@@ -8296,3 +8296,38 @@ three-character six-unit work path and rewind/saturation arithmetic, with the
 established search precharge and one fallible entry charge. Earlier APIs retain
 their closed domains and callbacks; four-unit paths and complete enclosing
 captures remain unchanged.
+
+A separate typed matcher compiles a finite source run of at least four
+independently checked, unquantified character-only v/vi classes
+(22.2.2.3, 22.2.2.4, 22.2.2.7.3). It accepts a plain run or canonical framing
+^? word? CHECKED...CHECKED word? $?, with at most one \b/\B at each endpoint.
+Both line and word assertions are optional. The source supplies the finite term
+count; no arbitrary term ceiling is introduced. Complete whole-body captures
+remain a separate Runtime caller proof. Earlier one-, two- and three-term APIs
+retain their closed domains, fields, callbacks and search behavior.
+
+Construction charges 4N before borrowed framing and both complete class-boundary
+passes. The first pass validates the entire class-only shape and count before
+program allocation or component compilation. Class storage is then reserved
+fallibly, and every complete character-only class proof runs in source order.
+An empty early set never skips later string-leaf rejection or source validation.
+Only a fully constructed immutable shared program is published; capacity and
+work failures retain their host-error categories. No source or input buffer is
+copied, and no general parser refactor or recursive term search is required.
+
+The first class searches for a candidate; every later class matches sticky at
+the preceding original complete-character end. A later class or outside-gate
+failure retries the first class's end in nonsticky mode. Sticky failure returns
+no match. Original UTF-16 ranges, lone surrogates and the documented initial-low-
+pair leading boundary remain in use. Outside words use actual i WordCharacters
+independently of fold-invariant class predicates; line assertions use original
+input and m context. Whole captures retain the selected complete range.
+
+Search-pass bounds conservatively sum all component predicates, term traversal
+and endpoint allowances with saturating arithmetic and one fallible entry
+charge. A dedicated Runtime branch uses the proved term count: sticky search is
+bounded by min(2 * count, remaining + 1), with saturating arithmetic; nonsticky
+search retains remaining + 1. The extra unit covers initial pair rewind. Source
+length is not a substitute for this character-derived bound. Existing two-,
+four- and six-unit paths and their tests remain unchanged. A separate direct
+unit verifies the new dynamic bound.

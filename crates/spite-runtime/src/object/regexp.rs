@@ -10,10 +10,11 @@ use spite_core::{
     RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
     RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher,
     RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,
-    RegExpUnicodeClassPairMatcher, RegExpUnicodeClassTripleMatcher,
-    RegExpUnicodeClassTripleWordMatcher, RegExpUnicodeFoldedLiteralMatcher,
-    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
-    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeClassPairMatcher, RegExpUnicodeClassSequenceMatcher,
+    RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
+    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
+    RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodePropertyDotMatcher,
+    RegExpUnicodeRepeatedAtomMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -38,6 +39,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeLiteralClassPairWord(RegExpUnicodeLiteralClassPairWordMatcher),
     UnicodeClassPairLiteralWord(RegExpUnicodeClassPairLiteralWordMatcher),
     UnicodeClassLiteralClassWord(RegExpUnicodeClassLiteralClassWordMatcher),
+    UnicodeClassSequence(RegExpUnicodeClassSequenceMatcher),
     UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
@@ -82,7 +84,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeClassTripleWord(_)
             | RegExpMatcherBody::UnicodeLiteralClassPairWord(_)
             | RegExpMatcherBody::UnicodeClassPairLiteralWord(_)
-            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_) => 0,
+            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_)
+            | RegExpMatcherBody::UnicodeClassSequence(_) => 0,
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -296,6 +299,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeClassSequence(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodePropertyDot(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, sticky, charge)
@@ -333,7 +350,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeClassTripleWord(_)
             | RegExpMatcherBody::UnicodeLiteralClassPairWord(_)
             | RegExpMatcherBody::UnicodeClassPairLiteralWord(_)
-            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_) => {
+            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_)
+            | RegExpMatcherBody::UnicodeClassSequence(_) => {
                 unreachable!("fallible matching dispatch")
             }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -409,6 +427,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeLiteralClassPairWord(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassPairLiteralWord(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassLiteralClassWord(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodeClassSequence(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodePropertyDot(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
@@ -425,6 +444,17 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if let RegExpMatcherBody::UnicodeClassSequence(matcher) = &self.body {
+            // The proved term count bounds original UTF-16 width, including a
+            // possible one-unit rewind at an initial low surrogate.
+            let remaining = remaining.saturating_add(1);
+            return if sticky {
+                matcher.max_match_code_units().min(remaining)
+            } else {
+                remaining
+            };
+        }
+
         if matches!(
             self.body,
             RegExpMatcherBody::UnicodeLiteralClassPair(_)
@@ -534,7 +564,8 @@ impl RegExpMatch<'_> {
             | RegExpMatcherBody::UnicodeClassTripleWord(_)
             | RegExpMatcherBody::UnicodeLiteralClassPairWord(_)
             | RegExpMatcherBody::UnicodeClassPairLiteralWord(_)
-            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_) => {
+            | RegExpMatcherBody::UnicodeClassLiteralClassWord(_)
+            | RegExpMatcherBody::UnicodeClassSequence(_) => {
                 return None;
             }
             RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
@@ -1116,5 +1147,75 @@ mod tests {
             objects.inspect(&object),
             Err(Error::Heap(spite_heap::Error::StaleHandle))
         ));
+    }
+
+    #[test]
+    fn unicode_class_sequence_work_bound_tracks_proved_terms() {
+        for count in [4usize, 5, 17] {
+            let pattern = format!(r"\B{}\B", r"[[\p{Any}]]".repeat(count));
+            let source = JsString::from(pattern.as_str());
+            let body = RegExpUnicodeClassSequenceMatcher::compile_v_set_with_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), std::convert::Infallible>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let width = count * 2;
+            assert_eq!(body.max_match_code_units(), width);
+            let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeClassSequence(body), 2);
+            assert_eq!(matcher.capture_count(), 2);
+            assert!(matcher.search_passes(true) > 0);
+            assert_eq!(matcher.search_passes(true), matcher.search_passes(false));
+            for source_len in [0, 1, source.len(), usize::MAX] {
+                for remaining in 0..=width + 1 {
+                    assert_eq!(
+                        matcher.search_work(true, source_len, remaining),
+                        width.min(remaining + 1)
+                    );
+                    assert_eq!(
+                        matcher.search_work(false, source_len, remaining),
+                        remaining + 1
+                    );
+                }
+                assert_eq!(matcher.search_work(true, source_len, usize::MAX), width);
+                assert_eq!(
+                    matcher.search_work(false, source_len, usize::MAX),
+                    usize::MAX
+                );
+            }
+            let input = JsString::from(format!("{}!", "😀".repeat(count)).as_str());
+            let mut work = Vec::new();
+            let found = matcher
+                .find_with_work(&input, 1, true, |units| {
+                    work.push(units);
+                    Ok::<(), std::convert::Infallible>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, [1]);
+            assert_eq!(found.range, 0..width);
+            assert_eq!(found.capture_count, 2);
+            assert_eq!(found.capture(0), Some(0..width));
+            assert_eq!(found.capture(1), Some(0..width));
+            assert_eq!(found.capture(2), None);
+            assert_eq!(
+                matcher.search_work(true, source.len(), input.len() - 1),
+                width
+            );
+            assert!(matches!(
+                matcher.find_with_work(&input, 1, true, |_| Err(7)),
+                Err(7)
+            ));
+            assert!(
+                matcher
+                    .find_with_work(&input, input.len() + 1, false, |_| {
+                        Ok::<(), std::convert::Infallible>(())
+                    })
+                    .unwrap()
+                    .is_none()
+            );
+        }
     }
 }

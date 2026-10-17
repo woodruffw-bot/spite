@@ -13562,3 +13562,63 @@ policy/inventory checks and all seven generators also pass. These measurements
 cover the selected test; incremental rebuilds were unpaired, and no compiler or
 whole-CI speed improvement is inferred. The complete hosted matrix remains
 required with unchanged test and corpus inventories.
+
+## Finite sequences of at least four checked UnicodeSets classes
+
+This increment compiles a finite source run of at least four independently
+checked, unquantified character-only v/vi classes, either plain or with canonical
+optional outside word/line assertions and complete whole-body captures. Every
+class retains the nested-class/set-operator proof. Borrowed framing charges 4N;
+complete shape/count validation precedes fallible program reservation, then all
+class proofs run in source order, including hidden string leaves behind an empty
+early set. Earlier typed APIs retain their closed domains and callbacks.
+
+On a later class or outside-gate failure, search retries the first class end,
+preserving overlaps and original UTF-16 ranges. Actual i WordCharacters and
+original m context govern outside endpoints. The new Runtime work branch derives
+its sticky bound from twice the proved term count and the remaining input plus
+initial-pair rewind. Earlier fixed-width work paths and bound tests remain
+unchanged.
+
+Exactly two original Unsupported programs in the existing plain-triple and
+word-triple Runtime functions became positive checks with their
+original expressions, complete metadata, each term/short-input negative and
+plain-versus-word neighbor behavior. All other 303 existing negative v_sets rows,
+all 23 preceding snapshot functions and old typed Core None controls remain
+unchanged. Admitted five-, six- or seventeen-term mismatches return false/null,
+rather than Unsupported; flat components, literals, repetitions, inner assertions,
+partial captures, alternatives and string leaves remain separate work.
+
+The two Core tests use 4,220 bounded independent UTF-16 comparisons,
+complete source/work-prefix checks and a 65-term domain/work witness. Two Runtime
+integration tests cover consumers, full captures/groups/indices, global/sticky
+state, ordered coercion, read-only lastIndex, GC retention and opted-in
+cancellation. A new separate Runtime bound unit covers counts 4/5/17, remaining
+zero/MAX, source-length independence and initial-low-pair handling without
+changing earlier bound-unit bodies.
+
+Ten handwritten finite snapshot rows specify complete JSON and original UTF-16
+input/result units: eight matches and two nulls. They cover four-term distinct-
+suffix overlap and late outside gates, sticky failure/success, five-term actual-i
+Kelvin/long-s word endpoints, a vi Ll-complement miss, a plain six-supplementary-
+character match spanning twelve units after initial-pair rewind, five lone high
+surrogates, original CRLF/LS multiline context and folded negative-K membership.
+Pinned Unicode 17/18 facts support only these selected finite witnesses.
+
+The generated insta snapshot was inspected against all ten handwritten rows.
+A fresh Node v24.19.0 comparison agreed with all ten complete JSON/UTF-16 results,
+with no exclusions. All 707 preceding snapshots are byte-identical; the new
+snapshot brings the total to 708. Two Core tests, two Runtime integration tests
+and one Runtime unit bring the registered Native inventory to 5,255 tests:
+970 Core and 4,285 REST, including 3,550 Runtime integration tests and 281 Runtime
+units. Parser retains 347 tests, and one documentation test is counted separately.
+The reviewed corpus remains 14,740 variants from 7,631 sources, with its full
+conformance gate separate from the Native inventory in all four CI lanes.
+
+All 24 local validation commands passed: both Rust versions' new and preceding
+triple Core checks, the new dynamic-bound unit, all 3,550 Runtime integration
+tests on each version, formatting, denied-warning Clippy, policy/inventory checks
+and all seven generators. The preceding published commit passed all fifteen
+hosted jobs. Full workspace, documentation, all 47 hosted runner/inventory probes
+and the four reviewed-corpus gates remain separately required for this increment
+in the retained fifteen-job CI matrix; its hosted results are pending publication.
