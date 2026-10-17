@@ -31,6 +31,7 @@ mod regexp_unicode_character;
 mod regexp_unicode_class;
 mod regexp_unicode_class_literal;
 mod regexp_unicode_class_pair;
+mod regexp_unicode_class_pair_literal;
 mod regexp_unicode_folded_literal;
 mod regexp_unicode_literal_class_pair;
 mod regexp_unicode_property_dot;
@@ -72,6 +73,7 @@ pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
 pub use regexp_unicode_class::{RegExpUnicodeClassMatcher, RegExpUnicodeSetCompileError};
 pub use regexp_unicode_class_literal::RegExpUnicodeClassLiteralMatcher;
 pub use regexp_unicode_class_pair::RegExpUnicodeClassPairMatcher;
+pub use regexp_unicode_class_pair_literal::RegExpUnicodeClassPairLiteralMatcher;
 pub use regexp_unicode_folded_literal::{
     RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
 };

@@ -8111,3 +8111,29 @@ allowance. Entry charging and summed predicate/traversal bounds remain fallible.
 The preceding four-unit paths and their callbacks are unchanged. No source/input
 buffer, parser refactor, dependency, default quota, profile, stack or worker-policy
 change is introduced.
+
+A separate typed plan matches exactly two checked character-only v/vi classes
+followed by one decoded Unicode literal (22.2.2.3, 22.2.2.7.3). An optional ^
+belongs to the first class and optional $ to the literal suffix; line assertions
+inspect the original input and m context. Each class independently retains the
+nested-class/set-operator gate, and the existing literal decoder proves one
+complete suffix atom. Borrowed framing charges 3N before the two class-end walks
+and literal decoding. Complete first-class, second-class and literal proofs then
+run in source order, including rejection of hidden string leaves in the second
+class behind an empty first class. Flat components, word gates, quantifiers,
+extra atoms, inner assertions and partial captures remain separate proofs.
+
+Matching checks the second class and then the literal sticky after the first
+class. If either fails, search retries at the first class's complete-character
+end, preserving the 1..4 overlap of [[a]][[a]]c on aaac. All ranges use original
+UTF-16 characters, folding and lone-surrogate semantics, including the documented
+leading-boundary behavior for an initial low surrogate. Runtime uses a separate
+zero-inner-capture variant and the existing complete whole-body capture proof.
+
+The suffix variant shares the literal-prefix variant's six-unit work path. The
+possible one-unit initial-pair rewind is added to the remaining suffix before the
+sticky cap; nonsticky work retains the rewind allowance. Entry charging and summed
+predicate/traversal bounds remain fallible. Earlier APIs, the literal-prefix
+proof and callbacks, and the old four-unit paths retain their behavior. No
+source/input buffer, parser refactor, dependency, default quota, profile, stack
+or worker-policy change is introduced.
