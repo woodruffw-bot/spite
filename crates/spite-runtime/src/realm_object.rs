@@ -775,7 +775,12 @@ fn string_index<'key>(string: &JsString, key: impl Into<PropertyKeyRef<'key>>) -
         }
         index = index.checked_mul(10)?.checked_add(usize::from(digit))?;
     }
-    if index >= string.len() || !key_is(key, &crate::value::number_to_string(index as f64)) {
+    // At most 15 decimal digits give an exact integer below 10^15 < 2^53,
+    // with fixed decimal Number::toString spelling below 10^21. Wider keys
+    // retain the rounding/canonical-spelling check.
+    if index >= string.len()
+        || units.len() > 15 && !key_is(key, &crate::value::number_to_string(index as f64))
+    {
         return None;
     }
     Some(index)
@@ -851,5 +856,100 @@ mod tests {
             realm.eval("delete base.both; child.both"),
             Ok(Value::Undefined)
         );
+    }
+
+    #[test]
+    fn canonical_small_string_indices_preserve_utf16_units_and_bounds() {
+        // A paired scalar and separate lone high/low surrogates stay code units.
+        let text =
+            JsString::from_code_units(vec![0x41, 0xd83d, 0xde00, 0xd800, 0x58, 0xdc00, 0x5a]);
+        for (key, index, unit) in [
+            ("0", 0, 0x41),
+            ("1", 1, 0xd83d),
+            ("2", 2, 0xde00),
+            ("3", 3, 0xd800),
+            ("4", 4, 0x58),
+            ("5", 5, 0xdc00),
+            ("6", 6, 0x5a),
+        ] {
+            let found = string_index(&text, &JsString::from(key));
+            assert_eq!(found, Some(index), "{key}");
+            assert_eq!(found.map(|at| text.code_units()[at]), Some(unit), "{key}");
+        }
+        let hex = JsString::from("0123456789ABCDEF");
+        for (key, expected) in [
+            ("0", Some(0)),
+            ("9", Some(9)),
+            ("10", Some(10)),
+            ("15", Some(15)),
+            ("16", None),
+        ] {
+            assert_eq!(string_index(&hex, &JsString::from(key)), expected, "{key}");
+        }
+        for key in [
+            "",
+            "00",
+            "01",
+            "-0",
+            "-1",
+            "+1",
+            "1.0",
+            "1e0",
+            "0x1",
+            "1.5",
+            " 1",
+            "1 ",
+            "NaN",
+            "Infinity",
+            "١",
+            "１",
+            "7",
+            "8",
+            // These long keys are out of range on a real small string. They do
+            // not require enormous storage or assume a 64-bit usize.
+            "999999999999998",
+            "999999999999999",
+            "1000000000000000",
+            "9007199254740991",
+            "9007199254740992",
+            "9007199254740993",
+            "9007199254740994",
+            "18446744073709551615",
+            "18446744073709551616",
+            "99999999999999999999",
+            "100000000000000000000",
+        ] {
+            assert_eq!(string_index(&text, &JsString::from(key)), None, "{key}");
+        }
+        assert_eq!(
+            string_index(&JsString::from(""), &JsString::from("0")),
+            None
+        );
+        let symbol = spite_core::JsSymbol::new(Some(JsString::from("0")));
+        assert_eq!(string_index(&text, &symbol), None);
+    }
+
+    #[test]
+    fn string_index_fast_acceptance_keeps_coercion_boxing_and_prototype_fallback() {
+        let mut realm = Realm::default();
+        assert_eq!(realm.eval(r#"
+            let calls='',key={toString(){calls+='k';return '1'}};
+            let s='A😀\uD800X\uDC00Z',box=new String(s),a=s[key],b=box[key];
+            String.prototype['0']='shadow';String.prototype['01']='leading';
+            String.prototype['999999999999999']='fifteen';
+            String.prototype['1000000000000000']='sixteen';
+            String.prototype['9007199254740992']='even';
+            String.prototype['9007199254740993']='rounded-neighbor';
+            String.prototype['18446744073709551616']='overflow';
+            calls==='kk'&&a==='\uD83D'&&b==='\uD83D'&&s.length===7&&box.length===7
+              &&s[0]==='A'&&box[0]==='A'&&s[2]==='\uDE00'&&box[3]==='\uD800'
+              &&s[5]==='\uDC00'&&s[7]===undefined&&box[7]===undefined
+              &&s['01']==='leading'&&box['01']==='leading'
+              &&s['999999999999999']==='fifteen'&&box['999999999999999']==='fifteen'
+              &&s['1000000000000000']==='sixteen'&&box['1000000000000000']==='sixteen'
+              &&s['9007199254740992']==='even'&&box['9007199254740992']==='even'
+              &&s['9007199254740993']==='rounded-neighbor'&&box['9007199254740993']==='rounded-neighbor'
+              &&s['18446744073709551616']==='overflow'&&box['18446744073709551616']==='overflow'
+        "#), Ok(Value::Boolean(true)));
     }
 }

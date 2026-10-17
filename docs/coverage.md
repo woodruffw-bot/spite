@@ -14059,3 +14059,25 @@ full Core, workspace and documentation tests, as well as all 47 framework probes
 and four full reviewed-corpus gates. No local full Core, workspace,
 documentation, framework-probe or corpus completion, or new hosted success, is
 claimed here.
+
+## Canonical primitive string indices
+
+Primitive string indexing avoids a redundant Number::toString check after a
+canonical decimal key of at most fifteen digits has passed the existing
+checked parse and length bound. Such integers are exactly represented in
+binary64 and retain fixed decimal spelling. The original check remains for
+sixteen- through twenty-digit keys; coercion, UTF-16 units, prototype fallback
+and host work accounting are unchanged. Two Runtime units cover direct keys,
+paired and lone surrogates, invalid spellings, bounds, symbol keys, boxing,
+coercion and distinct large-key prototype properties.
+
+Four balanced samples per source state and Rust toolchain, each performing
+200,000 primitive string-character reads, observed median user-CPU reductions
+of 3.8% on stable and 4.24% on Rust 1.85. Wall times were noisy; these focused
+results establish no full-corpus or hosted CI improvement.
+
+The Native definition inventory is 5,302: 988 Core and 4,314 REST, including
+3,568 Runtime integration tests and 292 Runtime units. All 717 snapshots are
+retained. The one documentation test and reviewed 14,740 corpus variants from
+7,631 sources remain separate. The fifteen-job hosted matrix still requires
+27 Cargo targets, all 47 framework probes and four full reviewed-corpus gates.
