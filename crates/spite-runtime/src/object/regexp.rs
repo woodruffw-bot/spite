@@ -9,9 +9,9 @@ use spite_core::{
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralMatcher,
     RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairMatcher,
-    RegExpUnicodeClassTripleMatcher, RegExpUnicodeFoldedLiteralMatcher,
-    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
+    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
+    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -32,6 +32,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeClassPairLiteral(RegExpUnicodeClassPairLiteralMatcher),
     UnicodeClassLiteralClass(RegExpUnicodeClassLiteralClassMatcher),
     UnicodeClassTriple(RegExpUnicodeClassTripleMatcher),
+    UnicodeClassTripleWord(RegExpUnicodeClassTripleWordMatcher),
     UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
@@ -72,7 +73,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
             | RegExpMatcherBody::UnicodeClassPairLiteral(_)
             | RegExpMatcherBody::UnicodeClassLiteralClass(_)
-            | RegExpMatcherBody::UnicodeClassTriple(_) => 0,
+            | RegExpMatcherBody::UnicodeClassTriple(_)
+            | RegExpMatcherBody::UnicodeClassTripleWord(_) => 0,
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -230,6 +232,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeClassTripleWord(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodePropertyDot(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, sticky, charge)
@@ -263,7 +279,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
             | RegExpMatcherBody::UnicodeClassPairLiteral(_)
             | RegExpMatcherBody::UnicodeClassLiteralClass(_)
-            | RegExpMatcherBody::UnicodeClassTriple(_) => {
+            | RegExpMatcherBody::UnicodeClassTriple(_)
+            | RegExpMatcherBody::UnicodeClassTripleWord(_) => {
                 unreachable!("fallible matching dispatch")
             }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -335,6 +352,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeClassPairLiteral(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassLiteralClass(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassTriple(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodeClassTripleWord(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodePropertyDot(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
@@ -357,6 +375,7 @@ impl RegExpMatcher {
                 | RegExpMatcherBody::UnicodeClassPairLiteral(_)
                 | RegExpMatcherBody::UnicodeClassLiteralClass(_)
                 | RegExpMatcherBody::UnicodeClassTriple(_)
+                | RegExpMatcherBody::UnicodeClassTripleWord(_)
         ) {
             // Three original characters consume at most six units. Their first
             // term retains the approved initial-low-surrogate rewind.
@@ -452,7 +471,8 @@ impl RegExpMatch<'_> {
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
             | RegExpMatcherBody::UnicodeClassPairLiteral(_)
             | RegExpMatcherBody::UnicodeClassLiteralClass(_)
-            | RegExpMatcherBody::UnicodeClassTriple(_) => {
+            | RegExpMatcherBody::UnicodeClassTriple(_)
+            | RegExpMatcherBody::UnicodeClassTripleWord(_) => {
                 return None;
             }
             RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
@@ -741,6 +761,55 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(triple_charges, [1]);
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(0..6));
+        assert_eq!(found.capture(1), Some(0..6));
+        assert_eq!(found.capture(2), None);
+
+        // Outside word gates share the unchanged six-unit branch and retain
+        // original neighbors at the approved initial-low-pair boundary.
+        let word_triple_source = JsString::from(r"\B[[\u{1f600}]][[\u{1f601}]][[\u{1f602}]]\B");
+        let word_triple = RegExpUnicodeClassTripleWordMatcher::compile_v_set_with_work(
+            &word_triple_source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let word_triple =
+            RegExpMatcher::new(RegExpMatcherBody::UnicodeClassTripleWord(word_triple), 2);
+        for source_len in [0, 1, word_triple_source.len(), usize::MAX] {
+            for remaining in 0usize..=7 {
+                assert_eq!(
+                    word_triple.search_work(true, source_len, remaining),
+                    [1, 2, 3, 4, 5, 6, 6, 6][remaining]
+                );
+                assert_eq!(
+                    word_triple.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(word_triple.search_work(true, source_len, usize::MAX), 6);
+            assert_eq!(
+                word_triple.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        assert_eq!(
+            word_triple.search_work(true, word_triple_source.len(), input.len() - 1),
+            6
+        );
+        let mut word_triple_charges = Vec::new();
+        let found = word_triple
+            .find_with_work(&input, 1, true, |n| {
+                word_triple_charges.push(n);
+                Ok::<(), std::convert::Infallible>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(word_triple_charges, [1]);
         assert_eq!(found.range, 0..6);
         assert_eq!(found.capture_count, 2);
         assert_eq!(found.capture(0), Some(0..6));

@@ -13331,3 +13331,61 @@ platform/toolchain, and all four full corpus gates retain 14,740 variants from
 stacks, JavaScript resource defaults, fixtures or snapshot bodies. Its complete
 hosted timings, queue cost and additional runner use will determine whether the
 trial improves CI completion time.
+
+The Windows two-shard trial was retained after all fifteen jobs passed with
+complete inventories and all 703 existing snapshots unchanged. In the single
+hosted comparison, workflow completion was 538 seconds versus 709 for its parent.
+Summed runner job time was 4,668 versus 4,589 seconds: 79 additional seconds,
+about 1.7%. The two added jobs used 507 seconds; changes in existing jobs account
+for the difference. Host and cache variation remain uncontrolled. These observed
+figures establish neither a causal speedup nor a stable marginal runner cost.
+The retained policy has fifteen jobs and 47 hosted runner/inventory probes:
+17 Cargo, 11 Runtime and 19 Parser.
+
+## Outside word assertions around three checked UnicodeSets classes
+
+Canonical outside \b/\B assertions compose with exactly three independently
+checked, unquantified character-only v/vi classes, optional outside ^/$ and
+existing complete whole-body captures. At least one word assertion is required.
+All three complete class proofs run in source order even behind an empty first
+or second set. The new wrapper charges 4N for borrowed framing; the plain triple
+plan retains its original fields, methods, callbacks and 3N transcript. Actual i
+WordCharacters and original m context govern whole-range endpoints. Failed later
+classes or gates retry the first end, retaining overlaps and original UTF-16
+ranges. Flat components, inner/reordered assertions, extra atoms, repetitions,
+partial captures and string leaves remain separate work.
+
+Exactly three original word-triple Unsupported controls become positive checks
+with their original expressions, complete match metadata, component/short-input
+negatives and failing outside-word neighbors. Other old controls remain unchanged,
+including the plain-triple and pair-word Core typed None cases. Two Core tests
+check 2,632 finite independent UTF-16/word-oracle comparisons and five complete
+work traces with every callback failure prefix, plus closed-domain and full-
+source-proof checks. Two Runtime integration tests cover consumers, full
+captures/groups/indices, global/sticky state, coercion, GC retention, read-only
+lastIndex and opted-in cancellation. The existing direct six-unit bound unit
+gains assertions without adding a unit test function or altering prior four-/
+six-unit checks.
+
+Ten inspected insta rows agree with complete handwritten JSON and original
+UTF-16 metadata and result units: eight matches and two nulls, including initial-
+low-pair, supplementary and lone-surrogate cases. A fresh Node comparison passes
+all ten complete rows with no exclusions. Pinned Unicode 17/18 witnesses establish
+selected finite word/fold facts only, not general version equivalence. All 703
+preceding snapshots are byte-identical; the inspected new snapshot makes 704.
+
+Stable and Rust 1.85 each pass the two new Core tests, two preceding plain-triple
+regressions and two checked-pair word regressions, each with 960 filtered. Both
+versions pass the extended direct Runtime bound unit with 279 filtered and all
+3,542 Runtime integration tests without filtering. The stable snapshot test also
+passes with 3,541 filtered. Two new Core and two Runtime integration test
+definitions bring the registered inventory to 5,238 workspace tests: 962 Core and
+4,276 REST, including 3,542 Runtime integration tests and 280 Runtime units.
+Parser retains 347 tests, and one documentation test is registered. The reviewed
+corpus remains 14,740 variants from 7,631 sources.
+
+Formatting, denied-warning Clippy, policy/inventory checks and all seven
+generators pass. Previously accepted Python framework results are reused after
+verifying unchanged sources and toolchain identities. Full workspace,
+documentation, all 47 hosted runner/inventory probes and all reviewed corpus
+variants remain separately required in the retained fifteen-job CI matrix.

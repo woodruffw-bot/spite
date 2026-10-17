@@ -8189,3 +8189,30 @@ Earlier typed APIs retain their closed domains, callbacks and search behavior,
 including their existing triple-class None controls. The direct Runtime work-
 bound unit gains assertions without a new test function. No source/input buffer,
 dependency, default quota or build-profile change is introduced.
+
+A separate typed wrapper matches canonical outside word assertions around
+exactly three checked character-only v/vi classes (22.2.2.3, 22.2.2.4). Its
+borrowed order is ^? word? CHECKED CHECKED CHECKED word? $?, with at least one
+\b/\B. Each class independently retains the nested-class/set-operator gate.
+The wrapper lives beside the plain triple matcher without changing its stored
+fields, methods, callbacks or closed domain. Complete whole-body captures remain
+a separate Runtime caller proof. Flat components, string leaves, extra atoms,
+quantifiers, inner/reordered assertions and partial captures remain separate work.
+
+Construction charges 4N before canonical framing and the three class-end walks,
+then runs all three complete bare-class proofs in source order, including
+hidden-string rejection after an empty first or second set. No source slice or
+input buffer is copied. The plain triple constructor retains its original 3N
+work transcript. Outside endpoint checks use actual i WordCharacters independently
+of fold-invariant class predicates, and original m line context. After a later
+class or outside gate fails, search retries the first class's complete-character
+end. This preserves the 1..4 overlap of \B[[a]][[a]][[a]]\b on aaaa!.
+
+All ranges and neighboring assertions inspect original UTF-16 characters,
+including lone surrogates and the documented initial-low-pair leading boundary.
+The wrapper adds the established endpoint allowances to the plain triple search
+bound and keeps one fallible entry charge. Its separate zero-inner-capture
+Runtime variant joins the unchanged six-unit work path and complete enclosing-
+capture proof. Existing rewind/saturation arithmetic, four-unit paths and prior
+six-unit assertions remain in use. No dependency, default quota, profile, stack
+or worker-policy change is introduced.
