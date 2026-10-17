@@ -8673,3 +8673,21 @@ and the six-unit work bound are shared without changes. Earlier entries keep
 their closed domains. Other mixed literal placements, extra atoms, string-set
 leaves, inner or reordered assertions, partial captures and quantified bodies
 remain outside this entry; resource limits remain explicitly opt-in.
+
+## Checked UnicodeSets class, flat class and literal
+
+A separate entry proves one checked character-only v/vi class, one flat class
+and one decoded literal, with canonical optional outside word/line assertions
+and caller-proved whole-body captures. Borrowed whole framing charges
+saturating 4N before the checked, flat and literal proofs run fully in source
+order. A successful empty checked class cannot hide a later flat-class error;
+explicit \q leaves reject framing before components, while a hidden string
+property reaches its corresponding compiler. Work errors propagate immediately.
+
+The existing ClassPairLiteralWord representation retains original UTF-16,
+actual-i word and original-m line context. Later-class, literal or gate failure
+retries first.end in nonsticky mode; sticky failure does not retry. Complete
+captures and six-unit Runtime work accounting are unchanged. Earlier entries
+keep their domains; reverse mixed suffix order, mixed middle placements,
+string leaves, extra atoms, inner assertions, partial captures and quantifiers
+remain outside this entry. Resource limits remain explicitly opt-in.

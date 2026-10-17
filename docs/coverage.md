@@ -14169,3 +14169,25 @@ arguments, package context, all 3,572 Native names, both partitions and all
 fallback checks on both Rust versions. These existing-target observations
 include unequal recompilation and do not establish cold-build or whole-CI
 speed gains; hosted coverage remains required before the following push.
+
+## Checked class and flat class followed by a literal
+
+Seven original Boolean controls across five owners retain their exact
+expressions as positives with independent intrinsic Array and full metadata
+checks, including leading-only abc in abcx. All other old source controls and
+35 preceding snapshot function bodies are preserved. Two Core tests specify
+8,944 independent UTF-16 oracle comparisons, fourteen ordered construction
+transcripts with fresh abort prefixes, thirty-three framing neighbors and
+actual-i invariant-consumer checks. Two Runtime functions cover state,
+overlap, captures, consumers, coercion, read-only lastIndex, GC and explicit
+opt-in cancellation; a separate direct unit checks the existing six-unit bound.
+Ten handwritten full-JSON/UTF-16 rows specify eight matches and two nulls.
+
+The Native inventory is 5,317: 994 Core and 4,323 REST,
+including 3,574 Runtime integration tests and 295 Runtime units. Parser retains
+347 tests; the one documentation test and reviewed 14,740 corpus variants from
+7,631 sources are separate. The snapshot inventory is 720, retaining all 719
+preceding snapshots. The ten new rows match the handwritten expectations and
+a fresh Node comparison without exclusions. The full Runtime integration
+suite passes on stable and Rust 1.85. The retained fifteen-job matrix requires
+all 53 framework probes and four full reviewed-corpus gates.
