@@ -8476,3 +8476,32 @@ and the approved initial-low-pair leading boundary are retained. The shared
 Runtime path keeps saturating sticky min(4, remaining + 1) and nonsticky
 remaining + 1, independent of source length. A separate direct bound test
 preserves every earlier bound test and work formula.
+
+## Outside words around one literal and a flat UnicodeSets class
+
+A separate constructor proves canonical optional ^, optional word gate, one
+consuming decoded literal, one complete flat character-only v/vi class, optional
+word gate and optional $. At least one outside \b/\B is required. Complete
+whole-body captures retain the existing caller proof. Inner or reordered gates,
+partial captures, quantifiers, extra terms, nested/operator classes and string
+leaves remain separate proofs. All six preceding APIs and callbacks are unchanged.
+
+Construction borrows original source and charges saturating 3N before framing
+or decoding. The complete literal boundary and full suffix class are framed
+before component proofs run in literal-then-class source order, with immediate
+work-error propagation. An empty suffix or impossible endpoint gate never skips
+complete validation. The existing literal-first representation and
+OutsideAssertions retain the caller's actual i/m flags, even when both consuming
+predicates are fold-invariant. Thus `^\B\$[\p{Any}]\b$` matches `$K` or `$ſ`
+only with i: the consuming predicates stay the same while the final word gate
+changes. Original input and multiline context determine every assertion.
+
+Matching preserves original complete-character UTF-16 ranges, supplementary and
+lone characters, enclosing captures and the approved initial-low-pair leading
+boundary. A late class or outside-gate failure retries the first literal's end;
+sticky failure does not retry. In particular, \Ba[a]\b over aaa! selects 1..3
+after the first pair fails its gates. The existing search precharge and one
+fallible entry charge are shared. Sticky work remains saturating
+min(4, remaining + 1) and nonsticky work remains remaining + 1, independent of
+source length. No new representation, source buffer, allocation boundary,
+dependency or default resource limit is introduced.
