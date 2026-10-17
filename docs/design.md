@@ -8269,3 +8269,30 @@ three-character six-unit work path and rewind/saturation arithmetic, with the
 established search precharge and one fallible entry charge. Earlier APIs retain
 their closed domains and callbacks; four-unit paths and complete enclosing
 captures remain unchanged.
+
+A separate typed wrapper composes canonical outside word assertions with one
+checked character-only v/vi class, one decoded Unicode literal and a second
+independently checked class (22.2.2.3, 22.2.2.4). Its borrowed order is
+^? word? CHECKED LITERAL CHECKED word? $?, with at least one \b/\B. Both classes
+retain the nested-class/set-operator proof. Complete whole-body captures remain
+a separate Runtime caller proof. Flat classes, extra atoms, quantifiers,
+inner/reordered assertions, partial captures and string leaves remain outside
+this domain.
+
+Construction charges 4N before canonical framing, class-boundary walks and
+literal decoding. The first class, literal and second class are proved completely
+in source order, including hidden-string rejection after an empty first
+set. The plain middle-literal matcher retains its original fields, methods,
+closed domain and 3N callback transcript. No source slice or input buffer is
+copied. Actual i WordCharacters govern outside endpoints independently of
+fold-invariant membership; optional ^/$ use original input and m line context.
+
+A failed literal, final class or outside gate retries the first class's end at
+an original character boundary, preserving the 1..4 overlap of \B[[a]]a[[a]]\b
+on aaaa!. Sticky failure returns no match. Ranges and neighboring assertions retain original
+UTF-16 characters, lone surrogates and the documented initial-low-pair leading
+boundary. The separate zero-inner-capture Runtime variant shares the existing
+three-character six-unit work path and rewind/saturation arithmetic, with the
+established search precharge and one fallible entry charge. Earlier APIs retain
+their closed domains and callbacks; four-unit paths and complete enclosing
+captures remain unchanged.

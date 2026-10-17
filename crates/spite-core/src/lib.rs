@@ -74,7 +74,9 @@ pub use regexp_sequence::RegExpSequenceMatcher;
 pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
 pub use regexp_unicode_class::{RegExpUnicodeClassMatcher, RegExpUnicodeSetCompileError};
 pub use regexp_unicode_class_literal::RegExpUnicodeClassLiteralMatcher;
-pub use regexp_unicode_class_literal_class::RegExpUnicodeClassLiteralClassMatcher;
+pub use regexp_unicode_class_literal_class::{
+    RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
+};
 pub use regexp_unicode_class_pair::RegExpUnicodeClassPairMatcher;
 pub use regexp_unicode_class_pair_literal::{
     RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,

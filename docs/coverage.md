@@ -13492,3 +13492,55 @@ seconds on stable and 231.813 to 249.155 seconds on Rust 1.85.0. Each toolchain 
 one baseline/candidate pair; all four runs discovered the same 964 test names and
 passed both targeted tests. The mixed result does not establish an overall speed
 improvement, so the original callbacks were retained.
+
+## Outside word assertions around checked UnicodeSets classes and a middle literal
+
+Native matching composes canonical outside \b/\B assertions with one
+independently checked, unquantified character-only v/vi class, one decoded
+Unicode literal and a second independently checked class, optional outside ^/$
+and complete whole-body captures. At least one word assertion is required.
+Complete first class, literal and second class proofs run in source order, even
+behind an empty set. Borrowed framing charges 4N; the plain middle-literal matcher
+retains its 3N transcript and closed domain. Actual i WordCharacters and original
+m context govern outside endpoints. A later component or gate failure retries
+the first class end, preserving overlaps and original UTF-16 ranges. Flat
+components, extra atoms, repetitions, inner/reordered assertions, partial
+captures and string leaves remain separate work.
+
+Six original Unsupported occurrences in three existing Runtime functions become
+positive checks, retaining their complete expressions and
+adding match metadata, component/short-input negatives and failing outside-word
+neighbors. All other old controls and all 22 preceding snapshot test functions
+remain unchanged, including old typed Core word-domain None cases. The
+two Core tests cover 6,316 finite independent UTF-16 comparisons, complete
+source-order work traces and every callback failure prefix, including unsupported
+late string leaves behind an empty first set. The two Runtime integration tests
+cover consumers, full captures/groups/indices, global/sticky state, coercion,
+original line context, GC retention, read-only lastIndex and opted-in
+cancellation. The existing direct six-unit bound unit gains assertions without
+another unit-test definition or changes to earlier four-/six-unit checks.
+
+Ten handwritten finite snapshot rows specify complete JSON and original UTF-16
+input/result units: eight matches and two nulls, including first-end overlap,
+initial-low-pair, supplementary, lone-surrogate, actual-i word and multiline
+cases. The folding witness places s in the middle literal, with K and a in the
+classes, distinguishing all three folded terms. Selected pinned Unicode 17/18
+word/fold facts support these finite witnesses without claiming general version
+equivalence. The inspected insta snapshot matches every handwritten expectation
+and a fresh Node comparison, with no exclusions. All 706 preceding snapshots
+remain byte-identical; the total is 707.
+
+The workspace runner's Native inventory is 5,250 tests: 968 Core and 4,282 REST,
+including 3,548 Runtime integration tests and 280 Runtime units. Parser retains
+347 tests.
+One documentation test is counted separately. The reviewed corpus remains
+14,740 variants from 7,631 sources; its full conformance gate is separate from
+the Native inventory and remains required in all four CI lanes.
+
+Local checks pass on both Rust versions for the new and preceding Core domains,
+the direct Runtime bound and the full Runtime integration suite. Formatting,
+denied-warning Clippy, policy/inventory checks and all seven generators pass.
+Full workspace, documentation, all 47 hosted runner/inventory probes and all
+four reviewed-corpus gates remain separately required in the fifteen-job CI
+matrix. The preceding suffix feature's full CI passed before this increment
+was published.

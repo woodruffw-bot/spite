@@ -10,13 +10,14 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralMatcher,
-    RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher,
-    RegExpUnicodeClassPairLiteralWordMatcher, RegExpUnicodeClassPairMatcher,
-    RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
-    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
-    RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
+    RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
+    RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher,
+    RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,
+    RegExpUnicodeClassPairMatcher, RegExpUnicodeClassTripleMatcher,
+    RegExpUnicodeClassTripleWordMatcher, RegExpUnicodeFoldedLiteralMatcher,
+    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
+    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -1179,6 +1180,16 @@ impl Realm {
                     .map_err(unicode_set_compile_error)?
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeClassPairLiteralWord(body)));
+                    }
+                    if let Some(body) = RegExpUnicodeClassLiteralClassWordMatcher::compile_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClassLiteralClassWord(body)));
                     }
                 }
                 Ok(None)
