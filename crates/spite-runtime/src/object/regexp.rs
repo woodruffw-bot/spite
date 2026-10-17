@@ -7,8 +7,8 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
-    RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher,
-    RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairMatcher,
+    RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralMatcher,
+    RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairMatcher,
     RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
     RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
 };
@@ -29,6 +29,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeClassPair(RegExpUnicodeClassPairMatcher),
     UnicodeLiteralClassPair(RegExpUnicodeLiteralClassPairMatcher),
     UnicodeClassPairLiteral(RegExpUnicodeClassPairLiteralMatcher),
+    UnicodeClassLiteralClass(RegExpUnicodeClassLiteralClassMatcher),
     UnicodeFoldedLiteral(RegExpUnicodeFoldedLiteralMatcher),
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
@@ -67,7 +68,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeClassLiteral(_)
             | RegExpMatcherBody::UnicodeClassPair(_)
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
-            | RegExpMatcherBody::UnicodeClassPairLiteral(_) => 0,
+            | RegExpMatcherBody::UnicodeClassPairLiteral(_)
+            | RegExpMatcherBody::UnicodeClassLiteralClass(_) => 0,
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -197,6 +199,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeClassLiteralClass(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodePropertyDot(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, sticky, charge)
@@ -228,7 +244,8 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeClassLiteral(_)
             | RegExpMatcherBody::UnicodeClassPair(_)
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
-            | RegExpMatcherBody::UnicodeClassPairLiteral(_) => {
+            | RegExpMatcherBody::UnicodeClassPairLiteral(_)
+            | RegExpMatcherBody::UnicodeClassLiteralClass(_) => {
                 unreachable!("fallible matching dispatch")
             }
             RegExpMatcherBody::Literal(matcher) => (matcher.find(input, start, sticky)?, 0),
@@ -298,6 +315,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeClassPair(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeLiteralClassPair(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassPairLiteral(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodeClassLiteralClass(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodePropertyDot(matcher) => matcher.search_passes(),
             RegExpMatcherBody::Quantified(_) => 1,
             RegExpMatcherBody::Prefixed(m) => m.search_passes(sticky),
@@ -318,6 +336,7 @@ impl RegExpMatcher {
             self.body,
             RegExpMatcherBody::UnicodeLiteralClassPair(_)
                 | RegExpMatcherBody::UnicodeClassPairLiteral(_)
+                | RegExpMatcherBody::UnicodeClassLiteralClass(_)
         ) {
             // Three original characters consume at most six units. Their first
             // term retains the approved initial-low-surrogate rewind.
@@ -411,7 +430,8 @@ impl RegExpMatch<'_> {
             | RegExpMatcherBody::UnicodeClassLiteral(_)
             | RegExpMatcherBody::UnicodeClassPair(_)
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
-            | RegExpMatcherBody::UnicodeClassPairLiteral(_) => {
+            | RegExpMatcherBody::UnicodeClassPairLiteral(_)
+            | RegExpMatcherBody::UnicodeClassLiteralClass(_) => {
                 return None;
             }
             RegExpMatcherBody::UnicodeRepeatedAtom(_) => return self.atom_capture.clone(),
@@ -604,6 +624,54 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(suffix_charges, [1]);
+        assert_eq!(found.range, 0..6);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(0..6));
+        assert_eq!(found.capture(1), Some(0..6));
+        assert_eq!(found.capture(2), None);
+
+        // The middle-literal variant shares the six-unit dispatcher; every
+        // preceding prefix, suffix and four-unit assertion remains unchanged.
+        let middle_source = JsString::from(r"[[\u{1f600}]]\u{1f601}[[\u{1f602}]]");
+        let middle = RegExpUnicodeClassLiteralClassMatcher::compile_v_set_with_work(
+            &middle_source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let middle = RegExpMatcher::new(RegExpMatcherBody::UnicodeClassLiteralClass(middle), 2);
+        for source_len in [0, 1, middle_source.len(), usize::MAX] {
+            for remaining in 0usize..=7 {
+                assert_eq!(
+                    middle.search_work(true, source_len, remaining),
+                    [1, 2, 3, 4, 5, 6, 6, 6][remaining]
+                );
+                assert_eq!(
+                    middle.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(middle.search_work(true, source_len, usize::MAX), 6);
+            assert_eq!(
+                middle.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        assert_eq!(
+            middle.search_work(true, middle_source.len(), input.len() - 1),
+            6
+        );
+        let mut middle_charges = Vec::new();
+        let found = middle
+            .find_with_work(&input, 1, true, |n| {
+                middle_charges.push(n);
+                Ok::<(), std::convert::Infallible>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(middle_charges, [1]);
         assert_eq!(found.range, 0..6);
         assert_eq!(found.capture_count, 2);
         assert_eq!(found.capture(0), Some(0..6));

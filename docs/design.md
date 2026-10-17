@@ -8137,3 +8137,30 @@ predicate/traversal bounds remain fallible. Earlier APIs, the literal-prefix
 proof and callbacks, and the old four-unit paths retain their behavior. No
 source/input buffer, parser refactor, dependency, default quota, profile, stack
 or worker-policy change is introduced.
+
+A separate typed plan matches exactly two checked character-only v/vi classes
+separated by one decoded Unicode literal (22.2.2.3, 22.2.2.7.3). An optional ^
+belongs to the first class and optional $ to the second; line assertions inspect
+the original input and m context. Both classes independently retain the nested-
+class/set-operator gate, and the existing literal decoder proves one complete
+middle atom. Borrowed framing charges 3N before either class-end walk or literal
+decoding. Complete first-class, literal and second-class proofs then run in
+source order, including rejection of hidden string leaves in the second class
+behind an empty first class. Flat components, word gates, quantifiers, extra
+atoms, inner assertions and partial captures remain separate proofs.
+
+Matching checks the literal sticky after the first class and the second class
+sticky after the literal. If either fails, search retries at the first class's
+complete-character end, preserving the 1..4 overlap of [[a]]a[[c]] on aaac. All
+ranges use original UTF-16 characters, folding and lone-surrogate semantics,
+including the documented leading-boundary behavior for an initial low surrogate.
+Runtime uses a separate zero-inner-capture variant and the existing complete
+whole-body capture proof.
+
+The middle variant shares the existing three-character six-unit work path. The
+possible one-unit initial-pair rewind is added to the remaining suffix before
+the sticky cap; nonsticky work retains the rewind allowance. Entry charging and
+summed predicate/traversal bounds remain fallible. Earlier APIs, callback bodies,
+prefix/suffix plans and four-unit paths retain their behavior. No source/input
+buffer, parser refactor, dependency, default quota, profile, stack or worker-policy
+change is introduced.

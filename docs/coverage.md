@@ -13200,3 +13200,48 @@ Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner/invent
 probes and all seven generators pass. Full workspace, documentation and
 all reviewed corpus variants remain separately required in the unchanged
 thirteen-job CI matrix.
+
+## Literal between two checked UnicodeSets classes
+
+Exactly two unquantified checked character-only v/vi classes can surround one
+decoded Unicode literal, with optional outside line assertions and existing
+complete whole-body captures. Both classes retain their independent nested-class/
+set-operator gates. Complete first-class, literal and second-class proofs run in
+source order, including hidden-string rejection in the second class behind an
+empty first class. Earlier APIs and all old Runtime controls remain unchanged.
+Flat components, word gates, quantifiers, extra atoms and partial captures remain
+separate work.
+
+Two Core tests check ten plans over sixteen tiny UTF-16 inputs, every initial
+offset and both sticky modes: 1,880 range comparisons. Domain and work checks
+cover five complete source-order callback traces, every callback failure prefix,
+decoded literal widths, full component proofs, first-end overlap retry after
+either continuation fails, original line context, folds/complements and complete
+supplementary/lone-surrogate boundaries. Two Runtime integration tests cover
+consumers, full captures/groups/indices, global/sticky state, coercion, read-only
+lastIndex and opted-in cancellation. Middle cases extend the existing direct
+Runtime bound unit to check the shared six-unit sticky path, initial-pair rewind,
+saturation and original capture ranges. All preceding prefix/suffix and four-unit
+assertions remain intact; no unit test function is added.
+
+Ten insta rows agree with complete handwritten JSON and UTF-16 metadata and
+result units, including the documented initial-low-pair behavior. A fresh Node
+comparison passes all ten rows with no exclusions. The independent finite oracle
+and raw Unicode 17/18 witness review cover selected fold/category facts; they
+establish no general Unicode-version equivalence.
+
+Stable and Rust 1.85 each pass the two new Core tests, two preceding literal-prefix
+tests and two preceding literal-suffix tests, each with 956 filtered, plus six
+existing class/literal tests with 952 filtered. Both versions pass all 3,538
+Runtime integration tests without filtering and the extended direct Runtime
+bound unit with 279 filtered. All 701 preceding snapshots are byte-identical;
+the inspected new snapshot makes 702. Two new Core and two new Runtime integration
+tests bring the registered workspace inventory to 5,230: 958 Core, 280 Runtime
+units and 3,538 Runtime integration tests. The REST inventory is 4,272; Parser
+has 347 tests, and one documentation test is registered. The reviewed corpus
+remains 14,740 variants from 7,631 sources.
+
+Formatting, denied-warning Clippy, policy/inventory checks, all 39 runner/inventory
+probes and all seven generators pass. Full workspace, documentation and
+all reviewed corpus variants remain separately required in the unchanged
+thirteen-job CI matrix.
