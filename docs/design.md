@@ -8505,3 +8505,41 @@ fallible entry charge are shared. Sticky work remains saturating
 min(4, remaining + 1) and nonsticky work remains remaining + 1, independent of
 source length. No new representation, source buffer, allocation boundary,
 dependency or default resource limit is introduced.
+
+## Two flat UnicodeSets classes separated by one literal
+
+A separate constructor proves exactly two independently flat character-only
+v/vi classes separated by one decoded Unicode literal. Canonical outside line
+anchors and word gates are optional: optional ^, optional \b/\B, the complete
+class/literal/class body, optional \b/\B and optional $. The existing caller may
+prove complete whole-body captures. Checked or mixed class kinds, inner or
+reordered assertions, partial captures, quantifiers, extra atoms and string
+leaves remain separate proofs. Every preceding constructor and callback retains
+its closed domain.
+
+Construction borrows original source units and charges saturating 4N before
+framing or decoding. The complete frame is proved before full flat-class,
+literal and flat-class proofs run in source order. A successful empty first
+class cannot skip the later literal or class proof, and work errors propagate
+immediately. The existing class/literal/class word-wrapper representation also
+admits the bare form with absent word gates; no new fields or matching plan are
+needed.
+
+Outside assertions use actual i WordCharacters and original m line context,
+even when all three consumers are case-invariant. Thus
+`^\B[\p{Any}]\$[\p{Any}]\b$` matches `!$K` or `!$ſ` only with i: Any, the
+literal dollar and Any retain their membership while the final word boundary
+changes. A leading-only gate does not imply a trailing gate, so `\b[a]b[c]`
+still matches original 0..3 in abcx.
+
+Matching retains complete original UTF-16 characters, supplementary and lone
+surrogates, complete captures and the approved initial-low-pair boundary.
+A late literal, last-class or outside-gate failure retries the first class end
+in nonsticky mode; sticky failure does not retry. In particular, `[a]a[a]\b`
+over aaaa! selects 1..4 after the first candidate fails its final gate. The
+existing entry charge, search-pass accounting, Runtime variant and six-unit
+branch are unchanged: sticky work remains saturating min(6, remaining + 1)
+and nonsticky work remains remaining + 1, independent of source length.
+Earlier two-atom four-unit bounds and all earlier direct units remain exact.
+No new representation, source or input buffer, dependency or default resource
+limit is introduced.

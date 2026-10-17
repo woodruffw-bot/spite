@@ -13896,3 +13896,51 @@ policy/inventory checks and all seven generators passed. The feature's full
 hosted validation remains required in the retained fifteen-job matrix,
 including full workspace and documentation tests, all 47 framework probes
 and four full reviewed-corpus gates.
+
+## Two flat UnicodeSets classes separated by one literal
+
+The v/vi adapter admits two independently flat classes separated by
+one decoded literal, with canonical optional outside word and line assertions
+and complete whole-body captures. Exactly three original Boolean programs in
+three preceding owners are the only migrations. Their literal expressions
+remain explicit positive checks alongside intrinsic Array, source, index, input,
+groups, indices and lastIndex checks. The leading-only form must still match
+the prefix abc in abcx. All other 425 preceding v_sets negative rows, all twelve
+mixed/string neighbors and all thirty preceding snapshot function sources are
+preserved. Twenty Boolean checks, twenty new closed-domain controls and two
+host-state blocks specify the new scope and its neighbors. Unsupported syntax
+receives no passing-negative conformance credit.
+
+Two Core tests provide 7,980 bounded independent UTF-16 oracle comparisons,
+twelve complete construction transcripts with fresh work-error prefixes and
+thirty-five framing neighbors. They cover source-ordered full proofs behind
+actual empty classes, late string rejection, original-character retry and
+unchanged earlier constructor domains. Two Runtime integration tests cover
+overlap, sticky/global state, original line and word context, complete captures,
+consumers, coercion, read-only lastIndex, GC retention and explicitly opted-in
+cancellation. A separate direct unit checks the unchanged six-unit bound,
+remaining zero/MAX, source-length independence, initial-low-pair handling,
+captures and entry errors without altering earlier bound units.
+
+Ten handwritten rows specify eight matches and two nulls with complete JSON
+and original UTF-16 payloads. They include a word boundary that changes only
+with actual i while all three consuming predicates remain invariant,
+overlapping late-gate retries, six-unit supplementary spans, lone surrogates,
+actual empty classes, negation, original CRLF/LS anchors and a leading-only
+gate. The selected fold, WordCharacters and Any facts reuse previously reviewed
+pinned Unicode 17/18 evidence only for identical witnesses; no new raw dataset
+or exhaustive query loop is added. The generated snapshot and Node 24.19 (Unicode 17) agree with all
+ten complete handwritten JSON/UTF-16 rows, with no exclusions or discrepancies.
+All 714 preceding snapshots remain byte for byte unchanged; the new snapshot
+brings the total to 715.
+
+The registered Native inventory is 5,290: 984 Core and 4,306 REST, including
+3,564 Runtime integration tests and 288 Runtime units. Parser retains 347
+tests. The one documentation test and reviewed corpus of 14,740 variants from
+7,631 sources are counted separately. Local validation passed the complete
+six-test class/literal/class Core module, the new direct bound unit and all
+3,564 Runtime integration tests on both Rust versions. Formatting,
+denied-warning Clippy, policy/inventory checks and all seven generators passed.
+The full Core inventory, workspace and documentation tests, all 47 framework
+probes and four full reviewed-corpus gates remain required in the retained
+fifteen-job hosted matrix.
