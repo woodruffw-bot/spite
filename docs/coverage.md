@@ -13389,3 +13389,57 @@ generators pass. Previously accepted Python framework results are reused after
 verifying unchanged sources and toolchain identities. Full workspace,
 documentation, all 47 hosted runner/inventory probes and all reviewed corpus
 variants remain separately required in the retained fifteen-job CI matrix.
+
+## Outside word assertions around a literal and two checked UnicodeSets classes
+
+Canonical outside \b/\B assertions compose with one decoded Unicode literal
+followed by exactly two independently checked, unquantified character-only v/vi
+classes, optional outside ^/$ and complete whole-body captures. At least one
+word assertion is required. Complete literal, first-class and second-class proofs
+run in source order even behind an empty set. The wrapper charges 4N for borrowed
+framing; the plain literal-prefix plan retains its original 3N transcript and
+closed domain. Actual i WordCharacters and original m context govern the outside
+endpoints. Failed classes or gates retry the literal end, preserving overlaps
+and original UTF-16 ranges. Flat components, extra atoms, repetitions, inner or
+reordered assertions, partial captures and string leaves remain separate work.
+
+Exactly two original Unsupported programs migrate within one existing Runtime
+function, retaining their complete expressions and adding match metadata,
+component/short-input negatives and failing outside-word neighbors. The other
+controls remain unchanged, including all 25 preceding word-triple Unsupported
+programs and the plain Core API's word-domain None cases. Two Core tests cover
+6,982 independent finite UTF-16 comparisons: 13 cases over 17 inputs and 128
+word-gate/anchor/i/m plans over two fixed inputs. Six complete successful work
+traces and a later unsupported string-property proof after an empty first class
+check every callback failure prefix; an early string-disjunction framing
+rejection is checked separately.
+
+Two Runtime integration tests cover consumers, whole captures/groups/indices,
+global/sticky state, ordered coercion, original line context, GC retention,
+read-only lastIndex and opted-in cancellation. The existing direct six-unit bound
+unit gains assertions without a new unit test function or changes to prior
+four-/six-unit checks. All 20 preceding insta test functions are retained. The
+new snapshot test defines ten finite rows with complete handwritten JSON and
+original UTF-16 input/result units: eight matches and two nulls, including
+initial-low-pair, supplementary and lone-surrogate cases.
+
+Ten inspected insta rows agree with the complete handwritten JSON and original
+UTF-16 metadata and result units: eight matches and two nulls. A fresh Node
+comparison passes all ten rows with no exclusions. Selected pinned Unicode
+17/18 word/fold witnesses establish finite compatibility only. All 704 preceding
+snapshots are byte-identical; the inspected new snapshot makes 705.
+
+Stable and Rust 1.85 each pass the two new Core tests, two preceding plain
+literal-prefix regressions and two word-triple regressions, each with 962
+filtered. Both versions pass the extended direct Runtime bound unit with 279
+filtered and all 3,544 Runtime integration tests without filtering. The stable
+snapshot test also passes with 3,543 filtered. Two new Core and two Runtime
+integration test definitions bring the registered inventory to 5,242 workspace
+tests: 964 Core and 4,278 REST, including 3,544 Runtime integration tests and 280
+Runtime units. Parser retains 347 tests, and one documentation test is registered.
+The reviewed corpus remains 14,740 variants from 7,631 sources.
+
+Formatting, denied-warning Clippy, policy/inventory checks and all seven
+generators pass. Full workspace, documentation, all 47 hosted runner/inventory
+probes and all reviewed corpus variants remain separately required in the
+retained fifteen-job CI matrix.

@@ -14,8 +14,8 @@ use spite_core::{
     RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairMatcher,
     RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
     RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
-    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
-    RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
+    RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodePropertyDotMatcher,
+    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeSetCompileError, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -1158,6 +1158,16 @@ impl Realm {
                     .map_err(unicode_set_compile_error)?
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeClassTripleWord(body)));
+                    }
+                    if let Some(body) = RegExpUnicodeLiteralClassPairWordMatcher::compile_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeLiteralClassPairWord(body)));
                     }
                 }
                 Ok(None)

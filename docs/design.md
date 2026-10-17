@@ -8216,3 +8216,29 @@ Runtime variant joins the unchanged six-unit work path and complete enclosing-
 capture proof. Existing rewind/saturation arithmetic, four-unit paths and prior
 six-unit assertions remain in use. No dependency, default quota, profile, stack
 or worker-policy change is introduced.
+
+A separate typed wrapper composes canonical outside word assertions with one
+decoded Unicode literal followed by exactly two checked character-only v/vi
+classes (22.2.2.3, 22.2.2.4). Its borrowed order is
+^? word? LITERAL CHECKED CHECKED word? $?, with at least one \b/\B. Each class
+independently retains the nested-class/set-operator proof. Complete whole-body
+captures remain a separate Runtime caller proof. Flat classes, extra atoms,
+quantifiers, inner/reordered assertions, partial captures and string leaves
+remain outside this domain.
+
+Construction charges 4N before framing, literal decoding and both class-boundary
+walks. It then proves the literal and both complete bare classes in source order,
+including rejection of a hidden string leaf after an empty first set. The plain
+literal-prefix matcher retains its original fields, methods, closed domain and
+3N callback transcript. No source slice or input buffer is copied. Actual i
+WordCharacters govern the outside endpoints independently of fold-invariant
+membership; optional ^/$ use the original input and m line context.
+
+A failed class or outside gate retries the literal's complete-character end,
+preserving the 1..4 overlap of \Ba[[a]][[a]]\b on aaaa!. Sticky failure returns
+no match. Ranges and neighboring assertions retain original UTF-16 characters,
+lone surrogates and the documented initial-low-pair leading boundary. The new
+zero-inner-capture Runtime variant shares the existing three-character six-unit
+work path and rewind/saturation arithmetic. It shares the existing search precharge
+and one fallible entry charge. Earlier four-unit paths and complete enclosing
+captures remain unchanged.

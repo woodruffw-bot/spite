@@ -83,7 +83,9 @@ pub use regexp_unicode_class_triple::{
 pub use regexp_unicode_folded_literal::{
     RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
 };
-pub use regexp_unicode_literal_class_pair::RegExpUnicodeLiteralClassPairMatcher;
+pub use regexp_unicode_literal_class_pair::{
+    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
+};
 pub use regexp_unicode_property_dot::{
     RegExpUnicodePropertyDotMatch, RegExpUnicodePropertyDotMatcher,
 };
