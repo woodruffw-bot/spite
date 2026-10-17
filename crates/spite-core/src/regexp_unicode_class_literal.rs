@@ -1,4 +1,4 @@
-//! One checked UnicodeSets class and one literal character (22.2.2.3).
+//! One UnicodeSets class and one literal character (22.2.2.3).
 
 use crate::{
     JsString, RegExpUnicodeCharacterMatcher, RegExpUnicodeClassMatcher,
@@ -8,9 +8,10 @@ use crate::{
 };
 use std::ops::Range;
 
-/// One unquantified checked v-mode class and one literal Unicode character.
+/// One unquantified v/vi class and one literal Unicode character.
 ///
-/// Separate constructors prove class-then-literal and literal-then-class order.
+/// Separate checked constructors prove both orders. The flat-only entry proves
+/// class-then-literal; every earlier entry retains its own closed domain.
 ///
 /// Requires complete validated v/vi Pattern input. Optional outside ^/$ use
 /// original line context. A separate entry admits canonical outside word gates.
@@ -385,6 +386,70 @@ pub(crate) fn class_end(units: &[u16], begin: usize) -> Option<usize> {
     None
 }
 
+impl RegExpUnicodeClassLiteralMatcher {
+    /// Proves one flat v/vi class followed by exactly one decoded literal.
+    ///
+    /// Complete validated Pattern input is required. Borrowed framing finishes
+    /// before either component proof; the flat class then the literal compile
+    /// in source order, including the literal behind an empty class. Optional
+    /// outside ^/$ retain original i/m behavior. Words, checked classes, strings,
+    /// captures, quantifiers and other atoms remain separate caller proofs.
+    /// Earlier constructors and callback bodies remain unchanged.
+    pub fn compile_flat_v_set_then_literal_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Charge before class boundaries or source-sized braced literal escapes.
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let begin = usize::from(units.first() == Some(&0x5e));
+        if units.get(begin) != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(class_end) = class_end(units, begin) else {
+            return Ok(None);
+        };
+        let Some(&first) = units.get(class_end) else {
+            return Ok(None);
+        };
+        let mut end = class_end + 1;
+        if unicode_literal_atom(units, &mut end, first).is_none()
+            || end.saturating_add(usize::from(units.get(end) == Some(&0x24))) != units.len()
+        {
+            return Ok(None);
+        }
+        let Some(class) = RegExpUnicodeClassMatcher::compile_flat_v_set_units_with_work(
+            &units[..class_end],
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &units[class_end..],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::ClassThenLiteral,
+            assertions: None,
+        }))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -731,3 +796,7 @@ mod literal_first_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_pair_word_tests.rs"]
 mod outside_word_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_flat_class_literal_tests.rs"]
+mod flat_class_literal_tests;

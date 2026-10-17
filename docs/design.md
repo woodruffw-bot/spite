@@ -8394,3 +8394,29 @@ initial-low-pair leading boundary. Sticky work retains the saturating
 min(2 * count, remaining + 1) bound, and nonsticky work retains remaining + 1,
 independent of source length or capacity. A separate mixed-bound unit verifies
 counts 3/4/17 without changing any preceding bound unit or fixed-width path.
+
+## Flat UnicodeSets class followed by one literal
+
+A separate constructor proves one unquantified flat character-only v/vi class
+followed by exactly one decoded Unicode literal, with optional outside ^/$.
+Complete whole-body captures retain the existing caller proof. Outside word
+gates, partial captures, quantifiers, extra terms and string leaves keep their
+separate treatment; all earlier constructor domains and callbacks are unchanged.
+
+Construction borrows original source units and charges saturating 3N before
+boundary walks or literal decoding. The complete two-term shape is proved
+before component compilers run. The flat class is then compiled first and the
+literal second in source order, with actual i/m flags and immediate work-error
+propagation. A successful empty class never skips complete literal validation.
+Escaped brackets, dollars and braced Unicode atoms retain their exact framing.
+No new source buffer, representation, allocation boundary or resource limit is
+introduced.
+
+The existing ClassThenLiteral representation, original-character matching,
+complete captures, GC ownership and four-unit Runtime work path are reused.
+A late literal failure retries the first class's original character end;
+sticky matching attempts only its selected candidate. Original UTF-16 spans,
+lone surrogates, line context and the approved initial-low-pair leading boundary
+are retained. Sticky work remains min(4, remaining + 1) and nonsticky work remains
+remaining + 1, with saturating arithmetic independent of source length. A new
+separate bound unit leaves all preceding bounds and tests unchanged.

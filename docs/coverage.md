@@ -13720,5 +13720,50 @@ integration tests, plus formatting, denied-warning Clippy, policy/inventory
 checks and all seven generators. Full workspace, documentation, all 47 hosted
 framework probes and the four reviewed-corpus gates remain required in the
 retained fifteen-job matrix. The preceding flat feature passed its own fifteen
-hosted jobs. This mixed increment's own hosted results remain pending publication;
-complete hosted acceptance is required before the following feature is pushed.
+hosted jobs. The mixed increment subsequently passed all fifteen hosted jobs
+before the flat-class/literal increment was pushed.
+
+## Flat UnicodeSets class followed by one literal
+
+The new increment adds a separate flat-class then decoded-literal proof
+using existing two-term matching and work accounting. Five original complete
+programs remain in their original owners: one test returns Boolean true, while
+four exec expressions retain intrinsic Array results with complete metadata.
+All preceding 354 v_sets unsupported rows, the outside-word neighbor and 26 old
+snapshot functions remain unchanged. Unsupported syntax receives no negative
+conformance credit.
+
+Two new Runtime integration tests cover overlap, sticky/global state, original
+Unicode boundaries, i-folding and complements, line assertions, consumers,
+coercion, read-only lastIndex, GC and explicitly opted-in cancellation. Ten
+handwritten JSON rows specify eight matches and two nulls with complete capture,
+group, index, source, lastIndex and original UTF-16 payloads. Independently parsed
+pinned Unicode17/18 facts support only these selected finite witnesses. A new
+separate Runtime unit checks the existing four-unit bound, remaining zero/MAX,
+source-length independence, initial-low-pair handling, captures and work errors.
+
+Two Core, two Runtime integration and one Runtime unit definition bring the
+Native inventory to 5,270: 976 Core and 4,294 REST, including 3,556 Runtime
+integration tests and 284 Runtime units. All 710 preceding snapshots remain byte
+for byte unchanged, and the new snapshot brings the total to 711. Parser retains
+347 tests; the one documentation test and corpus 14,740 variants from 7,631
+sources are separate. The two Core tests make 2,412 bounded independent UTF-16
+comparisons and verify complete framing, decoding, source-ordered proofs, every
+work-abort prefix and neighboring closed domains.
+
+All 20 local gates passed: the complete eight-test class/literal Core module,
+the new direct bound unit and all Runtime integration tests on both Rust
+versions, plus formatting, denied-warning Clippy, policy/inventory checks and
+all seven generators. The generated snapshot was inspected against all ten
+handwritten rows, and Node matched every complete JSON/UTF-16 result with no
+exclusions or discrepancies. Full workspace, documentation, all 47 hosted
+framework probes and the four full reviewed-corpus gates remain required in the
+retained fifteen-job matrix. The published mixed parent passed its own fifteen
+jobs. This increment's own hosted results remain pending publication; complete
+hosted acceptance is required before the following feature is pushed.
+
+A separate focused diagnostic ran the two new Runtime integration tests together
+in 0.185 seconds including Cargo startup, using the existing normal-profile
+binary, default workers and snapshot updates disabled. This bounds their direct
+cost in that run; it is not a before/after benchmark or an explanation of full-
+suite timing variation.

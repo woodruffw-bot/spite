@@ -141,6 +141,11 @@ fn unicode_class_large_sources_clones_collection_and_unlimited_defaults() {
 
 #[test]
 fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
+    let original = Realm::default().eval(r"/[a]b/v.exec('ab')").unwrap();
+    assert!(matches!(original, Value::Object(_)));
+    check(
+        r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -172,7 +177,6 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
         r"/([a])+b/u.exec('a')",
         r"/^([a])+b$/v.exec('a')",
         r"/[a]+b/u.exec('a')",
-        r"/[a]b/v.exec('ab')",
         r"/[\q{ab}]/v.exec('ab')",
         r"/[a]|b/u.exec('b')",
     ] {

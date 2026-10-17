@@ -115,6 +115,11 @@ fn unicode_sets_bmp_character_large_sources_clones_collection_and_unlimited_defa
 
 #[test]
 fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
+    let original = Realm::default().eval(r"/[a]b/v.exec('ab')").unwrap();
+    assert!(matches!(original, Value::Object(_)));
+    check(
+        r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -149,7 +154,6 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/([\uD800])+b/v.exec('\uD800')",
         r"/([\uD7FF-\uE000])+b/v.exec('a')",
         r"/([\u{1f600}])+b/v.exec('a')",
-        r"/[a]b/v.exec('ab')",
         r"/([a])+b/v.exec('a')",
         r"/[a]*b/v.exec('a')",
         r"/(.)+b/v.exec('a')",

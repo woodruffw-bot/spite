@@ -120,6 +120,13 @@ fn unicode_braced_bmp_character_long_zeros_clones_collection_and_unlimited_defau
 
 #[test]
 fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
+    let original = Realm::default()
+        .eval(r"/[\u{61}]\u{62}/v.exec('ab')")
+        .unwrap();
+    assert!(matches!(original, Value::Object(_)));
+    check(
+        r#"let r=/[\u{61}]\u{62}/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[\\u{61}]\\u{62}'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -147,7 +154,6 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         r"/([^\u{61}])+b/u.exec('b')",
         r"/[\u{61}]*b/u.exec('a')",
         r"/([\u{61}])+b/u.exec('a')",
-        r"/[\u{61}]\u{62}/v.exec('ab')",
     ] {
         assert!(
             matches!(

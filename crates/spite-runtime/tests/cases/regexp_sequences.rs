@@ -129,6 +129,10 @@ fn opted_in_sticky_work_covers_one_candidate_instead_of_all_candidate_starts() {
 
 #[test]
 fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gaps() {
+    check("/[a]b/v.test('ab')");
+    check(
+        r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+    );
     for source in [
         r"/(?:(?:((?:(?:[a]+[b]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]+[b]+|b){2}){2}){2})|){2,3}/.test('a')",
@@ -138,7 +142,6 @@ fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gap
         r"/(?:(?:(?:(?<x>[a])(?:\k<x>)+){2})|){2,3}/.test('a')",
         "/(?i:[a])/.test('a')",
         "/[a]b/u.test('ab')",
-        "/[a]b/v.test('ab')",
     ] {
         assert!(
             matches!(
