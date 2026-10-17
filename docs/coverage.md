@@ -14293,3 +14293,27 @@ unit and full Runtime integration suite pass on stable Rust and Rust 1.85;
 formatting, Clippy, policy, inventories and pinned generators also pass.
 The retained fifteen-job matrix requires all 57 framework probes and four
 full reviewed-corpus gates before the following push.
+
+## Flat class followed by a literal and a checked class
+
+Seven original Boolean controls across seven owners retain their exact
+expressions with independent intrinsic Array and complete metadata checks,
+including leading-only abc in abcx. All other old controls and 38 preceding
+snapshot function bodies are preserved. Two Core tests specify 8,280 bounded
+independent UTF-16 oracle comparisons, eight separate invariant-i/m checks,
+fourteen ordered construction transcripts with fresh abort prefixes and
+thirty-five framing neighbors. Two Runtime functions cover state, overlap,
+captures, consumers, coercion, read-only lastIndex, GC and explicit opt-in
+cancellation; a separate direct unit checks the unchanged six-unit bound.
+
+The Native inventory is 5,332: 1,000 Core and 4,332 REST, including 3,580
+Runtime integration tests and 298 Runtime units. Parser retains 347 tests;
+the one documentation test and 14,740 reviewed corpus variants from 7,631
+sources are separate. The new snapshot brings the inventory to 723 files,
+retaining all 722 preceding files byte-for-byte. Its ten handwritten
+full-JSON/UTF-16 rows and fresh Node comparison pass with eight matches,
+two nulls and no exclusions. The ten-test Core module, direct work-bound
+unit and full Runtime integration suite pass on stable Rust and Rust 1.85;
+formatting, Clippy, policy, inventories and pinned generators also pass.
+The retained fifteen-job matrix requires all 57 framework probes and four
+full reviewed-corpus gates before the following push.
