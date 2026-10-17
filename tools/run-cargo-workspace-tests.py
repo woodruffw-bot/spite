@@ -268,6 +268,37 @@ def can_collect_runtime_integration_libs(metadata):
             and not target.get('required-features', []))
 
 
+def can_collect_runtime_integration_only(metadata):
+    """Drop library harnesses only when Runtime retains every dependency context."""
+    if not can_collect_runtime_integration_libs(metadata):
+        return False
+    members = set(metadata['workspace_members'])
+    packages = [package for package in metadata['packages'] if package['id'] in members]
+    runtime = [package for package in packages if package['name'] == 'spite-runtime']
+    if len(runtime) != 1:
+        return False
+    runtime = runtime[0]
+    runtime_path = str(Path(runtime['manifest_path']).parent)
+    runtime_dependency = {'name': 'spite-runtime', 'source': None, 'req': '*',
+                          'kind': None, 'rename': None, 'optional': False,
+                          'uses_default_features': True, 'features': [],
+                          'target': None, 'registry': None, 'path': runtime_path}
+    for package in packages:
+        # Root defaults and host build contexts cannot be inferred from a union
+        # of dependency feature names. Keep the library-root fallback for them.
+        if package['features'] or any('custom-build' in target['kind']
+                                      for target in package['targets']):
+            return False
+        for dependency in package['dependencies']:
+            if dependency['kind'] not in (None, 'dev') or dependency['optional']:
+                return False
+            if dependency in runtime['dependencies']:
+                continue
+            if dependency != runtime_dependency:
+                return False
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
@@ -312,6 +343,7 @@ def main():
         runner = [sys.executable, str(Path(__file__).resolve()), '--record', temporary]
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
         target_selection = ['--all-targets']
+        integration_only = False
         if args.collect_core_libs or runtime_only:
             metadata_command = ['cargo', '+' + args.toolchain, 'metadata', '--no-deps',
                                 '--format-version', '1', '--locked']
@@ -331,11 +363,17 @@ def main():
                        'ineligible; using --workspace --all-targets'), flush=True)
             else:
                 eligible = can_collect_runtime_integration_libs(metadata)
-                if eligible:
-                    target_selection = ['--lib', '--test', 'integration']
-                print('Runtime integration library collection: ' +
-                      ('eligible; using --workspace --lib --test integration' if eligible else
-                       'ineligible; using --workspace --all-targets'), flush=True)
+                integration_only = eligible and can_collect_runtime_integration_only(metadata)
+                if integration_only:
+                    target_selection = ['--test', 'integration']
+                    print('Runtime integration target collection: eligible; '
+                          'using --workspace --test integration', flush=True)
+                else:
+                    if eligible:
+                        target_selection = ['--lib', '--test', 'integration']
+                    print('Runtime integration library collection: ' +
+                          ('eligible; using --workspace --lib --test integration' if eligible else
+                           'ineligible; using --workspace --all-targets'), flush=True)
         command = ['cargo', '+' + args.toolchain, 'test', '--workspace', *target_selection,
                    '--locked', '--config', configuration]
         if args.optimize_runtime:
@@ -351,10 +389,15 @@ def main():
                        sorted(directory.glob('invocation-*.json'))]
         if not invocations:
             raise RuntimeError('Cargo recorded no test invocations; check the host runner configuration')
-        # Both collection paths keep workspace package roots. Package suites
+        if integration_only:
+            if len(invocations) != 1:
+                raise RuntimeError('Runtime-only collection recorded extra test invocations')
+            validate_runtime_invocation(invocations)
+        # All collection paths keep workspace package roots. Package suites
         # filter only the recorded invocations.
         if args.suite != 'all':
-            if not any(row['package'] == 'spite-core' for row in invocations):
+            if not integration_only and not any(row['package'] == 'spite-core'
+                                                for row in invocations):
                 raise RuntimeError('The split workspace suites require a spite-core package')
             selected = [row for row in invocations
                         if (row['package'] == 'spite-core') == (args.suite == 'core')]

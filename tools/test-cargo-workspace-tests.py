@@ -157,6 +157,66 @@ def make_workspace(root, core_name='spite-core', include_rest=True,
             (package / 'build.rs').write_text(PROFILE_BUILD, encoding='utf-8')
 
 
+def make_integration_only_workspace(root):
+    """Exercise covered dev-feature context without workspace feature maps/scripts."""
+    (root / 'Cargo.toml').write_text(
+        '[workspace]\nmembers=["a","b","c"]\nresolver="2"\n', encoding='utf-8')
+    shared = root.parent / 'shared'
+    (shared / 'src').mkdir(parents=True)
+    (shared / 'Cargo.toml').write_text(
+        '[package]\nname="probe-shared"\nversion="0.1.0"\nedition="2021"\n'
+        '[features]\nwide=[]\n', encoding='utf-8')
+    (shared / 'src/lib.rs').write_text(
+        'pub fn enabled() -> bool { cfg!(feature = "wide") }\n', encoding='utf-8')
+    binding = ('[dev-dependencies]\nshared_alias={package="probe-shared",'
+               'path="../../shared",default-features=false,features=["wide"]}\n')
+    for directory, name in [('a', 'spite-core'), ('b', 'spite-runtime'),
+                            ('c', 'runner-probe-c')]:
+        package = root / directory
+        (package / 'src').mkdir(parents=True)
+        dependencies = ('[dependencies]\nspite-core={path="../a"}\n' if directory == 'b'
+                        else '[dependencies]\nspite-runtime={path="../b"}\n'
+                        if directory == 'c' else '')
+        (package / 'Cargo.toml').write_text(
+            f'[package]\nname="{name}"\nversion="0.1.0"\nedition="2021"\n'
+            + dependencies + binding, encoding='utf-8')
+        (package / 'src/lib.rs').write_text(
+            'pub fn primary() -> bool { option_env!("CARGO_PRIMARY_PACKAGE").is_some() }\n',
+            encoding='utf-8')
+    source = RUNTIME_SHARD_SOURCE.replace(
+        'assert!(spite_core::workspace_feature_is_unified());',
+        'assert!(spite_core::primary());\n    assert!(shared_alias::enabled());')
+    source = source.replace(
+        '    assert_eq!(env!("SPITE_RUNNER_PROBE_OPT_LEVEL"),\n'
+        '               std::env::var("SPITE_RUNNER_PROBE_RUNTIME_OPT").unwrap());\n', '')
+    (root / 'b/tests').mkdir()
+    (root / 'b/tests/integration.rs').write_text(source, encoding='utf-8')
+
+
+# This test-only entry retains the real runner's __file__, recorder and main.
+# Only hash observations are written; the returned child environment is unchanged.
+OBSERVE_RUNTIME_ENVIRONMENT = '''
+import hashlib, json, runpy, sys
+from pathlib import Path
+runner, observation, *arguments = sys.argv[1:]
+namespace = runpy.run_path(runner, run_name="runtime_environment_probe")
+main = namespace["main"]
+original = main.__globals__["invocation_environment"]
+rows = []
+def observe(invocation, baseline):
+    environment = original(invocation, baseline)
+    rows.append({"command": invocation["command"], "cwd": invocation["cwd"],
+                 "package": invocation["package"],
+                 "environment": {key: hashlib.sha256(value.encode("utf-8")).hexdigest()
+                                 for key, value in environment.items()}})
+    Path(observation).write_text(json.dumps(rows), encoding="utf-8")
+    return environment
+main.__globals__["invocation_environment"] = observe
+sys.argv = [runner, *arguments]
+sys.exit(main())
+'''
+
+
 class CargoRunnerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -190,6 +250,152 @@ class CargoRunnerTests(unittest.TestCase):
             cwd=root, env=environment,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         return result, json.loads(report.read_text()) if report.exists() else None
+
+    def integration_collection_context(self, root, toolchain, environment):
+        """Collect the actual old library+integration graph without executing Rust."""
+        records = root / ('records-' + toolchain)
+        records.mkdir()
+        fingerprint = lambda value: hashlib.sha256(value.encode('utf-8')).hexdigest()
+        (records / 'environment-fingerprints.json').write_text(
+            json.dumps({key: fingerprint(value) for key, value in environment.items()}),
+            encoding='utf-8')
+        version = subprocess.check_output(['rustc', '+' + toolchain, '-vV'],
+                                          text=True, env=environment)
+        host = re.search(r'^host: ([A-Za-z0-9_-]+)$', version, re.MULTILINE)[1]
+        runner = json.dumps([sys.executable, str(RUNNER.resolve()), '--record', str(records)])
+        result = subprocess.run(
+            ['cargo', '+' + toolchain, 'test', '--workspace', '--lib', '--test', 'integration',
+             '--locked', '--offline', '--config', 'target.' + host + '.runner=' + runner,
+             '--', '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+            cwd=root, env=environment, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        rows = [json.loads(path.read_text(encoding='utf-8'))
+                for path in records.glob('invocation-*.json')]
+        self.assertEqual(len(rows), 4)
+        runtime = next(row for row in rows
+                       if re.fullmatch(r'integration-[0-9a-f]{16}(?:\.exe)?',
+                                       Path(row['command'][0]).name))
+        effective = environment.copy()
+        effective.update(runtime['changed_environment'])
+        for key in runtime['removed_environment']:
+            effective.pop(key, None)
+        listing = subprocess.run(runtime['command'] + ['--list'], cwd=runtime['cwd'],
+                                 env=effective, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, text=True)
+        self.assertEqual(listing.returncode, 0, listing.stdout)
+        self.assertEqual(sorted(re.findall(r'^(.+): test$', listing.stdout, re.MULTILINE)),
+                         RUNTIME_SHARD_NAMES)
+        return ({'command': runtime['command'], 'cwd': runtime['cwd'],
+                 'package': runtime['package'],
+                 'environment': {key: fingerprint(value) for key, value in effective.items()}},
+                hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest())
+
+    def observed_integration_shard(self, root, toolchain, environment, index):
+        observation = root / f'environment-{toolchain}-{index}.json'
+        report = root / f'report-{toolchain}-{index}.json'
+        observer = root / 'observe.py'
+        observer.write_text(OBSERVE_RUNTIME_ENVIRONMENT, encoding='utf-8')
+        result = subprocess.run(
+            [sys.executable, str(observer), str(RUNNER.resolve()), str(observation),
+             '--toolchain', toolchain, '--offline', '--suite', 'rest',
+             '--runtime-shard', str(index), '--rest-shard', str(1 - index),
+             '--report', str(report)], cwd=root, env=environment,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        return (result, json.loads(report.read_text(encoding='utf-8')),
+                json.loads(observation.read_text(encoding='utf-8')))
+
+    def test_runtime_target_only_preserves_library_context_binary_and_environment(self):
+        for toolchain in ['stable', '1.85.0']:
+            with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-integration-only-') as temporary:
+                root = Path(temporary) / 'workspace'
+                root.mkdir()
+                make_integration_only_workspace(root)
+                environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'))
+                subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                               cwd=root, env=environment, check=True)
+                original, binary_hash = self.integration_collection_context(root, toolchain, environment)
+                executed = []
+                for index in [0, 1]:
+                    result, report, observations = self.observed_integration_shard(
+                        root, toolchain, environment, index)
+                    self.assertIn('Runtime integration target collection: eligible; '
+                                  'using --workspace --test integration', result.stdout)
+                    self.assertNotIn('Runtime integration library collection:', result.stdout)
+                    self.assertEqual(report['recorded_invocations'], 1)
+                    self.assertEqual(len(report['invocations']), 1)
+                    self.assertEqual(len(observations), 2)
+                    for observed in observations:
+                        self.assertEqual(observed['package'], original['package'])
+                        self.assertEqual(observed['cwd'], original['cwd'])
+                        self.assertEqual(observed['command'][:len(original['command'])],
+                                         original['command'])
+                        self.assertEqual(observed['environment'], original['environment'])
+                    row = report['invocations'][0]
+                    self.assertEqual(row['status'], 0)
+                    self.assertEqual(row['child_status'], 0)
+                    self.assertEqual(row['runtime_shard_execution']['names'],
+                                     report['runtime_shard']['planned_shards'][index])
+                    self.assertEqual(report['runtime_shard']['full_names'], RUNTIME_SHARD_NAMES)
+                    self.assertEqual(hashlib.sha256(Path(row['command'][0]).read_bytes()).hexdigest(),
+                                     binary_hash)
+                    executed.extend(row['runtime_shard_execution']['names'])
+                self.assertEqual(sorted(executed), RUNTIME_SHARD_NAMES)
+
+    def test_runtime_target_only_falls_back_for_unproved_workspace_contexts(self):
+        for toolchain in ['stable', '1.85.0']:
+            for shape in ['default-feature', 'custom-build', 'build-dependency',
+                          'renamed-dev-binding']:
+                with self.subTest(toolchain=toolchain, shape=shape), tempfile.TemporaryDirectory(
+                        prefix='spite-ci-integration-context-') as temporary:
+                    root = Path(temporary) / 'workspace'
+                    root.mkdir()
+                    make_integration_only_workspace(root)
+                    if shape == 'default-feature':
+                        with (root / 'a/Cargo.toml').open('a', encoding='utf-8') as manifest:
+                            manifest.write('[features]\ndefault=["wide"]\nwide=[]\n')
+                        manifest = root / 'b/Cargo.toml'
+                        manifest.write_text(manifest.read_text().replace(
+                            'spite-core={path="../a"}',
+                            'spite-core={path="../a",default-features=false}'), encoding='utf-8')
+                        with (root / 'a/src/lib.rs').open('a', encoding='utf-8') as source:
+                            source.write('pub fn wide() -> bool { cfg!(feature = "wide") }\n')
+                        source = root / 'b/tests/integration.rs'
+                        source.write_text(source.read_text().replace(
+                            'assert!(spite_core::primary());',
+                            'assert!(spite_core::primary());\n    assert!(spite_core::wide());'),
+                            encoding='utf-8')
+                    elif shape == 'custom-build':
+                        (root / 'c/build.rs').write_text('fn main() {}\n', encoding='utf-8')
+                    elif shape == 'build-dependency':
+                        with (root / 'c/Cargo.toml').open('a', encoding='utf-8') as manifest:
+                            manifest.write('[build-dependencies]\nshared_alias={package="probe-shared",'
+                                           'path="../../shared",default-features=false,features=["wide"]}\n')
+                    else:
+                        manifest = root / 'c/Cargo.toml'
+                        manifest.write_text(manifest.read_text().replace(
+                            'shared_alias={', 'different_alias={'), encoding='utf-8')
+                    environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'))
+                    subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                                   cwd=root, env=environment, check=True)
+                    original, binary_hash = self.integration_collection_context(
+                        root, toolchain, environment)
+                    result, report, observations = self.observed_integration_shard(
+                        root, toolchain, environment, 1)
+                    self.assertIn('Runtime integration library collection: eligible; '
+                                  'using --workspace --lib --test integration', result.stdout)
+                    self.assertNotIn('Runtime integration target collection:', result.stdout)
+                    self.assertEqual(report['recorded_invocations'], 4)
+                    self.assertEqual(len(report['invocations']), 1)
+                    self.assertEqual(len(observations), 2)
+                    for observed in observations:
+                        self.assertEqual(observed['environment'], original['environment'])
+                        self.assertEqual(observed['cwd'], original['cwd'])
+                        self.assertEqual(observed['command'][:len(original['command'])],
+                                         original['command'])
+                    self.assertEqual(hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest(),
+                                     binary_hash)
 
     def test_package_environment_filter_and_ignored_tests(self):
         result, report = self.run_suite()

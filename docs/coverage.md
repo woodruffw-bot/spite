@@ -14247,3 +14247,25 @@ oracles and the ordinary test settings are preserved. All 996 Core tests pass
 on stable and Rust 1.85.0 with the exact preceding test names. Formatting,
 Clippy, dependency policy and inventory checks pass. No compile-time or
 workflow-speed improvement is claimed from these local runs.
+
+## Guarded Runtime integration collection
+
+A Runtime-only partition can collect only the unique integration target with
+`--workspace --test integration`. The guard retains every workspace package
+root and requires empty workspace feature maps, no workspace build context,
+and complete dependency descriptors already supplied by Runtime, apart from
+plain dependencies on the same local Runtime package. An unproved context
+retains the eight-target library collection; an ineligible target layout
+retains all 27 targets. Other collection paths remain unchanged.
+
+The fifteen-job matrix retains all Native cases, both Runtime partitions,
+documentation and four full reviewed-corpus gates. The framework defines
+27 workspace-runner probes, 11 Runtime inventory probes and 19 Parser
+inventory probes, 57 in total. The new real Cargo probes require executable,
+working-directory, argument, effective-environment and complete-name parity
+on both Rust versions, including conservative feature/build/binding fallbacks.
+All 27 workspace-runner probes pass, including the real Cargo comparisons
+on stable and Rust 1.85.0. The actual workspace satisfies the stronger metadata
+proof on both versions. Formatting, Clippy, dependency policy and inventory
+checks pass; all 869 Rust sources and 721 snapshot files are unchanged. This
+collection change makes no measured compile-time or workflow-speed claim.
