@@ -8624,3 +8624,29 @@ remaining + 1, independent of source length. Earlier two-atom four-unit bounds
 and direct units remain exact. No new representation, source or input buffer,
 dependency or default resource limit is introduced; resource limits remain
 explicitly opt-in.
+
+## Literal, checked UnicodeSets class and flat class
+
+A separate constructor proves one decoded Unicode literal followed by a
+character-only v/vi class with the existing nested-class or set-operator proof,
+then one independently flat class. Canonical optional assertions are ordered
+as ^, outside \b/\B, the complete three-term body, outside \b/\B and $.
+The existing caller proof admits complete whole-body captures; absent word
+assertions also represent the bare form.
+
+Borrowed whole-body framing charges saturating 4N before component proofs.
+The literal, checked class and flat class are then compiled fully in source
+order, including the flat proof behind a successfully empty checked class.
+Explicit \q leaves reject during framing; a hidden string property instead
+reaches the corresponding component proof. Work errors propagate immediately.
+Existing predicates, storage and Runtime variant retain complete original
+UTF-16 ranges, supplementary and lone surrogates, initial-low-pair handling,
+actual-i WordCharacters and original-m line context. A failed class or outside
+gate retries literal.end in nonsticky mode; sticky failure does not retry.
+Complete captures and the existing six-unit work bound remain unchanged.
+
+The reverse flat/checked order, other mixed literal placements, extra atoms,
+string-set leaves, inner or reordered assertions, partial captures and
+quantified bodies remain outside this entry. Earlier constructors preserve
+their closed domains. General unsupported RegExp syntax receives no passing
+conformance credit, and resource limits remain explicitly opt-in.
