@@ -13443,3 +13443,52 @@ Formatting, denied-warning Clippy, policy/inventory checks and all seven
 generators pass. Full workspace, documentation, all 47 hosted runner/inventory
 probes and all reviewed corpus variants remain separately required in the
 retained fifteen-job CI matrix.
+
+## Outside word assertions around two checked UnicodeSets classes and a literal
+
+Native matching now composes canonical outside \b/\B assertions with exactly two
+independently checked, unquantified character-only v/vi classes followed by one
+decoded Unicode literal, optional outside ^/$ and complete whole-body captures.
+At least one word assertion is required. Complete first class, second class and
+literal proofs run in source order, even behind an empty set. Borrowed framing
+charges 4N; the plain checked-pair/literal matcher retains its 3N transcript and
+closed domain. Actual i WordCharacters and original m context govern endpoints.
+A later component or gate failure retries the first class end, preserving
+original UTF-16 ranges and overlapping candidates. Flat components, extra atoms,
+repetition, inner/reordered assertions, partial captures and string leaves remain
+separate work.
+
+Four original Unsupported occurrences in two Runtime functions become positive
+checks with unchanged expressions. Match metadata and component, short-input and
+outside-word negatives cover their new domain. The two Core tests include 6,316
+finite independent UTF-16 comparisons, six successful work traces, two late
+unsupported string-property proofs and every callback failure prefix. Runtime
+checks cover consumers, captures, indices, global/sticky state, coercion, original
+line context, GC, read-only lastIndex and explicit cancellation. The existing
+bound unit extends its six-unit checks without another test definition.
+
+Ten new insta rows specify complete JSON and original UTF-16 units: eight matches
+and two nulls, including initial-low-pair, supplementary and lone-surrogate cases.
+Every row agrees with the handwritten expectations and a fresh Node comparison;
+none is excluded. Selected pinned Unicode 17/18 word/fold facts justify these
+finite witnesses without claiming general version equivalence. All 705 preceding
+snapshots remain byte-identical; the total is 706.
+
+The workspace runner executes 5,246 Native tests: 966 Core and 4,280 REST,
+including 3,546 Runtime integration tests and 280 Runtime units. Parser retains
+347 tests; one additional documentation test runs. The pinned corpus gate runs
+separately on all four OS/compiler lanes, covering the same 14,740 reviewed
+variants from 7,631 sources.
+
+Local checks pass on both Rust versions for the new and preceding Core domains,
+the direct Runtime bound and the full Runtime integration suite. Formatting,
+denied-warning Clippy, policy/inventory checks and all seven generators pass.
+Full workspace, documentation, all 47 hosted runner/inventory probes and every
+reviewed corpus variant remain required in the fifteen-job CI matrix.
+
+A separate test-only callback-factory trial was rejected. With warm dependencies
+and only the Core test unit rebuilt cold, compilation took 236.215 to 221.190
+seconds on stable and 231.813 to 249.155 seconds on Rust 1.85.0. Each toolchain had
+one baseline/candidate pair; all four runs discovered the same 964 test names and
+passed both targeted tests. The mixed result does not establish an overall speed
+improvement, so the original callbacks were retained.

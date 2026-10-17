@@ -11,7 +11,8 @@ use spite_core::{
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralMatcher,
-    RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairMatcher,
+    RegExpUnicodeClassMatcher, RegExpUnicodeClassPairLiteralMatcher,
+    RegExpUnicodeClassPairLiteralWordMatcher, RegExpUnicodeClassPairMatcher,
     RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
     RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
     RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodePropertyDotMatcher,
@@ -1168,6 +1169,16 @@ impl Realm {
                     .map_err(unicode_set_compile_error)?
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeLiteralClassPairWord(body)));
+                    }
+                    if let Some(body) = RegExpUnicodeClassPairLiteralWordMatcher::compile_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClassPairLiteralWord(body)));
                     }
                 }
                 Ok(None)
