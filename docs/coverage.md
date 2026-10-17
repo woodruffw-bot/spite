@@ -13544,3 +13544,21 @@ Full workspace, documentation, all 47 hosted runner/inventory probes and all
 four reviewed-corpus gates remain separately required in the fifteen-job CI
 matrix. The preceding suffix feature's full CI passed before this increment
 was published.
+
+## Unicode class fold-reference lookup reuse
+
+The exhaustive class-fold test borrows its immutable preimage list once per
+Unicode point before visiting the 34 independently compiled matchers. The
+independent predicates, short-circuit membership checks, all 1,114,112 input
+points and all 37,879,808 match assertions remain unchanged. This is a test-only
+change; production matching and every other test retain their original code.
+
+Three alternating baseline/candidate pairs per Rust version measured this test's
+median warm execution from 3.004 to 1.053 seconds on stable and from 2.814 to
+0.989 seconds on Rust 1.85.0, about 65% less wall time on each. All twelve timed
+runs passed; both full Core suites passed the same 968 tests, and all 707
+snapshots remain byte-identical. Formatting, denied-warning Clippy,
+policy/inventory checks and all seven generators also pass. These measurements
+cover the selected test; incremental rebuilds were unpaired, and no compiler or
+whole-CI speed improvement is inferred. The complete hosted matrix remains
+required with unchanged test and corpus inventories.

@@ -35041,12 +35041,11 @@ mod tests {
         });
         for value in 0..=0x10ffff {
             let canonical = folds.get(&value).copied().unwrap_or(value);
+            let points = preimages.get(&canonical);
             for (case, inverted, matcher) in &plans {
                 let member = |point| folding_reference_member(*case, point) != *inverted;
                 let included = member(canonical)
-                    || preimages
-                        .get(&canonical)
-                        .is_some_and(|points| points.iter().copied().any(member));
+                    || points.is_some_and(|points| points.iter().copied().any(member));
                 assert_eq!(
                     matcher.matches(value),
                     included != *inverted,
