@@ -13621,4 +13621,56 @@ tests on each version, formatting, denied-warning Clippy, policy/inventory check
 and all seven generators. The preceding published commit passed all fifteen
 hosted jobs. Full workspace, documentation, all 47 hosted runner/inventory probes
 and the four reviewed-corpus gates remain separately required for this increment
-in the retained fifteen-job CI matrix; its hosted results are pending publication.
+in the retained fifteen-job CI matrix; all fifteen hosted jobs passed for the
+published checked-sequence commit.
+
+## Finite flat UnicodeSets class sequences
+
+The flat constructor extends the finite class-sequence matcher to at
+least three flat character-only v/vi classes, plain or with canonical outside
+word/line assertions and complete whole-body captures. Exactly two earlier
+Runtime controls become positive checks in their original owners, with full
+match metadata, each component's nonmember and short-input negatives. The
+leading-only word case still matches abcx at 0..3. All 325 other preceding
+negative rows, including the 24 checked-sequence controls, and all 24 preceding
+snapshot functions remain unchanged. Mixed flat/checked runs, literals, quantifiers,
+inner assertions, partial captures, alternatives and string leaves remain
+separate work.
+
+Two Core tests retain an independent finite UTF-16 oracle with 4,312
+queries, complete source/work-prefix checks, late string rejection behind empty
+sets and a 65-term domain/work witness. Two Runtime integration tests cover
+three-, four- and seventeen-term construction, overlap, global/sticky state,
+complete groups/indices, consumers, ordered coercion, read-only lastIndex, GC
+retention and opted-in cancellation. A new separate Runtime bound unit checks
+counts 3/4/17, remaining zero/MAX, source-length independence, entry errors,
+captures and initial-low-pair handling; all earlier bound units stay unchanged.
+
+Ten handwritten finite snapshot rows specify full JSON and original UTF-16
+input/result units: eight matches and two nulls. They cover three-term late
+component/gate overlap and sticky failure/success, four-term actual-i Kelvin/
+long-s word endpoints, a vi Ll-complement miss, seventeen supplementary Any
+terms spanning 34 units after initial-pair rewind, lone high surrogates,
+original CRLF/LS multiline context and complemented K-fold membership. Raw
+Unicode 17/18 facts support only these selected finite witnesses.
+
+The new insta snapshot was generated and inspected, then compared with a fresh
+Node run: all ten rows matched the handwritten full JSON and UTF-16 witnesses,
+with no exclusions or discrepancies. All 708 preceding snapshots remain byte
+for byte unchanged; the new snapshot brings the total to 709. Two Core, two
+Runtime integration and one Runtime unit definition bring the registered Native
+inventory to 5,260 tests: 972 Core and 4,288 REST, including 3,552 Runtime
+integration tests and 282 Runtime units. Parser retains 347 tests, and one
+documentation test is counted separately. The reviewed corpus remains 14,740
+variants from 7,631 sources, with its full conformance gate separate from the
+Native inventory in all four CI lanes.
+
+All 24 local commands passed: both Rust versions' new Core tests, preceding
+checked-sequence and flat-pair regressions, the separate flat-bound unit and all
+3,552 Runtime integration tests, plus formatting, denied-warning Clippy,
+policy/inventory checks and all seven generators. Full workspace, documentation,
+all 47 hosted runner/inventory probes and the four reviewed-corpus gates remain
+separately required in the retained fifteen-job CI matrix. The preceding checked
+sequence passed all fifteen hosted jobs. This flat increment's own hosted
+results remain pending publication; complete hosted acceptance is required
+before the following feature is pushed.

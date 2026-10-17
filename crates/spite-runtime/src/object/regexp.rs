@@ -1218,4 +1218,74 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn unicode_flat_class_sequence_work_bound_tracks_proved_terms() {
+        for count in [3usize, 4, 17] {
+            let pattern = format!(r"\B{}\B", r"[\p{Any}]".repeat(count));
+            let source = JsString::from(pattern.as_str());
+            let body = RegExpUnicodeClassSequenceMatcher::compile_flat_v_set_with_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), std::convert::Infallible>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let width = count * 2;
+            assert_eq!(body.max_match_code_units(), width);
+            let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeClassSequence(body), 2);
+            assert_eq!(matcher.capture_count(), 2);
+            assert!(matcher.search_passes(true) > 0);
+            assert_eq!(matcher.search_passes(true), matcher.search_passes(false));
+            for source_len in [0, 1, source.len(), usize::MAX] {
+                for remaining in 0..=width + 1 {
+                    assert_eq!(
+                        matcher.search_work(true, source_len, remaining),
+                        width.min(remaining + 1)
+                    );
+                    assert_eq!(
+                        matcher.search_work(false, source_len, remaining),
+                        remaining + 1
+                    );
+                }
+                assert_eq!(matcher.search_work(true, source_len, usize::MAX), width);
+                assert_eq!(
+                    matcher.search_work(false, source_len, usize::MAX),
+                    usize::MAX
+                );
+            }
+            let input = JsString::from(format!("{}!", "😀".repeat(count)).as_str());
+            let mut work = Vec::new();
+            let found = matcher
+                .find_with_work(&input, 1, true, |units| {
+                    work.push(units);
+                    Ok::<(), std::convert::Infallible>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, [1]);
+            assert_eq!(found.range, 0..width);
+            assert_eq!(found.capture_count, 2);
+            assert_eq!(found.capture(0), Some(0..width));
+            assert_eq!(found.capture(1), Some(0..width));
+            assert_eq!(found.capture(2), None);
+            assert_eq!(
+                matcher.search_work(true, source.len(), input.len() - 1),
+                width
+            );
+            assert!(matches!(
+                matcher.find_with_work(&input, 1, true, |_| Err(7)),
+                Err(7)
+            ));
+            assert!(
+                matcher
+                    .find_with_work(&input, input.len() + 1, false, |_| {
+                        Ok::<(), std::convert::Infallible>(())
+                    })
+                    .unwrap()
+                    .is_none()
+            );
+        }
+    }
 }

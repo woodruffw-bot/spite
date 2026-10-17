@@ -8331,3 +8331,33 @@ search retains remaining + 1. The extra unit covers initial pair rewind. Source
 length is not a substitute for this character-derived bound. Existing two-,
 four- and six-unit paths and their tests remain unchanged. A separate direct
 unit verifies the new dynamic bound.
+
+A separate flat constructor on the same finite class-sequence matcher admits at
+least three unquantified flat character-only v/vi classes (22.2.2.3, 22.2.2.4,
+22.2.2.7.3). Framing is ^? word? FLAT...FLAT word? $?, with at most one
+\b/\B at each endpoint; line and word assertions are optional. Every component
+uses the existing borrowed flat-class proof with actual i/m and UnicodeSets
+semantics. Nested or operator classes, mixed proof domains, literal atoms,
+quantifiers, reordered/inner assertions, partial captures and string leaves
+remain outside this constructor. Complete whole-body captures remain a separate
+Runtime caller proof. Earlier flat-pair and checked-sequence constructors retain
+their exact closed domains and callbacks.
+
+Construction charges 4N before borrowed framing and both class-boundary passes.
+The complete shape and finite source-derived count are validated before fallible
+storage reservation. Every component proof then runs in source order, including
+later hidden-string rejection behind an empty first class. The new constructor
+publishes the existing immutable shared program only after full success; work
+and capacity failures retain their host categories. No source or input buffer
+is copied, and no new count ceiling or resource default is introduced.
+
+The existing sequence search remains unchanged: later terms match sticky at the
+previous original-character end, and a late term or outside-gate failure retries
+the first class's end in nonsticky mode. Sticky failure returns no match. Outside
+words inspect actual i WordCharacters; line assertions inspect original input
+and m context. Ranges and complete captures preserve original UTF-16, lone
+surrogates and the documented initial-low-pair leading boundary. The same Runtime
+variant retains its term-derived saturating sticky min(2 * count, remaining + 1)
+bound, nonsticky remaining + 1 and fallible entry charge. The separate flat-bound
+unit verifies counts 3/4/17 without changing the checked bound or older fixed
+width paths.
