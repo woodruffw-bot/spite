@@ -230,12 +230,36 @@ def record(directory, command):
     print('Queued Cargo test invocation: ' + Path(command[0]).name, flush=True)
 
 
+def can_collect_core_libs(metadata):
+    """Keep every workspace library test root and every Core test target."""
+    members = metadata['workspace_members']
+    packages = {package['id']: package for package in metadata['packages']}
+    if not members or len(set(members)) != len(members):
+        raise RuntimeError('Cargo metadata has no unique workspace members')
+    core = []
+    for member in members:
+        package = packages[member]
+        targets = package['targets']
+        libraries = [target for target in targets
+                     if target['kind'] == ['lib'] and target['crate_types'] == ['lib']
+                     and target['test'] is True and not target.get('required-features', [])]
+        if len(libraries) != 1:
+            return False
+        if package['name'] == 'spite-core':
+            if len(targets) != 1:
+                return False
+            core.append(package)
+    return len(core) == 1
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--suite', choices=['all', 'core', 'rest'], default='all',
                         help='Select recorded packages after compiling the complete workspace')
+    parser.add_argument('--collect-core-libs', action='store_true',
+                        help='Collect workspace library tests when they cover the complete Core suite')
     parser.add_argument('--optimize-runtime', action='store_true',
                         help='Compile spite-runtime at opt-level 1 for this run')
     parser.add_argument('--runtime-shard', type=int, choices=[0, 1],
@@ -244,6 +268,8 @@ def main():
     args = parser.parse_args()
     if args.runtime_shard is not None and args.suite != 'rest':
         parser.error('--runtime-shard requires --suite rest')
+    if args.collect_core_libs and args.suite != 'core':
+        parser.error('--collect-core-libs requires --suite core')
     version_command = ['rustc', '+' + args.toolchain, '-vV']
     guard_windows_command(version_command)
     version = subprocess.check_output(version_command, text=True, shell=False)
@@ -261,7 +287,23 @@ def main():
             encoding='utf-8')
         runner = [sys.executable, str(Path(__file__).resolve()), '--record', temporary]
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
-        command = ['cargo', '+' + args.toolchain, 'test', '--workspace', '--all-targets',
+        target_selection = '--all-targets'
+        if args.collect_core_libs:
+            metadata_command = ['cargo', '+' + args.toolchain, 'metadata', '--no-deps',
+                                '--format-version', '1', '--locked']
+            if args.offline:
+                metadata_command.append('--offline')
+            metadata = run_command(metadata_command, stdout=subprocess.PIPE,
+                                   text=True, encoding='utf-8')
+            if metadata.returncode:
+                return metadata.returncode
+            eligible = can_collect_core_libs(json.loads(metadata.stdout))
+            if eligible:
+                target_selection = '--lib'
+            print('Core library collection: ' +
+                  ('eligible; using --workspace --lib' if eligible else
+                   'ineligible; using --workspace --all-targets'), flush=True)
+        command = ['cargo', '+' + args.toolchain, 'test', '--workspace', target_selection,
                    '--locked', '--config', configuration]
         if args.optimize_runtime:
             command += ['--config', 'profile.test.package.spite-runtime.opt-level=1']
@@ -276,8 +318,8 @@ def main():
                        sorted(directory.glob('invocation-*.json'))]
         if not invocations:
             raise RuntimeError('Cargo recorded no test invocations; check the host runner configuration')
-        # Every suite compiles the same workspace, preserving Cargo's feature
-        # unification. Package suites filter only the recorded invocations.
+        # Both collection paths keep workspace package roots. Package suites
+        # filter only the recorded invocations.
         if args.suite != 'all':
             if not any(row['package'] == 'spite-core' for row in invocations):
                 raise RuntimeError('The split workspace suites require a spite-core package')

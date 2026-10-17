@@ -14081,3 +14081,15 @@ The Native definition inventory is 5,302: 988 Core and 4,314 REST, including
 retained. The one documentation test and reviewed 14,740 corpus variants from
 7,631 sources remain separate. The fifteen-job hosted matrix still requires
 27 Cargo targets, all 47 framework probes and four full reviewed-corpus gates.
+
+## Core workspace-library collection
+
+The Core lane retains every workspace library root while collecting seven
+library invocations instead of 27 full-target invocations, with the same 988
+Core tests and Native commands. Cargo metadata must prove one ordinary,
+testable library per workspace member and no additional Core target. An
+ineligible shape uses the full collector before compilation; metadata, build
+and test failures propagate without retry. Full REST collection, Runtime
+shards and all four reviewed-corpus gates remain unchanged. Three additional
+Cargo probes bring the framework inventory to 20 Cargo, 11 Runtime and
+19 Parser probes, 50 in total. Hosted timing is assessed separately.

@@ -358,6 +358,135 @@ class CargoRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'no test invocations'):
                 module.main()
 
+    def test_core_library_collection_retains_sibling_and_dev_features(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-core-libs-features-') as temporary:
+            root = Path(temporary)
+            make_workspace(root)
+            manifest = root / 'a/Cargo.toml'
+            manifest.write_text(manifest.read_text().replace(
+                'workspace-unified=[]\n',
+                'workspace-unified=[]\nsibling-dev-unified=[]\n'), encoding='utf-8')
+            with (root / 'a/src/lib.rs').open('a', encoding='utf-8') as source:
+                source.write('''
+#[test]
+fn sibling_dev_feature_and_primary_package_remain_active() {
+    assert!(cfg!(feature = "sibling-dev-unified"));
+    assert!(option_env!("CARGO_PRIMARY_PACKAGE").is_some());
+}
+''')
+            with (root / 'b/Cargo.toml').open('a', encoding='utf-8') as manifest:
+                manifest.write('[dev-dependencies]\n'
+                               'spite-core={path="../a",features=["sibling-dev-unified"]}\n')
+            (root / 'b/tests').mkdir()
+            (root / 'b/tests/extra.rs').write_text(
+                '#[test]\nfn sibling_integration_target() {}\n', encoding='utf-8')
+            environment = {'CARGO_TARGET_DIR': str(root / 'target')}
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env={**self.environment, **environment}, check=True)
+            fields = ['command', 'cwd', 'package', 'status', 'summaries']
+            for toolchain in ['stable', '1.85.0']:
+                with self.subTest(toolchain=toolchain):
+                    reference, original = self.run_suite(
+                        suite='core', root=root, toolchain=toolchain,
+                        extra_environment=environment)
+                    result, report = self.run_suite(
+                        suite='core', root=root, toolchain=toolchain,
+                        extra_arguments=['--collect-core-libs'],
+                        extra_environment=environment)
+                    self.assertEqual(reference.returncode, 0, reference.stdout)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(original['recorded_invocations'], 3)
+                    self.assertEqual(report['recorded_invocations'], 2)
+                    self.assertEqual(len(original['invocations']), 1)
+                    self.assertEqual(len(report['invocations']), 1)
+                    self.assertEqual(
+                        {key: original['invocations'][0][key] for key in fields},
+                        {key: report['invocations'][0][key] for key in fields})
+                    self.assertEqual(report['invocations'][0]['summaries'],
+                                     [['ok', '3', '0', '1', '0', '1']])
+                    decision = 'Core library collection: eligible; using --workspace --lib'
+                    self.assertEqual(result.stdout.count(decision), 1)
+                    self.assertLess(result.stdout.index(decision),
+                                    result.stdout.index('Queued Cargo test invocation:'))
+                    self.assertEqual(result.stdout.count('Queued Cargo test invocation:'), 2)
+                    self.assertNotIn('Core library collection:', reference.stdout)
+                    failed, failure = self.run_suite(
+                        fail='spite-core', suite='core', root=root, toolchain=toolchain,
+                        extra_arguments=['--collect-core-libs'],
+                        extra_environment=environment)
+                    self.assertEqual(failed.returncode, 1, failed.stdout)
+                    self.assertEqual(failure['recorded_invocations'], 2)
+                    self.assertEqual([row['status'] for row in failure['invocations']], [101])
+                    self.assertEqual(failed.stdout.count(decision), 1)
+                    self.assertEqual(failed.stdout.count('Queued Cargo test invocation:'), 2)
+                    self.assertNotIn('ineligible; using', failed.stdout)
+
+    def test_core_library_collection_falls_back_before_compiling_new_target_shapes(self):
+        for shape, recorded, retained in [
+                ('core-integration', 3, 2), ('core-bin', 3, 2), ('sibling-bin-only', 2, 1)]:
+            with self.subTest(shape=shape), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-core-libs-fallback-') as temporary:
+                root = Path(temporary)
+                make_workspace(root)
+                if shape == 'core-integration':
+                    (root / 'a/tests').mkdir()
+                    (root / 'a/tests/extra.rs').write_text(
+                        '#[test]\nfn core_integration_target_runs() {}\n', encoding='utf-8')
+                elif shape == 'core-bin':
+                    (root / 'a/src/main.rs').write_text(
+                        'fn main() {}\n#[test]\nfn core_binary_target_runs() {}\n',
+                        encoding='utf-8')
+                else:
+                    (root / 'b/src/lib.rs').unlink()
+                    (root / 'b/src/main.rs').write_text(
+                        'fn main() {}\n' + SOURCE, encoding='utf-8')
+                environment = {'CARGO_TARGET_DIR': str(root / 'target')}
+                subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                               cwd=root, env={**self.environment, **environment}, check=True)
+                reference, original = self.run_suite(
+                    suite='core', root=root, extra_environment=environment)
+                result, report = self.run_suite(
+                    suite='core', root=root, extra_arguments=['--collect-core-libs'],
+                    extra_environment=environment)
+                self.assertEqual(reference.returncode, 0, reference.stdout)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(original['recorded_invocations'], recorded)
+                self.assertEqual(report['recorded_invocations'], recorded)
+                self.assertEqual(len(report['invocations']), retained)
+                fields = ['command', 'cwd', 'package', 'status', 'summaries']
+                project = lambda rows: sorted(
+                    [{key: row[key] for key in fields} for row in rows],
+                    key=lambda row: row['command'][0])
+                self.assertEqual(project(original['invocations']), project(report['invocations']))
+                decision = 'Core library collection: ineligible; using --workspace --all-targets'
+                self.assertEqual(result.stdout.count(decision), 1)
+                self.assertLess(result.stdout.index(decision),
+                                result.stdout.index('Queued Cargo test invocation:'))
+                self.assertEqual(result.stdout.count('Queued Cargo test invocation:'), recorded)
+                self.assertNotIn('Core library collection:', reference.stdout)
+
+    def test_core_library_collection_rejects_other_suites_and_metadata_errors(self):
+        for suite in ['all', 'rest']:
+            with self.subTest(suite=suite):
+                result, report = self.run_suite(
+                    suite=suite, extra_arguments=['--collect-core-libs'])
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIsNone(report)
+                self.assertIn('--collect-core-libs requires --suite core', result.stdout)
+                self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+        with tempfile.TemporaryDirectory(prefix='spite-ci-core-libs-metadata-error-') as temporary:
+            root = Path(temporary)
+            make_workspace(root)
+            (root / 'Cargo.toml').write_text('[workspace\n', encoding='utf-8')
+            result, report = self.run_suite(
+                suite='core', root=root, extra_arguments=['--collect-core-libs'],
+                extra_environment={'CARGO_TARGET_DIR': str(root / 'target')})
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIsNone(report)
+            self.assertNotIn('Core library collection:', result.stdout)
+            self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+            self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+
     def runtime_row(self, report):
         rows = [row for row in report['invocations']
                 if row['package'] == 'spite-runtime'

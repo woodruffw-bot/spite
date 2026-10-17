@@ -54,6 +54,9 @@ jobs:
         # The complete corpus runs once in the independent optimized-profile job.
         run: |
           extra_args=()
+          if [[ "$WORKSPACE_SUITE" == "core" ]]; then
+            extra_args+=(--collect-core-libs)
+          fi
           if [[ "$RUNNER_OS" == "Linux" && "$WORKSPACE_SUITE" == "rest" ]]; then
             extra_args+=(--optimize-runtime)
           fi
