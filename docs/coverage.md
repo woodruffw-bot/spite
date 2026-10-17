@@ -14000,3 +14000,62 @@ of 27 commands, including full Core, workspace and documentation tests, as well
 as all 47 framework probes and four full reviewed-corpus gates. No local full
 Core, workspace, documentation or corpus completion, or new hosted success, is
 claimed here.
+
+## Two flat UnicodeSets classes followed by one literal
+
+The v/vi adapter admits two independently flat classes followed by
+one decoded literal, with canonical optional outside word and line assertions
+and complete whole-body captures. Exactly one original Boolean program in
+checked_v_set_pair_literal_word_state_context_and_consumers is migrated:
+`/\b[a][b]c/v.test('abc')` remains an explicit positive check alongside an
+independent intrinsic Array, source, index, input, groups, indices and lastIndex
+check. The leading-only form must still match abc in abcx. All other 459
+preceding v_sets negative rows, all twelve mixed/string suffix controls and all
+thirty-two preceding snapshot function sources are preserved. Twenty-three
+Boolean programs, twenty new closed-domain controls and two host-state blocks
+specify the new scope and its neighbors. Unsupported syntax receives no
+passing-negative conformance credit.
+
+Two Core tests define 8,944 bounded independent UTF-16 oracle queries,
+fourteen complete component transcripts (eight successful and six rejected)
+with fresh work-error prefixes, and thirty-three framing neighbors. They cover
+source-ordered full proofs behind actual empty classes, late string-property
+rejection, early explicit \q framing rejection, original-character retry and
+unchanged earlier constructor domains. Two Runtime integration tests specify
+second-class, literal and outside-gate overlap, sticky/global state, original
+line and word context, complete captures, consumers, coercion and read-only
+lastIndex. The host blocks specify default-realm GC retention and explicitly
+opted-in cancellation. A separate direct unit checks the unchanged six-unit
+bound, remaining zero/MAX, source-length independence, initial-low-pair
+handling, captures and entry errors without altering earlier bound units.
+
+Ten handwritten rows specify eight matches and two nulls with complete JSON
+and original UTF-16 payloads. They distinguish second-class, literal and
+late-word failures, sticky overlap, the leading-only gate, six-unit
+supplementary spans, three lone high surrogates, an actual empty first class
+and actual-i word behavior with invariant consumers. Finite companions cover
+original CRLF/LS multiline context, complements and the distinct early \q and
+late string-property proof stages. Previously reviewed pinned Unicode 17/18
+facts are reused only for identical selected witnesses; no new raw dataset or
+exhaustive query loop is added. The generated snapshot and Node 24.19
+(Unicode 17) agree with all ten complete handwritten JSON/UTF-16 rows, with no
+exclusions or discrepancies. All 716 preceding snapshots remain byte for byte
+unchanged; the new snapshot brings the total to 717.
+
+The registered Native inventory is 5,300: 988 Core and 4,312 REST,
+including 3,568 Runtime integration tests and 290 Runtime units. Parser retains
+347 tests. The one documentation test and unchanged reviewed corpus of 14,740
+variants from 7,631 sources are counted separately. These are definition counts,
+not totals locally executed. Local validation passed the complete affected
+six-test Core module (982 filtered), the new direct bound unit (289 filtered)
+and all 3,568 Runtime integration tests (none filtered) on both Rust versions,
+plus the new snapshot (3,567 filtered). Formatting, denied-warning Clippy,
+policy/inventory checks and all seven generators passed.
+
+The published parent e3ad2432 has its own accepted fifteen-job CI result; that
+result supplies no execution credit for this feature. The retained fifteen-job
+hosted matrix still requires the normal Cargo graph of 27 commands, including
+full Core, workspace and documentation tests, as well as all 47 framework probes
+and four full reviewed-corpus gates. No local full Core, workspace,
+documentation, framework-probe or corpus completion, or new hosted success, is
+claimed here.

@@ -8582,3 +8582,45 @@ min(6, remaining + 1) and nonsticky work is remaining + 1, independent of
 source length. Earlier two-atom four-unit bounds and direct units remain exact.
 No new representation, source or input buffer, dependency or default resource
 limit is introduced.
+
+## Two flat UnicodeSets classes followed by one literal
+
+A separate constructor proves exactly two independently flat character-only
+v/vi classes followed by one decoded Unicode literal. Canonical outside line
+anchors and word gates are optional: optional ^, optional \b/\B, the complete
+class/class/literal body, optional \b/\B and optional $. The existing caller
+proof handles complete whole-body captures. Checked or mixed class kinds,
+string leaves, inner or reordered assertions, partial captures, quantifiers
+and extra atoms remain outside this constructor. Every preceding constructor
+and callback retains its closed domain.
+
+Construction borrows original source units and charges saturating 4N before
+framing or decoding. The complete frame is proved before the first flat class,
+second flat class and literal are fully compiled in source order. A successful
+empty first or second class cannot skip later component proofs. In particular,
+a string property in the second class is still rejected after a successful
+empty first class; no literal proof follows that rejection. An explicit \q
+string leaf instead rejects during framing before component callbacks. Work
+errors propagate immediately. The existing matcher stores two class predicates,
+the literal and outside assertions; absent word assertions also represent the
+bare form.
+
+Outside assertions retain actual i WordCharacters and original m line context,
+even when all three consumers are case-invariant. Thus
+`^\b[\p{Any}][\p{Any}]\$\B$` matches `K!$` or `ſ!$` only with i: both Any
+classes and the literal dollar retain their membership while the leading word
+gate changes. A leading-only gate does not imply a trailing gate, so
+`\b[a][b]c` still matches original 0..3 in abcx.
+
+Matching retains complete original UTF-16 characters, supplementary and lone
+surrogates, complete captures and the approved initial-low-pair boundary.
+Failure in the second class, literal or an outside gate retries the first
+class end in nonsticky mode; sticky failure does not retry. In particular,
+`[a][b]c` over aabc, `[a][a]b` over aaab! and `[a][a]a\b` over aaaa! each
+select 1..4 after the first candidate fails. The existing entry charge,
+search-pass accounting, Runtime variant and six-unit branch remain unchanged:
+sticky work is saturating min(6, remaining + 1) and nonsticky work is
+remaining + 1, independent of source length. Earlier two-atom four-unit bounds
+and direct units remain exact. No new representation, source or input buffer,
+dependency or default resource limit is introduced; resource limits remain
+explicitly opt-in.
