@@ -280,12 +280,20 @@ def main():
                         help='Compile spite-runtime at opt-level 1 for this run')
     parser.add_argument('--runtime-shard', type=int, choices=[0, 1],
                         help='Opt into one of two complete Runtime integration partitions')
+    parser.add_argument('--rest-shard', type=int, choices=[0, 1],
+                        help='Select the Runtime shard owning other REST tests (default: 0)')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    if args.rest_shard is not None and (args.suite != 'rest' or args.runtime_shard is None):
+        parser.error('--rest-shard requires --suite rest and --runtime-shard')
     if args.runtime_shard is not None and args.suite != 'rest':
         parser.error('--runtime-shard requires --suite rest')
     if args.collect_core_libs and args.suite != 'core':
         parser.error('--collect-core-libs requires --suite core')
+    rest_shard = 0 if args.rest_shard is None else args.rest_shard
+    runtime_only = args.runtime_shard is not None and args.runtime_shard != rest_shard
+    if args.rest_shard is not None:
+        print(f'NonRuntime REST owner: runtime shard {rest_shard}', flush=True)
     version_command = ['rustc', '+' + args.toolchain, '-vV']
     guard_windows_command(version_command)
     version = subprocess.check_output(version_command, text=True, shell=False)
@@ -304,7 +312,7 @@ def main():
         runner = [sys.executable, str(Path(__file__).resolve()), '--record', temporary]
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
         target_selection = ['--all-targets']
-        if args.collect_core_libs or args.runtime_shard == 1:
+        if args.collect_core_libs or runtime_only:
             metadata_command = ['cargo', '+' + args.toolchain, 'metadata', '--no-deps',
                                 '--format-version', '1', '--locked']
             if args.offline:
@@ -359,7 +367,7 @@ def main():
         if args.runtime_shard is not None:
             original, runtime, shard_metadata, shard_plan = prepare_runtime_shard(
                 invocations, args.runtime_shard, baseline)
-            if args.runtime_shard == 0:
+            if args.runtime_shard == rest_shard:
                 others = [row for row in selected if row is not original]
                 batches = [others, [runtime]]
             else:
@@ -419,6 +427,8 @@ def main():
         if shard_metadata is not None:
             report['runtime_shard'] = dict(shard_metadata, full_names=shard_plan['names'],
                                            planned_shards=shard_plan['shards'])
+        if args.rest_shard is not None:
+            report['rest_shard'] = rest_shard
         if args.report:
             args.report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
         failures = sum(row['status'] != 0 for row in results)

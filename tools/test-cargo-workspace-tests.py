@@ -534,20 +534,24 @@ fn sibling_dev_context_is_selected() {
                     self.assertEqual(complete['recorded_invocations'], 5)
                     original = self.runtime_row(complete)
                     original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
-                    result, report = self.run_suite(
-                        suite='rest', root=root, toolchain=toolchain,
-                        extra_arguments=['--runtime-shard', '1'], extra_environment=environment)
-                    runtime = self.assert_runtime_shard(result, report, 1, RUNTIME_SHARD_NAMES)
-                    self.assertEqual(runtime['command'][0], original['command'][0])
-                    self.assertEqual(runtime['cwd'], original['cwd'])
-                    self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
-                                     original_hash)
-                    decision = ('Runtime integration library collection: eligible; '
-                                'using --workspace --lib --test integration')
-                    self.assertEqual(result.stdout.count(decision), 1)
-                    self.assertLess(result.stdout.index(decision),
-                                    result.stdout.index('Queued Cargo test invocation:'))
-                    self.assertNotIn('Runtime integration library collection:', reference.stdout)
+                    for index in [1, 0]:
+                        result, report = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=['--runtime-shard', str(index)] +
+                                (['--rest-shard', '1'] if index == 0 else []),
+                                extra_environment=environment)
+                        runtime = self.assert_runtime_shard(
+                            result, report, index, RUNTIME_SHARD_NAMES, rest_owner=1 - index)
+                        self.assertEqual(runtime['command'][0], original['command'][0])
+                        self.assertEqual(runtime['cwd'], original['cwd'])
+                        self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                         original_hash)
+                        decision = ('Runtime integration library collection: eligible; '
+                                    'using --workspace --lib --test integration')
+                        self.assertEqual(result.stdout.count(decision), 1)
+                        self.assertLess(result.stdout.index(decision),
+                                        result.stdout.index('Queued Cargo test invocation:'))
+                        self.assertNotIn('Runtime integration library collection:', reference.stdout)
 
     def test_runtime_library_collection_falls_back_before_ambiguous_or_disabled_targets(self):
         for shape, recorded in [('second-integration', 5), ('integration-bin', 5),
@@ -592,44 +596,49 @@ fn sibling_dev_context_is_selected() {
                         self.assertEqual(reference.returncode, 0, reference.stdout)
                         original = self.runtime_row(complete)
                         original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
-                        result, report = self.run_suite(
-                            suite='rest', root=root, toolchain=toolchain,
-                            extra_arguments=['--runtime-shard', '1'], extra_environment=environment)
-                        self.assertEqual(result.returncode, 0, result.stdout)
-                        self.assertEqual(complete['recorded_invocations'], recorded)
-                        self.assertEqual(report['recorded_invocations'], recorded)
-                        self.assertEqual(len(report['invocations']), 1)
-                        runtime = self.runtime_row(report)
-                        self.assertEqual(runtime['command'][0], original['command'][0])
-                        self.assertEqual(runtime['cwd'], original['cwd'])
-                        self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
-                                         original_hash)
-                        plan = report['runtime_shard']
-                        self.assertEqual(plan['full_names'], RUNTIME_SHARD_NAMES)
-                        self.assertEqual(runtime['runtime_shard_execution']['names'],
-                                         plan['planned_shards'][1])
-                        self.assertEqual(runtime['child_status'], 0)
-                        decision = ('Runtime integration library collection: ineligible; '
-                                    'using --workspace --all-targets')
-                        self.assertEqual(result.stdout.count(decision), 1)
-                        self.assertLess(result.stdout.index(decision),
-                                        result.stdout.index('Queued Cargo test invocation:'))
-                        self.assertEqual(result.stdout.count('Queued Cargo test invocation:'), recorded)
-                        self.assertNotIn('Runtime integration library collection:', reference.stdout)
+                        for index in [1, 0]:
+                            result, report = self.run_suite(
+                                suite='rest', root=root, toolchain=toolchain,
+                                extra_arguments=['--runtime-shard', str(index)] +
+                                    (['--rest-shard', '1'] if index == 0 else []),
+                                    extra_environment=environment)
+                            self.assertEqual(result.returncode, 0, result.stdout)
+                            self.assertEqual(complete['recorded_invocations'], recorded)
+                            self.assertEqual(report['recorded_invocations'], recorded)
+                            self.assertEqual(len(report['invocations']), 1)
+                            runtime = self.runtime_row(report)
+                            self.assertEqual(runtime['command'][0], original['command'][0])
+                            self.assertEqual(runtime['cwd'], original['cwd'])
+                            self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                             original_hash)
+                            plan = report['runtime_shard']
+                            self.assertEqual(plan['full_names'], RUNTIME_SHARD_NAMES)
+                            self.assertEqual(runtime['runtime_shard_execution']['names'],
+                                             plan['planned_shards'][index])
+                            self.assertEqual(runtime['child_status'], 0)
+                            decision = ('Runtime integration library collection: ineligible; '
+                                        'using --workspace --all-targets')
+                            self.assertEqual(result.stdout.count(decision), 1)
+                            self.assertLess(result.stdout.index(decision),
+                                            result.stdout.index('Queued Cargo test invocation:'))
+                            self.assertEqual(result.stdout.count('Queued Cargo test invocation:'), recorded)
+                            self.assertNotIn('Runtime integration library collection:', reference.stdout)
 
     def test_runtime_library_collection_metadata_error_never_retries_collection(self):
         with tempfile.TemporaryDirectory(prefix='spite-ci-runtime-libs-metadata-error-') as temporary:
             root = Path(temporary)
             make_runtime_shard_workspace(root)
             (root / 'Cargo.toml').write_text('[workspace\n', encoding='utf-8')
-            result, report = self.run_suite(
-                suite='rest', root=root, extra_arguments=['--runtime-shard', '1'],
-                extra_environment={'CARGO_TARGET_DIR': str(root / 'target')})
-            self.assertNotEqual(result.returncode, 0, result.stdout)
-            self.assertIsNone(report)
-            self.assertNotIn('Runtime integration library collection:', result.stdout)
-            self.assertNotIn('Collecting Cargo test invocations', result.stdout)
-            self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+            for index in [1, 0]:
+                result, report = self.run_suite(
+                    suite='rest', root=root, extra_arguments=['--runtime-shard', str(index)] +
+                        (['--rest-shard', '1'] if index == 0 else []),
+                    extra_environment={'CARGO_TARGET_DIR': str(root / 'target')})
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIsNone(report)
+                self.assertNotIn('Runtime integration library collection:', result.stdout)
+                self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+                self.assertNotIn('Queued Cargo test invocation:', result.stdout)
 
     def runtime_row(self, report):
         rows = [row for row in report['invocations']
@@ -639,12 +648,12 @@ fn sibling_dev_context_is_selected() {
         self.assertEqual(len(rows), 1, report)
         return rows[0]
 
-    def assert_runtime_shard(self, result, report, index, expected_names):
+    def assert_runtime_shard(self, result, report, index, expected_names, rest_owner=0):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIsNotNone(report, result.stdout)
         self.assertEqual(report['suite'], 'rest')
         self.assertEqual(report['recorded_invocations'], 4)
-        self.assertEqual(len(report['invocations']), 3 if index == 0 else 1)
+        self.assertEqual(len(report['invocations']), 3 if index == rest_owner else 1)
         self.assertNotIn('spite-core', {row['package'] for row in report['invocations']})
         plan = report['runtime_shard']
         self.assertEqual(plan['schema'], 1)
@@ -798,6 +807,107 @@ fn new_pinned_corpus_runs_all_reviewed_variants_case() { check(); }
                     suite='rest', root=root, extra_arguments=['--runtime-shard', str(index)],
                     extra_environment=environment)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
+
+
+    def test_rest_owner_preserves_paired_coverage_and_moved_failures(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-rest-owner-') as temporary:
+            root = Path(temporary)
+            make_runtime_shard_workspace(root)
+            (root / 'a/build.rs').unlink()
+            core = root / 'a/src/lib.rs'
+            core.write_text(core.read_text().replace(PROFILE_SOURCE, '', 1), encoding='utf-8')
+            environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                           'SPITE_RUNNER_PROBE_RUNTIME_OPT': '0',
+                           'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env={**self.environment, **environment}, check=True)
+            fields = ['command', 'cwd', 'package', 'status', 'summaries']
+            project = lambda rows: sorted(
+                [{key: row[key] for key in fields} for row in rows],
+                key=lambda row: (row['command'], row['cwd']))
+            for toolchain in ['stable', '1.85.0']:
+                with self.subTest(toolchain=toolchain):
+                    reference, complete = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_environment=environment)
+                    self.assertEqual(reference.returncode, 0, reference.stdout)
+                    original = self.runtime_row(complete)
+                    original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
+                    other_rows = [row for row in complete['invocations'] if row is not original]
+                    self.assertEqual({row['package'] for row in other_rows},
+                                     {'spite-runtime', 'runner-probe-c'})
+                    reports = {}
+                    for owner in [0, 1]:
+                        combined = []
+                        executed = []
+                        for index in [0, 1]:
+                            arguments = ['--runtime-shard', str(index)]
+                            if owner == 1:
+                                arguments += ['--rest-shard', '1']
+                            result, report = self.run_suite(
+                                suite='rest', root=root, toolchain=toolchain,
+                                extra_arguments=arguments, extra_environment=environment)
+                            runtime = self.assert_runtime_shard(
+                                result, report, index, RUNTIME_SHARD_NAMES, rest_owner=owner)
+                            self.assertEqual(report.get('rest_shard', 0), owner)
+                            self.assertEqual(runtime['command'][0], original['command'][0])
+                            self.assertEqual(runtime['cwd'], original['cwd'])
+                            self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                             original_hash)
+                            others = [row for row in report['invocations'] if row is not runtime]
+                            self.assertEqual(project(others), project(other_rows) if index == owner else [])
+                            combined += others
+                            executed += runtime['runtime_shard_execution']['names']
+                            reports[owner, index] = report
+                        self.assertEqual(project(combined), project(other_rows))
+                        self.assertEqual(sorted(executed), RUNTIME_SHARD_NAMES)
+                    for index in [0, 1]:
+                        first, second = [reports[owner, index] for owner in [0, 1]]
+                        self.assertEqual(first['runtime_shard'], second['runtime_shard'])
+                        self.assertEqual(project([self.runtime_row(first)]),
+                                         project([self.runtime_row(second)]))
+                    # Explicit owner zero retains the omitted-option behavior.
+                    result, explicit = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=['--runtime-shard', '0', '--rest-shard', '0'],
+                        extra_environment=environment)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(explicit['rest_shard'], 0)
+                    self.assertEqual(project(explicit['invocations']),
+                                     project(reports[0, 0]['invocations']))
+                    # Only the new owner executes a failing nonRuntime package;
+                    # its failure must not prevent the Runtime half from running.
+                    for index in [0, 1]:
+                        result, failed = self.run_suite(
+                            fail='runner-probe-c', suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=['--runtime-shard', str(index), '--rest-shard', '1'],
+                            extra_environment=environment)
+                        self.assertEqual(result.returncode, int(index == 1), result.stdout)
+                        runtime = self.runtime_row(failed)
+                        self.assertEqual(runtime['child_status'], 0)
+                        self.assertEqual(runtime['runtime_shard_execution']['names'],
+                                         failed['runtime_shard']['planned_shards'][index])
+                        self.assertEqual(sorted(row['status'] for row in failed['invocations']),
+                                         [0, 0, 101] if index == 1 else [0])
+
+    def test_rest_owner_requires_an_explicit_runtime_shard_and_rest_suite(self):
+        for suite, runtime, owner in [('all', None, 1), ('core', None, 1), ('rest', None, 1),
+                                      ('rest', None, 0), ('all', 0, 1), ('core', 1, 1)]:
+            with self.subTest(suite=suite, runtime=runtime, owner=owner):
+                arguments = ['--rest-shard', str(owner)]
+                if runtime is not None:
+                    arguments += ['--runtime-shard', str(runtime)]
+                result, report = self.run_suite(suite=suite, extra_arguments=arguments)
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIsNone(report)
+                self.assertIn('--rest-shard requires --suite rest and --runtime-shard', result.stdout)
+                self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+                self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+        result, report = self.run_suite(
+            suite='rest', extra_arguments=['--runtime-shard', '0', '--rest-shard', '2'])
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIsNone(report)
+        self.assertIn('invalid choice', result.stdout)
 
 
 class RuntimeShardHelperTests(unittest.TestCase):

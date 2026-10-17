@@ -14191,3 +14191,22 @@ preceding snapshots. The ten new rows match the handwritten expectations and
 a fresh Node comparison without exclusions. The full Runtime integration
 suite passes on stable and Rust 1.85. The retained fifteen-job matrix requires
 all 53 framework probes and four full reviewed-corpus gates.
+
+## Windows REST ownership
+
+Both Windows Runtime partitions explicitly assign the other REST invocations
+to partition one with `--rest-shard 1`. The main REST job collects the eight
+workspace library and Runtime integration targets when the metadata guard is
+eligible, then runs partition zero and the workspace documentation tests. The
+extra job collects all 27 targets and runs the other 25 REST invocations before
+partition one. Ineligible metadata retains the complete collection fallback.
+Omitting the ownership option keeps partition zero responsible for other REST
+tests; Linux collection and execution remain unchanged.
+
+The fifteen-job matrix retains all 110 Native invocations, ten workspace
+phases, the complete 5,317-test union, documentation and four full corpus gates.
+The framework contains 25 workspace-runner probes, 11 Runtime inventory probes
+and 19 Parser inventory probes, 55 in total. Real Cargo probes cover both Rust
+versions, feature context, executable identity, exact paired coverage, moved
+failures and default-option compatibility. This scheduling change makes no
+measured workflow-speed claim.
