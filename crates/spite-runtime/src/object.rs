@@ -15,6 +15,8 @@ use std::fmt;
 mod accessor_tests;
 mod arguments;
 mod array;
+mod array_buffer;
+pub(crate) use array_buffer::{ArrayBufferData, ArrayBufferError};
 #[cfg(test)]
 mod symbol_tests;
 use arguments::ParameterMap;
@@ -81,6 +83,7 @@ pub struct OrdinaryObject {
     constructible: bool,
     primitive_data: Option<PrimitiveData>,
     date_value: Option<Box<f64>>,
+    array_buffer: Option<ArrayBufferData>,
     regexp: Option<Box<RegExpData>>,
     error_data: bool,
     raw_json: bool,
@@ -116,6 +119,7 @@ impl OrdinaryObject {
             constructible: false,
             primitive_data: None,
             date_value: None,
+            array_buffer: None,
             regexp: None,
             error_data: false,
             raw_json: false,
@@ -237,6 +241,10 @@ impl OrdinaryObject {
 
     pub(crate) fn date_value(&self) -> Option<f64> {
         self.date_value.as_deref().copied()
+    }
+
+    pub(crate) fn array_buffer_data(&self) -> Option<&ArrayBufferData> {
+        self.array_buffer.as_ref()
     }
 
     pub(crate) fn regexp_data(&self) -> Option<&RegExpData> {

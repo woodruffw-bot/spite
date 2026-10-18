@@ -159,6 +159,20 @@ impl Realm {
             .intrinsics
             .as_ref()
             .expect("initialized")
+            .array_buffer
+            .constructor
+            .clone();
+        self.define_builtin_property(
+            &object,
+            "ArrayBuffer",
+            Value::Object(constructor),
+            true,
+            span,
+        )?;
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
             .iterator
             .constructor
             .clone();

@@ -8,6 +8,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod arguments;
 mod array;
+mod array_buffer;
 mod arrow;
 mod bigint;
 mod boolean;
@@ -168,6 +169,10 @@ pub(crate) enum Builtin {
     ArrayOf,
     ArrayFrom,
     ArraySpecies,
+    ArrayBuffer,
+    ArrayBufferIsView,
+    ArrayBufferSpecies,
+    ArrayBufferMember(array_buffer::Member),
     ArrayKeys,
     ArrayValues,
     ArrayEntries,
@@ -429,6 +434,10 @@ impl Builtin {
             Self::ArrayOf => "of",
             Self::ArrayFrom | Self::IteratorFrom => "from",
             Self::ArraySpecies => "get [Symbol.species]",
+            Self::ArrayBuffer => "ArrayBuffer",
+            Self::ArrayBufferIsView => "isView",
+            Self::ArrayBufferSpecies => "get [Symbol.species]",
+            Self::ArrayBufferMember(member) => member.initial_name(),
             Self::ArrayKeys => "keys",
             Self::ArrayValues => "values",
             Self::ArrayEntries => "entries",
@@ -616,6 +625,8 @@ impl Builtin {
             Self::DateNow => 0.0,
             Self::DateParse => 1.0,
             Self::DateMethod(method) => method.length(),
+            Self::ArrayBuffer | Self::ArrayBufferIsView => 1.0,
+            Self::ArrayBufferMember(member) => member.length(),
             Self::RegExp => 2.0,
             Self::RegExpEscape => 1.0,
             Self::RegExpMember(member) => member.length(),
@@ -889,6 +900,7 @@ pub(super) struct Intrinsics {
     pub string: string::StringIntrinsics,
     pub symbol: symbol::SymbolIntrinsics,
     pub array: array::ArrayIntrinsics,
+    pub array_buffer: array_buffer::ArrayBufferIntrinsics,
     pub iterator: iterator::IteratorIntrinsics,
     pub reflect: reflect::ReflectIntrinsics,
     pub math: math::MathIntrinsics,
@@ -931,6 +943,7 @@ impl Intrinsics {
         .chain(self.string.roots())
         .chain(self.symbol.roots())
         .chain(self.array.roots())
+        .chain(self.array_buffer.roots())
         .chain(self.iterator.roots())
         .chain(self.reflect.roots())
         .chain(self.math.roots())
@@ -1082,6 +1095,8 @@ impl Realm {
         let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
         let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
+        let array_buffer =
+            self.array_buffer_intrinsics(&object_prototype, &function_prototype, span)?;
         let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
         let math = self.math_intrinsics(&object_prototype, &function_prototype, span)?;
         let json = self.json_intrinsics(&object_prototype, &function_prototype, span)?;
@@ -1129,6 +1144,7 @@ impl Realm {
             string,
             symbol,
             array,
+            array_buffer,
             iterator,
             reflect,
             math,

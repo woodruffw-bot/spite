@@ -189,6 +189,15 @@ impl Realm {
                 Callable::Builtin(Builtin::Array) => {
                     return self.array_constructor(Some(new_target), arguments.into_iter(), span);
                 }
+                Callable::Builtin(Builtin::ArrayBuffer) => {
+                    let mut arguments = arguments.into_iter();
+                    return self.array_buffer_constructor(
+                        new_target,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::Iterator) => {
                     // Iterator (27.1.3.1.1) is abstract but has [[Construct]].
                     // Reject the active function before reading newTarget.prototype.

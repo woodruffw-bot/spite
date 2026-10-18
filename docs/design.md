@@ -7461,6 +7461,29 @@ JavaScript WeakMap intrinsics remain pending until Symbol-key reachability is
 implemented; the internal object-key APIs are private and temporarily allow dead
 code for that staged integration.
 
+## ArrayBuffer
+
+Ordinary ArrayBuffer objects retain private byte storage, byte length, and an
+optional maximum byte length (25.1). Zero-filled pages are implicit; materialized
+4 KiB pages and their sorted index use checked, fallible allocation. Logical
+lengths cover the ToIndex domain without eagerly reserving or touching enormous
+host allocations. Shrinking clears truncated bytes before subsequent growth can
+expose them. Allocation and opted-in work failures leave existing storage intact.
+
+Construction converts length and the optional maximum before consulting
+newTarget.prototype. Resize, species-aware slice, transfer, and transferToFixedLength
+follow the specification's conversion and detachment order. Slice retains the
+original bounds, validates the species result, then rechecks the source and copies
+only its remaining bytes. Transfer uses the intrinsic prototype, copies before
+detaching, and preserves resizability only when requested. Detached buffers retain
+their resizability slot while reporting zero byte and maximum lengths. Freezing
+ordinary properties does not freeze these internal slots.
+
+The constructor, species getter, isView, state getters, methods, and toStringTag
+have their standard descriptors. No currently exposed object has a
+ViewedArrayBuffer slot, so isView returns false. Typed arrays, DataView, shared
+buffers, and embedding detach keys remain separate implementation work.
+
 ## Date time values
 
 Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).

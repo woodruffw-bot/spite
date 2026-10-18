@@ -304,6 +304,22 @@ impl Realm {
                 Ok(Value::Boolean(true))
             }
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
+            Builtin::ArrayBuffer => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "ArrayBuffer requires construction",
+            )),
+            Builtin::ArrayBufferSpecies => Ok(this),
+            // No object kind currently exposes [[ViewedArrayBuffer]]. This
+            // test never coerces its argument or reads public properties.
+            Builtin::ArrayBufferIsView => Ok(Value::Boolean(false)),
+            Builtin::ArrayBufferMember(member) => self.array_buffer_member(
+                member,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::Iterator => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

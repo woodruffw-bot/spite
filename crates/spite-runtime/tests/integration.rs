@@ -6,6 +6,8 @@ mod common;
 mod aggregate_errors;
 #[path = "cases/array_at.rs"]
 mod array_at;
+#[path = "cases/array_buffer.rs"]
+mod array_buffer;
 #[path = "cases/array_callbacks.rs"]
 mod array_callbacks;
 #[path = "cases/array_class_species.rs"]

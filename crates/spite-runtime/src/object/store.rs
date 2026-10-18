@@ -262,7 +262,8 @@ impl Objects {
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
-            Builtin::Set
+            Builtin::ArrayBuffer
+                | Builtin::Set
                 | Builtin::WeakSet
                 | Builtin::Map
                 | Builtin::Boolean

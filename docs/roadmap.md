@@ -629,6 +629,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match one ordinary non-q checked v/vi class followed by one checked class containing single-character ClassStringDisjunction operands, preserving canonical outside assertions and complete whole-body captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
+- [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.

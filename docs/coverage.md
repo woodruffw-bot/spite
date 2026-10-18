@@ -38,6 +38,7 @@ not an alternative language specification.
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
+| ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -14834,3 +14835,20 @@ The fifteen-job matrix still requires complete stable and MSRV suites, all 57
 framework probes and four complete 14,740-variant reviewed-corpus gates before
 the following push. This feature's hosted results remain separate from these
 local checks.
+
+## Ordinary ArrayBuffer
+
+Twenty Runtime integration tests cover construction and subclassing, ordered
+ToIndex/options/newTarget access, exact brands and intrinsic descriptors,
+resizing, species-aware slicing, transfer, and detachment during observable
+conversions. An inline insta snapshot fixes the descriptor and state matrix.
+Five direct storage tests cover sparse page boundaries, zero holes, shrink/regrow
+zeroing, full safe-index logical lengths, and allocation/work failure atomicity.
+No default heap or work quota is introduced.
+
+The full stable Runtime suites pass all 314 unit tests and 3,622 integration
+tests. All 25 new ArrayBuffer cases also pass on Rust 1.85. The expected Native
+total is 5,412: 1,022 Core and 4,390 REST. There are
+885 Rust sources; all 734 existing snapshot files remain unchanged. The reviewed
+Test262 corpus remains 14,740 variants from 7,631 sources at the existing pin.
+ArrayBuffer originals are a separate corpus increment; they are not counted here.
