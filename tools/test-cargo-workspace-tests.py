@@ -1305,6 +1305,220 @@ fn sibling_context_and_failure() {
             self.assertNotIn('Queued Cargo test invocation:', result.stdout)
 
 
+    def assert_three_runtime_shard(self, result, report, index, expected_names, owner):
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(report['recorded_invocations'], 4)
+        self.assertEqual(report['suite'], 'rest')
+        self.assertEqual(len(report['invocations']), 3 if index == owner else 1)
+        plan = report['runtime_shard']
+        self.assertEqual((plan['schema'], plan['algorithm'], plan['index'], plan['count']),
+                         (1, 'substring-components-greedy-v1', index, 3))
+        self.assertEqual(plan['full_names'], sorted(expected_names))
+        self.assertEqual(plan['full_count'], len(expected_names))
+        self.assertEqual(plan['full_sha256'], names_sha256(expected_names))
+        shards = plan['planned_shards']
+        self.assertEqual(len(shards), 3)
+        self.assertTrue(all(shards))
+        for left in range(3):
+            for right in range(left + 1, 3):
+                self.assertFalse(set(shards[left]) & set(shards[right]))
+        self.assertEqual(sorted(name for shard in shards for name in shard), sorted(expected_names))
+        self.assertEqual(plan['partition_counts'], [len(names) for names in shards])
+        self.assertEqual(plan['partition_sha256'], [names_sha256(names) for names in shards])
+        self.assertEqual(plan['listing_counts'], [len(expected_names), len(expected_names),
+                                                *map(len, shards)])
+        self.assertEqual(len(plan['listing_output_sha256']), 5)
+        self.assertEqual(len(plan['listing_command_utf16_units']), 5)
+        self.assertEqual(len(plan['native_command_utf16_units']), 3)
+        row = self.runtime_row(report)
+        execution = row['runtime_shard_execution']
+        self.assertEqual(execution['names'], shards[index])
+        self.assertEqual(execution['executed_name_count'], len(shards[index]))
+        self.assertEqual(execution['executed_names_sha256'], names_sha256(shards[index]))
+        self.assertEqual([execution[key] for key in ['passed', 'failed', 'ignored', 'measured',
+                                                   'filtered']],
+                         [len(shards[index]), 0, 0, 0, len(expected_names) - len(shards[index])])
+        self.assertEqual(row['child_status'], 0)
+        self.assertEqual(row['status'], 0)
+        self.assertNotIn('shard_validation_error', row)
+        self.assertEqual(row['summaries'], [['ok', str(len(shards[index])), '0', '0', '0',
+                                             str(len(expected_names) - len(shards[index]))]])
+        verdicts = re.findall(r'^test (\S+) \.\.\. (ok|FAILED|ignored)\s*$',
+                              result.stdout, re.MULTILINE)
+        actual = [(name, verdict) for name, verdict in verdicts if name in expected_names]
+        self.assertEqual(sorted(name for name, _ in actual), shards[index], result.stdout)
+        self.assertTrue(all(verdict == 'ok' for _, verdict in actual), result.stdout)
+        self.assertEqual(row['command'][1:3],
+                         ['--skip', 'pinned_corpus_runs_all_reviewed_variants'])
+        self.assertTrue(all(invocation['package'] != 'spite-core'
+                            for invocation in report['invocations']))
+        for invocation in report['invocations']:
+            self.assertFalse(set(invocation) & {
+                'environment', 'changed_environment', 'removed_environment'})
+        return row
+
+    def test_three_runtime_shards_preserve_real_coverage_profiles_and_failures(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-three-shards-') as temporary:
+            root = Path(temporary)
+            make_runtime_shard_workspace(root)
+            environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                           'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env={**self.environment, **environment}, check=True)
+            fields = ['command', 'cwd', 'package', 'status', 'summaries']
+            project = lambda rows: sorted(
+                [{key: row[key] for key in fields} for row in rows],
+                key=lambda row: (row['command'], row['cwd']))
+            for toolchain in ['stable', '1.85.0']:
+                for optimize in [False, True]:
+                    arguments = ['--optimize-runtime'] if optimize else []
+                    environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '1' if optimize else '0'
+                    reference, complete = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=arguments, extra_environment=environment)
+                    self.assertEqual(reference.returncode, 0, reference.stdout)
+                    original = self.runtime_row(complete)
+                    original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
+                    others = [row for row in complete['invocations'] if row is not original]
+                    replayed = []
+                    plans = []
+                    for index, owner in enumerate([1, 0, 0]):
+                        selection = arguments + ['--runtime-shard-count', '3',
+                                                 '--runtime-shard', str(index),
+                                                 '--rest-shard', str(owner)]
+                        result, report = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=selection, extra_environment=environment)
+                        runtime = self.assert_three_runtime_shard(
+                            result, report, index, RUNTIME_SHARD_NAMES, owner)
+                        self.assertEqual(report['rest_shard'], owner)
+                        self.assertEqual(project([row for row in report['invocations']
+                                                  if row is not runtime]), [])
+                        self.assertEqual(runtime['command'][0], original['command'][0])
+                        self.assertEqual(runtime['cwd'], original['cwd'])
+                        self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                         original_hash)
+                        replayed += runtime['runtime_shard_execution']['names']
+                        plans.append(report['runtime_shard'])
+                        failed, failure = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=selection,
+                            extra_environment={**environment, 'SPITE_RUNNER_PROBE_FAIL_CASE':
+                                               report['runtime_shard']['planned_shards'][index][0]})
+                        self.assertEqual(failed.returncode, 1, failed.stdout)
+                        failed_runtime = self.runtime_row(failure)
+                        self.assertEqual(failed_runtime['child_status'], 101)
+                        self.assertNotEqual(failed_runtime['status'], 0)
+                        self.assertIn('shard_validation_error', failed_runtime)
+                        self.assertEqual(len(failure['invocations']), 1)
+                    self.assertEqual(sorted(replayed), RUNTIME_SHARD_NAMES)
+                    for plan in plans[1:]:
+                        for field in ['full_sha256', 'partition_sha256', 'planned_shards']:
+                            self.assertEqual(plan[field], plans[0][field])
+                    result, excluded = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=arguments + ['--runtime-integration', 'exclude'],
+                        extra_environment=environment)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(project(excluded['invocations']), project(others))
+                    # Selecting the third shard as Runtime-only must not hide
+                    # failures in the independently owned nonRuntime invocation.
+                    result, excluded = self.run_suite(
+                        fail='runner-probe-c', suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=arguments + ['--runtime-integration', 'exclude'],
+                        extra_environment=environment)
+                    self.assertEqual(result.returncode, 1, result.stdout)
+                    self.assertEqual(sorted(row['status'] for row in excluded['invocations']), [0, 101])
+
+            environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '0'
+            source = root / 'b/tests/integration.rs'
+            added = '\nmod newly_added { #[test] fn discovered() { super::check(); } }\n'
+            source.write_text(RUNTIME_SHARD_SOURCE + added, encoding='utf-8')
+            expected = sorted(RUNTIME_SHARD_NAMES + ['newly_added::discovered'])
+            executed = []
+            for index, owner in enumerate([1, 0, 0]):
+                selection = ['--runtime-shard-count', '3', '--runtime-shard', str(index),
+                             '--rest-shard', str(owner)]
+                result, report = self.run_suite(
+                    suite='rest', root=root, extra_arguments=selection, extra_environment=environment)
+                runtime = self.assert_three_runtime_shard(result, report, index, expected, owner)
+                executed += runtime['runtime_shard_execution']['names']
+            self.assertEqual(sorted(executed), expected)
+            source.write_text(RUNTIME_SHARD_SOURCE + '''
+#[test]
+#[ignore]
+fn zzz_ignored_third_shard_case() { panic!("must not be credited as executed"); }
+''', encoding='utf-8')
+            rejected = []
+            for index, owner in enumerate([1, 0, 0]):
+                result, report = self.run_suite(
+                    suite='rest', root=root,
+                    extra_arguments=['--runtime-shard-count', '3', '--runtime-shard', str(index),
+                                     '--rest-shard', str(owner)], extra_environment=environment)
+                if result.returncode:
+                    runtime = self.runtime_row(report)
+                    self.assertEqual(runtime['child_status'], 0)
+                    self.assertIn('shard_validation_error', runtime)
+                    rejected.append(index)
+            self.assertEqual(rejected, [2])
+
+    def test_three_runtime_shards_preserve_cold_library_roots_and_private_environment(self):
+        for toolchain in ['stable', '1.85.0']:
+            with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-three-shard-roots-') as temporary:
+                root = Path(temporary) / 'workspace'
+                root.mkdir()
+                make_integration_only_workspace(root)
+                environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'))
+                subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                               cwd=root, env=environment, check=True)
+                observer = root / 'observe.py'
+                observer.write_text(OBSERVE_RUNTIME_ENVIRONMENT, encoding='utf-8')
+
+                def observed(index):
+                    observation = root / f'observation-{index}.json'
+                    report = root / f'report-{index}.json'
+                    result = subprocess.run(
+                        [sys.executable, str(observer), str(RUNNER.resolve()), str(observation),
+                         '--toolchain', toolchain, '--offline', '--suite', 'rest',
+                         '--runtime-shard-count', '3', '--runtime-shard', str(index),
+                         '--rest-shard', str([1, 0, 0][index]), '--report', str(report)],
+                        cwd=root, env=environment, stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT, text=True)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    return (result, json.loads(report.read_text()), json.loads(observation.read_text()))
+
+                # The new third index runs cold before the reference Cargo
+                # graph can mask a dependency's wrong primary-package context.
+                cold = observed(2)
+                cold_row = self.runtime_row(cold[1])
+                cold_hash = hashlib.sha256(Path(cold_row['command'][0]).read_bytes()).hexdigest()
+                original, binary_hash = self.integration_collection_context(root, toolchain, environment)
+                self.assertEqual(cold_hash, binary_hash)
+                executed = []
+                plans = []
+                for index in [2, 0, 1]:
+                    result, report, observations = cold if index == 2 else observed(index)
+                    self.assertIn('Runtime integration library collection: eligible; '
+                                  'using --workspace --lib --test integration', result.stdout)
+                    self.assertNotIn('Runtime integration target collection:', result.stdout)
+                    row = self.assert_three_runtime_shard(
+                        result, report, index, RUNTIME_SHARD_NAMES, [1, 0, 0][index])
+                    self.assertEqual(len(observations), 2)
+                    for observation in observations:
+                        self.assertEqual(observation['package'], original['package'])
+                        self.assertEqual(observation['cwd'], original['cwd'])
+                        self.assertEqual(observation['environment'], original['environment'])
+                        self.assertEqual(observation['command'][:len(original['command'])],
+                                         original['command'])
+                    self.assertEqual(hashlib.sha256(Path(row['command'][0]).read_bytes()).hexdigest(),
+                                     binary_hash)
+                    executed += row['runtime_shard_execution']['names']
+                    plans.append(report['runtime_shard'])
+                self.assertEqual(sorted(executed), RUNTIME_SHARD_NAMES)
+                self.assertEqual(len({plan['full_sha256'] for plan in plans}), 1)
+
+
 class RuntimeShardHelperTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1502,6 +1716,185 @@ class RuntimeShardHelperTests(unittest.TestCase):
                     stderr=subprocess.STDOUT, text=True)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertIn('--suite rest', result.stdout)
+
+
+    def test_three_way_partition_preserves_collisions_and_default_two_way_plan(self):
+        default = self.runner.runtime_partition(RUNTIME_SHARD_NAMES)
+        self.assertEqual(self.runner.runtime_partition(RUNTIME_SHARD_NAMES, 2), default)
+        self.assertEqual(default, {
+            'names': RUNTIME_SHARD_NAMES,
+            'prefixes': ['arrays::', 'independent_a::', 'independent_b::', 'nested::',
+                         'root_case', 'root_profile', 'typed_arrays::'],
+            'components': [['arrays::', 'nested::', 'root_case', 'typed_arrays::'],
+                           ['independent_a::'], ['independent_b::'], ['root_profile']],
+            'shards': [['arrays::fixture_environment', 'nested::arrays::fixture_environment',
+                        'nested::root_case', 'root_case', 'typed_arrays::fixture_environment'],
+                       ['independent_a::fixture_environment', 'independent_b::fixture_environment',
+                        'root_profile']],
+            'skips': [['independent_a::', 'independent_b::', 'root_profile'],
+                      ['arrays::', 'nested::', 'root_case', 'typed_arrays::']],
+        })
+        plan = self.runner.runtime_partition(RUNTIME_SHARD_NAMES, 3)
+        self.assertEqual(len(plan['shards']), 3)
+        self.assertTrue(all(plan['shards']))
+        for discovery in [list(reversed(RUNTIME_SHARD_NAMES)),
+                          RUNTIME_SHARD_NAMES[3:] + RUNTIME_SHARD_NAMES[:3]]:
+            self.assertEqual(self.runner.runtime_partition(discovery, 3), plan)
+        self.assertEqual(sorted(name for shard in plan['shards'] for name in shard),
+                         RUNTIME_SHARD_NAMES)
+        collided = {'arrays::fixture_environment', 'typed_arrays::fixture_environment',
+                    'nested::arrays::fixture_environment', 'nested::root_case', 'root_case'}
+        self.assertEqual(sum(collided <= set(shard) for shard in plan['shards']), 1)
+        for index in range(3):
+            selected = [name for name in RUNTIME_SHARD_NAMES
+                        if not any(prefix in name for prefix in plan['skips'][index])]
+            self.assertEqual(selected, plan['shards'][index])
+            for other in range(index + 1, 3):
+                self.assertFalse(set(plan['shards'][index]) & set(plan['shards'][other]))
+        changed = self.runner.runtime_partition(RUNTIME_SHARD_NAMES + ['new_module::new_case'], 3)
+        self.assertEqual(sorted(name for shard in changed['shards'] for name in shard),
+                         sorted(RUNTIME_SHARD_NAMES + ['new_module::new_case']))
+        for count in [None, True, 0, 1, 4, -1, 2.0]:
+            with self.subTest(count=count), self.assertRaises(RuntimeError):
+                self.runner.runtime_partition(RUNTIME_SHARD_NAMES, count)
+        for names in [[], ['single_root'], ['first::one', 'second::two'],
+                      ['arrays::one', 'typed_arrays::two', 'independent::three']]:
+            with self.subTest(names=names), self.assertRaises(RuntimeError):
+                self.runner.runtime_partition(names, 3)
+
+    def test_three_shard_preparation_rejects_third_listing_overlap_missing_and_errors(self):
+        invocation = {'package': 'spite-runtime', 'cwd': '/fixture/b',
+                      'command': ['/fixture/integration-0123456789abcdef',
+                                  '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+                      'changed_environment': {'changed': 'after'},
+                      'removed_environment': ['removed']}
+        baseline = {'kept': 'same', 'changed': 'before', 'removed': 'gone'}
+        full = 'alpha::one: test\nbeta::two: test\ngamma::three: test\n\n3 tests, 0 benchmarks\n'
+        first = 'alpha::one: test\n\n1 test, 0 benchmarks\n'
+        second = 'beta::two: test\n\n1 test, 0 benchmarks\n'
+        third = 'gamma::three: test\n\n1 test, 0 benchmarks\n'
+        cases = {
+            'third overlaps first': [(0, full), (0, full), (0, first), (0, second), (0, first)],
+            'third overlaps second': [(0, full), (0, full), (0, first), (0, second), (0, second)],
+            'third missing': [(0, full), (0, full), (0, first), (0, second),
+                              (0, '0 tests, 0 benchmarks\n')],
+            'third duplicate': [(0, full), (0, full), (0, first), (0, second),
+                                (0, 'gamma::three: test\ngamma::three: test\n\n2 tests, 0 benchmarks\n')],
+            'third truncated': [(0, full), (0, full), (0, first), (0, second),
+                                (0, 'gamma::three: test\n')],
+            'third failed': [(0, full), (0, full), (0, first), (0, second), (101, third)],
+        }
+        for index in range(3):
+            for label, responses in cases.items():
+                with self.subTest(index=index, case=label):
+                    remaining = iter(responses)
+
+                    def listed(command, **kwargs):
+                        self.assertEqual(command[-1], '--list', 'No Native before all five lists pass')
+                        self.assertEqual(kwargs['cwd'], invocation['cwd'])
+                        self.assertEqual(kwargs['env'], {'kept': 'same', 'changed': 'after'})
+                        status, output = next(remaining)
+                        return subprocess.CompletedProcess(command, status, stdout=output)
+
+                    with mock.patch.object(self.runner, 'run_command', side_effect=listed) as child, \
+                         mock.patch('builtins.print'), self.assertRaises(RuntimeError):
+                        self.runner.prepare_runtime_shard([invocation], index, baseline, 3)
+                    self.assertEqual(child.call_count, 5)
+        for index, count in [(2, 2), (3, 3), (-1, 3), (True, 3), (0, 1), (0, True)]:
+            with self.subTest(index=index, count=count), \
+                 mock.patch.object(self.runner, 'run_command') as child, self.assertRaises(RuntimeError):
+                self.runner.prepare_runtime_shard([invocation], index, baseline, count)
+            child.assert_not_called()
+
+    def test_three_shard_commands_keep_quoted_utf16_bounds_before_native(self):
+        names = ['alpha::one', 'beta::two', '\U00010400::three']
+        full = ''.join(name + ': test\n' for name in names) + '\n3 tests, 0 benchmarks\n'
+        parts = [name + ': test\n\n1 test, 0 benchmarks\n' for name in names]
+        invocation = {'package': 'spite-runtime', 'cwd': '/fixture/b',
+                      'command': ['C:/Program Files/spite/integration-0123456789abcdef.exe',
+                                  '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+                      'changed_environment': {}, 'removed_environment': []}
+        guard = self.runner.guard_windows_command
+        responses = iter([full, full, *parts])
+        commands = []
+
+        def listed(command, **kwargs):
+            self.assertEqual(command[-1], '--list', 'Preparation must only list tests')
+            self.assertEqual(kwargs['cwd'], invocation['cwd'])
+            self.assertEqual(kwargs['env'], {'private': 'unchanged'})
+            commands.append(command)
+            return subprocess.CompletedProcess(command, 0, stdout=next(responses))
+
+        with mock.patch.object(self.runner, 'guard_windows_command',
+                               side_effect=lambda command: guard(command, windows=True)), \
+             mock.patch.object(self.runner.subprocess, 'run', side_effect=listed) as child, \
+             mock.patch('builtins.print'):
+            original, selected, metadata, plan = self.runner.prepare_runtime_shard(
+                [invocation], 2, {'private': 'unchanged'}, 3)
+        self.assertIs(original, invocation)
+        self.assertEqual(child.call_count, 5)
+        self.assertEqual(plan['shards'], [[name] for name in names])
+        self.assertEqual(metadata['count'], 3)
+        self.assertEqual(metadata['index'], 2)
+        self.assertEqual(metadata['listing_counts'], [3, 3, 1, 1, 1])
+        expected_units = [len(subprocess.list2cmdline(command).encode('utf-16-le')) // 2 + 1
+                          for command in commands]
+        self.assertEqual(metadata['listing_command_utf16_units'], expected_units)
+        native = [invocation['command'] + [argument for prefix in skips
+                                          for argument in ['--skip', prefix]]
+                  for skips in plan['skips']]
+        self.assertEqual(selected['command'], native[2])
+        self.assertEqual(metadata['native_command_utf16_units'],
+                         [guard(command, windows=True) for command in native])
+        self.assertTrue(all(0 < units <= 32767 for units in expected_units))
+
+        # Every two-prefix complement is too large. The full listings fit,
+        # but the first filtered command must fail before its child is spawned.
+        huge_names = [letter * 17000 + '::case' for letter in ['a', 'b', 'c']]
+        huge = ''.join(name + ': test\n' for name in huge_names) + '\n3 tests, 0 benchmarks\n'
+        with mock.patch.object(self.runner, 'guard_windows_command',
+                               side_effect=lambda command: guard(command, windows=True)), \
+             mock.patch.object(self.runner.subprocess, 'run', return_value=
+                               subprocess.CompletedProcess([], 0, stdout=huge)) as child, \
+             mock.patch('builtins.print'), self.assertRaisesRegex(RuntimeError, '32767'):
+            self.runner.prepare_runtime_shard([invocation], 2, {}, 3)
+        self.assertEqual(child.call_count, 2)
+        self.assertTrue(all(call.args[0][-1] == '--list' for call in child.call_args_list))
+
+    def test_three_shard_cli_rejects_invalid_scope_before_toolchain_or_collection(self):
+        cases = [
+            (['--suite', 'rest', '--runtime-shard', '2'], 'must be less than'),
+            (['--suite', 'rest', '--runtime-shard', '2', '--runtime-shard-count', '2'],
+             'must be less than'),
+            (['--suite', 'rest', '--runtime-shard-count', '3'],
+             '--runtime-shard-count requires --suite rest and --runtime-shard'),
+            (['--suite', 'rest', '--runtime-shard-count', '2'],
+             '--runtime-shard-count requires --suite rest and --runtime-shard'),
+            (['--suite', 'core', '--runtime-shard', '2', '--runtime-shard-count', '3'],
+             '--runtime-shard requires --suite rest'),
+            (['--suite', 'all', '--runtime-shard-count', '3'], '--runtime-shard-count requires'),
+            (['--suite', 'rest', '--runtime-shard', '3', '--runtime-shard-count', '3'],
+             'invalid choice'),
+        ]
+        for mode in ['only', 'exclude']:
+            cases.append((['--suite', 'rest', '--runtime-integration', mode,
+                           '--runtime-shard-count', '3'],
+                          '--runtime-integration requires --suite rest without Runtime shard options'))
+        for count in ['0', '1', '4', '-1', 'invalid']:
+            cases.append((['--suite', 'rest', '--runtime-shard', '0',
+                           '--runtime-shard-count', count], 'invalid'))
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments), \
+                 mock.patch.object(sys, 'argv', [str(RUNNER), '--toolchain', 'stable', *arguments]), \
+                 mock.patch('sys.stderr') as diagnostic, \
+                 mock.patch.object(self.runner.subprocess, 'check_output') as compiler, \
+                 mock.patch.object(self.runner, 'run_command') as child:
+                with self.assertRaises(SystemExit) as rejected:
+                    self.runner.main()
+                self.assertEqual(rejected.exception.code, 2)
+                self.assertIn(expected, ''.join(call.args[0] for call in diagnostic.write.call_args_list))
+                compiler.assert_not_called()
+                child.assert_not_called()
 
 
 if __name__ == '__main__':

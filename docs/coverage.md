@@ -15114,3 +15114,39 @@ The expected Native total is 5,581: 1,022 Core and 4,559 REST. There are 905
 Rust sources, with all 898 unowned Rust files and 734 snapshots byte-identical.
 The existing 15,098-variant corpus, pin, helpers, three-worker gate and ordinary
 runtime defaults remain unchanged.
+
+## Three Windows Runtime partitions
+
+Windows schedules the complete Runtime integration inventory across three jobs
+per toolchain. The separate non-Runtime REST job retains sole ownership of
+the other REST targets; the first Runtime job retains workspace documentation
+tests. Linux commands, profiles, native stacks, cache eligibility, and all four
+complete pinned-corpus gates remain unchanged.
+
+The collector retains its two-partition default and accepts an explicit count
+of three. Collision components stay together. Before any test replay, five
+successful listings establish the full inventory, original command selection,
+and all three complement selections. Every observed partition must match its
+plan; the three partitions must be disjoint and their multiset union must equal
+the complete inventory. Actual test verdicts and child exit status remain
+authoritative. Every Windows listing and replay command retains the UTF-16
+command-length guard.
+
+The matrix contains nineteen jobs, 116 Native invocations, fourteen workspace
+phases, four documentation gates, and four full 15,098-variant corpus gates.
+The 5,581 Native names, all 905 Rust sources, and all 734 snapshot files are
+unchanged. The framework retains every existing assertion and adds six tests:
+37 collector, eleven Runtime-inventory, and nineteen Parser-inventory tests.
+New cases exercise all three partitions on both Rust versions, original
+artifact/environment context, failed and missing execution, third-listing
+errors, invalid CLI combinations, and Windows command bounds.
+
+The extra jobs repeat cold collection and add scheduling and listing work.
+Shorter individual test partitions do not establish faster overall CI; the
+complete hosted result and total runner time must be assessed separately.
+
+All 67 framework tests pass locally, as do formatting, cached workspace Clippy
+with denied warnings, dependency policy, and all three inventory checks.
+Unchanged production sources retain their preceding Runtime, documentation,
+and corpus validation; these suites were not redundantly rerun for this tooling
+change. The complete nineteen-job hosted matrix remains required.

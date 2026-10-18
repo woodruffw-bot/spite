@@ -64,8 +64,10 @@ def parse_test_listing(output):
     return sorted(names)
 
 
-def runtime_partition(names):
+def runtime_partition(names, count=2):
     """Keep every substring-colliding module prefix in the same shard."""
+    if type(count) is not int or count not in (2, 3):
+        raise RuntimeError('Runtime partition count must be two or three')
     names = sorted(names)
     if not names or len(names) != len(set(names)):
         raise RuntimeError('Runtime inventory must contain unique test names')
@@ -94,16 +96,19 @@ def runtime_partition(names):
         members = [name for name in names if owners[name] in filters]
         components.append((filters, members))
     components.sort(key=lambda row: (-len(row[1]), row[0][0]))
-    shards, filters = [[], []], [[], []]
+    shards = [[] for _ in range(count)]
+    filters = [[] for _ in range(count)]
     for component_filters, members in components:
-        index = min(range(2), key=lambda i: (len(shards[i]), i))
+        index = min(range(count), key=lambda i: (len(shards[i]), i))
         shards[index].extend(members)
         filters[index].extend(component_filters)
     shards = [sorted(shard) for shard in shards]
     if not all(shards):
-        raise RuntimeError('Runtime partition requires two nonempty collision components')
-    skips = [sorted(filters[1]), sorted(filters[0])]
-    for index in range(2):
+        required = 'two' if count == 2 else 'three'
+        raise RuntimeError(f'Runtime partition requires {required} nonempty collision components')
+    skips = [sorted(prefix for other, prefixes in enumerate(filters) if other != index
+                    for prefix in prefixes) for index in range(count)]
+    for index in range(count):
         selected = [name for name in names
                     if not any(prefix in name for prefix in skips[index])]
         if selected != shards[index]:
@@ -132,7 +137,11 @@ def invocation_environment(invocation, baseline):
     return environment
 
 
-def prepare_runtime_shard(invocations, index, baseline):
+def prepare_runtime_shard(invocations, index, baseline, count=2):
+    if type(count) is not int or count not in (2, 3):
+        raise RuntimeError('Runtime partition count must be two or three')
+    if type(index) is not int or not 0 <= index < count:
+        raise RuntimeError('Runtime shard index must be less than its partition count')
     invocation = validate_runtime_invocation(invocations)
     environment = invocation_environment(invocation, baseline)
     executable = invocation['command'][0]
@@ -161,18 +170,20 @@ def prepare_runtime_shard(invocations, index, baseline):
     if listing(invocation['command'] + ['--list']) != names:
         reject('The original Runtime arguments filter the complete inventory')
     try:
-        plan = runtime_partition(names)
+        plan = runtime_partition(names, count)
     except RuntimeError as error:
         reject(str(error))
     commands = [invocation['command'] +
                 [argument for prefix in skips for argument in ['--skip', prefix]]
                 for skips in plan['skips']]
     observed = [listing(command + ['--list']) for command in commands]
-    if observed != plan['shards'] or set(observed[0]) & set(observed[1]) \
-            or sorted(observed[0] + observed[1]) != names:
+    if observed != plan['shards'] or any(
+            set(observed[left]) & set(observed[right])
+            for left in range(count) for right in range(left + 1, count)) \
+            or Counter(name for shard in observed for name in shard) != Counter(names):
         reject('Actual Runtime shard listings are not a disjoint complete partition')
     metadata = {'schema': 1, 'algorithm': 'substring-components-greedy-v1',
-                'index': index, 'count': 2, 'full_count': len(names),
+                'index': index, 'count': count, 'full_count': len(names),
                 'full_sha256': names_hash(names),
                 'partition_counts': [len(shard) for shard in observed],
                 'partition_sha256': [names_hash(shard) for shard in observed],
@@ -314,8 +325,10 @@ def main():
                         help='Collect workspace library tests when they cover the complete Core suite')
     parser.add_argument('--optimize-runtime', action='store_true',
                         help='Compile spite-runtime at opt-level 1 for this run')
-    parser.add_argument('--runtime-shard', type=int, choices=[0, 1],
-                        help='Opt into one of two complete Runtime integration partitions')
+    parser.add_argument('--runtime-shard', type=int, choices=[0, 1, 2],
+                        help='Opt into one complete Runtime integration partition')
+    parser.add_argument('--runtime-shard-count', type=int, choices=[2, 3],
+                        help='Select two or three Runtime partitions (default: 2)')
     parser.add_argument('--rest-shard', type=int, choices=[0, 1],
                         help='Select the Runtime shard owning other REST tests (default: 0)')
     parser.add_argument('--runtime-integration', choices=['only', 'exclude'],
@@ -323,12 +336,19 @@ def main():
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     if args.runtime_integration is not None and (args.suite != 'rest' or
-            args.runtime_shard is not None or args.rest_shard is not None):
+            args.runtime_shard is not None or args.rest_shard is not None or
+            args.runtime_shard_count is not None):
         parser.error('--runtime-integration requires --suite rest without Runtime shard options')
     if args.rest_shard is not None and (args.suite != 'rest' or args.runtime_shard is None):
         parser.error('--rest-shard requires --suite rest and --runtime-shard')
     if args.runtime_shard is not None and args.suite != 'rest':
         parser.error('--runtime-shard requires --suite rest')
+    if args.runtime_shard_count is not None and (
+            args.suite != 'rest' or args.runtime_shard is None):
+        parser.error('--runtime-shard-count requires --suite rest and --runtime-shard')
+    shard_count = 2 if args.runtime_shard_count is None else args.runtime_shard_count
+    if args.runtime_shard is not None and args.runtime_shard >= shard_count:
+        parser.error('--runtime-shard must be less than --runtime-shard-count (default: 2)')
     if args.collect_core_libs and args.suite != 'core':
         parser.error('--collect-core-libs requires --suite core')
     rest_shard = 0 if args.rest_shard is None else args.rest_shard
@@ -421,7 +441,7 @@ def main():
             print(f'Runtime integration replay: excluded; {len(others)} other REST invocations', flush=True)
         elif args.runtime_shard is not None:
             original, runtime, shard_metadata, shard_plan = prepare_runtime_shard(
-                invocations, args.runtime_shard, baseline)
+                invocations, args.runtime_shard, baseline, shard_count)
             if args.runtime_shard == rest_shard:
                 others = [row for row in selected if row is not original]
                 batches = [others, [runtime]]
