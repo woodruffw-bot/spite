@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7713 unmodified test fixtures and twelve harness files come from
+These 7829 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -13,6 +13,41 @@ ordinary native stacks, and runtime defaults with JavaScript quotas disabled.
 Reports retain manifest order and every per-variant outcome. I/O, review, and
 thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
+
+## Ordinary DataView fixtures
+
+One hundred sixteen unchanged complete originals cover constructor and intrinsic
+metadata, state getters, and numeric access. They retain all 163,095 upstream
+bytes at the existing pin. Each source has Script and StrictScript variants:
+232 additional required harness-positive outcomes. All 22 numeric-method
+directories are represented, including Float16 and both BigInt kinds.
+
+The programs check branding, constructor/prototype coercion order, fixed and
+length-tracking resizable views, exact numeric read patterns, endianness,
+representative stores, and offset/value conversions. The selected setBigUint64
+original checks successful writes and out-of-bounds rejection; it does not add
+an independent unsigned 64-bit byte-pattern oracle. Native tests retain that
+coverage. Five existing helpers suffice: assert.js, sta.js, propertyHelper.js,
+isConstructor.js, and byteConversionValues.js. All twelve harness files, the
+license, and revision remain unchanged.
+
+The inventory contains 7829 fixtures, twelve helpers, 7810 reviewed sources and
+15098 required variants: 13565 harness positives, 1525 parse negatives, four
+raw positives and four runtime negatives. Every prior row and original remains
+unchanged, with two full-corpus workers and no default JavaScript quotas.
+
+Reviewed originals requiring global own-key enumeration, $262 detachment or
+cross-realm hooks, SharedArrayBuffer, or immutable buffers remain deferred. One
+byteOffset original also remains deferred because an undeclared BPE inside a
+catch prevents its claimed shrink branch from running. No original is repaired
+or partially executed to obtain coverage credit.
+
+Stable and Rust 1.85 conformance builds each pass all 35 package tests across
+seven target invocations, including all 15098 required variants from 7810
+sources with every non-passing outcome category at zero. All 232 new variants
+run as complete originals; no source, assertion, or input is reduced.
+Both package documentation checks, formatting, stable workspace Clippy with
+denied warnings, dependency policy and fixture/integration inventories pass.
 
 ## ArrayBuffer foundation fixtures
 
@@ -32,7 +67,8 @@ agents, cross-realm or detachment host hooks, or immutable-buffer APIs. They do
 not add execution coverage for the buffer-content operations that require those
 other prerequisites.
 
-The inventory contains 7713 fixtures, twelve helpers, 7694 reviewed sources and
+At this admission, the inventory contained 7713 fixtures, twelve helpers,
+7694 reviewed sources and
 14866 variants: 13333 harness positives, 1525 parse negatives, four raw positives
 and four runtime negatives. All prior inventory rows and original files remain
 unchanged; the full-corpus gate retains two workers and no default resource quotas.

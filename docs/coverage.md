@@ -46,7 +46,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 14866 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15098 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -14994,3 +14994,45 @@ with denied warnings passes. The expected Native total is 5,528: 1,022 Core
 and 4,506 REST. There are 901 Rust sources; all 734 snapshot files, the inspected
 constructor metadata snapshot, and the 14,866-variant reviewed corpus remain
 unchanged. This increment adds no dependency, upstream fixture, or default quota.
+
+## Ordinary DataView fixtures
+
+One hundred sixteen complete unchanged Test262 originals retain all 163,095
+upstream bytes at the existing revision. The cohort comprises 35 constructor
+and intrinsic sources, one tag descriptor, 27 state-getter sources, and 53
+numeric-method sources. All use the default Script and StrictScript variants,
+adding 232 required harness-positive outcomes. Each of the 22 numeric-method
+directories is represented, including Float16 and both BigInt kinds.
+
+The programs cover branding, exact constructor/prototype coercion order, fixed
+and length-tracking resizable views, state getter semantics, numeric read byte
+patterns, explicit/coerced endianness, representative stores, single-byte
+conversion tables, and offset/value conversions. The selected setBigUint64
+program checks successful writes and out-of-bounds rejection; it does not add
+an independent unsigned 64-bit byte-pattern oracle. Existing native tests
+retain that coverage. Small resizable-buffer programs keep their original
+permitted-host-failure catches, without claiming every caught branch ran.
+
+Five existing helpers suffice; all twelve harness files, the BSD license and
+revision remain byte-exact. Int8Array and Uint8Array constructor/index support
+allow complete original assertions without rewriting them. Existing inventory
+rows and fixture bytes remain unchanged. The corpus contains 7829 fixtures,
+7810 reviewed sources and 15098 variants: 13565 harness positives, 1525 parse
+negatives, four raw positives and four runtime negatives.
+
+Reviewed programs requiring global enumeration, detachment or cross-realm host
+hooks, shared buffers, or immutable buffers remain deferred. Another byteOffset
+original uses an undeclared BPE in a swallowed exception, preventing its claimed
+within-bounds shrink; it is deferred without editing the source or crediting
+that branch. No Unsupported outcome counts as a passing negative.
+
+Stable and Rust 1.85 conformance builds each pass all 35 package tests across
+seven target invocations. Both full gates pass all 15098 variants from 7810
+sources, including all 232 new variants, with every other outcome category zero.
+The two-worker corpus cases take 400.50 seconds and 434.43 seconds respectively;
+these are execution times, excluding compilation. Default limits, ordinary
+native stacks, existing helpers, and every previously admitted program remain
+unchanged. Runtime bytes and all 734 snapshot files are retained exactly.
+Both package documentation checks, formatting, fresh changed-package workspace
+Clippy with denied warnings, policy, inventory and diff checks pass. No upstream
+pin, dependency, production algorithm, or default resource limit changes.
