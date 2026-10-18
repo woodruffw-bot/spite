@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; Uint8Array encodings remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal conversion; Base64 methods remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -15250,3 +15250,29 @@ The prior bounded Cargo 1.85 cleanup review supplies the freshness basis; the
 mocks supply no artifact-freshness or performance credit. New archives need a
 cold seed followed by a compatible real source-changing run before warm
 restoration or speed can be assessed.
+
+## Uint8Array hexadecimal conversion
+
+Eighteen integration groups cover fromHex, setFromHex, and toHex: all byte
+values, ASCII case and lowercase output, primitive-string requirements,
+exact Uint8 branding, subclasses, intrinsic allocation, public-state overrides,
+empty and odd input, invalid pairs and partial writes, ignored suffixes,
+read/written descriptors, live resizable bounds, sparse page boundaries and
+safe-integer offsets, collection, and explicit argument/string/work limits.
+
+Five private units exercise the decoder matrix with an inline insta snapshot,
+all byte values and invalid UTF-16 code units, bounded work, and ordering under
+an explicitly full heap. The original 5,000-step work fixture keeps its limit
+and prepares sparse writes in separate evaluations. No new intrinsic object,
+dependency, upstream fixture, default resource quota, or sidecar snapshot is
+introduced. Base64 methods remain a separate implementation increment.
+
+Stable passes all 364 Runtime units, the 18 new integration groups, and the
+full 3,786-case integration suite. Rust 1.85 passes all 364 units and the 18
+new groups. These runs preceded a private enum-variant rename required by
+Clippy; inverse replacement restores the entire tested module exactly, with
+all other Rust sources unchanged. Fresh all-target workspace Clippy checks
+the renamed source successfully. Both Runtime documentation checks,
+formatting, policy, and all three inventories pass. No second full integration
+run is claimed. The expected Native total is 5,629: 1,022 Core and 4,607 REST.
+There are 909 Rust files, with 902 unowned files and all 734 snapshots unchanged.

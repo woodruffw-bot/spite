@@ -420,6 +420,13 @@ impl Realm {
                 return self.typed_array_method(method, receiver, arguments, span);
             }
         }
+        if let Member::Uint8Encoding(index) = member {
+            if let Some(method) =
+                super::uint8_hex::Method::from_name(UINT8_METHODS[usize::from(index)].0)
+            {
+                return self.uint8_hex_method(method, receiver, arguments, span);
+            }
+        }
         let unsupported_owner = match member {
             Member::Deferred(_) => Some("TypedArray.prototype"),
             Member::Uint8Encoding(index) => Some(if UINT8_METHODS[usize::from(index)].2 {

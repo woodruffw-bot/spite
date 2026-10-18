@@ -148,7 +148,7 @@ impl Realm {
             })
     }
 
-    fn allocate_typed_array(
+    pub(super) fn allocate_typed_array(
         &mut self,
         element: ElementType,
         prototype: &ObjectHandle,

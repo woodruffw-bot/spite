@@ -7709,6 +7709,28 @@ range and ordinary live indexed-set behavior, without an extra validation or
 deletion phase. Copies use numeric values rather than promising raw NaN payload
 preservation. Work, heap, and BigInt quotas remain caller-selected.
 
+## Uint8Array hexadecimal conversion
+
+fromHex, setFromHex, and toHex implement the hexadecimal operations in
+23.3.1.2, 23.3.2.2/.4, and 23.3.3.8. Decoders require a primitive String
+without coercion. Instance methods require the exact Uint8 element kind,
+including subclasses, and use live internal bounds rather than public state.
+The static decoder ignores its this value and uses the retained intrinsic
+constructor after successful decoding.
+
+Input parity is checked before destination capacity, even at capacity zero.
+Only ASCII hexadecimal pairs are accepted. A setter decodes up to its current
+capacity, writes complete valid pairs before an examined invalid pair, then
+throws SyntaxError. An unexamined even-length suffix is ignored. Normal setter
+results are ordinary objects with ordered, writable, enumerable, configurable
+read and written properties. Options are unused.
+
+toHex emits lowercase ASCII. Checked doubled length and any caller-selected
+string limit are tested before scanning a large sparse view. Scratch storage
+and byte I/O use checked sizes, fallible reservation, and bounded work.
+Malformed input remains a JavaScript exception; optional host work, allocation,
+and output limits retain their separate error channel and ordinary defaults.
+
 ## Date time values
 
 Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).

@@ -536,11 +536,8 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
     for expression in [
         "Uint8Array.fromBase64('')",
-        "Uint8Array.fromHex('')",
         "new Uint8Array(1).setFromBase64('')",
-        "new Uint8Array(1).setFromHex('')",
         "new Uint8Array(1).toBase64()",
-        "new Uint8Array(1).toHex()",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
