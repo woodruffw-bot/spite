@@ -15036,3 +15036,26 @@ unchanged. Runtime bytes and all 734 snapshot files are retained exactly.
 Both package documentation checks, formatting, fresh changed-package workspace
 Clippy with denied warnings, policy, inventory and diff checks pass. No upstream
 pin, dependency, production algorithm, or default resource limit changes.
+
+## Three-worker pinned corpus gate
+
+The pinned full-corpus test now uses three workers. The library's `run_corpus`
+API and CLI remain serial. Independent realms, original fixtures and assertions,
+profiles, ordinary native stacks, report order, failure propagation, and every
+non-passing category check remain unchanged. No JavaScript quota is added.
+
+Stable and Rust 1.85 each pass all 35 Test262 package tests across seven target
+invocations, including all 15098 variants from 7810 reviewed sources. Execution
+of the corpus case changed from 400.50s to 368.43s on stable and 434.43s to
+365.71s on Rust 1.85 in separate complete local runs. Prebuilds precede timing;
+no compiler process or compilation/checking output was observed during timing.
+These measurements describe those runs, without predicting hosted CI elapsed
+time or attributing all variation to parallelism.
+
+Process memory high-water measurements were 7.38 GiB on stable and 6.96 GiB
+on Rust 1.85. Sampled whole-environment memory, including file cache, peaked
+at 14.50 GiB under a 16 GiB constraint; no new high/max/OOM events occurred.
+The standard public CI runners have four CPUs and 16 GB allocated memory;
+actual free memory and platform behavior still require the complete hosted
+gates. All 5528 Native test names, 734 snapshot files, fixture and harness
+bytes, Runtime sources, dependencies and default limits remain unchanged.

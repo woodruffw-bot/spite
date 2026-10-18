@@ -8,11 +8,25 @@ These 7829 unmodified test fixtures and twelve harness files come from
 ## Full-corpus execution
 
 The pinned full-corpus gate runs every reviewed source and required Script
-variant with two workers. Each evaluated variant uses an independent realm,
+variant with three workers. Each evaluated variant uses an independent realm,
 ordinary native stacks, and runtime defaults with JavaScript quotas disabled.
 Reports retain manifest order and every per-variant outcome. I/O, review, and
 thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
+
+The gate uses three workers on the standard four-CPU public CI runners. Both
+stable and Rust 1.85 pass all 35 package tests across seven targets, including
+all 15098 variants, with every non-passing outcome at zero. With identical
+inputs, profiles, assertions and ordinary stacks, local corpus execution changed
+from 400.50s to 368.43s on stable and 434.43s to 365.71s on Rust 1.85. These
+individual observations do not guarantee the same gain on other machines.
+
+Parallelism costs memory: the observed corpus process high-water marks were
+7.38 GiB on stable and 6.96 GiB on Rust 1.85. The local environment's sampled
+memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint,
+with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
+no compiler activity was observed. No fixtures, assertions, profiles, native
+stacks, helpers, dependencies or JavaScript resource defaults change.
 
 ## Ordinary DataView fixtures
 
@@ -31,10 +45,11 @@ coverage. Five existing helpers suffice: assert.js, sta.js, propertyHelper.js,
 isConstructor.js, and byteConversionValues.js. All twelve harness files, the
 license, and revision remain unchanged.
 
-The inventory contains 7829 fixtures, twelve helpers, 7810 reviewed sources and
-15098 required variants: 13565 harness positives, 1525 parse negatives, four
-raw positives and four runtime negatives. Every prior row and original remains
-unchanged, with two full-corpus workers and no default JavaScript quotas.
+At this admission, the inventory contained 7829 fixtures, twelve helpers,
+7810 reviewed sources and 15098 required variants: 13565 harness positives,
+1525 parse negatives, four raw positives and four runtime negatives. Every prior
+row and original remains unchanged, with two full-corpus workers at admission
+and no default JavaScript quotas.
 
 Reviewed originals requiring global own-key enumeration, $262 detachment or
 cross-realm hooks, SharedArrayBuffer, or immutable buffers remain deferred. One
