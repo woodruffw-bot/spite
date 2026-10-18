@@ -2581,4 +2581,93 @@ mod tests {
         assert_eq!(found.capture(2), None);
         assert_eq!(found.capture(3), None);
     }
+
+    #[test]
+    fn raw_empty_single_character_v_string_repetition_capture_work_remains_incremental() {
+        for (pattern, input, start, wanted, inner, capture_charge) in [
+            (
+                r"((?:([\q{\uD83D\uDE00}]|)))+",
+                JsString::from("😀".repeat(128).as_str()),
+                1usize,
+                0..256,
+                Some(254..256),
+                Some(2),
+            ),
+            (
+                r"((?:([\q{a}--a]|)))+",
+                JsString::from("z"),
+                0,
+                0..0,
+                Some(0..0),
+                Some(1),
+            ),
+            (
+                r"((?:([\q{a}]|)))*?",
+                JsString::from("a"),
+                0,
+                0..0,
+                None,
+                None,
+            ),
+        ] {
+            let source = JsString::from(pattern);
+            let body = RegExpUnicodeRepeatedAtomMatcher::compile_nullable_v_set_with_single_character_strings_and_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), std::convert::Infallible>(()),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(body.capture_count(), 2);
+            let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeRepeatedAtom(body), 2);
+            assert_eq!(matcher.capture_count(), 4);
+            assert_eq!(matcher.search_passes(true), 0);
+            assert_eq!(matcher.search_passes(false), 0);
+            for source_len in [0, source.len(), usize::MAX] {
+                for sticky in [false, true] {
+                    assert_eq!(
+                        matcher.search_work(sticky, source_len, input.len()),
+                        input.len()
+                    );
+                    assert_eq!(
+                        matcher.search_work(sticky, source_len, usize::MAX),
+                        usize::MAX
+                    );
+                }
+            }
+            let mut complete = Vec::new();
+            let found = matcher
+                .find_with_work(&input, start, true, |amount| {
+                    complete.push(amount);
+                    Ok::<(), usize>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert!(!complete.is_empty());
+            assert_eq!(found.range, wanted);
+            assert_eq!(found.capture_count, 4);
+            assert_eq!(found.capture(0), Some(wanted.clone()));
+            assert_eq!(found.capture(1), Some(wanted));
+            assert_eq!(found.capture(2), inner);
+            assert_eq!(found.capture(3), inner);
+            assert_eq!(found.capture(4), None);
+            if let Some(charge) = capture_charge {
+                // Mandatory empty capture extraction charges one unit; a
+                // complete final supplementary character charges two units.
+                assert_eq!(complete.last(), Some(&charge));
+                let mut seen = Vec::new();
+                let result = matcher.find_with_work(&input, start, true, |amount| {
+                    seen.push(amount);
+                    if seen.len() == complete.len() {
+                        Err(seen.len())
+                    } else {
+                        Ok(())
+                    }
+                });
+                assert!(matches!(result, Err(at) if at == complete.len()));
+                assert_eq!(seen, complete);
+            }
+        }
+    }
 }

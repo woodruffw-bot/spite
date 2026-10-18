@@ -9079,11 +9079,23 @@ fn wrapped_single_character_v_string_repetition_state_context_and_consumers() {
             "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
         ));
     }
+    {
+        let source = r"/([\q{a}]|)+/v.test('a')";
+        let mut realm = Realm::default();
+        realm.eval("var marker=0").unwrap();
+        assert_eq!(
+            realm.eval(&format!(
+                "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
+            )),
+            Ok(Value::Boolean(true)),
+            "{source}"
+        );
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
+    }
     for source in [
         r"/([\q{a}]b)+/v.test('ab')",
         r"/(a[\q{b}])+/v.test('ab')",
         r"/([\q{a}]|b)+/v.test('ab')",
-        r"/([\q{a}]|)+/v.test('a')",
         r"/(\b[\q{a}])+/v.test('a')",
         r"/([\q{a}]\b)+/v.test('a')",
         r"/(^[\q{a}])+/v.test('a')",
@@ -9210,6 +9222,215 @@ fn wrapped_single_character_v_string_repetition_results() {
         (
             r#"(?<whole>(?<unit>([\q{b}])){2})"#,
             JsString::from_code_units(vec![97, 97, 98, 98]),
+            "dvy",
+            0usize,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+    ] {
+        let script = format!(
+            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+        );
+        let Value::String(result) = Realm::default().eval(&script).unwrap() else {
+            panic!("{script}")
+        };
+        assert_eq!(result, JsString::from(expected), "{script}");
+        writeln!(
+            rows,
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
+            input.code_units()
+        )
+        .unwrap();
+        row_count += 1;
+    }
+    assert_eq!(row_count, 10);
+    insta::assert_snapshot!(rows);
+}
+
+#[test]
+fn raw_empty_single_character_v_string_repetition_state_context_and_consumers() {
+    check(
+        r#"let a=/([\q{a}]|)*/dv.exec('aaa!'),b=/([\q{a}]|)*?/dv.exec('aaa!'),c=/([\q{a}]|)?/dv.exec('aaa!'),d=/([\q{a}]|)??/dv.exec('aaa!');a[0]==='aaa'&&a[1]==='a'&&b[0]===''&&b[1]===undefined&&c[0]==='a'&&d[0]===''&&d[1]===undefined"#,
+    );
+    check(
+        r#"let a=/(?<whole>(?<unit>([\q{a}--a]|))+)/dv.exec('z'),b=/(?<whole>(?<unit>([\q{a}]|))*?)/dv.exec('a');a[0]===''&&a.groups.whole===''&&a[2]===''&&a[3]===''&&a.groups.unit===''&&a.indices[2][0]===0&&a.indices[2][1]===0&&b.groups.whole===''&&b[2]===undefined&&b[3]===undefined&&Object.hasOwn(b,'2')&&Object.hasOwn(b.indices,'3')&&Object.hasOwn(b.groups,'unit')&&b.groups.unit===undefined&&Object.hasOwn(b.indices.groups,'unit')&&b.indices.groups.unit===undefined"#,
+    );
+    check(
+        r#"let a=/([\q{a}]|)+?\b/dv.exec('aa!'),b=/(|[\q{a}])+?/dv.exec('a'),c=/([\q{a}]|)+?/dv.exec('baaa');a.index===0&&a[0]==='aa'&&a[1]==='a'&&a.indices[1][0]===1&&b[0]===''&&b[1]===''&&c.index===0&&c[0]===''&&c[1]===''"#,
+    );
+    check(r#"let m=/([\q{\||\)}]|)+/v.exec('|)');m[0]==='|)'&&m[1]===')'"#);
+    check(
+        r#"let r=/([\q{a}]|)+/vg,a=r.exec('aa!'),b=r.exec('aa!');a[0]==='aa'&&r.lastIndex===2&&b.index===2&&b[0]===''&&b[1]===''&&r.exec('aa!').index===2&&(r.lastIndex=4,r.exec('aa!')===null)&&r.lastIndex===0"#,
+    );
+    check(
+        r#"let r=/\B([\q{a}]|)+?\b/dvy;r.lastIndex=0;let a=r.exec('aaa!');r.lastIndex=1;let b=r.exec('aaa!');a===null&&b.index===1&&b[0]==='aa'&&b[1]==='a'&&b.indices[1][0]===2&&r.lastIndex===3"#,
+    );
+    check(
+        r#"let a=/^\b(|[\q{K}&&k])+?\b$/iv.exec('KK'),b=/([^\q{K|s}]|)+?/iv.exec('K!');a[0]==='KK'&&a[1]==='K'&&b.index===0&&b[0]===''&&b[1]===''"#,
+    );
+    check(
+        r#"let r=/\b([\q{\uD83D\uDE00}]|)+\B/dvy;r.lastIndex=2;let m=r.exec('A😀😀!');m.index===1&&m[0]==='😀😀'&&m[1]==='😀'&&m.indices[1][0]===3&&m.indices[1][1]===5&&r.lastIndex===5"#,
+    );
+    check(
+        r#"let r=/^\B(|[\q{\uD800}])+\B$/dgmvy;r.lastIndex=3;let m=r.exec('x\r\n\uD800\uD800\r\nz');m.index===3&&m[0].length===2&&m[1].length===1&&m[1].charCodeAt(0)===0xD800&&m.indices[1][0]===4&&m.indices[1][1]===5&&r.lastIndex===5"#,
+    );
+    check(
+        r#"let trace='',r=/([\q{a}]|)+?/vgy;r.lastIndex={valueOf(){trace+='i';return 0}};let m=r.exec({toString(){trace+='s';return 'aaa'}});trace==='si'&&m[0]==='a'&&m[1]==='a'&&r.lastIndex===1"#,
+    );
+    check(
+        r#"let seen=0,r=/([\q{a}]|)+/v;r.lastIndex={valueOf(){seen++;return 3}};r.exec('aaa')[1]==='a'&&seen===1&&typeof r.lastIndex==='object'"#,
+    );
+    check(
+        r#"let r=/([\q{K}&&k]|)+/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('K');c.source==='([\\q{K}&&k]|)+'&&c.flags==='dvy'&&m[0]===''&&m[1]===''&&c.lastIndex===0&&r.exec('K')[1]==='K'&&r.lastIndex===7"#,
+    );
+    check(
+        r#"let a=/([\q{a}]|)+/vy,b=/([\q{a}]|)+/vy;a.lastIndex=1;Object.defineProperty(a,'lastIndex',{writable:false});Object.defineProperty(b,'lastIndex',{writable:false});let x=false,y=false;try{a.exec('zaa')}catch(e){x=e instanceof TypeError}try{b.exec('z')}catch(e){y=e instanceof TypeError}x&&y&&a.lastIndex===1&&b.lastIndex===0"#,
+    );
+    check(
+        r#"let r=/(?<whole>(?<unit>([\q{a}]|))+)/dvg,a=[...'aa'.matchAll(r)];a.length===2&&a[0].groups.whole==='aa'&&a[0].groups.unit==='a'&&a[1].index===2&&a[1].groups.unit===''&&'aa'.replace(r,'<$<unit>>')==='<a><>'&&'aa'.split(/([\q{a}]|)+/v).join('|')==='|a|'&&r.lastIndex===0"#,
+    );
+    check(
+        r#"let r=/([\q{a}]|)+/vg;r.lastIndex=3;'ba'.search(r)===0&&r.lastIndex===3&&'aa'.match(r).join('|')==='aa|'&&r.lastIndex===0"#,
+    );
+    check(
+        r#"let r=/(?<unit>(|[\q{a}]))+?/dvg,a=[...'A😀B'.matchAll(r)];a.map(m=>m.index).join(',')==='0,1,3,4'&&a.every(m=>m[1]===''&&m[2]===''&&m.groups.unit===''&&Object.hasOwn(m.indices,'2'))&&r.lastIndex===0"#,
+    );
+    for pattern in [
+        r"([\q{\d}]|)+",
+        r"([^\q{ab}]|)*",
+        r"([\q{a}-b]|)+",
+        r"([\q{a}]|)**",
+    ] {
+        let code = JsString::from(format!("marker=1; /{pattern}/v.test('a');").as_str());
+        check(&format!(
+            "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
+        ));
+    }
+    for source in [
+        r"/([\q{a}]|){0}/v.test('')",
+        r"/([\q{a}]|){1,}/v.test('a')",
+        r"/(([\q{a}])|)+/v.test('a')",
+        r"/([\q{a}]|())+/v.test('a')",
+        r"/(?:[\q{a}]|(?:))+/v.test('a')",
+        r"/([\q{a}]||)+/v.test('a')",
+        r"/(|[\q{a}]|)+/v.test('a')",
+        r"/([\q{a}]|b)+/v.test('ab')",
+        r"/(\b[\q{a}]|)+/v.test('a')",
+        r"/([\q{a}]|\b)+/v.test('a')",
+        r"/([\q{a}]|)+b/v.test('ab')",
+        r"/a([\q{b}]|)+/v.test('ab')",
+        r"/([\q{}]|)+/v.test('')",
+        r"/([\q{a|bc}]|)*/v.test('')",
+        r"/([\q{a}&&[]&&\p{RGI_Emoji}]|)??/v.test('')",
+        r"/\b^([\q{a}]|)+/v.test('a')",
+        r"/([\q{a}]|)+$$/v.test('a')",
+        r"/\b\b([\q{a}]|)+/v.test('a')",
+        r"/([\q{a}]|)+\b\b/v.test('a')",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("var marker=0").unwrap();
+        assert!(
+            matches!(
+                realm.eval(&format!(
+                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
+                )),
+                Err(Error::Unsupported { .. })
+            ),
+            "{source}"
+        );
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+    }
+    let mut realm = Realm::default();
+    realm
+        .eval(r#"var kept=/(?<whole>(?<unit>([\q{a|b}]|))+)/dvg;kept.lastIndex=1"#)
+        .unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval(r#"kept.source==='(?<whole>(?<unit>([\\q{a|b}]|))+)'&&kept.lastIndex===1&&kept.exec('zabb!').groups.unit==='b'&&kept.lastIndex===4"#), Ok(Value::Boolean(true)));
+    // This opt-in allowance targets construction; search/capture work has a direct unit.
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30000),
+        ..Limits::default()
+    });
+    realm.eval("var r=7,marker=0").unwrap();
+    assert!(matches!(
+        realm
+            .eval(r#"try{r=/(?<whole>(?<unit>([\q{a}]|))+?$)/vg}catch{marker=1}finally{marker=2}"#),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("marker===0&&r===7"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn raw_empty_single_character_v_string_repetition_results() {
+    let mut rows = String::new();
+    let mut row_count = 0;
+    // Complete JSON, participation and UTF16 spans were frozen before this source.
+    for (pattern, input, flags, start, expected) in [
+        (
+            r#"(?<whole>(?<unit>([\q{a}--a]|))+)"#,
+            JsString::from_code_units(vec![122]),
+            "dvg",
+            0usize,
+            r#"{"matches":["","","",""],"index":0,"input":"z","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}--a]|))+)"}"#,
+        ),
+        (
+            r#"(?<whole>(?<unit>([\q{a}]|))*?)"#,
+            JsString::from_code_units(vec![97]),
+            "dvg",
+            0usize,
+            r#"{"matches":["","",null,null],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],null,null],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}]|))*?)"}"#,
+        ),
+        (
+            r#"(?<whole>(?<unit>([\q{a}]|))+?\b)"#,
+            JsString::from_code_units(vec![97, 97, 33]),
+            "dvg",
+            0usize,
+            r#"{"matches":["aa","aa","a","a"],"index":0,"input":"aa!","groups":{"whole":"aa","unit":"a"},"indices":[[0,2],[0,2],[1,2],[1,2]],"indexGroups":{"whole":[0,2],"unit":[1,2]},"lastIndex":2,"source":"(?<whole>(?<unit>([\\q{a}]|))+?\\b)"}"#,
+        ),
+        (
+            r#"(?<whole>(?<unit>(|[\q{a}]))+?)"#,
+            JsString::from_code_units(vec![97]),
+            "dvg",
+            0usize,
+            r#"{"matches":["","","",""],"index":0,"input":"a","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>(|[\\q{a}]))+?)"}"#,
+        ),
+        (
+            r#"(?<whole>(?<unit>([^\q{K|s}]|))+?)"#,
+            JsString::from_code_units(vec![8490, 33]),
+            "divg",
+            0usize,
+            r#"{"matches":["","","",""],"index":0,"input":"K!","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([^\\q{K|s}]|))+?)"}"#,
+        ),
+        (
+            r#"^(?<whole>\b(?<unit>(|[\q{K}&&k]))+?\b)$"#,
+            JsString::from_code_units(vec![8490, 75]),
+            "divg",
+            0usize,
+            r#"{"matches":["KK","KK","K","K"],"index":0,"input":"KK","groups":{"whole":"KK","unit":"K"},"indices":[[0,2],[0,2],[1,2],[1,2]],"indexGroups":{"whole":[0,2],"unit":[1,2]},"lastIndex":2,"source":"^(?<whole>\\b(?<unit>(|[\\q{K}&&k]))+?\\b)$"}"#,
+        ),
+        (
+            r#"(?<whole>\b(?<unit>([\q{\uD83D\uDE00}]|))+\B)"#,
+            JsString::from_code_units(vec![65, 55357, 56832, 55357, 56832, 33]),
+            "dvy",
+            2usize,
+            r#"{"matches":["😀😀","😀😀","😀","😀"],"index":1,"input":"A😀😀!","groups":{"whole":"😀😀","unit":"😀"},"indices":[[1,5],[1,5],[3,5],[3,5]],"indexGroups":{"whole":[1,5],"unit":[3,5]},"lastIndex":5,"source":"(?<whole>\\b(?<unit>([\\q{\\uD83D\\uDE00}]|))+\\B)"}"#,
+        ),
+        (
+            r#"^(?<whole>\B(?<unit>(|[\q{\uD800}]))+\B)$"#,
+            JsString::from_code_units(vec![120, 13, 10, 55296, 55296, 13, 10, 122]),
+            "dgmvy",
+            3usize,
+            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800","\ud800"],"index":3,"input":"x\r\n\ud800\ud800\r\nz","groups":{"whole":"\ud800\ud800","unit":"\ud800"},"indices":[[3,5],[3,5],[4,5],[4,5]],"indexGroups":{"whole":[3,5],"unit":[4,5]},"lastIndex":5,"source":"^(?<whole>\\B(?<unit>(|[\\q{\\uD800}]))+\\B)$"}"#,
+        ),
+        (
+            r#"(?<whole>\b(?<unit>([\q{a}--a]|))+\b)"#,
+            JsString::from_code_units(vec![]),
+            "dvg",
+            0usize,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+        (
+            r#"(?<whole>\B(?<unit>([\q{a}]|))+?\b)"#,
+            JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvy",
             0usize,
             r#"{"match":null,"lastIndex":0}"#,

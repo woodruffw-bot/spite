@@ -1778,6 +1778,132 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         Ok(None)
     }
 
+    /// Proves one raw empty branch and one complete singleton-q class branch.
+    ///
+    /// The complete Pattern must already be validated in v/vi mode and named
+    /// captures normalized. Complete nested ordinary/noncapturing wrappers
+    /// surround either the bare class then |, or | then the bare class. Only
+    /// *, + and ? are admitted, including their lazy forms. Canonical optional
+    /// outside ^, leading \b/\B, trailing \b/\B and $ keep whole-match scope.
+    ///
+    /// RepeatMatcher rejects optional empty iterations; a required empty plus
+    /// iteration instead retains defined empty inner captures. All q operands
+    /// must prove one-character alternatives before either path can succeed.
+    /// Branch-local captures/assertions, grouped empty branches, extra branches,
+    /// braced counts and string-valued leaves decline. Existing constructors,
+    /// nullable search, captures, work callbacks and storage remain unchanged.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Edge parity scans <=2N, both simple-token parity scans <=2N and
+        // both opener/closing walks <=4N; reserve 2N for boundary recognition.
+        // Braced tokens decline before the general quantifier helper is called.
+        charge(units.len().saturating_mul(10))
+            .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
+        let mut begin = usize::from(start_anchor);
+        let mut end = units.len() - usize::from(end_anchor);
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && !escaped(units, end - 2)
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        for (end, greedy) in [
+            (
+                body.len()
+                    .checked_sub(1)
+                    .filter(|_| body.last() == Some(&0x3f)),
+                false,
+            ),
+            (Some(body.len()), true),
+        ] {
+            let Some(end) = end else { continue };
+            if !end
+                .checked_sub(1)
+                .and_then(|at| body.get(at))
+                .is_some_and(|unit| matches!(*unit, 0x2a | 0x2b | 0x3f))
+            {
+                continue;
+            }
+            let Some((atom_end, minimum, maximum)) = quantifier(body, end) else {
+                continue;
+            };
+            let (mut at, mut wrappers, mut captures) = (0, 0, 0);
+            while body.get(at) == Some(&0x28) {
+                if body.get(at + 1) == Some(&0x3f) {
+                    if body.get(at + 2) != Some(&0x3a) {
+                        break;
+                    }
+                    at += 3;
+                } else {
+                    at += 1;
+                    captures += 1;
+                }
+                wrappers += 1;
+            }
+            let Some(inner_end) = atom_end.checked_sub(wrappers) else {
+                continue;
+            };
+            let Some(inner) = body.get(at..inner_end) else {
+                continue;
+            };
+            if wrappers == 0 || !body[inner_end..atom_end].iter().all(|&unit| unit == 0x29) {
+                continue;
+            }
+            let (leaf, order) = if let Some(leaf) = inner.strip_prefix(&[0x7c]) {
+                (leaf, EmptyBranchOrder::First)
+            } else if let Some(leaf) = inner.strip_suffix(&[0x7c]) {
+                (leaf, EmptyBranchOrder::Last)
+            } else {
+                continue;
+            };
+            // Only an edge separator denotes the raw empty branch. The whole
+            // remaining bare class proves q payload bars and every later leaf.
+            if leaf.first() != Some(&0x5b) || leaf.last() != Some(&0x5d) {
+                continue;
+            }
+            let Some(atom) = RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
+                leaf, ignore_case, false, &mut charge,
+            )? else { continue };
+            return Ok(Some(Self {
+                atom: Atom::Class(atom),
+                minimum,
+                maximum,
+                greedy,
+                start_anchor,
+                multiline,
+                end_anchor,
+                atom_captures: captures,
+                start_word,
+                end_word,
+                word_ignore_case: ignore_case,
+                nullable: Some(order),
+            }));
+        }
+        Ok(None)
+    }
+
     /// Compiles one unanchored consuming atom and quantifier after full validation.
     ///
     /// Exact decimal bounds beyond native storage are retained semantically:
@@ -21060,3 +21186,7 @@ mod single_character_string_operands_repetition_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_wrapped_single_character_string_repetition_tests.rs"]
 mod wrapped_single_character_string_repetition_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_raw_empty_single_character_string_repetition_tests.rs"]
+mod raw_empty_single_character_string_repetition_tests;

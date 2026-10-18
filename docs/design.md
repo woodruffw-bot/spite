@@ -8891,3 +8891,29 @@ supplementary/lone characters and the approved initial-low-surrogate boundary.
 Actual i/m predicates retain original input context. Inner assertions, partial
 captures, alternatives, extra atoms, nullable branches and string-valued leaves
 remain outside this entry. Earlier constructors keep their domains/callbacks.
+
+## Raw empty alternatives in one-character UnicodeSets string repetition
+
+A separate v/vi entry proves one raw empty branch and one complete singleton-q
+checked class, in either source order, enclosed by complete capturing/noncapturing
+wrappers and followed by *, + or ? with optional laziness. Canonical outside
+line/word gates and caller-proved whole captures retain their original scopes.
+The consuming leaf is fully proved even if an empty path could succeed first.
+
+Borrowed framing checks exact prefix openers, a matching closing run, exactly
+one edge bar and a complete bare class. It adds no q scanner or copied Pattern.
+A conservative 10N source charge precedes all framing; braced tokens decline
+before the quantifier helper, and existing class work/capacity callbacks remain
+separate and unchanged. Prior constructor domains and callbacks are preserved.
+
+[RepeatMatcher](https://262.ecma-international.org/17.0/#sec-repeatmatcher)
+rejects optional zero-progress iterations, leaving inner captures undefined
+when no iteration participates. A mandatory empty plus iteration instead defines
+an empty capture. Source branch order and lazy continuation priority matter:
+character-first lazy plus can prefer a consuming path over an empty path at the
+same start, while the earliest candidate still wins. Existing nullable order,
+Atom::Class storage, final-capture projection and incremental full-suffix search
+implement these effects over original UTF-16 boundaries, including the approved
+initial-low-surrogate handling. No new matcher/search model or default limits
+are added. Branch-local captures/assertions, grouped empty branches, braced
+counts, extra alternatives and string-valued leaves remain outside this entry.

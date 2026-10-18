@@ -14546,3 +14546,52 @@ is excluded and no Native expectation is changed.
 
 The fifteen-job matrix still requires all 57 framework probes and four complete
 reviewed-corpus gates before the following push.
+
+## Raw empty alternatives beside one-character UnicodeSets string classes
+
+The new checked entry composes one raw empty branch with a fully proved
+singleton-q class under the six simple greedy/lazy quantifier forms. Complete
+wrappers share the selected final iteration: mandatory empty plus captures are
+defined empty strings, while zero optional iterations retain undefined slots.
+One former Unsupported control now requires true/finally marker 3 in its original
+owner. Every other preceding owner/control and snapshot remains unchanged.
+
+Two Core tests use a naturally terminating independent RepeatMatcher interpreter
+over seven tiny decoded UTF-16 inputs. Twelve order/quantifier combinations and
+four focused cases provide 1,344 cursor/sticky comparisons with one construction
+per plan, plus six explicit priority/Unicode/anchor witnesses. Six construction
+and three nullable search/capture rows check every observed cancellation prefix.
+Two Runtime functions and one direct accounting unit cover effects, named and
+ordinary capture participation, consumers, Unicode and opted-in cancellation.
+Ten frozen handwritten full JSON/UTF-16 rows specify eight matches and two nulls,
+with no exclusions or presumed differential discrepancies.
+
+Expected Native tests total 5,362: 1,012 Core and 4,350 REST, including 3,592 Runtime
+integration tests and 304 Runtime units. Parser retains 347 tests; the single
+documentation test and 14,740 reviewed corpus variants from 7,631 sources remain
+separate. Expected golds total 729, retaining all 728 preceding files byte-for-byte.
+Final local checks passed full Core and Runtime integration suites on stable
+and MSRV, the direct capture-accounting unit on both, all thirteen quality checks
+and the inspected ten-row insta snapshot. Three unchanged successful checks
+retain their original receipts under an exact source-amendment proof.
+
+Two initial full Runtime attempts stopped when the new proposed search-abort
+setup exhausted its explicit construction allowance. The corrected integration
+control deliberately checks construction cancellation before assignment and
+JavaScript handlers, retaining the same 30,000-step host quota. Core callback
+prefixes and the direct Runtime unit retain search/capture cancellation coverage.
+A focused corrected check and both final full Runtime suites passed.
+
+Fresh strict Node 24.19 comparisons agree on eight original rows. Two expose the
+same documented [V8 operand-folding defect](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6):
+Node consumes Kelvin where the folded complement requires an earlier mandatory
+empty match, and returns null where the folded intersection and outside gates
+require Kelvin/K with final K captures. All ten native gold rows retain their
+handwritten edition-17 expectations; no row is excluded or rewritten.
+
+Both ordinary-class supplemental comparisons passed with the same inputs, flags,
+starting indices, and complete capture JSON; only the serialized pattern source
+changed. The original strict ten-row Node report remains preserved with status 1.
+
+The fifteen-job matrix still requires all 57 framework probes and four complete
+14,740-variant reviewed-corpus gates before the following push.
