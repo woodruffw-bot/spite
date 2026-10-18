@@ -22,11 +22,15 @@ pub(super) enum Method {
     ReduceRight,
     Map,
     Filter,
+    CopyWithin,
+    Fill,
+    Reverse,
+    Set,
 }
 
 impl Method {
     // The intrinsic module retains the existing metadata table and function
-    // objects. Only invocation of these seventeen entries changes.
+    // objects. Only invocation of implemented entries changes.
     pub(super) fn from_name(name: &str) -> Option<Self> {
         Some(match name {
             "at" => Self::At,
@@ -46,6 +50,10 @@ impl Method {
             "reduceRight" => Self::ReduceRight,
             "map" => Self::Map,
             "filter" => Self::Filter,
+            "copyWithin" => Self::CopyWithin,
+            "fill" => Self::Fill,
+            "reverse" => Self::Reverse,
+            "set" => Self::Set,
             _ => return None,
         })
     }
@@ -75,6 +83,9 @@ impl Realm {
             | Method::Reduce
             | Method::ReduceRight => {
                 self.typed_array_read_method(method, receiver, arguments, span)
+            }
+            Method::CopyWithin | Method::Fill | Method::Reverse | Method::Set => {
+                self.typed_array_mutation_method(method, receiver, arguments, span)
             }
             _ => self.typed_array_callback_method(method, receiver, arguments, span),
         }

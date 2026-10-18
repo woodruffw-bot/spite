@@ -634,7 +634,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement TypedArray integer-indexed exotic methods for all twelve element kinds, fixed and length-tracking buffer witnesses, receiver-sensitive writes, reflection, integrity operations, and live ArrayIterator access.
 - [x] Add all twelve TypedArray constructors, construction overloads, intrinsic metadata, state getters, and from/of factories.
 - [x] Implement TypedArray indexed access, search, callback traversal, reduction, string conversion, and species-aware map/filter.
-- [ ] Implement TypedArray mutation, copying, subarray views, and numeric sorting.
+- [x] Implement TypedArray copyWithin, fill, reverse, and typed/array-like set with live buffer checks and overlap handling.
+- [ ] Implement TypedArray copying, subarray views, and numeric sorting.
 - [ ] Implement Uint8Array base64 and hexadecimal conversion methods.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.

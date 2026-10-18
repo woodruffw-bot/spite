@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; mutation/copy/sort algorithms and Uint8Array encodings remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; copy/subarray/sort algorithms and Uint8Array encodings remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -15059,3 +15059,30 @@ The standard public CI runners have four CPUs and 16 GB allocated memory;
 actual free memory and platform behavior still require the complete hosted
 gates. All 5528 Native test names, 734 snapshot files, fixture and harness
 bytes, Runtime sources, dependencies and default limits remain unchanged.
+
+## TypedArray mutation
+
+Twenty-three integration groups cover copyWithin, fill, reverse, and typed or
+array-like set. They check every element kind, branded receivers, captured
+lengths despite public overrides, offset/value/bound conversion order, exact
+exceptions and partial writes, empty operations, resizes, detachments, aliased
+and different-kind sources, byte offsets, and ignored iterator/constructor
+hooks. Raw-copy oracles preserve NaN payloads with native-endian byte patterns;
+numeric reverse and fill retain their distinct conversion semantics.
+
+Five storage units independently check overlapping raw moves in both directions,
+sparse page boundaries and holes, exact large virtual offsets, validation before
+no-op returns, and failures that leave buffer bytes and heap state unchanged.
+Explicit quota cases preserve caller-selected work, heap, BigInt, and argument
+limits; no default quota or testing allowance changes. Constructor metadata,
+realm entries, and the existing inspected state snapshot remain unchanged.
+
+Stable passes all 356 Runtime units and 3,721 integration tests. Rust 1.85
+passes all 356 units and all 23 new integration groups. Runtime documentation
+checks pass on both toolchains, along with fresh stable workspace Clippy with
+denied warnings, formatting, dependency policy, and integration/fixture
+inventories. The expected Native total is 5,556: 1,022 Core and 4,534 REST.
+There are 903 Rust sources; 895 unowned Rust files and all 734 snapshot files
+remain byte-identical. The 15,098-variant corpus retains its three-worker gate,
+existing pin, original inputs, and ordinary defaults. No new upstream fixture
+or dependency is introduced.

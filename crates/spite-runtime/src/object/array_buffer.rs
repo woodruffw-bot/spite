@@ -359,6 +359,34 @@ impl Objects {
         Ok(())
     }
 
+    /// Moves raw bytes within one buffer with the overlap semantics required by
+    /// TypedArray.prototype.copyWithin (23.2.3.6). Finish every fallible step on
+    /// private sparse storage before replacing the buffer's original block.
+    pub(crate) fn move_array_buffer_bytes(
+        &mut self,
+        buffer: &Handle,
+        source_start: u64,
+        target_start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        let data = self.array_buffer(buffer)?;
+        data.check_range(source_start, count)?;
+        data.check_range(target_start, count)?;
+        // No-op ranges still require an attached buffer and valid endpoints.
+        if count == 0 || source_start == target_start {
+            return Ok(());
+        }
+        budget.charge(1)?;
+        let original = data.block()?;
+        let mut copy = original.try_clone(budget)?;
+        // Reading the immutable original preserves overlap in either direction.
+        // copy_range also clears destination bytes covered by source zero holes.
+        original.copy_range(source_start, &mut copy, target_start, count, budget)?;
+        self.array_buffer_mut(buffer)?.block = Some(copy);
+        Ok(())
+    }
+
     /// CloneArrayBuffer (25.1.3.6): copy raw bytes into a fresh fixed buffer.
     /// Sparse zero pages stay implicit, including for safe-integer-sized ranges.
     /// Finish copying before allocating the heap entry so every failure leaves
@@ -568,6 +596,173 @@ mod tests {
                 }
             })
             .collect()
+    }
+
+    #[test]
+    fn raw_move_preserves_overlapping_payloads_in_both_directions() {
+        let initial = [
+            0x44, 0x33, 0x34, 0x12, 0, 0, 0, 0, 0xf8, 0xff, 0x88, 0x99, 0x66, 0x77,
+        ];
+        let payload = [0x34, 0x12, 0, 0, 0, 0, 0xf8, 0xff];
+        for target in [4091u64, 4095] {
+            let (mut objects, _, buffer) = fixture(8200, Some(16_400));
+            write(&mut objects, &buffer, 4091, &initial);
+            let mut expected = initial;
+            expected.copy_within(2..10, usize::try_from(target - 4091).unwrap());
+            objects
+                .move_array_buffer_bytes(&buffer, 4093, target, 8, &mut unlimited())
+                .unwrap();
+            assert_eq!(read(&objects, &buffer, 4091, initial.len()), expected);
+            assert_eq!(read(&objects, &buffer, target, 8), payload);
+            assert_eq!(read(&objects, &buffer, 4090, 1), [0]);
+            assert_eq!(read(&objects, &buffer, 4105, 1), [0]);
+            let data = objects.array_buffer(&buffer).unwrap();
+            assert_eq!(data.byte_length(), 8200);
+            assert_eq!(data.max_byte_length(), 16_400);
+            assert!(data.is_resizable());
+            assert_eq!(data.block().unwrap().pages.len(), 2);
+        }
+    }
+
+    #[test]
+    fn raw_move_clears_implicit_holes_and_preserves_outside_bytes() {
+        let (mut objects, _, buffer) = fixture(20_000, Some(32_000));
+        write(&mut objects, &buffer, 4094, &[1, 2, 3, 4, 5]);
+        write(&mut objects, &buffer, 8191, &[9]);
+        write(&mut objects, &buffer, 8192, &[7, 7]);
+        write(&mut objects, &buffer, 12_288, &[8, 8, 8, 8]);
+        write(&mut objects, &buffer, 16_384, &[6]);
+        objects
+            .move_array_buffer_bytes(&buffer, 0, 8192, 8192, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            read(&objects, &buffer, 8191, 9),
+            [9, 0, 0, 0, 0, 0, 0, 0, 0]
+        );
+        assert_eq!(read(&objects, &buffer, 10_000, 8), [0; 8]);
+        assert_eq!(
+            read(&objects, &buffer, 12_285, 9),
+            [0, 1, 2, 3, 4, 5, 0, 0, 0]
+        );
+        assert_eq!(read(&objects, &buffer, 16_383, 2), [9, 6]);
+        assert_eq!(read(&objects, &buffer, 4094, 5), [1, 2, 3, 4, 5]);
+        let data = objects.array_buffer(&buffer).unwrap();
+        assert_eq!(data.byte_length(), 20_000);
+        assert_eq!(data.max_byte_length(), 32_000);
+        assert_eq!(data.block().unwrap().pages.len(), 5);
+    }
+
+    #[test]
+    fn raw_move_keeps_safe_integer_offsets_and_sparse_logical_ranges() {
+        let (mut objects, _, buffer) = fixture(MAX_BYTE_LENGTH, Some(MAX_BYTE_LENGTH));
+        let payload = [8, 7, 6, 5, 4, 3, 2, 1];
+        write(&mut objects, &buffer, MAX_BYTE_LENGTH - 8, &payload);
+        objects
+            .move_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH - 8, 0, 8, &mut unlimited())
+            .unwrap();
+        assert_eq!(read(&objects, &buffer, 0, 8), payload);
+        assert_eq!(read(&objects, &buffer, MAX_BYTE_LENGTH - 8, 8), payload);
+        // The huge overlapping range contains only two stored pages. Its holes
+        // must stay sparse rather than allocating from the logical byte count.
+        objects
+            .move_array_buffer_bytes(&buffer, 0, 1, MAX_BYTE_LENGTH - 1, &mut unlimited())
+            .unwrap();
+        assert_eq!(read(&objects, &buffer, 0, 9), [8, 8, 7, 6, 5, 4, 3, 2, 1]);
+        assert_eq!(
+            read(&objects, &buffer, MAX_BYTE_LENGTH - 9, 9),
+            [0, 0, 8, 7, 6, 5, 4, 3, 2]
+        );
+        assert_eq!(read(&objects, &buffer, MAX_BYTE_LENGTH / 2, 8), [0; 8]);
+        let data = objects.array_buffer(&buffer).unwrap();
+        assert_eq!(data.byte_length(), MAX_BYTE_LENGTH);
+        assert_eq!(data.max_byte_length(), MAX_BYTE_LENGTH);
+        assert!(data.is_resizable());
+        assert_eq!(data.block().unwrap().pages.len(), 2);
+    }
+
+    #[test]
+    fn raw_move_validates_attached_ranges_before_no_op_fast_paths() {
+        let (mut objects, prototype, buffer) = fixture(8, Some(16));
+        write(&mut objects, &buffer, 0, &[1, 2, 3]);
+        objects
+            .move_array_buffer_bytes(&buffer, 8, 8, 0, &mut Budget::new(0))
+            .unwrap();
+        objects
+            .move_array_buffer_bytes(&buffer, 0, 0, 8, &mut Budget::new(0))
+            .unwrap();
+        for (source, target, count) in [
+            (9, 0, 0),
+            (0, 9, 0),
+            (8, 8, 1),
+            (0, 8, 1),
+            (u64::MAX, u64::MAX, 0),
+            (1, 0, u64::MAX),
+            (0, u64::MAX, 1),
+        ] {
+            assert_eq!(
+                objects.move_array_buffer_bytes(&buffer, source, target, count, &mut unlimited()),
+                Err(ArrayBufferError::OutOfBounds)
+            );
+        }
+        assert_eq!(
+            objects.move_array_buffer_bytes(&prototype, 0, 0, 0, &mut unlimited()),
+            Err(ArrayBufferError::Storage(Error::WrongKind))
+        );
+        let mut other = Objects::with_limits(None, None);
+        let foreign = other.create(None).unwrap();
+        assert_eq!(
+            objects.move_array_buffer_bytes(&foreign, 0, 0, 0, &mut unlimited()),
+            Err(ArrayBufferError::Storage(Error::Heap(
+                spite_heap::Error::ForeignHandle
+            )))
+        );
+        assert_eq!(read(&objects, &buffer, 0, 8), [1, 2, 3, 0, 0, 0, 0, 0]);
+        objects
+            .detach_array_buffer(&buffer, &mut unlimited())
+            .unwrap();
+        for count in [0, 1] {
+            assert_eq!(
+                objects.move_array_buffer_bytes(&buffer, 0, 0, count, &mut unlimited()),
+                Err(ArrayBufferError::Detached)
+            );
+        }
+    }
+
+    #[test]
+    fn raw_move_work_failures_preserve_bytes_metadata_and_heap_edges() {
+        let (mut objects, _, buffer) = fixture(12_300, Some(20_000));
+        write(&mut objects, &buffer, 4093, &[1, 2, 3, 4, 5, 6, 7, 8]);
+        write(&mut objects, &buffer, 8192, &[9, 10]);
+        let before = read(&objects, &buffer, 0, 12_300);
+        // Fail before cloning, during cloning, during destination clearing, and
+        // after some bytes have been copied into the private staged block.
+        for limit in [0, PAGE_SIZE + 10, 3 * PAGE_SIZE + 100, 6 * PAGE_SIZE + 200] {
+            assert_eq!(
+                objects.move_array_buffer_bytes(&buffer, 0, 1, 8192, &mut Budget::new(limit)),
+                Err(ArrayBufferError::Storage(Error::WorkLimit))
+            );
+            assert_eq!(read(&objects, &buffer, 0, 12_300), before);
+            let data = objects.array_buffer(&buffer).unwrap();
+            assert_eq!(data.byte_length(), 12_300);
+            assert_eq!(data.max_byte_length(), 20_000);
+            assert!(data.is_resizable());
+            assert!(!data.is_detached());
+            assert_eq!(data.block().unwrap().pages.len(), 3);
+            assert_eq!(objects.collect([&buffer], 100).unwrap().reclaimed, 0);
+        }
+        // Moving backing bytes does not allocate another heap entry, even when
+        // the embedding has explicitly filled its object-slot quota.
+        let mut full_heap = Objects::new(2, 10);
+        let prototype = full_heap.create(None).unwrap();
+        let buffer = full_heap
+            .create_array_buffer(&prototype, 8, None, &mut unlimited())
+            .unwrap();
+        write(&mut full_heap, &buffer, 0, &[1, 2, 3, 4, 5]);
+        full_heap
+            .move_array_buffer_bytes(&buffer, 0, 1, 4, &mut unlimited())
+            .unwrap();
+        assert_eq!(read(&full_heap, &buffer, 0, 8), [1, 1, 2, 3, 4, 0, 0, 0]);
+        assert_eq!(full_heap.collect([&buffer], 100).unwrap().reclaimed, 0);
     }
 
     #[test]

@@ -7621,8 +7621,38 @@ content type. Custom species
 may return an aliased view or another compatible element kind. Subsequent
 writes retain ordinary Set conversion and live bounds behavior, including
 reentrant detachment or resizing. Filter's scratch list is independent of
-call-argument quotas. Mutation, copying, subarray, sorting, and Uint8Array
-encoding algorithms remain separate work.
+call-argument quotas. Copying, subarray, sorting, and Uint8Array encoding
+algorithms remain separate work.
+
+## TypedArray mutation
+
+copyWithin, fill, reverse, and set implement 23.2.3.6/.9/.25/.26 using captured
+internal lengths and live buffer witnesses. copyWithin converts all bounds
+before a second witness, and skips that witness only when the original copy
+count is zero. Resizing a still-valid auto view clips the original byte range.
+Its raw sparse memmove preserves NaN payloads and overlap direction; all
+fallible storage work finishes on a private clone before replacing the block.
+
+fill converts its value once before either bound and always takes the second
+witness, including for an empty range. reverse performs numeric Get/Get/Set/Set
+for each pair, retaining the specified conversion and partial-effect behavior.
+These two methods do not substitute raw byte operations for numeric semantics.
+
+set checks the receiver brand before offset conversion, rejects negative
+offsets before its target witness, and validates typed source state in order.
+The range check precedes Number/BigInt content mismatch, even for empty sources.
+Every same-buffer typed source uses a complete CloneArrayBuffer snapshot before
+writing, including nonoverlapping and different-kind copies. Same-kind copies
+retain raw bytes; other compatible kinds decode the chosen source buffer and
+perform ordered numeric writes.
+
+Array-like set captures source length after the target witness, then reads and
+converts each element live. Getters and conversions can resize or detach the
+target; conversion still precedes each current-bounds write check. Earlier
+writes and user effects remain on later failure. Normative backing allocation
+failures retain RangeError; internal staging failures remain host failures.
+Native capacity and optional work checks stay separate from JavaScript errors;
+no default limit, synthetic view, or extra intrinsic object is introduced.
 
 ## Date time values
 

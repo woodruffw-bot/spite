@@ -323,7 +323,7 @@ impl Realm {
         Ok(result)
     }
 
-    fn typed_array_backing_work<T>(
+    pub(super) fn typed_array_backing_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Objects, &mut Budget) -> Result<T, ArrayBufferError>,

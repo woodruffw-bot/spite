@@ -536,10 +536,6 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
     let mut expressions = Vec::new();
     for name in [
-        "copyWithin",
-        "fill",
-        "reverse",
-        "set",
         "slice",
         "sort",
         "subarray",
