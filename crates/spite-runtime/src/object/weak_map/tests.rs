@@ -349,3 +349,50 @@ fn opted_in_operation_and_collection_failures_preserve_entries_and_owned_symbols
     assert_eq!(weak.upgrade(), None);
     assert!(objects.weak_map_data(&map).unwrap().entries.is_empty());
 }
+
+#[test]
+fn growth_work_failure_preserves_entries_while_overwrite_avoids_growth() {
+    let mut objects = Objects::with_limits(None, None);
+    let prototype = objects.create(None).unwrap();
+    let map = objects.create_weak_map(&prototype).unwrap();
+    let mut keys = Vec::new();
+    loop {
+        let data = objects.weak_map_data(&map).unwrap();
+        if !data.entries.is_empty()
+            && (data.entries.len() == data.entries.capacity()
+                || data.index.len() == data.index.capacity())
+        {
+            break;
+        }
+        let key = objects.create(None).unwrap();
+        objects
+            .weak_map_set(&map, &key, Value::Null, &mut unlimited())
+            .unwrap();
+        keys.push(key);
+    }
+    let before = objects.weak_map_data(&map).unwrap().entries.clone();
+    let index = objects.weak_map_data(&map).unwrap().index.clone();
+    let next = objects.create(None).unwrap();
+    // The constant allowance covers one ordinary lookup plus a scalar value.
+    // Growing a nonempty retained vector/index needs additional real work.
+    assert_eq!(
+        objects.weak_map_set(&map, &next, Value::Null, &mut Budget::new(2)),
+        Err(Error::WorkLimit)
+    );
+    assert_eq!(objects.weak_map_data(&map).unwrap().entries, before);
+    assert_eq!(objects.weak_map_data(&map).unwrap().index, index);
+    assert!(!objects.weak_map_has(&map, &next, &mut unlimited()).unwrap());
+    objects
+        .weak_map_set(&map, &keys[0], Value::Number(7.0), &mut Budget::new(2))
+        .unwrap();
+    assert_eq!(
+        objects
+            .weak_map_get(&map, &keys[0], &mut unlimited())
+            .unwrap(),
+        Some(Value::Number(7.0))
+    );
+    assert_eq!(
+        objects.weak_map_data(&map).unwrap().entries.len(),
+        before.len()
+    );
+}

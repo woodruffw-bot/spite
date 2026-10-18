@@ -148,7 +148,7 @@ impl Realm {
         ))
     }
 
-    fn can_be_held_weakly(&mut self, value: &Value, span: Span) -> Result<bool, Error> {
+    pub(super) fn can_be_held_weakly(&mut self, value: &Value, span: Span) -> Result<bool, Error> {
         match value {
             Value::Object(_) => Ok(true),
             Value::Symbol(symbol) => self.symbol_is_registered(symbol, span).map(|value| !value),

@@ -2006,8 +2006,7 @@ fn reference_expression(expr: &Expr) -> bool {
 fn standard_global(name: &str) -> bool {
     matches!(
         name,
-        "WeakMap"
-            | "SharedArrayBuffer"
+        "SharedArrayBuffer"
             | "Atomics"
             | "WeakRef"
             | "FinalizationRegistry"

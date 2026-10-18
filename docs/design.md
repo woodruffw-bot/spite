@@ -5662,7 +5662,8 @@ unreachable conditional cycles do not root themselves. Stale weak keys are
 ignored across generation reuse. Foreign keys and invalid active values abort
 before sweeping. Ephemeron inspections and activations consume caller-selected
 collection work; scratch and sweep free-list allocations are checked before
-removal. WeakMap's JavaScript intrinsics and Symbol-key reachability remain pending.
+removal. Object-key WeakMap JavaScript methods use this ephemeron path; weak
+Symbol-key reachability remains an explicit Unsupported boundary.
 After marking reaches its fixpoint, reachable containers can remove entries
 whose keys were not retained. Cleanup work is prepaid during enumeration, and
 validated key generations prevent reused slots from preserving stale entries.
@@ -7457,9 +7458,20 @@ values are not enumerated as strong edges. Successful collection removes dead
 entries with swap removal and updates moved indices without allocating. Primitive
 values, including Symbols, are dropped with inactive entries. Checked storage
 validates object keys and values, brands, work and reservations before mutation.
-JavaScript WeakMap intrinsics remain pending until Symbol-key reachability is
-implemented; the internal object-key APIs are private and temporarily allow dead
-code for that staged integration.
+WeakMap exposes its constructor and delete/get/has/set/getOrInsert/
+getOrInsertComputed methods for object keys. The six methods check receiver brand
+and the full CanBeHeldWeakly domain before their storage operation. Invalid keys
+retain the specified TypeError/false/undefined behavior; valid non-registered and
+well-known Symbol keys report host Unsupported until conditional Symbol
+reachability is implemented. Computed insertion validates its callback before
+that lookup gap. Registered Symbol checks use the internal registry, not a
+mutable public method. The constructor calls its captured adder without key
+prevalidation, so a custom adder can accept unsupported or invalid built-in keys.
+Object ephemeron marking/cleanup and the explicit between-evaluations collection
+protocol remain unchanged. Callback upserts use a new lookup after callback
+execution, and a returned value overwrites a same-key callback insertion. Checked
+storage prepays vector/index growth before retained graph mutation. This partial
+stage does not expose WeakRef, finalization, Symbol-key storage, or new quotas.
 
 ## ArrayBuffer
 

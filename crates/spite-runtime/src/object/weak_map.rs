@@ -1,6 +1,7 @@
 //! Object-key WeakMapData with conditional values and dense cleanup (24.3).
 //!
-//! JavaScript intrinsics and Symbol-key reachability are separate increments.
+//! Object keys use existing ephemerons. Valid weak Symbol keys remain an explicit
+//! Realm Unsupported boundary until conditional Symbol reachability is implemented.
 
 use super::{Budget, Error, Objects};
 use crate::Value;
@@ -44,9 +45,6 @@ impl WeakMapData {
     }
 }
 
-// Keep the checked storage private until Symbol-key tracing permits exposing
-// WeakMap's JavaScript intrinsics with the complete CanBeHeldWeakly domain.
-#[allow(dead_code, reason = "WeakMap intrinsics await Symbol-key reachability")]
 impl Objects {
     pub(crate) fn create_weak_map(&mut self, prototype: &Handle) -> Result<Handle, Error> {
         let map = self.create(Some(prototype))?;
@@ -119,6 +117,14 @@ impl Objects {
         if let Some(index) = data.index.get(key) {
             data.entries[*index].1 = value;
             return Ok(());
+        }
+        // Reserve/copy work must finish before entries or retained values
+        // change. An overwrite above performs no growth or index movement.
+        if data.entries.len() == data.entries.capacity() {
+            budget.charge(data.entries.len())?;
+        }
+        if data.index.len() == data.index.capacity() {
+            budget.charge(data.index.len())?;
         }
         data.entries
             .try_reserve(1)

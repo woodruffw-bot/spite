@@ -310,6 +310,7 @@ impl Objects {
                 | Builtin::DataView
                 | Builtin::Set
                 | Builtin::WeakSet
+                | Builtin::WeakMap
                 | Builtin::Map
                 | Builtin::Boolean
                 | Builtin::Date

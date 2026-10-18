@@ -64,6 +64,23 @@ impl Realm {
                 span,
                 "Set requires construction",
             )),
+            Builtin::WeakMap => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "WeakMap requires construction",
+            )),
+            Builtin::WeakMapDelete
+            | Builtin::WeakMapGet
+            | Builtin::WeakMapGetOrInsert
+            | Builtin::WeakMapGetOrInsertComputed
+            | Builtin::WeakMapHas
+            | Builtin::WeakMapSet => self.weak_map_method(
+                builtin,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::WeakSet => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

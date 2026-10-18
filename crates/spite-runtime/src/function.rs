@@ -53,6 +53,7 @@ mod typed_array_sort;
 mod uint8_base64;
 mod uint8_hex;
 mod uri;
+mod weak_map;
 mod weak_set;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;
@@ -315,6 +316,13 @@ pub(crate) enum Builtin {
     WeakSetAdd,
     WeakSetDelete,
     WeakSetHas,
+    WeakMap,
+    WeakMapDelete,
+    WeakMapGet,
+    WeakMapGetOrInsert,
+    WeakMapGetOrInsertComputed,
+    WeakMapHas,
+    WeakMapSet,
     SetAdd,
     SetClear,
     SetDelete,
@@ -601,6 +609,13 @@ impl Builtin {
             Self::WeakSetAdd => "add",
             Self::WeakSetDelete => "delete",
             Self::WeakSetHas => "has",
+            Self::WeakMap => "WeakMap",
+            Self::WeakMapDelete => "delete",
+            Self::WeakMapGet => "get",
+            Self::WeakMapGetOrInsert => "getOrInsert",
+            Self::WeakMapGetOrInsertComputed => "getOrInsertComputed",
+            Self::WeakMapHas => "has",
+            Self::WeakMapSet => "set",
             Self::SetAdd => "add",
             Self::SetClear => "clear",
             Self::SetDelete => "delete",
@@ -667,6 +682,9 @@ impl Builtin {
             | Self::WeakSetAdd
             | Self::WeakSetDelete
             | Self::WeakSetHas
+            | Self::WeakMapDelete
+            | Self::WeakMapGet
+            | Self::WeakMapHas
             | Self::SetDelete
             | Self::SetForEach
             | Self::SetHas
@@ -678,7 +696,10 @@ impl Builtin {
             | Self::SetIsSubsetOf
             | Self::SetIsSupersetOf => 1.0,
             Self::MapDelete | Self::MapForEach | Self::MapGet | Self::MapHas => 1.0,
-            Self::MapSet
+            Self::WeakMapSet
+            | Self::WeakMapGetOrInsert
+            | Self::WeakMapGetOrInsertComputed
+            | Self::MapSet
             | Self::MapGetOrInsert
             | Self::MapGetOrInsertComputed
             | Self::MapGroupBy => 2.0,
@@ -942,6 +963,7 @@ pub(super) struct Intrinsics {
     pub map: map::MapIntrinsics,
     pub set: set::SetIntrinsics,
     pub weak_set: weak_set::WeakSetIntrinsics,
+    pub weak_map: weak_map::WeakMapIntrinsics,
 }
 
 impl Intrinsics {
@@ -987,6 +1009,7 @@ impl Intrinsics {
         .chain(self.map.roots())
         .chain(self.set.roots())
         .chain(self.weak_set.roots())
+        .chain(self.weak_map.roots())
     }
 }
 
@@ -1156,6 +1179,7 @@ impl Realm {
             span,
         )?;
         let weak_set = self.weak_set_intrinsics(&object_prototype, &function_prototype, span)?;
+        let weak_map = self.weak_map_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -1197,6 +1221,7 @@ impl Realm {
             map,
             set,
             weak_set,
+            weak_map,
         });
         Ok(object_prototype)
     }

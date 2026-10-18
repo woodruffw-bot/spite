@@ -42,6 +42,7 @@ not an alternative language specification.
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
+| WeakMap | Object-key ephemeron storage, iterable construction/closing, branded delete/get/has/set and computed insertion, subclassing, and reflection; valid weak Symbol keys report explicit Unsupported until conditional Symbol reachability is implemented |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
@@ -15307,3 +15308,48 @@ formatting, policy, and all three inventories pass. The expected Native total
 is 5,654: 1,022 Core and 4,632 REST. All prior Native names remain except the
 single obsolete unsupported-wrapper name, replaced by its positive regression.
 There are 911 Rust files, with 904 unowned files and all 734 snapshots unchanged.
+
+## Object-key WeakMap methods
+
+WeakMap exposes construction and the six delete/get/has/set/getOrInsert/
+getOrInsertComputed methods over the existing object-key ephemeron store.
+Twenty-three integration groups cover identity and primitive values, cached
+undefined, receiver/key/callback ordering, registered Symbols and invalid keys,
+reentrant computed insertion, captured constructor adders, entry reads and
+iterator closing, subclassing, descriptors, integrity behavior, conditional
+collection and cycles, failure atomicity, and opt-in work limits. Inline insta
+checks the complete reflected surface; direct assertions check state and order.
+
+Valid non-registered and well-known Symbol keys retain an explicit host
+Unsupported result until their conditional reachability is implemented.
+Callback validation still precedes that boundary, and constructor overrides can
+accept any key without invoking native storage. Ordinary invalid keys keep
+their specified TypeError, false, or undefined outcomes. Object ephemeron GC,
+explicit collection between evaluations, and primitive Symbol values are
+unchanged. A new storage unit checks that growth work failure preserves the
+logical entries and index while an existing-key overwrite avoids growth.
+The intrinsic baseline increases from 496 to 504. No dependency, default quota,
+selected test limit, snapshot file, or upstream corpus fixture changes.
+
+The preceding hexadecimal implementation and separate MSRV cache checkpoint
+passed all seventeen hosted jobs at their final source. Actual verdict names
+retain all 5,606 parent tests and add 23; all four corpus gates pass 15,098
+variants with three workers. Each newly eligible MSRV role recorded a cold
+cache miss, fresh Runtime compilation, successful workspace-output trimming,
+and a saved dependency cache. This seeds future reuse; the 647-second workflow
+versus its parent's 590 seconds establishes no cache speed gain. The policy
+restoration, new tests, and hosted scheduling also differ. A subsequent warm
+comparison must check actual restore, cleanup, current workspace compilation,
+and complete test results before attributing any improvement.
+
+Stable passes all 370 Runtime units and all 3,829 integration cases. Rust 1.85
+passes all 370 units and the 23 focused WeakMap groups. The full integration run
+reuses the positively compiled focus binary. Both documentation checks, fresh
+all-target workspace Clippy, formatting, dependency policy, all three
+inventories, and diff checks pass. No source fix or snapshot update was needed.
+Compiled name vectors retain every prior Base64 unit and integration name and
+add exactly one unit and 23 integration groups. The expected workspace Native
+inventory is 5,678: 1,022 Core and 4,656 REST, including 3,829 Runtime integration
+cases, 370 Runtime units, and 457 other REST names. There are 913 Rust files;
+900 unowned sources and all 734 snapshot files are unchanged. The separate
+full hosted gate remains required before accepting the published commit.
