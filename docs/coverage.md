@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; other prototype algorithms and Uint8Array encodings remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; mutation/copy/sort algorithms and Uint8Array encodings remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -14970,3 +14970,27 @@ The expected Native total is 5,504: 1,022 Core and 4,482 REST, including those R
 There are 898 Rust sources; all 734 snapshot files and the 14,866-variant corpus
 remain unchanged. This increment admits no new upstream fixtures and adds no
 dependency or default resource quota.
+
+## TypedArray traversal and species results
+
+Twenty-four integration tests exercise all seventeen access, search, callback,
+reduction, string conversion, map, and filter methods across all twelve element
+kinds. They check entry validation before hooks, internal lengths despite public
+overrides, omitted arguments, comparison semantics, callback arguments and
+direction, short-circuiting, exact throws, and captured ranges with live reads
+after resizing or detachment. Locale checks preserve primitive receivers,
+zero-argument calls, and live method/result conversions.
+
+Species regressions cover construction before map callbacks and after filter
+predicates, retained pre-predicate values, intrinsic defaults, custom compatible
+kinds, aliased results, insufficient or invalid results, empty content-type
+mismatches, and writes whose conversion invalidates the result. Explicit host
+quota cases check that filter scratch lists do not consume call-argument limits
+and that host failures bypass JavaScript handlers.
+
+Stable passes all 351 Runtime units and 3,698 integration tests. Rust 1.85
+passes all 351 units and the 24 new integration cases. Fresh workspace Clippy
+with denied warnings passes. The expected Native total is 5,528: 1,022 Core
+and 4,506 REST. There are 901 Rust sources; all 734 snapshot files, the inspected
+constructor metadata snapshot, and the 14,866-variant reviewed corpus remain
+unchanged. This increment adds no dependency, upstream fixture, or default quota.

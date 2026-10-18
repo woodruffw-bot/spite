@@ -45,6 +45,8 @@ mod symbol;
 mod template;
 mod typed_array;
 mod typed_array_intrinsics;
+mod typed_array_methods;
+mod typed_array_read;
 mod uri;
 mod weak_set;
 mod wrapper;

@@ -337,7 +337,9 @@ impl Realm {
                 span,
             ),
             Builtin::TypedArrayOf => self.typed_array_of(this, arguments, span),
-            Builtin::TypedArrayMember(member) => self.typed_array_member(member, this, span),
+            Builtin::TypedArrayMember(member) => {
+                self.typed_array_member(member, this, arguments, span)
+            }
             Builtin::ArrayBufferIsView => {
                 self.array_buffer_is_view(arguments.next().unwrap_or(Value::Undefined), span)
             }

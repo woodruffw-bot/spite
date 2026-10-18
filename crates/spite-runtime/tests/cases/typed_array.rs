@@ -536,30 +536,13 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
     let mut expressions = Vec::new();
     for name in [
-        "at",
         "copyWithin",
-        "every",
         "fill",
-        "filter",
-        "find",
-        "findIndex",
-        "findLast",
-        "findLastIndex",
-        "forEach",
-        "includes",
-        "indexOf",
-        "join",
-        "lastIndexOf",
-        "map",
-        "reduce",
-        "reduceRight",
         "reverse",
         "set",
         "slice",
-        "some",
         "sort",
         "subarray",
-        "toLocaleString",
         "toReversed",
         "toSorted",
         "with",
@@ -573,7 +556,6 @@ fn deferred_algorithms_report_host_unsupported_without_entering_language_handler
         "new Uint8Array(1).setFromHex('')".into(),
         "new Uint8Array(1).toBase64()".into(),
         "new Uint8Array(1).toHex()".into(),
-        "new Uint8Array(1).toString()".into(),
     ]);
     for expression in expressions {
         let mut realm = Realm::default();

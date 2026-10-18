@@ -488,7 +488,7 @@ impl Realm {
         }
     }
 
-    fn typed_array_factory_result(
+    pub(super) fn typed_array_factory_result(
         &mut self,
         constructor: Value,
         length: u64,

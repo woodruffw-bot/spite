@@ -410,8 +410,16 @@ impl Realm {
         &mut self,
         member: Member,
         receiver: Value,
+        arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        if let Member::Deferred(index) = member {
+            if let Some(method) = super::typed_array_methods::Method::from_name(
+                DEFERRED_METHODS[usize::from(index)].0,
+            ) {
+                return self.typed_array_method(method, receiver, arguments, span);
+            }
+        }
         let unsupported_owner = match member {
             Member::Deferred(_) => Some("TypedArray.prototype"),
             Member::Uint8Encoding(index) => Some(if UINT8_METHODS[usize::from(index)].2 {

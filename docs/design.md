@@ -7596,6 +7596,34 @@ Unsupported result. Their presence does not count as algorithm support or turn
 unsupported operations into passing negative conformance tests. Shared buffers
 and agents remain separate implementation work.
 
+## TypedArray traversal and species results
+
+Seventeen prototype methods implement indexed access, search, callbacks,
+reductions, string conversion, map, and filter (23.2.3). Entry validation captures
+the internal element kind and length, ignoring public length properties. Later
+indexed operations inspect live buffer state. A callback can detach or resize
+the source without changing the captured iteration range or triggering an extra
+validation step. Includes reads invalid indices as undefined; indexOf and
+lastIndexOf use live presence checks and skip them.
+
+Callback methods preserve their specified direction, arguments, thisArg, and
+early returns. Find methods retain the value read before the predicate runs.
+Reductions distinguish an omitted accumulator from explicit undefined. Join
+converts the separator even for an empty view. The existing implementation
+without ECMA-402 supplies comma-separated toLocaleString through live primitive
+method lookup and zero-argument calls. String accumulation uses checked,
+fallible UTF-16 storage and the embedding's optional quotas.
+
+Map constructs its species result before callbacks; filter collects selected
+values before species construction (23.2.4.3, delegating to 23.2.4.1). Both
+validate the result's live TypedArray brand, minimum length, and Number/BigInt
+content type. Custom species
+may return an aliased view or another compatible element kind. Subsequent
+writes retain ordinary Set conversion and live bounds behavior, including
+reentrant detachment or resizing. Filter's scratch list is independent of
+call-argument quotas. Mutation, copying, subarray, sorting, and Uint8Array
+encoding algorithms remain separate work.
+
 ## Date time values
 
 Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).
