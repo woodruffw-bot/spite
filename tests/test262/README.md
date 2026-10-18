@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7650 unmodified test fixtures and twelve harness files come from
+These 7713 unmodified test fixtures and twelve harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -14,7 +14,42 @@ Reports retain manifest order and every per-variant outcome. I/O, review, and
 thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
+## ArrayBuffer foundation fixtures
 
+Sixty-three unchanged complete Test262 originals cover ordinary ArrayBuffer
+construction, ToIndex length coercion, maxByteLength options and ordered
+newTarget prototype checks; constructor/species/prototype descriptors; and
+getter and method metadata, extensibility and nonconstructibility. The cohort
+contains 45 metadata sources and 18 constructor sources, retaining all 56,608
+original bytes, frontmatter, assertions, copyright notices and BSD terms at the
+existing pin. Every source has the default Script and StrictScript variants:
+126 required harness-positive outcomes, with each original executed in full.
+
+The sources use only the existing assert.js, sta.js, propertyHelper.js and
+isConstructor.js. All twelve harness files and the Test262 revision are unchanged.
+These foundation programs require no typed arrays, DataView, SharedArrayBuffer,
+agents, cross-realm or detachment host hooks, or immutable-buffer APIs. They do
+not add execution coverage for the buffer-content operations that require those
+other prerequisites.
+
+The inventory contains 7713 fixtures, twelve helpers, 7694 reviewed sources and
+14866 variants: 13333 harness positives, 1525 parse negatives, four raw positives
+and four runtime negatives. All prior inventory rows and original files remain
+unchanged; the full-corpus gate retains two workers and no default resource quotas.
+
+The global ArrayBuffer descriptor original is deferred because propertyHelper
+requires own-key enumeration of the incomplete global object. The initial
+64-source candidate run recorded 126 new passing variants and two Unsupported
+outcomes for that original. The failed run is retained; neither unsupported
+outcome is counted as passing. Every previously admitted source remains.
+
+Stable and Rust 1.85.0 conformance builds pass the complete expanded gate:
+14,866 variants from 7,694 reviewed sources, including all 126 new variants,
+with every non-passing outcome category at zero. Both affected package runs pass
+35 tests across seven invocations, and both package documentation checks pass.
+Formatting, stable Clippy with denied warnings, dependency policy, fixture and
+integration inventories, and diff checks pass. Runtime sources, dependencies,
+all 734 snapshot files, default limits, and the two-worker gate are unchanged.
 
 ## Generated character-class/property v-set intersection and subtraction fixtures
 
