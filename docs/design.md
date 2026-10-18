@@ -7480,9 +7480,46 @@ their resizability slot while reporting zero byte and maximum lengths. Freezing
 ordinary properties does not freeze these internal slots.
 
 The constructor, species getter, isView, state getters, methods, and toStringTag
-have their standard descriptors. No currently exposed object has a
-ViewedArrayBuffer slot, so isView returns false. Typed arrays, DataView, shared
-buffers, and embedding detach keys remain separate implementation work.
+have their standard descriptors. isView recognizes DataView's ViewedArrayBuffer
+slot, including detached and out-of-bounds views, without reading public
+properties. Typed arrays, shared buffers, and embedding detach keys remain
+separate implementation work.
+
+## DataView
+
+Ordinary DataView objects retain a traced buffer handle, a byte offset, and either
+a fixed byte length or the specification's auto length (25.3). Omitted length
+tracks a resizable buffer's remaining bytes; an explicit length remains fixed.
+Shrinking can make either view out of bounds without changing its slots, so
+regrowth restores valid views. The buffer getter still returns the same buffer
+when it is detached or the view is out of bounds. The byteLength and byteOffset
+getters throw TypeError for detached or out-of-bounds views.
+
+Construction checks the buffer brand before offset conversion, then captures
+the buffer length before converting an explicit view length (25.3.2.1). That
+first range check uses the captured length. After newTarget.prototype lookup,
+construction rechecks detachment and current bounds before installing the slots.
+GetViewValue and SetViewValue validate the view brand, convert the offset and
+setter value, and only then form a live buffer witness (25.3.1.2–6). Conversion
+callbacks can resize, detach, or restore a view; the final witness determines
+whether access throws TypeError or exceeds the valid view with RangeError.
+
+The complete numeric family covers signed and unsigned 8/16/32-bit integers,
+BigInt64/BigUint64, and Float16/Float32/Float64. Explicit byte order supports
+unaligned accesses. Integer stores truncate and reduce modulo their width;
+BigInt conversion never passes through Number or platform-sized integers.
+Budgeted native-word helpers preserve all 64 bits, including signed minima.
+Float16 stores reuse direct binary64 rounding to avoid binary32 double rounding.
+Float encodings preserve signed zero and use consistent canonical NaN encodings.
+
+Numeric reads use a fixed eight-byte result. Stores stage at most two sparse
+pages, reserve the page index, and charge opted-in work before changing bytes.
+Successful stores replace at most eight buffer bytes without cloning the whole
+buffer; allocation or work failure preserves the existing bytes. Lazy page allocation
+failure remains a host failure because SetValueInBuffer does not allocate a new
+Data Block in the specification. The constructor, three getters, 22 numeric
+methods, and toStringTag have their standard descriptors. No dependency or
+default resource quota is added.
 
 ## Date time values
 

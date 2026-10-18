@@ -39,6 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
+| DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -14889,3 +14890,31 @@ with every non-passing outcome category at zero. Both affected package runs pass
 Formatting, stable Clippy with denied warnings, dependency policy, fixture and
 integration inventories, and diff checks pass. Runtime sources, dependencies,
 all 734 snapshot files, default limits, and the two-worker gate are unchanged.
+
+## Ordinary DataView
+
+Twenty-six Runtime integration tests cover all eleven numeric element types,
+exact byte patterns and endianness, integer wrapping, BigInt conversion, float
+rounding, constructor and accessor coercion order, resizable view bounds,
+detachment, ArrayBuffer slicing and transfer with live bytes, subclassing, and
+buffer reachability through collection. An inline insta snapshot records
+descriptors and fixed/length-tracking view states.
+
+Six numeric unit tests include all 65,536 binary16 encodings in both byte orders,
+direct binary64 rounding around half-precision ties, float special values, and
+exact 64-bit BigInt patterns. Five storage tests cover live view witnesses,
+traced buffer edges, safe-index offsets, sparse page boundaries, shrink/regrow
+zeroing, and transactional writes under opted-in work exhaustion. Three BigInt
+regressions cover exact native-word construction, modulo conversion, and quotas.
+
+The full stable Runtime suites pass all 325 unit tests and 3,648 integration
+tests. Rust 1.85 passes all 325 Runtime units and the 26 new DataView integration
+tests. All three new BigInt tests pass on both toolchains. Formatting, fresh
+stable workspace Clippy with denied warnings, policy and integration inventory
+checks pass.
+
+The expected Native total is 5,452: 1,022 Core and 4,430 REST. There are 891 Rust
+sources and 734 unchanged snapshot files. The reviewed Test262 corpus contains
+14,866 variants from 7,694 sources at the existing pin; no upstream DataView
+originals are counted in this increment. No default work or heap quota is
+introduced.

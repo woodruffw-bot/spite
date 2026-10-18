@@ -359,6 +359,125 @@ impl Objects {
         Ok(())
     }
 
+    /// Reads a single numeric element without allocating a temporary byte vector.
+    pub(crate) fn read_array_buffer_bytes(
+        &self,
+        buffer: &Handle,
+        index: u64,
+        count: usize,
+        budget: &mut Budget,
+    ) -> Result<[u8; 8], ArrayBufferError> {
+        if count > 8 {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        let data = self.array_buffer(buffer)?;
+        data.check_range(
+            index,
+            u64::try_from(count).map_err(|_| ArrayBufferError::OutOfBounds)?,
+        )?;
+        let block = data.block()?;
+        let search_work = block
+            .pages
+            .len()
+            .checked_ilog2()
+            .map_or(1, |log| log as usize + 2);
+        budget.charge(1 + count * search_work)?;
+        let mut result = [0; 8];
+        for (offset, byte) in result.iter_mut().take(count).enumerate() {
+            let position = index
+                .checked_add(u64::try_from(offset).map_err(|_| ArrayBufferError::OutOfBounds)?)
+                .ok_or(ArrayBufferError::OutOfBounds)?;
+            if let Ok(page) = block
+                .pages
+                .binary_search_by_key(&(position / PAGE_SIZE_U64), |page| page.index)
+            {
+                *byte = block.pages[page].bytes[page_offset(position)];
+            }
+        }
+        Ok(result)
+    }
+
+    /// Writes one numeric element atomically, touching at most two sparse pages.
+    pub(crate) fn write_array_buffer_bytes(
+        &mut self,
+        buffer: &Handle,
+        index: u64,
+        bytes: &[u8],
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        if bytes.len() > 8 {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        let data = self.array_buffer_mut(buffer)?;
+        data.check_range(
+            index,
+            u64::try_from(bytes.len()).map_err(|_| ArrayBufferError::OutOfBounds)?,
+        )?;
+        let block = data.block.as_mut().expect("validated attached buffer");
+        let search_work = block
+            .pages
+            .len()
+            .checked_ilog2()
+            .map_or(1, |log| log as usize + 2);
+        // Include the bounded preflight, insertion, and final byte lookups.
+        budget.charge(1 + (bytes.len() + 4) * search_work)?;
+        let mut staged: [Option<Page>; 2] = [None, None];
+        let mut additional = 0;
+        let mut remaining = bytes;
+        let mut current = index;
+        for staged_page in &mut staged {
+            if remaining.is_empty() {
+                break;
+            }
+            let page_index = current / PAGE_SIZE_U64;
+            let count = (PAGE_SIZE - page_offset(current)).min(remaining.len());
+            let (fragment, rest) = remaining.split_at(count);
+            if let Err(position) = block
+                .pages
+                .binary_search_by_key(&page_index, |page| page.index)
+            {
+                if fragment.iter().any(|byte| *byte != 0) {
+                    budget.charge(PAGE_SIZE)?;
+                    budget.charge(
+                        (block.pages.len() - position)
+                            .checked_add(additional)
+                            .ok_or(Error::WorkLimit)?,
+                    )?;
+                    *staged_page = Some(Page::new(page_index)?);
+                    additional += 1;
+                }
+            }
+            current = current
+                .checked_add(u64::try_from(count).map_err(|_| ArrayBufferError::OutOfBounds)?)
+                .ok_or(ArrayBufferError::OutOfBounds)?;
+            remaining = rest;
+        }
+        // A failed reservation preserves the existing index and bytes. No work
+        // charges, allocation, or other fallible steps follow this reservation.
+        block.reserve_pages(additional, budget)?;
+        for page in staged.into_iter().flatten() {
+            let position = block
+                .pages
+                .binary_search_by_key(&page.index, |existing| existing.index)
+                .expect_err("staged pages have distinct absent indices");
+            block.pages.insert(position, page);
+        }
+        for (offset, byte) in bytes.iter().enumerate() {
+            // check_range proved every numeric element position is below the
+            // buffer length, and the length is at most MAX_BYTE_LENGTH.
+            let position = index
+                .checked_add(u64::try_from(offset).expect("a numeric element offset fits u64"))
+                .expect("validated numeric element range");
+            if let Ok(page) = block
+                .pages
+                .binary_search_by_key(&(position / PAGE_SIZE_U64), |page| page.index)
+            {
+                block.pages[page].bytes[page_offset(position)] = *byte;
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn detach_array_buffer(
         &mut self,
         buffer: &Handle,
@@ -418,6 +537,182 @@ mod tests {
                 }
             })
             .collect()
+    }
+
+    #[test]
+    fn numeric_byte_io_crosses_pages_and_observes_resize_zeroing() {
+        let (mut objects, _, buffer) = fixture(12_300, Some(20_000));
+        let bytes = [1, 2, 3, 4, 5, 6, 7, 8];
+        objects
+            .write_array_buffer_bytes(&buffer, 4093, &bytes, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited())
+                .unwrap(),
+            bytes
+        );
+        assert_eq!(
+            read(&objects, &buffer, 4091, 12),
+            [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 0]
+        );
+        objects
+            .write_array_buffer_bytes(&buffer, 8190, &[0; 8], &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects
+                .array_buffer(&buffer)
+                .unwrap()
+                .block()
+                .unwrap()
+                .pages
+                .len(),
+            2
+        );
+        objects
+            .resize_array_buffer(&buffer, 4097, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects.read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        objects
+            .resize_array_buffer(&buffer, 12_300, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited())
+                .unwrap(),
+            [1, 2, 3, 4, 0, 0, 0, 0]
+        );
+        objects
+            .write_array_buffer_bytes(&buffer, 4093, &[0; 8], &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited())
+                .unwrap(),
+            [0; 8]
+        );
+        assert_eq!(
+            objects.read_array_buffer_bytes(&buffer, 0, 9, &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        assert_eq!(
+            objects.write_array_buffer_bytes(&buffer, 0, &[1; 9], &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        objects
+            .detach_array_buffer(&buffer, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects.write_array_buffer_bytes(&buffer, 0, &[1], &mut unlimited()),
+            Err(ArrayBufferError::Detached)
+        );
+        assert_eq!(
+            objects.read_array_buffer_bytes(&buffer, 0, 1, &mut unlimited()),
+            Err(ArrayBufferError::Detached)
+        );
+    }
+
+    #[test]
+    fn numeric_writes_preflight_every_page_before_mutating_existing_storage() {
+        let (mut objects, _, buffer) = fixture(12_300, None);
+        objects
+            .write_array_buffer_bytes(&buffer, 8192, &[9, 10], &mut unlimited())
+            .unwrap();
+        // The first absent page is staged before this budget fails on the
+        // second. Neither the index nor any bytes may be committed early.
+        assert_eq!(
+            objects.write_array_buffer_bytes(
+                &buffer,
+                4093,
+                &[1; 8],
+                &mut Budget::new(PAGE_SIZE + 100)
+            ),
+            Err(ArrayBufferError::Storage(Error::WorkLimit))
+        );
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited())
+                .unwrap(),
+            [0; 8]
+        );
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 8192, 2, &mut unlimited())
+                .unwrap(),
+            [9, 10, 0, 0, 0, 0, 0, 0]
+        );
+        assert_eq!(
+            objects
+                .array_buffer(&buffer)
+                .unwrap()
+                .block()
+                .unwrap()
+                .pages
+                .len(),
+            1
+        );
+        objects
+            .write_array_buffer_bytes(&buffer, 4093, &[2; 3], &mut unlimited())
+            .unwrap();
+        // An existing first page must stay intact if the missing second page
+        // cannot be prepared within the host's explicitly configured budget.
+        assert_eq!(
+            objects.write_array_buffer_bytes(&buffer, 4093, &[3; 8], &mut Budget::new(100)),
+            Err(ArrayBufferError::Storage(Error::WorkLimit))
+        );
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 4093, 8, &mut unlimited())
+                .unwrap(),
+            [2, 2, 2, 0, 0, 0, 0, 0]
+        );
+        assert_eq!(
+            objects.write_array_buffer_bytes(&buffer, u64::MAX, &[1], &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        // Updating an existing page needs only bounded element/lookup work,
+        // without copying the other stored pages under this small opt-in budget.
+        objects
+            .write_array_buffer_bytes(&buffer, 8192, &[12], &mut Budget::new(50))
+            .unwrap();
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, 8192, 2, &mut unlimited())
+                .unwrap(),
+            [12, 10, 0, 0, 0, 0, 0, 0]
+        );
+    }
+
+    #[test]
+    fn numeric_byte_io_keeps_safe_integer_offsets_without_narrowing() {
+        let (mut objects, _, buffer) = fixture(MAX_BYTE_LENGTH, None);
+        let bytes = [8, 7, 6, 5, 4, 3, 2, 1];
+        objects
+            .write_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH - 8, &bytes, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH - 8, 8, &mut unlimited())
+                .unwrap(),
+            bytes
+        );
+        assert_eq!(
+            objects.read_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH - 7, 8, &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        assert_eq!(
+            objects.write_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH, &[1], &mut unlimited()),
+            Err(ArrayBufferError::OutOfBounds)
+        );
+        assert_eq!(
+            objects
+                .read_array_buffer_bytes(&buffer, MAX_BYTE_LENGTH, 0, &mut unlimited())
+                .unwrap(),
+            [0; 8]
+        );
     }
 
     #[test]

@@ -21,6 +21,8 @@ pub(crate) use class_field::ClassField;
 mod class_private;
 mod class_static;
 mod construct;
+mod data_view;
+mod data_view_numeric;
 mod date;
 mod dynamic;
 mod error;
@@ -153,6 +155,8 @@ pub(crate) enum Builtin {
     DateParse,
     DateUtc,
     DateMethod(date::Method),
+    DataView,
+    DataViewMember(data_view::Member),
     RegExp,
     RegExpEscape,
     RegExpSpecies,
@@ -422,6 +426,8 @@ impl Builtin {
             Self::DateParse => "parse",
             Self::DateUtc => "UTC",
             Self::DateMethod(method) => method.name(),
+            Self::DataView => "DataView",
+            Self::DataViewMember(member) => member.initial_name(),
             Self::RegExp => "RegExp",
             Self::RegExpEscape => "escape",
             Self::RegExpSpecies => "get [Symbol.species]",
@@ -625,6 +631,8 @@ impl Builtin {
             Self::DateNow => 0.0,
             Self::DateParse => 1.0,
             Self::DateMethod(method) => method.length(),
+            Self::DataView => 1.0,
+            Self::DataViewMember(member) => member.length(),
             Self::ArrayBuffer | Self::ArrayBufferIsView => 1.0,
             Self::ArrayBufferMember(member) => member.length(),
             Self::RegExp => 2.0,
@@ -894,6 +902,7 @@ pub(super) struct Intrinsics {
     pub function_to_string: ObjectHandle,
     pub boolean: boolean::BooleanIntrinsics,
     pub date: date::DateIntrinsics,
+    pub data_view: data_view::DataViewIntrinsics,
     pub regexp: regexp::RegExpIntrinsics,
     pub bigint: bigint::BigIntIntrinsics,
     pub number: number::NumberIntrinsics,
@@ -935,6 +944,7 @@ impl Intrinsics {
         .into_iter()
         .chain(self.boolean.roots())
         .chain(self.date.roots())
+        .chain(self.data_view.roots())
         .chain(self.regexp.roots())
         .chain(self.bigint.roots())
         .chain(self.number.roots())
@@ -1076,6 +1086,7 @@ impl Realm {
         })?;
         let boolean = self.boolean_intrinsics(&object_prototype, &function_prototype, span)?;
         let date = self.date_intrinsics(&object_prototype, &function_prototype, span)?;
+        let data_view = self.data_view_intrinsics(&object_prototype, &function_prototype, span)?;
         let regexp = self.regexp_intrinsics(&object_prototype, &function_prototype, span)?;
         let bigint = self.bigint_intrinsics(&object_prototype, &function_prototype, span)?;
         let number = self.number_intrinsics(&object_prototype, &function_prototype, span)?;
@@ -1138,6 +1149,7 @@ impl Realm {
             function_to_string,
             boolean,
             date,
+            data_view,
             regexp,
             bigint,
             number,

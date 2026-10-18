@@ -173,6 +173,14 @@ impl Realm {
             .intrinsics
             .as_ref()
             .expect("initialized")
+            .data_view
+            .constructor
+            .clone();
+        self.define_builtin_property(&object, "DataView", Value::Object(constructor), true, span)?;
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
             .iterator
             .constructor
             .clone();

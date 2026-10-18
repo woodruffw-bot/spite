@@ -263,6 +263,7 @@ impl Objects {
         object.constructible = matches!(
             builtin,
             Builtin::ArrayBuffer
+                | Builtin::DataView
                 | Builtin::Set
                 | Builtin::WeakSet
                 | Builtin::Map

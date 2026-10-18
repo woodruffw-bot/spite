@@ -20,6 +20,8 @@ pub(crate) use array_buffer::{ArrayBufferData, ArrayBufferError};
 #[cfg(test)]
 mod symbol_tests;
 use arguments::ParameterMap;
+mod data_view;
+pub(crate) use data_view::DataViewData;
 mod descriptor;
 mod iterator;
 mod map;
@@ -84,6 +86,7 @@ pub struct OrdinaryObject {
     primitive_data: Option<PrimitiveData>,
     date_value: Option<Box<f64>>,
     array_buffer: Option<ArrayBufferData>,
+    data_view: Option<DataViewData>,
     regexp: Option<Box<RegExpData>>,
     error_data: bool,
     raw_json: bool,
@@ -120,6 +123,7 @@ impl OrdinaryObject {
             primitive_data: None,
             date_value: None,
             array_buffer: None,
+            data_view: None,
             regexp: None,
             error_data: false,
             raw_json: false,
@@ -245,6 +249,10 @@ impl OrdinaryObject {
 
     pub(crate) fn array_buffer_data(&self) -> Option<&ArrayBufferData> {
         self.array_buffer.as_ref()
+    }
+
+    pub(crate) fn data_view_data(&self) -> Option<&DataViewData> {
+        self.data_view.as_ref()
     }
 
     pub(crate) fn regexp_data(&self) -> Option<&RegExpData> {
@@ -396,6 +404,7 @@ impl Trace for OrdinaryObject {
         };
         std::iter::once(self.prototype.as_ref())
             .chain(self.primitive_data.iter().map(|_| None))
+            .chain(self.data_view.iter().map(|data| Some(data.buffer())))
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(self.raw_json.then_some(None))

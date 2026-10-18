@@ -2,6 +2,7 @@
 
 use std::{cmp::Ordering, fmt};
 
+mod native;
 mod width;
 
 /// An arithmetic or resource failure.

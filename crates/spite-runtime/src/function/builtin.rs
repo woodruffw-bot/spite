@@ -46,6 +46,19 @@ impl Realm {
                 span,
             ),
             Builtin::DateMethod(method) => self.date_method(method, this, arguments, span),
+            Builtin::DataView => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "DataView requires construction",
+            )),
+            Builtin::DataViewMember(member) => self.data_view_member(
+                member,
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -310,9 +323,9 @@ impl Realm {
                 "ArrayBuffer requires construction",
             )),
             Builtin::ArrayBufferSpecies => Ok(this),
-            // No object kind currently exposes [[ViewedArrayBuffer]]. This
-            // test never coerces its argument or reads public properties.
-            Builtin::ArrayBufferIsView => Ok(Value::Boolean(false)),
+            Builtin::ArrayBufferIsView => {
+                self.array_buffer_is_view(arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Builtin::ArrayBufferMember(member) => self.array_buffer_member(
                 member,
                 this,

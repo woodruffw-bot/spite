@@ -2014,7 +2014,6 @@ fn standard_global(name: &str) -> bool {
             | "Float64Array"
             | "WeakMap"
             | "SharedArrayBuffer"
-            | "DataView"
             | "Atomics"
             | "WeakRef"
             | "FinalizationRegistry"

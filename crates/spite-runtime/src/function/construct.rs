@@ -269,6 +269,16 @@ impl Realm {
                 Callable::Builtin(Builtin::Date) => {
                     return self.date_constructor(new_target, arguments, span);
                 }
+                Callable::Builtin(Builtin::DataView) => {
+                    let mut arguments = arguments.into_iter();
+                    return self.data_view_constructor(
+                        new_target,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::Number) => {
                     let value =
                         self.number_constructor_value(arguments.into_iter().next(), span)?;
