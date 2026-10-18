@@ -14502,3 +14502,47 @@ no row is excluded and no Native expectation is changed.
 
 The fifteen-job matrix still requires all 57 framework probes and four complete
 reviewed-corpus gates before the following push.
+
+## Inner captures around one-character UnicodeSets string repetition
+
+A separate constructor proves complete nested capturing/noncapturing wrappers
+around one singleton-q checked v/vi class and one existing quantifier. Whole
+outside gates and enclosing captures retain their scopes; all inner captures
+share the final selected original character and remain undefined after zero
+iterations. No new search/capture storage or default resource limits are added.
+Two preceding Unsupported controls in their original owner now assert concrete
+success and finally-marker completion; every other old control is retained.
+
+Two Core tests cover sixteen pairwise cases over six tiny original-UTF-16 inputs,
+with 1,344 independent cursor/sticky comparisons, six construction-cancellation
+rows and three complete search/capture cancellation rows. Matchers are compiled
+once per case. Two Runtime functions and one direct incremental-work unit cover
+state/effects, named/ordinary capture scopes, undefined properties, consumers,
+Unicode boundaries and explicitly opted-in cancellation. Ten handwritten full
+JSON/UTF-16 rows specify eight matches and two nulls with no exclusions.
+
+The expected Native inventory is 5,357: 1,010 Core and 4,347 REST, including
+3,590 Runtime integration tests and 303 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. Gold files total 728, retaining all 727 preceding files
+byte-for-byte. All twenty local checks passed, including full Core and Runtime
+integration suites on stable and MSRV, the direct accounting witness on both,
+one inspected insta update and thirteen ordinary quality checks.
+
+The fresh strict ten-row comparison with Node 24.19.0 retained eight agreements
+and two disagreements. Both concern the documented V8 singleton-q folding
+defect: the intersection row selects only lowercase k instead of the complete
+Kelvin/K/k run, and the complemented lazy row selects Kelvin instead of the
+first permitted exclamation mark. The original nonzero receipt and all ten
+outputs remain evidence. Native golds retain the edition-17 expectations.
+See [the V8 fix](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6)
+and [Chromium issue 571793422](https://issues.chromium.org/issues/571793422).
+
+After normative review, a separate two-row ordinary-class comparison passed
+with [k] and [^ks] substituted for those exact classes. It required the same
+flags, inputs, starts and complete JSON, including all nested capture values,
+indices and named groups; only the reported source changed. No original row
+is excluded and no Native expectation is changed.
+
+The fifteen-job matrix still requires all 57 framework probes and four complete
+reviewed-corpus gates before the following push.

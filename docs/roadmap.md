@@ -620,6 +620,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compose single-character ClassStringDisjunction operands through checked v/vi unions, nested complements, intersections and subtractions, with canonical outside assertions and complete whole-body captures.
 - [x] Match greedy/lazy repetition of one checked v/vi class containing single-character ClassStringDisjunction operands, with canonical outside assertions and complete whole-body captures.
 - [x] Match one decoded Unicode literal followed by one complete checked v/vi class with one-character ClassStringDisjunction operands, with canonical optional outside assertions and complete whole-body captures.
+- [x] Repeat a checked one-character ClassStringDisjunction v/vi class inside complete capturing/noncapturing groups, preserving final-iteration inner captures, undefined zero-iteration captures and whole outside assertion/capture scopes.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.

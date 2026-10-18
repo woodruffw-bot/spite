@@ -8864,3 +8864,30 @@ remains saturating min(4, remaining + 1) for sticky calls and remaining + 1 for
 nonsticky calls, independent of source length. Class-first q forms, partial
 captures, additional atoms, quantifiers, reordered assertions, empty or longer
 q alternatives and properties of strings remain outside this entry.
+
+## Complete inner captures around one-character UnicodeSets string repetition
+
+A separate v/vi entry admits complete nested ordinary capturing/noncapturing
+wrappers around one checked class containing singleton-character q operands,
+followed by one existing greedy/lazy quantifier. Canonical optional outside
+line and word predicates apply to the complete repetition. Each inner capture
+selects the final original character, or remains undefined after zero selected
+iterations. Complete enclosing captures retain the caller's whole-match scope.
+
+Construction borrows the original source. A saturating 16N charge bounds outside
+framing, both existing quantifier interpretations and wrapper walks before any
+scan. Exact prefix openers and a corresponding closing run surround a bare
+[...]-class. Bounds are parsed first; zero or impossible bounds cannot skip the
+complete checked q compiler's proof of every leaf. Its existing fallible
+work/storage charges remain unchanged, including after empty results and under
+unrepresentable counts. No class/group scanner, copied Pattern, quantifier
+expansion or default quota is introduced.
+
+[RepeatMatcher](https://262.ecma-international.org/17.0/#sec-repeatmatcher)
+retains final-iteration capture effects and undefined zero-iteration slots.
+The existing UnicodeRepeatedAtom representation, original-character matching,
+whole-body captures and incremental full-suffix accounting are reused, including
+supplementary/lone characters and the approved initial-low-surrogate boundary.
+Actual i/m predicates retain original input context. Inner assertions, partial
+captures, alternatives, extra atoms, nullable branches and string-valued leaves
+remain outside this entry. Earlier constructors keep their domains/callbacks.

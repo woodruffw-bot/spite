@@ -2503,4 +2503,82 @@ mod tests {
             Err(spite_core::RegExpUnicodeSetCompileError::Work(43))
         ));
     }
+
+    #[test]
+    fn wrapped_single_character_v_string_repetition_capture_work_remains_incremental() {
+        let source = JsString::from(r"((?:([\q{\uD83D\uDE00|x}--x])))+");
+        let body = RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_v_set_with_single_character_strings_and_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(body.capture_count(), 2);
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeRepeatedAtom(body), 2);
+        let input = JsString::from(format!("A{}!", "😀".repeat(128)).as_str());
+        assert!(source.len() < input.len());
+        assert_eq!(matcher.capture_count(), 4);
+        assert_eq!(matcher.search_passes(true), 0);
+        assert_eq!(matcher.search_passes(false), 0);
+        assert_eq!(
+            matcher.search_work(true, source.len(), input.len()),
+            input.len()
+        );
+        assert_eq!(
+            matcher.search_work(false, source.len(), input.len()),
+            input.len()
+        );
+        let mut complete = Vec::new();
+        let found = matcher
+            .find_with_work(&input, 2, true, |amount| {
+                complete.push(amount);
+                Ok::<(), usize>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(complete.len() > 2);
+        assert_eq!(complete.last(), Some(&2));
+        assert_eq!(found.range, 1..257);
+        assert_eq!(found.capture_count, 4);
+        assert_eq!(found.capture(0), Some(1..257));
+        assert_eq!(found.capture(1), Some(1..257));
+        assert_eq!(found.capture(2), Some(255..257));
+        assert_eq!(found.capture(3), Some(255..257));
+        assert_eq!(found.capture(4), None);
+        // Fail at the final capture-extraction charge, after selecting the run
+        // but before a result can expose captures or BuiltinExec writes effects.
+        let mut seen = Vec::new();
+        let cancelled = matcher.find_with_work(&input, 2, true, |amount| {
+            seen.push(amount);
+            if seen.len() == complete.len() {
+                Err(seen.len())
+            } else {
+                Ok(())
+            }
+        });
+        assert!(matches!(cancelled, Err(at) if at == complete.len()));
+        assert_eq!(seen, complete);
+        let source = JsString::from(r"((?:([\q{a}--a]))){0}");
+        let body = RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_v_set_with_single_character_strings_and_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeRepeatedAtom(body), 2);
+        let found = matcher
+            .find_with_work(&JsString::from("a"), 0, true, |_| Ok::<(), usize>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..0);
+        assert_eq!(found.capture_count, 4);
+        assert_eq!(found.capture(0), Some(0..0));
+        assert_eq!(found.capture(1), Some(0..0));
+        assert_eq!(found.capture(2), None);
+        assert_eq!(found.capture(3), None);
+    }
 }
