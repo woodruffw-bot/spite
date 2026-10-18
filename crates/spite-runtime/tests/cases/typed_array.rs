@@ -533,21 +533,18 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 }
 
 #[test]
-fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
+fn uint8_encoding_wrappers_execute_and_report_language_syntax_errors() {
+    check(
+        "let a=Uint8Array.fromBase64('AQI='),b=Uint8Array.fromHex('0304'),c=new Uint8Array(2),x=c.setFromBase64('BQY='),y=c.setFromHex('0708');a.toBase64()==='AQI=' && a.toHex()==='0102' && b.toBase64()==='AwQ=' && b.toHex()==='0304' && x.read===4 && x.written===2 && y.read===4 && y.written===2 && c.toHex()==='0708'",
+    );
     for expression in [
-        "Uint8Array.fromBase64('')",
-        "new Uint8Array(1).setFromBase64('')",
-        "new Uint8Array(1).toBase64()",
+        "Uint8Array.fromBase64('!')",
+        "Uint8Array.fromHex('!')",
+        "new Uint8Array(1).setFromBase64('!')",
+        "new Uint8Array(1).setFromHex('!')",
     ] {
-        let mut realm = Realm::default();
-        realm.eval("let flag=0").unwrap();
-        let result = realm.eval(&format!(
-            "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
+        check(&format!(
+            "let caught=false,finished=false;try{{{expression};}}catch(e){{caught=e instanceof SyntaxError;}}finally{{finished=true;}}caught && finished"
         ));
-        assert!(
-            matches!(&result, Err(Error::Unsupported { .. })),
-            "{expression}: {result:?}"
-        );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
 }

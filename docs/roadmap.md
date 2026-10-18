@@ -638,7 +638,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement TypedArray species-aware slice and subarray views, intrinsic toReversed and with copies, and live resize/conversion ordering.
 - [x] Implement TypedArray numeric sort and toSorted.
 - [x] Implement Uint8Array hexadecimal conversion methods.
-- [ ] Implement Uint8Array base64 conversion methods.
+- [x] Implement Uint8Array base64 conversion methods.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.

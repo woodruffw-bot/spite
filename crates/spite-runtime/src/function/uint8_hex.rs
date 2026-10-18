@@ -93,10 +93,10 @@ fn hex_digit(unit: u16) -> Option<u8> {
     }
 }
 
-struct Layout {
-    buffer: ObjectHandle,
-    byte_offset: u64,
-    length: u64,
+pub(super) struct Uint8Layout {
+    pub(super) buffer: ObjectHandle,
+    pub(super) byte_offset: u64,
+    pub(super) length: u64,
 }
 
 impl Realm {
@@ -129,37 +129,41 @@ impl Realm {
                 .prototype(ElementType::Uint8)
                 .clone();
             let result = self.allocate_typed_array(ElementType::Uint8, &prototype, length, span)?;
-            let layout = self.uint8_hex_layout(&result, span)?;
-            self.uint8_hex_write(&layout, &decoded.bytes, span)?;
+            let layout = self.uint8_layout(&result, span)?;
+            self.uint8_write_bytes(&layout, &decoded.bytes, span)?;
             return Ok(Value::Object(result));
         }
 
-        let object = self.uint8_hex_brand(receiver, span)?;
+        let object = self.uint8_brand(receiver, span)?;
         if matches!(method, Method::SetFrom) {
             // Brand -> String type -> current witness -> bounded decode.
             // Neither String conversion hooks nor public view properties run.
             let string =
                 Self::uint8_hex_string(arguments.next().unwrap_or(Value::Undefined), span)?;
-            let layout = self.uint8_hex_layout(&object, span)?;
+            let layout = self.uint8_layout(&object, span)?;
             let decoded = self.object_work(span, |_, budget| {
                 from_hex(string.code_units(), layout.length, budget)
             })?;
-            self.uint8_hex_write(&layout, &decoded.bytes, span)?;
+            self.uint8_write_bytes(&layout, &decoded.bytes, span)?;
             // A language syntax failure is deliberately thrown only after all
             // completed pairs have been written. Result allocation follows it.
             if let Some(error) = decoded.error {
                 return Err(Self::uint8_hex_syntax(error, span));
             }
-            self.uint8_hex_result(decoded.read, decoded.bytes.len(), span)
+            self.uint8_decoding_result(decoded.read, decoded.bytes.len(), span)
         } else {
-            let layout = self.uint8_hex_layout(&object, span)?;
+            let layout = self.uint8_layout(&object, span)?;
             self.uint8_hex_encode(&layout, span)
         }
     }
 
     /// ValidateUint8Array (23.3.3.1) checks only exact private kind, without a
     /// current-bounds check. In particular, Uint8ClampedArray is not accepted.
-    fn uint8_hex_brand(&mut self, receiver: Value, span: Span) -> Result<ObjectHandle, Error> {
+    pub(super) fn uint8_brand(
+        &mut self,
+        receiver: Value,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
         let invalid = || {
             Self::exception(
                 ExceptionKind::TypeError,
@@ -193,7 +197,11 @@ impl Realm {
         }
     }
 
-    fn uint8_hex_layout(&mut self, object: &ObjectHandle, span: Span) -> Result<Layout, Error> {
+    pub(super) fn uint8_layout(
+        &mut self,
+        object: &ObjectHandle,
+        span: Span,
+    ) -> Result<Uint8Layout, Error> {
         let layout = self.object_work(span, |objects, _| {
             let data = objects
                 .inspect(object)?
@@ -203,11 +211,13 @@ impl Realm {
                 .inspect(data.buffer())?
                 .array_buffer_data()
                 .expect("TypedArray's buffer");
-            Ok(data.in_bounds_array_length(buffer).map(|length| Layout {
-                buffer: data.buffer().clone(),
-                byte_offset: data.byte_offset(),
-                length,
-            }))
+            Ok(data
+                .in_bounds_array_length(buffer)
+                .map(|length| Uint8Layout {
+                    buffer: data.buffer().clone(),
+                    byte_offset: data.byte_offset(),
+                    length,
+                }))
         })?;
         layout.ok_or_else(|| {
             Self::exception(
@@ -221,8 +231,13 @@ impl Realm {
     /// SetUint8ArrayBytes (23.3.3.3) has no callbacks or numeric conversions.
     /// Each bounded byte write retains its existing transactional guarantee;
     /// earlier bytes remain committed if a later host operation fails.
-    fn uint8_hex_write(&mut self, layout: &Layout, bytes: &[u8], span: Span) -> Result<(), Error> {
-        self.uint8_hex_buffer_work(span, |objects, budget| {
+    pub(super) fn uint8_write_bytes(
+        &mut self,
+        layout: &Uint8Layout,
+        bytes: &[u8],
+        span: Span,
+    ) -> Result<(), Error> {
+        self.uint8_buffer_work(span, |objects, budget| {
             for (index, byte) in bytes.iter().enumerate() {
                 let index = u64::try_from(index).map_err(|_| ArrayBufferError::OutOfBounds)?;
                 let offset = layout
@@ -235,7 +250,7 @@ impl Realm {
         })
     }
 
-    fn uint8_hex_result(
+    pub(super) fn uint8_decoding_result(
         &mut self,
         read: usize,
         written: usize,
@@ -266,7 +281,7 @@ impl Realm {
         })
     }
 
-    fn uint8_hex_encode(&mut self, layout: &Layout, span: Span) -> Result<Value, Error> {
+    fn uint8_hex_encode(&mut self, layout: &Uint8Layout, span: Span) -> Result<Value, Error> {
         // Fusing GetUint8ArrayBytes and encoding avoids a second full byte list.
         // No JavaScript hook or collection can run after the captured witness.
         let length = layout
@@ -292,7 +307,7 @@ impl Realm {
                 .byte_offset
                 .checked_add(index)
                 .ok_or_else(|| Self::uint8_hex_capacity(span))?;
-            let bytes = self.uint8_hex_buffer_work(span, |objects, budget| {
+            let bytes = self.uint8_buffer_work(span, |objects, budget| {
                 objects.read_array_buffer_bytes(&layout.buffer, offset, count, budget)
             })?;
             for byte in &bytes[..count] {
@@ -315,7 +330,7 @@ impl Realm {
         Ok(Value::String(JsString::from_code_units(units)))
     }
 
-    fn uint8_hex_buffer_work<T>(
+    pub(super) fn uint8_buffer_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Objects, &mut Budget) -> Result<T, ArrayBufferError>,

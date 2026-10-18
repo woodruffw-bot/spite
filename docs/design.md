@@ -7731,6 +7731,30 @@ and byte I/O use checked sizes, fallible reservation, and bounded work.
 Malformed input remains a JavaScript exception; optional host work, allocation,
 and output limits retain their separate error channel and ordinary defaults.
 
+## Uint8Array Base64 conversion
+
+fromBase64, setFromBase64, and toBase64 implement the Base64 operations in
+23.3. Decoders require primitive Strings. Instance methods check the exact
+Uint8 brand, including subclasses, before reading options; the live buffer
+witness follows option getters so their resize and detach effects are observed.
+The static decoder ignores its this value and allocates through the retained
+intrinsic only after decoding succeeds.
+
+Options use GetOptionsObject, including its ordinary allocation for an omitted
+argument. Decoding reads alphabet before lastChunkHandling; encoding reads
+alphabet before applying ToBoolean to omitPadding. Standard and URL alphabets
+are distinct, only the five ASCII whitespace characters are skipped, and
+loose, strict, and stop-before-partial modes retain their separate tail rules.
+Strict padded tails require zero unused bits.
+
+Decoding respects destination capacity while scanning, with read positions in
+UTF-16 code units. Syntax errors preserve writes from preceding complete
+quanta; invalid padding or trailing junk does not write the current quantum.
+Normal setters return ordinary objects with ordered writable, enumerable,
+configurable read and written properties. Encoding uses checked output sizes,
+fallible scratch storage, and bounded byte I/O. Host quotas remain opt-in and
+use their separate error channel.
+
 ## Date time values
 
 Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).

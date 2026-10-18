@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal conversion; Base64 methods remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -15276,3 +15276,34 @@ the renamed source successfully. Both Runtime documentation checks,
 formatting, policy, and all three inventories pass. No second full integration
 run is claimed. The expected Native total is 5,629: 1,022 Core and 4,607 REST.
 There are 909 Rust files, with 902 unowned files and all 734 snapshots unchanged.
+
+## Uint8Array Base64 conversion
+
+Twenty new integration groups cover fromBase64, setFromBase64, and
+toBase64, using inline insta matrices and independent byte/string assertions.
+They cover both alphabets, all tail modes, ASCII whitespace, strict overflow
+bits, invalid padding and suffixes, UTF-16 read positions, capacity stops,
+partial writes, brand and input validation, intrinsic allocation, ordered
+option getters, live resize/detachment, descriptors, sparse buffers, collection,
+and explicit host quotas. The preceding unsupported-wrapper fixture now checks
+positive execution of all six encodings and catch/finally for SyntaxError.
+
+Five private units check boundary matrices, every strict padded-tail sextet,
+bounded suffix work, allocation/error ordering under an explicitly full heap,
+and output preflight under an eight-unit string limit enabled after fixture
+setup. The original target scripts, huge-buffer case, and assertions retain
+that limit. Shared Uint8 helpers retain the hexadecimal codec and all its
+regression tests. No dependency, intrinsic object, default quota, upstream
+fixture, or sidecar snapshot is introduced.
+
+Stable passes all 369 Runtime units and all 3,806 integration cases. Rust 1.85
+passes all 369 units and the 21 focused groups, including the revised wrapper
+fixture. The initial focus found a quota-fixture setup error: its eight-unit
+string limit prevented looking up fromBase64. Moving that new fixture to a
+private unit preserves its setup, target scripts, assertions, huge-buffer
+ordering, and original limit. The full integration run began after correction.
+Both Runtime documentation checks, fresh all-target workspace Clippy,
+formatting, policy, and all three inventories pass. The expected Native total
+is 5,654: 1,022 Core and 4,632 REST. All prior Native names remain except the
+single obsolete unsupported-wrapper name, replaced by its positive regression.
+There are 911 Rust files, with 904 unowned files and all 734 snapshots unchanged.

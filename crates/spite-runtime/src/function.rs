@@ -50,6 +50,7 @@ mod typed_array_methods;
 mod typed_array_mutation;
 mod typed_array_read;
 mod typed_array_sort;
+mod uint8_base64;
 mod uint8_hex;
 mod uri;
 mod weak_set;
