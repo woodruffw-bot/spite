@@ -1,8 +1,8 @@
-//! Ordinary property storage and function call metadata.
+//! Property storage, integer-indexed buffer views, and function call metadata.
 //!
 //! This layer implements own string/symbol data and accessor properties.
-//! Additional exotic internal methods are separate increments. Mapped arguments
-//! synchronize indexed properties with traced parameter environments.
+//! Mapped arguments synchronize indexed properties with traced parameter
+//! environments; TypedArray elements read and write their viewed buffer.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
 use crate::{Value, function::Callable};
@@ -22,6 +22,8 @@ mod symbol_tests;
 use arguments::ParameterMap;
 mod data_view;
 pub(crate) use data_view::DataViewData;
+mod typed_array;
+pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArraySetAction};
 mod descriptor;
 mod iterator;
 mod map;
@@ -87,6 +89,7 @@ pub struct OrdinaryObject {
     date_value: Option<Box<f64>>,
     array_buffer: Option<ArrayBufferData>,
     data_view: Option<DataViewData>,
+    typed_array: Option<TypedArrayData>,
     regexp: Option<Box<RegExpData>>,
     error_data: bool,
     raw_json: bool,
@@ -124,6 +127,7 @@ impl OrdinaryObject {
             date_value: None,
             array_buffer: None,
             data_view: None,
+            typed_array: None,
             regexp: None,
             error_data: false,
             raw_json: false,
@@ -255,6 +259,10 @@ impl OrdinaryObject {
         self.data_view.as_ref()
     }
 
+    pub(crate) fn typed_array_data(&self) -> Option<&TypedArrayData> {
+        self.typed_array.as_ref()
+    }
+
     pub(crate) fn regexp_data(&self) -> Option<&RegExpData> {
         self.regexp.as_deref()
     }
@@ -294,13 +302,15 @@ impl OrdinaryObject {
         self.extensible = false;
     }
 
-    /// Returns the number of own properties, including non-enumerable properties.
+    /// Returns the number of physically stored ordinary properties.
+    /// Virtual TypedArray elements require [`Objects::own_keys`] for enumeration.
     pub fn property_count(&self) -> usize {
         self.properties.len()
     }
 
     /// Looks up a stored own property without consulting the prototype.
-    /// Use [`Objects::get_own`] to observe current mapped-argument values.
+    /// Use [`Objects::get_own`] or [`Objects::has_own`] for exotic properties and
+    /// current mapped-argument values; this record does not resolve buffer bytes.
     pub fn own_property<'key>(&self, key: impl Into<PropertyKeyRef<'key>>) -> Option<&Property> {
         let key = key.into();
         self.property_index(key)
@@ -349,7 +359,8 @@ impl OrdinaryObject {
         true
     }
 
-    /// Returns all own keys in OrdinaryOwnPropertyKeys order (10.1.11.1).
+    /// Returns stored ordinary keys in OrdinaryOwnPropertyKeys order (10.1.11.1).
+    /// Use [`Objects::own_keys`] to include virtual TypedArray elements.
     ///
     /// Array indices precede other strings and sort numerically. Other strings
     /// retain creation order, followed by symbols in their creation order.
@@ -405,6 +416,7 @@ impl Trace for OrdinaryObject {
         std::iter::once(self.prototype.as_ref())
             .chain(self.primitive_data.iter().map(|_| None))
             .chain(self.data_view.iter().map(|data| Some(data.buffer())))
+            .chain(self.typed_array.iter().map(|data| Some(data.buffer())))
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(self.raw_json.then_some(None))

@@ -5,6 +5,7 @@
 mod test_support;
 
 mod assignment_pattern;
+mod binary_data;
 mod binding;
 mod environment;
 mod eval;
@@ -22,6 +23,9 @@ use environment::{BindingState, EnvironmentHandle};
 pub use time_zone::{TimeZone, TimeZoneError};
 pub mod object;
 mod realm_object;
+mod realm_typed_array;
+#[cfg(test)]
+mod typed_array_tests;
 mod value;
 pub use realm_object::RootedValue;
 pub use spite_heap::{Collection, Handle as ObjectHandle};

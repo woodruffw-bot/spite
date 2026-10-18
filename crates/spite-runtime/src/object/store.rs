@@ -1,4 +1,4 @@
-//! Heap context for ordinary internal methods with bounded prototype traversal.
+//! Heap context for ordinary and exotic internal methods with bounded work.
 
 use super::entry::Entry;
 use super::{
@@ -41,6 +41,8 @@ impl Root {
 pub enum Error {
     /// An invalid handle or exhausted heap capacity.
     Heap(spite_heap::Error),
+    /// Numeric element conversion exhausted an integer limit or failed.
+    Integer(spite_bigint::Error),
     /// The operation exhausted its work budget.
     WorkLimit,
     /// A permitted new property would exceed the object's capacity.
@@ -52,18 +54,24 @@ pub enum Error {
     /// Array length has not been converted to an integral Number in the u32 range.
     /// JavaScript's two observable numeric conversions belong to the Realm layer.
     UnnormalizedArrayLength,
+    /// An indexed TypedArray write requires a Number or BigInt converted by its Realm.
+    UnnormalizedTypedArrayElement,
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Heap(error) => error.fmt(f),
+            Self::Integer(error) => error.fmt(f),
             Self::WorkLimit => f.write_str("object work limit exceeded"),
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
             Self::NotCallable => f.write_str("function handle must be callable"),
             Self::WrongKind => f.write_str("heap entry has the wrong kind"),
             Self::UnnormalizedArrayLength => {
                 f.write_str("array length requires a preconverted u32 Number")
+            }
+            Self::UnnormalizedTypedArrayElement => {
+                f.write_str("TypedArray element requires a preconverted numeric value")
             }
         }
     }
@@ -75,10 +83,12 @@ impl From<spite_heap::Error> for Error {
     }
 }
 
-/// Work remaining for prototype hops, property scans, and value copies.
+/// Optional work and integer-magnitude limits shared by object operations.
+/// Work covers prototype hops, property scans, element codecs, and value copies.
 #[derive(Debug)]
 pub struct Budget {
     remaining: Option<usize>,
+    max_bigint_bits: Option<usize>,
 }
 
 impl Budget {
@@ -90,7 +100,15 @@ impl Budget {
     /// Creates an object-operation budget with an optional work limit.
     /// `None` disables work accounting; storage and identity checks still apply.
     pub fn with_work_limit(work: Option<usize>) -> Self {
-        Self { remaining: work }
+        Self::with_limits(None, work)
+    }
+
+    /// Creates a budget sharing optional integer-magnitude and object-work limits.
+    pub fn with_limits(max_bigint_bits: Option<usize>, work: Option<usize>) -> Self {
+        Self {
+            remaining: work,
+            max_bigint_bits,
+        }
     }
 
     /// Returns the unconsumed work units, or `None` when work is unlimited.
@@ -103,6 +121,16 @@ impl Budget {
             *remaining = remaining.checked_sub(work).ok_or(Error::WorkLimit)?;
         }
         Ok(())
+    }
+
+    pub(crate) fn integer<T>(
+        &mut self,
+        work: impl FnOnce(&mut spite_bigint::Budget) -> Result<T, spite_bigint::Error>,
+    ) -> Result<T, Error> {
+        let mut budget = spite_bigint::Budget::with_limits(self.max_bigint_bits, self.remaining);
+        let result = work(&mut budget);
+        self.remaining = budget.remaining_work();
+        result.map_err(Error::Integer)
     }
 
     pub(super) fn lookup<'key>(
@@ -139,7 +167,7 @@ impl Budget {
     }
 }
 
-/// The next step of OrdinaryGet, performed after releasing storage borrows.
+/// A property lookup result, performed after releasing storage borrows.
 #[derive(Clone, Debug, PartialEq)]
 pub enum GetAction {
     /// Return the supplied data value (or undefined for an absent getter).
@@ -148,7 +176,7 @@ pub enum GetAction {
     Call(Handle),
 }
 
-/// The next step of OrdinarySet, performed after releasing storage borrows.
+/// A property write result or continuation outside storage borrows.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SetAction {
     /// The write completed or was rejected, without invoking a setter.
@@ -158,9 +186,23 @@ pub enum SetAction {
     /// Define this Array receiver's length after performing ArraySetLength's
     /// numeric conversions on the originally assigned value outside storage.
     ArrayLength(Handle),
+    /// Convert this assigned value in its Realm, then recheck and write the element.
+    TypedArrayElement {
+        /// The integer-indexed target whose receiver is itself.
+        target: Handle,
+        /// The canonical numeric index, including invalid indices.
+        index: f64,
+        /// The original value, before observable numeric coercion.
+        value: Value,
+    },
 }
 
-/// An ordinary-object heap that validates prototypes and prevents their cycles.
+enum FoundProperty<'a> {
+    Stored(Handle, &'a Property),
+    Element(Handle, f64),
+}
+
+/// An object heap that validates prototypes and prevents their cycles.
 ///
 /// Allocation and internal methods never trigger collection. Returned handles
 /// are unrooted: retain a `Root` or include each live host/interpreter handle in
@@ -702,10 +744,21 @@ impl Objects {
         Ok(Root { handle })
     }
 
-    /// Disallows new own properties while preserving existing property attributes.
-    pub fn prevent_extensions(&mut self, object: &Handle) -> Result<(), Error> {
+    /// Prevents extensions, returning false when a TypedArray's buffer is resizable.
+    /// Rejection preserves extensibility and existing property attributes.
+    pub fn prevent_extensions(&mut self, object: &Handle) -> Result<bool, Error> {
+        if let Some(data) = self.inspect(object)?.typed_array_data() {
+            let buffer = self
+                .inspect(data.buffer())?
+                .array_buffer_data()
+                .ok_or(Error::WrongKind)?;
+            // 10.4.5.1 rejects even fixed-length views over resizable buffers.
+            if buffer.is_resizable() {
+                return Ok(false);
+            }
+        }
         self.object_mut(object)?.prevent_extensions();
-        Ok(())
+        Ok(true)
     }
 
     /// Applies OrdinarySetPrototypeOf (10.1.2.1), returning false on rejection.
@@ -746,6 +799,8 @@ impl Objects {
     /// Array length values must already be Numbers in the u32 range; this storage
     /// layer cannot execute the observable ArraySetLength conversions. Array
     /// truncation can return false after deleting higher configurable elements.
+    /// TypedArray element values must already have the matching numeric type;
+    /// callers needing observable coercion first use its definition continuation.
     pub fn define(
         &mut self,
         object: &Handle,
@@ -755,7 +810,24 @@ impl Objects {
     ) -> Result<bool, Error> {
         let key = key.into();
         let mut descriptor = descriptor.into().normalize();
-        budget.lookup(self.inspect(object)?, &key)?;
+        let record = self.inspect(object)?;
+        if record.typed_array_data().is_some() {
+            match self.typed_array_define_action(object, &key, &descriptor, budget)? {
+                super::TypedArrayDefineAction::Ordinary => {}
+                super::TypedArrayDefineAction::Done(allowed) => return Ok(allowed),
+                super::TypedArrayDefineAction::Element { index } => {
+                    let DescriptorKind::Data {
+                        value: Some(value), ..
+                    } = descriptor.kind
+                    else {
+                        unreachable!("element definition requires a value")
+                    };
+                    self.typed_array_set_element(object, index, value, budget)?;
+                    return Ok(true);
+                }
+            }
+        }
+        budget.lookup(record, &key)?;
         let mapping = self.mapped_target(object, &key, budget)?;
         // Prepare copies and charge all work before changing either the ordinary
         // descriptor or its aliased environment cell (10.4.4.2).
@@ -854,6 +926,9 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<Vec<PropertyKey>, Error> {
         let record = self.inspect(object)?;
+        if record.typed_array_data().is_some() {
+            return self.typed_array_own_keys(object, budget);
+        }
         let count = record.property_count();
         let sorting = count
             .checked_mul(count.max(1).ilog2() as usize + 1)
@@ -880,6 +955,11 @@ impl Objects {
     ) -> Result<bool, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.typed_array_data().is_some() {
+            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
+                return self.typed_array_has_index(object, index, budget);
+            }
+        }
         budget.lookup(record, key)?;
         Ok(record.own_property(key).is_some())
     }
@@ -893,6 +973,11 @@ impl Objects {
     ) -> Result<Option<Property>, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.typed_array_data().is_some() {
+            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
+                return self.typed_array_get_own_element(object, index, budget);
+            }
+        }
         budget.lookup(record, key)?;
         match record.own_property(key) {
             Some(Property::Data(data)) => {
@@ -924,14 +1009,17 @@ impl Objects {
     ) -> Result<GetAction, Error> {
         let key = key.into();
         match self.find(object, key, budget)? {
-            Some((owner, Property::Data(property))) => {
+            Some(FoundProperty::Element(owner, index)) => self
+                .typed_array_get_element(&owner, index, budget)
+                .map(GetAction::Value),
+            Some(FoundProperty::Stored(owner, Property::Data(property))) => {
                 let value = self
                     .mapped_value(&owner, key, budget)?
                     .unwrap_or(&property.value);
                 budget.value(value)?;
                 Ok(GetAction::Value(value.clone()))
             }
-            Some((_, Property::Accessor(property))) => {
+            Some(FoundProperty::Stored(_, Property::Accessor(property))) => {
                 budget.charge(1)?;
                 Ok(match &property.get {
                     Some(getter) => GetAction::Call(getter.clone()),
@@ -950,7 +1038,13 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<bool, Error> {
         let key = key.into();
-        Ok(self.find(object, key, budget)?.is_some())
+        match self.find(object, key, budget)? {
+            Some(FoundProperty::Element(owner, index)) => {
+                self.typed_array_has_index(&owner, index, budget)
+            }
+            Some(FoundProperty::Stored(..)) => Ok(true),
+            None => Ok(false),
+        }
     }
 
     /// Applies ordinary data writes or returns a setter call with an explicit receiver.
@@ -971,14 +1065,29 @@ impl Objects {
             self.inspect(receiver)?;
         }
         match self.find(object, &key, budget)? {
-            Some((_, Property::Accessor(property))) => {
+            Some(FoundProperty::Element(owner, _)) => {
+                match self.typed_array_set_action(&owner, &key, receiver, budget)? {
+                    super::TypedArraySetAction::Ordinary => {}
+                    super::TypedArraySetAction::Done(allowed) => {
+                        return Ok(SetAction::Done(allowed));
+                    }
+                    super::TypedArraySetAction::Element { index } => {
+                        return Ok(SetAction::TypedArrayElement {
+                            target: owner,
+                            index,
+                            value,
+                        });
+                    }
+                }
+            }
+            Some(FoundProperty::Stored(_, Property::Accessor(property))) => {
                 budget.charge(1)?;
                 return Ok(match &property.set {
                     Some(setter) => SetAction::Call(setter.clone()),
                     None => SetAction::Done(false),
                 });
             }
-            Some((_, Property::Data(property))) if !property.writable => {
+            Some(FoundProperty::Stored(_, Property::Data(property))) if !property.writable => {
                 return Ok(SetAction::Done(false));
             }
             _ => {}
@@ -987,9 +1096,19 @@ impl Objects {
             return Ok(SetAction::Done(false));
         };
         let destination = self.inspect(receiver)?;
-        budget.lookup(destination, &key)?;
-        let descriptor = if let Some(property) = destination.own_property(&key) {
-            if !matches!(property, Property::Data(data) if data.writable) {
+        let array_length = destination.is_array() && super::array::is_length(&key);
+        let own_writable =
+            if let Some(index) = self.typed_array_numeric_index(receiver, &key, budget)? {
+                self.typed_array_has_index(receiver, index, budget)?
+                    .then_some(true)
+            } else {
+                budget.lookup(destination, &key)?;
+                destination
+                    .own_property(&key)
+                    .map(|property| matches!(property, Property::Data(data) if data.writable))
+            };
+        let descriptor = if let Some(writable) = own_writable {
+            if !writable {
                 return Ok(SetAction::Done(false));
             }
             DataDescriptor {
@@ -1004,8 +1123,28 @@ impl Objects {
                 configurable: Some(true),
             }
         };
-        if destination.is_array() && super::array::is_length(&key) {
+        if array_length {
             return Ok(SetAction::ArrayLength(receiver.clone()));
+        }
+        let descriptor: PropertyDescriptor = descriptor.into();
+        match self.typed_array_define_action(receiver, &key, &descriptor, budget)? {
+            super::TypedArrayDefineAction::Ordinary => {}
+            super::TypedArrayDefineAction::Done(allowed) => {
+                return Ok(SetAction::Done(allowed));
+            }
+            super::TypedArrayDefineAction::Element { index } => {
+                let DescriptorKind::Data {
+                    value: Some(value), ..
+                } = descriptor.kind
+                else {
+                    unreachable!("element definition requires a value")
+                };
+                return Ok(SetAction::TypedArrayElement {
+                    target: receiver.clone(),
+                    index,
+                    value,
+                });
+            }
         }
         self.define(receiver, key, descriptor, budget)
             .map(SetAction::Done)
@@ -1020,6 +1159,13 @@ impl Objects {
     ) -> Result<bool, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.typed_array_data().is_some() {
+            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
+                return self
+                    .typed_array_has_index(object, index, budget)
+                    .map(|valid| !valid);
+            }
+        }
         // Deletion may shift the remaining vector entries after the key scan.
         budget.charge(record.property_count())?;
         budget.lookup(record, key)?;
@@ -1066,14 +1212,19 @@ impl Objects {
         object: &Handle,
         key: impl Into<PropertyKeyRef<'key>>,
         budget: &mut Budget,
-    ) -> Result<Option<(Handle, &Property)>, Error> {
+    ) -> Result<Option<FoundProperty<'_>>, Error> {
         let key = key.into();
         let mut next = Some(object);
         while let Some(handle) = next {
             let record = self.inspect(handle)?;
+            if record.typed_array_data().is_some() {
+                if let Some(index) = self.typed_array_numeric_index(handle, key, budget)? {
+                    return Ok(Some(FoundProperty::Element(handle.clone(), index)));
+                }
+            }
             budget.lookup(record, key)?;
             if let Some(property) = record.own_property(key) {
-                return Ok(Some((handle.clone(), property)));
+                return Ok(Some(FoundProperty::Stored(handle.clone(), property)));
             }
             next = record.prototype();
         }

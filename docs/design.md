@@ -7480,10 +7480,10 @@ their resizability slot while reporting zero byte and maximum lengths. Freezing
 ordinary properties does not freeze these internal slots.
 
 The constructor, species getter, isView, state getters, methods, and toStringTag
-have their standard descriptors. isView recognizes DataView's ViewedArrayBuffer
-slot, including detached and out-of-bounds views, without reading public
-properties. Typed arrays, shared buffers, and embedding detach keys remain
-separate implementation work.
+have their standard descriptors. isView recognizes DataView and TypedArray
+ViewedArrayBuffer slots, including detached and out-of-bounds views, without
+reading public properties. TypedArray constructors, shared buffers, and embedding
+detach keys remain separate implementation work.
 
 ## DataView
 
@@ -7520,6 +7520,41 @@ failure remains a host failure because SetValueInBuffer does not allocate a new
 Data Block in the specification. The constructor, three getters, 22 numeric
 methods, and toStringTag have their standard descriptors. No dependency or
 default resource quota is added.
+
+## TypedArray indexed properties
+
+The internal TypedArray boundary implements all eight exotic methods in 10.4.5
+for twelve element kinds, including Uint8Clamped and both BigInt kinds. Standard
+TypedArray constructors and prototype algorithms remain unsupported. Private
+views retain a traced buffer, an aligned byte offset, an element kind, and either
+a fixed element count or auto length. Live witnesses reject a whole fixed view
+when it extends beyond the buffer; auto length floors remaining bytes to complete
+elements. Original slots survive shrinking and detachment, allowing recovery
+after regrowth when the buffer remains attached.
+
+CanonicalNumericIndexString uses the existing ECMAScript Number parser and
+formatter and preserves negative zero (7.1.21). Canonical invalid indices stop
+Get and HasProperty from consulting prototypes; noncanonical strings and Symbols
+keep ordinary property behavior. The maximum canonical numeric spelling has
+25 code units, so longer keys can take the ordinary path without an extra copy.
+This is a classification rule, not a property-key length limit.
+
+Same-receiver Set converts its value before rechecking current index validity.
+Distinct receivers follow the specification's separate validity and ordinary
+receiver rules. DefineOwnProperty rejects invalid indices or incompatible
+descriptors before conversion, then commits against current bounds. Element
+descriptors report writable, enumerable, and configurable true, but valid elements
+cannot be deleted. Own keys contain current indices followed by ordinary strings
+and Symbols. PreventExtensions rejects views backed by resizable ordinary
+buffers; Object and Reflect preserve that Boolean result and integrity failures.
+
+Element access shares DataView's checked byte I/O and numeric codec. Uint8Clamped
+rounds ties to even. BigInt reads retain opted-in magnitude and work limits;
+HasProperty, deletion, and key enumeration do not decode element values. Numeric
+writes retain the existing transactional sparse-page behavior and host failure
+classification. ArrayIterator.next uses a TypedArray's current internal length,
+throws for out-of-bounds views, and ignores public length properties (23.1.5.2.1).
+No dependency or default resource quota is added.
 
 ## Date time values
 

@@ -313,8 +313,8 @@ impl Realm {
             Builtin::ReflectPreventExtensions => {
                 let target =
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
-                self.object_work(span, |objects, _| objects.prevent_extensions(&target))?;
-                Ok(Value::Boolean(true))
+                self.object_work(span, |objects, _| objects.prevent_extensions(&target))
+                    .map(Value::Boolean)
             }
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
             Builtin::ArrayBuffer => Err(Self::exception(

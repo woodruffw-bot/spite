@@ -530,7 +530,7 @@ fn logarithm(number: f64, builtin: Builtin) -> f64 {
     }
 }
 
-pub(super) fn binary16_round(number: f64) -> f64 {
+pub(crate) fn binary16_round(number: f64) -> f64 {
     // sec-math.f16round: direct binary64 -> binary16 rounding, never through
     // binary32 (which would misround values adjacent to binary16 half ties).
     if !number.is_finite() || number == 0.0 {

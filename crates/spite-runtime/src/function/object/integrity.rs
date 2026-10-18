@@ -1,7 +1,7 @@
 //! SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 
 use crate::{
-    Error, Realm, Value,
+    Error, ExceptionKind, Realm, Value,
     object::{DataDescriptor, Property},
 };
 use spite_core::Span;
@@ -16,7 +16,13 @@ impl Realm {
         let Value::Object(object) = &target else {
             return Ok(target);
         };
-        self.object_work(span, |objects, _| objects.prevent_extensions(object))?;
+        if !self.object_work(span, |objects, _| objects.prevent_extensions(object))? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "preventExtensions was rejected",
+            ));
+        }
         let keys = self.own_property_keys(object, span)?;
         for key in keys {
             let writable = if frozen {

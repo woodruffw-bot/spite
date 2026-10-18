@@ -40,6 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
+| TypedArray internals | Twelve element kinds, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, reflection/integrity behavior, isView and live ArrayIterator access; standard constructors remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -14918,3 +14919,26 @@ sources and 734 unchanged snapshot files. The reviewed Test262 corpus contains
 14,866 variants from 7,694 sources at the existing pin; no upstream DataView
 originals are counted in this increment. No default work or heap quota is
 introduced.
+
+## TypedArray indexed exotic methods
+
+Fourteen Runtime unit tests inject private internal views to exercise canonical
+numeric keys, prototype barriers, same and distinct receivers, descriptor
+prechecks, reentrant resize/detach conversions, reflection and integrity
+operations, BigInt limits, collection, and borrowed ArrayIterator methods.
+Seven storage tests cover all twelve element kinds, aligned sparse views,
+fixed/auto bounds and recovery, ordered keys, exact numeric classification,
+long ordinary keys, and work or magnitude failures. One new codec test checks
+Uint8Clamped half ties, adjacent values, saturation, and all byte values.
+
+Stable passes all 347 Runtime units and 3,648 integration tests; Rust 1.85 passes
+all 347 Runtime units. Fresh stable workspace Clippy with denied warnings and
+formatting pass. The existing BigInt tests retain their validated source bytes.
+Six existing numeric unit tests move to the shared binary module with their
+bodies unchanged; the inventory records those six name changes explicitly.
+
+The expected Native total is 5,474: 1,022 Core and 4,452 REST, including 347
+Runtime units and 3,648 Runtime integration tests. There are 894 Rust sources;
+all 734 snapshot files and the 14,866-variant reviewed corpus remain unchanged.
+These internal tests do not claim standard TypedArray constructor coverage or
+admit new Test262 sources. Resource quotas remain opt-in.

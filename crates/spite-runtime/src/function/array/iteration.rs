@@ -49,10 +49,32 @@ impl Realm {
         let Some(array) = state.array else {
             return self.iterator_result(Value::Undefined, true, span);
         };
-        // Index is snapshotted before live length lookup. The TypedArray-specific
-        // length/detachment branch joins here when that object kind exists.
+        // Index is snapshotted before live length lookup. TypedArray iteration
+        // uses its internal length and rejects an out-of-bounds view without
+        // consulting a public length property (23.1.5.2.1).
         let index = state.next_index;
-        let length = self.length_of_array_like(&array, span)?;
+        let typed_length = self.object_work(span, |objects, _| {
+            let record = objects.inspect(&array)?;
+            let Some(view) = record.typed_array_data() else {
+                return Ok(None);
+            };
+            let buffer = objects
+                .inspect(view.buffer())?
+                .array_buffer_data()
+                .expect("TypedArray buffer slot");
+            Ok(Some(view.in_bounds_array_length(buffer)))
+        })?;
+        let length = match typed_length {
+            Some(Some(length)) => length,
+            Some(None) => {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Array Iterator's TypedArray is out of bounds or detached",
+                ));
+            }
+            None => self.length_of_array_like(&array, span)?,
+        };
         if index >= length {
             self.object_work(span, |objects, _| objects.finish_array_iterator(&iterator))?;
             return self.iterator_result(Value::Undefined, true, span);

@@ -55,6 +55,23 @@ impl Realm {
     ) -> Result<bool, Error> {
         let key = key.into();
         self.check_missing_intrinsic_mutation(object, &key, span)?;
+        let action = self.object_work(span, |objects, budget| {
+            objects.typed_array_define_action(object, &key, &descriptor, budget)
+        })?;
+        match action {
+            crate::object::TypedArrayDefineAction::Ordinary => {}
+            crate::object::TypedArrayDefineAction::Done(result) => return Ok(result),
+            crate::object::TypedArrayDefineAction::Element { index } => {
+                let DescriptorKind::Data {
+                    value: Some(value), ..
+                } = descriptor.kind
+                else {
+                    unreachable!("typed definition continuation requires a value")
+                };
+                self.set_typed_array_element(object, index, value, span)?;
+                return Ok(true);
+            }
+        }
         self.convert_array_length(object, &key, &mut descriptor, span)?;
         self.object_work(span, |objects, budget| {
             objects.define(object, key, descriptor, budget)

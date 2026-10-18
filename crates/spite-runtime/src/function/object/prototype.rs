@@ -64,7 +64,13 @@ impl Realm {
     ) -> Result<Value, Error> {
         if prevent {
             if let Value::Object(object) = &target {
-                self.object_work(span, |objects, _| objects.prevent_extensions(object))?;
+                if !self.object_work(span, |objects, _| objects.prevent_extensions(object))? {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "preventExtensions was rejected",
+                    ));
+                }
             }
             return Ok(target);
         }

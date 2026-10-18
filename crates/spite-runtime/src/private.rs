@@ -129,8 +129,8 @@ impl Realm {
                     return Ok(());
                 }
                 SetAction::Done(false) => {}
-                SetAction::ArrayLength(_) => {
-                    unreachable!("private writes do not target array length")
+                SetAction::ArrayLength(_) | SetAction::TypedArrayElement { .. } => {
+                    unreachable!("private writes do not target indexed exotic elements")
                 }
             }
         }

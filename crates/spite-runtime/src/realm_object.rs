@@ -158,11 +158,21 @@ impl Realm {
         let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
-            if self.object_work(span, |objects, budget| {
-                objects.has_own(&handle, key, budget)
-            })? || self.missing_intrinsic_property(&handle, key)
-            {
+            let (own, numeric_absence) = self.object_work(span, |objects, budget| {
+                let own = objects.has_own(&handle, key, budget)?;
+                let numeric_absence = !own
+                    && objects
+                        .typed_array_numeric_index(&handle, key, budget)?
+                        .is_some();
+                Ok((own, numeric_absence))
+            })?;
+            if own || self.missing_intrinsic_property(&handle, key) {
                 return Ok(true);
+            }
+            if numeric_absence {
+                // Canonical numeric names are terminal at a TypedArray even
+                // when invalid, detached, or outside its current view bounds.
+                return Ok(false);
             }
             next = self.object_work(span, |objects, _| {
                 Ok(objects.inspect(&handle)?.prototype().cloned())
@@ -246,6 +256,26 @@ impl Realm {
         // be treated as absent, including on a distinct write receiver.
         let mut current = target.clone();
         let descriptor = loop {
+            let action = self.object_work(span, |objects, budget| {
+                objects.typed_array_set_action(
+                    &current,
+                    &key,
+                    if let Value::Object(receiver) = &receiver {
+                        Some(receiver)
+                    } else {
+                        None
+                    },
+                    budget,
+                )
+            })?;
+            match action {
+                object::TypedArraySetAction::Ordinary => {}
+                object::TypedArraySetAction::Done(result) => return Ok(result),
+                object::TypedArraySetAction::Element { index } => {
+                    self.set_typed_array_element(&current, index, value, span)?;
+                    return Ok(true);
+                }
+            }
             if let Some(property) = self.own_property_descriptor(&current, &key, span)? {
                 break Some(property);
             }
@@ -336,8 +366,13 @@ impl Realm {
         let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
-            let own = self.object_work(span, |objects, budget| {
-                objects.get_own(&handle, key, budget)
+            let (own, numeric_absence) = self.object_work(span, |objects, budget| {
+                let own = objects.get_own(&handle, key, budget)?;
+                let numeric_absence = own.is_none()
+                    && objects
+                        .typed_array_numeric_index(&handle, key, budget)?
+                        .is_some();
+                Ok((own, numeric_absence))
             })?;
             if let Some(property) = own {
                 return match property {
@@ -349,6 +384,9 @@ impl Realm {
                         None => Ok(Value::Undefined),
                     },
                 };
+            }
+            if numeric_absence {
+                return Ok(Value::Undefined);
             }
             // Missing standard methods must not appear to be absent. Until
             // callable intrinsics are implemented, accessing one is a host gap.
@@ -439,7 +477,8 @@ impl Realm {
         work: impl FnOnce(&mut object::Objects, &mut object::Budget) -> Result<T, object::Error>,
     ) -> Result<T, Error> {
         self.tick(span)?;
-        let mut budget = object::Budget::with_work_limit(self.remaining_steps);
+        let mut budget =
+            object::Budget::with_limits(self.limits.max_bigint_bits, self.remaining_steps);
         let result = work(&mut self.objects, &mut budget);
         self.remaining_steps = budget.remaining_work();
         result.map_err(|error| match error {
@@ -457,6 +496,10 @@ impl Realm {
             object::Error::UnnormalizedArrayLength => {
                 unreachable!("realm converts array length values before storage")
             }
+            object::Error::UnnormalizedTypedArrayElement => {
+                unreachable!("realm converts typed element values before storage")
+            }
+            object::Error::Integer(error) => Self::integer_error(error, span),
             object::Error::Heap(
                 spite_heap::Error::ForeignHandle | spite_heap::Error::StaleHandle,
             ) => {

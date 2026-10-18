@@ -1,8 +1,9 @@
 //! Ordinary DataView construction and live buffer witnesses (25.3).
 
-use super::{Builtin, data_view_numeric::ElementType};
+use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
+    binary_data::ElementType,
     object::{
         ArrayBufferError, Budget, DataDescriptor, DescriptorKind, Objects, PropertyDescriptor,
     },
@@ -60,6 +61,9 @@ impl Member {
             Self::Set(ElementType::Uint8) => "setUint8",
             Self::Set(ElementType::Uint16) => "setUint16",
             Self::Set(ElementType::Uint32) => "setUint32",
+            Self::Get(ElementType::Uint8Clamped) | Self::Set(ElementType::Uint8Clamped) => {
+                unreachable!("DataView has no clamped byte methods")
+            }
         }
     }
 
@@ -391,7 +395,8 @@ impl Realm {
         // rejecting a view whose buffer has since been detached.
         let result = if let Value::Object(object) = argument {
             self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&object)?.data_view_data().is_some())
+                let record = objects.inspect(&object)?;
+                Ok(record.data_view_data().is_some() || record.typed_array_data().is_some())
             })?
         } else {
             false

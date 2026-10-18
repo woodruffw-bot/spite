@@ -1,4 +1,4 @@
-//! RawBytesToNumeric and NumericToRawBytes for DataView element types (25.1.3).
+//! Shared RawBytesToNumeric and NumericToRawBytes element codecs (25.1.3).
 
 use crate::{Value, value::to_uint32};
 use spite_bigint::{BigInt, Budget, Error};
@@ -7,6 +7,12 @@ use spite_bigint::{BigInt, Budget, Error};
 pub(crate) enum ElementType {
     Int8,
     Uint8,
+    // Remove this expectation when TypedArray constructors construct this kind.
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "TypedArray constructors are a later increment")
+    )]
+    Uint8Clamped,
     Int16,
     Uint16,
     Int32,
@@ -19,22 +25,22 @@ pub(crate) enum ElementType {
 }
 
 impl ElementType {
-    pub(super) fn size(self) -> usize {
+    pub(crate) fn size(self) -> usize {
         match self {
-            Self::Int8 | Self::Uint8 => 1,
+            Self::Int8 | Self::Uint8 | Self::Uint8Clamped => 1,
             Self::Int16 | Self::Uint16 | Self::Float16 => 2,
             Self::Int32 | Self::Uint32 | Self::Float32 => 4,
             Self::BigInt64 | Self::BigUint64 | Self::Float64 => 8,
         }
     }
 
-    pub(super) fn is_bigint(self) -> bool {
+    pub(crate) fn is_bigint(self) -> bool {
         matches!(self, Self::BigInt64 | Self::BigUint64)
     }
 
     // The caller completes observable coercions and validates the live view
     // before entering this fixed-width conversion. Unused output bytes are zero.
-    pub(super) fn encode(
+    pub(crate) fn encode(
         self,
         value: Value,
         little_endian: bool,
@@ -44,6 +50,7 @@ impl ElementType {
         let bits = match value {
             Value::BigInt(value) if self.is_bigint() => value.modulo_u64(budget)?,
             Value::Number(number) if !self.is_bigint() => match self {
+                Self::Uint8Clamped => u64::from(uint8_clamp(number)),
                 Self::Float16 => u64::from(binary16_bits(number)),
                 Self::Float32 => u64::from(if number.is_nan() {
                     f32::NAN.to_bits()
@@ -59,7 +66,7 @@ impl ElementType {
                 }
                 _ => u64::from(to_uint32(number)),
             },
-            _ => unreachable!("DataView value was coerced to the element's numeric type"),
+            _ => unreachable!("value was coerced to the element's numeric type"),
         };
         let mut bytes = bits.to_le_bytes();
         bytes[self.size()..].fill(0);
@@ -69,7 +76,7 @@ impl ElementType {
         Ok(bytes)
     }
 
-    pub(super) fn decode(
+    pub(crate) fn decode(
         self,
         mut bytes: [u8; 8],
         little_endian: bool,
@@ -83,7 +90,7 @@ impl ElementType {
         let bits = u64::from_le_bytes(bytes);
         let number = match self {
             Self::Int8 => f64::from(bits as i8),
-            Self::Uint8 => f64::from(bits as u8),
+            Self::Uint8 | Self::Uint8Clamped => f64::from(bits as u8),
             Self::Int16 => f64::from(bits as i16),
             Self::Uint16 => f64::from(bits as u16),
             Self::Int32 => f64::from(bits as i32),
@@ -102,10 +109,20 @@ impl ElementType {
     }
 }
 
+// ToUint8Clamp (7.1.12): clamp before nearest-even rounding, without a
+// ToUint32 conversion or the upward ties used by Math.round.
+fn uint8_clamp(number: f64) -> u8 {
+    if number.is_nan() {
+        0
+    } else {
+        number.clamp(0.0, 255.0).round_ties_even() as u8
+    }
+}
+
 fn binary16_bits(number: f64) -> u16 {
     // Reuse Math.f16round's direct binary64 rounding. Going through binary32
     // first would double-round inputs adjacent to a binary16 midpoint.
-    let rounded = super::math::binary16_round(number);
+    let rounded = crate::function::binary16_round(number);
     if rounded.is_nan() {
         return 0x7e00;
     }
@@ -223,6 +240,56 @@ mod tests {
         }
         assert_eq!(binary16_bits(f64::from_bits(1)), 0);
         assert_eq!(binary16_bits(-f64::from_bits(1)), 0x8000);
+    }
+
+    #[test]
+    fn clamped_bytes_saturate_and_round_halfway_values_to_even() {
+        for (input, expected) in [
+            (f64::NAN, 0),
+            (f64::NEG_INFINITY, 0),
+            (-1.0, 0),
+            (-0.0, 0),
+            (0.0, 0),
+            (f64::from_bits(1), 0),
+            (255.0, 255),
+            (256.0, 255),
+            (f64::INFINITY, 255),
+            (f64::MAX, 255),
+        ] {
+            for little_endian in [false, true] {
+                let encoded = ElementType::Uint8Clamped
+                    .encode(Value::Number(input), little_endian, &mut unlimited())
+                    .unwrap();
+                assert_eq!(encoded, [expected, 0, 0, 0, 0, 0, 0, 0]);
+                assert_eq!(
+                    number(ElementType::Uint8Clamped, encoded, little_endian),
+                    f64::from(expected)
+                );
+            }
+        }
+        // Exercise both tie parities and each midpoint's binary64 neighbors.
+        for lower in 0_u8..255 {
+            let midpoint = f64::from(lower) + 0.5;
+            for (input, expected) in [
+                (f64::from_bits(midpoint.to_bits() - 1), lower),
+                (midpoint, if lower % 2 == 0 { lower } else { lower + 1 }),
+                (f64::from_bits(midpoint.to_bits() + 1), lower + 1),
+            ] {
+                assert_eq!(
+                    ElementType::Uint8Clamped
+                        .encode(Value::Number(input), true, &mut unlimited())
+                        .unwrap(),
+                    [expected, 0, 0, 0, 0, 0, 0, 0],
+                    "{input}"
+                );
+            }
+        }
+        for byte in 0..=u8::MAX {
+            assert_eq!(
+                number(ElementType::Uint8Clamped, [byte; 8], true),
+                f64::from(byte)
+            );
+        }
     }
 
     #[test]
