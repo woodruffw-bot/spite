@@ -8940,3 +8940,29 @@ code units, including the approved initial-low-surrogate behavior. No new
 matcher storage, copied Pattern, default host limit or dependency is introduced.
 Partial captures, extra atoms, repetition and string-valued alternatives remain
 outside this entry. Earlier constructors retain their domains and callbacks.
+
+## A checked one-character UnicodeSets string class followed by a flat class
+
+A separate checked v/vi entry composes one complete class containing singleton
+ClassStringDisjunction operands with one ordinary flat class. Every q alternative
+must decode to one character. The suffix retains its independent flat proof;
+nested set algebra and string-valued suffixes remain outside this entry.
+
+Complete v validation precedes the borrowed boundary proof. A private prefix
+scanner skips escaped pairs; valid q payloads cannot contain raw brackets. The
+unchanged legacy scanner proves the suffix boundary and continues to reject q.
+The full checked prefix and full flat suffix compile in source order, including
+when the first class is empty or an outside assertion cannot succeed. Existing
+fallible work and class storage errors propagate.
+
+A conservative 4N charge precedes both outside parity walks and both class
+boundary scans. Canonical outside ^, leading \b/\B, trailing \b/\B and $
+apply to the complete pair. The existing pair matcher preserves original UTF-16
+context and retries at the first character's end; sticky precharge remains four
+code units, including the approved initial-low-surrogate handling. Complete
+whole-body capture proof and result projection remain with the caller.
+
+Earlier constructors and search plans retain their domains and callbacks. No
+matcher storage, copied Pattern, default limit or dependency is added. Reverse
+order, two q classes, repetition, extra terms and partial captures remain outside
+this entry.
