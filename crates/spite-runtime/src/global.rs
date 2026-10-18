@@ -177,6 +177,7 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "DataView", Value::Object(constructor), true, span)?;
+        self.define_typed_array_globals(&object, span)?;
         let constructor = self
             .intrinsics
             .as_ref()

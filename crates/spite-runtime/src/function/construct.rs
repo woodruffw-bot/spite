@@ -198,6 +198,18 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::TypedArray(element)) => {
+                    return self.typed_array_constructor(element, new_target, arguments, span);
+                }
+                Callable::Builtin(Builtin::TypedArrayAbstract) => {
+                    // %TypedArray% is abstract even with a distinct newTarget
+                    // (23.2.1.1). No prototype lookup or coercion occurs.
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "TypedArray is an abstract constructor",
+                    ));
+                }
                 Callable::Builtin(Builtin::Iterator) => {
                     // Iterator (27.1.3.1.1) is abstract but has [[Construct]].
                     // Reject the active function before reading newTarget.prototype.

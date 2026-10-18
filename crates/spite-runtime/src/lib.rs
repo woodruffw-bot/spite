@@ -14,6 +14,8 @@ mod for_of;
 mod function;
 mod global;
 mod iterator_count;
+#[cfg(test)]
+mod loop_limit_tests;
 mod optional_chain;
 mod private;
 mod super_property;
@@ -2004,19 +2006,7 @@ fn reference_expression(expr: &Expr) -> bool {
 fn standard_global(name: &str) -> bool {
     matches!(
         name,
-        "Int8Array"
-            | "Uint8Array"
-            | "Uint8ClampedArray"
-            | "Int16Array"
-            | "Uint16Array"
-            | "Int32Array"
-            | "Uint32Array"
-            | "BigInt64Array"
-            | "BigUint64Array"
-            | "Float16Array"
-            | "Float32Array"
-            | "Float64Array"
-            | "WeakMap"
+        "WeakMap"
             | "SharedArrayBuffer"
             | "Atomics"
             | "WeakRef"

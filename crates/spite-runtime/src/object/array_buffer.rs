@@ -359,6 +359,37 @@ impl Objects {
         Ok(())
     }
 
+    /// CloneArrayBuffer (25.1.3.6): copy raw bytes into a fresh fixed buffer.
+    /// Sparse zero pages stay implicit, including for safe-integer-sized ranges.
+    /// Finish copying before allocating the heap entry so every failure leaves
+    /// the source and the existing heap graph unchanged.
+    pub(crate) fn clone_array_buffer(
+        &mut self,
+        prototype: &Handle,
+        source: &Handle,
+        offset: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<Handle, ArrayBufferError> {
+        self.inspect(prototype)?;
+        let source_data = self.array_buffer(source)?;
+        source_data.check_range(offset, count)?;
+        let mut data = ArrayBufferData::new(count, None)?;
+        budget.charge(1)?;
+        if count != 0 {
+            source_data.block()?.copy_range(
+                offset,
+                data.block.as_mut().expect("fresh attached buffer"),
+                0,
+                count,
+                budget,
+            )?;
+        }
+        let buffer = self.create(Some(prototype))?;
+        self.object_mut(&buffer)?.array_buffer = Some(data);
+        Ok(buffer)
+    }
+
     /// Reads a single numeric element without allocating a temporary byte vector.
     pub(crate) fn read_array_buffer_bytes(
         &self,
@@ -537,6 +568,135 @@ mod tests {
                 }
             })
             .collect()
+    }
+
+    #[test]
+    fn raw_clone_preserves_payloads_unaligned_offsets_and_implicit_holes() {
+        let (mut objects, prototype, source) = fixture(16_400, Some(20_000));
+        // A negative binary64 NaN with a noncanonical payload. The byte clone
+        // must not pass through any Number conversion or NaN canonicalization.
+        let payload = [0x34, 0x12, 0, 0, 0, 0, 0xf8, 0xff];
+        write(&mut objects, &source, 4093, &payload);
+        write(&mut objects, &source, 4092, &[99]);
+        write(&mut objects, &source, 12_288, &[1, 2, 3, 4, 5, 88]);
+        let copy = objects
+            .clone_array_buffer(&prototype, &source, 4093, 8200, &mut unlimited())
+            .unwrap();
+        let data = objects.array_buffer(&copy).unwrap();
+        assert_eq!(data.byte_length(), 8200);
+        assert_eq!(data.max_byte_length(), 8200);
+        assert!(!data.is_resizable());
+        assert_eq!(data.block().unwrap().pages.len(), 2);
+        assert_eq!(read(&objects, &copy, 0, 8), payload);
+        assert_eq!(read(&objects, &copy, 5000, 8), [0; 8]);
+        assert_eq!(read(&objects, &copy, 8195, 5), [1, 2, 3, 4, 5]);
+        assert_eq!(read(&objects, &source, 4092, 1), [99]);
+        assert_eq!(read(&objects, &source, 12_293, 1), [88]);
+        objects
+            .write_array_buffer_bytes(&copy, 0, &[77], &mut unlimited())
+            .unwrap();
+        objects
+            .write_array_buffer_bytes(&source, 4094, &[66], &mut unlimited())
+            .unwrap();
+        assert_eq!(read(&objects, &source, 4093, 2), [0x34, 66]);
+        assert_eq!(read(&objects, &copy, 0, 2), [77, 0x12]);
+        assert_eq!(objects.array_buffer(&source).unwrap().byte_length(), 16_400);
+        assert!(objects.array_buffer(&source).unwrap().is_resizable());
+    }
+
+    #[test]
+    fn raw_clone_retains_safe_integer_lengths_without_a_machine_width_limit() {
+        let (mut objects, prototype, source) = fixture(MAX_BYTE_LENGTH, None);
+        let payload = [8, 7, 6, 5, 4, 3, 2, 1];
+        objects
+            .write_array_buffer_bytes(&source, MAX_BYTE_LENGTH - 8, &payload, &mut unlimited())
+            .unwrap();
+        let tail = objects
+            .clone_array_buffer(
+                &prototype,
+                &source,
+                MAX_BYTE_LENGTH - 8,
+                8,
+                &mut unlimited(),
+            )
+            .unwrap();
+        assert_eq!(read(&objects, &tail, 0, 8), payload);
+        let full = objects
+            .clone_array_buffer(&prototype, &source, 0, MAX_BYTE_LENGTH, &mut unlimited())
+            .unwrap();
+        let data = objects.array_buffer(&full).unwrap();
+        assert_eq!(data.byte_length(), MAX_BYTE_LENGTH);
+        assert_eq!(data.block().unwrap().pages.len(), 1);
+        assert_eq!(read(&objects, &full, MAX_BYTE_LENGTH - 8, 8), payload);
+        assert_eq!(read(&objects, &full, 0, 8), [0; 8]);
+        // An empty clone at the end does not scan even the stored source page.
+        let empty = objects
+            .clone_array_buffer(&prototype, &source, MAX_BYTE_LENGTH, 0, &mut Budget::new(1))
+            .unwrap();
+        assert_eq!(objects.array_buffer(&empty).unwrap().byte_length(), 0);
+        assert!(
+            objects
+                .array_buffer(&empty)
+                .unwrap()
+                .block()
+                .unwrap()
+                .pages
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn raw_clone_failures_preserve_source_bytes_and_allocate_no_heap_entry() {
+        let (mut objects, prototype, source) = fixture(8, None);
+        write(&mut objects, &source, 0, &[9]);
+        assert_eq!(
+            objects.clone_array_buffer(&prototype, &source, 0, 8, &mut Budget::new(8)),
+            Err(ArrayBufferError::Storage(Error::WorkLimit))
+        );
+        for (offset, count) in [(1, 8), (u64::MAX, 1), (1, u64::MAX)] {
+            assert_eq!(
+                objects.clone_array_buffer(&prototype, &source, offset, count, &mut unlimited()),
+                Err(ArrayBufferError::OutOfBounds)
+            );
+        }
+        let mut foreign_heap = Objects::with_limits(None, None);
+        let foreign = foreign_heap.create(None).unwrap();
+        for (prototype, source) in [(&foreign, &source), (&prototype, &foreign)] {
+            assert_eq!(
+                objects.clone_array_buffer(prototype, source, 0, 0, &mut unlimited()),
+                Err(ArrayBufferError::Storage(Error::Heap(
+                    spite_heap::Error::ForeignHandle
+                )))
+            );
+        }
+        assert_eq!(
+            objects.clone_array_buffer(&prototype, &prototype, 0, 0, &mut unlimited()),
+            Err(ArrayBufferError::Storage(Error::WrongKind))
+        );
+        assert_eq!(read(&objects, &source, 0, 8), [9, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(objects.collect([&source], 100).unwrap().reclaimed, 0);
+        objects
+            .detach_array_buffer(&source, &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects.clone_array_buffer(&prototype, &source, 0, 0, &mut unlimited()),
+            Err(ArrayBufferError::Detached)
+        );
+
+        let mut full_heap = Objects::new(2, 10);
+        let prototype = full_heap.create(None).unwrap();
+        let source = full_heap
+            .create_array_buffer(&prototype, 8, None, &mut unlimited())
+            .unwrap();
+        write(&mut full_heap, &source, 0, &[7]);
+        assert_eq!(
+            full_heap.clone_array_buffer(&prototype, &source, 0, 8, &mut unlimited()),
+            Err(ArrayBufferError::Storage(Error::Heap(
+                spite_heap::Error::Capacity
+            )))
+        );
+        assert_eq!(read(&full_heap, &source, 0, 8), [7, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(full_heap.collect([&source], 100).unwrap().reclaimed, 0);
     }
 
     #[test]

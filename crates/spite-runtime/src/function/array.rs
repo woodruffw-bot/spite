@@ -35,6 +35,7 @@ pub(crate) struct ArrayIntrinsics {
     pub constructor: ObjectHandle,
     pub prototype: ObjectHandle,
     pub values: ObjectHandle,
+    pub to_string: ObjectHandle,
     is_array: ObjectHandle,
     of: ObjectHandle,
     from: ObjectHandle,
@@ -182,6 +183,7 @@ impl Realm {
             span,
         )?;
         let mut methods = Vec::new();
+        let mut to_string = None;
         for builtin in [
             Builtin::ArrayJoin,
             Builtin::ArrayToString,
@@ -222,6 +224,9 @@ impl Realm {
             Builtin::ArrayEntries,
         ] {
             let method = self.new_builtin(function_prototype, builtin, span)?;
+            if matches!(builtin, Builtin::ArrayToString) {
+                to_string = Some(method.clone());
+            }
             self.define_builtin_property(
                 &prototype,
                 builtin.initial_name(),
@@ -239,10 +244,12 @@ impl Realm {
             span,
         )?;
         methods.push(species);
+        let to_string = to_string.expect("Array intrinsics include toString");
         Ok(ArrayIntrinsics {
             constructor,
             prototype,
             values,
+            to_string,
             is_array,
             of,
             from,

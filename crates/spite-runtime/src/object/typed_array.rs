@@ -2,7 +2,7 @@
 //!
 //! Observable ToNumber/ToBigInt conversions belong to the Realm. Storage returns
 //! continuations before those conversions and checks the live buffer again when
-//! the normalized value is committed. No constructor or global is exposed here.
+//! the normalized value is committed. Constructor algorithms live in the Realm.
 
 use super::{
     ArrayBufferData, ArrayBufferError, Budget, DataProperty, DescriptorKind, Error, Objects,
@@ -118,11 +118,7 @@ fn canonical_numeric_index(
 }
 
 impl Objects {
-    /// Creates a validated internal view. TypedArray constructors are separate.
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "TypedArray constructors are a later increment")
-    )]
+    /// Creates a view after the Realm has validated constructor arguments.
     pub(crate) fn create_typed_array(
         &mut self,
         prototype: &Handle,

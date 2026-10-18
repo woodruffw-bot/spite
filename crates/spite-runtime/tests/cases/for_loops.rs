@@ -126,23 +126,6 @@ fn bodies_restore_scopes_before_updates_and_on_budget_exhaustion() {
         "let i = 0; for (;i < 3;i = i + 1) { let i = 99; continue; } i",
         Value::Number(3.0),
     );
-    for source in [
-        "for (;;) ;",
-        "for (;;) continue;",
-        "for (;;) { let x = 2; }",
-        "a: for (;;) { let x = 2; continue a; }",
-    ] {
-        let mut realm = Realm::new(Limits {
-            max_steps: Some(100),
-            ..Limits::default()
-        });
-        realm.eval("let x = 1").unwrap();
-        assert!(
-            matches!(realm.eval(source), Err(Error::Limit { .. })),
-            "{source}"
-        );
-        assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
-    }
 }
 
 #[test]

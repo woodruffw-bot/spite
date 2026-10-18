@@ -323,6 +323,21 @@ impl Realm {
                 "ArrayBuffer requires construction",
             )),
             Builtin::ArrayBufferSpecies => Ok(this),
+            Builtin::TypedArray(_) | Builtin::TypedArrayAbstract => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "TypedArray requires construction",
+            )),
+            Builtin::TypedArraySpecies => Ok(this),
+            Builtin::TypedArrayFrom => self.typed_array_from(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::TypedArrayOf => self.typed_array_of(this, arguments, span),
+            Builtin::TypedArrayMember(member) => self.typed_array_member(member, this, span),
             Builtin::ArrayBufferIsView => {
                 self.array_buffer_is_view(arguments.next().unwrap_or(Value::Undefined), span)
             }

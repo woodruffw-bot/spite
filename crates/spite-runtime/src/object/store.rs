@@ -305,6 +305,8 @@ impl Objects {
         object.constructible = matches!(
             builtin,
             Builtin::ArrayBuffer
+                | Builtin::TypedArray(_)
+                | Builtin::TypedArrayAbstract
                 | Builtin::DataView
                 | Builtin::Set
                 | Builtin::WeakSet

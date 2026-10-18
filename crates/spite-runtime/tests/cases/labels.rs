@@ -1,6 +1,6 @@
 //! Labelled completion propagation and environment restoration.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Error, Realm, Value};
 
 fn result(source: &str, expected: Value) {
     for prefix in ["", "'use strict'; "] {
@@ -123,21 +123,6 @@ fn escaping_a_label_restores_all_nested_scopes() {
         "let x = 0; a: do { let x = 99; while (true) { let x = 100; continue a; } } while ((x = x + 1) < 3); x",
         Value::Number(3.0),
     );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100),
-        ..Limits::default()
-    });
-    realm.eval("let x = 1").unwrap();
-    assert!(matches!(
-        realm.eval("a: while (true) { let x = 2; while (true) continue a; }"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
-    assert_eq!(
-        realm.eval("a: { let x = 2; throw x; }"),
-        Err(Error::Thrown(Value::Number(2.0)))
-    );
-    assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
 }
 
 #[test]

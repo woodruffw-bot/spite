@@ -7,11 +7,6 @@ use spite_bigint::{BigInt, Budget, Error};
 pub(crate) enum ElementType {
     Int8,
     Uint8,
-    // Remove this expectation when TypedArray constructors construct this kind.
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "TypedArray constructors are a later increment")
-    )]
     Uint8Clamped,
     Int16,
     Uint16,

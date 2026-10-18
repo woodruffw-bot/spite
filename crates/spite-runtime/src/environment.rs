@@ -453,9 +453,11 @@ mod tests {
             max_steps: Some(1000),
             ..Limits::default()
         });
-        limited
-            .eval("let marker = -1; let caught = false; let finalized = false;")
-            .unwrap();
+        // Separate setup evaluations keep this quota test focused on loop
+        // execution as the intrinsic inventory grows.
+        limited.eval("let marker = -1;").unwrap();
+        limited.eval("let caught = false;").unwrap();
+        limited.eval("let finalized = false;").unwrap();
         assert!(matches!(
             limited.eval(
                 "try { for (let i = 0;; i++) marker = i; }

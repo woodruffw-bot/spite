@@ -632,7 +632,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
 - [x] Implement ordinary DataView construction, all integer/BigInt/Float16/Float32/Float64 accessors, fixed and length-tracking resizable views, live bounds and detachment checks, and intrinsic reflection.
 - [x] Implement TypedArray integer-indexed exotic methods for all twelve element kinds, fixed and length-tracking buffer witnesses, receiver-sensitive writes, reflection, integrity operations, and live ArrayIterator access.
-- [ ] Add all twelve TypedArray constructors, construction overloads, intrinsic metadata, state getters, and from/of factories.
+- [x] Add all twelve TypedArray constructors, construction overloads, intrinsic metadata, state getters, and from/of factories.
+- [ ] Implement TypedArray prototype algorithms beyond state getters and keys/values/entries, including species-aware results, numeric sorting, and buffer copies.
+- [ ] Implement Uint8Array base64 and hexadecimal conversion methods.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.

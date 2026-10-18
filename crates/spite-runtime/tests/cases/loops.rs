@@ -1,7 +1,7 @@
 //! Iteration evaluation, completions, and environment restoration.
 
 use spite_core::JsString;
-use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn result(source: &str, expected: Value) {
     for prefix in ["", "'use strict'; "] {
@@ -127,27 +127,6 @@ fn throws_and_failed_conditions_restore_block_scopes() {
 }
 
 #[test]
-fn infinite_loops_exhaust_the_host_budget_and_restore_scopes() {
-    for source in [
-        "while (true) ;",
-        "do ; while (true)",
-        "while (true) { let x = 2; }",
-        "do { let x = 2; } while (true)",
-    ] {
-        let mut realm = Realm::new(Limits {
-            max_steps: Some(100),
-            ..Limits::default()
-        });
-        realm.eval("let x = 1").unwrap();
-        assert!(
-            matches!(realm.eval(source), Err(Error::Limit { .. })),
-            "{source}"
-        );
-        assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
-    }
-}
-
-#[test]
 fn break_skips_the_remaining_body_and_do_while_condition() {
     result(
         "let x = 0; while (true) { x = 1; break; x = 99; } x",
@@ -253,18 +232,6 @@ fn control_transfers_restore_scopes() {
         "let x = 0; do { let x = 99; continue; } while ((x = x + 1) < 3); x",
         Value::Number(3.0),
     );
-    for source in [
-        "while (true) { let x = 2; continue; }",
-        "do { let x = 2; continue; } while (true)",
-    ] {
-        let mut realm = Realm::new(Limits {
-            max_steps: Some(100),
-            ..Limits::default()
-        });
-        realm.eval("let x = 1").unwrap();
-        assert!(matches!(realm.eval(source), Err(Error::Limit { .. })));
-        assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
-    }
 }
 
 #[test]

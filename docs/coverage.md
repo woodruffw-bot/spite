@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray internals | Twelve element kinds, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, reflection/integrity behavior, isView and live ArrayIterator access; standard constructors remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; other prototype algorithms and Uint8Array encodings remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -14942,3 +14942,31 @@ Runtime units and 3,648 Runtime integration tests. There are 894 Rust sources;
 all 734 snapshot files and the 14,866-variant reviewed corpus remain unchanged.
 These internal tests do not claim standard TypedArray constructor coverage or
 admit new Test262 sources. Resource quotas remain opt-in.
+
+## TypedArray constructors and intrinsic graph
+
+Twenty-seven integration tests exercise all twelve concrete kinds and their
+primitive, ArrayBuffer, TypedArray, iterable, and array-like construction paths.
+They check prototype and coercion order, subclass fields, byte-domain boundaries,
+raw NaN-preserving copies, content-type rejection, generic from/of factories,
+iterator exhaustion, live state, collection, and explicit host quotas. One
+inspected inline insta snapshot records constructor metadata and fixed/auto view
+states through shrinkage, regrowth, and detachment. Reflection checks cover the
+abstract constructor, shared prototype, required aliases, all descriptors, and
+explicit host Unsupported results for deferred algorithms.
+
+Three storage units cover raw sparse clones, selected offsets, safe-integer
+lengths, independent buffers, and failures that preserve the existing graph.
+Eleven existing loop-quota scripts now run in one private unit test, retaining
+their original 100-step limit and scope-restoration assertions after independent
+setup. The inventory records the integration-to-unit name relocation. Other
+quota fixtures prepare their inputs in separate evaluations without increasing
+their caller-selected limits or changing the operations under test.
+
+Stable passes all 351 Runtime units and 3,674 integration tests. Rust 1.85
+passes all 351 units and all 27 constructor integration cases. Fresh workspace
+Clippy with denied warnings, formatting, policy, and inventory checks pass.
+The expected Native total is 5,504: 1,022 Core and 4,482 REST, including those Runtime tests.
+There are 898 Rust sources; all 734 snapshot files and the 14,866-variant corpus
+remain unchanged. This increment admits no new upstream fixtures and adds no
+dependency or default resource quota.

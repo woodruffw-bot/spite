@@ -1,7 +1,7 @@
 //! Builtin function objects and the initial Object/Function prototype graph.
 
 use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
+    Error, ExceptionKind, ObjectHandle, Realm, Value, binary_data,
     object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
@@ -43,6 +43,8 @@ mod spread;
 mod string;
 mod symbol;
 mod template;
+mod typed_array;
+mod typed_array_intrinsics;
 mod uri;
 mod weak_set;
 mod wrapper;
@@ -177,6 +179,12 @@ pub(crate) enum Builtin {
     ArrayBufferIsView,
     ArrayBufferSpecies,
     ArrayBufferMember(array_buffer::Member),
+    TypedArray(binary_data::ElementType),
+    TypedArrayAbstract,
+    TypedArrayFrom,
+    TypedArrayOf,
+    TypedArraySpecies,
+    TypedArrayMember(typed_array_intrinsics::Member),
     ArrayKeys,
     ArrayValues,
     ArrayEntries,
@@ -444,6 +452,12 @@ impl Builtin {
             Self::ArrayBufferIsView => "isView",
             Self::ArrayBufferSpecies => "get [Symbol.species]",
             Self::ArrayBufferMember(member) => member.initial_name(),
+            Self::TypedArray(element) => typed_array_intrinsics::typed_array_name(element),
+            Self::TypedArrayAbstract => "TypedArray",
+            Self::TypedArrayFrom => "from",
+            Self::TypedArrayOf => "of",
+            Self::TypedArraySpecies => "get [Symbol.species]",
+            Self::TypedArrayMember(member) => member.initial_name(),
             Self::ArrayKeys => "keys",
             Self::ArrayValues => "values",
             Self::ArrayEntries => "entries",
@@ -635,6 +649,9 @@ impl Builtin {
             Self::DataViewMember(member) => member.length(),
             Self::ArrayBuffer | Self::ArrayBufferIsView => 1.0,
             Self::ArrayBufferMember(member) => member.length(),
+            Self::TypedArray(_) => 3.0,
+            Self::TypedArrayFrom => 1.0,
+            Self::TypedArrayMember(member) => member.length(),
             Self::RegExp => 2.0,
             Self::RegExpEscape => 1.0,
             Self::RegExpMember(member) => member.length(),
@@ -910,6 +927,7 @@ pub(super) struct Intrinsics {
     pub symbol: symbol::SymbolIntrinsics,
     pub array: array::ArrayIntrinsics,
     pub array_buffer: array_buffer::ArrayBufferIntrinsics,
+    pub typed_array: typed_array_intrinsics::TypedArrayIntrinsics,
     pub iterator: iterator::IteratorIntrinsics,
     pub reflect: reflect::ReflectIntrinsics,
     pub math: math::MathIntrinsics,
@@ -954,6 +972,7 @@ impl Intrinsics {
         .chain(self.symbol.roots())
         .chain(self.array.roots())
         .chain(self.array_buffer.roots())
+        .chain(self.typed_array.roots())
         .chain(self.iterator.roots())
         .chain(self.reflect.roots())
         .chain(self.math.roots())
@@ -1106,6 +1125,12 @@ impl Realm {
         let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
         let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
+        let typed_array = self.typed_array_intrinsics(
+            &object_prototype,
+            &function_prototype,
+            &array.to_string,
+            span,
+        )?;
         let array_buffer =
             self.array_buffer_intrinsics(&object_prototype, &function_prototype, span)?;
         let reflect = self.reflect_intrinsics(&object_prototype, &function_prototype, span)?;
@@ -1157,6 +1182,7 @@ impl Realm {
             symbol,
             array,
             array_buffer,
+            typed_array,
             iterator,
             reflect,
             math,

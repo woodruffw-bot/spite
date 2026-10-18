@@ -154,9 +154,13 @@ fn unicode_uppercase_properties_opted_work_and_remaining_sets() {
         max_steps: Some(30000),
         ..Limits::default()
     });
+    // Give each setup operation its own budget before the RegExp work under test.
+    realm.eval("let r=/\\p{Upper}/ug").unwrap();
+    realm.eval("let marker=0").unwrap();
     realm
-        .eval("let r=/\\p{Upper}/ug,marker=0,text='\\uDB40\\uDC01'.repeat(10000);r.lastIndex=1")
+        .eval("let text='\\uDB40\\uDC01'.repeat(10000)")
         .unwrap();
+    realm.eval("r.lastIndex=1").unwrap();
     assert!(matches!(
         realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
         Err(Error::Limit { .. })

@@ -924,6 +924,8 @@ mod tagged_templates;
 mod templates;
 #[path = "cases/try_finally.rs"]
 mod try_finally;
+#[path = "cases/typed_array.rs"]
+mod typed_array;
 #[path = "cases/updates.rs"]
 mod updates;
 #[path = "cases/uri_decoding.rs"]

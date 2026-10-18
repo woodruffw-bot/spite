@@ -7482,8 +7482,8 @@ ordinary properties does not freeze these internal slots.
 The constructor, species getter, isView, state getters, methods, and toStringTag
 have their standard descriptors. isView recognizes DataView and TypedArray
 ViewedArrayBuffer slots, including detached and out-of-bounds views, without
-reading public properties. TypedArray constructors, shared buffers, and embedding
-detach keys remain separate implementation work.
+reading public properties. Shared buffers and embedding detach keys remain
+separate implementation work.
 
 ## DataView
 
@@ -7524,9 +7524,8 @@ default resource quota is added.
 ## TypedArray indexed properties
 
 The internal TypedArray boundary implements all eight exotic methods in 10.4.5
-for twelve element kinds, including Uint8Clamped and both BigInt kinds. Standard
-TypedArray constructors and prototype algorithms remain unsupported. Private
-views retain a traced buffer, an aligned byte offset, an element kind, and either
+for twelve element kinds, including Uint8Clamped and both BigInt kinds. Each
+view retains a traced buffer, an aligned byte offset, an element kind, and either
 a fixed element count or auto length. Live witnesses reject a whole fixed view
 when it extends beyond the buffer; auto length floors remaining bytes to complete
 elements. Original slots survive shrinking and detachment, allowing recovery
@@ -7555,6 +7554,47 @@ writes retain the existing transactional sparse-page behavior and host failure
 classification. ArrayIterator.next uses a TypedArray's current internal length,
 throws for out-of-bounds views, and ignores public length properties (23.1.5.2.1).
 No dependency or default resource quota is added.
+
+## TypedArray construction and intrinsics
+
+All twelve concrete constructors share the overload algorithms in 23.2.5.1.
+Primitive inputs pass through ToIndex before prototype lookup; object inputs
+resolve the destination prototype before accessing source hooks. Buffer inputs
+check offset alignment before converting an explicit length, then inspect live
+detachment and bounds. Omitted lengths over resizable buffers track complete
+elements; fixed buffers require divisible byte lengths.
+
+TypedArray sources use internal slots instead of public properties or iterators.
+Same-kind copies clone the selected source bytes into a fresh fixed buffer at
+offset zero, preserving NaN payloads and sparse zero regions. Other compatible
+kinds convert internal numeric values; Number and BigInt content types cannot
+mix, including empty sources. Iterable inputs finish iteration before allocation
+or element conversion. Array-like inputs capture length once and read each index
+in order.
+Scratch element lists use checked allocation independently of call-argument
+quotas. Byte lengths retain CreateByteDataBlock's maximum safe integer bound.
+
+The shared from/of factories construct their receiver, require a live TypedArray
+result of sufficient length, then use ordinary Set for each element (23.2.2).
+The from mapper receives the value and index with the supplied thisArg. Its
+iterable branch finishes collecting before construction or mapping; its
+array-like branch captures length before construction and reads values afterward.
+Later callbacks can resize or detach a custom result without an extra validation
+step beyond the specified Set operations.
+
+The abstract %TypedArray% constructor is available through the intrinsic graph
+and has no global binding. Concrete constructors inherit its from/of and species
+getter. State getters, the tag getter, and keys/values/entries use internal slots;
+detached or out-of-bounds state getters return zero where required, while
+iteration rejects those views. Symbol.iterator aliases values, and toString
+aliases the initial Array.prototype.toString function. Intrinsics remain rooted
+even after public properties change.
+
+Deferred prototype algorithms and Uint8Array encoding methods have their
+standard callable metadata and descriptors. Calling them reports a host
+Unsupported result. Their presence does not count as algorithm support or turn
+unsupported operations into passing negative conformance tests. Shared buffers
+and agents remain separate implementation work.
 
 ## Date time values
 
