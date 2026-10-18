@@ -1519,6 +1519,262 @@ fn zzz_ignored_third_shard_case() { panic!("must not be credited as executed"); 
                 self.assertEqual(len({plan['full_sha256'] for plan in plans}), 1)
 
 
+    def assert_refined_runtime_shard(self, result, report, count, index, expected_names):
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(report['suite'], 'rest')
+        self.assertEqual(report['recorded_invocations'], 4)
+        self.assertEqual(len(report['invocations']), 1)
+        plan = report['runtime_shard']
+        self.assertEqual((plan['schema'], plan['algorithm'], plan['count'], plan['index']),
+                         (1, 'substring-components-refined-prefixes-greedy-v1', count, index))
+        self.assertEqual(plan['full_names'], sorted(expected_names))
+        self.assertEqual(plan['full_count'], len(expected_names))
+        self.assertEqual(plan['full_sha256'], names_sha256(expected_names))
+        shards = plan['planned_shards']
+        self.assertEqual(len(shards), count)
+        self.assertTrue(all(shards))
+        self.assertEqual(sorted(name for shard in shards for name in shard), sorted(expected_names))
+        for left in range(count):
+            for right in range(left + 1, count):
+                self.assertFalse(set(shards[left]) & set(shards[right]))
+        self.assertEqual(plan['partition_counts'], list(map(len, shards)))
+        self.assertEqual(plan['partition_sha256'], list(map(names_sha256, shards)))
+        self.assertEqual(plan['listing_counts'], [len(expected_names), len(expected_names),
+                                                *map(len, shards)])
+        self.assertEqual(len(plan['listing_output_sha256']), count + 2)
+        self.assertEqual(len(plan['listing_command_utf16_units']), count + 2)
+        self.assertEqual(len(plan['native_command_utf16_units']), count)
+        row = self.runtime_row(report)
+        self.assertEqual(row['package'], 'spite-runtime')
+        self.assertEqual(row['status'], 0)
+        self.assertEqual(row['child_status'], 0)
+        self.assertNotIn('shard_validation_error', row)
+        execution = row['runtime_shard_execution']
+        self.assertEqual(execution['names'], shards[index])
+        self.assertEqual(execution['executed_name_count'], len(shards[index]))
+        self.assertEqual(execution['executed_names_sha256'], names_sha256(shards[index]))
+        self.assertEqual([execution[key] for key in ['passed', 'failed', 'ignored', 'measured',
+                                                   'filtered']],
+                         [len(shards[index]), 0, 0, 0, len(expected_names) - len(shards[index])])
+        self.assertEqual(row['summaries'], [['ok', str(len(shards[index])), '0', '0', '0',
+                                             str(len(expected_names) - len(shards[index]))]])
+        verdicts = re.findall(r'^test (\S+) \.\.\. (ok|FAILED|ignored)\s*$',
+                              result.stdout, re.MULTILINE)
+        actual = [(name, verdict) for name, verdict in verdicts if name in expected_names]
+        self.assertEqual(sorted(name for name, _ in actual), shards[index], result.stdout)
+        self.assertTrue(all(verdict == 'ok' for _, verdict in actual))
+        self.assertEqual(row['command'][1:3],
+                         ['--skip', 'pinned_corpus_runs_all_reviewed_variants'])
+        self.assertFalse(set(row) & {'environment', 'changed_environment', 'removed_environment'})
+        return row
+
+    def test_refined_runtime_shards_preserve_real_programs_profiles_and_failures(self):
+        with tempfile.TemporaryDirectory(prefix='spite-ci-refined-shards-') as temporary:
+            root = Path(temporary)
+            make_runtime_shard_workspace(root)
+            added = '''
+mod properties {
+    #[test]
+    fn unique() { super::check(); }
+    #[test]
+    fn shared() { super::check(); }
+}
+mod super_properties {
+    #[test]
+    fn shared() { super::check(); }
+    #[test]
+    fn other() { super::check(); }
+}
+mod unicode_properties {
+    #[test]
+    fn independent() { super::check(); }
+}
+'''
+            source = root / 'b/tests/integration.rs'
+            source.write_text(RUNTIME_SHARD_SOURCE + added, encoding='utf-8')
+            expected = sorted(RUNTIME_SHARD_NAMES + [
+                'properties::unique', 'properties::shared', 'super_properties::shared',
+                'super_properties::other', 'unicode_properties::independent'])
+            environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                           'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+            subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
+                           cwd=root, env={**self.environment, **environment}, check=True)
+            fields = ['command', 'cwd', 'package', 'status', 'summaries']
+            project = lambda rows: sorted(
+                [{key: row[key] for key in fields} for row in rows],
+                key=lambda row: (row['command'], row['cwd']))
+            for toolchain in ['stable', '1.85.0']:
+                for count in [2, 3]:
+                    # Existing profile modes are orthogonal to the policy;
+                    # exercise both without duplicating every fixture matrix.
+                    optimize = count == 3
+                    profile = ['--optimize-runtime'] if optimize else []
+                    environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '1' if optimize else '0'
+                    result, complete = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=profile, extra_environment=environment)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    original = self.runtime_row(complete)
+                    original_hash = hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest()
+                    others = [row for row in complete['invocations'] if row is not original]
+                    plans, executed, filters = [], [], set()
+                    for index in range(count):
+                        owner = 1 if index == 0 else 0
+                        arguments = profile + ['--runtime-shard-count', str(count),
+                                               '--runtime-shard', str(index), '--rest-shard', str(owner),
+                                               '--refine-runtime-prefixes']
+                        result, report = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain,
+                            extra_arguments=arguments, extra_environment=environment)
+                        runtime = self.assert_refined_runtime_shard(
+                            result, report, count, index, expected)
+                        self.assertEqual(runtime['command'][:len(original['command'])],
+                                         original['command'])
+                        self.assertEqual(runtime['cwd'], original['cwd'])
+                        self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                         original_hash)
+                        extra = runtime['command'][len(original['command']):]
+                        self.assertEqual(extra[::2], ['--skip'] * (len(extra) // 2))
+                        filters.update(extra[1::2])
+                        plans.append(report['runtime_shard'])
+                        executed += runtime['runtime_shard_execution']['names']
+                        failed, failure = self.run_suite(
+                            suite='rest', root=root, toolchain=toolchain, extra_arguments=arguments,
+                            extra_environment={**environment, 'SPITE_RUNNER_PROBE_FAIL_CASE':
+                                               report['runtime_shard']['planned_shards'][index][0]})
+                        self.assertEqual(failed.returncode, 1, failed.stdout)
+                        failed_runtime = self.runtime_row(failure)
+                        self.assertEqual(failed_runtime['child_status'], 101)
+                        self.assertIn('shard_validation_error', failed_runtime)
+                        self.assertEqual(len(failure['invocations']), 1)
+                    self.assertEqual(sorted(executed), expected)
+                    self.assertNotIn('properties::', filters)
+                    self.assertIn('properties::unique', filters)
+                    self.assertIn('properties::shared', filters)
+                    self.assertIn('super_properties::', filters)
+                    self.assertIn('unicode_properties::', filters)
+                    for plan in plans:
+                        self.assertEqual(plan['prefix_count'], len(filters))
+                        self.assertEqual(plan['partition_sha256'], plans[0]['partition_sha256'])
+                        self.assertEqual(plan['planned_shards'], plans[0]['planned_shards'])
+                        collided = {'properties::shared', 'super_properties::shared',
+                                    'super_properties::other'}
+                        self.assertEqual(sum(collided <= set(shard)
+                                             for shard in plan['planned_shards']), 1)
+                    result, excluded = self.run_suite(
+                        suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=profile + ['--runtime-integration', 'exclude'],
+                        extra_environment=environment)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    self.assertEqual(project(excluded['invocations']), project(others))
+
+            # A newly compiled longer module prefix must cause fresh refinement
+            # of a previously compact owner, without omitting either name.
+            discovered = '''
+mod outer_unicode_properties {
+    #[test]
+    fn discovered_after_first_run() { super::check(); }
+}
+'''
+            source.write_text(RUNTIME_SHARD_SOURCE + added + discovered, encoding='utf-8')
+            discovered_names = sorted(expected + ['outer_unicode_properties::discovered_after_first_run'])
+            environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '0'
+            for count in [2, 3]:
+                executed, filters = [], set()
+                for index in range(count):
+                    result, report = self.run_suite(
+                        suite='rest', root=root,
+                        extra_arguments=['--runtime-shard-count', str(count),
+                                         '--runtime-shard', str(index),
+                                         '--rest-shard', str(1 if index == 0 else 0),
+                                         '--refine-runtime-prefixes'], extra_environment=environment)
+                    runtime = self.assert_refined_runtime_shard(
+                        result, report, count, index, discovered_names)
+                    executed += runtime['runtime_shard_execution']['names']
+                    filters.update(runtime['command'][4::2])
+                self.assertEqual(sorted(executed), discovered_names)
+                self.assertNotIn('unicode_properties::', filters)
+                self.assertIn('unicode_properties::independent', filters)
+                self.assertIn('outer_unicode_properties::', filters)
+
+            # A registered but ignored selected name gives a zero child status;
+            # refinement must still reject the omitted execution for either count.
+            ignored = added.replace('    #[test]\n    fn unique()',
+                                    '    #[test]\n    #[ignore]\n    fn unique()', 1)
+            source.write_text(RUNTIME_SHARD_SOURCE + ignored, encoding='utf-8')
+            environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '0'
+            for count in [2, 3]:
+                rejected = []
+                for index in range(count):
+                    result, report = self.run_suite(
+                        suite='rest', root=root,
+                        extra_arguments=['--runtime-shard-count', str(count),
+                                         '--runtime-shard', str(index),
+                                         '--rest-shard', str(1 if index == 0 else 0),
+                                         '--refine-runtime-prefixes'], extra_environment=environment)
+                    runtime = self.runtime_row(report)
+                    if result.returncode:
+                        self.assertEqual(runtime['child_status'], 0)
+                        self.assertIn('shard_validation_error', runtime)
+                        self.assertIn('properties::unique', report['runtime_shard']['planned_shards'][index])
+                        rejected.append(index)
+                    else:
+                        self.assertNotIn('properties::unique', runtime['runtime_shard_execution']['names'])
+                self.assertEqual(len(rejected), 1)
+
+    def test_refined_runtime_shards_preserve_cold_library_roots_and_private_environment(self):
+        for toolchain in ['stable', '1.85.0']:
+            with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-refined-roots-') as temporary:
+                root = Path(temporary) / 'workspace'
+                root.mkdir()
+                make_integration_only_workspace(root)
+                environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'))
+                subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                               cwd=root, env=environment, check=True)
+                observer = root / 'observe.py'
+                observer.write_text(OBSERVE_RUNTIME_ENVIRONMENT, encoding='utf-8')
+
+                def observed(index):
+                    observation = root / f'observation-{index}.json'
+                    report = root / f'report-{index}.json'
+                    result = subprocess.run(
+                        [sys.executable, str(observer), str(RUNNER.resolve()), str(observation),
+                         '--toolchain', toolchain, '--offline', '--suite', 'rest',
+                         '--runtime-shard-count', '3', '--runtime-shard', str(index),
+                         '--rest-shard', str(1 if index == 0 else 0), '--refine-runtime-prefixes',
+                         '--report', str(report)], cwd=root, env=environment,
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    self.assertEqual(result.returncode, 0, result.stdout)
+                    return result, json.loads(report.read_text()), json.loads(observation.read_text())
+
+                # No reference artifact may seed the cold primary-package check.
+                cold = observed(2)
+                cold_row = self.runtime_row(cold[1])
+                cold_hash = hashlib.sha256(Path(cold_row['command'][0]).read_bytes()).hexdigest()
+                original, binary_hash = self.integration_collection_context(root, toolchain, environment)
+                self.assertEqual(cold_hash, binary_hash)
+                executed = []
+                for index in [2, 0, 1]:
+                    result, report, observations = cold if index == 2 else observed(index)
+                    self.assertIn('Runtime integration library collection: eligible; '
+                                  'using --workspace --lib --test integration', result.stdout)
+                    self.assertNotIn('Runtime integration target collection:', result.stdout)
+                    runtime = self.assert_refined_runtime_shard(
+                        result, report, 3, index, RUNTIME_SHARD_NAMES)
+                    self.assertEqual(len(observations), 2)
+                    for observation in observations:
+                        self.assertEqual(observation['package'], original['package'])
+                        self.assertEqual(observation['cwd'], original['cwd'])
+                        self.assertEqual(observation['environment'], original['environment'])
+                        self.assertEqual(observation['command'][:len(original['command'])],
+                                         original['command'])
+                    self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                     binary_hash)
+                    executed += runtime['runtime_shard_execution']['names']
+                self.assertEqual(sorted(executed), RUNTIME_SHARD_NAMES)
+
+
 class RuntimeShardHelperTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1883,6 +2139,194 @@ class RuntimeShardHelperTests(unittest.TestCase):
         for count in ['0', '1', '4', '-1', 'invalid']:
             cases.append((['--suite', 'rest', '--runtime-shard', '0',
                            '--runtime-shard-count', count], 'invalid'))
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments), \
+                 mock.patch.object(sys, 'argv', [str(RUNNER), '--toolchain', 'stable', *arguments]), \
+                 mock.patch('sys.stderr') as diagnostic, \
+                 mock.patch.object(self.runner.subprocess, 'check_output') as compiler, \
+                 mock.patch.object(self.runner, 'run_command') as child:
+                with self.assertRaises(SystemExit) as rejected:
+                    self.runner.main()
+                self.assertEqual(rejected.exception.code, 2)
+                self.assertIn(expected, ''.join(call.args[0] for call in diagnostic.write.call_args_list))
+                compiler.assert_not_called()
+                child.assert_not_called()
+
+
+    def test_refined_filters_keep_full_name_root_and_nonmodule_collisions(self):
+        names = sorted([
+            'properties::alpha', 'properties::shared', 'super_properties::shared',
+            'super_properties::other', 'unicode_properties::unicode', 'root_case',
+            'nested::root_case', 'independent_a::one', 'independent_b::one'])
+        default = self.runner.runtime_partition(names)
+        self.assertEqual(self.runner.runtime_partition(names, 2, False), default)
+        for count in [2, 3]:
+            plan = self.runner.runtime_partition(names, count, True)
+            self.assertNotIn('properties::', plan['prefixes'])
+            self.assertIn('properties::alpha', plan['prefixes'])
+            self.assertIn('properties::shared', plan['prefixes'])
+            self.assertIn('super_properties::', plan['prefixes'])
+            self.assertIn('unicode_properties::', plan['prefixes'])
+            self.assertIn('root_case', plan['prefixes'])
+            self.assertIn('nested::', plan['prefixes'])
+            for discovery in [list(reversed(names)), names[3:] + names[:3]]:
+                self.assertEqual(self.runner.runtime_partition(discovery, count, True), plan)
+            collided = {'properties::shared', 'super_properties::shared', 'super_properties::other'}
+            self.assertEqual(sum(collided <= set(shard) for shard in plan['shards']), 1)
+            roots = {'root_case', 'nested::root_case'}
+            self.assertEqual(sum(roots <= set(shard) for shard in plan['shards']), 1)
+            self.assertEqual(sorted(name for shard in plan['shards'] for name in shard), names)
+            for index in range(count):
+                selected = [name for name in names
+                            if not any(part in name for part in plan['skips'][index])]
+                self.assertEqual(selected, plan['shards'][index])
+                for other in range(index + 1, count):
+                    self.assertFalse(set(plan['shards'][index]) & set(plan['shards'][other]))
+            changed = self.runner.runtime_partition(names + ['extra_properties::new'], count, True)
+            self.assertEqual(sorted(name for shard in changed['shards'] for name in shard),
+                             sorted(names + ['extra_properties::new']))
+
+        # A root full-name filter may still join several refined modules.
+        rooted = self.runner.runtime_partition(names + ['properties'], 3, True)
+        self.assertIn('properties', rooted['prefixes'])
+        all_properties = {name for name in names + ['properties'] if 'properties' in name}
+        self.assertEqual(sum(all_properties <= set(shard) for shard in rooted['shards']), 1)
+        # A module string inside a nested test name, but not another module
+        # prefix, is not an expansion trigger. Its actual collision still joins.
+        nested = self.runner.runtime_partition(
+            ['short::one', 'outer::short::two', 'independent_a::one', 'independent_b::one'],
+            3, True)
+        self.assertIn('short::', nested['prefixes'])
+        self.assertNotIn('short::one', nested['prefixes'])
+        self.assertEqual(sum({'short::one', 'outer::short::two'} <= set(shard)
+                             for shard in nested['shards']), 1)
+        for invalid in [None, 0, 1, 'true']:
+            with self.subTest(refine=invalid), self.assertRaises(RuntimeError):
+                self.runner.runtime_partition(names, 2, invalid)
+        for count, collided_names in [
+                (2, ['properties::same', 'super_properties::same']),
+                (3, ['properties::same', 'super_properties::same', 'independent::one'])]:
+            with self.subTest(count=count), self.assertRaises(RuntimeError):
+                self.runner.runtime_partition(collided_names, count, True)
+
+    def test_refined_preparation_checks_every_actual_listing_and_policy_metadata(self):
+        invocation = {'package': 'spite-runtime', 'cwd': '/fixture/b',
+                      'command': ['/fixture/integration-0123456789abcdef',
+                                  '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+                      'changed_environment': {'changed': 'after'},
+                      'removed_environment': ['removed']}
+        baseline = {'kept': 'same', 'changed': 'before', 'removed': 'gone'}
+        names = ['properties::a', 'properties::b', 'super_properties::c']
+
+        def listed_names(selected):
+            return ''.join(name + ': test\n' for name in selected) + \
+                f'\n{len(selected)} tests, 0 benchmarks\n'
+
+        full = listed_names(names)
+        for count in [2, 3]:
+            shards = [[names[0], names[2]], [names[1]]] if count == 2 else [[name] for name in names]
+            for index in range(count):
+                responses = iter([full, full, *map(listed_names, shards)])
+                listing_commands = []
+
+                def listed(command, **kwargs):
+                    self.assertEqual(command[-1], '--list', 'No Native before all actual lists pass')
+                    if not listing_commands:
+                        self.assertEqual(command, [invocation['command'][0], '--list'])
+                    else:
+                        self.assertEqual(command[:len(invocation['command'])], invocation['command'])
+                    listing_commands.append(command)
+                    self.assertEqual(kwargs['cwd'], invocation['cwd'])
+                    self.assertEqual(kwargs['env'], {'kept': 'same', 'changed': 'after'})
+                    return subprocess.CompletedProcess(command, 0, stdout=next(responses))
+
+                with mock.patch.object(self.runner, 'run_command', side_effect=listed) as child, \
+                     mock.patch('builtins.print'):
+                    original, selected, metadata, plan = self.runner.prepare_runtime_shard(
+                        [invocation], index, baseline, count, True)
+                self.assertIs(original, invocation)
+                self.assertEqual(child.call_count, count + 2)
+                self.assertEqual(listing_commands, [
+                    [invocation['command'][0], '--list'],
+                    invocation['command'] + ['--list'],
+                    *[invocation['command'] +
+                      [part for prefix in skips for part in ['--skip', prefix]] + ['--list']
+                      for skips in plan['skips']],
+                ])
+                self.assertEqual(plan['shards'], shards)
+                self.assertEqual(metadata['algorithm'], 'substring-components-refined-prefixes-greedy-v1')
+                self.assertEqual(metadata['schema'], 1)
+                self.assertEqual(metadata['count'], count)
+                self.assertEqual(metadata['index'], index)
+                self.assertEqual(metadata['prefix_count'], 3)
+                self.assertEqual(metadata['prefix_count'], len(plan['prefixes']))
+                self.assertEqual(metadata['listing_counts'], [3, 3, *map(len, shards)])
+                self.assertEqual(len(metadata['listing_output_sha256']), count + 2)
+                self.assertEqual(len(metadata['native_command_utf16_units']), count)
+                self.assertEqual(selected['command'][len(invocation['command']):],
+                                 [part for prefix in plan['skips'][index] for part in ['--skip', prefix]])
+
+        first, second, third = [listed_names([name]) for name in names]
+        for last in [first, second, listed_names([]), 'super_properties::c: test\n',
+                     'super_properties::c: test\nsuper_properties::c: test\n\n2 tests, 0 benchmarks\n']:
+            responses = iter([full, full, first, second, last])
+            with mock.patch.object(self.runner, 'run_command', side_effect=lambda command, **kwargs:
+                                   subprocess.CompletedProcess(command, 0, stdout=next(responses))) as child, \
+                 mock.patch('builtins.print'), self.assertRaises(RuntimeError):
+                self.runner.prepare_runtime_shard([invocation], 2, baseline, 3, True)
+            self.assertEqual(child.call_count, 5)
+        responses = iter([(0, full), (0, full), (0, first), (0, second), (101, third)])
+
+        def failed_list(command, **kwargs):
+            status, output = next(responses)
+            return subprocess.CompletedProcess(command, status, stdout=output)
+
+        with mock.patch.object(self.runner, 'run_command', side_effect=failed_list) as child, \
+             mock.patch('builtins.print'), self.assertRaises(RuntimeError):
+            self.runner.prepare_runtime_shard([invocation], 2, baseline, 3, True)
+        self.assertEqual(child.call_count, 5)
+        for invalid in [None, 0, 1, 'true']:
+            with self.subTest(refine=invalid), \
+                 mock.patch.object(self.runner, 'run_command') as child, self.assertRaises(RuntimeError):
+                self.runner.prepare_runtime_shard([invocation], 0, baseline, 2, invalid)
+            child.assert_not_called()
+
+    def test_refined_full_name_growth_keeps_windows_bound_before_filtered_child(self):
+        names = ['a::' + 'x' * 17000, 'a::' + 'y' * 17000, 'outer_a::last']
+        full = ''.join(name + ': test\n' for name in names) + '\n3 tests, 0 benchmarks\n'
+        singles = [name + ': test\n\n1 test, 0 benchmarks\n' for name in names]
+        invocation = {'package': 'spite-runtime', 'cwd': '/fixture/b',
+                      'command': ['C:/Program Files/spite/integration-0123456789abcdef.exe',
+                                  '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+                      'changed_environment': {}, 'removed_environment': []}
+        guard = self.runner.guard_windows_command
+        responses = iter([full, full, singles[0], singles[1]])
+
+        def listed(command, **kwargs):
+            self.assertEqual(command[-1], '--list', 'Never execute Native during preparation')
+            return subprocess.CompletedProcess(command, 0, stdout=next(responses))
+
+        # Compact a:: has become two long full-name filters. The third
+        # complement exceeds CreateProcessW's limit after four valid lists.
+        with mock.patch.object(self.runner, 'guard_windows_command',
+                               side_effect=lambda command: guard(command, windows=True)), \
+             mock.patch.object(self.runner.subprocess, 'run', side_effect=listed) as child, \
+             mock.patch('builtins.print'), self.assertRaisesRegex(RuntimeError, '32767'):
+            self.runner.prepare_runtime_shard([invocation], 2, {}, 3, True)
+        self.assertEqual(child.call_count, 4)
+        self.assertTrue(all(call.args[0][-1] == '--list' for call in child.call_args_list))
+
+    def test_refinement_cli_rejects_invalid_scope_before_toolchain_or_collection(self):
+        cases = [(['--suite', suite, '--refine-runtime-prefixes'],
+                  '--refine-runtime-prefixes requires --suite rest and --runtime-shard')
+                 for suite in ['all', 'core', 'rest']]
+        for suite in ['all', 'core']:
+            cases.append((['--suite', suite, '--runtime-shard', '0', '--refine-runtime-prefixes'],
+                          '--runtime-shard requires --suite rest'))
+        for mode in ['only', 'exclude']:
+            cases.append((['--suite', 'rest', '--runtime-integration', mode,
+                           '--refine-runtime-prefixes'],
+                          '--runtime-integration requires --suite rest without Runtime shard options'))
         for arguments, expected in cases:
             with self.subTest(arguments=arguments), \
                  mock.patch.object(sys, 'argv', [str(RUNNER), '--toolchain', 'stable', *arguments]), \

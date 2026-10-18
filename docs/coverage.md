@@ -15173,4 +15173,39 @@ warnings, formatting, policy, and all three inventories pass. The expected
 Native total is 5,606: 1,022 Core and 4,584 REST, including 3,768 Runtime
 integration cases and 359 units. There are 907 Rust sources, with 901 unowned
 files and all 734 snapshots unchanged. The existing pinned corpus and its
-three-worker gate remain mandatory in the complete nineteen-job hosted matrix.
+three-worker gate remain mandatory in the complete seventeen-job hosted matrix.
+
+## Smaller Windows Runtime scheduling groups
+
+The two existing Windows Runtime partitions opt into prefix refinement. A
+module filter such as `properties::` also matches `super_properties::`, so
+the preceding plan kept all such matches together. Refinement replaces only
+ambiguous shorter module filters with their owned full test names, then still
+joins every actual substring collision. Full names are not assumed to be exact
+filters. The default collector policy and optional third partition are retained.
+
+On the compiled 3,768-name sorting inventory, the largest indivisible group
+falls from 504 names to 106. The refined plan has 570 filter groups and two
+disjoint partitions of 1,884 names. Predicted quoted Windows command sizes are
+12,899 and 12,763 UTF-16 units using an archived executable path. These are
+planning results; they do not establish a hosted speed improvement. Actual
+listings, complete execution, child status, and command bounds remain checked.
+
+The workflow retains seventeen jobs, the separate non-Runtime REST owner,
+all documentation and complete corpus gates, original Cargo contexts, and
+existing profile, cache, stack, thread, and quota settings. All 37 preceding
+collector tests remain unchanged; six new tests cover refined real programs,
+both toolchains and partition counts, residual collisions, discovery, private
+environment, rejected child results, CLI scope, and Windows command growth.
+
+Local validation covers all 73 framework tests. The full collector run passed
+42 tests and found an incorrect new mock assertion about the unfiltered
+listing's arguments. The corrected mock passes separately; all other 42
+methods and every preceding test/helper remain unchanged. No second full
+collector run is claimed. The 11 Runtime and 19 Parser framework tests,
+formatting, policy, and all three inventories pass. All 907 Rust files,
+734 snapshots, Cargo manifests and lockfile, and pinned corpus bytes match the
+accepted sorting commit, allowing its successful Clippy check to carry without
+another build.
+The complete seventeen-job hosted run still validates actual production
+execution and all documentation and corpus gates.

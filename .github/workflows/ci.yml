@@ -278,11 +278,11 @@ jobs:
             extra_args+=(--optimize-runtime)
           fi
           if [[ "$RUNNER_OS" == "Windows" && "${{ matrix.suite }}" == "workspace-rest" ]]; then
-            extra_args+=(--runtime-shard 0 --rest-shard 1)
+            extra_args+=(--runtime-shard 0 --rest-shard 1 --refine-runtime-prefixes)
           elif [[ "${{ matrix.suite }}" == "runtime-integration" ]]; then
             extra_args+=(--runtime-integration exclude)
           elif [[ "${{ matrix.suite }}" == "runtime-second-half" ]]; then
-            extra_args+=(--runtime-shard 1 --rest-shard 0)
+            extra_args+=(--runtime-shard 1 --rest-shard 0 --refine-runtime-prefixes)
           fi
           python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN" --suite "$WORKSPACE_SUITE" "${extra_args[@]}"
       - name: Run documentation tests

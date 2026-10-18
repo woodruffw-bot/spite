@@ -64,15 +64,27 @@ def parse_test_listing(output):
     return sorted(names)
 
 
-def runtime_partition(names, count=2):
+def runtime_partition(names, count=2, refine_prefixes=False):
     """Keep every substring-colliding module prefix in the same shard."""
     if type(count) is not int or count not in (2, 3):
         raise RuntimeError('Runtime partition count must be two or three')
+    if type(refine_prefixes) is not bool:
+        raise RuntimeError('Runtime prefix refinement must be a boolean')
     names = sorted(names)
     if not names or len(names) != len(set(names)):
         raise RuntimeError('Runtime inventory must contain unique test names')
     owners = {name: name.split('::', 1)[0] + '::' if '::' in name else name
               for name in names}
+    if refine_prefixes:
+        # Only genuine module-prefix overlaps trigger expansion. Root test
+        # names remain full-name filters, even when they match another module.
+        modules = sorted({owner for name, owner in owners.items() if '::' in name})
+        overlapping = {prefix for prefix in modules
+                       if any(prefix != other and prefix in other for other in modules)}
+        owners = {name: name if '::' in name and owner in overlapping else owner
+                  for name, owner in owners.items()}
+    # The legacy key and metadata prefix_count count actual filter entries:
+    # module prefixes, root names, and optionally expanded full test names.
     prefixes = sorted(set(owners.values()))
     parent = {prefix: prefix for prefix in prefixes}
 
@@ -137,11 +149,13 @@ def invocation_environment(invocation, baseline):
     return environment
 
 
-def prepare_runtime_shard(invocations, index, baseline, count=2):
+def prepare_runtime_shard(invocations, index, baseline, count=2, refine_prefixes=False):
     if type(count) is not int or count not in (2, 3):
         raise RuntimeError('Runtime partition count must be two or three')
     if type(index) is not int or not 0 <= index < count:
         raise RuntimeError('Runtime shard index must be less than its partition count')
+    if type(refine_prefixes) is not bool:
+        raise RuntimeError('Runtime prefix refinement must be a boolean')
     invocation = validate_runtime_invocation(invocations)
     environment = invocation_environment(invocation, baseline)
     executable = invocation['command'][0]
@@ -170,7 +184,7 @@ def prepare_runtime_shard(invocations, index, baseline, count=2):
     if listing(invocation['command'] + ['--list']) != names:
         reject('The original Runtime arguments filter the complete inventory')
     try:
-        plan = runtime_partition(names, count)
+        plan = runtime_partition(names, count, refine_prefixes)
     except RuntimeError as error:
         reject(str(error))
     commands = [invocation['command'] +
@@ -182,7 +196,9 @@ def prepare_runtime_shard(invocations, index, baseline, count=2):
             for left in range(count) for right in range(left + 1, count)) \
             or Counter(name for shard in observed for name in shard) != Counter(names):
         reject('Actual Runtime shard listings are not a disjoint complete partition')
-    metadata = {'schema': 1, 'algorithm': 'substring-components-greedy-v1',
+    algorithm = ('substring-components-refined-prefixes-greedy-v1' if refine_prefixes
+                 else 'substring-components-greedy-v1')
+    metadata = {'schema': 1, 'algorithm': algorithm,
                 'index': index, 'count': count, 'full_count': len(names),
                 'full_sha256': names_hash(names),
                 'partition_counts': [len(shard) for shard in observed],
@@ -329,6 +345,8 @@ def main():
                         help='Opt into one complete Runtime integration partition')
     parser.add_argument('--runtime-shard-count', type=int, choices=[2, 3],
                         help='Select two or three Runtime partitions (default: 2)')
+    parser.add_argument('--refine-runtime-prefixes', action='store_true',
+                        help='Expand overlapping Runtime module prefixes into full test-name filters')
     parser.add_argument('--rest-shard', type=int, choices=[0, 1],
                         help='Select the Runtime shard owning other REST tests (default: 0)')
     parser.add_argument('--runtime-integration', choices=['only', 'exclude'],
@@ -337,7 +355,7 @@ def main():
     args = parser.parse_args()
     if args.runtime_integration is not None and (args.suite != 'rest' or
             args.runtime_shard is not None or args.rest_shard is not None or
-            args.runtime_shard_count is not None):
+            args.runtime_shard_count is not None or args.refine_runtime_prefixes):
         parser.error('--runtime-integration requires --suite rest without Runtime shard options')
     if args.rest_shard is not None and (args.suite != 'rest' or args.runtime_shard is None):
         parser.error('--rest-shard requires --suite rest and --runtime-shard')
@@ -346,6 +364,8 @@ def main():
     if args.runtime_shard_count is not None and (
             args.suite != 'rest' or args.runtime_shard is None):
         parser.error('--runtime-shard-count requires --suite rest and --runtime-shard')
+    if args.refine_runtime_prefixes and (args.suite != 'rest' or args.runtime_shard is None):
+        parser.error('--refine-runtime-prefixes requires --suite rest and --runtime-shard')
     shard_count = 2 if args.runtime_shard_count is None else args.runtime_shard_count
     if args.runtime_shard is not None and args.runtime_shard >= shard_count:
         parser.error('--runtime-shard must be less than --runtime-shard-count (default: 2)')
@@ -441,7 +461,7 @@ def main():
             print(f'Runtime integration replay: excluded; {len(others)} other REST invocations', flush=True)
         elif args.runtime_shard is not None:
             original, runtime, shard_metadata, shard_plan = prepare_runtime_shard(
-                invocations, args.runtime_shard, baseline, shard_count)
+                invocations, args.runtime_shard, baseline, shard_count, args.refine_runtime_prefixes)
             if args.runtime_shard == rest_shard:
                 others = [row for row in selected if row is not original]
                 batches = [others, [runtime]]
