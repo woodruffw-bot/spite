@@ -954,6 +954,110 @@ impl RegExpUnicodeClassPairMatcher {
             }),
         }))
     }
+
+    /// Proves two complete singleton-q checked classes in source order.
+    ///
+    /// Requires complete validated v/vi Pattern input. Each class independently
+    /// requires a q operand and every alternative must decode to one character.
+    /// Both retain nested algebra and operand-wise simple-fold closure.
+    ///
+    /// Canonical outside ^, leading \b/\B, trailing \b/\B and $ surround
+    /// the complete pair. Enclosing captures remain a caller proof; inner
+    /// groups/assertions, repetition and extra atoms decline. Both borrowed
+    /// classes compile fully in source order, even when the first set is empty
+    /// or an outside gate is impossible. Earlier APIs, scanner bodies, storage,
+    /// callbacks and pair search remain unchanged.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_v_set_pair_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Bound both outside parity walks and both borrowed class boundaries.
+        charge(units.len().saturating_mul(4)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) {
+            return Ok(None);
+        }
+        let Some(split) = q_class_end(body) else {
+            return Ok(None);
+        };
+        if body.get(split) != Some(&0x5b) || q_class_end(&body[split..]) != Some(body.len() - split)
+        {
+            return Ok(None);
+        }
+        let Some(first) =
+            RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
+                &body[..split],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let Some(second) =
+            RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
+                &body[split..],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            classes: [first, second],
+            assertions: Some(OutsideAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            }),
+        }))
+    }
 }
 
 // Private to the singleton-q checked-component adapters. Complete v validation
@@ -1027,3 +1131,7 @@ mod single_character_string_then_flat_class_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_flat_class_then_single_character_string_tests.rs"]
 mod flat_class_then_single_character_string_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_single_character_string_class_pair_tests.rs"]
+mod single_character_string_class_pair_tests;

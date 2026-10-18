@@ -8987,3 +8987,29 @@ the existing pair plan, original UTF-16 context and overlapping retry from the
 first character's end. Sticky accounting remains four code units, including
 the approved initial-low-surrogate behavior. Two checked q classes, repetition,
 additional atoms and partial captures remain outside this entry.
+
+## Two checked one-character UnicodeSets string classes
+
+A separate v/vi entry proves exactly two complete checked classes. Each class
+must contain at least one ClassStringDisjunction operand, and every alternative
+must decode to one original Unicode character. Operand-wise simple folding
+precedes set operations and complement
+([CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)).
+
+The adapter borrows validated source and uses the shared checked-class boundary
+walk for both components. An observable 4N framing charge precedes both outside
+parity walks and both class-boundary walks. Both complete classes compile in
+source order through the existing fallible work and capacity checks, including
+when the first set is empty or an outside assertion cannot succeed.
+
+Canonical outside ^, leading \b/\B, trailing \b/\B and $ apply to the complete
+pair. The existing pair matcher preserves original UTF-16 context, overlapping
+retry from the first character's end and four-unit sticky accounting, including
+the approved initial-low-surrogate behavior. Complete enclosing captures and
+result projection retain the caller's existing proof.
+
+Earlier entries keep their domains and callbacks. A checked component without
+q operands, repetition, additional atoms and partial captures remain outside
+this entry. Mixing a q class with an ordinary non-q checked class remains
+unproved in either order. Matcher storage and dependencies are unchanged;
+host resource quotas remain opt-in.

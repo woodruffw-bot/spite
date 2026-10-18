@@ -14740,3 +14740,54 @@ candidate was not executed, and the original strict disagreement is preserved.
 The fifteen-job matrix still requires complete stable and MSRV suites, all 57
 framework probes and four complete 14,740-variant reviewed-corpus gates before
 the following push.
+
+## Two checked one-character UnicodeSets string classes
+
+The new entry composes exactly two complete checked v/vi classes, each requiring
+single-character ClassStringDisjunction operands. Two earlier Unsupported
+Boolean controls become true in their original owners and retain finally
+marker 3. The other 100 earlier test functions and all 48 earlier snapshot
+functions retain their contents.
+
+Two Core tests specify 28 handwritten membership pairs over eight tiny inputs:
+3,640 cursor/sticky queries using an independent UTF-16 oracle. Eight complete
+component transcripts cover every cancellation prefix and full suffix proof
+after an empty first set. All ten earlier compiler entries still decline this
+new domain. Two Runtime tests and one accounting unit cover original context,
+overlapping and sticky matches, captures, indices, state, consumers,
+supplementary and lone characters, and explicitly opted-in construction
+cancellation. Ten handwritten complete JSON/UTF-16 cases specify eight matches
+and two nulls, with no exclusions.
+
+The earlier 190 q-containing controls were scoped to 45 declared arrays, rather
+than the complete negative inventory. The complete source census after this
+step contains 710 Unsupported controls in 48 arrays, including 216 q-containing
+controls; ordinary non-q checked neighbors remain unproved in both orders.
+
+Expected Native totals are 5,382: 1,020 Core and 4,362 REST, including 3,600
+Runtime integration tests and 308 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. Golds total 733, retaining all 732 earlier files byte-for-byte.
+
+All 22 local checks passed: full stable Core and Runtime integration suites,
+focused new Core/Runtime tests on MSRV, the direct accounting unit on both,
+one inspected insta update and thirteen quality checks. Full MSRV suites remain
+mandatory in hosted CI; no local full-MSRV result is claimed.
+
+The fresh strict comparison with Node 24.19.0 retains eight agreements and two
+disagreements in the folded intersection and folded union/complement cases.
+Node returns null in both. Singleton string operands must close under simple
+case folding before set operations and complement; all ten native gold rows
+retain their complete handwritten edition-17 JSON expectations. The original
+nonzero comparison is preserved, with no exclusions. This is the documented
+[V8 operand-folding defect](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+
+A separate two-row ordinary-class comparison passed after replacing the exact
+singleton string operands with equivalent ordinary classes. The same flags,
+input, start, captures, named groups, indices and complete JSON matched; only
+the serialized pattern source changed. The original strict disagreements remain
+preserved.
+
+The fifteen-job matrix still requires complete stable and MSRV suites, all 57
+framework probes and four complete 14,740-variant reviewed-corpus gates before
+the following push.
