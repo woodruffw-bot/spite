@@ -2789,6 +2789,88 @@ mod tests {
     }
 
     #[test]
+    fn checked_class_then_single_character_v_string_work_bound_tracks_proved_terms() {
+        let source = JsString::from(r"\b[[\u{1f600}]][\q{\uD83D\uDE80|x}--x]\B");
+        let body = RegExpUnicodeClassPairMatcher::compile_checked_then_v_set_with_single_character_strings_and_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeClassPair(body), 2);
+        assert_eq!(matcher.capture_count(), 2);
+        for source_len in [0, 1, source.len(), usize::MAX] {
+            for remaining in 0usize..=5 {
+                assert_eq!(
+                    matcher.search_work(true, source_len, remaining),
+                    4.min(remaining + 1)
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(matcher.search_work(true, source_len, usize::MAX), 4);
+            assert_eq!(
+                matcher.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        let input = JsString::from("A😀🚀!");
+        let mut work = Vec::new();
+        let found = matcher
+            .find_with_work(&input, 2, true, |units| {
+                work.push(units);
+                Ok::<(), std::convert::Infallible>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(work, [1]);
+        assert_eq!(found.range, 1..5);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(1..5));
+        assert_eq!(found.capture(1), Some(1..5));
+        assert_eq!(found.capture(2), None);
+        assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
+        let mut aborted = Vec::new();
+        assert!(matches!(
+            matcher.find_with_work(&input, 2, true, |units| {
+                aborted.push(units);
+                Err(29u8)
+            }),
+            Err(29)
+        ));
+        assert_eq!(aborted, [1]);
+        let mut outside = Vec::new();
+        assert!(
+            matcher
+                .find_with_work(&input, input.len() + 1, false, |units| {
+                    outside.push(units);
+                    Ok::<(), std::convert::Infallible>(())
+                })
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(outside, [1]);
+        let mut compile_aborted = Vec::new();
+        assert!(matches!(
+            RegExpUnicodeClassPairMatcher::compile_checked_then_v_set_with_single_character_strings_and_work(
+                &source,
+                false,
+                false,
+                |units| {
+                    compile_aborted.push(units);
+                    Err(43u8)
+                },
+            ),
+            Err(spite_core::RegExpUnicodeSetCompileError::Work(43))
+        ));
+        assert_eq!(compile_aborted, [source.len().saturating_mul(4)]);
+    }
+
+    #[test]
     fn wrapped_single_character_v_string_repetition_capture_work_remains_incremental() {
         let source = JsString::from(r"((?:([\q{\uD83D\uDE00|x}--x])))+");
         let body = RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_v_set_with_single_character_strings_and_work(

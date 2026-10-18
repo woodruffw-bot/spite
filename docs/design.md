@@ -9008,8 +9008,28 @@ retry from the first character's end and four-unit sticky accounting, including
 the approved initial-low-surrogate behavior. Complete enclosing captures and
 result projection retain the caller's existing proof.
 
-Earlier entries keep their domains and callbacks. A checked component without
-q operands, repetition, additional atoms and partial captures remain outside
-this entry. Mixing a q class with an ordinary non-q checked class remains
-unproved in either order. Matcher storage and dependencies are unchanged;
-host resource quotas remain opt-in.
+Earlier entries keep their domains and callbacks. This entry requires q
+operands in both classes; ordinary non-q checked operands use separate entries.
+Repetition, additional atoms and partial captures remain outside this entry.
+Matcher storage and dependencies are unchanged; host resource quotas remain
+opt-in.
+
+## An ordinary checked class followed by a one-character UnicodeSets string class
+
+A separate v/vi pair entry requires a non-q checked prefix with a nested class
+or set operator, then a complete q-aware checked suffix. Every q alternative
+must decode to exactly one original character. The borrowed 4N framing proof
+finishes before the legacy checked prefix and q-aware suffix compile fully in
+source order, even after an empty first set or an impossible outside gate.
+Operand-wise simple folding precedes set operations and complement
+([CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)).
+
+Canonical outside line/word assertions and complete enclosing captures reuse
+the existing pair representation, original UTF-16 context, first-end overlap
+retry and four-unit sticky accounting, including the approved initial low-pair
+rewind. Earlier eleven APIs, scanners, callbacks, storage and search stay
+unchanged. Reverse q-to-ordinary-checked order, partial captures, repetition,
+extra atoms, noncanonical assertions and empty or multicharacter q alternatives
+remain outside this entry. Parser string-property early errors remain distinct
+from unsupported valid syntax and optional host limits; dependencies and default
+resource policy are unchanged.

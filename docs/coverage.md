@@ -14791,3 +14791,46 @@ preserved.
 The fifteen-job matrix still requires complete stable and MSRV suites, all 57
 framework probes and four complete 14,740-variant reviewed-corpus gates before
 the following push.
+
+## An ordinary checked class followed by a one-character string class
+
+Two Core tests specify 2,600 independent UTF-16 pair queries, 17 direct
+witnesses and nine handwritten construction ledgers covering 107 fresh abort
+prefixes and rebuilds. Nine exact Boolean promotions retain their expressions
+in six owners; 701 other negatives and all 49 earlier snapshot functions remain
+unchanged. Two Runtime tests and one direct accounting unit cover complete
+captures, indices, original context, overlap, state, consumers and explicitly
+opted-in construction cancellation.
+
+The inventory contains 882 Rust sources and 5,387 Native tests: 1,022 Core and
+4,365 REST, including 3,602 Runtime integration tests and 309 Runtime units.
+Parser retains 347 tests. The documentation test and 14,740 reviewed corpus
+variants from 7,631 sources remain separate. All 734 gold files are present,
+including 733 earlier files preserved byte-for-byte; the ten new complete
+JSON/UTF-16 rows match their handwritten eight-match/two-null expectations.
+
+Focused new Core tests passed on both Rust versions. Full stable Runtime
+integration passed all 3,602 tests, the stable accounting unit passed, and the
+new snapshot was generated and inspected once.
+The MSRV accounting unit, eight exact changed Runtime tests on MSRV and
+thirteen quality checks also passed, completing all 27 planned local checks.
+No local full-Core or full-MSRV-Runtime suite result is claimed.
+
+The fresh strict Node 24.19.0 comparison retains nine agreements and one
+folded-intersection disagreement, at zero-based row 4. Node returns null;
+singleton q operands must close under simple case folding before intersection,
+so the native result and all ten gold rows retain their complete handwritten
+edition-17 expectations. The original nonzero ten-row comparison is preserved,
+with no exclusions. This is the documented
+[V8 operand-folding defect](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+
+A separate one-row ordinary-class comparison passed after replacing only the
+singleton q{K} operand with ordinary K in the same intersection. Flags, input,
+start, captures, named groups, indices and complete JSON matched; only
+serialized pattern source changed. The original strict disagreement remains
+preserved.
+
+The fifteen-job matrix still requires complete stable and MSRV suites, all 57
+framework probes and four complete 14,740-variant reviewed-corpus gates before
+the following push. This feature's hosted results remain separate from these
+local checks.
