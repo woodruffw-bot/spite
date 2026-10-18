@@ -45,6 +45,217 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: rustup toolchain install "$TOOLCHAIN" --profile minimal
+      - name: Prepare trusted main build cache
+        id: build-cache-key
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.85.0' && matrix.suite == 'runtime-integration'
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+          CACHE_SUITE: ${{ matrix.suite }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import tomllib
+
+          outputs = {"eligible": "false"}
+          try:
+              root = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
+              home = Path.home().resolve(strict=True)
+              cargo = home / ".cargo"
+              target = root / "target"
+              debug = target / "debug"
+              packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+              expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
+                          "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
+                          "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
+                          "CACHE_SUITE": "runtime-integration"}
+              if any(os.environ.get(k) != v for k, v in expected.items()):
+                  raise ValueError("Unsupported cache context")
+              if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):
+                  raise ValueError("Unsupported workspace or revision")
+              for name, default in (("CARGO_HOME", cargo), ("CARGO_TARGET_DIR", target)):
+                  if Path(os.environ.get(name) or default).resolve() != default:
+                      raise ValueError("Unsupported Cargo directory override")
+              if any(k.upper() in ("CARGO_BUILD_TARGET", "CARGO_BUILD_TARGET_DIR", "CARGO_BUILD_BUILD_DIR") for k in os.environ):
+                  raise ValueError("Unsupported Cargo target layout")
+              paths = [cargo, cargo / "registry", target, debug]
+              paths.extend(cargo / "registry" / name for name in ("cache", "index", "src"))
+              paths.extend(debug / name for name in (".fingerprint", "deps", "build", "examples", "incremental"))
+              if any(p.resolve() != p or (p.exists() and not p.is_dir()) for p in paths):
+                  raise ValueError("Unsupported or redirected cache path")
+              configs = [parent / ".cargo" / name for parent in (root, *root.parents) for name in ("config", "config.toml")]
+              configs.extend(cargo / name for name in ("config", "config.toml"))
+              if any(p.exists() or p.is_symlink() for p in configs):
+                  raise ValueError("Unsupported Cargo configuration")
+              required = [root / name for name in ("Cargo.lock", "Cargo.toml", ".github/workflows/ci.yml", "tools/run-cargo-workspace-tests.py")]
+              manifests = sorted(root.glob("crates/*/Cargo.toml"))
+              if len(manifests) != len(packages) or any(not p.is_file() for p in required):
+                  raise ValueError("Missing build configuration")
+              documents = [tomllib.loads(p.read_text(encoding="utf-8")) for p in [root / "Cargo.toml", *manifests]]
+              workspace = documents[0]["workspace"]
+              if "package" in documents[0] or workspace.get("members") != ["crates/*"] or workspace.get("exclude") or workspace.get("default-members"):
+                  raise ValueError("Unsupported workspace membership")
+              if any("patch" in d or "replace" in d for d in documents):
+                  raise ValueError("Unsupported dependency replacement")
+              if tuple(sorted(d["package"]["name"] for d in documents[1:])) != packages:
+                  raise ValueError("Unsupported workspace packages")
+              if any(p.parent.name != d["package"]["name"] or "build" in d["package"] or "metabuild" in d["package"] or (p.parent / "build.rs").exists() or (p.parent / "build.rs").is_symlink() for p, d in zip(manifests, documents[1:])):
+                  raise ValueError("Unsupported workspace build script or package path")
+              locked = tomllib.loads((root / "Cargo.lock").read_text(encoding="utf-8"))["package"]
+              if tuple(sorted(p["name"] for p in locked if "source" not in p)) != packages:
+                  raise ValueError("Unsupported local dependency context")
+              if any(p["source"] != "registry+https://github.com/rust-lang/crates.io-index" or not re.fullmatch(r"[0-9a-f]{64}", p.get("checksum", "")) for p in locked if "source" in p):
+                  raise ValueError("Unsupported registry dependency context")
+              image = {name: os.environ[name] for name in ("ImageOS", "ImageVersion")}
+              if not all(image.values()):
+                  raise ValueError("Missing hosted image identity")
+              inputs = required + manifests + [root / name for name in ("rust-toolchain", "rust-toolchain.toml")] + configs
+              hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None for p in inputs}
+              rustc = subprocess.check_output(["rustc", "+1.85.0", "-vV"], cwd=root, text=True)
+              cargo_version = subprocess.check_output(["cargo", "+1.85.0", "-vV"], cwd=root, text=True)
+              if not re.search(r"^host: x86_64-pc-windows-msvc$", rustc, re.MULTILINE) or not re.search(r"^commit-hash: [0-9a-f]{40}$", rustc, re.MULTILINE):
+                  raise ValueError("Unsupported compiler identity")
+              if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.85\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: d73d2caf9e41a39daf2a8d6ce60ec80bf354d2a7$", cargo_version, re.MULTILINE):
+                  raise ValueError("Unsupported Cargo identity")
+              names = {"RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_ENCODED_RUSTDOCFLAGS", "RUSTC", "RUSTDOC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTC_BOOTSTRAP", "RUSTC_CODEGEN_BACKEND", "RUSTUP_TOOLCHAIN", "CARGO_INCREMENTAL", "PATH", "CL", "_CL_", "LINK", "_LINK_", "CC", "CXX", "AR", "CFLAGS", "CXXFLAGS", "ARFLAGS", "LDFLAGS", "VSINSTALLDIR", "VCINSTALLDIR", "VCTOOLSVERSION", "WINDOWSSDKVERSION", "LIB", "LIBPATH", "INCLUDE"}
+              flags = {k.upper(): v for k, v in os.environ.items() if k.upper() in names or k.upper().startswith(("CARGO_PROFILE_", "CARGO_TARGET_", "CARGO_BUILD_", "CARGO_UNSTABLE_"))}
+              identity = {"rustc": rustc, "cargo": cargo_version, "image": image, "context": expected,
+                          "profile": "test", "workspace": str(root), "cargo_home": str(cargo),
+                          "target": str(target), "inputs": hashes, "flags": flags}
+              digest = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+              prefix = "spite-build-v2-workspace-clean-trusted-main-Windows-X64-runtime-integration-" + digest + "-"
+              outputs = {"eligible": "true", "prefix": prefix, "key": prefix + os.environ["GITHUB_SHA"]}
+          except (OSError, ValueError, KeyError, RuntimeError, subprocess.CalledProcessError):
+              print("Build cache is ineligible; running the existing uncached CI commands.")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              for name, value in outputs.items():
+                  output.write(name + "=" + value + "\n")
+          PY
+      - name: Restore trusted main build cache
+        id: build-cache
+        if: steps.build-cache-key.outputs.eligible == 'true'
+        continue-on-error: true
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/cache
+            ~/.cargo/registry/index
+            ~/.cargo/registry/src
+            target/debug
+          key: ${{ steps.build-cache-key.outputs.key }}
+          restore-keys: ${{ steps.build-cache-key.outputs.prefix }}
+          enableCrossOsArchive: 'false'
+          fail-on-cache-miss: 'false'
+          lookup-only: 'false'
+      - name: Discard incomplete build cache
+        if: steps.build-cache-key.outputs.eligible == 'true' && (steps.build-cache.outcome == 'failure' || (steps.build-cache.outcome == 'success' && steps.build-cache.outputs.cache-hit == ''))
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import shutil
+
+          root = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
+          home = Path.home().resolve(strict=True)
+          cargo = home / ".cargo"
+          target = root / "target"
+          if Path.cwd().resolve() != root:
+              raise RuntimeError("Unexpected workspace during cache fallback")
+          for name, default in (("CARGO_HOME", cargo), ("CARGO_TARGET_DIR", target)):
+              if Path(os.environ.get(name) or default).resolve() != default:
+                  raise RuntimeError("Cargo directory changed during cache restore")
+          if any(p.resolve() != p for p in (cargo, cargo / "registry", target)):
+              raise RuntimeError("Refusing redirected cache ancestors")
+          paths = [cargo / "registry" / name for name in ("cache", "index", "src")]
+          paths.append(target / "debug")
+          for path in paths:
+              if path.is_symlink():
+                  path.unlink()
+              elif path.resolve() != path:
+                  path.rmdir()
+              elif path.is_dir():
+                  shutil.rmtree(path)
+              elif path.exists():
+                  path.unlink()
+          PY
+      - name: Invalidate restored workspace builds
+        if: steps.build-cache-key.outputs.eligible == 'true' && steps.build-cache.outcome == 'success' && (steps.build-cache.outputs.cache-hit == 'true' || steps.build-cache.outputs.cache-hit == 'false')
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+          CACHE_SUITE: ${{ matrix.suite }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import tomllib
+
+          root = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
+          home = Path.home().resolve(strict=True)
+          cargo = home / ".cargo"
+          target = root / "target"
+          debug = target / "debug"
+          packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+          expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
+                      "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
+                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
+                      "CACHE_SUITE": "runtime-integration"}
+          if any(os.environ.get(k) != v for k, v in expected.items()):
+              raise ValueError("Unsupported cache context")
+          if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):
+              raise ValueError("Unsupported workspace or revision")
+          for name, default in (("CARGO_HOME", cargo), ("CARGO_TARGET_DIR", target)):
+              if Path(os.environ.get(name) or default).resolve() != default:
+                  raise ValueError("Unsupported Cargo directory override")
+          if any(k.upper() in ("CARGO_BUILD_TARGET", "CARGO_BUILD_TARGET_DIR", "CARGO_BUILD_BUILD_DIR") for k in os.environ):
+              raise ValueError("Unsupported Cargo target layout")
+          paths = [cargo, cargo / "registry", target, debug]
+          paths.extend(cargo / "registry" / name for name in ("cache", "index", "src"))
+          paths.extend(debug / name for name in (".fingerprint", "deps", "build", "examples", "incremental"))
+          if any(p.resolve() != p or (p.exists() and not p.is_dir()) for p in paths):
+              raise ValueError("Unsupported or redirected cache path")
+          configs = [parent / ".cargo" / name for parent in (root, *root.parents) for name in ("config", "config.toml")]
+          configs.extend(cargo / name for name in ("config", "config.toml"))
+          if any(p.exists() or p.is_symlink() for p in configs):
+              raise ValueError("Unsupported Cargo configuration")
+          required = [root / name for name in ("Cargo.lock", "Cargo.toml", ".github/workflows/ci.yml", "tools/run-cargo-workspace-tests.py")]
+          manifests = sorted(root.glob("crates/*/Cargo.toml"))
+          if len(manifests) != len(packages) or any(not p.is_file() for p in required):
+              raise ValueError("Missing build configuration")
+          documents = [tomllib.loads(p.read_text(encoding="utf-8")) for p in [root / "Cargo.toml", *manifests]]
+          workspace = documents[0]["workspace"]
+          if "package" in documents[0] or workspace.get("members") != ["crates/*"] or workspace.get("exclude") or workspace.get("default-members"):
+              raise ValueError("Unsupported workspace membership")
+          if any("patch" in d or "replace" in d for d in documents):
+              raise ValueError("Unsupported dependency replacement")
+          if tuple(sorted(d["package"]["name"] for d in documents[1:])) != packages:
+              raise ValueError("Unsupported workspace packages")
+          if any(p.parent.name != d["package"]["name"] or "build" in d["package"] or "metabuild" in d["package"] or (p.parent / "build.rs").exists() or (p.parent / "build.rs").is_symlink() for p, d in zip(manifests, documents[1:])):
+              raise ValueError("Unsupported workspace build script or package path")
+          locked = tomllib.loads((root / "Cargo.lock").read_text(encoding="utf-8"))["package"]
+          if tuple(sorted(p["name"] for p in locked if "source" not in p)) != packages:
+              raise ValueError("Unsupported local dependency context")
+          if any(p["source"] != "registry+https://github.com/rust-lang/crates.io-index" or not re.fullmatch(r"[0-9a-f]{64}", p.get("checksum", "")) for p in locked if "source" in p):
+              raise ValueError("Unsupported registry dependency context")
+
+          if debug.exists():
+              cargo_version = subprocess.check_output(["cargo", "+1.85.0", "-vV"], cwd=root, text=True)
+              if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.85\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: d73d2caf9e41a39daf2a8d6ce60ec80bf354d2a7$", cargo_version, re.MULTILINE):
+                  raise ValueError("Unsupported Cargo identity after restore")
+              command = ["cargo", "+1.85.0", "clean", "--locked", "--profile", "dev",
+                         "--manifest-path", str(root / "Cargo.toml"), "--target-dir", str(target)]
+              for package in packages:
+                  command += ["-p", package]
+              subprocess.run(command, cwd=root, check=True)
+          PY
       - name: Run unit and integration tests
         if: matrix.suite != 'test262'
         shell: bash
@@ -84,6 +295,78 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: cargo +"$TOOLCHAIN" test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact
+      - name: Prepare dependency build cache for saving
+        if: success() && steps.build-cache-key.outputs.eligible == 'true' && steps.build-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          TOOLCHAIN: ${{ matrix.toolchain }}
+          CACHE_SUITE: ${{ matrix.suite }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import tomllib
+
+          root = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
+          home = Path.home().resolve(strict=True)
+          cargo = home / ".cargo"
+          target = root / "target"
+          debug = target / "debug"
+          packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+          expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
+                      "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
+                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
+                      "CACHE_SUITE": "runtime-integration"}
+          if any(os.environ.get(k) != v for k, v in expected.items()):
+              raise ValueError("Unsupported cache context")
+          if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):
+              raise ValueError("Unsupported workspace or revision")
+          for name, default in (("CARGO_HOME", cargo), ("CARGO_TARGET_DIR", target)):
+              if Path(os.environ.get(name) or default).resolve() != default:
+                  raise ValueError("Unsupported Cargo directory override")
+          if any(k.upper() in ("CARGO_BUILD_TARGET", "CARGO_BUILD_TARGET_DIR", "CARGO_BUILD_BUILD_DIR") for k in os.environ):
+              raise ValueError("Unsupported Cargo target layout")
+          paths = [cargo, cargo / "registry", target, debug]
+          paths.extend(cargo / "registry" / name for name in ("cache", "index", "src"))
+          paths.extend(debug / name for name in (".fingerprint", "deps", "build", "examples", "incremental"))
+          if any(p.resolve() != p or (p.exists() and not p.is_dir()) for p in paths):
+              raise ValueError("Unsupported or redirected cache path")
+          configs = [parent / ".cargo" / name for parent in (root, *root.parents) for name in ("config", "config.toml")]
+          configs.extend(cargo / name for name in ("config", "config.toml"))
+          if any(p.exists() or p.is_symlink() for p in configs):
+              raise ValueError("Unsupported Cargo configuration")
+          required = [root / name for name in ("Cargo.lock", "Cargo.toml", ".github/workflows/ci.yml", "tools/run-cargo-workspace-tests.py")]
+          manifests = sorted(root.glob("crates/*/Cargo.toml"))
+          if len(manifests) != len(packages) or any(not p.is_file() for p in required):
+              raise ValueError("Missing build configuration")
+          documents = [tomllib.loads(p.read_text(encoding="utf-8")) for p in [root / "Cargo.toml", *manifests]]
+          workspace = documents[0]["workspace"]
+          if "package" in documents[0] or workspace.get("members") != ["crates/*"] or workspace.get("exclude") or workspace.get("default-members"):
+              raise ValueError("Unsupported workspace membership")
+          if any("patch" in d or "replace" in d for d in documents):
+              raise ValueError("Unsupported dependency replacement")
+          if tuple(sorted(d["package"]["name"] for d in documents[1:])) != packages:
+              raise ValueError("Unsupported workspace packages")
+          if any(p.parent.name != d["package"]["name"] or "build" in d["package"] or "metabuild" in d["package"] or (p.parent / "build.rs").exists() or (p.parent / "build.rs").is_symlink() for p, d in zip(manifests, documents[1:])):
+              raise ValueError("Unsupported workspace build script or package path")
+          locked = tomllib.loads((root / "Cargo.lock").read_text(encoding="utf-8"))["package"]
+          if tuple(sorted(p["name"] for p in locked if "source" not in p)) != packages:
+              raise ValueError("Unsupported local dependency context")
+          if any(p["source"] != "registry+https://github.com/rust-lang/crates.io-index" or not re.fullmatch(r"[0-9a-f]{64}", p.get("checksum", "")) for p in locked if "source" in p):
+              raise ValueError("Unsupported registry dependency context")
+
+          if debug.exists():
+              cargo_version = subprocess.check_output(["cargo", "+1.85.0", "-vV"], cwd=root, text=True)
+              if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.85\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: d73d2caf9e41a39daf2a8d6ce60ec80bf354d2a7$", cargo_version, re.MULTILINE):
+                  raise ValueError("Unsupported Cargo identity after restore")
+              command = ["cargo", "+1.85.0", "clean", "--locked", "--profile", "dev",
+                         "--manifest-path", str(root / "Cargo.toml"), "--target-dir", str(target)]
+              for package in packages:
+                  command += ["-p", package]
+              subprocess.run(command, cwd=root, check=True)
+          PY
 
   quality:
     runs-on: ubuntu-latest
