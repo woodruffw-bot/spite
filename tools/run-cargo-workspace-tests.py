@@ -190,6 +190,42 @@ def prepare_runtime_shard(invocations, index, baseline):
     return invocation, selected, metadata, plan
 
 
+def prepare_runtime_full(invocations, baseline):
+    """Validate the complete original Runtime invocation without partition filters."""
+    invocation = validate_runtime_invocation(invocations)
+    environment = invocation_environment(invocation, baseline)
+    commands = [[invocation['command'][0], '--list'], invocation['command'] + ['--list']]
+    listings, inventories = [], []
+    for command in commands:
+        result = run_command(command, cwd=invocation['cwd'], env=environment,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, encoding='utf-8', errors='replace')
+        listings.append(result.stdout)
+        try:
+            if result.returncode:
+                raise RuntimeError(f'Runtime listing exited with status {result.returncode}')
+            inventories.append(parse_test_listing(result.stdout))
+        except RuntimeError:
+            for output in listings:
+                print(output, flush=True)
+            raise
+    if inventories[0] != inventories[1]:
+        for output in listings:
+            print(output, flush=True)
+        raise RuntimeError('The original Runtime arguments filter the complete inventory')
+    names = inventories[0]
+    metadata = {'schema': 1, 'algorithm': 'original-integration-full-v1',
+                'full_count': len(names), 'full_sha256': names_hash(names),
+                'listing_counts': list(map(len, inventories)),
+                'listing_output_sha256': [hashlib.sha256(output.encode('utf-8')).hexdigest()
+                                          for output in listings],
+                'listing_command_utf16_units': [guard_windows_command(command)
+                                                for command in commands],
+                'native_command_utf16_units': guard_windows_command(invocation['command'])}
+    print('Runtime full plan: ' + json.dumps(metadata, sort_keys=True), flush=True)
+    return invocation, metadata, names
+
+
 def runtime_execution(output, expected_names, full_count):
     rows = re.findall(r'^test (.+) \.\.\. ([^\r\n]+)$',
                       output, re.MULTILINE)
@@ -268,37 +304,6 @@ def can_collect_runtime_integration_libs(metadata):
             and not target.get('required-features', []))
 
 
-def can_collect_runtime_integration_only(metadata):
-    """Drop library harnesses only when Runtime retains every dependency context."""
-    if not can_collect_runtime_integration_libs(metadata):
-        return False
-    members = set(metadata['workspace_members'])
-    packages = [package for package in metadata['packages'] if package['id'] in members]
-    runtime = [package for package in packages if package['name'] == 'spite-runtime']
-    if len(runtime) != 1:
-        return False
-    runtime = runtime[0]
-    runtime_path = str(Path(runtime['manifest_path']).parent)
-    runtime_dependency = {'name': 'spite-runtime', 'source': None, 'req': '*',
-                          'kind': None, 'rename': None, 'optional': False,
-                          'uses_default_features': True, 'features': [],
-                          'target': None, 'registry': None, 'path': runtime_path}
-    for package in packages:
-        # Root defaults and host build contexts cannot be inferred from a union
-        # of dependency feature names. Keep the library-root fallback for them.
-        if package['features'] or any('custom-build' in target['kind']
-                                      for target in package['targets']):
-            return False
-        for dependency in package['dependencies']:
-            if dependency['kind'] not in (None, 'dev') or dependency['optional']:
-                return False
-            if dependency in runtime['dependencies']:
-                continue
-            if dependency != runtime_dependency:
-                return False
-    return True
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
@@ -313,8 +318,13 @@ def main():
                         help='Opt into one of two complete Runtime integration partitions')
     parser.add_argument('--rest-shard', type=int, choices=[0, 1],
                         help='Select the Runtime shard owning other REST tests (default: 0)')
+    parser.add_argument('--runtime-integration', choices=['only', 'exclude'],
+                        help='Replay the complete Runtime integration invocation or other REST invocations')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    if args.runtime_integration is not None and (args.suite != 'rest' or
+            args.runtime_shard is not None or args.rest_shard is not None):
+        parser.error('--runtime-integration requires --suite rest without Runtime shard options')
     if args.rest_shard is not None and (args.suite != 'rest' or args.runtime_shard is None):
         parser.error('--rest-shard requires --suite rest and --runtime-shard')
     if args.runtime_shard is not None and args.suite != 'rest':
@@ -322,7 +332,8 @@ def main():
     if args.collect_core_libs and args.suite != 'core':
         parser.error('--collect-core-libs requires --suite core')
     rest_shard = 0 if args.rest_shard is None else args.rest_shard
-    runtime_only = args.runtime_shard is not None and args.runtime_shard != rest_shard
+    runtime_only = args.runtime_integration == 'only' or (
+        args.runtime_shard is not None and args.runtime_shard != rest_shard)
     if args.rest_shard is not None:
         print(f'NonRuntime REST owner: runtime shard {rest_shard}', flush=True)
     version_command = ['rustc', '+' + args.toolchain, '-vV']
@@ -343,7 +354,6 @@ def main():
         runner = [sys.executable, str(Path(__file__).resolve()), '--record', temporary]
         configuration = 'target.' + host[1] + '.runner=' + json.dumps(runner)
         target_selection = ['--all-targets']
-        integration_only = False
         if args.collect_core_libs or runtime_only:
             metadata_command = ['cargo', '+' + args.toolchain, 'metadata', '--no-deps',
                                 '--format-version', '1', '--locked']
@@ -363,17 +373,13 @@ def main():
                        'ineligible; using --workspace --all-targets'), flush=True)
             else:
                 eligible = can_collect_runtime_integration_libs(metadata)
-                integration_only = eligible and can_collect_runtime_integration_only(metadata)
-                if integration_only:
-                    target_selection = ['--test', 'integration']
-                    print('Runtime integration target collection: eligible; '
-                          'using --workspace --test integration', flush=True)
-                else:
-                    if eligible:
-                        target_selection = ['--lib', '--test', 'integration']
-                    print('Runtime integration library collection: ' +
-                          ('eligible; using --workspace --lib --test integration' if eligible else
-                           'ineligible; using --workspace --all-targets'), flush=True)
+                if eligible:
+                    # Keep library roots even when replaying only Runtime:
+                    # --test alone changes CARGO_PRIMARY_PACKAGE in dependencies.
+                    target_selection = ['--lib', '--test', 'integration']
+                print('Runtime integration library collection: ' +
+                      ('eligible; using --workspace --lib --test integration' if eligible else
+                       'ineligible; using --workspace --all-targets'), flush=True)
         command = ['cargo', '+' + args.toolchain, 'test', '--workspace', *target_selection,
                    '--locked', '--config', configuration]
         if args.optimize_runtime:
@@ -389,15 +395,10 @@ def main():
                        sorted(directory.glob('invocation-*.json'))]
         if not invocations:
             raise RuntimeError('Cargo recorded no test invocations; check the host runner configuration')
-        if integration_only:
-            if len(invocations) != 1:
-                raise RuntimeError('Runtime-only collection recorded extra test invocations')
-            validate_runtime_invocation(invocations)
         # All collection paths keep workspace package roots. Package suites
         # filter only the recorded invocations.
         if args.suite != 'all':
-            if not integration_only and not any(row['package'] == 'spite-core'
-                                                for row in invocations):
+            if not any(row['package'] == 'spite-core' for row in invocations):
                 raise RuntimeError('The split workspace suites require a spite-core package')
             selected = [row for row in invocations
                         if (row['package'] == 'spite-core') == (args.suite == 'core')]
@@ -406,8 +407,19 @@ def main():
         if not selected:
             raise RuntimeError('The selected workspace suite recorded no test invocations')
         runtime = shard_metadata = shard_plan = None
+        full_metadata = full_names = None
         batches = [selected]
-        if args.runtime_shard is not None:
+        if args.runtime_integration == 'only':
+            runtime, full_metadata, full_names = prepare_runtime_full(invocations, baseline)
+            batches = [[runtime]]
+        elif args.runtime_integration == 'exclude':
+            original = validate_runtime_invocation(invocations)
+            others = [row for row in selected if row is not original]
+            if not others:
+                raise RuntimeError('Runtime exclusion recorded no other REST invocations')
+            batches = [others]
+            print(f'Runtime integration replay: excluded; {len(others)} other REST invocations', flush=True)
+        elif args.runtime_shard is not None:
             original, runtime, shard_metadata, shard_plan = prepare_runtime_shard(
                 invocations, args.runtime_shard, baseline)
             if args.runtime_shard == rest_shard:
@@ -435,11 +447,16 @@ def main():
             if invocation is runtime:
                 row['child_status'] = result.returncode
                 try:
-                    row['runtime_shard_execution'] = runtime_execution(
-                        result.stdout, shard_plan['shards'][args.runtime_shard],
-                        len(shard_plan['names']))
+                    if full_metadata is not None:
+                        row['runtime_full_execution'] = runtime_execution(
+                            result.stdout, full_names, len(full_names))
+                    else:
+                        row['runtime_shard_execution'] = runtime_execution(
+                            result.stdout, shard_plan['shards'][args.runtime_shard],
+                            len(shard_plan['names']))
                 except RuntimeError as error:
-                    row['shard_validation_error'] = str(error)
+                    key = 'full_validation_error' if full_metadata is not None else 'shard_validation_error'
+                    row[key] = str(error)
                     row['status'] = result.returncode or 1
             return row, result.stdout
 
@@ -455,13 +472,16 @@ def main():
                     print('::endgroup::', flush=True)
                     print(f'Cargo invocation elapsed: {Path(row["command"][0]).name} {row["seconds"]:.3f}s', flush=True)
                     if 'child_status' in row:
-                        execution = row.get('runtime_shard_execution', {})
+                        full = full_metadata is not None
+                        execution = row.get('runtime_full_execution' if full else 'runtime_shard_execution', {})
                         public = {key: value for key, value in execution.items() if key != 'names'}
-                        public.update(shard_metadata, child_status=row['child_status'],
+                        public.update(full_metadata if full else shard_metadata, child_status=row['child_status'],
                                       status=row['status'])
-                        if 'shard_validation_error' in row:
-                            public['validation_error'] = row['shard_validation_error']
-                        print('Runtime shard result: ' + json.dumps(public, sort_keys=True), flush=True)
+                        error_key = 'full_validation_error' if full else 'shard_validation_error'
+                        if error_key in row:
+                            public['validation_error'] = row[error_key]
+                        prefix = 'Runtime full result: ' if full else 'Runtime shard result: '
+                        print(prefix + json.dumps(public, sort_keys=True), flush=True)
         finished = time.monotonic()
         report = {'collection_seconds': collected - started,
                   'test_seconds': finished - collected, 'total_seconds': finished - started,
@@ -470,6 +490,10 @@ def main():
         if shard_metadata is not None:
             report['runtime_shard'] = dict(shard_metadata, full_names=shard_plan['names'],
                                            planned_shards=shard_plan['shards'])
+        if args.runtime_integration is not None:
+            report['runtime_integration'] = args.runtime_integration
+        if full_metadata is not None:
+            report['runtime_full'] = dict(full_metadata, full_names=full_names)
         if args.rest_shard is not None:
             report['rest_shard'] = rest_shard
         if args.report:

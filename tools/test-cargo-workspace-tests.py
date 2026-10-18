@@ -290,15 +290,18 @@ class CargoRunnerTests(unittest.TestCase):
                  'environment': {key: fingerprint(value) for key, value in effective.items()}},
                 hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest())
 
-    def observed_integration_shard(self, root, toolchain, environment, index):
-        observation = root / f'environment-{toolchain}-{index}.json'
-        report = root / f'report-{toolchain}-{index}.json'
+    def observed_integration_shard(self, root, toolchain, environment, index, full=False):
+        selection = 'full' if full else index
+        observation = root / f'environment-{toolchain}-{selection}.json'
+        report = root / f'report-{toolchain}-{selection}.json'
         observer = root / 'observe.py'
         observer.write_text(OBSERVE_RUNTIME_ENVIRONMENT, encoding='utf-8')
+        arguments = (['--runtime-integration', 'only'] if full else
+                     ['--runtime-shard', str(index), '--rest-shard', str(1 - index)])
         result = subprocess.run(
             [sys.executable, str(observer), str(RUNNER.resolve()), str(observation),
              '--toolchain', toolchain, '--offline', '--suite', 'rest',
-             '--runtime-shard', str(index), '--rest-shard', str(1 - index),
+             *arguments,
              '--report', str(report)], cwd=root, env=environment,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         self.assertEqual(result.returncode, 0, result.stdout)
@@ -315,15 +318,27 @@ class CargoRunnerTests(unittest.TestCase):
                 environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'))
                 subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
                                cwd=root, env=environment, check=True)
+                # Run before the reference collection: Cargo may reuse a library
+                # compiled with CARGO_PRIMARY_PACKAGE from that earlier build.
+                cold_result, cold_report, cold_observations = self.observed_integration_shard(
+                    root, toolchain, environment, 1)
+                self.assertIn('Runtime integration library collection: eligible; '
+                              'using --workspace --lib --test integration', cold_result.stdout)
+                self.assertEqual(cold_report['recorded_invocations'], 4)
                 original, binary_hash = self.integration_collection_context(root, toolchain, environment)
+                for observed in cold_observations:
+                    self.assertEqual(observed['environment'], original['environment'])
+                    self.assertEqual(observed['cwd'], original['cwd'])
+                    self.assertEqual(observed['command'][:len(original['command'])],
+                                     original['command'])
                 executed = []
                 for index in [0, 1]:
                     result, report, observations = self.observed_integration_shard(
                         root, toolchain, environment, index)
-                    self.assertIn('Runtime integration target collection: eligible; '
-                                  'using --workspace --test integration', result.stdout)
-                    self.assertNotIn('Runtime integration library collection:', result.stdout)
-                    self.assertEqual(report['recorded_invocations'], 1)
+                    self.assertIn('Runtime integration library collection: eligible; '
+                                  'using --workspace --lib --test integration', result.stdout)
+                    self.assertNotIn('Runtime integration target collection:', result.stdout)
+                    self.assertEqual(report['recorded_invocations'], 4)
                     self.assertEqual(len(report['invocations']), 1)
                     self.assertEqual(len(observations), 2)
                     for observed in observations:
@@ -1116,6 +1131,180 @@ fn new_pinned_corpus_runs_all_reviewed_variants_case() { check(); }
         self.assertIn('invalid choice', result.stdout)
 
 
+    def test_full_runtime_and_nonruntime_replay_preserve_context_union_and_failures(self):
+        for toolchain in ['stable', '1.85.0']:
+            with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-runtime-replay-') as temporary:
+                root = Path(temporary) / 'workspace'
+                root.mkdir()
+                make_integration_only_workspace(root)
+                with (root / 'c/src/lib.rs').open('a', encoding='utf-8') as source:
+                    source.write('''
+#[test]
+fn sibling_context_and_failure() {
+    assert!(option_env!("CARGO_PRIMARY_PACKAGE").is_some());
+    assert_eq!(std::env::current_dir().unwrap(), std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")));
+    assert_eq!(std::env::var("CARGO_MANIFEST_DIR").unwrap(), env!("CARGO_MANIFEST_DIR"));
+    assert_eq!(std::env::var("SPITE_RUNNER_PROBE_INHERITED").unwrap(), "unchanged");
+    assert_ne!(std::env::var("SPITE_RUNNER_PROBE_FAIL").unwrap_or_default(), env!("CARGO_PKG_NAME"));
+}
+''')
+                environment = dict(self.environment, CARGO_TARGET_DIR=str(root / 'target'),
+                                   SPITE_RUNNER_PROBE_FAIL_CASE='')
+                subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                               cwd=root, env=environment, check=True)
+                original, binary_hash = self.integration_collection_context(root, toolchain, environment)
+                result, complete = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain, extra_environment=environment)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(complete['recorded_invocations'], 4)
+                original_row = self.runtime_row(complete)
+                others = [row for row in complete['invocations'] if row is not original_row]
+                fields = ['command', 'cwd', 'package', 'status', 'summaries']
+                project = lambda rows: sorted(
+                    [{key: row[key] for key in fields} for row in rows],
+                    key=lambda row: (row['command'], row['cwd']))
+
+                result, full, observations = self.observed_integration_shard(
+                    root, toolchain, environment, 0, full=True)
+                self.assertIn('Runtime integration library collection: eligible; '
+                              'using --workspace --lib --test integration', result.stdout)
+                self.assertEqual(full['recorded_invocations'], 4)
+                self.assertEqual(len(full['invocations']), 1)
+                self.assertEqual(full['runtime_integration'], 'only')
+                self.assertNotIn('runtime_shard', full)
+                self.assertEqual(full['runtime_full']['full_names'], RUNTIME_SHARD_NAMES)
+                self.assertEqual(full['runtime_full']['full_sha256'], names_sha256(RUNTIME_SHARD_NAMES))
+                self.assertEqual(full['runtime_full']['listing_counts'], [8, 8])
+                runtime = self.runtime_row(full)
+                self.assertEqual(runtime['child_status'], 0)
+                self.assertEqual(runtime['runtime_full_execution']['names'], RUNTIME_SHARD_NAMES)
+                self.assertEqual(runtime['runtime_full_execution']['filtered'], 0)
+                self.assertEqual(project([runtime]), project([original_row]))
+                self.assertEqual(len(observations), 2)
+                for observed in observations:
+                    self.assertEqual(observed, original)
+                self.assertEqual(hashlib.sha256(Path(runtime['command'][0]).read_bytes()).hexdigest(),
+                                 binary_hash)
+
+                result, excluded = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain,
+                    extra_arguments=['--runtime-integration', 'exclude'], extra_environment=environment)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(excluded['recorded_invocations'], 4)
+                self.assertEqual(excluded['runtime_integration'], 'exclude')
+                self.assertEqual(project(excluded['invocations']), project(others))
+                self.assertEqual(project(excluded['invocations'] + full['invocations']),
+                                 project(complete['invocations']))
+                self.assertTrue(all(row['package'] != 'spite-core' for row in excluded['invocations']))
+                for mode in ['only', 'exclude']:
+                    result, failed = self.run_suite(
+                        fail='runner-probe-c', suite='rest', root=root, toolchain=toolchain,
+                        extra_arguments=['--runtime-integration', mode], extra_environment=environment)
+                    self.assertEqual(result.returncode, int(mode == 'exclude'), result.stdout)
+                    self.assertEqual(sorted(row['status'] for row in failed['invocations']),
+                                     [0, 101] if mode == 'exclude' else [0])
+                result, failed = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain,
+                    extra_arguments=['--runtime-integration', 'only'],
+                    extra_environment={**environment, 'SPITE_RUNNER_PROBE_FAIL_CASE': 'root_case'})
+                self.assertEqual(result.returncode, 1, result.stdout)
+                runtime = self.runtime_row(failed)
+                self.assertEqual(runtime['child_status'], 101)
+                self.assertIn('full_validation_error', runtime)
+
+                # Keep the same guarded library and all-target fallbacks for full replay.
+                (root / 'c/build.rs').write_text('fn main() {}\n', encoding='utf-8')
+                result, fallback, observations = self.observed_integration_shard(
+                    root, toolchain, environment, 0, full=True)
+                self.assertIn('using --workspace --lib --test integration', result.stdout)
+                self.assertEqual(fallback['recorded_invocations'], 4)
+                self.assertEqual(len(fallback['invocations']), 1)
+                self.assertEqual(self.runtime_row(fallback)['runtime_full_execution']['names'],
+                                 RUNTIME_SHARD_NAMES)
+                self.assertTrue(all(observed == original for observed in observations))
+                self.assertEqual(hashlib.sha256(Path(original['command'][0]).read_bytes()).hexdigest(),
+                                 binary_hash)
+                (root / 'a/tests').mkdir()
+                (root / 'a/tests/extra.rs').write_text(
+                    '#[test]\nfn core_must_not_run_in_rest() { panic!("Core replayed"); }\n', encoding='utf-8')
+                result, fallback, observations = self.observed_integration_shard(
+                    root, toolchain, environment, 0, full=True)
+                self.assertIn('ineligible; using --workspace --all-targets', result.stdout)
+                self.assertEqual(fallback['recorded_invocations'], 5)
+                self.assertEqual(len(fallback['invocations']), 1)
+                self.assertEqual(self.runtime_row(fallback)['runtime_full_execution']['names'],
+                                 RUNTIME_SHARD_NAMES)
+                self.assertTrue(all(observed == original for observed in observations))
+
+    def test_full_runtime_replay_discovers_names_and_rejects_ignored_or_globally_skipped_cases(self):
+        for toolchain in ['stable', '1.85.0']:
+            with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
+                    prefix='spite-ci-runtime-full-inventory-') as temporary:
+                root = Path(temporary) / 'workspace'
+                root.mkdir()
+                make_integration_only_workspace(root)
+                environment = {'CARGO_TARGET_DIR': str(root / 'target'),
+                               'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
+                subprocess.run(['cargo', '+' + toolchain, 'generate-lockfile', '--offline'],
+                               cwd=root, env={**self.environment, **environment}, check=True)
+                source = root / 'b/tests/integration.rs'
+                original = source.read_text(encoding='utf-8')
+                arguments = ['--runtime-integration', 'only']
+                source.write_text(original + '\n#[test]\nfn newly_discovered() { check(); }\n', encoding='utf-8')
+                result, discovered = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain,
+                    extra_arguments=arguments, extra_environment=environment)
+                self.assertEqual(result.returncode, 0, result.stdout)
+                expected = sorted(RUNTIME_SHARD_NAMES + ['newly_discovered'])
+                self.assertEqual(discovered['runtime_full']['full_names'], expected)
+                self.assertEqual(self.runtime_row(discovered)['runtime_full_execution']['names'], expected)
+                source.write_text(original + '\n#[test]\n#[ignore]\nfn ignored_full_case() {}\n', encoding='utf-8')
+                result, ignored = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain,
+                    extra_arguments=arguments, extra_environment=environment)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                runtime = self.runtime_row(ignored)
+                self.assertEqual(runtime['child_status'], 0)
+                self.assertIn('full_validation_error', runtime)
+                source.write_text(original + '\n#[test]\nfn new_pinned_corpus_runs_all_reviewed_variants_case() { check(); }\n',
+                                  encoding='utf-8')
+                result, missing = self.run_suite(
+                    suite='rest', root=root, toolchain=toolchain,
+                    extra_arguments=arguments, extra_environment=environment)
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIsNone(missing)
+                self.assertIn('original Runtime arguments filter the complete inventory', result.stdout)
+                self.assertNotIn('Cargo invocation elapsed:', result.stdout)
+
+    def test_runtime_replay_modes_require_rest_without_shard_options(self):
+        for mode in ['only', 'exclude']:
+            for suite, extra in [('all', []), ('core', []),
+                                 ('rest', ['--runtime-shard', '0']),
+                                 ('rest', ['--rest-shard', '1'])]:
+                with self.subTest(mode=mode, suite=suite, extra=extra):
+                    result, report = self.run_suite(
+                        suite=suite, extra_arguments=['--runtime-integration', mode, *extra])
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertIsNone(report)
+                    self.assertIn('--runtime-integration requires --suite rest without Runtime shard options', result.stdout)
+                    self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+            result, report = self.run_suite(
+                suite='rest', extra_arguments=['--runtime-integration', mode, '--collect-core-libs'])
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIsNone(report)
+            self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+        with tempfile.TemporaryDirectory(prefix='spite-ci-runtime-full-metadata-error-') as temporary:
+            root = Path(temporary)
+            (root / 'Cargo.toml').write_text('[workspace\n', encoding='utf-8')
+            result, report = self.run_suite(
+                suite='rest', root=root, extra_arguments=['--runtime-integration', 'only'])
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIsNone(report)
+            self.assertNotIn('Collecting Cargo test invocations', result.stdout)
+            self.assertNotIn('Queued Cargo test invocation:', result.stdout)
+
+
 class RuntimeShardHelperTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -1244,6 +1433,46 @@ class RuntimeShardHelperTests(unittest.TestCase):
                          mock.patch('builtins.print'), self.assertRaises(RuntimeError):
                         self.runner.prepare_runtime_shard([invocation], index, baseline)
                     self.assertEqual(child.call_count, len(responses))
+
+    def test_full_preparation_preserves_original_arguments_and_requires_complete_listings(self):
+        invocation = {
+            'package': 'spite-runtime', 'cwd': '/fixture/b',
+            'command': ['/fixture/integration-0123456789abcdef',
+                        '--skip', 'pinned_corpus_runs_all_reviewed_variants'],
+            'changed_environment': {'changed': 'after'}, 'removed_environment': ['removed'],
+        }
+        baseline = {'kept': 'same', 'changed': 'before', 'removed': 'gone'}
+        full = 'arrays::one: test\ntyped_arrays::two: test\n\n2 tests, 0 benchmarks\n'
+        # One collision component cannot be split, but needs no partition for full replay.
+        with mock.patch.object(self.runner, 'run_command', return_value=
+                subprocess.CompletedProcess([], 0, stdout=full)) as child, mock.patch('builtins.print'):
+            original, metadata, names = self.runner.prepare_runtime_full([invocation], baseline)
+        self.assertIs(original, invocation)
+        self.assertEqual(names, ['arrays::one', 'typed_arrays::two'])
+        self.assertEqual(metadata['full_count'], 2)
+        self.assertEqual(metadata['full_sha256'], names_sha256(names))
+        self.assertEqual(metadata['listing_counts'], [2, 2])
+        self.assertEqual([call.args[0] for call in child.call_args_list],
+                         [[invocation['command'][0], '--list'], invocation['command'] + ['--list']])
+        for call in child.call_args_list:
+            self.assertEqual(call.kwargs['cwd'], '/fixture/b')
+            self.assertEqual(call.kwargs['env'], {'kept': 'same', 'changed': 'after'})
+        cases = [[(101, full)], [(0, 'unrecognized listing\n')],
+                 [(0, full), (101, full)], [(0, full), (0, '')],
+                 [(0, full), (0, 'arrays::one: test\n\n1 test, 0 benchmarks\n')]]
+        for responses in cases:
+            with self.subTest(responses=responses):
+                remaining = iter(responses)
+
+                def listed(command, **kwargs):
+                    self.assertEqual(command[-1], '--list', 'No Native replay before both lists pass')
+                    status, output = next(remaining)
+                    return subprocess.CompletedProcess(command, status, stdout=output)
+
+                with mock.patch.object(self.runner, 'run_command', side_effect=listed) as child, \
+                     mock.patch('builtins.print'), self.assertRaises(RuntimeError):
+                    self.runner.prepare_runtime_full([invocation], baseline)
+                self.assertEqual(child.call_count, len(responses))
 
     def test_windows_command_guard_uses_full_quoted_utf16_boundary(self):
         command = ['C:\\Program Files\\spite\\integration-0123456789abcdef.exe',
