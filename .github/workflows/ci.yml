@@ -25,7 +25,7 @@ jobs:
         toolchain: [stable, '1.85.0']
         # Keep the full corpus independent of workspace compilation and tests.
         suite: [workspace-core, workspace-rest, test262]
-        # Windows separates complete Runtime replay from other REST tests.
+        # Windows runs the two Runtime halves separately from other REST tests.
         include:
           - os: windows-latest
             toolchain: stable
@@ -33,6 +33,12 @@ jobs:
           - os: windows-latest
             toolchain: '1.85.0'
             suite: runtime-integration
+          - os: windows-latest
+            toolchain: stable
+            suite: runtime-second-half
+          - os: windows-latest
+            toolchain: '1.85.0'
+            suite: runtime-second-half
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -272,9 +278,11 @@ jobs:
             extra_args+=(--optimize-runtime)
           fi
           if [[ "$RUNNER_OS" == "Windows" && "${{ matrix.suite }}" == "workspace-rest" ]]; then
-            extra_args+=(--runtime-integration only)
+            extra_args+=(--runtime-shard 0 --rest-shard 1)
           elif [[ "${{ matrix.suite }}" == "runtime-integration" ]]; then
             extra_args+=(--runtime-integration exclude)
+          elif [[ "${{ matrix.suite }}" == "runtime-second-half" ]]; then
+            extra_args+=(--runtime-shard 1 --rest-shard 0)
           fi
           python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN" --suite "$WORKSPACE_SUITE" "${extra_args[@]}"
       - name: Run documentation tests
