@@ -8966,3 +8966,24 @@ Earlier constructors and search plans retain their domains and callbacks. No
 matcher storage, copied Pattern, default limit or dependency is added. Reverse
 order, two q classes, repetition, extra terms and partial captures remain outside
 this entry.
+
+## A flat class followed by a checked one-character UnicodeSets string class
+
+A separate validated v/vi entry composes one ordinary flat class with one
+complete checked class containing single-character ClassStringDisjunction
+operands. The flat prefix and checked suffix compile completely in source
+order, including the suffix after an empty prefix or an impossible outside
+assertion. Each q alternative must decode to one original Unicode character;
+operand-wise simple folding precedes set operations and complement.
+
+The adapter borrows validated source and shares the pair matcher's private
+checked-class boundary scanner. Its observable initial 4N charge covers both
+outside parity walks and both class-boundary walks. Child compilation retains
+its fallible work and capacity checks. The legacy scanner and earlier compiler
+entry points retain their existing domains and callbacks.
+
+Canonical outside line/word assertions and complete enclosing captures reuse
+the existing pair plan, original UTF-16 context and overlapping retry from the
+first character's end. Sticky accounting remains four code units, including
+the approved initial-low-surrogate behavior. Two checked q classes, repetition,
+additional atoms and partial captures remain outside this entry.

@@ -14691,3 +14691,52 @@ not executed, and the original strict disagreement remains preserved.
 The fifteen-job matrix still requires complete stable and MSRV suites, all 57
 framework probes and four complete 14,740-variant reviewed-corpus gates before
 the following push.
+
+## Flat class followed by a checked one-character UnicodeSets string class
+
+The new checked entry composes an ordinary flat v/vi class with exactly one
+complete singleton-q checked class. Canonical outside assertions and complete
+enclosing captures retain their existing scope. Five old Unsupported controls
+now check one true and four false results in their original owners. The computed
+true control reaches finally marker 3. The other 95 preceding test functions
+and all 47 preceding snapshot functions remain unchanged.
+
+Two Core tests compare 28 handwritten membership pairs against an independent
+adjacent-character UTF-16 oracle over eight inputs: 3,640 cursor/sticky queries.
+The oracle includes Kelvin/long-s closure of ASCII under ignoreCase, original
+line/word context, overlapping retry, supplementary and lone characters. Eight
+complete component transcripts check every work-cancellation prefix, including
+late unsupported suffix leaves behind empty flat prefixes. Nine old compiler
+domains and three search-entry proofs remain covered. Two Runtime tests and a
+direct accounting unit cover captures, indices, state, consumers and explicitly
+opted-in construction cancellation before assignment or JavaScript handlers.
+Ten handwritten complete JSON/UTF-16 rows specify eight matches and two nulls.
+
+The expected Native inventory is 5,377: 1,018 Core and 4,359 REST, including
+3,598 Runtime integration tests and 307 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. Expected golds total 732, retaining all 731 preceding files
+byte-for-byte.
+
+All 22 local checks passed: full stable Core and Runtime integration suites,
+focused new Core/Runtime tests on MSRV, the direct accounting unit on both,
+one inspected insta update and thirteen quality checks. Full MSRV suites remain
+mandatory in hosted CI; no local full-MSRV result is claimed.
+
+The fresh strict comparison with Node 24.19.0 retains nine agreements and one
+disagreement in the folded intersection row. The ordinary a prefix under i
+admits original A; singleton K and ordinary k must close to K/k/Kelvin before
+intersection, admitting the original Kelvin suffix. All ten native gold rows
+retain the complete handwritten edition-17 JSON expectations. The original
+nonzero comparison is preserved, with no exclusions. This is the documented
+[V8 operand-folding defect](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+
+A separate one-row ordinary-class comparison passed after replacing exactly
+\q{K} with nested [K], retaining the ordinary prefix and intersection. The
+same flags, input, start, captures, named groups, indices and complete JSON
+matched; only the serialized pattern source changed. The complemented
+candidate was not executed, and the original strict disagreement is preserved.
+
+The fifteen-job matrix still requires complete stable and MSRV suites, all 57
+framework probes and four complete 14,740-variant reviewed-corpus gates before
+the following push.
