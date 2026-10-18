@@ -8810,3 +8810,28 @@ its equivalent ordinary character class. Matching preserves original UTF-16
 text, the approved initial-low-surrogate behavior and actual i/m assertion
 context. Multi-character or empty q alternatives, consuming continuations,
 quantifiers and properties of strings remain outside this entry.
+
+## Repetition of checked one-character UnicodeSets string operands
+
+A separate v/vi entry compiles one supported checked class containing at least
+one single-character ClassStringDisjunction operand and one existing greedy or
+lazy quantifier. Optional outside line and word assertions apply to the whole
+repetition. Complete enclosing captures remain the Runtime caller's proof.
+The same class algebra, compact decimal bounds and UnicodeRepeatedAtom storage
+handle empty sets, zero iterations and counts beyond the native integer range;
+the implementation does not expand exact counts.
+
+The new route charges N before borrowed canonical assertion framing, then uses
+the shared repetition constructor's existing 8N parsing charge and the checked
+class proof. Its private q-class wrapper adds no callback to the earlier class
+entry. Previous constructors retain their accepted domains and work callbacks.
+Search retains incremental work over the original input suffix, including long
+runs and greedy/lazy endpoint retries. Host quotas remain opt-in.
+
+[CompileQuantifier](https://262.ecma-international.org/17.0/#sec-compilequantifier)
+and [CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)
+govern count selection and folded character membership. Matching preserves the
+earliest candidate, original UTF-16 spans and the approved initial-low-surrogate
+behavior. Empty or multi-character q alternatives and properties of strings
+decline even under zero or impossible bounds. Inner groups, additional consuming
+atoms and reordered assertions remain outside this entry.

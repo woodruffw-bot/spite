@@ -202,6 +202,21 @@ impl RegExpUnicodeClassMatcher {
         )
     }
 
+    pub(crate) fn compile_v_set_units_with_single_character_strings_and_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_v_set_units_with_string_operands_and_work(
+            units,
+            ignore_case,
+            multiline,
+            true,
+            charge,
+        )
+    }
+
     fn compile_v_set_units_with_string_operands_and_work<E>(
         units: &[u16],
         ignore_case: bool,
@@ -473,11 +488,10 @@ impl RegExpUnicodeClassMatcher {
         if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
             return Ok(None);
         }
-        let Some(mut matcher) = Self::compile_v_set_units_with_string_operands_and_work(
+        let Some(mut matcher) = Self::compile_v_set_units_with_single_character_strings_and_work(
             body,
             ignore_case,
             multiline,
-            true,
             &mut charge,
         )?
         else {

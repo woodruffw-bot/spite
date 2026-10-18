@@ -1516,6 +1516,16 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         units: &[u16],
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_v_set_repetition_units_with_work(units, ignore_case, multiline, false, charge)
+    }
+
+    fn compile_v_set_repetition_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        single_character_strings: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         // Bound both quantifier attempts, decimal comparisons and anchor scans
@@ -1544,13 +1554,22 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
                 continue;
             }
-            let Some(atom) = RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
-                body,
-                ignore_case,
-                false,
-                &mut charge,
-            )?
-            else {
+            let atom = if single_character_strings {
+                RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
+                    body,
+                    ignore_case,
+                    false,
+                    &mut charge,
+                )
+            } else {
+                RegExpUnicodeClassMatcher::compile_v_set_units_with_work(
+                    body,
+                    ignore_case,
+                    false,
+                    &mut charge,
+                )
+            };
+            let Some(atom) = atom? else {
                 continue;
             };
             return Ok(Some(Self {
@@ -1569,6 +1588,82 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }));
         }
         Ok(None)
+    }
+
+    /// Compiles one complete character-only q-class with one quantifier.
+    ///
+    /// The complete Pattern must already be validated in v/vi mode. Its class
+    /// must contain a ClassStringDisjunction, and every alternative of every q
+    /// operand must decode to one character. Supported nested character-only
+    /// unions, complements, intersections and subtractions retain fold closure.
+    ///
+    /// The admitted order is optional ^, optional leading \b/\B, one complete
+    /// class with an existing greedy/lazy quantifier, optional trailing \b/\B
+    /// and optional $. Predicates apply to the whole repetition in original
+    /// input context. Complete captures remain a separate caller proof.
+    /// Inner groups, consuming continuations and string-valued leaves decline,
+    /// even under zero or impossible bounds. Exact counts are not expanded.
+    ///
+    /// Existing class storage, opt-in work/capacity errors and flat incremental
+    /// repetition matching are reused (22.2.2.3, 22.2.2.4, 22.2.2.9). Legacy
+    /// entry points retain their accepted domains and callback sequences.
+    pub fn compile_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len()).map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
+        let mut begin = usize::from(start_anchor);
+        let mut end = units.len() - usize::from(end_anchor);
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2 {
+            match &units[end - 2..end] {
+                [0x5c, kind @ (0x62 | 0x42)] => {
+                    end -= 2;
+                    Some(*kind == 0x62)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        // The retained class/quantifier proof rejects escaped edge tokens.
+        // Do not overwrite a second, retained line assertion with outside flags.
+        if body.first() != Some(&0x5b) || body.last() == Some(&0x24) {
+            return Ok(None);
+        }
+        let Some(mut plan) = Self::compile_v_set_repetition_units_with_work(
+            body,
+            ignore_case,
+            multiline,
+            true,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if plan.start_anchor || plan.end_anchor {
+            return Ok(None);
+        }
+        plan.start_anchor = start_anchor;
+        plan.end_anchor = end_anchor;
+        plan.start_word = start_word;
+        plan.end_word = end_word;
+        plan.word_ignore_case = ignore_case;
+        Ok(Some(plan))
     }
 
     /// Compiles one unanchored consuming atom and quantifier after full validation.
@@ -20845,3 +20940,7 @@ mod empty_choice_nullable_alternative_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "regexp_unicode_repeated_single_character_string_operands_tests.rs"]
+mod single_character_string_operands_repetition_tests;

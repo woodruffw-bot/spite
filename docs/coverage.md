@@ -14412,3 +14412,46 @@ Both Rust versions pass all 1,004 Core tests, with no filtered or ignored tests.
 All thirteen ordinary quality checks pass. The unchanged fifteen-job matrix
 still requires all 57 framework probes and four full reviewed-corpus gates
 before the following push.
+
+## Quantified one-character string operands in UnicodeSets classes
+
+Four admitted controls move within their three existing Runtime owners with
+their original expressions. The two wrapped controls now complete their
+existing finally blocks with marker 3; the ten remaining unsupported controls
+retain marker 1. All 89 preceding functions and 41 snapshot function bodies are
+otherwise retained.
+
+Two new Core tests specify 26 pairwise class/count/assertion cases with 2,964
+independent UTF-16 cursor and sticky comparisons, five direct endpoint witnesses,
+six construction-cancellation rows and three search-cancellation rows. Two
+Runtime functions cover state, captures, consumers, empty matches, coercion
+effects and explicit opt-in cancellation. One direct unit checks that long
+repetition runs retain incremental matching work.
+
+The expected Native inventory is 5,347: 1,006 Core and 4,341 REST, including
+3,586 Runtime integration tests and 301 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. The expected snapshot inventory is 726, retaining all 725
+preceding files byte-for-byte. Ten handwritten complete JSON/UTF-16 rows specify
+eight matches and two nulls, with no exclusions.
+
+Full Core (1,006 tests) and Runtime integration (3,586 tests) suites pass on
+stable and MSRV. Both direct work witnesses and all thirteen ordinary quality
+checks pass. The new insta file was updated once and inspected against all ten
+handwritten complete JSON/UTF-16 expectations; all 725 preceding snapshots
+remain byte-for-byte unchanged. The shared private repetition constructor is
+covered by both full Core suites without additional focused runs.
+
+The original strict Node 24.19.0 comparison retains all ten outputs: eight agree,
+while the folded intersection and lazy inverted-class rows expose the already
+documented singleton-q closure defect fixed in
+[V8 bca5c4e](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+All ten Native gold rows match the normative handwritten expectations. Two
+separately reviewed ordinary-class equivalents reproduce the complete expected
+JSON and original UTF-16 spans in fresh Node checks. The two original Node
+disagreements remain recorded; no row is excluded and no Native expectation is
+changed. Pattern metadata uses Rust &str Debug for printable-ASCII patterns;
+results retain the existing JsString UTF-16 codec.
+
+The fifteen-job matrix still requires all 57 framework probes and four complete
+reviewed-corpus gates before the following push.

@@ -2387,4 +2387,49 @@ mod tests {
             Err(spite_core::RegExpUnicodeSetCompileError::Work(73))
         ));
     }
+
+    #[test]
+    fn single_character_v_string_repetition_work_remains_incremental_for_long_runs() {
+        let source = JsString::from(r"[\q{a|b}&&[b]]+");
+        let body =
+            RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_single_character_strings_and_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), std::convert::Infallible>(()),
+            )
+            .unwrap()
+            .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeRepeatedAtom(body), 2);
+        let input = JsString::from("b".repeat(128).as_str());
+        assert!(source.len() < input.len());
+        assert_eq!(matcher.search_passes(true), 0);
+        assert_eq!(matcher.search_passes(false), 0);
+        assert_eq!(
+            matcher.search_work(true, source.len(), input.len()),
+            input.len()
+        );
+        assert_eq!(
+            matcher.search_work(false, source.len(), input.len()),
+            input.len()
+        );
+        let mut calls = 0;
+        let found = matcher
+            .find_with_work(&input, 0, true, |_| {
+                calls += 1;
+                Ok::<(), u8>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert!(calls > 0);
+        assert_eq!(found.range, 0..128);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(0..128));
+        assert_eq!(found.capture(1), Some(0..128));
+        assert_eq!(found.capture(2), None);
+        assert!(matches!(
+            matcher.find_with_work(&input, 0, true, |_| Err(19u8)),
+            Err(19)
+        ));
+    }
 }
