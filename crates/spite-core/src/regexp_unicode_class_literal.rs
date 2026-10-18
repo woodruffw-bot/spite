@@ -16,7 +16,8 @@ use std::ops::Range;
 /// Requires complete validated v/vi Pattern input. Optional outside ^/$ use
 /// original line context. A separate entry admits canonical outside word gates.
 /// A dedicated entry admits a literal followed by a class whose q alternatives
-/// each consume one character. Groups, quantifiers, additional characters and
+/// each consume one character; a separate entry proves the class-first order.
+/// Groups, quantifiers, additional characters and
 /// string-valued leaves remain separate proofs. Complete enclosing captures may
 /// be proved by the caller; this plan has no captures.
 /// Both terms consume complete original characters without flattening surrogate
@@ -842,6 +843,148 @@ impl RegExpUnicodeClassLiteralMatcher {
     }
 }
 
+impl RegExpUnicodeClassLiteralMatcher {
+    /// Proves one complete character-only q-class followed by one literal.
+    ///
+    /// Requires complete validated v/vi Pattern input. Each q alternative must
+    /// consume one decoded character and at least one q operand is required.
+    /// Optional outside ^, leading \b/\B, trailing \b/\B and $ occur in that
+    /// order around the complete pair. The caller may prove complete enclosing
+    /// captures; inner groups, repetitions and additional atoms decline.
+    ///
+    /// Both borrowed terms are compiled in source order, including an empty
+    /// class or impossible outside gate. Operand-wise fold closure, fallible
+    /// class storage and the two-character search plan are reused unchanged.
+    /// Earlier constructors retain their closed domains and work callbacks.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_v_set_then_literal_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Before walking source, bound both outside backslash-parity walks,
+        // the private class-boundary scan and complete suffix predecoding.
+        charge(units.len().saturating_mul(4)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24)
+            && units[..units.len() - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 0;
+        let mut begin = usize::from(start_anchor);
+        let Some(mut end) = units.len().checked_sub(usize::from(end_anchor)) else {
+            return Ok(None);
+        };
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && units[..end - 1]
+                .iter()
+                .rev()
+                .take_while(|&&unit| unit == 0x5c)
+                .count()
+                % 2
+                == 1
+        {
+            end -= 2;
+            Some(units[end + 1] == 0x62)
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let Some(split) = q_class_end(body) else {
+            return Ok(None);
+        };
+        let Some(&first) = body.get(split) else {
+            return Ok(None);
+        };
+        let mut at = split + 1;
+        if unicode_literal_atom(body, &mut at, first).is_none() || at != body.len() {
+            return Ok(None);
+        }
+        let Some(class) =
+            RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
+                &body[..split],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let Some(literal) =
+            RegExpUnicodeCharacterMatcher::compile_literal_units_with_flags_and_work(
+                &body[split..],
+                ignore_case,
+                multiline,
+                &mut charge,
+            )
+            .map_err(RegExpUnicodeSetCompileError::Work)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            literal,
+            order: Order::ClassThenLiteral,
+            assertions: Some(OutsideAssertions {
+                start_word,
+                end_word,
+                start_anchor,
+                end_anchor,
+                ignore_case,
+                multiline,
+            }),
+        }))
+    }
+}
+
+// This boundary proof is private to the new constructor. Complete v validation
+// forbids raw brackets in ClassString payloads; escaped brackets and backslashes
+// are opaque pairs, while valid property/Unicode payloads have no raw brackets.
+// The complete class compiler separately proves all q leaves and operators.
+// Legacy class_end keeps rejecting q before any payload is interpreted.
+fn q_class_end(units: &[u16]) -> Option<usize> {
+    if units.first() != Some(&0x5b) {
+        return None;
+    }
+    let mut at = 0usize;
+    let mut depth = 0usize;
+    while let Some(&unit) = units.get(at) {
+        match unit {
+            0x5c => {
+                units.get(at.checked_add(1)?)?;
+                at = at.checked_add(2)?;
+                continue;
+            }
+            0x5b => depth = depth.checked_add(1)?,
+            0x5d => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return at.checked_add(1);
+                }
+            }
+            _ => {}
+        }
+        at = at.checked_add(1)?;
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1208,3 +1351,7 @@ mod literal_flat_class_word_tests;
 #[cfg(test)]
 #[path = "regexp_unicode_literal_single_character_string_class_tests.rs"]
 mod literal_single_character_string_class_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_single_character_string_class_literal_tests.rs"]
+mod single_character_string_class_literal_tests;

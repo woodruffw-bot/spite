@@ -8917,3 +8917,26 @@ implement these effects over original UTF-16 boundaries, including the approved
 initial-low-surrogate handling. No new matcher/search model or default limits
 are added. Branch-local captures/assertions, grouped empty branches, braced
 counts, extra alternatives and string-valued leaves remain outside this entry.
+
+## One-character UnicodeSets string classes followed by one literal
+
+A separate checked v/vi entry composes one complete class containing at least
+one ClassStringDisjunction operand with one decoded Unicode literal. Every q
+alternative must consume exactly one character. Canonical outside ^, leading
+\b/\B, trailing \b/\B and $ apply to the complete pair; enclosing whole
+captures remain the caller's proof.
+
+The new private boundary walk borrows validated source. ClassString syntax
+forbids raw brackets inside q payloads, and escaped brackets/backslashes remain
+opaque pairs. Complete class compilation independently proves every q leaf and
+set operator. The earlier boundary scanner continues to reject q. A conservative
+4N charge precedes both outside parity walks, the boundary scan and suffix
+predecoding. The complete class and literal then compile in source order, even
+behind an empty class or an impossible gate, retaining fallible class storage.
+
+The existing ClassThenLiteral order, first-character-end retries and original
+UTF-16 line/word context implement search. Sticky work remains bounded to four
+code units, including the approved initial-low-surrogate behavior. No new
+matcher storage, copied Pattern, default host limit or dependency is introduced.
+Partial captures, extra atoms, repetition and string-valued alternatives remain
+outside this entry. Earlier constructors retain their domains and callbacks.
