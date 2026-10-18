@@ -14387,3 +14387,28 @@ The original Node disagreements remain recorded, with no excluded rows or
 changes to the native expectations. The retained fifteen-job matrix still
 requires all 57 framework probes and four full reviewed-corpus gates before
 the following push.
+
+## Invariant checks in the repetition oracle
+
+Each plan in the repetition oracle caches its case's word assertion polarity,
+which is invariant across input and cursor loops. All 128 constructions,
+16,750,592 matcher queries and 33,501,184 assertions remain unchanged; production
+code, cases and expected results are preserved.
+
+One eight-run comparison used separate once-built baseline and candidate
+binaries, with unchanged settings and baseline/candidate/candidate/baseline
+order on each Rust version. All eight exact tests passed, without retries,
+ignored tests or replacement samples. Builds were outside the measurements.
+
+| Rust | Mean baseline wall | Mean candidate wall | Wall reduction | CPU reduction |
+| --- | ---: | ---: | ---: | ---: |
+| stable | 4.955 s | 2.174 s | 56.1% | 56.1% |
+| 1.85.0 | 7.706 s | 3.181 s | 58.7% | 58.8% |
+
+These measurements describe this oracle on one machine; they do not establish
+a whole-suite or hosted-CI gain. The Native inventory remains 5,342, including
+1,004 Core tests, and all 725 snapshots are retained unchanged.
+Both Rust versions pass all 1,004 Core tests, with no filtered or ignored tests.
+All thirteen ordinary quality checks pass. The unchanged fifteen-job matrix
+still requires all 57 framework probes and four full reviewed-corpus gates
+before the following push.

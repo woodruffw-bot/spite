@@ -5551,7 +5551,10 @@ mod start_word_tests {
         for i in [false, true] {
             for m in [false, true] {
                 for s in [false, true] {
-                    let plans: Vec<_> = CASES.iter().map(|c| plan(c.0, true, i, m, s)).collect();
+                    let plans: Vec<_> = CASES
+                        .iter()
+                        .map(|c| (plan(c.0, true, i, m, s), c.0.contains(r"\b")))
+                        .collect();
                     let fold = |c| {
                         if i {
                             match c {
@@ -5602,7 +5605,7 @@ mod start_word_tests {
                             let input = JsString::from_code_units(units);
                             for start in 0..=input.len() + 1 {
                                 for sticky in [false, true] {
-                                    for (case, matcher) in CASES.iter().zip(&plans) {
+                                    for (case, (matcher, positive)) in CASES.iter().zip(&plans) {
                                         let expected = if start > input.len() {
                                             None
                                         } else {
@@ -5613,8 +5616,7 @@ mod start_word_tests {
                                                         || (i && matches!(c, 0x17f | 0x212a))
                                                 });
                                                 let boundary = word(at.checked_sub(1).and_then(|p| points.get(p))) != word(points.get(at));
-                                                let positive = case.0.contains(r"\b");
-                                                if boundary != positive || (sticky && at != first)
+                                                if boundary != *positive || (sticky && at != first)
                                                     || (case.6
                                                         && at != 0
                                                         && !(m && lt(points[at - 1])))
