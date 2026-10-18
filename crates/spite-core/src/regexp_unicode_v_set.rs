@@ -193,6 +193,22 @@ impl RegExpUnicodeClassMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
+        Self::compile_v_set_units_with_string_operands_and_work(
+            units,
+            ignore_case,
+            multiline,
+            false,
+            charge,
+        )
+    }
+
+    fn compile_v_set_units_with_string_operands_and_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        allow_string_operands: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
         let start_anchor = units.first() == Some(&0x5e);
         let end_anchor = units.last() == Some(&0x24);
         let Some(end) = units.len().checked_sub(usize::from(end_anchor)) else {
@@ -218,6 +234,7 @@ impl RegExpUnicodeClassMatcher {
         let mut current = Frame::new(inverted);
         let mut parents = Vec::new();
         let mut eligible = false;
+        let mut has_string_operand = false;
         let ranges;
         loop {
             if builder.units.get(builder.at) == Some(&0x5d) {
@@ -227,6 +244,11 @@ impl RegExpUnicodeClassMatcher {
                 builder.at += 1;
                 let mut completed = builder.finish(current.expression)?;
                 let Some(mut parent) = parents.pop() else {
+                    let eligible = if allow_string_operands {
+                        has_string_operand
+                    } else {
+                        eligible
+                    };
                     if builder.at != builder.units.len() || !eligible {
                         return Ok(None);
                     }
@@ -252,8 +274,23 @@ impl RegExpUnicodeClassMatcher {
                     builder.at += usize::from(inverted);
                     current = Frame::new(inverted);
                 } else {
-                    let Some(term) = builder.term() else {
-                        return Ok(None);
+                    let term = if allow_string_operands
+                        && builder
+                            .units
+                            .get(builder.at..)
+                            .is_some_and(|tail| tail.starts_with(&[0x5c, 0x71, 0x7b]))
+                    {
+                        builder.at += 3;
+                        let Some(ranges) = builder.single_character_string_ranges(true)? else {
+                            return Ok(None);
+                        };
+                        has_string_operand = true;
+                        Term::Closed(ranges)
+                    } else {
+                        let Some(term) = builder.term() else {
+                            return Ok(None);
+                        };
+                        term
                     };
                     if matches!(term, Term::Range(..))
                         && matches!(current.expression, Expression::Operation(..))
@@ -368,25 +405,9 @@ impl RegExpUnicodeClassMatcher {
             ignore_case,
             charge: &mut charge,
         };
-        let mut ranges = Vec::new();
-        loop {
-            let Some(point) = single_string_character(strings, &mut builder.at) else {
-                return Ok(None);
-            };
-            // Do not deduplicate or fold before proving every complete branch.
-            if builder.at < strings.len() && strings[builder.at] != 0x7c {
-                return Ok(None);
-            }
-            builder.reserve(&mut ranges, 1)?;
-            ranges.push((point, point));
-            if builder.at == strings.len() {
-                break;
-            }
-            builder.at += 1;
-        }
-        // Existing fallible radix normalization and case closure; no expansion
-        // of Unicode intervals and no change to the checked algebra's domain.
-        let ranges = builder.close(ranges)?;
+        let Some(ranges) = builder.single_character_string_ranges(false)? else {
+            return Ok(None);
+        };
         builder.work(ranges.len())?;
         Ok(Some(Self {
             ranges: ranges.into(),
@@ -398,6 +419,75 @@ impl RegExpUnicodeClassMatcher {
             start_word,
             end_word,
         }))
+    }
+}
+
+impl RegExpUnicodeClassMatcher {
+    /// Compiles one checked v-mode class containing character-only string leaves.
+    ///
+    /// The complete Pattern must already be validated in v/vi mode. At least one
+    /// ClassStringDisjunction is required, and every alternative of every such
+    /// operand must decode to exactly one Unicode character. Those finite leaves
+    /// compose with supported character operands, unions, nested complements,
+    /// intersections and subtractions. Folding precedes every set operation.
+    ///
+    /// Optional outside ^, leading \b/\B, trailing \b/\B and $ assertions are
+    /// admitted in that order. Complete captures remain a caller proof. Empty or
+    /// longer string alternatives, quantifiers and consuming continuations decline,
+    /// even when an earlier operand makes the resulting character set empty.
+    /// Legacy constructors retain their domains and construction work callbacks.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let mut begin = usize::from(start_anchor);
+        let mut end = units.len() - usize::from(end_anchor);
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2 {
+            match &units[end - 2..end] {
+                [0x5c, kind @ (0x62 | 0x42)] => {
+                    end -= 2;
+                    Some(*kind == 0x62)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let Some(mut matcher) = Self::compile_v_set_units_with_string_operands_and_work(
+            body,
+            ignore_case,
+            multiline,
+            true,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        matcher.start_anchor = start_anchor;
+        matcher.end_anchor = end_anchor;
+        matcher.start_word = start_word;
+        matcher.end_word = end_word;
+        Ok(Some(matcher))
     }
 }
 
@@ -438,6 +528,34 @@ fn single_string_character(units: &[u16], at: &mut usize) -> Option<u32> {
 }
 
 impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
+    // Both callers prove the same one-character alternatives. The standalone
+    // entry has already stripped its final brace; algebra operands consume it.
+    fn single_character_string_ranges(&mut self, braced: bool) -> Checked<Option<Intervals>, E> {
+        let mut ranges = Vec::new();
+        loop {
+            let Some(point) = single_string_character(self.units, &mut self.at) else {
+                return Ok(None);
+            };
+            let end = if braced {
+                self.units.get(self.at) == Some(&0x7d)
+            } else {
+                self.at == self.units.len()
+            };
+            // Do not deduplicate or fold before proving every complete branch.
+            if !end && self.units.get(self.at) != Some(&0x7c) {
+                return Ok(None);
+            }
+            self.reserve(&mut ranges, 1)?;
+            ranges.push((point, point));
+            if end {
+                self.at += usize::from(braced);
+                break;
+            }
+            self.at += 1;
+        }
+        self.close(ranges).map(Some)
+    }
+
     fn work(&mut self, amount: usize) -> Checked<(), E> {
         (self.charge)(amount).map_err(RegExpUnicodeSetCompileError::Work)
     }
@@ -809,3 +927,7 @@ mod tests;
 #[cfg(test)]
 #[path = "regexp_unicode_single_character_strings_tests.rs"]
 mod single_character_strings_tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_single_character_string_operands_tests.rs"]
+mod single_character_string_operands_tests;

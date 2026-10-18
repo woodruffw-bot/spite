@@ -8185,6 +8185,19 @@ fn single_character_v_strings_state_context_and_consumers() {
             "let caught=false;try{{new RegExp({pattern:?},'v')}}catch(e){{caught=e instanceof SyntaxError}}caught"
         ));
     }
+    for (source, expected) in [
+        (r#"/[\q{a}b]/v.test('a')"#, true),
+        (r#"/[[\q{a}]]/v.test('a')"#, true),
+        (r#"/[\q{a}&&a]/v.test('a')"#, true),
+        (r#"/[^\q{a}&&a]/v.test('a')"#, false),
+        (r#"/[\q{a}\q{b}]/v.test('a')"#, true),
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::Boolean(expected)),
+            "{source}"
+        );
+    }
     for source in [
         r#"/[\q{}]/v.test('')"#,
         r#"/[\q{a|}]/v.test('a')"#,
@@ -8192,11 +8205,6 @@ fn single_character_v_strings_state_context_and_consumers() {
         r#"/[\q{a|b|ab}]/v.test('a')"#,
         r#"/[\q{ab|c}]/v.test('ab')"#,
         r#"/[\q{\u{D800}\u{DC00}}]/v.test('\uD800\uDC00')"#,
-        r#"/[\q{a}b]/v.test('a')"#,
-        r#"/[[\q{a}]]/v.test('a')"#,
-        r#"/[\q{a}&&a]/v.test('a')"#,
-        r#"/[^\q{a}&&a]/v.test('a')"#,
-        r#"/[\q{a}\q{b}]/v.test('a')"#,
         r#"/[\q{a|b}]+/v.test('ab')"#,
         r#"/[\q{a}]b/v.test('ab')"#,
         r#"/a[\q{b}]/v.test('ab')"#,
@@ -8317,6 +8325,221 @@ fn single_character_v_strings_results() {
         let pattern = JsString::from(pattern);
         let script = format!(
             "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+        );
+        let Value::String(result) = Realm::default().eval(&script).unwrap() else {
+            panic!("{script}")
+        };
+        assert_eq!(result, JsString::from(expected), "{script}");
+        writeln!(
+            rows,
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
+            input.code_units()
+        )
+        .unwrap();
+        row_count += 1;
+    }
+    assert_eq!(row_count, 10);
+    insta::assert_snapshot!(rows);
+}
+
+#[test]
+fn single_character_v_string_operands_state_context_and_consumers() {
+    check(r#"/[a\q{b|c}]/v.test('a')&&/[a\q{b|c}]/v.test('b')&&!/[a\q{b|c}]/v.test('z')"#);
+    check(
+        r#"/[a[\q{b|c}]d-f]/v.test('e')&&/[a[\q{b|c}]d-f]/v.test('c')&&!/[a[\q{b|c}]d-f]/v.test('x')"#,
+    );
+    check(r#"/[\q{a|b}\d]/v.test('7')&&/[\q{a|b}\d]/v.test('b')&&!/[\q{a|b}\d]/v.test('z')"#);
+    check(r#"/[\q{a|b}&&[b-z]]/v.exec('aab').index===2&&!/[\q{a|b}&&[b-z]]/v.test('a')"#);
+    check(
+        r#"/[\q{a|b}--b]/v.test('a')&&!/[\q{a|b}--b]/v.test('b')&&!/[a--\q{a|b}]/v.test('a')&&/[[a-c]--\q{b}]/v.test('c')"#,
+    );
+    check(
+        r#"/[\q{a|b}&&[^\q{a}]]/v.test('b')&&!/[\q{a|b}&&[^\q{a}]]/v.test('a')&&!/[^\q{a}&&a]/v.test('a')&&/[^\q{a}&&a]/v.test('b')"#,
+    );
+    check(
+        r#"/[\q{a}\q{b}]/v.test('b')&&/[\q{a|b}&&\q{b|c}]/v.test('b')&&!/[\q{a|b}&&\q{b|c}]/v.test('a')"#,
+    );
+    check(r#"/[\q{a|😀}&&\p{ASCII}]/v.test('a')&&!/[\q{a|😀}&&\p{ASCII}]/v.test('😀')"#);
+    check(
+        r#"/[\q{K|s}--k]/iv.test('ſ')&&!/[\q{K|s}--k]/iv.test('KKk')&&/[\q{K|s}--k]/v.test('K')"#,
+    );
+    check(r#"! /[^[[\q{K|s}]--[s]]]/iv.test('KKk')&&/[^[[\q{K|s}]--[s]]]/iv.test('ſ!')"#);
+    check(r#"/[\q{Σ|µ}--ς]/iv.test('μ')&&!/[\q{Σ|µ}--ς]/iv.test('Σςσ')"#);
+    check(
+        r#"let r=/[\q{\b|\!|\||\}|\/}&&[^\q{!}]]/v;r.test('\b')&&r.test('|')&&r.test('}')&&r.test('/')&&!r.test('!')&&!r.test('b')"#,
+    );
+    check(
+        r#"/[\q{\]|\[|\}}x]/v.test(']')&&/[\q{\]|\[|\}}x]/v.test('[')&&/[\q{\]|\[|\}}x]/v.test('}')&&/[\q{\]|\[|\}}x]/v.test('x')"#,
+    );
+    check(
+        r#"/^\b[\q{K}&&k]\b$/ivm.test('x\nK\nz')&&!/^\b[\q{K}&&k]\b$/vm.test('x\nK\nz')&&!/^\b[\q{K}&&k]\b$/iv.test('x\nK\nz')"#,
+    );
+    check(
+        r#"let r=/\b[\q{\uD83D\uDE00|x}&&[^\q{x}]]\B/dvy;r.lastIndex=2;let m=r.exec('A😀!');m.index===1&&m[0]==='😀'&&m.indices[0][0]===1&&m.indices[0][1]===3&&r.lastIndex===3"#,
+    );
+    check(
+        r#"/[\q{\uD800|\uDC00}--[\q{\uDC00}]]/v.exec('A\uD800B').index===1&&!/[\q{\uD800|\uDC00}--[\q{\uDC00}]]/v.test('😀')"#,
+    );
+    check(
+        r#"let trace='',r=/[\q{a|b}&&[b]]/vy;r.lastIndex={valueOf(){trace+='i';return 1}};let m=r.exec({toString(){trace+='s';return 'xb'}});trace==='si'&&m[0]==='b'&&m.index===1&&r.lastIndex===2"#,
+    );
+    check(
+        r#"let seen=0,r=/[\q{a|b}&&[b]]/v;r.lastIndex={valueOf(){seen++;return 3}};r.exec('xb').index===1&&seen===1&&typeof r.lastIndex==='object'"#,
+    );
+    check(
+        r#"let r=/[\q{K|s}--k]/iv;r.lastIndex=7;let c=new RegExp(r,'dvy');c.source==='[\\q{K|s}--k]'&&c.flags==='dvy'&&c.lastIndex===0&&c.exec('ſ')===null&&r.exec('ſ')[0]==='ſ'&&r.lastIndex===7"#,
+    );
+    check(
+        r#"let a=/[\q{a|b}&&[b]]/vy,b=/[\q{a|b}&&[b]]/vy;a.lastIndex=1;Object.defineProperty(a,'lastIndex',{writable:false});Object.defineProperty(b,'lastIndex',{writable:false});let x=false,y=false;try{a.exec('xb')}catch(e){x=e instanceof TypeError}try{b.exec('x')}catch(e){y=e instanceof TypeError}x&&y&&a.lastIndex===1&&b.lastIndex===0"#,
+    );
+    check(
+        r#"let r=/(?<whole>([\q{a|b}&&[b]]))/dvg,a=[...'a-bb!'.matchAll(r)];a.length===2&&a[0].index===2&&a[1].index===3&&a[1].groups.whole==='b'&&'a-bb!'.replace(r,'<$<whole>>')==='a-<b><b>!'&&'a-bb!'.split(/[\q{a|b}&&[b]]/v).join('|')==='a-||!'"#,
+    );
+    check(
+        r#"let r=/[\q{a|b}&&[b]]/vg;r.lastIndex=1;'xab'.search(r)===2&&r.lastIndex===1&&'abbb'.match(r).join(',')==='b,b,b'&&r.lastIndex===0"#,
+    );
+    for pattern in [
+        r"[^\q{a|ab}]",
+        r"[\q{a}-b]",
+        r"[a-\q{b}]",
+        r"[\q{a}&&a--a]",
+        r"[\q{\d}&&a]",
+        r"[\q{!!}a]",
+    ] {
+        let code = JsString::from(format!("marker=1; /{pattern}/v.test('a');").as_str());
+        check(&format!(
+            "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
+        ));
+    }
+    for source in [
+        r"/[[a--a]&&[\q{ab}]]/v.test('a')",
+        r"/[a--a--\q{ab}]/v.test('a')",
+        r"/[\q{}&&a]/v.test('a')",
+        r"/[^\q{ab}&&a]/v.test('a')",
+        r"/[[\q{a|b}]--[\q{a|bc}]]/v.test('b')",
+        r"/[[\q{a|b}]&&[\p{RGI_Emoji}]]/v.test('a')",
+        r"/[\q{a|b}]+/v.test('ab')",
+        r"/[[\q{a|b}]]{0}/v.test('')",
+        r"/[\q{a}&&a]b/v.test('ab')",
+        r"/a[\q{b}]/v.test('ab')",
+        r"/\b^[\q{a}&&a]/v.test('a')",
+        r"/[\q{a}&&a]$\b/v.test('a')",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("var marker=0").unwrap();
+        assert!(
+            matches!(
+                realm.eval(&format!(
+                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
+                )),
+                Err(Error::Unsupported { .. })
+            ),
+            "{source}"
+        );
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+    }
+    let mut realm = Realm::default();
+    realm
+        .eval(r#"var kept=/(?<whole>([\q{a|b}&&[b]]))/dvg;kept.lastIndex=1"#)
+        .unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval(r#"kept.source==='(?<whole>([\\q{a|b}&&[b]]))'&&kept.lastIndex===1&&kept.exec('zb').groups.whole==='b'&&kept.lastIndex===2"#),Ok(Value::Boolean(true)));
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30000),
+        ..Limits::default()
+    });
+    realm.eval(r#"var r=/[\q{z}&&z]/vg,marker=0"#).unwrap();
+    let setup = format!("var text='{}';r.lastIndex=1", "a".repeat(20_000));
+    realm.eval(&setup).unwrap();
+    assert!(matches!(
+        realm.eval(r#"try{r.exec(text)}catch{marker=1}finally{marker=2}"#),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(
+        realm.eval(r#"marker===0&&r.lastIndex===1"#),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn single_character_v_string_operands_results() {
+    let mut rows = String::new();
+    let mut row_count = 0;
+    // Full JSON and original UTF16 spans were fixed before this Runtime source.
+    for (pattern, input, flags, start, expected) in [
+        (
+            r#"(?<whole>([a\q{b|c}]))"#,
+            JsString::from_code_units(vec![122, 98]),
+            "dvg",
+            0usize,
+            r#"{"matches":["b","b","b"],"index":1,"input":"zb","groups":{"whole":"b"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([a\\q{b|c}]))"}"#,
+        ),
+        (
+            r#"(?<whole>([\q{a|b}&&[b-z]]))"#,
+            JsString::from_code_units(vec![97, 97, 98]),
+            "dvg",
+            0usize,
+            r#"{"matches":["b","b","b"],"index":2,"input":"aab","groups":{"whole":"b"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"(?<whole>([\\q{a|b}&&[b-z]]))"}"#,
+        ),
+        (
+            r#"(?<whole>([\q{K|s}--k]))"#,
+            JsString::from_code_units(vec![8490, 115]),
+            "divg",
+            0usize,
+            r#"{"matches":["s","s","s"],"index":1,"input":"Ks","groups":{"whole":"s"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{K|s}--k]))"}"#,
+        ),
+        (
+            r#"(?<whole>([^[[\q{K|s}]--[s]]]))"#,
+            JsString::from_code_units(vec![8490]),
+            "divg",
+            0usize,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+        (
+            r#"^(?<whole>(\b[\q{K}&&k]\b))$"#,
+            JsString::from_code_units(vec![120, 10, 8490, 10, 122]),
+            "dgimv",
+            0usize,
+            r#"{"matches":["K","K","K"],"index":2,"input":"x\nK\nz","groups":{"whole":"K"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\b[\\q{K}&&k]\\b))$"}"#,
+        ),
+        (
+            r#"^(?<whole>(\b[\q{K}&&k]\b))$"#,
+            JsString::from_code_units(vec![120, 10, 8490, 10, 122]),
+            "dgmv",
+            0usize,
+            r#"{"match":null,"lastIndex":0}"#,
+        ),
+        (
+            r#"(?<whole>(\b[\q{\uD83D\uDE00|x}&&[^\q{x}]]\B))"#,
+            JsString::from_code_units(vec![65, 55357, 56832, 33]),
+            "dvy",
+            2usize,
+            r#"{"matches":["😀","😀","😀"],"index":1,"input":"A😀!","groups":{"whole":"😀"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]\\B))"}"#,
+        ),
+        (
+            r#"(?<whole>([\q{\uD800|\uDC00}--[\q{\uDC00}]]))"#,
+            JsString::from_code_units(vec![65, 55296, 66]),
+            "dvg",
+            0usize,
+            r#"{"matches":["\ud800","\ud800","\ud800"],"index":1,"input":"A\ud800B","groups":{"whole":"\ud800"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800|\\uDC00}--[\\q{\\uDC00}]]))"}"#,
+        ),
+        (
+            r#"(?<whole>([\q{\b|\!|\||\}|\/}&&[^\q{!}]]))"#,
+            JsString::from_code_units(vec![33, 124]),
+            "dvg",
+            0usize,
+            r#"{"matches":["|","|","|"],"index":1,"input":"!|","groups":{"whole":"|"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\b|\\!|\\||\\}|\\/}&&[^\\q{!}]]))"}"#,
+        ),
+        (
+            r#"^(?<whole>(\B[[\q{\r|\n|\u2028}]--[\q{\r}]]\B))$"#,
+            JsString::from_code_units(vec![120, 13, 10, 8232, 121]),
+            "dgmv",
+            0usize,
+            r#"{"matches":["\n","\n","\n"],"index":2,"input":"x\r\n y","groups":{"whole":"\n"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]\\B))$"}"#,
+        ),
+    ] {
+        let script = format!(
+            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")

@@ -2347,4 +2347,44 @@ mod tests {
             Err(spite_core::RegExpUnicodeSetCompileError::Work(41))
         ));
     }
+
+    #[test]
+    fn single_character_v_string_operands_work_bound_tracks_original_characters() {
+        let source = JsString::from(r"[\q{\uD83D\uDE00|x}&&[^\q{x}]]");
+        let body = RegExpUnicodeClassMatcher::compile_v_set_with_single_character_strings_and_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeClass(body), 2);
+        assert_eq!(matcher.search_work(true, source.len(), usize::MAX), 2);
+        assert_eq!(matcher.search_work(false, source.len(), 3), 4);
+        assert_eq!(
+            matcher.search_work(false, source.len(), usize::MAX),
+            usize::MAX
+        );
+        // This fixed character plan retains the existing BuiltinExec precharge.
+        let found = matcher
+            .find_with_work(&JsString::from("A😀!"), 2, true, |_| -> Result<(), u8> {
+                panic!("fixed character matching is precharged")
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 1..3);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(1..3));
+        assert_eq!(found.capture(1), Some(1..3));
+        assert!(matches!(
+            RegExpUnicodeClassMatcher::compile_v_set_with_single_character_strings_and_work(
+                &source,
+                false,
+                false,
+                |_| Err(73u8),
+            ),
+            Err(spite_core::RegExpUnicodeSetCompileError::Work(73))
+        ));
+    }
 }

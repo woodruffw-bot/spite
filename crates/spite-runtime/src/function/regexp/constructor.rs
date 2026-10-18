@@ -621,6 +621,18 @@ impl Realm {
                         return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
                     }
                 }
+                if flags.code_units().contains(&u16::from(b'v')) {
+                    if let Some(body) = RegExpUnicodeClassMatcher::compile_v_set_with_single_character_strings_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClass(body)));
+                    }
+                }
                 if let Some(body) = RegExpUnicodePropertyDotMatcher::compile_with_work(
                     &matching_source,
                     flags.code_units().contains(&0x76),

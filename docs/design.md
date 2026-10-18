@@ -8785,3 +8785,28 @@ fixed this defect in
 including Kelvin, long-s and complement regressions. Differential evidence
 retains the original Node results and records equivalent ordinary flat-class
 checks separately; the handwritten native expectations stay unchanged.
+
+## One-character UnicodeSets string operands in checked class algebra
+
+A separate v/vi entry admits one complete checked character class containing
+at least one ClassStringDisjunction operand whose alternatives each decode to
+one character. Existing unions, nested complements, intersection chains and
+subtraction chains combine these operands with the supported character-only
+leaves. Canonical optional outside word and line assertions and complete
+caller-proved enclosing captures retain the UnicodeClass representation and
+two-unit Runtime search bound.
+
+The shared iterative compiler keeps its earlier mode unchanged and enables
+string operands only for the new entry. Every q alternative and every operand
+is proved in source order, including after an empty intermediate result. The
+new entry charges N before canonical framing, then uses the existing 4N checked
+algebra and fallible charged interval paths. The standalone q entry retains its
+3N framing charge and exact callback transcript. Resource limits remain opt-in.
+
+[CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)
+applies simple case folding to each operand before Boolean operations and
+complement. Each admitted q operand therefore has the same character set as
+its equivalent ordinary character class. Matching preserves original UTF-16
+text, the approved initial-low-surrogate behavior and actual i/m assertion
+context. Multi-character or empty q alternatives, consuming continuations,
+quantifiers and properties of strings remain outside this entry.

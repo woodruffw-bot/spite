@@ -14351,3 +14351,39 @@ and UTF-16 equality. The original Node disagreements remain recorded separately,
 with no excluded rows or changes to the native expectations.
 The retained fifteen-job matrix still requires all 57 framework probes and
 four full reviewed-corpus gates before the following push.
+
+## One-character string operands in checked UnicodeSets algebra
+
+Five existing Boolean controls move within their original Runtime test owner
+with exact expressions and independent expected values. All 87 preceding
+functions and 40 snapshot function bodies are otherwise retained.
+Two new Core tests specify 64,512 independent UTF-16 expression-oracle queries,
+five separate flag/fold witnesses and thirteen ordered construction transcripts
+with fresh abort-prefix checks. They cover unions, nested complements,
+intersections and subtractions, including late unsupported operands after an
+empty result. Two Runtime functions cover state, complete captures, consumers,
+effects and explicit opt-in cancellation; a direct unit checks the unchanged
+two-unit search bound.
+
+The expected Native inventory is 5,342: 1,004 Core and 4,338 REST, including
+3,584 Runtime integration tests and 300 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. The target snapshot inventory is 725, retaining all 724
+preceding files byte-for-byte. Ten handwritten full-JSON/UTF-16 rows specify
+eight matches and two nulls, with no exclusions.
+
+Both Rust versions pass all 1,004 Core tests, the direct bound unit and all
+3,584 Runtime integration tests. The new insta snapshot and all thirteen
+ordinary quality checks pass. All 724 preceding snapshots remain byte-for-byte
+unchanged.
+
+The fresh Node v24.19.0 comparison retains all ten original rows: eight agree,
+and two expose its documented singleton class-string case-folding defect,
+fixed in V8 [bca5c4eb1db2](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+All ten native results agree with the handwritten edition-17 expectations.
+Two supplemental equivalent flat-class comparisons pass with complete JSON
+and UTF-16 equality.
+The original Node disagreements remain recorded, with no excluded rows or
+changes to the native expectations. The retained fifteen-job matrix still
+requires all 57 framework probes and four full reviewed-corpus gates before
+the following push.
