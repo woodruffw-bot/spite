@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; copy/subarray/sort algorithms and Uint8Array encodings remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; sort/toSorted and Uint8Array encodings remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -15086,3 +15086,31 @@ There are 903 Rust sources; 895 unowned Rust files and all 734 snapshot files
 remain byte-identical. The 15,098-variant corpus retains its three-worker gate,
 existing pin, original inputs, and ordinary defaults. No new upstream fixture
 or dependency is introduced.
+
+## TypedArray copies and views
+
+Twenty-five integration groups cover slice, subarray, toReversed, and with.
+They check all twelve kinds, branding and internal lengths, bound/index/value
+conversion order, species defaults and exceptions, exact two/three constructor
+arguments, compatible custom kinds, short/invalid species results, and live
+resizable or detached views. Slice regressions distinguish raw NaN-preserving
+copies from numeric copies and verify live forward propagation through aliased
+species results. Shrinkage clips only the original copied prefix and preserves
+the destination's existing tail.
+
+Subarray checks retain auto/fixed length behavior, initially invalid state,
+custom recovery and short unrelated results. Intrinsic copy regressions ignore
+public constructors/species and replaced global bindings, preserve numeric NaN
+semantics, skip replacement reads, and exercise growth beyond captured lengths
+and later undefined reads. Explicit quota tests retain their selected work,
+heap, BigInt, and argument limits. No default quota, storage primitive, intrinsic
+object, upstream fixture, dependency, or snapshot baseline is added.
+
+Stable passes all 356 Runtime units and 3,746 integration tests. Rust 1.85
+passes all 356 units and the 25 new integration groups. Both Runtime
+documentation checks, fresh stable workspace Clippy with denied warnings,
+formatting, dependency policy, and fixture/integration inventories pass.
+The expected Native total is 5,581: 1,022 Core and 4,559 REST. There are 905
+Rust sources, with all 898 unowned Rust files and 734 snapshots byte-identical.
+The existing 15,098-variant corpus, pin, helpers, three-worker gate and ordinary
+runtime defaults remain unchanged.

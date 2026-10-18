@@ -535,14 +535,7 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 #[test]
 fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
     let mut expressions = Vec::new();
-    for name in [
-        "slice",
-        "sort",
-        "subarray",
-        "toReversed",
-        "toSorted",
-        "with",
-    ] {
+    for name in ["sort", "toSorted"] {
         expressions.push(format!("new Uint8Array(1).{name}()"));
     }
     expressions.extend([

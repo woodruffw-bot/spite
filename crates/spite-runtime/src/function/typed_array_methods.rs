@@ -26,6 +26,10 @@ pub(super) enum Method {
     Fill,
     Reverse,
     Set,
+    Slice,
+    Subarray,
+    ToReversed,
+    With,
 }
 
 impl Method {
@@ -54,6 +58,10 @@ impl Method {
             "fill" => Self::Fill,
             "reverse" => Self::Reverse,
             "set" => Self::Set,
+            "slice" => Self::Slice,
+            "subarray" => Self::Subarray,
+            "toReversed" => Self::ToReversed,
+            "with" => Self::With,
             _ => return None,
         })
     }
@@ -86,6 +94,9 @@ impl Realm {
             }
             Method::CopyWithin | Method::Fill | Method::Reverse | Method::Set => {
                 self.typed_array_mutation_method(method, receiver, arguments, span)
+            }
+            Method::Slice | Method::Subarray | Method::ToReversed | Method::With => {
+                self.typed_array_copy_method(method, receiver, arguments, span)
             }
             _ => self.typed_array_callback_method(method, receiver, arguments, span),
         }
@@ -128,13 +139,30 @@ impl Realm {
         })
     }
 
-    /// TypedArraySpeciesCreate (23.2.4.3) with the one-count argument list
-    /// required by map/filter. Unlike the factories, it enforces content type.
+    /// TypedArraySpeciesCreate (23.2.4.3) with one numeric count. The wrapper
+    /// preserves map/filter/slice's checked minimum-length result contract.
     pub(super) fn typed_array_species_create(
         &mut self,
         exemplar: &ObjectHandle,
         element: ElementType,
         length: u64,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
+        self.typed_array_species_create_arguments(
+            exemplar,
+            element,
+            vec![Value::Number(length as f64)],
+            span,
+        )
+    }
+
+    /// TypedArraySpeciesCreate with the exact constructor argument list.
+    /// subarray supplies two or three arguments and has no count minimum.
+    pub(super) fn typed_array_species_create_arguments(
+        &mut self,
+        exemplar: &ObjectHandle,
+        element: ElementType,
+        arguments: Vec<Value>,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
         let constructor = self.get_property(exemplar, &JsString::from("constructor"), span)?;
@@ -170,7 +198,7 @@ impl Realm {
             }
             species
         };
-        let result = self.typed_array_factory_result(constructor, length, span)?;
+        let result = self.typed_array_factory_result_arguments(constructor, arguments, span)?;
         let result_is_bigint = self.object_work(span, |objects, _| {
             Ok(objects
                 .inspect(&result)?
@@ -187,6 +215,24 @@ impl Realm {
             ));
         }
         Ok(result)
+    }
+
+    /// TypedArrayCreateSameType (23.2.4.2). Only the retained intrinsic
+    /// constructor is used; public constructor/species hooks are ignored.
+    pub(super) fn typed_array_create_same_type(
+        &mut self,
+        element: ElementType,
+        length: u64,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized realm")
+            .typed_array
+            .constructor(element)
+            .clone();
+        self.typed_array_factory_result(Value::Object(constructor), length, span)
     }
 
     fn typed_array_callback_method(

@@ -927,6 +927,9 @@ mod try_finally;
 #[path = "cases/typed_array.rs"]
 mod typed_array;
 
+#[path = "cases/typed_array_copy.rs"]
+mod typed_array_copy;
+
 #[path = "cases/typed_array_methods.rs"]
 mod typed_array_methods;
 

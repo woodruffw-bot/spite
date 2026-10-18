@@ -494,9 +494,27 @@ impl Realm {
         length: u64,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        let Value::Object(result) =
-            self.construct(constructor, vec![Value::Number(length as f64)], span)?
-        else {
+        self.typed_array_factory_result_arguments(
+            constructor,
+            vec![Value::Number(length as f64)],
+            span,
+        )
+    }
+
+    /// TypedArrayCreateFromConstructor (23.2.4.1) validates the constructed
+    /// result for every argument list. Only one Number argument imposes a
+    /// minimum length; subarray's buffer/offset[/length] forms do not.
+    pub(super) fn typed_array_factory_result_arguments(
+        &mut self,
+        constructor: Value,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
+        let minimum_length = match arguments.as_slice() {
+            [Value::Number(length)] => Some(*length),
+            _ => None,
+        };
+        let Value::Object(result) = self.construct(constructor, arguments, span)? else {
             unreachable!("Construct returns an object");
         };
         // TypedArrayCreateFromConstructor (23.2.4.1) validates only here.
@@ -513,7 +531,9 @@ impl Realm {
                 .expect("TypedArray buffer");
             Ok(data.in_bounds_array_length(buffer))
         })?;
-        if valid_length.is_none_or(|actual| actual < length) {
+        if valid_length
+            .is_none_or(|actual| minimum_length.is_some_and(|minimum| (actual as f64) < minimum))
+        {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

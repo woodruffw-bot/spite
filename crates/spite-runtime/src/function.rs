@@ -44,6 +44,7 @@ mod string;
 mod symbol;
 mod template;
 mod typed_array;
+mod typed_array_copy;
 mod typed_array_intrinsics;
 mod typed_array_methods;
 mod typed_array_mutation;

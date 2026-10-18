@@ -7621,8 +7621,8 @@ content type. Custom species
 may return an aliased view or another compatible element kind. Subsequent
 writes retain ordinary Set conversion and live bounds behavior, including
 reentrant detachment or resizing. Filter's scratch list is independent of
-call-argument quotas. Copying, subarray, sorting, and Uint8Array encoding
-algorithms remain separate work.
+call-argument quotas. Sorting and Uint8Array encoding algorithms remain
+separate work.
 
 ## TypedArray mutation
 
@@ -7653,6 +7653,39 @@ writes and user effects remain on later failure. Normative backing allocation
 failures retain RangeError; internal staging failures remain host failures.
 Native capacity and optional work checks stay separate from JavaScript errors;
 no default limit, synthetic view, or extra intrinsic object is introduced.
+
+## TypedArray copies and views
+
+slice, subarray, toReversed, and with implement 23.2.3.27/.30/.32/.36. The shared
+TypedArrayCreateFromConstructor helper accepts the exact argument list, checks
+brand and live bounds after construction, and enforces minimum length only for
+a single Number argument (23.2.4.1). Existing from/of and map/filter count-based
+wrappers retain that check. Species results also require matching Number/BigInt
+content type; subarray's two/three-argument form has no minimum-length check.
+
+slice captures length, converts bounds, constructs species for the original
+requested count, then revalidates source only if that request was positive.
+A later shrink clips the copied prefix without reducing result length or
+changing its existing tail. Same-kind copies retain raw bytes. An aliased
+same-kind result requires live forward byte copying: a snapshot or memmove
+would suppress the specified propagation of earlier writes. Different kinds
+use increasing numeric Get/Set, preserving their own alias behavior.
+
+subarray checks only the entry brand; detached or out-of-bounds source state
+contributes length zero while retaining original buffer slots. An auto view
+with missing/undefined end supplies exactly two constructor arguments; all
+other forms supply the third count. No later source validation is added.
+Custom species may return an unrelated shorter live view of the same content
+type; the built-in constructor applies its own ordered buffer/range checks.
+
+toReversed and with construct fresh results through the retained intrinsic
+constructor for the source kind (23.2.4.2), without consulting source species or
+replaced global bindings. Both copy numeric values instead of raw NaN payloads.
+with converts the replacement before testing the normalized index against live
+source bounds. Auto growth can validate an index beyond captured length while
+the result still retains that captured length. Later reads after shrinkage keep
+normal undefined-to-Number/BigInt behavior; the replaced index is not read.
+Checked byte arithmetic, sparse storage and optional host limits are unchanged.
 
 ## Date time values
 
