@@ -92,18 +92,15 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
         ("[[a]b]", "a", true),
         ("[[a]b]", "b", true),
         ("[[a]b]", "c", false),
+        (r"[\q{a|b}]", "a", true),
+        (r"[^\q{a|b}]", "a", false),
     ] {
         let code = format!("marker=1; /{pattern}/v.test('{input}');");
         check(&format!(
             "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
         ));
     }
-    for pattern in [
-        r"([\u{1f600}])+b",
-        r"[\q{a|b}]",
-        r"[^\q{a|b}]",
-        r"[^\q{ab}&&a]",
-    ] {
+    for pattern in [r"([\u{1f600}])+b", r"[^\q{ab}&&a]"] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         let code = format!("marker=1; /{pattern}/v.test('a');");

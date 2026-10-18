@@ -39,7 +39,8 @@ pub struct RegExpOuterGroupBody {
 /// compile the complete retained body as a supported subset. Nested character-only
 /// v classes are safe here: raw parentheses are forbidden inside them, and escaped
 /// parentheses remain opaque to this scan even after an inner closing bracket.
-/// String-set escapes remain excluded. Quantified
+/// String-valued branches remain excluded. A standalone single-character
+/// ClassStringDisjunction additionally needs its caller's complete class proof. Quantified
 /// groups, continuations and assertion/named/modifier groups remain inside the
 /// body. Three linear scans use constant space and no native recursion.
 pub fn regexp_outer_group_body(source: &JsString) -> Option<RegExpOuterGroupBody> {

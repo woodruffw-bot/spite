@@ -2287,4 +2287,64 @@ mod tests {
             Err(spite_core::RegExpUnicodeSetCompileError::Work(9))
         ));
     }
+
+    #[test]
+    fn single_character_v_strings_work_bound_tracks_original_characters() {
+        let source = JsString::from(r"[\q{\uD83D\uDE00|x}]");
+        let body = RegExpUnicodeClassMatcher::compile_single_character_strings_v_set_with_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), std::convert::Infallible>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeClass(body), 2);
+        for source_len in [0, 1, source.len(), usize::MAX] {
+            for remaining in 0usize..=3 {
+                assert_eq!(
+                    matcher.search_work(true, source_len, remaining),
+                    [1, 2, 2, 2][remaining]
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, remaining),
+                    remaining + 1
+                );
+            }
+            assert_eq!(matcher.search_work(true, source_len, usize::MAX), 2);
+            assert_eq!(
+                matcher.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        let input = JsString::from("A😀!");
+        // BuiltinExec precharges this fixed character plan via search_work;
+        // unlike composite searches it needs no incremental work callback.
+        let found = matcher
+            .find_with_work(&input, 2, true, |_| -> Result<(), u8> {
+                panic!("fixed character matching is precharged")
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 1..3);
+        assert_eq!(found.capture_count, 2);
+        assert_eq!(found.capture(0), Some(1..3));
+        assert_eq!(found.capture(1), Some(1..3));
+        assert_eq!(found.capture(2), None);
+        assert!(
+            matcher
+                .find_with_work(&input, 0, true, |_| Ok::<(), u8>(()))
+                .unwrap()
+                .is_none()
+        );
+        assert!(matches!(
+            RegExpUnicodeClassMatcher::compile_single_character_strings_v_set_with_work(
+                &source,
+                false,
+                false,
+                |_| Err(41u8),
+            ),
+            Err(spite_core::RegExpUnicodeSetCompileError::Work(41))
+        ));
+    }
 }

@@ -8750,3 +8750,38 @@ Earlier typed entries, storage, search, complete captures and six-unit Runtime
 accounting remain unchanged. Checked-literal-flat forms, string leaves, extra
 atoms, inner assertions, partial captures and quantified bodies remain outside
 this entry. Resource limits remain explicitly opt-in.
+
+## Standalone one-character UnicodeSets string disjunctions
+
+A separate v/vi entry proves a standalone [\q{...}] or [^\q{...}] whose
+alternatives each decode to exactly one Unicode character. Canonical optional
+outside word and line assertions and complete caller-proved enclosing captures
+reuse the existing UnicodeClass representation and two-unit Runtime bound.
+Construction charges saturating 3N before borrowed framing and branch decoding,
+then uses the existing fallible charged interval normalization and case closure.
+Every branch is proved before deduplication or folding can hide a late empty or
+multi-character alternative. Folding precedes outer inversion.
+
+ClassString \b is backspace. Escaped class punctuation, raw supplementary
+characters and adjacent fixed Unicode surrogate escapes retain their character
+values; braced or separated lone-surrogate alternatives remain distinct.
+Matching retains original UTF-16 text, initial-low-pair handling and actual i/m
+assertion context. Existing parser MayContainStrings errors remain SyntaxError.
+Empty or multi-character positive alternatives, mixed members, nesting, set
+operations, repetition, continuations and properties of strings remain outside
+this entry. Earlier typed compilers and composite \q rejection are unchanged;
+resource limits remain explicitly opt-in.
+
+Edition 17 [CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)
+applies [MaybeSimpleCaseFolding](https://262.ecma-international.org/17.0/#sec-maybesimplecasefolding)
+to class-string disjunctions before matching and complementing them. Thus
+`[\q{K|s}]` with `iv` accepts Kelvin sign, and its complement rejects Kelvin
+sign and long s.
+Node v24.19.0, which bundles V8 13.6.233.17, omits the singleton class-string
+case-equivalence closure: `[\q{K}]` with `iv` matches lowercase k but rejects
+uppercase K and Kelvin sign. Spite retains the specification behavior. V8
+fixed this defect in
+[bca5c4eb1db2](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6),
+including Kelvin, long-s and complement regressions. Differential evidence
+retains the original Node results and records equivalent ordinary flat-class
+checks separately; the handwritten native expectations stay unchanged.

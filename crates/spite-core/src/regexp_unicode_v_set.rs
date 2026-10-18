@@ -307,6 +307,136 @@ impl RegExpUnicodeClassMatcher {
     }
 }
 
+impl RegExpUnicodeClassMatcher {
+    /// Compiles a standalone v-mode ClassStringDisjunction whose alternatives
+    /// each contain exactly one decoded character, with optional canonical
+    /// ^, leading word, trailing word and $ assertions. Complete captures remain
+    /// a caller proof. Other class members and all string-valued branches decline.
+    ///
+    /// This entry proves ClassString syntax itself, including its backspace and
+    /// reserved-punctuation escapes. Folding precedes outer class inversion.
+    /// https://262.ecma-international.org/17.0/#prod-ClassStringDisjunction
+    pub fn compile_single_character_strings_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Full borrowed framing and character decoding precede normalization.
+        charge(units.len().saturating_mul(3)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let start_anchor = units.first() == Some(&0x5e);
+        let end_anchor = units.last() == Some(&0x24);
+        let mut begin = usize::from(start_anchor);
+        let mut end = units.len() - usize::from(end_anchor);
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, kind @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*kind == 0x62)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2 {
+            match &units[end - 2..end] {
+                [0x5c, kind @ (0x62 | 0x42)] => {
+                    end -= 2;
+                    Some(*kind == 0x62)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        if body.first() != Some(&0x5b) || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let inverted = body.get(1) == Some(&0x5e);
+        let begin = 1 + usize::from(inverted);
+        let Some(strings) = body
+            .get(begin..body.len() - 1)
+            .and_then(|class| class.strip_prefix(&[0x5c, 0x71, 0x7b]))
+            .and_then(|strings| strings.strip_suffix(&[0x7d]))
+        else {
+            return Ok(None);
+        };
+        let mut builder = Builder {
+            units: strings,
+            at: 0,
+            ignore_case,
+            charge: &mut charge,
+        };
+        let mut ranges = Vec::new();
+        loop {
+            let Some(point) = single_string_character(strings, &mut builder.at) else {
+                return Ok(None);
+            };
+            // Do not deduplicate or fold before proving every complete branch.
+            if builder.at < strings.len() && strings[builder.at] != 0x7c {
+                return Ok(None);
+            }
+            builder.reserve(&mut ranges, 1)?;
+            ranges.push((point, point));
+            if builder.at == strings.len() {
+                break;
+            }
+            builder.at += 1;
+        }
+        // Existing fallible radix normalization and case closure; no expansion
+        // of Unicode intervals and no change to the checked algebra's domain.
+        let ranges = builder.close(ranges)?;
+        builder.work(ranges.len())?;
+        Ok(Some(Self {
+            ranges: ranges.into(),
+            inverted,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            start_word,
+            end_word,
+        }))
+    }
+}
+
+// ClassSetCharacter in ClassString context. Unicode identity escapes are narrower
+// than the legacy ordinary-atom helper; \b is backspace and \d/\p are not chars.
+// Adjacent fixed Unicode lead/trail escapes combine; braced escapes do not.
+fn single_string_character(units: &[u16], at: &mut usize) -> Option<u32> {
+    let unit = *units.get(*at)?;
+    *at += 1;
+    if unit == 0x5c {
+        let escaped = *units.get(*at)?;
+        if escaped == 0x62 {
+            *at += 1;
+            return Some(8);
+        }
+        if b"&-!#%,:;<=>@`~^$\\.*+?()[]{}|/".contains(&(u8::try_from(escaped).ok()?)) {
+            *at += 1;
+            return Some(u32::from(escaped));
+        }
+        if !matches!(
+            escaped,
+            0x30 | 0x63 | 0x66 | 0x6e | 0x72 | 0x74 | 0x76 | 0x78 | 0x75
+        ) {
+            return None;
+        }
+        return super::unicode_literal_atom(units, at, unit);
+    }
+    if b"()[]{}/-|".contains(&(u8::try_from(unit).unwrap_or(0))) {
+        return None;
+    }
+    if (0xd800..=0xdbff).contains(&unit) {
+        if let Some(&trail @ 0xdc00..=0xdfff) = units.get(*at) {
+            *at += 1;
+            return Some(0x10000 + (u32::from(unit) - 0xd800) * 0x400 + u32::from(trail) - 0xdc00);
+        }
+    }
+    Some(u32::from(unit))
+}
+
 impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
     fn work(&mut self, amount: usize) -> Checked<(), E> {
         (self.charge)(amount).map_err(RegExpUnicodeSetCompileError::Work)
@@ -675,3 +805,7 @@ impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
 #[cfg(test)]
 #[path = "regexp_unicode_v_set_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_single_character_strings_tests.rs"]
+mod single_character_strings_tests;

@@ -14317,3 +14317,37 @@ unit and full Runtime integration suite pass on stable Rust and Rust 1.85;
 formatting, Clippy, policy, inventories and pinned generators also pass.
 The retained fifteen-job matrix requires all 57 framework probes and four
 full reviewed-corpus gates before the following push.
+
+## Standalone single-character UnicodeSets string disjunctions
+
+Two computed direct-eval controls retain their exact positive and negated
+patterns and test expressions, now completing normally through finally with
+true and false results. Other controls and all 39 preceding snapshot function
+bodies are preserved. Two Core tests specify 255,744 finite independent UTF-16
+oracle comparisons across eight sets, 36 canonical assertion frames, actual i/m,
+eleven inputs and every cursor/sticky mode. They also cover ClassString escapes,
+fold-before-inversion, public syntax/domain rejection and fresh work-abort
+prefixes. Two Runtime functions cover full results, state, consumers, coercion,
+read-only lastIndex, GC, explicit opt-in cancellation and distinct SyntaxError
+versus Unsupported controls; a separate unit checks the unchanged two-unit bound.
+
+The expected Native inventory is 5,337: 1,002 Core and 4,335 REST, including
+3,582 Runtime integration tests and 299 Runtime units. Parser retains 347 tests;
+the one documentation test and 14,740 reviewed corpus variants from 7,631
+sources are separate. The target snapshot inventory is 724, with all 723
+preceding files required to remain byte-for-byte unchanged. Ten handwritten
+full-JSON/UTF-16 rows specify eight matches and two nulls, with no exclusions.
+Both Rust versions pass the two focused Core tests, the direct bound unit and
+all 3,582 Runtime integration tests. The new insta test and all thirteen
+formatting, Clippy, policy, inventory and pinned-generator checks pass. All 723
+preceding snapshots remain byte-for-byte unchanged.
+
+The fresh Node v24.19.0 comparison retains all ten original rows: seven agree,
+and three expose its singleton class-string case-folding defect, fixed in V8
+[bca5c4eb1db2](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6).
+All ten native results agree with the handwritten edition-17 expectations.
+Three additional equivalent flat-class comparisons pass with complete JSON
+and UTF-16 equality. The original Node disagreements remain recorded separately,
+with no excluded rows or changes to the native expectations.
+The retained fifteen-job matrix still requires all 57 framework probes and
+four full reviewed-corpus gates before the following push.
