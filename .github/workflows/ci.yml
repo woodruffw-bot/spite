@@ -53,7 +53,7 @@ jobs:
         run: rustup toolchain install "$TOOLCHAIN" --profile minimal
       - name: Prepare trusted main build cache
         id: build-cache-key
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.85.0' && matrix.suite == 'runtime-integration'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.85.0' && (matrix.suite == 'runtime-integration' || matrix.suite == 'workspace-rest' || matrix.suite == 'runtime-second-half')
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
@@ -76,10 +76,13 @@ jobs:
               target = root / "target"
               debug = target / "debug"
               packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+              suite = os.environ["CACHE_SUITE"]
+              if suite not in ("runtime-integration", "workspace-rest", "runtime-second-half"):
+                  raise ValueError("Unsupported cache suite")
               expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                           "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
                           "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
-                          "CACHE_SUITE": "runtime-integration"}
+                          "CACHE_SUITE": suite}
               if any(os.environ.get(k) != v for k, v in expected.items()):
                   raise ValueError("Unsupported cache context")
               if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):
@@ -134,7 +137,7 @@ jobs:
                           "profile": "test", "workspace": str(root), "cargo_home": str(cargo),
                           "target": str(target), "inputs": hashes, "flags": flags}
               digest = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-              prefix = "spite-build-v2-workspace-clean-trusted-main-Windows-X64-runtime-integration-" + digest + "-"
+              prefix = "spite-build-v2-workspace-clean-trusted-main-Windows-X64-" + suite + "-" + digest + "-"
               outputs = {"eligible": "true", "prefix": prefix, "key": prefix + os.environ["GITHUB_SHA"]}
           except (OSError, ValueError, KeyError, RuntimeError, subprocess.CalledProcessError):
               print("Build cache is ineligible; running the existing uncached CI commands.")
@@ -210,10 +213,13 @@ jobs:
           target = root / "target"
           debug = target / "debug"
           packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+          suite = os.environ["CACHE_SUITE"]
+          if suite not in ("runtime-integration", "workspace-rest", "runtime-second-half"):
+              raise ValueError("Unsupported cache suite")
           expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                       "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
                       "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
-                      "CACHE_SUITE": "runtime-integration"}
+                      "CACHE_SUITE": suite}
           if any(os.environ.get(k) != v for k, v in expected.items()):
               raise ValueError("Unsupported cache context")
           if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):
@@ -278,11 +284,11 @@ jobs:
             extra_args+=(--optimize-runtime)
           fi
           if [[ "$RUNNER_OS" == "Windows" && "${{ matrix.suite }}" == "workspace-rest" ]]; then
-            extra_args+=(--runtime-shard 0 --rest-shard 1 --refine-runtime-prefixes)
+            extra_args+=(--runtime-shard 0 --rest-shard 1)
           elif [[ "${{ matrix.suite }}" == "runtime-integration" ]]; then
             extra_args+=(--runtime-integration exclude)
           elif [[ "${{ matrix.suite }}" == "runtime-second-half" ]]; then
-            extra_args+=(--runtime-shard 1 --rest-shard 0 --refine-runtime-prefixes)
+            extra_args+=(--runtime-shard 1 --rest-shard 0)
           fi
           python tools/run-cargo-workspace-tests.py --toolchain "$TOOLCHAIN" --suite "$WORKSPACE_SUITE" "${extra_args[@]}"
       - name: Run documentation tests
@@ -323,10 +329,13 @@ jobs:
           target = root / "target"
           debug = target / "debug"
           packages = ("spite", "spite-bigint", "spite-core", "spite-heap", "spite-parser", "spite-runtime", "spite-test262")
+          suite = os.environ["CACHE_SUITE"]
+          if suite not in ("runtime-integration", "workspace-rest", "runtime-second-half"):
+              raise ValueError("Unsupported cache suite")
           expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                       "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
                       "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.85.0",
-                      "CACHE_SUITE": "runtime-integration"}
+                      "CACHE_SUITE": suite}
           if any(os.environ.get(k) != v for k, v in expected.items()):
               raise ValueError("Unsupported cache context")
           if Path.cwd().resolve() != root or not re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"]):

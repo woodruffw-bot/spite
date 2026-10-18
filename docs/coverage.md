@@ -15209,3 +15209,44 @@ accepted sorting commit, allowing its successful Clippy check to carry without
 another build.
 The complete seventeen-job hosted run still validates actual production
 execution and all documentation and corpus gates.
+
+## Completed Windows Runtime prefix-refinement trial
+
+The complete seventeen-job trial passed all 5,606 Native tests, 73 framework
+tests, four documentation gates, and four complete 15,098-variant corpus gates.
+All 907 Rust files and 734 snapshots were unchanged. Workflow completion took
+590 seconds versus 539 for the accepted parent. Summed runner time was 5,921
+versus 5,995 seconds; summed queue time was 35 versus 31 seconds. These are
+measurements from one hosted comparison, without causal attribution.
+
+Smaller name groups have not demonstrated a speed improvement. The normal
+workflow returns to default filtering, retaining optional refinement and all
+six new regressions. All 73 framework checks and every production test remain
+mandatory. Dependency caching below addresses the observed MSRV build phases
+while preserving complete execution.
+
+## Dependency caching for Windows MSRV Runtime partitions
+
+The existing trusted-main Windows Rust 1.85 dependency cache also covers the
+two Runtime partition roles. Each of the three roles has its own suite identity
+and compatibility prefix. Other platforms, stable Rust, untrusted events, and
+unrelated suites remain ineligible. Exact compiler, Cargo revision, image,
+flags, manifests, lockfile, workflow, collector, path, and registry checks stay
+mandatory.
+
+The same seven-package Cargo clean runs after a successful restore and before
+saving a new dependency archive. Workspace binaries rebuild, and a cache hit
+never skips tests. Restore failures keep the existing cold fallback; cleanup
+failures remain job failures. Apart from restoring default filters above, collection roots, profiles,
+stacks, workers, default limits, documentation, and corpus gates are unchanged.
+
+Forty disposable mock tests pass, retaining all 34 preceding cases and adding
+role identities, scope rejection, exact cleanup arguments, failure propagation,
+and isolation checks. One obsolete negative suite example now uses an excluded
+Core role. The first run caught whitespace lost in comparison-copy extraction;
+the corrected copies reproduce the actual workflow bodies exactly, with test
+bodies unchanged. No real Cargo or external command ran in these mocks.
+The prior bounded Cargo 1.85 cleanup review supplies the freshness basis; the
+mocks supply no artifact-freshness or performance credit. New archives need a
+cold seed followed by a compatible real source-changing run before warm
+restoration or speed can be assessed.
