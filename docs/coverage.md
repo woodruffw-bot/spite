@@ -14455,3 +14455,50 @@ results retain the existing JsString UTF-16 codec.
 
 The fifteen-job matrix still requires all 57 framework probes and four complete
 reviewed-corpus gates before the following push.
+
+
+## Literal before a checked one-character UnicodeSets string class
+
+A separate constructor covers one decoded literal followed by one complete
+singleton-q v/vi class, canonical optional outside word/line assertions and
+complete whole-body captures. It reuses pair matching and the existing four-unit
+sticky work bound. Every preceding constructor's domain and callbacks remain
+unchanged. Five prior Runtime Unsupported controls now assert their concrete
+supported results; every other preceding control and snapshot is retained.
+
+Two new Core tests cover 24 manually specified pair/set/assertion cases with
+3,072 independent original-UTF-16 cursor/sticky comparisons, five direct endpoint
+witnesses, six construction-cancellation rows and three search-entry rows.
+Each oracle matcher is constructed once and reused over eight tiny inputs.
+Two Runtime functions cover effects, captures, consumers, GC retention and an
+explicitly opted-in cancellation case. One direct unit preserves the existing
+source-independent four-unit work formula and original pair boundaries.
+
+The expected Native inventory is 5,352: 1,008 Core and 4,344 REST, including
+3,588 Runtime integration tests and 302 Runtime units. Parser retains 347 tests;
+the documentation test and 14,740 reviewed corpus variants from 7,631 sources
+remain separate. The expected snapshot inventory is 727, retaining all 726
+preceding files byte-for-byte. Ten handwritten complete JSON/UTF-16 rows specify
+eight matches and two nulls, with no exclusions.
+
+Full Core suites (1,008 tests) and Runtime integration suites (3,588 tests) pass
+on stable Rust and Rust 1.85. The direct work witness passes on both versions.
+The new insta snapshot matches all ten handwritten complete JSON/UTF-16 rows;
+all 726 preceding snapshots remain byte-identical. Formatting, Clippy, policy,
+corpus inventories, Runtime/Parser inventories and all seven generator checks
+pass. The unchanged framework tools retain their accepted preceding 57-probe
+evidence; this feature claims no fresh local framework execution.
+
+The original strict Node 24.19.0 comparison retains all ten rows: seven agree,
+and three expose its missing singleton-q case-fold closure before intersection
+or complement. Native results retain the edition 17 expectations. The
+[upstream V8 fix](https://github.com/v8/v8/commit/bca5c4eb1db2dc36cffd133eb5c9d2ce8b54f1f6)
+documents the same defect. Separately reviewed ordinary-class references
+`s[k]`, `K[^ks]` and `s[^ks]` preserve each original input, flags, initial
+lastIndex, enclosing captures and complete expected JSON, changing only the
+reported source when present. All three supplemental comparisons pass,
+including the null result. The original three failures remain recorded;
+no row is excluded and no Native expectation is changed.
+
+The fifteen-job matrix still requires all 57 framework probes and four complete
+reviewed-corpus gates before the following push.

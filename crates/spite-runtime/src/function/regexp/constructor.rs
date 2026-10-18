@@ -1387,6 +1387,16 @@ impl Realm {
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeClassLiteralClassWord(body)));
                     }
+                    if let Some(body) = RegExpUnicodeClassLiteralMatcher::compile_literal_then_v_set_with_single_character_strings_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeClassLiteral(body)));
+                    }
                 }
                 Ok(None)
             })?;

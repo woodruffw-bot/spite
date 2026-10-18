@@ -8835,3 +8835,32 @@ earliest candidate, original UTF-16 spans and the approved initial-low-surrogate
 behavior. Empty or multi-character q alternatives and properties of strings
 decline even under zero or impossible bounds. Inner groups, additional consuming
 atoms and reordered assertions remain outside this entry.
+
+## One literal followed by a checked one-character UnicodeSets string class
+
+A separate v/vi entry proves one decoded Unicode literal followed by one
+complete checked class containing at least one ClassStringDisjunction operand
+whose alternatives each decode to one character. Optional outside line and word
+assertions occur in canonical order and apply to the complete pair. Complete
+whole-body captures retain the existing Runtime caller proof. The shared
+UnicodeClassLiteral representation and matching path remain unchanged.
+
+Construction charges saturating 3N before borrowed framing and atom decoding,
+then compiles the exact literal prefix and the complete class suffix in source
+order. The retained suffix must start with [ and end with ]; the internal class
+compiler cannot absorb an additional line gate. No q-aware boundary scanner is
+introduced, and every earlier constructor keeps its domain and work callbacks.
+All q alternatives and later class operands are proved even after an empty
+intermediate set or an impossible outside gate. Resource quotas remain opt-in.
+
+[CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)
+and [CompileSubpattern](https://262.ecma-international.org/17.0/#sec-compilesubpattern)
+retain operand-wise simple folding and two adjacent original characters.
+Matching preserves original UTF-16 text, supplementary and lone surrogates,
+actual i/m assertion context and the approved initial-low-surrogate boundary.
+A suffix-class or outside-gate miss retries the first literal's end in nonsticky
+mode; sticky calls attempt only their selected candidate. Existing search work
+remains saturating min(4, remaining + 1) for sticky calls and remaining + 1 for
+nonsticky calls, independent of source length. Class-first q forms, partial
+captures, additional atoms, quantifiers, reordered assertions, empty or longer
+q alternatives and properties of strings remain outside this entry.
