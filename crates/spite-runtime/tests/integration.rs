@@ -935,6 +935,9 @@ mod typed_array_methods;
 
 #[path = "cases/typed_array_mutation.rs"]
 mod typed_array_mutation;
+
+#[path = "cases/typed_array_sort.rs"]
+mod typed_array_sort;
 #[path = "cases/updates.rs"]
 mod updates;
 #[path = "cases/uri_decoding.rs"]

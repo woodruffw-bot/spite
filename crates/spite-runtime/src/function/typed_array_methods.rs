@@ -30,6 +30,8 @@ pub(super) enum Method {
     Subarray,
     ToReversed,
     With,
+    Sort,
+    ToSorted,
 }
 
 impl Method {
@@ -62,6 +64,8 @@ impl Method {
             "subarray" => Self::Subarray,
             "toReversed" => Self::ToReversed,
             "with" => Self::With,
+            "sort" => Self::Sort,
+            "toSorted" => Self::ToSorted,
             _ => return None,
         })
     }
@@ -97,6 +101,9 @@ impl Realm {
             }
             Method::Slice | Method::Subarray | Method::ToReversed | Method::With => {
                 self.typed_array_copy_method(method, receiver, arguments, span)
+            }
+            Method::Sort | Method::ToSorted => {
+                self.typed_array_sort_method(method, receiver, arguments, span)
             }
             _ => self.typed_array_callback_method(method, receiver, arguments, span),
         }

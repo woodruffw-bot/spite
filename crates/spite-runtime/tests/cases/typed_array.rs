@@ -534,19 +534,14 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 
 #[test]
 fn deferred_algorithms_report_host_unsupported_without_entering_language_handlers() {
-    let mut expressions = Vec::new();
-    for name in ["sort", "toSorted"] {
-        expressions.push(format!("new Uint8Array(1).{name}()"));
-    }
-    expressions.extend([
-        "Uint8Array.fromBase64('')".into(),
-        "Uint8Array.fromHex('')".into(),
-        "new Uint8Array(1).setFromBase64('')".into(),
-        "new Uint8Array(1).setFromHex('')".into(),
-        "new Uint8Array(1).toBase64()".into(),
-        "new Uint8Array(1).toHex()".into(),
-    ]);
-    for expression in expressions {
+    for expression in [
+        "Uint8Array.fromBase64('')",
+        "Uint8Array.fromHex('')",
+        "new Uint8Array(1).setFromBase64('')",
+        "new Uint8Array(1).setFromHex('')",
+        "new Uint8Array(1).toBase64()",
+        "new Uint8Array(1).toHex()",
+    ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
         let result = realm.eval(&format!(

@@ -7687,6 +7687,28 @@ the result still retains that captured length. Later reads after shrinkage keep
 normal undefined-to-Number/BigInt behavior; the replaced index is not read.
 Checked byte arithmetic, sparse storage and optional host limits are unchanged.
 
+## TypedArray numeric sorting
+
+sort and toSorted validate comparator callability before the receiver
+(23.2.3.29/.33). Both capture the validated length and read every numeric element
+before invoking comparisons. toSorted allocates through the retained intrinsic
+constructor before those reads, without consulting public constructors or species.
+The captured values use stable, iterative merging with fallible scratch allocation;
+merging moves values between buffers and does not recurse on the native stack.
+
+CompareTypedArrayElements (23.2.4.7) orders Numbers numerically, places NaN last,
+and places negative zero before positive zero; BigInts use exact comparison.
+A supplied comparator receives two values and undefined this, and its result
+undergoes ToNumber. NaN and either zero compare equal. Callback and conversion
+exceptions propagate immediately. Tests preserve stability without prescribing
+the implementation-dependent sequence of comparator calls.
+
+Only after sorting finishes are values written in increasing index order.
+Comparator hooks may resize or detach the source: writes retain the captured
+range and ordinary live indexed-set behavior, without an extra validation or
+deletion phase. Copies use numeric values rather than promising raw NaN payload
+preservation. Work, heap, and BigInt quotas remain caller-selected.
+
 ## Date time values
 
 Shared Date arithmetic implements TimeClip, MakeTime and MakeDate (21.4.1).

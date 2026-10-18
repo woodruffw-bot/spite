@@ -49,6 +49,7 @@ mod typed_array_intrinsics;
 mod typed_array_methods;
 mod typed_array_mutation;
 mod typed_array_read;
+mod typed_array_sort;
 mod uri;
 mod weak_set;
 mod wrapper;

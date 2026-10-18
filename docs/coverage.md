@@ -40,7 +40,7 @@ not an alternative language specification.
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
-| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; sort/toSorted and Uint8Array encodings remain unsupported |
+| TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView; Uint8Array encodings remain unsupported |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
@@ -15139,3 +15139,38 @@ collector still verifies every actual filtered listing, complete disjoint
 execution, original Cargo context, authoritative child status, and Windows
 command bounds. Profiles, stacks, cache eligibility, fixtures, defaults, and
 test assertions are unchanged.
+
+## TypedArray numeric sorting
+
+Twenty-two integration groups cover sort and toSorted across all twelve
+kinds, numeric order and independent intrinsic copies, empty/singleton views,
+callback validation and arguments, stable equal groups, signed zeros and NaN,
+exact BigInt ordering, and one-time comparator-result conversion. They check
+that comparisons see the complete captured list before writeback, including
+abrupt callbacks and live resize, growth, shrink, recovery, and detachment.
+Copy, NaN-byte, and collection checks distinguish numeric writes from source
+preservation. Explicit quota cases preserve their selected work, BigInt, and
+argument limits and the ordering of host failures.
+
+Three private units distinguish comparator validation from receiver validation,
+prove intrinsic copy allocation precedes element decoding under an explicitly
+full heap, and enable a selected 5,000-step quota after preparing inputs to
+check comparator effects and host-abort propagation. The stable merge is
+iterative and uses fallible scratch allocation. No new intrinsic, dependency,
+fixture, default quota, or snapshot baseline is introduced. Metadata and all
+734 existing snapshots are retained.
+
+The initial full stable integration run produced 3,768 passing verdicts and
+one new fixture setup failure. That quota-only case moved to a private unit,
+preserving both methods, the original limit, target scripts, and assertions.
+The final compiled integration inventory exactly matches the 3,768 prior passing
+names; production code and all remaining integration bodies are unchanged.
+No second full integration execution is claimed.
+
+Stable and Rust 1.85 each pass all 359 Runtime units and all 22 focused sorting
+groups. Both Runtime documentation checks, fresh workspace Clippy with denied
+warnings, formatting, policy, and all three inventories pass. The expected
+Native total is 5,606: 1,022 Core and 4,584 REST, including 3,768 Runtime
+integration cases and 359 units. There are 907 Rust sources, with 901 unowned
+files and all 734 snapshots unchanged. The existing pinned corpus and its
+three-worker gate remain mandatory in the complete nineteen-job hosted matrix.
