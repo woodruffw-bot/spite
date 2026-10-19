@@ -51,6 +51,10 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: rustup toolchain install "$TOOLCHAIN" --profile minimal
+      - name: Disable incremental compilation for cold MSRV Runtime build
+        if: matrix.os == 'windows-latest' && matrix.toolchain == '1.85.0' && matrix.suite == 'runtime-second-half'
+        shell: bash
+        run: echo 'CARGO_INCREMENTAL=0' >> "$GITHUB_ENV"
       - name: Prepare trusted main build cache
         id: build-cache-key
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.85.0' && (matrix.suite == 'runtime-integration' || matrix.suite == 'workspace-rest' || matrix.suite == 'runtime-second-half')
