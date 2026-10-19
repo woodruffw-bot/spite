@@ -47,7 +47,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15226 reviewed Test262 variants, thirteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15702 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15466,6 +15466,45 @@ Fresh strict all-target workspace Clippy, formatting, dependency policy, all
 three inventories, and diff checks pass. The sole Rust change preserves the
 production prefix, all 921 other Rust sources, all 734 snapshot files, and the
 5,705-name Native inventory. Runtime and other-crate local evidence carries
-from the exact parent sources. The separate own hosted gate must still retain
-all Native cases and four full 15,226-variant corpus runs. No profile, stack,
-worker, dependency, selected limit, or default quota changes.
+from the exact parent sources. The separate own hosted gate passes all seventeen
+jobs, retains all 5,705 Native cases, and runs four full 15,226-variant corpus gates. Workflow elapsed
+is 556 seconds versus 554 for the foundation parent; summed runner wall time is
+6,228 versus 6,060 seconds. Core collection and test timings vary across the four
+platform/toolchain pairs, so this run establishes no uniform or causal speedup.
+No profile, stack, worker, dependency, selected limit, or default quota changes.
+
+## TypedArray map, filter, and slice Test262 originals
+
+Review of 264 complete originals at the existing pin selects 238 unchanged
+fixtures: 80 map, 81 filter, and 77 slice programs, retaining 325,618 bytes. Their
+prescribed normal/strict modes add 476 required variants. Two whole helpers,
+nans.js (608 bytes) and resizableArrayBufferUtils.js (3,829 bytes), join the
+thirteen existing helpers. All earlier originals, helpers, inventory rows,
+license, and revision remain exact; the two Rust count files change only four
+numeric assertions. The source and inventory admission has 244 paths, plus these
+coverage and README updates.
+
+Coverage includes receiver and method metadata, callbacks and mutations, species
+and content checks, resizable states, and slice aliasing. Live forward copying
+retains the original overlapping-species expectation [20,20,20,60]. NaN cases do
+not establish all payload bit patterns, and resizable factories that permit
+failure do not establish successful execution of every helper branch. The 26
+deferred originals are 23 host-detachment cases and three immutable-buffer
+proposal cases outside edition 17; none is rewritten or partially credited.
+
+The expanded corpus has 8131 fixtures, fifteen helpers, 8112 reviewed sources,
+and 15702 variants: 14169 harness positives, 1525 parse negatives, four raw
+positives, and four runtime negatives. Native names remain 5,705; the 922 Rust
+sources include two owned count files and 920 unchanged files. All 734 snapshot
+files, production code, default quotas, selected budgets, profiles, dependencies,
+and worker settings remain unchanged.
+
+Both toolchains pass all 476 new variants and all 15,702 complete-corpus
+variants, with every non-passing category zero. Each Test262 package run passes
+35 tests across seven invocations. Stable's corpus execution is 390.65 seconds
+and its complete command 397.563 seconds; Rust 1.85 records 356.88 and 366.881
+seconds respectively. Fresh strict all-target workspace Clippy passes, including
+positive checking of the affected Test262 package. Formatting, dependency policy,
+all three inventories, and diff checks pass. Source guards retain every original,
+helper, unchanged Rust source, and snapshot. The own hosted gate must still run
+all seventeen jobs and four full 15,702-variant corpus gates.

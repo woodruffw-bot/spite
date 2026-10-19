@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7893 unmodified test fixtures and thirteen harness files come from
+These 8131 unmodified test fixtures and fifteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,33 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+## TypedArray map, filter, and slice fixtures
+
+Two hundred thirty-eight whole unchanged originals at the existing pin cover
+map (80), filter (81), and slice (77). They retain 325,618 fixture bytes and add
+476 normal/strict variants. Whole unchanged nans.js (608 bytes) and
+resizableArrayBufferUtils.js (3,829 bytes) bring the harness inventory to fifteen
+files. All prior originals, helpers, inventory prefixes, license, and pin remain
+unchanged. The runtime and runner implementation, defaults, selected limits,
+dependencies, profiles, and three-worker gate are unchanged.
+
+The cohort covers metadata, receiver validation, callbacks and mutations,
+species results, Number and BigInt content, resizable views, and slice aliasing.
+The NaN cases do not establish every possible payload bit pattern. Some resizable
+factory cases permit failure, so loading a complete helper does not establish
+successful execution of every optional factory branch. Twenty-six other whole
+originals remain deferred: 23 need the host detachment hook and three require
+immutable-buffer proposal APIs absent from the retained edition 17 baseline.
+No original is adapted or partially credited.
+
+The expanded inventory has 8131 fixtures, fifteen helpers, 8112 reviewed sources,
+and 15702 required variants: 14169 harness positives, 1525 parse negatives, four
+raw positives, and four runtime negatives. Both toolchains pass all 476 new
+variants and the full 15702-variant corpus, with every non-passing count zero.
+Each complete package run passes 35 tests across seven invocations. Stable's
+corpus gate takes 390.65 seconds and Rust 1.85's takes 356.88 seconds. Fresh
+strict workspace Clippy, formatting, dependency policy, and inventories pass.
+
 ## Uint8Array hex and Base64 fixtures
 
 Sixty-four complete unchanged originals at the existing pin cover all six
@@ -50,8 +77,8 @@ every input has odd length. Separate even-length cases check actual bad pairs.
 
 Six complete originals remain deferred: four need the unavailable $262 detachment
 hook and two need immutable backing stores. No original is rewritten, reduced,
-skipped, or credited for Unsupported. The inventory is 7893 fixtures, thirteen
-helpers, 7874 reviewed sources and 15226 variants: 13693 harness positives,
+skipped, or credited for Unsupported. At this admission there were 7893 fixtures,
+thirteen helpers, 7874 reviewed sources and 15226 variants: 13693 harness positives,
 1525 parse negatives, four raw positives and four runtime negatives.
 
 Stable and Rust 1.85 each pass all 128 newly admitted normal/strict variants,
@@ -3829,8 +3856,8 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 15226 variants from 7874 reviewed sources:
-13693 harness positives, 1525 reviewed parse negatives, four raw positives, and
+The `spite-test262` command runs 15702 variants from 8112 reviewed sources:
+14169 harness positives, 1525 reviewed parse negatives, four raw positives, and
 four runtime negatives. The cohort sections above describe the admitted whole
 originals and deferred prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
