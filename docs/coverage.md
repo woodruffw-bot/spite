@@ -49,7 +49,7 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16169 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16221 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15841,5 +15841,38 @@ The Native inventory grows by 28 names to 5,806. The 932 Rust files retain 920
 unowned byte and individual-mtime identities, all 734 external snapshots and 549
 initial realm objects. Test262 remains at 8,365 fixtures, sixteen helpers, 8,346
 reviewed sources and 16,169 variants. All seventeen child CI jobs and four full
-corpus gates remain required before the following push. No default limits,
-dependencies, profiles, native stacks or worker counts change.
+corpus gates pass in [run 39204576996](https://github.com/woodruffw-bot/spite/actions/runs/39204576996).
+No default limits, dependencies, profiles, native stacks or worker counts change.
+
+## WeakRef constructor and deref fixtures
+
+Twenty-six whole unchanged originals at the existing Test262 pin cover WeakRef
+construction, target categories, custom newTarget prototypes and abrupt lookup,
+branded live deref, and standard descriptors.
+They retain 25,107 fixture bytes and add 52 required normal/strict variants.
+The existing WeakRef/prop-desc.js stays exactly once. All four required harness
+files, the license, revision and earlier corpus inputs remain unchanged.
+
+The foreign-realm prototype original still needs $262.createRealm. The complete
+branded-receiver original that constructs FinalizationRegistry remains deferred
+until that constructor is implemented. No branch is trimmed or counted partly.
+These fixtures establish live-target language behavior; deterministic collection,
+kept-object checkpoints and expired-target behavior remain covered by the
+separate Runtime tests.
+
+Both toolchains pass all 52 new modes and 34 ordinary Test262 package controls
+across seven executables, with only the named full-corpus case filtered locally.
+Each focused run reuses the exact CLI built by its package-control run. Package
+controls take 2.58 seconds on stable and 5.73 on Rust 1.85; focused modes take
+0.93 and 1.05 seconds respectively. These observed command times include any
+compilation. No new profile build or duplicate local full-corpus run is needed. Formatting, strict
+workspace Clippy, dependency policy, all inventories and source/diff checks pass.
+
+The corpus contains 8,391 fixtures, sixteen helpers, 8,372 reviewed sources and
+16,221 variants: 14,688 harness positives, 1,525 parse negatives, four raw positives
+and four runtime negatives. Only three numeric assertions change in the two
+Rust inventory tests. The engine, runner, all 5,806 Native names, 932 Rust paths,
+734 external snapshots and 549 initial realm objects retain the accepted WeakRef
+implementation results. All seventeen child CI jobs and all four full
+16,221-variant gates remain required before the next push. Defaults, dependencies,
+profiles, native stacks and worker counts remain unchanged.

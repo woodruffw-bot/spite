@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8365 unmodified test fixtures and sixteen harness files come from
+These 8391 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,39 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## WeakRef constructor and deref fixtures
+
+Twenty-six whole unchanged originals at the existing Test262 pin cover WeakRef
+construction, target categories, custom newTarget prototypes and abrupt lookup,
+branded live deref, and standard descriptors.
+They retain 25,107 fixture bytes and add 52 required normal/strict variants.
+The existing WeakRef/prop-desc.js stays exactly once. All four required harness
+files, the license, revision and earlier corpus inputs remain unchanged.
+
+The foreign-realm prototype original still needs $262.createRealm. The complete
+branded-receiver original that constructs FinalizationRegistry remains deferred
+until that constructor is implemented. No branch is trimmed or counted partly.
+These fixtures establish live-target language behavior; deterministic collection,
+kept-object checkpoints and expired-target behavior remain covered by the
+separate Runtime tests.
+
+Both toolchains pass all 52 new modes and 34 ordinary Test262 package controls
+across seven executables, with only the named full-corpus case filtered locally.
+Each focused run reuses the exact CLI built by its package-control run. Package
+controls take 2.58 seconds on stable and 5.73 on Rust 1.85; focused modes take
+0.93 and 1.05 seconds respectively. These observed command times include any
+compilation. No new profile build or duplicate local full-corpus run is needed. Formatting, strict
+workspace Clippy, dependency policy, all inventories and source/diff checks pass.
+
+The corpus contains 8,391 fixtures, sixteen helpers, 8,372 reviewed sources and
+16,221 variants: 14,688 harness positives, 1,525 parse negatives, four raw positives
+and four runtime negatives. Only three numeric assertions change in the two
+Rust inventory tests. The engine, runner, all 5,806 Native names, 932 Rust paths,
+734 external snapshots and 549 initial realm objects retain the accepted WeakRef
+implementation results. All seventeen child CI jobs and all four full
+16,221-variant gates remain required before the next push. Defaults, dependencies,
+profiles, native stacks and worker counts remain unchanged.
 
 ## Proxy construction, revocation, get, and set fixtures
 
