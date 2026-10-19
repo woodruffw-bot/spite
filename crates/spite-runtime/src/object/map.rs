@@ -43,8 +43,8 @@ impl CollectionKey {
 pub(super) struct MapData {
     // Stable positions preserve paused iterator/forEach cursors. Deletion and
     // clear erase values without shifting positions; reinsertion appends.
-    entries: Vec<Option<(Value, Value)>>,
-    index: HashMap<CollectionKey, usize>,
+    pub(super) entries: Vec<Option<(Value, Value)>>,
+    pub(super) index: HashMap<CollectionKey, usize>,
 }
 
 impl MapData {

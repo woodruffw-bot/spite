@@ -14,6 +14,8 @@ impl Realm {
         self.copy_data_properties(target, source, &HashSet::new(), span)
     }
 
+    // Exclusion keys hash immutable strings or Symbol identity, never Symbol liveness.
+    #[allow(clippy::mutable_key_type)]
     pub(crate) fn copy_data_properties(
         &mut self,
         target: &ObjectHandle,

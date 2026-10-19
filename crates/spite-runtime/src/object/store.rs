@@ -213,6 +213,9 @@ pub struct Objects {
     heap: Heap<Entry>,
     max_properties: Option<usize>,
     roots: Vec<Weak<Handle>>,
+    // One-way: only a committed private WeakMap Symbol insertion/overwrite
+    // sets this. Never reset it after deletion or collection.
+    pub(super) symbol_keys_ever_stored: bool,
 }
 
 impl Objects {
@@ -227,6 +230,7 @@ impl Objects {
             heap: Heap::with_capacity_limit(max_entries),
             max_properties,
             roots: Vec::new(),
+            symbol_keys_ever_stored: false,
         }
     }
 
@@ -1195,18 +1199,59 @@ impl Objects {
         roots: impl IntoIterator<Item = &'a Handle>,
         max_work: usize,
     ) -> Result<Collection, spite_heap::Error> {
-        let remaining = max_work
-            .checked_sub(self.roots.len())
-            .ok_or(spite_heap::Error::Limit)?;
-        let retained: Vec<_> = self.roots.iter().filter_map(Weak::upgrade).collect();
-        let mut registered = retained.iter();
-        let mut supplied = roots.into_iter();
-        let combined = std::iter::from_fn(|| match registered.next() {
-            Some(root) => Some(root.as_ref()),
-            None => supplied.next(),
-        });
-        let mut result = self.heap.collect(combined, remaining)?;
-        result.work_used += self.roots.len();
+        if !self.symbol_keys_ever_stored {
+            // With no Symbol-key ephemerons ever stored, physical Arc drops
+            // cannot lose a local conditional value by Symbol-key activation.
+            // Keep the existing collector and work accounting exactly intact;
+            // ordinary Symbols/WeakSet keys need no census or retirement gate.
+            let remaining = max_work
+                .checked_sub(self.roots.len())
+                .ok_or(spite_heap::Error::Limit)?;
+            let retained: Vec<_> = self.roots.iter().filter_map(Weak::upgrade).collect();
+            let mut registered = retained.iter();
+            let mut supplied = roots.into_iter();
+            let combined = std::iter::from_fn(|| match registered.next() {
+                Some(root) => Some(root.as_ref()),
+                None => supplied.next(),
+            });
+            let mut result = self.heap.collect(combined, remaining)?;
+            result.work_used += self.roots.len();
+            return Ok(result);
+        }
+        let mut remaining = max_work;
+        let mut retained = Vec::new();
+        // Drain and drop all caller-defined iterator state before a Symbol
+        // commit gate exists: next/IntoIterator/Drop may upgrade weak Symbols.
+        // These are only unrooted Handle clones, never owning Symbol temporaries.
+        for weak in &self.roots {
+            remaining = remaining.checked_sub(1).ok_or(spite_heap::Error::Limit)?;
+            if let Some(root) = weak.upgrade() {
+                if retained.len() == retained.capacity() {
+                    remaining = remaining
+                        .checked_sub(retained.len())
+                        .ok_or(spite_heap::Error::Limit)?;
+                }
+                retained
+                    .try_reserve(1)
+                    .map_err(|_| spite_heap::Error::Capacity)?;
+                retained.push(root.as_ref().clone());
+            }
+        }
+        for root in roots {
+            remaining = remaining.checked_sub(1).ok_or(spite_heap::Error::Limit)?;
+            if retained.len() == retained.capacity() {
+                remaining = remaining
+                    .checked_sub(retained.len())
+                    .ok_or(spite_heap::Error::Limit)?;
+            }
+            retained
+                .try_reserve(1)
+                .map_err(|_| spite_heap::Error::Capacity)?;
+            retained.push(root.clone());
+        }
+        let prepaid = max_work - remaining;
+        let mut result = super::symbol_gc::collect(&mut self.heap, retained, remaining)?;
+        result.work_used += prepaid;
         Ok(result)
     }
 

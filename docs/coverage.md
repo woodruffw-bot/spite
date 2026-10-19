@@ -15374,7 +15374,9 @@ Number-content receiver brands with Float16 and resizable argument factories.
 They do not establish BigInt receiver-brand coverage. Two misleadingly named Hex
 illegal-characters originals reach only parity errors; separate setter originals
 check even-length bad pairs and prefix writes. Four detachment-hook and two
-immutable-buffer originals remain wholly deferred, without passing credit.
+immutable-buffer proposal originals remain wholly deferred, without passing
+credit. Those immutable APIs are absent from the retained edition 17 specification
+and are outside this implementation baseline.
 
 The expanded inventory contains 7893 fixtures, thirteen helpers, 7874 reviewed
 sources, and 15226 required variants: 13693 harness positives, 1525 parse
@@ -15388,6 +15390,11 @@ gates pass all 35 tests across seven targets and all 15226 corpus variants, with
 every non-passing outcome at zero. Corpus execution takes 330.78 seconds on stable
 and 346.16 seconds on Rust 1.85. Documentation tests, fresh affected Test262
 workspace Clippy, formatting, dependency policy, and all inventories pass.
+The separate encoding-fixture push also passes all seventeen hosted jobs,
+including all 5,678 unchanged Native names per platform/toolchain, 73 framework
+checks, four documentation gates, and four complete 15,226-variant corpus gates.
+Workflow elapsed time is 545 seconds versus 647; summed runner wall time is
+6,294 versus 6,021 seconds. These observations do not isolate a speedup.
 
 ## MSRV dependency-cache reuse
 
@@ -15405,3 +15412,32 @@ are mixed across roles, and implementation/code-generation cost, 25 added Native
 cases, one replacement, and hosted scheduling also differ. The evidence proves
 safe cache reuse, with no uniform or isolated causal speedup claim. No test,
 Realm isolation, default quota, profile, stack, or worker setting is weakened.
+
+
+## Conditional Symbol reachability foundation
+
+Private WeakMap Symbol storage and the explicit collector now share a mixed
+object/Symbol ephemeron fixpoint. The physical ownership census distinguishes
+internal copies from host owners; the final atomic recheck prevents weak
+resurrection before physical cleanup. Ordinary realms retain the existing
+collector path until a private Symbol-key insertion. JavaScript Symbol-key
+operations remain Unsupported in this foundation increment.
+
+Twenty-seven new private regressions cover host and cross-realm ownership,
+concurrent weak upgrades, shared class-field Rc recovery, holding locations,
+conditional cycles, sparse collection indices, stale generations, invalid roots,
+work failures and precommit unwinding. Existing cases and all 734 snapshots are
+preserved. Stable and Rust 1.85 each pass all 1,421 affected library tests:
+1,026 Core, five Heap, and 390 Runtime. Both also pass the 27 public Heap
+integration cases. Stable passes the unchanged 3,829 Runtime integration cases.
+Both documentation gates, fresh strict all-target workspace Clippy, formatting,
+dependency policy, all three inventories, and diff checks pass. Native vectors
+retain all prior names and add exactly the 27 reviewed units. The expected
+workspace inventory is 5,705 Native names: 1,026 Core and 4,679 REST. There are
+922 Rust sources, with 27 owned paths and 895 unchanged sources; all 734 snapshot
+files are unchanged. Compilation required a concrete unwind-test payload and
+equivalent Option visitor syntax. Narrow lint annotations document that Symbol
+retirement never affects key equality or hashing. No assertions, selected
+budgets, default quotas, dependencies, profiles, or worker settings changed.
+The separate hosted gate must still execute the complete Native inventory and
+four full 15,226-variant corpus gates.

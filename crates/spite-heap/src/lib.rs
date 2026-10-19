@@ -11,6 +11,10 @@ use std::{
     rc::Rc,
 };
 
+mod sweep;
+#[doc(hidden)]
+pub use sweep::SweepSession;
+
 #[derive(Debug)]
 struct Identity;
 
@@ -62,6 +66,10 @@ pub enum Error {
     StaleHandle,
     /// Collection exhausted its work budget before sweeping any values.
     Limit,
+    /// A prepared collection's ownership or index state was inconsistent.
+    ///
+    /// Reported before any logical retirement, value removal or generation edit.
+    CollectionState,
 }
 
 impl fmt::Display for Error {
@@ -71,6 +79,7 @@ impl fmt::Display for Error {
             Self::ForeignHandle => "handle belongs to another heap",
             Self::StaleHandle => "handle refers to a removed value",
             Self::Limit => "heap collection work limit exceeded",
+            Self::CollectionState => "heap collection state is inconsistent",
         })
     }
 }

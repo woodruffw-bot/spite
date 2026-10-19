@@ -100,6 +100,8 @@ pub use regexp_unicode_repeated_atom::{
 };
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
+#[doc(hidden)]
+pub use symbol::{SymbolCollectionGuard, SymbolCollectionPin};
 pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
 pub use well_known::WellKnownSymbol;

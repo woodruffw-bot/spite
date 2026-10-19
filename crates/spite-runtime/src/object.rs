@@ -42,6 +42,7 @@ mod set;
 pub(crate) use set::SetData;
 mod entry;
 mod store;
+mod symbol_gc;
 mod weak_map;
 mod weak_set;
 pub use descriptor::{

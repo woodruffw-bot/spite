@@ -4,8 +4,23 @@ use crate::JsString;
 use std::{
     fmt,
     hash::{Hash, Hasher},
-    sync::{Arc, Weak},
+    sync::{
+        Arc, Weak,
+        atomic::{AtomicBool, Ordering},
+    },
 };
+
+mod collection;
+#[doc(hidden)]
+pub use collection::{SymbolCollectionGuard, SymbolCollectionPin};
+
+struct SymbolData {
+    description: Option<JsString>,
+    // A collector can retire an unreachable identity before releasing its last
+    // internal owners. The transition is irreversible: weak handles cannot
+    // resurrect an identity during allocator re-entry from the later sweep.
+    retired: AtomicBool,
+}
 
 /// An immutable ECMAScript Symbol identity with an optional UTF-16 description.
 ///
@@ -13,17 +28,20 @@ use std::{
 /// an absent description is distinct from an empty description. This constructor
 /// does not use the runtime registry or the shared [`crate::WellKnownSymbol`] table.
 #[derive(Clone)]
-pub struct JsSymbol(Arc<Option<JsString>>);
+pub struct JsSymbol(Arc<SymbolData>);
 
 impl JsSymbol {
     /// Creates a fresh symbol, distinct from every other live symbol.
     pub fn new(description: Option<JsString>) -> Self {
-        Self(Arc::new(description))
+        Self(Arc::new(SymbolData {
+            description,
+            retired: AtomicBool::new(false),
+        }))
     }
 
     /// Borrows the description without copying its UTF-16 code units.
     pub fn description(&self) -> Option<&JsString> {
-        self.0.as_ref().as_ref()
+        self.0.description.as_ref()
     }
 
     /// Creates an identity reference that does not keep this symbol alive.
@@ -38,12 +56,31 @@ impl JsSymbol {
 /// reference is dropped. The weak allocation prevents address reuse until every
 /// weak reference is dropped; no address is exposed as a JavaScript value.
 #[derive(Clone, Debug)]
-pub struct WeakJsSymbol(Weak<Option<JsString>>);
+pub struct WeakJsSymbol(Weak<SymbolData>);
 
 impl WeakJsSymbol {
-    /// Returns the symbol if another strong reference still keeps it alive.
+    /// Returns a strong reference unless the identity has expired or been collected.
+    ///
+    /// Host-owned strong symbols keep their identity alive. A collector may
+    /// retire an unreachable identity before releasing its internal storage;
+    /// this weak handle cannot resurrect that retired identity.
     pub fn upgrade(&self) -> Option<JsSymbol> {
-        self.0.upgrade().map(JsSymbol)
+        let (data, live) = {
+            let _guard = collection::lock();
+            let data = self.0.upgrade();
+            let live = data
+                .as_ref()
+                .is_some_and(|data| !data.retired.load(Ordering::Acquire));
+            (data, live)
+        };
+        // Even a rejected temporary can be the last strong owner. Drop it only
+        // after unlocking: its deallocator may itself upgrade a weak Symbol.
+        if live {
+            data.map(JsSymbol)
+        } else {
+            drop(data);
+            None
+        }
     }
 }
 
@@ -208,6 +245,8 @@ mod tests {
             assert_ne!(first, second);
             assert_eq!(first, copy);
             assert_eq!(first.description(), description.as_ref());
+            // Symbol Hash/Eq use immutable allocation identity, never the liveness flag.
+            #[allow(clippy::mutable_key_type)]
             let mut set = HashSet::new();
             assert!(set.insert(first));
             assert!(!set.insert(copy));
@@ -258,6 +297,8 @@ mod tests {
             let other = PropertyKey::from(JsSymbol::new(Some(JsString::from(name))));
             assert_ne!(string, symbol);
             assert_ne!(symbol, other);
+            // PropertyKey hashes immutable strings or Symbol identity, never Symbol liveness.
+            #[allow(clippy::mutable_key_type)]
             let mut map = HashMap::new();
             map.insert(string.clone(), 1);
             map.insert(symbol.clone(), 2);

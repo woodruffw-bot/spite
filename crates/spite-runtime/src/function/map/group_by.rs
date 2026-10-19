@@ -60,6 +60,8 @@ impl Realm {
             })?;
         let mut iterator = self.get_iterator_from_method(items, method, span)?;
         let mut groups: Groups = Vec::new();
+        // CollectionKey hashes immutable values/identities, never Symbol liveness.
+        #[allow(clippy::mutable_key_type)]
         let mut lookup: HashMap<CollectionKey, usize> = HashMap::new();
         loop {
             self.tick(span)?;

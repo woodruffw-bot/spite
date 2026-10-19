@@ -6,8 +6,8 @@ use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub(crate) struct SetData {
-    entries: Vec<Option<Value>>,
-    index: HashMap<CollectionKey, usize>,
+    pub(super) entries: Vec<Option<Value>>,
+    pub(super) index: HashMap<CollectionKey, usize>,
 }
 
 impl SetData {

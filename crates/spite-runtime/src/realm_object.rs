@@ -501,9 +501,13 @@ impl Realm {
             }
             object::Error::Integer(error) => Self::integer_error(error, span),
             object::Error::Heap(
-                spite_heap::Error::ForeignHandle | spite_heap::Error::StaleHandle,
+                spite_heap::Error::ForeignHandle
+                | spite_heap::Error::StaleHandle
+                | spite_heap::Error::CollectionState,
             ) => {
-                unreachable!("realm-internal values retain valid handles between collections")
+                // CollectionState can only originate in explicit collection,
+                // never in ordinary evaluator object_work operations.
+                unreachable!("object work retains valid handles and never creates collection state")
             }
         })
     }

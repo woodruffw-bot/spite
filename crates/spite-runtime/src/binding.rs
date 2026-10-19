@@ -108,6 +108,8 @@ impl Realm {
                 // GetV preserves the original primitive receiver. Empty object
                 // patterns still reject null/undefined without coercing objects.
                 Self::require_object_coercible(&value, span)?;
+                // PropertyKey hashes immutable strings or Symbol identity, never Symbol liveness.
+                #[allow(clippy::mutable_key_type)]
                 let mut excluded = HashSet::new();
                 if rest.is_some() {
                     excluded

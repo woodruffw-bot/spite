@@ -1,0 +1,810 @@
+//! Joint object/Symbol ephemeron, ownership and failure regressions.
+
+use crate::object::{Budget, DataDescriptor, Error as ObjectError, Objects};
+use crate::{Realm, Value};
+use spite_core::{JsString, JsSymbol, WeakJsSymbol};
+use spite_heap::Handle;
+use std::{
+    cell::{Cell, RefCell},
+    rc::Rc,
+    sync::mpsc,
+    thread,
+};
+
+fn unlimited() -> Budget {
+    Budget::with_work_limit(None)
+}
+
+fn data(value: Value) -> DataDescriptor {
+    DataDescriptor {
+        value: Some(value),
+        writable: Some(true),
+        enumerable: Some(true),
+        configurable: Some(true),
+    }
+}
+
+fn object(value: Value) -> Handle {
+    let Value::Object(value) = value else {
+        panic!("expected object")
+    };
+    value
+}
+
+fn symbol(value: Value) -> JsSymbol {
+    let Value::Symbol(value) = value else {
+        panic!("expected Symbol")
+    };
+    value
+}
+
+fn empty_map(objects: &mut Objects) -> Handle {
+    let prototype = objects.create(None).unwrap();
+    objects.create_weak_map(&prototype).unwrap()
+}
+
+fn symbol_entries(objects: &Objects, map: &Handle) -> usize {
+    objects
+        .inspect(map)
+        .unwrap()
+        .weak_map
+        .as_ref()
+        .unwrap()
+        .symbol_entries
+        .len()
+}
+
+fn object_entries(objects: &Objects, map: &Handle) -> usize {
+    objects
+        .inspect(map)
+        .unwrap()
+        .weak_map
+        .as_ref()
+        .unwrap()
+        .entries
+        .len()
+}
+
+fn stale(objects: &Objects, value: &Handle) {
+    assert!(matches!(
+        objects.inspect(value),
+        Err(ObjectError::Heap(spite_heap::Error::StaleHandle))
+    ));
+}
+
+// Rooted map --weak Symbol key--> value --ordinary property--> the same Symbol.
+// Returning only unrooted object Handles and a Symbol Weak adds no graph root.
+fn install_closed_cycle(objects: &mut Objects) -> (Handle, Handle, WeakJsSymbol) {
+    let map = empty_map(objects);
+    let value = objects.create(None).unwrap();
+    let key = JsSymbol::new(Some(JsString::from("cycle")));
+    let weak = key.downgrade();
+    assert!(
+        objects
+            .define(
+                &value,
+                "back",
+                data(Value::Symbol(key.clone())),
+                &mut unlimited()
+            )
+            .unwrap()
+    );
+    objects
+        .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+        .unwrap();
+    drop(key);
+    (map, value, weak)
+}
+
+fn closed_cycle() -> (Objects, Handle, Handle, WeakJsSymbol) {
+    let mut objects = Objects::with_limits(None, None);
+    let (map, value, weak) = install_closed_cycle(&mut objects);
+    (objects, map, value, weak)
+}
+
+#[test]
+fn symbol_storage_keeps_identity_undefined_and_dense_indices_separate_from_object_keys() {
+    let mut objects = Objects::with_limits(None, None);
+    let map = empty_map(&mut objects);
+    let object_key = objects.create(None).unwrap();
+    let keys: Vec<_> = (0..3)
+        .map(|_| JsSymbol::new(Some(JsString::from("same"))))
+        .collect();
+    objects
+        .weak_map_set(&map, &object_key, Value::Number(90.0), &mut unlimited())
+        .unwrap();
+    for (index, key) in keys.iter().enumerate() {
+        objects
+            .weak_map_set_symbol(&map, key, Value::Number(index as f64), &mut unlimited())
+            .unwrap();
+    }
+    objects
+        .weak_map_set_symbol(&map, &keys[0], Value::Undefined, &mut unlimited())
+        .unwrap();
+    assert!(
+        objects
+            .weak_map_has_symbol(&map, &keys[0], &mut unlimited())
+            .unwrap()
+    );
+    assert_eq!(
+        objects
+            .weak_map_get_symbol(&map, &keys[0], &mut unlimited())
+            .unwrap(),
+        Some(Value::Undefined)
+    );
+    assert!(
+        objects
+            .weak_map_delete_symbol(&map, &keys[1], &mut unlimited())
+            .unwrap()
+    );
+    assert!(
+        !objects
+            .weak_map_delete_symbol(&map, &keys[1], &mut unlimited())
+            .unwrap()
+    );
+    assert_eq!(
+        objects
+            .weak_map_get_symbol(&map, &keys[2], &mut unlimited())
+            .unwrap(),
+        Some(Value::Number(2.0))
+    );
+    assert_eq!(
+        objects
+            .weak_map_get_symbol(&map, &keys[1], &mut unlimited())
+            .unwrap(),
+        None
+    );
+    let unrelated = JsSymbol::new(Some(JsString::from("same")));
+    assert!(
+        !objects
+            .weak_map_has_symbol(&map, &unrelated, &mut unlimited())
+            .unwrap()
+    );
+    assert_eq!(
+        objects
+            .weak_map_get(&map, &object_key, &mut unlimited())
+            .unwrap(),
+        Some(Value::Number(90.0))
+    );
+    assert_eq!(symbol_entries(&objects, &map), 2);
+    assert_eq!(object_entries(&objects, &map), 1);
+}
+
+#[test]
+fn a_host_key_with_zero_local_strong_cells_activates_its_conditional_value() {
+    let mut objects = Objects::with_limits(None, None);
+    let map = empty_map(&mut objects);
+    let value = objects.create(None).unwrap();
+    let key = JsSymbol::new(None);
+    let weak = key.downgrade();
+    objects
+        .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+        .unwrap();
+    objects.collect([&map], usize::MAX).unwrap();
+    assert!(objects.inspect(&value).is_ok());
+    assert!(
+        objects
+            .weak_map_has_symbol(&map, &key, &mut unlimited())
+            .unwrap()
+    );
+    drop(key);
+    assert_eq!(weak.upgrade(), None);
+    objects.collect([&map], usize::MAX).unwrap();
+    stale(&objects, &value);
+    assert_eq!(symbol_entries(&objects, &map), 0);
+}
+
+#[test]
+fn conditional_self_and_object_back_edges_do_not_resurrect_their_own_key() {
+    for object_back_edge in [false, true] {
+        let mut objects = Objects::with_limits(None, None);
+        let map = empty_map(&mut objects);
+        let key = JsSymbol::new(None);
+        let weak = key.downgrade();
+        let value = object_back_edge.then(|| objects.create(None).unwrap());
+        let stored = if let Some(value) = &value {
+            assert!(
+                objects
+                    .define(
+                        value,
+                        "key",
+                        data(Value::Symbol(key.clone())),
+                        &mut unlimited()
+                    )
+                    .unwrap()
+            );
+            Value::Object(value.clone())
+        } else {
+            Value::Symbol(key.clone())
+        };
+        objects
+            .weak_map_set_symbol(&map, &key, stored, &mut unlimited())
+            .unwrap();
+        drop(key);
+        assert!(weak.upgrade().is_some());
+        objects.collect([&map], usize::MAX).unwrap();
+        assert_eq!(weak.upgrade(), None);
+        assert_eq!(symbol_entries(&objects, &map), 0);
+        if let Some(value) = &value {
+            stale(&objects, value);
+        }
+    }
+}
+
+#[test]
+fn a_host_anchor_activates_a_two_symbol_cycle_and_dropping_it_reclaims_both() {
+    let mut objects = Objects::with_limits(None, None);
+    let first_map = empty_map(&mut objects);
+    let second_map = empty_map(&mut objects);
+    let first = JsSymbol::new(None);
+    let second = JsSymbol::new(None);
+    let first_weak = first.downgrade();
+    let second_weak = second.downgrade();
+    objects
+        .weak_map_set_symbol(
+            &first_map,
+            &first,
+            Value::Symbol(second.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    objects
+        .weak_map_set_symbol(
+            &second_map,
+            &second,
+            Value::Symbol(first.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    drop(second);
+    objects
+        .collect([&first_map, &second_map], usize::MAX)
+        .unwrap();
+    assert!(first_weak.upgrade().is_some());
+    assert!(second_weak.upgrade().is_some());
+    drop(first);
+    objects
+        .collect([&first_map, &second_map], usize::MAX)
+        .unwrap();
+    assert_eq!(first_weak.upgrade(), None);
+    assert_eq!(second_weak.upgrade(), None);
+    assert_eq!(symbol_entries(&objects, &first_map), 0);
+    assert_eq!(symbol_entries(&objects, &second_map), 0);
+}
+
+#[test]
+fn reverse_mixed_object_symbol_chains_reach_a_fixpoint_in_either_allocation_order() {
+    for reverse in [false, true] {
+        let mut objects = Objects::with_limits(None, None);
+        let mut maps: Vec<_> = (0..3).map(|_| empty_map(&mut objects)).collect();
+        if reverse {
+            maps.reverse();
+        }
+        let anchor = objects.create(None).unwrap();
+        let value = objects.create(None).unwrap();
+        let first = JsSymbol::new(None);
+        let second = JsSymbol::new(None);
+        let first_weak = first.downgrade();
+        let second_weak = second.downgrade();
+        objects
+            .weak_map_set_symbol(
+                &maps[0],
+                &second,
+                Value::Object(value.clone()),
+                &mut unlimited(),
+            )
+            .unwrap();
+        objects
+            .weak_map_set_symbol(
+                &maps[1],
+                &first,
+                Value::Symbol(second.clone()),
+                &mut unlimited(),
+            )
+            .unwrap();
+        objects
+            .weak_map_set(
+                &maps[2],
+                &anchor,
+                Value::Symbol(first.clone()),
+                &mut unlimited(),
+            )
+            .unwrap();
+        drop(first);
+        drop(second);
+        objects
+            .collect(maps.iter().chain([&anchor]), usize::MAX)
+            .unwrap();
+        assert!(first_weak.upgrade().is_some());
+        assert!(second_weak.upgrade().is_some());
+        assert!(objects.inspect(&value).is_ok());
+        objects.collect(maps.iter(), usize::MAX).unwrap();
+        assert_eq!(first_weak.upgrade(), None);
+        assert_eq!(second_weak.upgrade(), None);
+        stale(&objects, &anchor);
+        stale(&objects, &value);
+        assert_eq!(symbol_entries(&objects, &maps[0]), 0);
+        assert_eq!(symbol_entries(&objects, &maps[1]), 0);
+        assert_eq!(object_entries(&objects, &maps[2]), 0);
+    }
+}
+
+#[test]
+fn an_object_symbol_back_cycle_requires_an_independent_object_root() {
+    let mut objects = Objects::with_limits(None, None);
+    let symbol_map = empty_map(&mut objects);
+    let object_map = empty_map(&mut objects);
+    let value = objects.create(None).unwrap();
+    let key = JsSymbol::new(None);
+    let weak = key.downgrade();
+    objects
+        .weak_map_set_symbol(
+            &symbol_map,
+            &key,
+            Value::Object(value.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    objects
+        .weak_map_set(
+            &object_map,
+            &value,
+            Value::Symbol(key.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    drop(key);
+    objects
+        .collect([&symbol_map, &object_map, &value], usize::MAX)
+        .unwrap();
+    assert!(weak.upgrade().is_some());
+    objects
+        .collect([&symbol_map, &object_map], usize::MAX)
+        .unwrap();
+    assert_eq!(weak.upgrade(), None);
+    stale(&objects, &value);
+    assert_eq!(symbol_entries(&objects, &symbol_map), 0);
+    assert_eq!(object_entries(&objects, &object_map), 0);
+}
+
+#[test]
+fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable() {
+    let owners = [
+        ("property value", "({value:key})"),
+        ("property key", "({[key]:0})"),
+        ("Symbol wrapper", "Object(key)"),
+        (
+            "environment",
+            "(function(value){return function(){return value;};})(key)",
+        ),
+        ("bound this and argument", "(function(){}).bind(key,key)"),
+        ("Map key and its index", "new Map([[key,0]])"),
+        ("Map value", "new Map([[0,key]])"),
+        ("Map key/value/index copies", "new Map([[key,key]])"),
+        ("Set value and its index", "new Set([key])"),
+        (
+            "private field",
+            "new (class {#value=key;read(){return this.#value;}})()",
+        ),
+        ("iterator next copies", "Iterator.from({next:key})"),
+    ];
+    let mut realm = Realm::default();
+    for (name, expression) in owners {
+        let key = symbol(
+            realm
+                .eval(&format!("var key=Symbol('census'),holder={expression};key"))
+                .unwrap(),
+        );
+        let weak = key.downgrade();
+        let map = object(realm.eval("new WeakMap()").unwrap());
+        let _map_root = realm
+            .root_value(Value::Object(map.clone()), usize::MAX)
+            .unwrap();
+        let value = object(realm.eval("({})").unwrap());
+        realm
+            .objects
+            .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+            .unwrap();
+        drop(key);
+        realm.eval("key=null").unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert!(weak.upgrade().is_some(), "live {name}");
+        assert!(
+            realm.objects.inspect(&value).is_ok(),
+            "conditional value for live {name}"
+        );
+        realm.eval("holder=null").unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert_eq!(
+            weak.upgrade(),
+            None,
+            "unreachable {name} must not look like an external Arc owner"
+        );
+        stale(&realm.objects, &value);
+        assert_eq!(symbol_entries(&realm.objects, &map), 0, "{name}");
+    }
+}
+
+#[test]
+fn an_independent_thread_strong_owner_needs_no_heap_root_registration() {
+    let mut objects = Objects::with_limits(None, None);
+    let map = empty_map(&mut objects);
+    let value = objects.create(None).unwrap();
+    let key = JsSymbol::new(None);
+    let weak = key.downgrade();
+    objects
+        .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+        .unwrap();
+    let (ready_tx, ready_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let owner = thread::spawn(move || {
+        ready_tx.send(()).unwrap();
+        release_rx.recv().unwrap();
+        drop(key);
+    });
+    ready_rx.recv().unwrap();
+    let collected = objects.collect([&map], usize::MAX);
+    let identity_live = weak.upgrade().is_some();
+    let value_live = objects.inspect(&value).is_ok();
+    release_tx.send(()).unwrap();
+    owner.join().unwrap();
+    collected.unwrap();
+    assert!(identity_live);
+    assert!(value_live);
+    assert_eq!(weak.upgrade(), None);
+    objects.collect([&map], usize::MAX).unwrap();
+    stale(&objects, &value);
+}
+
+#[test]
+fn another_realms_strong_symbol_cell_is_external_to_the_collecting_heap() {
+    let mut objects = Objects::with_limits(None, None);
+    let map = empty_map(&mut objects);
+    let value = objects.create(None).unwrap();
+    let key = JsSymbol::new(None);
+    let weak = key.downgrade();
+    objects
+        .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+        .unwrap();
+    let mut other = Realm::default();
+    let holder = object(other.eval("({})").unwrap());
+    assert!(
+        other
+            .objects
+            .define(
+                &holder,
+                "symbol",
+                data(Value::Symbol(key.clone())),
+                &mut unlimited()
+            )
+            .unwrap()
+    );
+    let other_root = other.root_value(Value::Object(holder), usize::MAX).unwrap();
+    drop(key);
+    objects.collect([&map], usize::MAX).unwrap();
+    assert!(weak.upgrade().is_some());
+    assert!(objects.inspect(&value).is_ok());
+    drop(other_root);
+    drop(other);
+    assert_eq!(weak.upgrade(), None);
+    objects.collect([&map], usize::MAX).unwrap();
+    stale(&objects, &value);
+}
+
+struct UpgradingRoots<'a> {
+    map: &'a Handle,
+    key: WeakJsSymbol,
+    promoted: Rc<RefCell<Vec<JsSymbol>>>,
+    events: Rc<Cell<u8>>,
+    yielded: bool,
+    promote_on_next: bool,
+}
+
+impl<'a> Iterator for UpgradingRoots<'a> {
+    type Item = &'a Handle;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.yielded {
+            return None;
+        }
+        self.yielded = true;
+        if self.promote_on_next {
+            if let Some(key) = self.key.upgrade() {
+                self.promoted.borrow_mut().push(key);
+            } else {
+                self.events.set(self.events.get() | 4);
+            }
+        }
+        self.events.set(self.events.get() | 1);
+        Some(self.map)
+    }
+}
+
+impl Drop for UpgradingRoots<'_> {
+    fn drop(&mut self) {
+        if let Some(key) = self.key.upgrade() {
+            self.promoted.borrow_mut().push(key);
+        } else {
+            self.events.set(self.events.get() | 4);
+        }
+        self.events.set(self.events.get() | 2);
+    }
+}
+
+#[test]
+fn caller_root_iteration_and_destruction_upgrade_before_any_logical_death() {
+    for promote_on_next in [false, true] {
+        let (mut objects, map, value, weak) = closed_cycle();
+        let promoted = Rc::new(RefCell::new(Vec::new()));
+        let events = Rc::new(Cell::new(0));
+        let roots = UpgradingRoots {
+            map: &map,
+            key: weak.clone(),
+            promoted: promoted.clone(),
+            events: events.clone(),
+            yielded: false,
+            promote_on_next,
+        };
+        objects.collect(roots, usize::MAX).unwrap();
+        assert_eq!(events.get(), 3);
+        assert_eq!(promoted.borrow().len(), if promote_on_next { 2 } else { 1 });
+        assert!(weak.upgrade().is_some());
+        assert!(objects.inspect(&value).is_ok());
+        promoted.borrow_mut().clear();
+        objects.collect([&map], usize::MAX).unwrap();
+        assert_eq!(weak.upgrade(), None);
+        stale(&objects, &value);
+    }
+}
+
+#[test]
+fn a_late_host_promotion_activates_earlier_candidates_before_any_retirement() {
+    let mut objects = Objects::with_limits(None, None);
+    let early_map = empty_map(&mut objects);
+    let late_map = empty_map(&mut objects);
+    let value = objects.create(None).unwrap();
+    let early = JsSymbol::new(None);
+    let late = JsSymbol::new(None);
+    let early_weak = early.downgrade();
+    let late_weak = late.downgrade();
+    objects
+        .weak_map_set_symbol(
+            &early_map,
+            &early,
+            Value::Object(value.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    objects
+        .weak_map_set_symbol(
+            &late_map,
+            &late,
+            Value::Symbol(early.clone()),
+            &mut unlimited(),
+        )
+        .unwrap();
+    assert!(
+        objects
+            .define(
+                &value,
+                "back",
+                data(Value::Symbol(late.clone())),
+                &mut unlimited()
+            )
+            .unwrap()
+    );
+    drop(early);
+    drop(late);
+    let promoted = Rc::new(RefCell::new(None));
+    let sink = promoted.clone();
+    let key = late_weak.clone();
+    let result = Objects::with_symbol_gc_test_hooks(
+        Some(Box::new(move || {
+            *sink.borrow_mut() = key.upgrade();
+        })),
+        None,
+        || objects.collect([&early_map, &late_map], usize::MAX),
+    );
+    result.unwrap();
+    assert!(promoted.borrow().is_some());
+    assert!(early_weak.upgrade().is_some());
+    assert!(late_weak.upgrade().is_some());
+    assert!(objects.inspect(&value).is_ok());
+    // The earlier candidate is reached only through the newly external late
+    // candidate. A root-discovery loop that retires as it scans is invalid.
+    drop(promoted.borrow_mut().take());
+    objects
+        .collect([&early_map, &late_map], usize::MAX)
+        .unwrap();
+    assert_eq!(early_weak.upgrade(), None);
+    assert_eq!(late_weak.upgrade(), None);
+    stale(&objects, &value);
+}
+
+#[test]
+fn logical_retirement_blocks_weak_resurrection_before_physical_cleanup() {
+    let (mut objects, map, value, weak) = closed_cycle();
+    let observed = Rc::new(Cell::new(None));
+    let sink = observed.clone();
+    let key = weak.clone();
+    let result = Objects::with_symbol_gc_test_hooks(
+        None,
+        Some(Box::new(move || {
+            sink.set(Some(key.upgrade().is_none()));
+        })),
+        || objects.collect([&map], usize::MAX),
+    );
+    result.unwrap();
+    // The callback ran after unlock but before the value/back-edge and collector
+    // pin were released, so a physical Arc existed and logical death decided it.
+    assert_eq!(observed.get(), Some(true));
+    assert_eq!(weak.upgrade(), None);
+    stale(&objects, &value);
+    assert_eq!(symbol_entries(&objects, &map), 0);
+}
+
+#[test]
+fn failing_work_prefixes_preserve_entries_handles_and_symbol_liveness() {
+    let (mut calibration, map, _, _) = closed_cycle();
+    let complete = calibration.collect([&map], usize::MAX).unwrap().work_used;
+    assert!(complete > 2);
+    // Derive a late failing prefix from the same graph, without hardcoding a
+    // success allowance or changing any default quota.
+    for limit in [0, 1, complete / 2, complete - 1] {
+        let (mut objects, map, value, weak) = closed_cycle();
+        assert_eq!(
+            objects.collect([&map], limit),
+            Err(spite_heap::Error::Limit)
+        );
+        assert!(weak.upgrade().is_some());
+        assert!(objects.inspect(&value).is_ok());
+        assert_eq!(symbol_entries(&objects, &map), 1);
+        objects.collect([&map], usize::MAX).unwrap();
+        assert_eq!(weak.upgrade(), None);
+        stale(&objects, &value);
+    }
+}
+
+#[test]
+fn an_index_invariant_error_is_reported_before_any_symbol_is_retired() {
+    let (mut objects, map, value, weak) = closed_cycle();
+    objects
+        .object_mut(&map)
+        .unwrap()
+        .weak_map
+        .as_mut()
+        .unwrap()
+        .symbol_index
+        .insert(weak.clone(), 7);
+    assert_eq!(
+        objects.collect([&map], usize::MAX),
+        Err(spite_heap::Error::CollectionState)
+    );
+    assert!(weak.upgrade().is_some());
+    assert!(objects.inspect(&value).is_ok());
+    let stored = objects.inspect(&map).unwrap().weak_map.as_ref().unwrap();
+    assert_eq!(stored.symbol_entries.len(), 1);
+    assert_eq!(stored.symbol_index.get(&weak), Some(&7));
+    objects
+        .object_mut(&map)
+        .unwrap()
+        .weak_map
+        .as_mut()
+        .unwrap()
+        .symbol_index
+        .insert(weak.clone(), 0);
+    objects.collect([&map], usize::MAX).unwrap();
+    assert_eq!(weak.upgrade(), None);
+    stale(&objects, &value);
+}
+
+#[test]
+fn invalid_caller_roots_and_precommit_unwind_leave_the_graph_usable() {
+    let mut objects = Objects::with_limits(None, None);
+    let old = objects.create(None).unwrap();
+    objects.collect([], usize::MAX).unwrap();
+    let (map, value, weak) = install_closed_cycle(&mut objects);
+    let mut other = Objects::with_limits(None, None);
+    let foreign = other.create(None).unwrap();
+    for (bad, expected) in [
+        (old, spite_heap::Error::StaleHandle),
+        (foreign, spite_heap::Error::ForeignHandle),
+    ] {
+        assert_eq!(objects.collect([&map, &bad], usize::MAX), Err(expected));
+        assert!(weak.upgrade().is_some());
+        assert!(objects.inspect(&value).is_ok());
+        assert_eq!(symbol_entries(&objects, &map), 1);
+    }
+    let unwind = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let roots =
+            std::iter::once(&map).inspect(|_| panic!("caller iterator failed before commit"));
+        let _ = objects.collect(roots, usize::MAX);
+    }));
+    assert!(unwind.is_err());
+    assert!(weak.upgrade().is_some());
+    assert!(objects.inspect(&value).is_ok());
+    assert_eq!(symbol_entries(&objects, &map), 1);
+    objects.collect([&map], usize::MAX).unwrap();
+    assert_eq!(weak.upgrade(), None);
+    stale(&objects, &value);
+}
+
+#[test]
+fn sparse_map_and_set_index_scans_precharge_capacity_before_symbol_retirement() {
+    for is_set in [false, true] {
+        let (mut objects, map, value, weak) = closed_cycle();
+        let prototype = objects.create(None).unwrap();
+        let key = weak.upgrade().unwrap();
+        let holder = if is_set {
+            let holder = objects
+                .create_set(
+                    &prototype,
+                    crate::object::SetData::default(),
+                    &mut unlimited(),
+                )
+                .unwrap();
+            objects
+                .set_insert(&holder, Value::Symbol(key), &mut unlimited())
+                .unwrap();
+            holder
+        } else {
+            let holder = objects.create_map(&prototype).unwrap();
+            objects
+                .map_set(
+                    &holder,
+                    Value::Symbol(key),
+                    Value::Number(1.0),
+                    &mut unlimited(),
+                )
+                .unwrap();
+            holder
+        };
+        // This pass retains the exact same graph. Its actual complete work is
+        // more than the ordinary work needed once holder is no longer a root.
+        let ordinary = objects
+            .collect([&map, &holder], usize::MAX)
+            .unwrap()
+            .work_used;
+        assert!(ordinary > 1);
+        let requested = ordinary.checked_mul(4).unwrap();
+        let capacity = {
+            let record = objects.object_mut(&holder).unwrap();
+            // CollectionKey hashes immutable values/identities, never Symbol liveness.
+            #[allow(clippy::mutable_key_type)]
+            let index = if is_set {
+                &mut record.set.as_mut().unwrap().index
+            } else {
+                &mut record.map.as_mut().unwrap().index
+            };
+            assert_eq!(index.len(), 1);
+            index.try_reserve(requested).unwrap();
+            assert!(index.capacity() > ordinary);
+            index.capacity()
+        };
+        // Only storage capacity changed. The same nonzero graph-derived budget
+        // must now fail before the sparse bucket scan, not after logical death.
+        assert_eq!(
+            objects.collect([&map], ordinary),
+            Err(spite_heap::Error::Limit)
+        );
+        assert!(weak.upgrade().is_some());
+        assert!(objects.inspect(&value).is_ok());
+        assert!(objects.inspect(&holder).is_ok());
+        assert_eq!(symbol_entries(&objects, &map), 1);
+        let record = objects.inspect(&holder).unwrap();
+        // CollectionKey hashes immutable values/identities, never Symbol liveness.
+        #[allow(clippy::mutable_key_type)]
+        let index = if is_set {
+            &record.set.as_ref().unwrap().index
+        } else {
+            &record.map.as_ref().unwrap().index
+        };
+        assert_eq!(index.len(), 1);
+        assert_eq!(index.capacity(), capacity);
+        objects.collect([&map], usize::MAX).unwrap();
+        assert_eq!(weak.upgrade(), None);
+        stale(&objects, &value);
+        stale(&objects, &holder);
+        assert_eq!(symbol_entries(&objects, &map), 0);
+    }
+}

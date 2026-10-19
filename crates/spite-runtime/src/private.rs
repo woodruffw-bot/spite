@@ -12,6 +12,10 @@ use std::collections::BTreeSet;
 pub(crate) struct PrivateName(JsSymbol);
 
 impl PrivateName {
+    pub(crate) fn symbol(&self) -> &JsSymbol {
+        &self.0
+    }
+
     pub(crate) fn new(description: &str) -> Self {
         Self(JsSymbol::new(Some(JsString::from(description))))
     }

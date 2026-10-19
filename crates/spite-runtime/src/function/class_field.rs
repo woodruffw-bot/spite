@@ -5,6 +5,9 @@ use spite_core::{PropertyKey, Span};
 use spite_parser::ast::Expr;
 use std::rc::Rc;
 
+#[cfg(test)]
+mod symbol_gc_tests;
+
 #[derive(Clone, Debug)]
 pub(crate) struct FieldInitializer {
     pub expression: Rc<Expr>,
@@ -112,6 +115,15 @@ pub(crate) struct ClassField {
     pub name: ClassFieldName,
     pub initializer: Option<FieldInitializer>,
     pub span: Span,
+}
+
+impl ClassField {
+    pub(crate) fn symbol_name(&self) -> Option<&spite_core::JsSymbol> {
+        match &self.name {
+            ClassFieldName::Public(key) => key.as_symbol(),
+            ClassFieldName::Private(name) => Some(name.symbol()),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]

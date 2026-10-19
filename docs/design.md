@@ -7473,6 +7473,32 @@ execution, and a returned value overwrites a same-key callback insertion. Checke
 storage prepays vector/index growth before retained graph mutation. This partial
 stage does not expose WeakRef, finalization, Symbol-key storage, or new quotas.
 
+
+The private Symbol-key collector foundation extends conditional reachability to
+mixed object/Symbol graphs without treating internal Arc copies as host roots.
+A physical census counts every stored Symbol wrapper, including collection
+indices and shared class-field/iterator records; marking separately follows
+reachable strong fields and activates weak-key values to a fixpoint. External
+strong Symbols and recoverable shared Rc records remain roots. Other realms and
+permanent Symbol registries conservatively retain their identities. WeakSet keys
+have no conditional values and need no candidate census.
+
+A short allocation-free atomic gate orders weak upgrades against logical Symbol
+retirement. Final root rechecks happen before any retirement; newly observed host
+owners resume marking outside the gate. Allocation, user iterators, callbacks,
+formatting, owned drops, cleanup and sweeping stay outside the gate. Checked
+scratch allocation, sparse index capacity and all fallible graph validation are
+prepaid before commit. A returned collection error preserves entries, handles,
+generations and Symbol liveness; reserved capacities may change. The generic heap
+Trace/collect path remains unchanged, and Objects uses it until the first private
+Symbol-key insertion. Existing public JsSymbol/WeakJsSymbol signatures and host
+rooting obligations remain unchanged; hidden workspace support and prepared heap
+sweeping add an explicit spite_heap::Error::CollectionState variant.
+
+This foundation is separate from the JavaScript adapters: valid WeakMap Symbol
+keys still report Unsupported. It adds no default resource quota, automatic
+collection, JavaScript GC hook, WeakRef, or finalization.
+
 ## ArrayBuffer
 
 Ordinary ArrayBuffer objects retain private byte storage, byte length, and an

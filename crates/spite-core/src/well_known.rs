@@ -96,6 +96,8 @@ mod tests {
 
     #[test]
     fn well_known_identities_are_unique_stable_and_distinct_from_descriptive_lookalikes() {
+        // Symbol Hash/Eq use immutable allocation identity, never the liveness flag.
+        #[allow(clippy::mutable_key_type)]
         let mut identities = HashSet::new();
         for key in WellKnownSymbol::ALL {
             let symbol = key.symbol();

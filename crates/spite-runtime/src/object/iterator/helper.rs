@@ -66,7 +66,7 @@ pub(crate) enum HelperClosure {
 #[derive(Debug)]
 pub(crate) struct IteratorHelper {
     pub status: HelperStatus,
-    closure: Option<HelperClosure>,
+    pub(in crate::object) closure: Option<HelperClosure>,
 }
 
 impl IteratorHelper {

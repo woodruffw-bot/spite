@@ -40,6 +40,8 @@ impl Realm {
         match &pattern.kind {
             AssignmentPatternKind::Object { properties, rest } => {
                 Self::require_object_coercible(&value, span)?;
+                // PropertyKey hashes immutable strings or Symbol identity, never Symbol liveness.
+                #[allow(clippy::mutable_key_type)]
                 let mut excluded = HashSet::new();
                 if rest.is_some() {
                     excluded

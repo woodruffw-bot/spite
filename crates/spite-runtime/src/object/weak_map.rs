@@ -1,10 +1,11 @@
 //! Object-key WeakMapData with conditional values and dense cleanup (24.3).
 //!
 //! Object keys use existing ephemerons. Valid weak Symbol keys remain an explicit
-//! Realm Unsupported boundary until conditional Symbol reachability is implemented.
+//! Realm Unsupported boundary; the Symbol surface is a separate increment.
 
 use super::{Budget, Error, Objects};
 use crate::Value;
+use spite_core::{JsSymbol, WeakJsSymbol};
 use spite_heap::{Handle, Trace};
 use std::collections::HashMap;
 
@@ -13,8 +14,12 @@ pub(super) struct WeakMapData {
     // WeakMap has no observable iteration order. Dense entries keep each trace
     // step bounded and let cleanup release values without allocating or leaving
     // tombstones that an iterator would have to skip.
-    entries: Vec<(Handle, Value)>,
-    index: HashMap<Handle, usize>,
+    pub(super) entries: Vec<(Handle, Value)>,
+    pub(super) index: HashMap<Handle, usize>,
+    // Keep the existing object-key API and GC tests independent. Both domains
+    // participate in the Runtime collector's one joint conditional fixpoint.
+    pub(super) symbol_entries: Vec<(WeakJsSymbol, Value)>,
+    pub(super) symbol_index: HashMap<WeakJsSymbol, usize>,
 }
 
 impl WeakMapData {
@@ -24,11 +29,23 @@ impl WeakMapData {
             .map(|(key, value)| (key, value.trace().next().flatten()))
     }
 
-    fn remove_at(&mut self, index: usize) {
+    pub(super) fn remove_at(&mut self, index: usize) {
         let (key, value) = self.entries.swap_remove(index);
         self.index.remove(&key);
         if let Some((moved, _)) = self.entries.get(index) {
             *self.index.get_mut(moved).expect("moved entry is indexed") = index;
+        }
+        drop((key, value));
+    }
+
+    pub(super) fn remove_symbol_at(&mut self, index: usize) {
+        let (key, value) = self.symbol_entries.swap_remove(index);
+        self.symbol_index.remove(&key);
+        if let Some((moved, _)) = self.symbol_entries.get(index) {
+            *self
+                .symbol_index
+                .get_mut(moved)
+                .expect("moved entry is indexed") = index;
         }
         drop((key, value));
     }
@@ -46,6 +63,104 @@ impl WeakMapData {
 }
 
 impl Objects {
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "Symbol surface is a separate increment")
+    )]
+    pub(crate) fn weak_map_has_symbol(
+        &self,
+        map: &Handle,
+        key: &JsSymbol,
+        budget: &mut Budget,
+    ) -> Result<bool, Error> {
+        let data = self.weak_map_data(map)?;
+        budget.charge(1)?;
+        Ok(data.symbol_index.contains_key(&key.downgrade()))
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "Symbol surface is a separate increment")
+    )]
+    pub(crate) fn weak_map_get_symbol(
+        &self,
+        map: &Handle,
+        key: &JsSymbol,
+        budget: &mut Budget,
+    ) -> Result<Option<Value>, Error> {
+        let data = self.weak_map_data(map)?;
+        budget.charge(1)?;
+        let Some(index) = data.symbol_index.get(&key.downgrade()) else {
+            return Ok(None);
+        };
+        let value = &data.symbol_entries[*index].1;
+        budget.value(value)?;
+        Ok(Some(value.clone()))
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "Symbol surface is a separate increment")
+    )]
+    pub(crate) fn weak_map_set_symbol(
+        &mut self,
+        map: &Handle,
+        key: &JsSymbol,
+        value: Value,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        self.weak_map_data(map)?;
+        if let Value::Object(object) = &value {
+            self.inspect(object)?;
+        }
+        budget.charge(1)?;
+        budget.value(&value)?;
+        let key = key.downgrade();
+        let data = self.weak_map_data_mut(map)?;
+        if let Some(index) = data.symbol_index.get(&key) {
+            data.symbol_entries[*index].1 = value;
+            self.symbol_keys_ever_stored = true;
+            return Ok(());
+        }
+        if data.symbol_entries.len() == data.symbol_entries.capacity() {
+            budget.charge(data.symbol_entries.len())?;
+        }
+        if data.symbol_index.len() == data.symbol_index.capacity() {
+            budget.charge(data.symbol_index.len())?;
+        }
+        data.symbol_entries
+            .try_reserve(1)
+            .map_err(|_| spite_heap::Error::Capacity)?;
+        data.symbol_index
+            .try_reserve(1)
+            .map_err(|_| spite_heap::Error::Capacity)?;
+        data.symbol_index
+            .insert(key.clone(), data.symbol_entries.len());
+        data.symbol_entries.push((key, value));
+        self.symbol_keys_ever_stored = true;
+        Ok(())
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "Symbol surface is a separate increment")
+    )]
+    pub(crate) fn weak_map_delete_symbol(
+        &mut self,
+        map: &Handle,
+        key: &JsSymbol,
+        budget: &mut Budget,
+    ) -> Result<bool, Error> {
+        self.weak_map_data(map)?;
+        budget.charge(1)?;
+        let data = self.weak_map_data_mut(map)?;
+        let Some(index) = data.symbol_index.get(&key.downgrade()).copied() else {
+            return Ok(false);
+        };
+        data.remove_symbol_at(index);
+        Ok(true)
+    }
+
     pub(crate) fn create_weak_map(&mut self, prototype: &Handle) -> Result<Handle, Error> {
         let map = self.create(Some(prototype))?;
         self.object_mut(&map)?.weak_map = Some(Box::default());
