@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8279 unmodified test fixtures and fifteen harness files come from
+These 8365 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,33 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## Proxy construction, revocation, get, and set fixtures
+
+Eighty-six whole unchanged originals at the existing pin cover constructor and
+revocable behavior (42) and [[Get]]/[[Set]] traps (44). They retain 61,887 fixture
+bytes and add 172 required normal/strict variants. The complete unchanged
+proxyTrapsHelper.js adds 1,851 bytes; all fifteen earlier helpers remain exact.
+The existing global Proxy/proxy.js original is retained without adding it again.
+Five foreign-realm originals remain deferred pending $262.createRealm.
+
+Both toolchains pass all 172 new modes with every nonpassing category zero.
+Stable passes all 35 Test262 package tests across seven executables, including
+all 16,169 variants in 412.17 seconds. Rust 1.85 passes the 34 nonfull
+package tests; only the named full-corpus case is filtered locally. Formatting,
+strict workspace Clippy, dependency policy, all three inventories and source/diff
+checks pass. Runtime and runner implementation, the 5,772 Native names, 928 Rust
+files, 734 snapshots and all earlier corpus inputs retain their accepted public
+Proxy parent results without another local engine run.
+
+The corpus contains 8,365 fixtures, sixteen helpers, 8,346 reviewed sources and
+16,169 variants: 14,636 harness positives, 1,525 parse negatives, four raw
+positives and four runtime negatives. Four numeric assertions change in the two
+Rust inventory tests. One combined fixture commit retains every mode and check
+while avoiding a duplicate full local run and hosted matrix for the two cohorts.
+All seventeen child CI jobs and four complete 16,169-variant gates remain
+required. Defaults, selected limits, dependencies, profiles, ordinary stacks and
+three-worker execution are unchanged.
 
 ## Global descriptor fixtures
 

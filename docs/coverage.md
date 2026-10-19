@@ -48,7 +48,7 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; GetFunctionRealm chain validation remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15997 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16169 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15735,7 +15735,8 @@ toolchains. One complete stable Test262 run passes all 35 tests across seven tes
 executables and all 15,997 pinned variants with three workers. The MSRV runner
 passes its 34 nonfull tests across the same seven executables; only the sole
 full-corpus case is filtered locally. Formatting, strict workspace Clippy,
-dependency policy, all three inventory checks and diff checks pass. Core/Heap results are retained from the accepted unchanged parent.
+dependency policy, all three inventory checks and diff checks pass. Core/Heap
+results are retained from the accepted unchanged parent.
 
 Initial formatting, compiler and Clippy failures were corrected before the final
 runs. An earlier focused run exposed a raw property-definition path in the JSON
@@ -15749,6 +15750,35 @@ names, with the one explicit global-case rename. The 928 Rust files comprise 30
 owned paths and 898 unchanged files; all 734 external snapshots and 549 initial
 realm objects remain exact. Test262 stays at 8,279 fixtures, 15 helpers, 8,260
 reviewed sources and 15,997 variants until unchanged Proxy originals are admitted
-separately. All seventeen hosted jobs and four complete corpus gates remain
-required for this public commit. Defaults, selected quotas, dependencies,
-profiles, ordinary stacks and worker counts are unchanged.
+separately. Public commit cbf967cf passes all seventeen hosted jobs, all 5,772
+Native names per platform/toolchain and four complete 15,997-variant corpus gates
+in [run 39197907035](https://github.com/woodruffw-bot/spite/actions/runs/39197907035).
+Defaults, selected quotas, dependencies, profiles, ordinary stacks and worker
+counts are unchanged.
+
+## Proxy basics whole-program fixture review
+
+Eighty-six unchanged Test262 originals at the existing pin cover construction,
+revocation and get/set traps: 42 constructor/revocable and 44 property originals.
+They retain 61,887 bytes and add 172 normal/strict modes. The complete unchanged
+proxyTrapsHelper.js adds 1,851 bytes; all fifteen old helpers, every original,
+mode-plan prefix, license and revision remain exact. The previously admitted
+Proxy/proxy.js stays in the corpus. Five foreign-realm originals remain deferred.
+
+Both toolchains pass every new mode. The single stable package run passes all
+35 tests across seven executables and all 8,346 sources /16,169 variants, with
+all nonpassing categories zero, in 412.17 seconds of corpus execution.
+Rust 1.85 passes all 34 nonfull package tests across seven executables; only the
+sole pinned full-corpus case is filtered locally. Fresh strict workspace Clippy,
+formatting, dependency policy, all three inventories and diff/source checks pass.
+The unchanged engine and Native names retain the accepted public parent's
+complete results; no local Runtime/Core/Heap or MSRV full-corpus replay is added.
+
+Inventories become 8,365 fixtures, sixteen helpers, 8,346 reviewed sources and
+16,169 variants. Only four numeric assertions change in two Rust tests. The
+928 Rust files retain 926 unowned byte and individual-mtime identities, all 734
+external snapshots and 549 initial realm objects. Combining these two fixture
+cohorts avoids one duplicate full local package run and hosted matrix while
+retaining every original, mode, control and child gate. All seventeen child jobs
+and four full 16,169-variant corpus gates remain required. Defaults, selected
+limits, dependencies, profiles, native stacks and worker counts are unchanged.
