@@ -47,7 +47,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15702 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15979 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15492,7 +15492,8 @@ failure do not establish successful execution of every helper branch. The 26
 deferred originals are 23 host-detachment cases and three immutable-buffer
 proposal cases outside edition 17; none is rewritten or partially credited.
 
-The expanded corpus has 8131 fixtures, fifteen helpers, 8112 reviewed sources,
+At this admission, the expanded corpus had 8131 fixtures, fifteen helpers,
+8112 reviewed sources,
 and 15702 variants: 14169 harness positives, 1525 parse negatives, four raw
 positives, and four runtime negatives. Native names remain 5,705; the 922 Rust
 sources include two owned count files and 920 unchanged files. All 734 snapshot
@@ -15537,5 +15538,39 @@ fresh strict all-target workspace Clippy passes. Formatting, dependency policy,
 all three inventories, and diff checks pass. All 922 Rust sources are retained:
 three owned and 919 unchanged; all 734 snapshots and the 15,702-variant corpus
 inputs are exact. No default quota, selected budget, dependency, profile, worker,
-or collector protocol changes. The separate hosted gate must run all seventeen
-jobs and four complete corpus gates with production Symbol insertion active.
+or collector protocol changes. Its separate hosted gate passes all seventeen jobs and four complete
+15,702-variant corpus gates with production Symbol insertion active. Workflow
+elapsed is 627 seconds versus 647 for the parent, while summed runner wall time
+is 6,541 versus 6,092 seconds. These mixed observations establish no isolated
+performance improvement.
+
+## WeakMap Test262 originals
+
+Review of 141 whole originals at the existing pin selects 139 unchanged fixtures,
+retaining 107,724 bytes. Their prescribed modes add 277 variants: 138 sources run
+in normal and strict mode, and the one onlyStrict source runs strictly. They reuse
+five already vendored helpers; all fifteen helpers, previous originals, license,
+revision, and inventory prefixes remain exact. Two originals remain deferred:
+one needs $262.createRealm and one needs global property enumeration. Neither is
+adapted or partially credited.
+
+The cohort covers constructor ordering and iterator closing, method metadata and
+brands, object and valid weak Symbol identities, registered-Symbol rejection,
+computed callback checks and reentrancy, subclassing, and reflection. The expanded
+corpus has 8270 fixtures, fifteen helpers, 8251 reviewed sources, and 15979 required
+variants: 14446 harness positives, 1525 parse negatives, four raw positives, and
+four runtime negatives. The two Rust inventory files change only three numeric
+assertions; Runtime implementation and all 5,713 Native names remain unchanged.
+
+Both toolchains pass all 277 added variants in their exact prescribed modes.
+The stable package passes all 35 tests across seven invocations, including the
+full 15,979-variant corpus with every non-passing category zero. Corpus execution
+takes 320.84 seconds; the complete command takes 333.370 seconds. Rust 1.85 passes
+all 34 other package cases, filtering only the full-corpus case; its complete
+277-variant addition check and exact prior engine/corpus conservation avoid an
+extra local full replay. No full local MSRV replay is claimed. Fresh strict
+workspace Clippy, formatting, dependency policy, all three inventories, and diff
+checks pass. All 922 Rust sources, 734 snapshots, old fixtures, and helpers are
+retained; only two Rust count files change. No default quota, selected test budget,
+dependency, profile, or worker changes. All four full hosted corpus gates remain
+required for this separate fixture commit.

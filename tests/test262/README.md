@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8131 unmodified test fixtures and fifteen harness files come from
+These 8270 unmodified test fixtures and fifteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,35 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+## WeakMap fixtures
+
+One hundred thirty-nine whole unchanged originals at the existing pin retain
+107,724 bytes and add 277 required variants. One source is onlyStrict; the other
+138 run in normal and strict mode. They reuse the already complete assert.js,
+sta.js, isConstructor.js, propertyHelper.js, and compareArray.js helpers, leaving
+the fifteen-helper inventory unchanged. All earlier originals, inventory
+prefixes, license, and revision remain exact.
+
+The programs exercise constructor ordering and iterator closing, method metadata,
+receiver brands, object and non-registered Symbol keys, registered-Symbol rejection,
+callback validation and reentrancy, subclassing, and reflection. Of 141 reviewed
+whole originals, two remain deferred: proto-from-ctor-realm.js needs
+$262.createRealm, and weakmap.js needs global enumeration. No original is adapted
+or partially credited. The corpus now has 8270 fixtures and 8251 reviewed sources,
+requiring 15979 variants: 14446 harness positives, 1525 parse negatives, four raw
+positives, and four runtime negatives.
+
+Both toolchains pass the complete 277-variant addition with every non-passing
+category zero. Stable passes all 35 package tests across seven invocations,
+including the full 15979-variant corpus in 320.84 seconds (333.370 seconds for the
+complete command). Rust 1.85 passes the other 34 package tests with only the
+full-corpus case filtered; unchanged engine and prior corpus inputs carry their
+accepted evidence, and the full addition is checked on that toolchain. No local
+MSRV full replay is claimed. Fresh strict workspace Clippy, formatting, dependency
+policy, and inventories pass. Runtime and runner implementation, default quotas,
+selected test limits, dependencies, profiles, and three-worker execution remain
+unchanged. All four full hosted corpus gates remain required.
+
 ## TypedArray map, filter, and slice fixtures
 
 Two hundred thirty-eight whole unchanged originals at the existing pin cover
@@ -48,7 +77,8 @@ originals remain deferred: 23 need the host detachment hook and three require
 immutable-buffer proposal APIs absent from the retained edition 17 baseline.
 No original is adapted or partially credited.
 
-The expanded inventory has 8131 fixtures, fifteen helpers, 8112 reviewed sources,
+At this admission, the expanded inventory had 8131 fixtures, fifteen helpers,
+8112 reviewed sources,
 and 15702 required variants: 14169 harness positives, 1525 parse negatives, four
 raw positives, and four runtime negatives. Both toolchains pass all 476 new
 variants and the full 15702-variant corpus, with every non-passing count zero.
@@ -3856,8 +3886,8 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 15702 variants from 8112 reviewed sources:
-14169 harness positives, 1525 reviewed parse negatives, four raw positives, and
+The `spite-test262` command runs 15979 variants from 8251 reviewed sources:
+14446 harness positives, 1525 reviewed parse negatives, four raw positives, and
 four runtime negatives. The cohort sections above describe the admitted whole
 originals and deferred prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
