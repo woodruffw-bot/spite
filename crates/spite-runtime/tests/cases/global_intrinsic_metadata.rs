@@ -152,7 +152,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     let operations = [
         "new Promise(()=>{hits++})",
         "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
-        "new WeakRef({})",
         "new FinalizationRegistry(()=>{hits++})",
         "Promise.all([])",
         "Promise.allSettled([])",
@@ -170,7 +169,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get.call({})",
         "SharedArrayBuffer.prototype.grow.call({},0)",
         "SharedArrayBuffer.prototype.slice.call({},0,0)",
-        "WeakRef.prototype.deref.call({})",
         "FinalizationRegistry.prototype.register.call({},{},7)",
         "FinalizationRegistry.prototype.unregister.call({},{})",
         "Atomics.add()",
@@ -208,7 +206,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     for (constructor, arguments) in [
         ("Promise", "[(order++,()=>7)]"),
         ("SharedArrayBuffer", "[(order++,0)]"),
-        ("WeakRef", "[(order++,{})]"),
         ("FinalizationRegistry", "[(order++,()=>7)]"),
     ] {
         realm.eval("order=0").unwrap();

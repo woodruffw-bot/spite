@@ -962,6 +962,8 @@ mod var;
 mod var_patterns;
 #[path = "cases/weak_map.rs"]
 mod weak_map;
+#[path = "cases/weak_ref.rs"]
+mod weak_ref;
 #[path = "cases/weak_set.rs"]
 mod weak_set;
 #[path = "cases/with.rs"]

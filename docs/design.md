@@ -7449,7 +7449,8 @@ before changing the index. Collection charges for weak storage without marking
 keys. Presenting a live key preserves identity through cleanup; no enumeration or
 liveness observation is exposed. Constructor acquisition and iterator closing
 follow the ordinary Set sequence, including host-abort propagation and default
-derived forwarding. WeakMap's ephemerons and WeakRef/finalization remain separate.
+derived forwarding. WeakMap's ephemerons and WeakRef use the lifetime rules below;
+FinalizationRegistry remains separate work.
 
 Object-key WeakMapData uses a dense vector of key/value entries and a hash index
 (24.3). Heap handles preserve key identity without rooting their objects. The
@@ -7493,8 +7494,40 @@ rooting obligations remain unchanged; hidden workspace support and prepared heap
 sweeping add an explicit spite_heap::Error::CollectionState variant.
 
 JavaScript Symbol-key insertion activates this joint collector. Collection is
-explicitly requested by the host between evaluations. WeakRef and finalization
-remain unimplemented; resource quotas remain opt-in.
+explicitly requested by the host between evaluations. WeakRef uses the same
+Symbol retirement protocol; FinalizationRegistry remains unimplemented.
+Resource quotas remain opt-in.
+
+## WeakRef and kept objects
+
+WeakRef construction and deref implement 26.1 over checked, unrooted object handles
+or weak Symbol identities. Targets satisfy CanBeHeldWeakly (9.13): objects and
+non-registered Symbols, including well-known Symbols, are eligible. Construction
+validates the target before reading newTarget.prototype. A non-object prototype
+requires GetFunctionRealm validation before intrinsic fallback. Deref requires
+the receiver's own internal slot, without unwrapping Proxies or reading public
+properties. A stale object generation or retired Symbol produces undefined.
+
+Construction and successful deref append a temporary strong root through
+AddToKeptObjects (9.11). The list reserves capacity and charges opted-in work
+before using the existing root registry; append has no later fallible operation.
+Weak slots themselves are neither tracing edges nor physical Symbol owners.
+Atomic Symbol upgrade bridges the transfer into the kept list. Existing root
+registry allocation behavior is unchanged.
+
+The host calls Realm::clear_kept_objects after an entire synchronous execution
+sequence, including callbacks and reentry, has ended (9.10). A sequence can span
+multiple evaluations and host property reads. Those operations and collect never
+clear the list automatically, including after abrupt completion. The checkpoint
+releases only temporary kept roots, without collection, JavaScript execution,
+intrinsic initialization or work-quota reset. Active execution rejects it without
+changing roots; detached roots drop outside object borrows and the Symbol gate.
+Independent host roots remain live.
+
+The current Realm heaps and execution domains are independent. Hosts grouping
+several domains into one synchronous sequence must wait for the entire sequence
+before clearing each domain. Shared-Agent and foreign-realm coordination remain
+deferred. No automatic collection, default quota or cleanup scheduling is added.
 
 ## ArrayBuffer
 
@@ -9372,10 +9405,11 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise, SharedArrayBuffer, WeakRef, FinalizationRegistry, and Atomics retain
+Promise, SharedArrayBuffer, FinalizationRegistry, and Atomics retain
 explicit Unsupported results for their deferred bodies after ordinary argument
 evaluation and the specified call/new prefix checks. Proxy algorithms are
-described below. The two species accessors return their original receiver. The
+described below; WeakRef's lifetime behavior is described above. The two species
+accessors return their original receiver. The
 metadata adds 45 rooted intrinsic objects; global mutation or deletion cannot
 unroot them.
 

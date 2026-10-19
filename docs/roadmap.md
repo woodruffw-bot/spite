@@ -670,10 +670,11 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Format local Date calendar/time strings with exact offset names where needed and parse their canonical whole-second output independently of host data.
 - [x] Implement Date toString/toDateString/toTimeString and Date function-call output with required own-string parse round trips and exact optional output quotas.
 - [x] Implement Date locale string methods with a fixed English non-Intl fallback, ignored reserved arguments and the shared local formatter.
-- [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [x] Implement object-key WeakMap construction, branded lookup/mutation and upserts, iterable closing, subclassing, and reflection.
 - [x] Implement WeakMap non-registered Symbol keys and upserts with sound conditional object/Symbol reachability.
+- [x] Implement WeakRef construction and deref for object/non-registered Symbol targets, with explicit kept-object checkpoints and checked collection lifetimes.
+- [ ] Implement FinalizationRegistry construction, registration, unregistration, weak cells, and host-scheduled cleanup jobs.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
 
 ## 5. Modules and suspended execution

@@ -165,6 +165,8 @@ pub(crate) struct GlobalMetadataIntrinsics {
     pub proxy: ObjectHandle,
     pub shared_array_buffer: ObjectHandle,
     pub weak_ref: ObjectHandle,
+    // Already rooted in objects; retain this exact fallback independently of globals.
+    pub weak_ref_prototype: ObjectHandle,
     pub finalization_registry: ObjectHandle,
     pub atomics: ObjectHandle,
     // Four prototypes and 35 distinct method/getter objects remain rooted even
@@ -391,6 +393,7 @@ impl Realm {
             proxy,
             shared_array_buffer,
             weak_ref,
+            weak_ref_prototype,
             finalization_registry,
             atomics,
             objects,
@@ -480,6 +483,7 @@ impl Realm {
             // getter: these generic accessors return this without
             // receiver branding, coercion, allocation, or species recursion.
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
+            Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
             _ => Err(Self::unsupported(
                 span,
                 format!("{} is not implemented", member.name()),

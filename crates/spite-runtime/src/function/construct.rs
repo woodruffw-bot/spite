@@ -190,6 +190,15 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::GlobalMetadataConstructor(
+                    super::global_metadata::Constructor::WeakRef,
+                )) => {
+                    return self.weak_ref_constructor(
+                        new_target,
+                        arguments.into_iter().next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::GlobalMetadataConstructor(constructor)) => {
                     return Err(Self::unsupported(
                         span,

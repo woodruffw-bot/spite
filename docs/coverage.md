@@ -34,7 +34,7 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer, WeakRef, FinalizationRegistry and Atomics graphs with deferred bodies |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer, FinalizationRegistry and Atomics graphs with deferred bodies |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
@@ -43,6 +43,7 @@ not an alternative language specification.
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
+| WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
@@ -15801,7 +15802,44 @@ policy and all inventories pass.
 The Native inventory grows by six cases to 5,778. All 929 Rust files retain 911
 unowned byte and individual-mtime identities, 734 external snapshots and 549
 initial realm objects. No duplicate full local corpus run is added. All seventeen
-child CI jobs and four full 16,169-variant corpus gates remain required before
-the following push. Limits, dependencies, profiles, stacks and workers are
-unchanged.
+child CI jobs and four full 16,169-variant corpus gates pass in
+[run 39202011773](https://github.com/woodruffw-bot/spite/actions/runs/39202011773).
+Limits, dependencies, profiles, stacks and workers are unchanged.
 Foreign-realm intrinsic normalization remains deferred.
+
+## WeakRef and explicit kept-object checkpoints
+
+WeakRef construction and deref support objects and non-registered Symbols,
+including well-known Symbols (26.1). Target validation precedes prototype lookup;
+non-object prototype fallback checks constructor realms. Deref uses the receiver's
+own internal slot without Proxy unwrapping or public property access. Collected
+object generations and expired or retired Symbols return undefined.
+
+Construction and live deref keep targets across evaluations, host property reads
+and explicit collection. The host ends an entire synchronous sequence with
+Realm::clear_kept_objects, then may collect. That checkpoint rejects active
+execution without mutation and releases only temporary kept roots. It executes
+no JavaScript, initializes no intrinsics, resets no work quota and preserves
+independent host roots. Abrupt evaluations do not implicitly clear targets.
+
+The current independent Realm domains retain their existing boundaries;
+shared-Agent coordination and foreign-realm execution remain deferred.
+FinalizationRegistry and cleanup jobs remain separate implementation work.
+No new Test262 originals are included in this implementation commit.
+
+Both toolchains pass all 408 Runtime units, including six new private lifetime
+and failure cases, and the same 22 WeakRef integration groups. They cover
+construction and branding, prototype getter order and revoked constructors,
+explicit checkpoints, host roots, object generations, Symbol ownership and mixed
+WeakMap cycles. One full stable run passes all 3,912 cases in 255.34 seconds,
+reusing the exact focused binary. Both toolchains also pass 13 CLI tests, Runtime
+documentation checks and 34 Test262 controls; only the separate full-corpus case
+is filtered locally. Formatting, strict workspace Clippy, dependency policy and
+all three inventories pass on their first attempts.
+
+The Native inventory grows by 28 names to 5,806. The 932 Rust files retain 920
+unowned byte and individual-mtime identities, all 734 external snapshots and 549
+initial realm objects. Test262 remains at 8,365 fixtures, sixteen helpers, 8,346
+reviewed sources and 16,169 variants. All seventeen child CI jobs and four full
+corpus gates remain required before the following push. No default limits,
+dependencies, profiles, native stacks or worker counts change.

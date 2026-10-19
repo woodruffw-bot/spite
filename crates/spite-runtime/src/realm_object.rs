@@ -459,6 +459,68 @@ impl Realm {
         Ok(RootedValue { value, _root: root })
     }
 
+    // AddToKeptObjects (9.11). Only fixed-size Object/Symbol identities enter
+    // this list; charge their copies and any list movement before allocation.
+    pub(super) fn add_to_kept_objects(&mut self, target: &Value, span: Span) -> Result<(), Error> {
+        debug_assert!(matches!(target, Value::Object(_) | Value::Symbol(_)));
+        let len = self.kept_alive.len();
+        let growing = len == self.kept_alive.capacity();
+        self.object_work(span, |_, budget| {
+            budget.charge(if growing {
+                len.checked_add(1).ok_or(object::Error::WorkLimit)?
+            } else {
+                1
+            })
+        })?;
+        if growing {
+            self.kept_alive.try_reserve(1).map_err(|_| Error::Limit {
+                span,
+                message: "kept-alive list capacity exceeded".into(),
+            })?;
+        }
+        // Reuse the established root registry. Its optional work checks happen
+        // before registration; the new kept list already has room for append.
+        let root = if let Value::Object(handle) = target {
+            Some(self.object_work(span, |objects, budget| objects.root(handle, budget))?)
+        } else {
+            None
+        };
+        self.kept_alive.push(RootedValue {
+            value: target.clone(),
+            _root: root,
+        });
+        Ok(())
+    }
+
+    /// Ends the embedding's synchronous execution sequence (ClearKeptObjects, 9.10).
+    ///
+    /// Call this only after the whole sequence, including callbacks, has ended.
+    /// A sequence may span several evaluations and host property reads. These
+    /// operations and [`Self::collect`] never clear the kept-alive list themselves.
+    ///
+    /// This releases only WeakRef's temporary kept roots. Independent host roots
+    /// remain live. It neither collects nor executes JavaScript, initializes the
+    /// realm, or resets a work allowance. An active execution returns a host error
+    /// without changing any roots. After any evaluation result, an inactive host
+    /// may clear the list and then explicitly collect.
+    ///
+    /// Realms currently have independent heaps and execution domains. A host that
+    /// groups several domains into one synchronous sequence must wait until the
+    /// complete sequence finishes before calling their checkpoints.
+    pub fn clear_kept_objects(&mut self) -> Result<(), Error> {
+        if self.call_depth != 0 || self.evaluation_depth != 0 {
+            return Err(Error::Host {
+                span: Span::new(0, 0),
+                message: "cannot clear kept objects during active execution".into(),
+            });
+        }
+        // Detach before dropping. Root/Symbol destruction is outside every
+        // object borrow and Symbol gate, including allocator reentry on drop.
+        let kept = std::mem::take(&mut self.kept_alive);
+        drop(kept);
+        Ok(())
+    }
+
     /// Borrows implemented object storage for host inspection.
     ///
     /// This is not a JavaScript reflection operation. Intrinsic methods that are

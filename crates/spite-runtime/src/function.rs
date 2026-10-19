@@ -56,6 +56,7 @@ mod uint8_base64;
 mod uint8_hex;
 mod uri;
 mod weak_map;
+mod weak_ref;
 mod weak_set;
 mod wrapper;
 pub(crate) use arrow::ScriptFunction;

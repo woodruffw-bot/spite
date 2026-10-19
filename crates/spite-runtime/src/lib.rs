@@ -287,6 +287,8 @@ pub struct Realm {
     objects: object::Objects,
     intrinsics: Option<function::Intrinsics>,
     template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
+    // 9.11: retained until the embedding explicitly ends its synchronous sequence.
+    kept_alive: Vec<RootedValue>,
     time_zone: Option<TimeZone>,
 }
 
@@ -312,6 +314,7 @@ impl Realm {
             objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
             intrinsics: None,
             template_map: Vec::new(),
+            kept_alive: Vec::new(),
             time_zone: None,
         }
     }

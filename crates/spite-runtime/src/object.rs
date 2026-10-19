@@ -46,6 +46,7 @@ mod entry;
 mod store;
 mod symbol_gc;
 mod weak_map;
+mod weak_ref;
 mod weak_set;
 pub use descriptor::{
     AccessorProperty, DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor,
@@ -100,6 +101,7 @@ pub struct OrdinaryObject {
     map: Option<Box<map::MapData>>,
     set: Option<Box<SetData>>,
     weak_map: Option<Box<weak_map::WeakMapData>>,
+    weak_ref: Option<Box<weak_ref::WeakRefData>>,
     weak_set: Option<Box<weak_set::WeakSetData>>,
     immutable_prototype: bool,
     // Presence of [[ParameterMap]], including the empty unmapped form.
@@ -139,6 +141,7 @@ impl OrdinaryObject {
             map: None,
             set: None,
             weak_map: None,
+            weak_ref: None,
             weak_set: None,
             immutable_prototype: false,
             arguments: false,
@@ -447,6 +450,8 @@ impl Trace for OrdinaryObject {
             .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(self.set.iter().flat_map(|data| data.trace()))
             .chain(self.weak_map.iter().map(|_| None))
+            // WeakRef targets are weak; only account for visiting the slot.
+            .chain(self.weak_ref.iter().map(|_| None))
             .chain(self.weak_set.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))

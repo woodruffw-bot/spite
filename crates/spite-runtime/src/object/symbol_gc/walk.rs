@@ -125,6 +125,8 @@ fn object_symbols(
         map,
         set,
         weak_map,
+        // Only WeakJsSymbol/Handle identities, never an owning Symbol wrapper.
+        weak_ref: _,
         weak_set: _,
         immutable_prototype: _,
         arguments: _,
