@@ -45,7 +45,7 @@ not an alternative language specification.
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
-| Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; GetFunctionRealm chain validation remains pending |
+| Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16169 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
@@ -15718,10 +15718,9 @@ forwarding, Array/JSON behavior, GC edges, copy failures, and deep chains. Three
 inspected inline snapshots record ordered effects. Existing metadata/global
 controls now assert the implemented Proxy behavior; one case is renamed.
 
-Constructor prototype fallback and Array species selection still need
-GetFunctionRealm validation through Proxy and bound-function target chains.
-This includes revoked-target ordering within one realm; foreign-realm intrinsic
-normalization is a separate deferred capability.
+GetFunctionRealm-dependent allocation was tracked separately from this increment.
+The later constructor realm validation section covers same-realm Proxy/bound
+chains. Foreign-realm intrinsic normalization remains deferred.
 
 Both toolchains pass all 402 Runtime units and the same 53 focused integration
 cases, including every private Proxy unit, all three new inline snapshots, the
@@ -15779,6 +15778,30 @@ Inventories become 8,365 fixtures, sixteen helpers, 8,346 reviewed sources and
 928 Rust files retain 926 unowned byte and individual-mtime identities, all 734
 external snapshots and 549 initial realm objects. Combining these two fixture
 cohorts avoids one duplicate full local package run and hosted matrix while
-retaining every original, mode, control and child gate. All seventeen child jobs
-and four full 16,169-variant corpus gates remain required. Defaults, selected
+retaining every original, mode, control and child gate. The fixture commit passed all seventeen child jobs and four full
+16,169-variant corpus gates in [CI run 39199798761](https://github.com/woodruffw-bot/spite/actions/runs/39199798761). Defaults, selected
 limits, dependencies, profiles, native stacks and worker counts are unchanged.
+
+## Constructor realm validation
+
+Constructor prototype fallback implements GetFunctionRealm validation through
+Proxy and bound-function targets. A getter that revokes its constructor and
+returns a primitive causes TypeError; an object result skips the realm query.
+Array map/filter/slice validate constructor realms before reading @@species.
+Traversals are iterative and retain the existing native stack and opt-in quotas.
+
+Both toolchains pass all 402 Runtime units and six new regression groups,
+covering 37 constructor entries and 4,096 bound/Proxy pairs on the existing
+two-mebibyte stack. One full stable Runtime run passes all 3,890 cases in 206.16
+seconds, reusing the focused run's exact binary. Both toolchains pass 13 CLI tests,
+Runtime documentation checks and 34 Test262 controls; only the separate full
+corpus case is filtered locally. Strict workspace Clippy, formatting, dependency
+policy and all inventories pass.
+
+The Native inventory grows by six cases to 5,778. All 929 Rust files retain 911
+unowned byte and individual-mtime identities, 734 external snapshots and 549
+initial realm objects. No duplicate full local corpus run is added. All seventeen
+child CI jobs and four full 16,169-variant corpus gates remain required before
+the following push. Limits, dependencies, profiles, stacks and workers are
+unchanged.
+Foreign-realm intrinsic normalization remains deferred.

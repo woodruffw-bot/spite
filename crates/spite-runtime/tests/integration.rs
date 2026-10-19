@@ -98,6 +98,8 @@ mod class_static_blocks;
 mod classes;
 #[path = "cases/construction.rs"]
 mod construction;
+#[path = "cases/constructor_realm.rs"]
+mod constructor_realm;
 #[path = "cases/data_view.rs"]
 mod data_view;
 #[path = "cases/date.rs"]

@@ -276,13 +276,15 @@ impl Realm {
         let prototype = self.get_property(&target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
             Value::Object(prototype) => prototype,
-            _ => self
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .array
-                .prototype
-                .clone(),
+            _ => {
+                self.check_function_realm(&target, span)?;
+                self.intrinsics
+                    .as_ref()
+                    .expect("initialized")
+                    .array
+                    .prototype
+                    .clone()
+            }
         };
         let count = arguments.len();
         let length = u32::try_from(if count == 1 { 0 } else { count }).map_err(|_| {

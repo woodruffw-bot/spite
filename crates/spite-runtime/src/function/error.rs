@@ -229,7 +229,10 @@ impl Realm {
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
             Value::Object(prototype) => prototype,
-            _ => fallback,
+            _ => {
+                self.check_function_realm(&new_target, span)?;
+                fallback
+            }
         };
         let object = self.object_work(span, |objects, _| objects.create_error(&prototype))?;
         if let Some(message) = arguments.next().filter(|v| !matches!(v, Value::Undefined)) {

@@ -1,8 +1,14 @@
 //! Ordinary construction and iterative bound/default forwarding (10.2.2, 10.4.1.2).
 
 use super::{Builtin, Callable};
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::ProxyState};
 use spite_core::{JsString, Span};
+
+enum FunctionRealmStep {
+    Current,
+    Target(ObjectHandle),
+    Revoked,
+}
 
 impl Realm {
     pub(crate) fn construct(
@@ -264,6 +270,7 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
+                        self.check_function_realm(&new_target, span)?;
                         self.intrinsics
                             .as_ref()
                             .expect("initialized realm")
@@ -297,6 +304,7 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
+                        self.check_function_realm(&new_target, span)?;
                         self.intrinsics
                             .as_ref()
                             .expect("initialized realm")
@@ -338,6 +346,7 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
+                        self.check_function_realm(&new_target, span)?;
                         self.intrinsics
                             .as_ref()
                             .expect("initialized realm")
@@ -369,6 +378,7 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
+            self.check_function_realm(&new_target, span)?;
             self.intrinsics
                 .as_ref()
                 .expect("initialized realm")
@@ -398,6 +408,42 @@ impl Realm {
         } else {
             this
         })
+    }
+
+    // GetFunctionRealm (7.3.24) resolves to the sole exposed Realm. Bound
+    // functions and Proxies do not own [[Realm]]; follow their checked target
+    // edges without invoking handlers or copying bound arguments and receivers.
+    pub(super) fn check_function_realm(
+        &mut self,
+        function: &ObjectHandle,
+        span: Span,
+    ) -> Result<(), Error> {
+        let mut function = function.clone();
+        loop {
+            let step = self.object_work(span, |objects, budget| {
+                if let Some(proxy) = objects.proxy_state(&function, budget)? {
+                    return Ok(match proxy {
+                        ProxyState::Live(snapshot) => FunctionRealmStep::Target(snapshot.target),
+                        ProxyState::Revoked => FunctionRealmStep::Revoked,
+                    });
+                }
+                Ok(match objects.inspect(&function)?.callable() {
+                    Some(Callable::Bound(bound)) => FunctionRealmStep::Target(bound.target.clone()),
+                    _ => FunctionRealmStep::Current,
+                })
+            })?;
+            match step {
+                FunctionRealmStep::Current => return Ok(()),
+                FunctionRealmStep::Target(target) => function = target,
+                FunctionRealmStep::Revoked => {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "proxy has been revoked",
+                    ));
+                }
+            }
+        }
     }
 
     pub(crate) fn is_constructor(&mut self, value: &Value, span: Span) -> Result<bool, Error> {

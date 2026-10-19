@@ -185,13 +185,15 @@ impl Realm {
         let prototype = self.get_property(&target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
             Value::Object(prototype) => prototype,
-            _ => self
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .string
-                .prototype
-                .clone(),
+            _ => {
+                self.check_function_realm(&target, span)?;
+                self.intrinsics
+                    .as_ref()
+                    .expect("initialized")
+                    .string
+                    .prototype
+                    .clone()
+            }
         };
         let Value::String(string) = value else {
             unreachable!("String result");

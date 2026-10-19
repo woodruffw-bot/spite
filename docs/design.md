@@ -9429,8 +9429,12 @@ and Object algorithms; direct built-in brand checks retain their own rules.
 Reflection, integrity operations, binding, prototype traversal, instanceof, and
 super property access use Proxy internal methods at their specified boundaries.
 
-Constructor prototype fallback and Array species selection still need
-GetFunctionRealm validation for revoked Proxy and bound-function chains, including
-within one realm. Foreign-realm intrinsic normalization remains deferred.
+Constructor prototype fallback validates Proxy and bound-function chains after a
+non-object prototype result. Revoked records throw before allocation; object-valued
+prototypes skip the realm query. Array species selection validates a constructor
+before reading @@species. The traversal uses checked internal slots and an
+iterative loop without observable traps or copying bound arguments. The current
+implementation exposes one realm; foreign-realm intrinsic normalization remains
+deferred.
 Resource quotas remain opt-in, and the initial realm retains the same 549
 intrinsic objects.

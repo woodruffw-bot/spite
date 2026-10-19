@@ -136,7 +136,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Materialize edition-17 global intrinsic metadata and implement complete ordinary global reflection, enumeration, mutation, and deletion.
 - [x] Add checked Proxy target/handler storage, failure-atomic revocation, GC tracing, cached call/construct capabilities, and ordinary internal-method dispatch boundaries.
 - [x] Implement Proxy construction/revocation, all thirteen internal methods and trap invariants, iterative invocation forwarding, and Proxy-aware object/Array/JSON internal-method dispatch.
-- [ ] Implement GetFunctionRealm validation through Proxy and bound-function chains for constructor prototype fallback and Array species selection.
+- [x] Implement GetFunctionRealm validation through Proxy and bound-function chains for constructor prototype fallback and Array species selection.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.
 - [x] Add String calls/construction, UTF-16 indexed wrappers, branded methods, and boxed receivers.

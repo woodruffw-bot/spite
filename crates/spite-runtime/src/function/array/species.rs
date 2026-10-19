@@ -14,9 +14,15 @@ impl Realm {
             return self.create_intrinsic_array(length, span);
         }
         let mut constructor = self.get_property(source, &JsString::from("constructor"), span)?;
-        // All exposed constructors belong to this realm. Cross-realm intrinsic
-        // normalization remains deferred; Proxy IsArray is already handled
-        // above, and foreign heap handles are rejected.
+        // ArraySpeciesCreate queries the constructor's realm before @@species,
+        // even in one Realm: a Bound/Proxy target chain can contain a revoked
+        // Proxy. Cross-realm intrinsic-Array normalization remains deferred.
+        if self.is_constructor(&constructor, span)? {
+            let Value::Object(function) = &constructor else {
+                unreachable!("constructors are objects");
+            };
+            self.check_function_realm(function, span)?;
+        }
         if let Value::Object(object) = constructor {
             constructor = self.get_property(&object, &WellKnownSymbol::Species.symbol(), span)?;
             if matches!(constructor, Value::Null) {

@@ -107,6 +107,7 @@ impl Realm {
         Ok(if let Value::Object(prototype) = prototype {
             prototype
         } else {
+            self.check_function_realm(new_target, span)?;
             self.intrinsics
                 .as_ref()
                 .expect("initialized realm")

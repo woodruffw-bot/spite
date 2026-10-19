@@ -115,6 +115,7 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
+            self.check_function_realm(&new_target, span)?;
             fallback
         };
         let environment = self.scopes.first().expect("global environment").clone();
