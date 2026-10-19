@@ -7459,22 +7459,19 @@ entries with swap removal and updates moved indices without allocating. Primitiv
 values, including Symbols, are dropped with inactive entries. Checked storage
 validates object keys and values, brands, work and reservations before mutation.
 WeakMap exposes its constructor and delete/get/has/set/getOrInsert/
-getOrInsertComputed methods for object keys. The six methods check receiver brand
-and the full CanBeHeldWeakly domain before their storage operation. Invalid keys
-retain the specified TypeError/false/undefined behavior; valid non-registered and
-well-known Symbol keys report host Unsupported until conditional Symbol
-reachability is implemented. Computed insertion validates its callback before
-that lookup gap. Registered Symbol checks use the internal registry, not a
-mutable public method. The constructor calls its captured adder without key
-prevalidation, so a custom adder can accept unsupported or invalid built-in keys.
-Object ephemeron marking/cleanup and the explicit between-evaluations collection
-protocol remain unchanged. Callback upserts use a new lookup after callback
-execution, and a returned value overwrites a same-key callback insertion. Checked
-storage prepays vector/index growth before retained graph mutation. This partial
-stage does not expose WeakRef, finalization, Symbol-key storage, or new quotas.
+getOrInsertComputed methods for object and non-registered Symbol keys. Receiver
+branding precedes CanBeHeldWeakly; computed insertion validates its callback
+before lookup. Registered Symbols remain invalid, while boxed Symbols use their
+ordinary object identities. Registry checks use internal state. Constructors
+reuse the captured adder without prevalidating entry keys.
 
+Computed insertion distinguishes stored undefined from absence and calls its
+callback with the original key. It performs a fresh insertion after the callback,
+overwriting a same-key callback insertion. Checked storage prepays vector/index
+growth before graph mutation. Object and Symbol keys share the conditional
+reachability protocol below.
 
-The private Symbol-key collector foundation extends conditional reachability to
+The Symbol-key collector extends conditional reachability to
 mixed object/Symbol graphs without treating internal Arc copies as host roots.
 A physical census counts every stored Symbol wrapper, including collection
 indices and shared class-field/iterator records; marking separately follows
@@ -7490,14 +7487,14 @@ formatting, owned drops, cleanup and sweeping stay outside the gate. Checked
 scratch allocation, sparse index capacity and all fallible graph validation are
 prepaid before commit. A returned collection error preserves entries, handles,
 generations and Symbol liveness; reserved capacities may change. The generic heap
-Trace/collect path remains unchanged, and Objects uses it until the first private
+Trace/collect path remains unchanged, and Objects uses it until the first
 Symbol-key insertion. Existing public JsSymbol/WeakJsSymbol signatures and host
 rooting obligations remain unchanged; hidden workspace support and prepared heap
 sweeping add an explicit spite_heap::Error::CollectionState variant.
 
-This foundation is separate from the JavaScript adapters: valid WeakMap Symbol
-keys still report Unsupported. It adds no default resource quota, automatic
-collection, JavaScript GC hook, WeakRef, or finalization.
+JavaScript Symbol-key insertion activates this joint collector. Collection is
+explicitly requested by the host between evaluations. WeakRef and finalization
+remain unimplemented; resource quotas remain opt-in.
 
 ## ArrayBuffer
 

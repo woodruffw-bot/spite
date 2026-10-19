@@ -669,7 +669,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Add weak collections, WeakRef, and FinalizationRegistry with valid GC behavior.
 - [x] Implement WeakSet construction, object/non-registered Symbol keys, weak reachability, branded mutation, and complete reflection.
 - [x] Implement object-key WeakMap construction, branded lookup/mutation and upserts, iterable closing, subclassing, and reflection.
-- [ ] Implement WeakMap non-registered Symbol keys with sound conditional Symbol reachability; these operations currently report explicit Unsupported results.
+- [x] Implement WeakMap non-registered Symbol keys and upserts with sound conditional object/Symbol reachability.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
 
 ## 5. Modules and suspended execution

@@ -1,7 +1,4 @@
-//! WeakMap constructor and object-key methods (24.3).
-//!
-//! Valid weak Symbol keys report host Unsupported until conditional Symbol
-//! reachability is implemented. They are never treated as invalid or absent.
+//! WeakMap constructor and object/Symbol-key methods (24.3).
 
 use super::Builtin;
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
@@ -204,7 +201,6 @@ impl Realm {
         }
         let computed = matches!(builtin, Builtin::WeakMapGetOrInsertComputed);
         // 24.3.3.5 checks callability before lookup, including existing keys.
-        // Preserve that language error before the valid-Symbol lookup gap.
         if computed && !self.is_callable(&value, span)? {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
@@ -212,47 +208,38 @@ impl Realm {
                 "WeakMap callback is not callable",
             ));
         }
-        let Value::Object(key) = key else {
-            return Err(Self::unsupported(
-                span,
-                "WeakMap Symbol-key reachability is not implemented",
-            ));
-        };
         match builtin {
             Builtin::WeakMapDelete => self
-                .object_work(span, |objects, budget| {
-                    objects.weak_map_delete(&map, &key, budget)
+                .object_work(span, |objects, budget| match &key {
+                    Value::Object(key) => objects.weak_map_delete(&map, key, budget),
+                    Value::Symbol(key) => objects.weak_map_delete_symbol(&map, key, budget),
+                    _ => unreachable!("validated weak key"),
                 })
                 .map(Value::Boolean),
             Builtin::WeakMapHas => self
-                .object_work(span, |objects, budget| {
-                    objects.weak_map_has(&map, &key, budget)
+                .object_work(span, |objects, budget| match &key {
+                    Value::Object(key) => objects.weak_map_has(&map, key, budget),
+                    Value::Symbol(key) => objects.weak_map_has_symbol(&map, key, budget),
+                    _ => unreachable!("validated weak key"),
                 })
                 .map(Value::Boolean),
             Builtin::WeakMapGet => self
-                .object_work(span, |objects, budget| {
-                    objects.weak_map_get(&map, &key, budget)
-                })
+                .weak_map_entry_get(&map, &key, span)
                 .map(|value| value.unwrap_or(Value::Undefined)),
             Builtin::WeakMapSet => {
-                self.object_work(span, |objects, budget| {
-                    objects.weak_map_set(&map, &key, value, budget)
+                self.object_work(span, |objects, budget| match &key {
+                    Value::Object(key) => objects.weak_map_set(&map, key, value, budget),
+                    Value::Symbol(key) => objects.weak_map_set_symbol(&map, key, value, budget),
+                    _ => unreachable!("validated weak key"),
                 })?;
                 Ok(Value::Object(map))
             }
             Builtin::WeakMapGetOrInsert | Builtin::WeakMapGetOrInsertComputed => {
-                if let Some(value) = self.object_work(span, |objects, budget| {
-                    objects.weak_map_get(&map, &key, budget)
-                })? {
+                if let Some(value) = self.weak_map_entry_get(&map, &key, span)? {
                     return Ok(value);
                 }
                 let value = if computed {
-                    self.call(
-                        value,
-                        Value::Undefined,
-                        vec![Value::Object(key.clone())],
-                        span,
-                    )?
+                    self.call(value, Value::Undefined, vec![key.clone()], span)?
                 } else {
                     value
                 };
@@ -261,11 +248,32 @@ impl Realm {
                     // No entry borrow/index survives the reentrant callback;
                     // set freshly finds and overwrites its same-key insertion.
                     budget.value(&value)?;
-                    objects.weak_map_set(&map, &key, value.clone(), budget)
+                    match &key {
+                        Value::Object(key) => {
+                            objects.weak_map_set(&map, key, value.clone(), budget)
+                        }
+                        Value::Symbol(key) => {
+                            objects.weak_map_set_symbol(&map, key, value.clone(), budget)
+                        }
+                        _ => unreachable!("validated weak key"),
+                    }
                 })?;
                 Ok(value)
             }
             _ => unreachable!("WeakMap keyed methods"),
         }
+    }
+
+    fn weak_map_entry_get(
+        &mut self,
+        map: &ObjectHandle,
+        key: &Value,
+        span: Span,
+    ) -> Result<Option<Value>, Error> {
+        self.object_work(span, |objects, budget| match key {
+            Value::Object(key) => objects.weak_map_get(map, key, budget),
+            Value::Symbol(key) => objects.weak_map_get_symbol(map, key, budget),
+            _ => unreachable!("validated weak key"),
+        })
     }
 }

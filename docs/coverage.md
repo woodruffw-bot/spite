@@ -42,7 +42,7 @@ not an alternative language specification.
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
-| WeakMap | Object-key ephemeron storage, iterable construction/closing, branded delete/get/has/set and computed insertion, subclassing, and reflection; valid weak Symbol keys report explicit Unsupported until conditional Symbol reachability is implemented |
+| WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
@@ -15506,5 +15506,36 @@ and its complete command 397.563 seconds; Rust 1.85 records 356.88 and 366.881
 seconds respectively. Fresh strict all-target workspace Clippy passes, including
 positive checking of the affected Test262 package. Formatting, dependency policy,
 all three inventories, and diff checks pass. Source guards retain every original,
-helper, unchanged Rust source, and snapshot. The own hosted gate must still run
-all seventeen jobs and four full 15,702-variant corpus gates.
+helper, unchanged Rust source, and snapshot. The own hosted gate passes all
+seventeen jobs, including four full 15,702-variant corpus gates. Workflow elapsed
+is 647 seconds versus 556 for its parent; summed runner wall time is 6,092 versus
+6,228 seconds. The additional 476 variants and hosted scheduling/cache differences
+prevent an isolated performance conclusion.
+
+## WeakMap non-registered Symbol keys
+
+All six prototype methods accept valid weak Symbol identities as well as object
+keys. Branding, key validity, and callback checks retain their specified order.
+Computed insertion preserves stored undefined, passes the original key, and
+overwrites same-key callback insertions after reentrancy. Constructors use their
+captured adder; registered Symbols remain invalid and boxed Symbols are objects.
+
+Integration cases cover identity, mixed constructor entries,
+callback order and reentrancy, registered and boxed keys, independent host Symbol
+owners, conditional cycles in both allocation orders, and collection-failure
+recovery. Eight new cases are added, and three obsolete Unsupported controls
+become positive Symbol cases;
+the separate selected-work constructor-abort case remains. The metadata snapshot
+and 504-entry realm graph are unchanged. Expected Native inventory is 5,713,
+including 390 Runtime units and 3,837 Runtime integration cases.
+
+Both toolchains pass all 390 Runtime units and all 31 WeakMap integration cases,
+with exact reviewed vectors and fresh affected compilation. The single full
+stable Runtime run passes all 3,837 cases in 213.18 seconds; it reuses the focused
+run's verified binary. Runtime documentation tests pass on both toolchains, and
+fresh strict all-target workspace Clippy passes. Formatting, dependency policy,
+all three inventories, and diff checks pass. All 922 Rust sources are retained:
+three owned and 919 unchanged; all 734 snapshots and the 15,702-variant corpus
+inputs are exact. No default quota, selected budget, dependency, profile, worker,
+or collector protocol changes. The separate hosted gate must run all seventeen
+jobs and four complete corpus gates with production Symbol insertion active.

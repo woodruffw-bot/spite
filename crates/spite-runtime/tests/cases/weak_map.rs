@@ -1,5 +1,6 @@
-//! Object-key WeakMap semantics and explicit Symbol-key staging boundaries (24.3).
+//! Object and nonregistered Symbol WeakMap keys, ordering, and collection (24.3).
 
+use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 const METHODS: [&str; 6] = [
@@ -99,7 +100,7 @@ fn invalid_primitives_and_registered_symbols_keep_their_language_defined_outcome
 }
 
 #[test]
-fn receiver_brand_checks_precede_valid_symbol_unsupported_and_callback_handling() {
+fn receiver_brand_checks_precede_symbol_key_and_callback_handling() {
     for receiver in [
         "undefined",
         "null",
@@ -122,30 +123,19 @@ fn receiver_brand_checks_precede_valid_symbol_unsupported_and_callback_handling(
 }
 
 #[test]
-fn valid_weak_symbols_are_explicit_host_unsupported_without_running_language_handlers() {
-    for key in ["Symbol('key')", "Symbol.iterator"] {
-        for method in METHODS {
-            let arguments = if method == "getOrInsertComputed" {
-                "key,()=>{calls++;return 7;}"
-            } else {
-                "key,7"
-            };
-            let mut realm = Realm::default();
-            realm.eval(&format!("let key={key},m=new WeakMap(),flag=0,calls=0;Symbol.keyFor=function(){{throw 8;}}")).unwrap();
-            assert!(
-                matches!(
-                    realm.eval(&format!(
-                        "try{{m.{method}({arguments});}}catch{{flag=1;}}finally{{flag=2;}}"
-                    )),
-                    Err(Error::Unsupported { .. })
-                ),
-                "{method} / {key}"
-            );
-            assert_eq!(
-                realm.eval("flag===0 && calls===0"),
-                Ok(Value::Boolean(true))
-            );
-        }
+fn nonregistered_symbol_keys_support_all_methods_and_preserve_callback_order() {
+    for key in ["Symbol('key')", "Symbol.iterator", "Symbol.toStringTag"] {
+        check(&format!(
+            "let key={key},m=new WeakMap(),calls=0;Symbol.keyFor=function(){{throw 8;}};\
+             m.get(key)===undefined && !m.has(key) && !m.delete(key) && \
+             m.set(key,7)===m && m.has(key) && m.get(key)===7 && \
+             m.getOrInsert(key,8)===7 && \
+             m.getOrInsertComputed(key,()=>{{calls++;return 9;}})===7 && calls===0 && \
+             m.delete(key) && !m.has(key) && m.getOrInsert(key,10)===10 && \
+             m.get(key)===10 && m.delete(key) && \
+             m.getOrInsertComputed(key,()=>{{calls++;return 11;}})===11 && \
+             calls===1 && m.get(key)===11 && !m.delete(Symbol('key'))"
+        ));
         type_error(&format!("new WeakMap().getOrInsertComputed({key},null)"));
         type_error(&format!(
             "new WeakMap().getOrInsertComputed({key},{{valueOf(){{throw 7;}}}})"
@@ -276,18 +266,20 @@ fn invalid_key_constructor_failure_preserves_earlier_entries_and_language_close_
 }
 
 #[test]
-fn valid_symbol_constructor_abort_skips_iterator_close_and_retains_prior_object_entries() {
-    let mut realm = Realm::default();
-    realm.eval("let key={},symbol=Symbol(),escaped,closed=0,flag=0,n=0,set=WeakMap.prototype.set;WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};let i={next(){return {value:n++===0?[key,7]:[symbol,8]};},return(){closed++;return {};}}").unwrap();
-    assert!(matches!(
-        realm.eval(
-            "try{new WeakMap({[Symbol.iterator](){return i;}});}catch{flag=1;}finally{flag=2;}"
-        ),
-        Err(Error::Unsupported { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0 && closed===0 && escaped.get(key)===7"),
-        Ok(Value::Boolean(true))
+fn constructor_accepts_mixed_object_and_symbol_entries_without_iterator_close() {
+    check(
+        r#"
+        let key={},symbol=Symbol('key'),boxed=Object(symbol),escaped,closed=0,n=0,steps=0,flag=0,m;
+        let entries=[[key,7],[symbol,8],[Symbol.iterator,9],[boxed,10]],set=WeakMap.prototype.set;
+        WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
+        let i={
+            next(){steps++;return n<entries.length?{value:entries[n++]}:{done:true};},
+            return(){closed++;throw 11;}
+        };
+        try{m=new WeakMap({[Symbol.iterator](){return i;}});}finally{flag=2;}
+        flag===2 && n===4 && steps===5 && closed===0 && escaped===m &&
+        m.get(key)===7 && m.get(symbol)===8 && m.get(Symbol.iterator)===9 && m.get(boxed)===10
+        "#,
     );
 }
 
@@ -457,6 +449,225 @@ fn constructor_host_abort_does_not_close_the_iterator_or_enter_language_handlers
     ));
     assert_eq!(
         realm.eval("flag===0 && closed===0"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn symbol_identity_and_boxed_symbols_remain_separate_from_registered_primitive_keys() {
+    check(
+        r#"
+        let key=Symbol('same'),other=Symbol('same'),boxed=Object(key),otherBox=Object(key);
+        let registered=Symbol.for('weak-map-boxed'),registeredBox=Object(registered);
+        Object.defineProperty(boxed,Symbol.toPrimitive,{get(){throw 7;}});
+        boxed.valueOf=function(){throw 8;};
+        let m=new WeakMap([[key,1],[other,2],[boxed,3],[otherBox,4],[registeredBox,5]]);
+        m.get(key)===1 && m.get(other)===2 && !m.has(Symbol('same')) &&
+        m.get(boxed)===3 && m.get(otherBox)===4 && m.get(registeredBox)===5 &&
+        m.get(registered)===undefined && !m.has(registered) && !m.delete(registered) &&
+        m.delete(key) && !m.has(key) && m.get(other)===2 && m.get(boxed)===3
+        "#,
+    );
+}
+
+#[test]
+fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
+    check(
+        r#"
+        let key=Symbol('cached'),other=Symbol('insert'),m=new WeakMap([[key,undefined]]),calls=0;
+        let value={valueOf(){throw 7;}};
+        m.getOrInsert(key,value)===undefined &&
+        m.getOrInsertComputed(key,()=>{calls++;return 8;})===undefined && calls===0 &&
+        m.getOrInsert(other)===undefined && m.has(other) && m.get(other)===undefined &&
+        m.delete(other) && m.getOrInsertComputed(other,()=>{calls++;return undefined;})===undefined &&
+        calls===1 && m.has(other)
+        "#,
+    );
+    for callback in ["undefined", "null", "7", "{}", "Symbol()"] {
+        type_error(&format!(
+            "let key=Symbol('key'),m=new WeakMap([[key,7]]);m.getOrInsertComputed(key,{callback})"
+        ));
+    }
+    check(
+        "let key=Symbol('key'),m=new WeakMap([[key,7]]);class C{}m.getOrInsertComputed(key,C)===7 && m.get(key)===7",
+    );
+    type_error("class C{}new WeakMap().getOrInsertComputed(Symbol('key'),C)");
+}
+
+#[test]
+fn symbol_computed_upserts_pass_the_original_key_and_recheck_after_reentrant_changes() {
+    check(
+        r#"
+        let key=Symbol('key'),a=Symbol('a'),b=Symbol('b'),other={},value={},calls=0,valid=false;
+        let m=new WeakMap([[a,1],[b,2]]);
+        let result=m.getOrInsertComputed(key,function(k){
+            'use strict';
+            calls++;
+            valid=this===undefined && arguments.length===1 && k===key;
+            m.set(key,'temporary');m.delete(a);m.delete(b);m.set(other,7);
+            return value;
+        });
+        valid && calls===1 && result===value && m.get(key)===value &&
+        m.get(other)===7 && !m.has(a) && !m.has(b)
+        "#,
+    );
+    check(
+        r#"
+        let key=Symbol('key'),other=Symbol('other'),m=new WeakMap();
+        let result=m.getOrInsertComputed(key,()=>{
+            m.set(key,1);m.delete(key);m.set(other,7);return undefined;
+        });
+        result===undefined && m.has(key) && m.get(key)===undefined && m.get(other)===7
+        "#,
+    );
+    check(
+        r#"
+        let key=Symbol('key'),m=new WeakMap(),calls=0;
+        let result=m.getOrInsertComputed(key,()=>{
+            calls++;return m.getOrInsertComputed(key,()=>{calls++;return 3;})+2;
+        });
+        result===5 && calls===2 && m.get(key)===5
+        "#,
+    );
+    check(
+        r#"
+        let key=Symbol('key'),other=Symbol('other'),m=new WeakMap(),get=WeakMap.prototype.get;
+        m.get=function(){throw 7;};m.has=function(){throw 8;};m.set=function(){throw 9;};
+        let first=m.getOrInsert(key,3),second=m.getOrInsertComputed(other,()=>{
+            Object.defineProperty(m,'set',{get(){throw 10;}});return 4;
+        });
+        first===3 && second===4 && get.call(m,key)===3 && get.call(m,other)===4
+        "#,
+    );
+}
+
+#[test]
+fn symbol_callback_throws_preserve_only_prior_callback_effects() {
+    check(
+        r#"
+        let key=Symbol('key'),other=Symbol('other'),marker={},m=new WeakMap(),caught=false;
+        try{m.getOrInsertComputed(key,()=>{m.set(other,7);throw marker;});}
+        catch(e){caught=e===marker;}
+        caught && !m.has(key) && m.get(other)===7
+        "#,
+    );
+    check(
+        r#"
+        let key=Symbol('key'),m=new WeakMap(),caught=false;
+        try{m.getOrInsertComputed(key,()=>{m.set(key,3);throw 7;});}
+        catch(e){caught=e===7;}
+        caught && m.get(key)===3
+        "#,
+    );
+}
+
+#[test]
+fn registered_symbol_constructor_failure_closes_once_after_prior_mixed_entries() {
+    check(
+        r#"
+        let object={},symbol=Symbol('key'),registered=Symbol.for('weak-map-invalid');
+        let entries=[[object,1],[symbol,2],[registered,3]],n=0,closed=0,escaped;
+        let set=WeakMap.prototype.set;
+        WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
+        let i={next(){return n<entries.length?{value:entries[n++]}:{done:true};},
+               return(){closed++;throw 7;}},caught=false;
+        try{new WeakMap({[Symbol.iterator](){return i;}});}
+        catch(e){caught=e instanceof TypeError;}
+        caught && n===3 && closed===1 && escaped.get(object)===1 &&
+        escaped.get(symbol)===2 && escaped.get(registered)===undefined
+        "#,
+    );
+}
+
+#[test]
+fn a_host_symbol_keeps_its_conditional_object_alive_until_the_host_drops_it() {
+    let mut realm = Realm::default();
+    let pair = realm
+        .eval(
+            "let map=new WeakMap();(()=>{let key=Symbol('host-only'),value={n:7,back:key};map.set(key,value);return [key,value];})()",
+        )
+        .unwrap();
+    let Value::Symbol(symbol) = realm.read_property(&pair, &JsString::from("0")).unwrap() else {
+        panic!("Expected the original Symbol key")
+    };
+    let Value::Object(value) = realm.read_property(&pair, &JsString::from("1")).unwrap() else {
+        panic!("Expected the conditional object value")
+    };
+    let weak = symbol.downgrade();
+    // Object handles alone are unrooted. Only the host Symbol keeps this entry
+    // active once the temporary array and IIFE cease to be reachable.
+    drop(pair);
+    realm.collect(usize::MAX).unwrap();
+    assert!(weak.upgrade().is_some());
+    assert!(realm.inspect_object(&value).is_ok());
+    assert_eq!(
+        realm.read_property(&Value::Object(value.clone()), &JsString::from("n")),
+        Ok(Value::Number(7.0))
+    );
+    assert_eq!(
+        realm.read_property(&Value::Object(value.clone()), &JsString::from("back")),
+        Ok(Value::Symbol(symbol.clone()))
+    );
+    drop(symbol);
+    realm.collect(usize::MAX).unwrap();
+    assert!(weak.upgrade().is_none());
+    assert!(realm.inspect_object(&value).is_err());
+    assert_eq!(
+        realm.eval("let fresh=Symbol('fresh');map.set(fresh,9);map.get(fresh)===9"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn mixed_object_and_symbol_ephemerons_reach_a_fixed_point_and_reclaim_back_edge_cycles() {
+    for declarations in [
+        "let first=new WeakMap(),second=new WeakMap();",
+        "let second=new WeakMap(),first=new WeakMap();",
+    ] {
+        for (root, middle, observed) in [
+            ("{}", "Symbol('middle')", "middle"),
+            ("Symbol('root')", "{}", "root"),
+        ] {
+            let mut realm = Realm::default();
+            let Value::Symbol(symbol) = realm
+                .eval(&format!(
+                    "{declarations}let root={root};(()=>{{let middle={middle},value={{n:7,back:root}};first.set(root,middle);second.set(middle,value);return {observed};}})()"
+                ))
+                .unwrap()
+            else {
+                panic!("Expected a Symbol from the mixed-key chain")
+            };
+            let weak = symbol.downgrade();
+            drop(symbol);
+            realm.collect(usize::MAX).unwrap();
+            assert!(weak.upgrade().is_some());
+            assert_eq!(
+                realm.eval(
+                    "second.get(first.get(root)).n===7 && second.get(first.get(root)).back===root"
+                ),
+                Ok(Value::Boolean(true))
+            );
+            realm.eval("root=undefined").unwrap();
+            assert!(realm.collect(usize::MAX).unwrap().reclaimed >= 2);
+            assert!(weak.upgrade().is_none());
+        }
+    }
+}
+
+#[test]
+fn a_failed_collection_keeps_symbol_entries_usable_for_later_successful_collection() {
+    let mut realm = Realm::default();
+    realm
+        .eval("let map=new WeakMap(),key=Symbol('key');map.set(key,{n:7,back:key})")
+        .unwrap();
+    assert!(realm.collect(0).is_err());
+    assert_eq!(
+        realm.eval("map.get(key).n===7 && map.get(key).back===key"),
+        Ok(Value::Boolean(true))
+    );
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("map.get(key).n===7 && map.get(key).back===key"),
         Ok(Value::Boolean(true))
     );
 }

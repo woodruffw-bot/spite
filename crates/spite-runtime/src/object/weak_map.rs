@@ -1,7 +1,4 @@
-//! Object-key WeakMapData with conditional values and dense cleanup (24.3).
-//!
-//! Object keys use existing ephemerons. Valid weak Symbol keys remain an explicit
-//! Realm Unsupported boundary; the Symbol surface is a separate increment.
+//! Object/Symbol WeakMap ephemerons with conditional values and dense cleanup (24.3).
 
 use super::{Budget, Error, Objects};
 use crate::Value;
@@ -63,10 +60,6 @@ impl WeakMapData {
 }
 
 impl Objects {
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "Symbol surface is a separate increment")
-    )]
     pub(crate) fn weak_map_has_symbol(
         &self,
         map: &Handle,
@@ -78,10 +71,6 @@ impl Objects {
         Ok(data.symbol_index.contains_key(&key.downgrade()))
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "Symbol surface is a separate increment")
-    )]
     pub(crate) fn weak_map_get_symbol(
         &self,
         map: &Handle,
@@ -98,10 +87,6 @@ impl Objects {
         Ok(Some(value.clone()))
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "Symbol surface is a separate increment")
-    )]
     pub(crate) fn weak_map_set_symbol(
         &mut self,
         map: &Handle,
@@ -141,10 +126,6 @@ impl Objects {
         Ok(())
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "Symbol surface is a separate increment")
-    )]
     pub(crate) fn weak_map_delete_symbol(
         &mut self,
         map: &Handle,
