@@ -21,6 +21,12 @@ impl Realm {
                 span,
                 format!("{} requires construction", constructor.name()),
             )),
+            Builtin::GlobalMetadataMember(super::global_metadata::Member::ProxyRevocable) => self
+                .proxy_revocable(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
             Builtin::GlobalMetadataMember(member) => {
                 self.global_metadata_method(member, this, span)
             }
@@ -344,8 +350,7 @@ impl Realm {
             Builtin::ReflectPreventExtensions => {
                 let target =
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
-                self.object_work(span, |objects, _| objects.prevent_extensions(&target))
-                    .map(Value::Boolean)
+                self.prevent_extensions(&target, span).map(Value::Boolean)
             }
             Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
             Builtin::ArrayBuffer => Err(Self::exception(

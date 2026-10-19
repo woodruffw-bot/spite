@@ -294,6 +294,8 @@ mod private_syntax;
 mod properties;
 #[path = "cases/prototypes.rs"]
 mod prototypes;
+#[path = "cases/proxy.rs"]
+mod proxy;
 #[path = "cases/realm_collection.rs"]
 mod realm_collection;
 #[path = "cases/reflect_call.rs"]

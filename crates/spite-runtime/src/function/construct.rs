@@ -77,7 +77,13 @@ impl Realm {
                 Ok((Some(callable), None))
             })?;
             if let Some(proxy) = proxy {
-                return self.proxy_unimplemented_invocation(proxy, span);
+                match self.proxy_construct(proxy, &arguments, &new_target, span)? {
+                    super::proxy::ProxyInvocation::Forward(target) => {
+                        function = target;
+                        continue;
+                    }
+                    super::proxy::ProxyInvocation::Complete(value) => return Ok(value),
+                }
             }
             match callable.expect("non-Proxy constructor metadata") {
                 Callable::Builtin(Builtin::Function) => {
@@ -165,6 +171,16 @@ impl Realm {
                         new_target,
                         Some(class.method.home_object),
                         arguments,
+                        span,
+                    );
+                }
+                Callable::Builtin(Builtin::GlobalMetadataConstructor(
+                    super::global_metadata::Constructor::Proxy,
+                )) => {
+                    let mut arguments = arguments.into_iter();
+                    return self.proxy_constructor(
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
                         span,
                     );
                 }

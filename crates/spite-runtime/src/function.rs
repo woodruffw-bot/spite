@@ -1412,7 +1412,13 @@ impl Realm {
                 (None, None)
             };
             if let Some(proxy) = proxy {
-                return self.proxy_unimplemented_invocation(proxy, span);
+                match self.proxy_call(proxy, &this, arguments.as_slice(), span)? {
+                    proxy::ProxyInvocation::Forward(target) => {
+                        function = Value::Object(target);
+                        continue;
+                    }
+                    proxy::ProxyInvocation::Complete(value) => return Ok(value),
+                }
             }
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,

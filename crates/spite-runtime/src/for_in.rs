@@ -57,9 +57,7 @@ impl Realm {
                 }
                 value = result.value.expect("loop UpdateEmpty supplies a value");
             }
-            current = self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&object)?.prototype().cloned())
-            })?;
+            current = self.get_prototype_of(&object, span)?;
         }
         Ok(Completion::normal(Some(value)))
     }

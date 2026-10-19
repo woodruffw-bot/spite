@@ -75,8 +75,7 @@ impl Realm {
                 ));
             }
             Value::Object(object) if !self.is_callable(&Value::Object(object.clone()), span)? => {
-                let array =
-                    self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_array()))?;
+                let array = self.is_array(&Value::Object(object.clone()), span)?;
                 Serialized::Container(object, array)
             }
             _ => Serialized::Omit,

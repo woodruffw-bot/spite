@@ -363,12 +363,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         // 7.2.2 / 23.1.2.3: identity does not depend on a public prototype.
-        // Proxy target traversal joins IsArray when Proxy objects are exposed.
-        let result = if let Some(Value::Object(object)) = value {
-            self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_array()))?
-        } else {
-            false
-        };
+        let result = self.is_array(&value.unwrap_or(Value::Undefined), span)?;
         Ok(Value::Boolean(result))
     }
 

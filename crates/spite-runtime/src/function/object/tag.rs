@@ -13,10 +13,18 @@ impl Realm {
         let Value::Object(object) = self.box_primitive(value, span)? else {
             unreachable!("ToObject");
         };
-        // Compute the internal-slot fallback before the observable tag getter.
-        let builtin_tag = self.object_work(span, |objects, _| {
-            let record = objects.inspect(&object)?;
-            Ok(if record.is_array() {
+        // IsArray precedes even the callable/direct-slot fallback and the
+        // observable tag getter, so a revoked Proxy throws at this point.
+        let array = self.is_array(&Value::Object(object.clone()), span)?;
+        // IsArray validated this handle without any user call or collection.
+        // The following physical slot read adds no second ordinary work tick;
+        // only the static fallback survives into the observable tag Get.
+        let builtin_tag = {
+            let record = self
+                .objects
+                .inspect(&object)
+                .expect("IsArray validated the local handle");
+            if array {
                 "Array"
             } else if record.is_arguments() {
                 "Arguments"
@@ -36,8 +44,8 @@ impl Realm {
                 "String"
             } else {
                 "Object"
-            })
-        })?;
+            }
+        };
         let tag = self.get_property(&object, &WellKnownSymbol::ToStringTag.symbol(), span)?;
         // No ToPrimitive or ToString is performed on non-string tags.
         let tag = match tag {

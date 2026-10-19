@@ -207,9 +207,7 @@ impl Realm {
                 ));
             }
         };
-        self.object_work(span, |objects, budget| {
-            objects.set_prototype(&target, prototype.as_ref(), budget)
-        })
-        .map(Value::Boolean)
+        self.set_prototype_of(&target, prototype, span)
+            .map(Value::Boolean)
     }
 }

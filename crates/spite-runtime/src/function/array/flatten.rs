@@ -129,7 +129,7 @@ impl Realm {
             }
             let child = match &element {
                 Value::Object(child) if depth != Some(0) => self
-                    .object_work(span, |objects, _| Ok(objects.inspect(child)?.is_array()))?
+                    .is_array(&Value::Object(child.clone()), span)?
                     .then(|| child.clone()),
                 _ => None,
             };

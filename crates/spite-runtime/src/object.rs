@@ -502,6 +502,62 @@ impl Trace for OrdinaryObject {
     }
 }
 
+/// IsCompatiblePropertyDescriptor (10.1.6.2), without mutation or value copies.
+/// Callers account for any potentially large SameValue comparison beforehand.
+pub(crate) fn is_compatible_property_descriptor(
+    extensible: bool,
+    descriptor: &PropertyDescriptor,
+    current: Option<&Property>,
+) -> bool {
+    let Some(current) = current else {
+        return extensible;
+    };
+    if current.configurable() {
+        return true;
+    }
+    if descriptor.configurable == Some(true)
+        || descriptor
+            .enumerable
+            .is_some_and(|value| value != current.enumerable())
+    {
+        return false;
+    }
+    match (&descriptor.kind, current) {
+        (DescriptorKind::Generic, _)
+        | (
+            DescriptorKind::Data {
+                value: None,
+                writable: None,
+            },
+            _,
+        )
+        | (
+            DescriptorKind::Accessor {
+                get: None,
+                set: None,
+            },
+            _,
+        ) => true,
+        (DescriptorKind::Data { value, writable }, Property::Data(current)) => {
+            current.writable
+                || (*writable != Some(true)
+                    && value
+                        .as_ref()
+                        .is_none_or(|value| value.same_value(&current.value)))
+        }
+        (DescriptorKind::Accessor { get, set }, Property::Accessor(current)) => {
+            get.as_ref().is_none_or(|value| *value == current.get)
+                && set.as_ref().is_none_or(|value| *value == current.set)
+        }
+        _ => false,
+    }
+}
+
+/// CompletePropertyDescriptor (6.2.6.6), consuming the owned partial record.
+pub(crate) fn complete_property_descriptor(descriptor: PropertyDescriptor) -> Property {
+    descriptor.normalize().complete()
+}
+
 // Array indices are canonical decimal strings in [0, 2^32 - 2]. Checking code
 // units directly preserves non-ASCII and lone-surrogate property names.
 fn array_index<'key>(key: impl Into<PropertyKeyRef<'key>>) -> Option<u32> {

@@ -78,6 +78,6 @@ impl Realm {
             return Ok(spreadable.to_boolean());
         }
         // IsArray uses the internal brand, independently of public prototypes.
-        self.object_work(span, |objects, _| Ok(objects.inspect(object)?.is_array()))
+        self.is_array(&Value::Object(object.clone()), span)
     }
 }

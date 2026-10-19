@@ -172,8 +172,7 @@ impl Realm {
             }
         }
         let children = if let Value::Object(object) = &value {
-            let array =
-                self.object_work(span, |objects, _| Ok(objects.inspect(object)?.is_array()))?;
+            let array = self.is_array(&value, span)?;
             if array {
                 Children::Array {
                     index: 0,
@@ -218,19 +217,18 @@ impl Realm {
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
-        self.object_work(span, |objects, budget| {
-            objects.define(
-                object,
-                key,
-                DataDescriptor {
-                    value: Some(value),
-                    writable: Some(true),
-                    enumerable: Some(true),
-                    configurable: Some(true),
-                },
-                budget,
-            )
-        })?;
+        self.define_property(
+            object,
+            key,
+            DataDescriptor {
+                value: Some(value),
+                writable: Some(true),
+                enumerable: Some(true),
+                configurable: Some(true),
+            }
+            .into(),
+            span,
+        )?;
         Ok(())
     }
 }

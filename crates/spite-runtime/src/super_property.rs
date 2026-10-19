@@ -36,13 +36,9 @@ impl Realm {
         };
         // GetSuperConstructor precedes arguments. A repeated super call still
         // evaluates arguments and constructs before BindThisValue rejects it.
-        let superclass = self.object_work(span, |objects, _| {
-            Ok(objects
-                .inspect(&function)?
-                .prototype()
-                .cloned()
-                .map_or(Value::Null, Value::Object))
-        })?;
+        let superclass = self
+            .get_prototype_of(&function, span)?
+            .map_or(Value::Null, Value::Object);
         let values = self.argument_list(arguments)?;
         let instance =
             self.construct_with_new_target(superclass, values, Some(new_target), span)?;
@@ -105,13 +101,9 @@ impl Realm {
             })?;
             if function {
                 if let Some(home) = home {
-                    base = self.object_work(span, |objects, _| {
-                        Ok(objects
-                            .inspect(&home)?
-                            .prototype()
-                            .cloned()
-                            .map_or(Value::Null, Value::Object))
-                    })?;
+                    base = self
+                        .get_prototype_of(&home, span)?
+                        .map_or(Value::Null, Value::Object);
                 }
                 break;
             }

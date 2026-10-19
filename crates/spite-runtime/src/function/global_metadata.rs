@@ -1,7 +1,8 @@
 //! Edition-17 intrinsic metadata for deferred globals and generic species getters.
 //!
-//! Ordinary metadata objects expose the specified reflection graph. Only the
-//! two generic species getters run their algorithms; deferred constructors and
+//! Ordinary metadata objects expose the specified reflection graph. The
+//! generic species getters run their algorithms. Proxy creation/revocation are
+//! routed to their complete algorithms; the remaining deferred constructors and
 //! methods report host Unsupported and cannot create unbranded fake instances.
 
 use super::Builtin;

@@ -12,13 +12,8 @@ impl Realm {
         let Value::Object(object) = self.box_primitive(target, span)? else {
             unreachable!("ToObject");
         };
-        self.object_work(span, |objects, _| {
-            Ok(objects
-                .inspect(&object)?
-                .prototype()
-                .cloned()
-                .map_or(Value::Null, Value::Object))
-        })
+        self.get_prototype_of(&object, span)
+            .map(|prototype| prototype.map_or(Value::Null, Value::Object))
     }
 
     pub(crate) fn object_set_prototype_of(
@@ -43,9 +38,7 @@ impl Realm {
         let Value::Object(object) = &target else {
             return Ok(target);
         };
-        let changed = self.object_work(span, |objects, budget| {
-            objects.set_prototype(object, prototype.as_ref(), budget)
-        })?;
+        let changed = self.set_prototype_of(object, prototype, span)?;
         if !changed {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
@@ -64,7 +57,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         if prevent {
             if let Value::Object(object) = &target {
-                if !self.object_work(span, |objects, _| objects.prevent_extensions(object))? {
+                if !self.prevent_extensions(object, span)? {
                     return Err(Self::exception(
                         ExceptionKind::TypeError,
                         span,
@@ -77,8 +70,6 @@ impl Realm {
         let Value::Object(object) = target else {
             return Ok(Value::Boolean(false));
         };
-        self.object_work(span, |objects, _| {
-            Ok(Value::Boolean(objects.inspect(&object)?.is_extensible()))
-        })
+        self.is_extensible(&object, span).map(Value::Boolean)
     }
 }

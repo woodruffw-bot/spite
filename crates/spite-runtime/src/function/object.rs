@@ -180,9 +180,7 @@ impl Realm {
             unreachable!("ToObject");
         };
         loop {
-            let next = self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&candidate)?.prototype().cloned())
-            })?;
+            let next = self.get_prototype_of(&candidate, span)?;
             let Some(next) = next else {
                 return Ok(Value::Boolean(false));
             };

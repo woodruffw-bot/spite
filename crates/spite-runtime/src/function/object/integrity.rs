@@ -16,7 +16,7 @@ impl Realm {
         let Value::Object(object) = &target else {
             return Ok(target);
         };
-        if !self.object_work(span, |objects, _| objects.prevent_extensions(object))? {
+        if !self.prevent_extensions(object, span)? {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -59,9 +59,7 @@ impl Realm {
             return Ok(Value::Boolean(true));
         };
         // An extensible object fails before any own-key/descriptor inspection.
-        if self.object_work(span, |objects, _| {
-            Ok(objects.inspect(&object)?.is_extensible())
-        })? {
+        if self.is_extensible(&object, span)? {
             return Ok(Value::Boolean(false));
         }
         let keys = self.own_property_keys(&object, span)?;

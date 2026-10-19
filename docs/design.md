@@ -9372,11 +9372,12 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Metadata exposure does not implement the deferred algorithms. Calling a
-constructor that requires new throws the specified TypeError first. Construction
-and deferred methods retain explicit Unsupported results, after ordinary argument
-evaluation. The two species accessors return their original receiver. This adds
-45 rooted intrinsic objects; global mutation or deletion cannot unroot them.
+Promise, SharedArrayBuffer, WeakRef, FinalizationRegistry, and Atomics retain
+explicit Unsupported results for their deferred bodies after ordinary argument
+evaluation and the specified call/new prefix checks. Proxy algorithms are
+described below. The two species accessors return their original receiver. The
+metadata adds 45 rooted intrinsic objects; global mutation or deletion cannot
+unroot them.
 
 The complete global own-key set supports reflection, enumeration, copying, and
 integrity operations through ordinary object behavior. Standard bindings can be
@@ -9400,8 +9401,36 @@ fallible operations; repeated revocation is inert. Cached call/construct
 capabilities survive revocation and do not copy Array or other target brands.
 
 Ordinary property operations stop at direct or inherited Proxy records and
-require Realm dispatch. Revoked records throw TypeError; live records retain
-explicit Unsupported behavior until trap algorithms are implemented. Existing
+require Realm dispatch. Revoked records throw TypeError; live records execute
+the trap algorithms described below. Existing
 read-only, accessor, TypedArray, and Array-length decisions keep their required
 ordering. Ordinary prototype-cycle traversal stops at a Proxy candidate.
-Public Proxy construction and Proxy.revocable remain deferred in this stage.
+Public construction, revocation, and trap dispatch use these checked records.
+
+## Proxy exotic objects
+
+Proxy construction and Proxy.revocable implement 28.2 over the checked storage
+and revocation foundation. All thirteen internal methods implement the Proxy
+algorithms in 10.5, including missing-trap forwarding, trap receiver/argument
+ordering, and target invariants checked after the trap returns. Target and handler
+are captured before trap lookup; later invariant queries inspect live target
+state. Descriptor conversion preserves HasProperty/Get ordering, and ownKeys
+finishes the array-like key list before checking duplicates and target keys.
+
+Object-method queries use explicit continuations. Missing call and construct
+traps forward iteratively, preserving this, arguments, and newTarget across long
+Proxy chains. Actual JavaScript callbacks still use the existing native-stack
+safety boundary. Argument and receiver copies charge opted-in work before cloning
+large values; property-key lists do not inherit a function argument-count limit.
+
+Callability and constructibility remain cached after revocation. Array detection
+unwraps Proxy targets and rejects revoked records where required by Array, JSON,
+and Object algorithms; direct built-in brand checks retain their own rules.
+Reflection, integrity operations, binding, prototype traversal, instanceof, and
+super property access use Proxy internal methods at their specified boundaries.
+
+Constructor prototype fallback and Array species selection still need
+GetFunctionRealm validation for revoked Proxy and bound-function chains, including
+within one realm. Foreign-realm intrinsic normalization remains deferred.
+Resource quotas remain opt-in, and the initial realm retains the same 549
+intrinsic objects.

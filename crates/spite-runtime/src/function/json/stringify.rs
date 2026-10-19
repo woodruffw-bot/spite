@@ -76,9 +76,7 @@ impl Realm {
         if let Value::Object(object) = &replacer {
             if self.is_callable(&replacer, span)? {
                 state.replacer = Some(replacer.clone());
-            } else if self
-                .object_work(span, |objects, _| Ok(objects.inspect(object)?.is_array()))?
-            {
+            } else if self.is_array(&replacer, span)? {
                 let length = self.length_of_array_like(object, span)?;
                 let mut properties = Vec::new();
                 let mut seen = HashSet::new();

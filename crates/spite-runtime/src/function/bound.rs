@@ -18,7 +18,15 @@ impl Realm {
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if !self.is_callable(&target, span)? {
+        let (callable, proxy) = if let Value::Object(object) = &target {
+            self.object_work(span, |objects, _| {
+                let record = objects.inspect(object)?;
+                Ok((record.is_callable(), record.is_proxy()))
+            })?
+        } else {
+            (false, false)
+        };
+        if !callable {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -28,6 +36,13 @@ impl Realm {
         let Value::Object(target) = target else {
             unreachable!("callable values are objects")
         };
+        // Ordinary targets retain the original physical fast path and charges.
+        // Proxy targets must run [[GetPrototypeOf]] before bound allocation.
+        let prototype = if proxy {
+            Some(self.get_prototype_of(&target, span)?)
+        } else {
+            None
+        };
         let bound = BoundFunction {
             target: target.clone(),
             this: arguments.next().unwrap_or(Value::Undefined),
@@ -36,11 +51,21 @@ impl Realm {
         let count = bound.arguments.len();
         // 20.2.3.2 allocates before observable length/name reads. The partially
         // initialized object is unreachable if either getter subsequently throws.
-        let function =
-            self.object_work(span, |objects, budget| objects.create_bound(bound, budget))?;
-        let has_length = self.object_work(span, |objects, budget| {
-            objects.has_own(&target, &JsString::from("length"), budget)
-        })?;
+        let function = if let Some(prototype) = prototype {
+            self.object_work(span, |objects, budget| {
+                objects.create_bound_with_prototype(bound, prototype.as_ref(), budget)
+            })?
+        } else {
+            self.object_work(span, |objects, budget| objects.create_bound(bound, budget))?
+        };
+        let has_length = if proxy {
+            self.own_property_descriptor(&target, &JsString::from("length"), span)?
+                .is_some()
+        } else {
+            self.object_work(span, |objects, budget| {
+                objects.has_own(&target, &JsString::from("length"), budget)
+            })?
+        };
         let mut length = 0.0;
         if has_length {
             if let Value::Number(number) =

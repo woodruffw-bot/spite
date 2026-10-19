@@ -165,7 +165,7 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
 }
 
 #[test]
-fn materialized_proxy_global_supports_ordinary_mutation_and_defers_construction() {
+fn materialized_proxy_global_supports_ordinary_mutation_and_construction() {
     truth(
         "typeof Proxy==='function' && Proxy===this.Proxy && Object.hasOwn(this,'Proxy') && Reflect.ownKeys(this).includes('Proxy')",
     );
@@ -179,16 +179,28 @@ fn materialized_proxy_global_supports_ordinary_mutation_and_defers_construction(
     truth("'Proxy' in this");
     truth("function Proxy(){}Proxy===this.Proxy");
     truth("let caught=false;try{Proxy();}catch(e){caught=e instanceof TypeError;}caught");
-    for source in ["new Proxy({},{})", "new Proxy(Object,Object)"] {
+    for (source, checks) in [
+        (
+            "new Proxy({},{})",
+            "typeof proxy==='object' && Object.getPrototypeOf(proxy)===Object.prototype && Reflect.ownKeys(proxy).length===0 && Reflect.isExtensible(proxy)",
+        ),
+        (
+            "new Proxy(Object,Object)",
+            "let instance=new proxy();typeof proxy==='function' && Object.getPrototypeOf(proxy)===Function.prototype && proxy.prototype===Object.prototype && typeof instance==='object' && Object.getPrototypeOf(instance)===Object.prototype && Function.prototype.toString.call(proxy).includes('[native code]')",
+        ),
+    ] {
         let mut realm = Realm::default();
-        realm.eval("let flag=0").unwrap();
+        realm.eval("let flag=0,proxy").unwrap();
         let result = realm.eval(&format!(
-            "try{{{source};}}catch{{flag=1;}}finally{{flag=2;}}"
+            "try{{proxy={source};}}catch{{flag=1;}}finally{{flag=2;}}"
         ));
         assert!(
-            matches!(&result, Err(Error::Unsupported { .. })),
+            matches!(&result, Ok(Value::Object(_))),
             "{source}: {result:?}"
         );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
+        // The function target is constructed and inspected, never called: its
+        // Object handler inherits Function.prototype.apply as an actual trap.
+        assert_eq!(realm.eval(checks), Ok(Value::Boolean(true)), "{source}");
     }
 }

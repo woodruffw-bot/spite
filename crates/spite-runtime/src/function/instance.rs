@@ -111,9 +111,7 @@ impl Realm {
         };
         let mut next = Some(value.clone());
         while let Some(handle) = next {
-            next = self.object_work(span, |objects, _| {
-                Ok(objects.inspect(&handle)?.prototype().cloned())
-            })?;
+            next = self.get_prototype_of(&handle, span)?;
             if next.as_ref() == Some(&prototype) {
                 return Ok(InstanceCheck::Result(true));
             }

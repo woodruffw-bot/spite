@@ -34,7 +34,7 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, Proxy, SharedArrayBuffer, WeakRef, FinalizationRegistry and Atomics graphs with deferred bodies |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer, WeakRef, FinalizationRegistry and Atomics graphs with deferred bodies |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
@@ -45,9 +45,10 @@ not an alternative language specification.
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
+| Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; GetFunctionRealm chain validation remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15979 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15997 reviewed Test262 variants, fifteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15700,7 +15701,54 @@ units. The 927 Rust sources comprise twelve owned paths and 915 unchanged files;
 all 734 external snapshots and 549 initial realm objects remain exact. Corpus
 fixtures/helpers and all 15,997 variants are unchanged. Local coverage retains
 the accepted unchanged Core/Heap results; full corpus and full MSRV integration
-remain hosted gates. All seventeen hosted jobs and four complete corpus gates
-remain required for this foundation commit.
+remain hosted gates. The foundation commit b3c087a6 passes all seventeen hosted
+jobs, all 5,739 Native names on each platform/toolchain, and four complete
+15,997-variant corpus gates in
+[run 39194132701](https://github.com/woodruffw-bot/spite/actions/runs/39194132701).
 Defaults, selected quotas, dependencies, profiles, ordinary stacks, and worker
 counts are unchanged.
+
+## Proxy internal methods and invocation
+
+Proxy construction, revocation, all eleven object internal methods, [[Call]],
+and [[Construct]] now implement ordinary forwarding and trap behavior. Thirty
+new integration groups and three additional private units cover trap ordering,
+descriptor and key-list invariants, revoked capabilities, receiver/newTarget
+forwarding, Array/JSON behavior, GC edges, copy failures, and deep chains. Three
+inspected inline snapshots record ordered effects. Existing metadata/global
+controls now assert the implemented Proxy behavior; one case is renamed.
+
+Constructor prototype fallback and Array species selection still need
+GetFunctionRealm validation through Proxy and bound-function target chains.
+This includes revoked-target ordering within one realm; foreign-realm intrinsic
+normalization is a separate deferred capability.
+
+Both toolchains pass all 402 Runtime units and the same 53 focused integration
+cases, including every private Proxy unit, all three new inline snapshots, the
+existing metadata snapshots, and 10,000-deep invocation chains on the ordinary
+two-mebibyte test stack. The single full stable Runtime run passes all 3,884
+integration cases in 213.08 seconds, reusing the focused run's exact binary
+without rebuilding. This elapsed time is descriptive, not an isolated speedup.
+
+The final source passes 13 CLI cases and Runtime documentation checks on both
+toolchains. One complete stable Test262 run passes all 35 tests across seven test
+executables and all 15,997 pinned variants with three workers. The MSRV runner
+passes its 34 nonfull tests across the same seven executables; only the sole
+full-corpus case is filtered locally. Formatting, strict workspace Clippy,
+dependency policy, all three inventory checks and diff checks pass. Core/Heap results are retained from the accepted unchanged parent.
+
+Initial formatting, compiler and Clippy failures were corrected before the final
+runs. An earlier focused run exposed a raw property-definition path in the JSON
+reviver. It now uses Realm dispatch, ignores a false definition result as required
+by InternalizeJSONProperty, and propagates abrupt completions. The original
+failing case remains intact, with added object/Array Proxy regressions for false
+definition/deletion results, descriptor flags, ordering and abrupt identity.
+
+Native inventories are 402 Runtime units, 3,884 integration cases and 5,772 total
+names, with the one explicit global-case rename. The 928 Rust files comprise 30
+owned paths and 898 unchanged files; all 734 external snapshots and 549 initial
+realm objects remain exact. Test262 stays at 8,279 fixtures, 15 helpers, 8,260
+reviewed sources and 15,997 variants until unchanged Proxy originals are admitted
+separately. All seventeen hosted jobs and four complete corpus gates remain
+required for this public commit. Defaults, selected quotas, dependencies,
+profiles, ordinary stacks and worker counts are unchanged.

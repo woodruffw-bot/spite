@@ -151,7 +151,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // its real metadata object is supported and must not stand in for this call.
     let operations = [
         "new Promise(()=>{hits++})",
-        "new Proxy({},{get(){hits++}})",
         "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
         "new WeakRef({})",
         "new FinalizationRegistry(()=>{hits++})",
@@ -166,7 +165,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Promise.prototype.catch.call({},()=>{hits++})",
         "Promise.prototype.finally.call({},()=>{hits++})",
         "Promise.prototype.then.call({},()=>{hits++},()=>{hits++})",
-        "Proxy.revocable({},{get(){hits++}})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'byteLength').get.call({})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'growable').get.call({})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get.call({})",
@@ -209,7 +207,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // instance. Ordinary evaluation of arguments still precedes construction.
     for (constructor, arguments) in [
         ("Promise", "[(order++,()=>7)]"),
-        ("Proxy", "[(order++,{}),{}]"),
         ("SharedArrayBuffer", "[(order++,0)]"),
         ("WeakRef", "[(order++,{})]"),
         ("FinalizationRegistry", "[(order++,()=>7)]"),
@@ -226,6 +223,31 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
             "{constructor}"
         );
     }
+    // Proxy is implemented now: construction itself does not invoke handler
+    // traps, while ordinary completion runs finally and later Get uses the trap.
+    realm
+        .eval("let proxyTarget={x:7},proxyHandler={get(t,k){hits++;return t[k];}},madeProxy;")
+        .unwrap();
+    for operation in [
+        "new Proxy(proxyTarget,proxyHandler)",
+        "Proxy.revocable(proxyTarget,proxyHandler).proxy",
+    ] {
+        realm.eval("flag=0;hits=0;madeProxy=undefined").unwrap();
+        assert_eq!(
+            realm.eval(&format!("try{{madeProxy={operation};flag=3;}}catch{{flag=1;}}finally{{flag=2;}}madeProxy!==proxyTarget && flag===2 && hits===0 && madeProxy.x===7 && hits===1")),
+            Ok(Value::Boolean(true)),
+            "{operation}"
+        );
+    }
+    // The actual ProxyCreate operation ignores newTarget.prototype; retain the
+    // existing throwing bound getter and the argument-order observation.
+    realm
+        .eval("order=0;flag=0;hits=0;madeProxy=undefined")
+        .unwrap();
+    assert_eq!(
+        realm.eval("try{madeProxy=Reflect.construct(Proxy,[(order++,proxyTarget),proxyHandler],bound);flag=3;}catch{flag=1;}finally{flag=2;}order===1 && flag===2 && hits===0 && Object.getPrototypeOf(madeProxy)===Object.prototype && madeProxy.x===7 && hits===1"),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

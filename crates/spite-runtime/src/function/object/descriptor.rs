@@ -252,6 +252,73 @@ impl Realm {
         ))
     }
 
+    /// FromPropertyDescriptor for a partial record passed to a Proxy trap.
+    /// Presence and field creation order are observable; omitted fields stay absent.
+    pub(crate) fn partial_descriptor_object(
+        &mut self,
+        descriptor: &PropertyDescriptor,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .object_prototype
+            .clone();
+        self.object_work(span, |objects, budget| {
+            if let DescriptorKind::Data {
+                value: Some(value), ..
+            } = &descriptor.kind
+            {
+                budget.value(value)?;
+            }
+            let object = objects.create(Some(&prototype))?;
+            let mut define = |name: &str, value: Value| -> Result<(), crate::object::Error> {
+                let defined = objects.define(
+                    &object,
+                    JsString::from(name),
+                    DataDescriptor {
+                        value: Some(value),
+                        writable: Some(true),
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    budget,
+                )?;
+                debug_assert!(defined, "fresh partial descriptor object");
+                Ok(())
+            };
+            match &descriptor.kind {
+                DescriptorKind::Generic => {}
+                DescriptorKind::Data { value, writable } => {
+                    if let Some(value) = value {
+                        // The owned argument record and descriptor retain their
+                        // own values; copies are charged before allocation.
+                        define("value", value.clone())?;
+                    }
+                    if let Some(value) = writable {
+                        define("writable", Value::Boolean(*value))?;
+                    }
+                }
+                DescriptorKind::Accessor { get, set } => {
+                    if let Some(value) = get {
+                        define("get", value.clone().map_or(Value::Undefined, Value::Object))?;
+                    }
+                    if let Some(value) = set {
+                        define("set", value.clone().map_or(Value::Undefined, Value::Object))?;
+                    }
+                }
+            }
+            if let Some(value) = descriptor.enumerable {
+                define("enumerable", Value::Boolean(value))?;
+            }
+            if let Some(value) = descriptor.configurable {
+                define("configurable", Value::Boolean(value))?;
+            }
+            Ok(Value::Object(object))
+        })
+    }
+
     pub(super) fn descriptor_object(
         &mut self,
         property: Option<Property>,

@@ -12,10 +12,6 @@ pub(crate) struct ProxySnapshot {
 
 #[derive(Clone, Debug)]
 pub(crate) enum ProxyState {
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "read by next Proxy trap dispatch stage")
-    )]
     Live(ProxySnapshot),
     Revoked,
 }
@@ -85,8 +81,11 @@ mod tests {
     use super::*;
     use crate::{
         Value,
-        function::Builtin,
-        object::{DataDescriptor, DescriptorKind, PropertyDescriptor, SetAction},
+        function::{BoundFunction, Builtin},
+        object::{
+            DataDescriptor, DescriptorKind, GetAction, Property, PropertyDescriptor, SetAction,
+            complete_property_descriptor, is_compatible_property_descriptor,
+        },
     };
     use spite_core::{JsString, JsSymbol};
 
@@ -431,6 +430,46 @@ mod tests {
     }
 
     #[test]
+    fn bound_allocation_uses_the_already_observed_prototype_and_cached_capability() {
+        let mut objects = Objects::with_limits(None, None);
+        let initial = objects.create(None).unwrap();
+        let observed = objects.create(None).unwrap();
+        let target = objects.create_builtin(&initial, Builtin::Object).unwrap();
+        let proxy = objects
+            .create_proxy(&target, &initial, &mut unlimited())
+            .unwrap();
+        let bound = || BoundFunction {
+            target: proxy.clone(),
+            this: Value::Undefined,
+            arguments: Vec::new(),
+        };
+        assert!(matches!(
+            objects.create_bound(bound(), &mut unlimited()),
+            Err(Error::RequiresRuntime)
+        ));
+        let revoker = objects
+            .create_proxy_revoker(&initial, &proxy, &mut unlimited())
+            .unwrap();
+        objects
+            .revoke_proxy_from(&revoker, &mut unlimited())
+            .unwrap();
+        let function = objects
+            .create_bound_with_prototype(bound(), Some(&observed), &mut unlimited())
+            .unwrap();
+        assert_eq!(
+            objects.inspect(&function).unwrap().prototype(),
+            Some(&observed)
+        );
+        assert!(objects.inspect(&function).unwrap().is_constructor());
+        assert_eq!(
+            objects
+                .get(&function, &JsString::from("missing"), &mut unlimited())
+                .unwrap(),
+            GetAction::Value(Value::Undefined)
+        );
+    }
+
+    #[test]
     fn revoker_traces_proxy_target_handler_and_releases_all_three_on_revoke() {
         let mut objects = Objects::with_limits(None, None);
         let prototype = objects.create(None).unwrap();
@@ -497,5 +536,62 @@ mod tests {
         for handle in [&value, &target, &handler, &proxy] {
             assert!(objects.inspect(handle).is_err());
         }
+    }
+
+    #[test]
+    fn borrowed_compatibility_preserves_frozen_same_value_and_omitted_fields() {
+        let current = complete_property_descriptor(
+            DataDescriptor {
+                value: Some(Value::Number(-0.0)),
+                ..Default::default()
+            }
+            .into(),
+        );
+        let same = PropertyDescriptor::from(DataDescriptor {
+            value: Some(Value::Number(-0.0)),
+            ..Default::default()
+        });
+        let other = PropertyDescriptor::from(DataDescriptor {
+            value: Some(Value::Number(0.0)),
+            ..Default::default()
+        });
+        assert!(is_compatible_property_descriptor(
+            false,
+            &same,
+            Some(&current)
+        ));
+        assert!(!is_compatible_property_descriptor(
+            false,
+            &other,
+            Some(&current)
+        ));
+        assert!(!is_compatible_property_descriptor(false, &same, None));
+        let generic = PropertyDescriptor {
+            kind: DescriptorKind::Accessor {
+                get: None,
+                set: None,
+            },
+            ..Default::default()
+        };
+        assert!(is_compatible_property_descriptor(
+            false,
+            &generic,
+            Some(&current)
+        ));
+        let accessor = PropertyDescriptor {
+            kind: DescriptorKind::Accessor {
+                get: Some(None),
+                set: None,
+            },
+            ..Default::default()
+        };
+        assert!(!is_compatible_property_descriptor(
+            false,
+            &accessor,
+            Some(&current)
+        ));
+        assert!(
+            matches!(current, Property::Data(data) if matches!(data.value, Value::Number(value) if value.is_sign_negative()))
+        );
     }
 }

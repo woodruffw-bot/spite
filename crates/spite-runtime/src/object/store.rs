@@ -587,6 +587,36 @@ impl Objects {
         }
         let prototype = target.prototype().cloned();
         let constructible = target.is_constructor();
+        self.create_bound_record(bound, prototype, constructible, budget)
+    }
+
+    // BoundFunctionCreate observes [[GetPrototypeOf]] in the Realm before this
+    // allocation (10.4.1.3); never read a Proxy's physical prototype here.
+    pub(crate) fn create_bound_with_prototype(
+        &mut self,
+        bound: BoundFunction,
+        prototype: Option<&Handle>,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        budget.charge(1)?;
+        let target = self.inspect(&bound.target)?;
+        if !target.is_callable() {
+            return Err(Error::NotCallable);
+        }
+        let constructible = target.is_constructor();
+        if let Some(prototype) = prototype {
+            self.inspect(prototype)?;
+        }
+        self.create_bound_record(bound, prototype.cloned(), constructible, budget)
+    }
+
+    fn create_bound_record(
+        &mut self,
+        bound: BoundFunction,
+        prototype: Option<Handle>,
+        constructible: bool,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
         for value in std::iter::once(&bound.this).chain(&bound.arguments) {
             budget.charge(1)?;
             if let Value::Object(handle) = value {
@@ -599,10 +629,6 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "public Proxy creation is a later increment")
-    )]
     pub(crate) fn create_proxy(
         &mut self,
         target: &Handle,
@@ -626,10 +652,6 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(record))?)
     }
 
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "public Proxy creation is a later increment")
-    )]
     pub(crate) fn create_proxy_revoker(
         &mut self,
         function_prototype: &Handle,
