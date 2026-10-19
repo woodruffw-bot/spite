@@ -170,12 +170,19 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 }
 
 #[test]
-fn incomplete_global_remains_a_host_gap_and_skips_constructor_handlers() {
+fn global_keys_support_iterator_prototypes_and_reserved_host_gaps_abort_handlers() {
+    check(
+        "let result,flag=0;try{result=Reflect.ownKeys(globalThis);flag=3;}catch{flag=1;}finally{flag+=4;}Array.isArray(result) && result.length===59 && result.includes('Iterator') && result.includes('Promise') && result.includes('Atomics') && flag===7",
+    );
+    check(
+        "let prototype,calls=0,result,flag=0;function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get(){calls++;prototype=Reflect.ownKeys(globalThis);return prototype;}});try{result=Reflect.construct(Iterator,[],B);flag=3;}catch{flag=1;}finally{flag+=4;}calls===1 && flag===7 && Array.isArray(prototype) && prototype.includes('F') && prototype.includes('Iterator') && Object.getPrototypeOf(result)===prototype && Object.getOwnPropertyNames(result).length===0",
+    );
     for expression in [
-        "Reflect.ownKeys(globalThis)",
-        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>Reflect.ownKeys(globalThis)});Reflect.construct(Iterator,[],B)",
+        "gap",
+        "function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>gap});Reflect.construct(Iterator,[],B)",
     ] {
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("gap");
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(

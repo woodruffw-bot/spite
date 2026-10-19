@@ -139,18 +139,17 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
     check(
         "let o={};Object.defineProperties(o,Function.prototype)===o && Object.keys(o).length===0",
     );
-    for source in [
-        "Object.defineProperties({},Array)",
-        "Object.defineProperties({},globalThis)",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(
+        "let target={};Object.defineProperties(target,globalThis)===target && Reflect.ownKeys(target).length===0",
+    );
+    let source = "Object.defineProperties({},Array)";
+    assert!(
+        matches!(
+            Realm::default().eval(source),
+            Err(Error::Unsupported { .. })
+        ),
+        "{source}"
+    );
 }
 
 #[test]

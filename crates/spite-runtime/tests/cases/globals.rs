@@ -165,21 +165,30 @@ fn global_descriptors_and_collection_preserve_required_attributes_and_identity()
 }
 
 #[test]
-fn unavailable_standard_global_properties_remain_explicit_gaps() {
-    for source in [
-        "this.Proxy",
-        "typeof this.Proxy",
-        "this.Proxy=7",
-        "delete this.Proxy",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+fn materialized_proxy_global_supports_ordinary_mutation_and_defers_construction() {
+    truth(
+        "typeof Proxy==='function' && Proxy===this.Proxy && Object.hasOwn(this,'Proxy') && Reflect.ownKeys(this).includes('Proxy')",
+    );
+    truth(
+        "let d=Object.getOwnPropertyDescriptor(this,'Proxy');d.value===Proxy && d.writable && !d.enumerable && d.configurable",
+    );
+    truth("this.Proxy=7;Proxy===7 && this.Proxy===7");
+    truth(
+        "delete this.Proxy;typeof Proxy==='undefined' && !('Proxy' in this) && !Object.hasOwn(this,'Proxy') && Object.getOwnPropertyDescriptor(this,'Proxy')===undefined",
+    );
     truth("'Proxy' in this");
     truth("function Proxy(){}Proxy===this.Proxy");
+    truth("let caught=false;try{Proxy();}catch(e){caught=e instanceof TypeError;}caught");
+    for source in ["new Proxy({},{})", "new Proxy(Object,Object)"] {
+        let mut realm = Realm::default();
+        realm.eval("let flag=0").unwrap();
+        let result = realm.eval(&format!(
+            "try{{{source};}}catch{{flag=1;}}finally{{flag=2;}}"
+        ));
+        assert!(
+            matches!(&result, Err(Error::Unsupported { .. })),
+            "{source}: {result:?}"
+        );
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
 }

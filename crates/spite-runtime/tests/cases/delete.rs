@@ -90,9 +90,9 @@ fn strict_delete_is_an_early_error_before_any_side_effects() {
 }
 
 #[test]
-fn missing_standard_objects_stay_unsupported_when_deleted() {
-    assert!(matches!(
-        Realm::default().eval("try { delete Proxy; } catch { 1; }"),
-        Err(Error::Unsupported { .. })
-    ));
+fn configurable_standard_objects_can_be_deleted_without_running_their_bodies() {
+    assert_eq!(
+        Realm::default().eval("let caught=0,finalized=0;try{if(!delete Proxy)throw 1;}catch{caught=1;}finally{finalized=1;}caught===0 && finalized===1 && typeof Proxy==='undefined' && !('Proxy' in this) && Object.getOwnPropertyDescriptor(this,'Proxy')===undefined"),
+        Ok(Value::Boolean(true))
+    );
 }

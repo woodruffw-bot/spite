@@ -166,10 +166,10 @@ fn restricted_global_values_follow_existing_writability_rules() {
             ..
         })
     ));
-    assert!(matches!(
-        Realm::default().eval("var Proxy;"),
-        Err(Error::Unsupported { .. })
-    ));
+    result(
+        "let saved=Proxy;var Proxy;Proxy===saved && typeof Proxy==='function'",
+        Value::Boolean(true),
+    );
 }
 
 #[test]

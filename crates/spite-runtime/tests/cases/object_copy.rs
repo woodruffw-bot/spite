@@ -143,18 +143,13 @@ fn descriptor_results_define_data_properties_even_over_inherited_setters_and_pro
             "{source}"
         );
     }
-    for source in [
-        "Object.assign({},Array)",
-        "Object.getOwnPropertyDescriptors(globalThis)",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(
+        "let ds=Object.getOwnPropertyDescriptors(globalThis),p=ds.Proxy,n=ds.undefined,d=Object.getOwnPropertyDescriptor(ds,'Proxy');Reflect.ownKeys(ds).length===59 && p.value===Proxy && p.writable && !p.enumerable && p.configurable && n.value===undefined && !n.writable && !n.enumerable && !n.configurable && d.value===p && d.writable && d.enumerable && d.configurable",
+    );
+    assert!(matches!(
+        Realm::default().eval("Object.assign({},Array)"),
+        Err(Error::Unsupported { .. })
+    ));
 }
 
 #[test]

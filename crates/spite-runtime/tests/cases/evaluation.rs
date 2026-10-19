@@ -219,10 +219,11 @@ fn typeof_special_cases_only_unresolvable_references() {
     assert_eq!(eval("typeof null"), Value::String(JsString::from("object")));
     exception("typeof x; let x", ExceptionKind::ReferenceError);
     exception("typeof (0, missing)", ExceptionKind::ReferenceError);
-    assert!(matches!(
-        Realm::default().eval("typeof Proxy"),
-        Err(Error::Unsupported { .. })
-    ));
+    assert_eq!(
+        eval("typeof Proxy"),
+        Value::String(JsString::from("function"))
+    );
+    boolean("delete this.Proxy;typeof Proxy==='undefined'", true);
 }
 
 #[test]

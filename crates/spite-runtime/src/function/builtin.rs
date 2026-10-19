@@ -16,6 +16,14 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match builtin {
+            Builtin::GlobalMetadataConstructor(constructor) => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                format!("{} requires construction", constructor.name()),
+            )),
+            Builtin::GlobalMetadataMember(member) => {
+                self.global_metadata_method(member, this, span)
+            }
             Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
             Builtin::Date => self.date_format_local(
                 super::date::Method::ToString,

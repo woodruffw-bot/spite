@@ -184,6 +184,7 @@ fn locale_string_invokes_the_current_method_without_forwarding_reserved_argument
 
 #[test]
 fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
+    check("globalThis.hasOwnProperty('Proxy') && typeof Proxy==='function'");
     let mut realm = Realm::default();
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -193,11 +194,7 @@ fn intrinsic_roots_survive_deleted_bindings_and_missing_statics_remain_gaps() {
         ),
         Ok(Value::Boolean(true))
     );
-    for source in [
-        "Array.fromAsync",
-        "Array.propertyIsEnumerable('fromAsync')",
-        "globalThis.hasOwnProperty('Proxy')",
-    ] {
+    for source in ["Array.fromAsync", "Array.propertyIsEnumerable('fromAsync')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

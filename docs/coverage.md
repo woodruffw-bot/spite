@@ -34,7 +34,7 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Ordinary global object, globalThis, Script/arrow global this, undefined, NaN, Infinity, and property-backed global bindings |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, Proxy, SharedArrayBuffer, WeakRef, FinalizationRegistry and Atomics graphs with deferred bodies |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
@@ -15572,5 +15572,65 @@ extra local full replay. No full local MSRV replay is claimed. Fresh strict
 workspace Clippy, formatting, dependency policy, all three inventories, and diff
 checks pass. All 922 Rust sources, 734 snapshots, old fixtures, and helpers are
 retained; only two Rust count files change. No default quota, selected test budget,
-dependency, profile, or worker changes. All four full hosted corpus gates remain
-required for this separate fixture commit.
+dependency, profile, or worker changes. The separate fixture commit passes all
+seventeen hosted jobs, including four full 15,979-variant corpus gates. Workflow
+elapsed is 631 seconds versus 627 for its parent; summed runner wall time is
+6,245 versus 6,541 seconds. These mixed observations establish no isolated
+performance improvement.
+
+## Global intrinsic metadata and complete global reflection
+
+Promise, Proxy, SharedArrayBuffer, WeakRef, FinalizationRegistry, and Atomics now
+have their edition-17 intrinsic graphs and standard metadata. SharedArrayBuffer
+is the host's optional exposure. Five constructors, four unbranded prototypes,
+one namespace, and 35 methods/accessors add 45 retained objects. The initial realm
+therefore has 549 entries. Proxy has no prototype property and Atomics is not
+callable or constructible. Function arities, descriptors, tags, and constructor
+links follow the retained specification; no out-of-edition APIs are added.
+
+Deferred constructors and methods still report Unsupported after their specified
+call/new prefix checks. Promise and SharedArrayBuffer species getters implement
+the generic receiver-preserving behavior. This metadata work establishes no
+promise jobs, Proxy internal methods, weak references/finalization, shared-memory
+storage, or atomic algorithms.
+
+All 59 initial global own properties support ordinary reflection and enumeration.
+Global mutation, inherited replacements, deletion, lexical separation, getter-inert
+for-in traversal, copying, and integrity operations use the ordinary algorithms.
+Deleting a standard binding restores ordinary missing-name behavior; explicit
+host reservations retain their existing host-gap category. The incomplete Array
+constructor remains a separate gap.
+
+Seventeen new integration groups and updated global property tests cover
+these behaviors. Two inspected inline snapshots record exact metadata. Collection
+after deleting configurable intrinsic edges retains all 45 new objects. Existing
+host-failure controls use explicit reserved names, the Test262 runner's existing
+print reservation, or the CLI's unsupported generator grammar. Their assertions,
+selected quotas, test names, and intended host-failure categories remain intact.
+The separate sentinel cleanup changes no implementation behavior or Native names.
+
+Both toolchains pass all 390 Runtime units and all 29 focused metadata cases,
+including both unchanged inline snapshots. The single full stable Runtime run
+passes all 3,854 cases in 221.78 seconds using the focused run's exact
+binary. All 13 CLI cases and 34 nonfull Test262 controls pass on both toolchains;
+only the full pinned-corpus case is filtered from those local control runs.
+Runtime documentation tests, fresh strict workspace Clippy, formatting,
+dependency policy, all three inventories, and diff checks pass. The separate
+sentinel cleanup passes all 28 affected cases on both toolchains.
+
+The initial full run exposed one obsolete global-reflection oracle and two
+work-limit failures during fixture setup. Only those three test bodies change:
+the global oracle now checks ordinary behavior, and the RegExp fixtures separate
+setup Scripts with the same per-Script limits. Their 8,000-character inputs,
+target execution limits, and handler assertions remain unchanged. The unit-test
+results are retained through exact unchanged production and unit-test sources.
+
+Native names total 5,730, including 390 Runtime units and 3,854 integration cases.
+The metadata commit retains all 924 Rust sources: 27 owned metadata/control paths
+and 897 unchanged files. All 734 snapshot files remain exact. The two-commit
+series changes 53 unique Rust paths and three documents; 871 Rust files are
+unchanged from its published base. No default quota, selected allowance,
+dependency, profile, stack, worker, or full hosted corpus coverage changes.
+All seventeen hosted jobs and four full 15,979-variant corpus gates remain
+required for the final metadata commit; no intermediate cleanup own-CI result
+is claimed.

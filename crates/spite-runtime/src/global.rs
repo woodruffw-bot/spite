@@ -242,6 +242,25 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "WeakMap", Value::Object(weak_map), true, span)?;
+        let metadata = &self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .global_metadata;
+        let globals = [
+            ("Promise", metadata.promise.clone()),
+            ("Proxy", metadata.proxy.clone()),
+            ("SharedArrayBuffer", metadata.shared_array_buffer.clone()),
+            ("WeakRef", metadata.weak_ref.clone()),
+            (
+                "FinalizationRegistry",
+                metadata.finalization_registry.clone(),
+            ),
+            ("Atomics", metadata.atomics.clone()),
+        ];
+        for (name, value) in globals {
+            self.define_builtin_property(&object, name, Value::Object(value), true, span)?;
+        }
         self.global_object = Some(object);
         Ok(())
     }
@@ -418,10 +437,9 @@ impl Realm {
 
     pub(super) fn missing_global_property(&self, key: &JsString) -> bool {
         // Identifier names are UTF-8 scalar strings, while arbitrary property
-        // names may contain lone surrogates; those never name these placeholders.
-        String::from_utf16(key.code_units()).is_ok_and(|name| {
-            crate::standard_global(&name) || self.unsupported_host_globals.contains(&name)
-        })
+        // names may contain lone surrogates; those never name configured host barriers.
+        String::from_utf16(key.code_units())
+            .is_ok_and(|name| self.unsupported_host_globals.contains(&name))
     }
 
     pub(super) fn check_global_property_operation<'key>(

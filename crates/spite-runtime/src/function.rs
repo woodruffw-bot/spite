@@ -25,6 +25,7 @@ mod data_view;
 mod date;
 mod dynamic;
 mod error;
+mod global_metadata;
 mod instance;
 mod iterator;
 mod json;
@@ -61,6 +62,8 @@ pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
+    GlobalMetadataConstructor(global_metadata::Constructor),
+    GlobalMetadataMember(global_metadata::Member),
     Function,
     Eval,
     EncodeUri,
@@ -372,6 +375,8 @@ impl Builtin {
     // [[InitialName]] does not change when the public name property is altered.
     fn initial_name(self) -> &'static str {
         match self {
+            Self::GlobalMetadataConstructor(constructor) => constructor.name(),
+            Self::GlobalMetadataMember(member) => member.name(),
             Self::Function => "Function",
             Self::FunctionPrototype | Self::ThrowTypeError => "",
             Self::FunctionCall => "call",
@@ -663,6 +668,8 @@ impl Builtin {
 
     fn length(self) -> f64 {
         match self {
+            Self::GlobalMetadataConstructor(constructor) => constructor.length(),
+            Self::GlobalMetadataMember(member) => member.length(),
             Self::Date | Self::DateUtc => 7.0,
             Self::DateNow => 0.0,
             Self::DateParse => 1.0,
@@ -964,6 +971,7 @@ pub(super) struct Intrinsics {
     pub set: set::SetIntrinsics,
     pub weak_set: weak_set::WeakSetIntrinsics,
     pub weak_map: weak_map::WeakMapIntrinsics,
+    pub global_metadata: global_metadata::GlobalMetadataIntrinsics,
 }
 
 impl Intrinsics {
@@ -1010,6 +1018,7 @@ impl Intrinsics {
         .chain(self.set.roots())
         .chain(self.weak_set.roots())
         .chain(self.weak_map.roots())
+        .chain(self.global_metadata.roots())
     }
 }
 
@@ -1180,6 +1189,8 @@ impl Realm {
         )?;
         let weak_set = self.weak_set_intrinsics(&object_prototype, &function_prototype, span)?;
         let weak_map = self.weak_map_intrinsics(&object_prototype, &function_prototype, span)?;
+        let global_metadata =
+            self.global_metadata_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -1222,6 +1233,7 @@ impl Realm {
             set,
             weak_set,
             weak_map,
+            global_metadata,
         });
         Ok(object_prototype)
     }

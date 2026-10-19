@@ -162,6 +162,8 @@ mod function_gaps;
 mod function_intrinsics;
 #[path = "cases/function_methods.rs"]
 mod function_methods;
+#[path = "cases/global_intrinsic_metadata.rs"]
+mod global_intrinsic_metadata;
 #[path = "cases/global_numeric_predicates.rs"]
 mod global_numeric_predicates;
 #[path = "cases/globals.rs"]

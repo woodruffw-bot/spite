@@ -111,9 +111,9 @@ fn opted_in_constructor_and_sticky_branch_work_failures_bypass_js_handlers() {
             max_steps: Some(10000),
             ..Limits::default()
         });
-        realm
-            .eval(&format!("let r={pattern},flag=0,s='a'.repeat(8000)"))
-            .unwrap();
+        // Each setup Script retains the same explicit allowance as the target.
+        realm.eval(&format!("let r={pattern},flag=0")).unwrap();
+        realm.eval("let s='a'.repeat(8000)").unwrap();
         assert!(
             matches!(
                 realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),

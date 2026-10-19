@@ -2,7 +2,7 @@
 
 use crate::{
     BindingState, CompletionKind, Error, ExceptionKind, Realm, Reference, Value,
-    environment::EnvironmentHandle, standard_global,
+    environment::EnvironmentHandle,
 };
 use spite_core::{DiagnosticKind, Span};
 use spite_parser::{EvalContext, ast::Script, parse_eval_utf16_with_private_names};
@@ -203,7 +203,7 @@ impl Realm {
         if global {
             // Complete every global check before creating any binding.
             for &(name, range) in &names {
-                if (standard_global(name) || self.unsupported_host_globals.contains(name))
+                if self.unsupported_host_globals.contains(name)
                     && self.global_own(name, range)?.is_none()
                     && !seen.contains(name)
                 {

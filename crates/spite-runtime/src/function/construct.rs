@@ -158,6 +158,12 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::GlobalMetadataConstructor(constructor)) => {
+                    return Err(Self::unsupported(
+                        span,
+                        format!("{} is not implemented", constructor.name()),
+                    ));
+                }
                 Callable::Builtin(Builtin::Object) => {
                     return self.object_constructor(
                         Some(new_target),

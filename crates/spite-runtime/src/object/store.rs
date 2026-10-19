@@ -308,7 +308,8 @@ impl Objects {
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
-            Builtin::ArrayBuffer
+            Builtin::GlobalMetadataConstructor(_)
+                | Builtin::ArrayBuffer
                 | Builtin::TypedArray(_)
                 | Builtin::TypedArrayAbstract
                 | Builtin::DataView

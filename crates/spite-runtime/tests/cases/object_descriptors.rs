@@ -211,6 +211,9 @@ fn same_value_does_not_coerce_and_distinguishes_negative_zero() {
 
 #[test]
 fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
+    check(
+        "let saved=Proxy;Object.defineProperty(globalThis,'Proxy',{});let d=Object.getOwnPropertyDescriptor(globalThis,'Proxy');d.value===saved && d.writable && !d.enumerable && d.configurable",
+    );
     for (method, length) in [
         ("defineProperty", 3),
         ("getOwnPropertyDescriptor", 2),
@@ -230,8 +233,6 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
         "Object.getOwnPropertyDescriptor(Array,'fromAsync')",
         "Object.hasOwn(Array,'fromAsync')",
         "Object.defineProperty(Array,'fromAsync',{})",
-        "Object.defineProperty(globalThis,'Proxy',{})",
-        "Object.getOwnPropertyDescriptor(globalThis,'Proxy')",
     ] {
         assert!(
             matches!(

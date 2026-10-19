@@ -91,9 +91,9 @@ fn opted_in_constructor_and_sticky_search_aborts_remain_host_failures() {
         max_steps: Some(10000),
         ..Limits::default()
     });
-    realm
-        .eval("let r=/a+|([b])/y,flag=0,s='a'.repeat(8000)")
-        .unwrap();
+    // Each setup Script retains the same explicit allowance as the target.
+    realm.eval("let r=/a+|([b])/y,flag=0").unwrap();
+    realm.eval("let s='a'.repeat(8000)").unwrap();
     assert!(matches!(
         realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
         Err(Error::Limit { .. })

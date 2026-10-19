@@ -618,8 +618,7 @@ impl Realm {
                     "var declaration conflicts with global lexical binding",
                 ));
             }
-            if (standard_global(binding.name)
-                || self.unsupported_host_globals.contains(binding.name))
+            if self.unsupported_host_globals.contains(binding.name)
                 && self.global_own(binding.name, binding.span)?.is_none()
                 && !function_names.contains(binding.name)
             {
@@ -1260,9 +1259,7 @@ impl Realm {
                 }
             }
         }
-        if (standard_global(name) || self.unsupported_host_globals.contains(name))
-            && self.global_own(name, span)?.is_none()
-        {
+        if self.unsupported_host_globals.contains(name) && self.global_own(name, span)?.is_none() {
             return Ok(Reference::UnsupportedGlobal(name));
         }
         let object = self.global_object();
@@ -2002,18 +1999,4 @@ fn reference_expression(expr: &Expr) -> bool {
         ExprKind::Parenthesized(inner) => reference_expression(inner),
         _ => false,
     }
-}
-fn standard_global(name: &str) -> bool {
-    matches!(
-        name,
-        "SharedArrayBuffer"
-            | "Atomics"
-            | "WeakRef"
-            | "FinalizationRegistry"
-            | "Promise"
-            | "Proxy"
-            | "DisposableStack"
-            | "AsyncDisposableStack"
-            | "SuppressedError"
-    )
 }

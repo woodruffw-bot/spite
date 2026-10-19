@@ -64,7 +64,7 @@ fn execution_work_limit_is_optional() {
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),
-        ("Proxy", "Unsupported"),
+        ("function* gap(){}", "Unsupported"),
         ("1n + 1", "TypeError"),
         ("1n / 0n", "RangeError"),
         ("throw 7", "uncaught 7"),

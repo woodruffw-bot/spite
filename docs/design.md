@@ -6222,8 +6222,8 @@ String overrides the fallback; other values are never coerced. Tag concatenation
 preserves UTF-16 and checks output work/capacity before allocation. Nullish values
 skip lookup. Symbol and BigInt receivers use their actual wrappers and observable
 prototype tags. Deleting those tags exposes the ordinary Object fallback.
-Missing intrinsics remain Unsupported. Each new object kind must implement its
-required Symbol hooks alongside its string-keyed API.
+Unimplemented intrinsic algorithms remain Unsupported. Each object kind must
+implement its required Symbol hooks alongside its string-keyed API.
 Arithmetic and comparisons convert original operands from left to right after
 both expressions evaluate; untagged templates and property names use the string hint.
 
@@ -6689,8 +6689,8 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of the incomplete Array constructor and global
-object reports Unsupported until their own key sets are complete. Object.freeze/seal and
+bounded work. Enumeration of the incomplete Array constructor reports Unsupported
+until its own key set is complete. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
 and use mapped-argument descriptor rules when freezing indexed properties.
@@ -9362,3 +9362,26 @@ extra atoms, noncanonical assertions and empty or multicharacter q alternatives
 remain outside this entry. Parser string-property early errors remain distinct
 from unsupported valid syntax and optional host limits; dependencies and default
 resource policy are unchanged.
+
+## Global intrinsic metadata and enumeration
+
+The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
+WeakRef, FinalizationRegistry, and Atomics with their standard property attributes
+and retained intrinsic identities. SharedArrayBuffer is the host's selected
+optional exposure. Constructors, prototypes, methods, tags, species accessors,
+and function name/length properties follow their specification inventories.
+Proxy has no prototype property; Atomics is a namespace, not a function.
+
+Metadata exposure does not implement the deferred algorithms. Calling a
+constructor that requires new throws the specified TypeError first. Construction
+and deferred methods retain explicit Unsupported results, after ordinary argument
+evaluation. The two species accessors return their original receiver. This adds
+45 rooted intrinsic objects; global mutation or deletion cannot unroot them.
+
+The complete global own-key set supports reflection, enumeration, copying, and
+integrity operations through ordinary object behavior. Standard bindings can be
+replaced, shadowed through prototypes, or deleted. Deleted names follow ordinary
+lookup and typeof rules. Lexical bindings remain separate from global properties.
+Configured host reservations still report explicit host gaps and install no
+properties. Names outside the selected edition receive no implicit reservation.
+The incomplete Array constructor retains its separate fromAsync barrier.
