@@ -8250,3 +8250,12 @@ test/built-ins/WeakMap/prototype/set/this-not-object-throw-undefined.js	-	-	-
 test/built-ins/WeakMap/prototype/set/throw-if-key-cannot-be-held-weakly.js	-	-	-
 test/built-ins/WeakMap/set-not-callable-throws.js	-	-	-
 test/built-ins/WeakMap/undefined-newtarget.js	-	-	-
+test/built-ins/ArrayBuffer/prop-desc.js	-	-	-
+test/built-ins/Atomics/prop-desc.js	-	-	-
+test/built-ins/DataView/dataview.js	-	-	-
+test/built-ins/FinalizationRegistry/prop-desc.js	-	-	-
+test/built-ins/Promise/promise.js	-	-	-
+test/built-ins/Proxy/proxy.js	-	-	-
+test/built-ins/WeakMap/weakmap.js	-	-	-
+test/built-ins/WeakRef/prop-desc.js	-	-	-
+test/built-ins/WeakSet/weakset.js	-	-	-

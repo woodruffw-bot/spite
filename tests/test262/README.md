@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8270 unmodified test fixtures and fifteen harness files come from
+These 8279 unmodified test fixtures and fifteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,38 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+## Global descriptor fixtures
+
+Nine whole unchanged originals at the existing pin cover the global binding
+descriptors of WeakMap, WeakSet, DataView, ArrayBuffer, Promise, Proxy, WeakRef,
+FinalizationRegistry, and Atomics. They retain 5,385 bytes and add eighteen required
+normal/strict variants. The existing complete sta.js, assert.js, and
+propertyHelper.js helpers remain unchanged; no helper is added. Every earlier
+original, inventory prefix, license, and revision remains exact.
+
+These cases exercise standard global reflection and property attributes.
+Atomics also retains its ordinary non-callable/non-constructible namespace
+checks. The cohort establishes no deferred Promise, Proxy, weak-reference,
+finalization, shared-memory, or atomic algorithm support. WeakMap's formerly
+deferred global-enumeration original is now included; its separate foreign-realm
+original still needs $262.createRealm and remains deferred.
+
+The corpus now contains 8279 fixtures, fifteen helpers, 8260 reviewed sources,
+and 15997 required variants: 14464 harness positives, 1525 parse negatives, four
+raw positives, and four runtime negatives. Only three numeric assertions change
+in the two Rust inventory files. Runtime and runner behavior, all 5,730 Native
+names, 924 Rust source paths, and 734 snapshot files remain unchanged.
+
+Both toolchains pass all eighteen new variants. Stable passes all 35 Test262
+package tests, including the complete 15,997-variant corpus in 377.92 seconds.
+MSRV passes the 34 nonfull package tests; only the full pinned-corpus case is
+filtered locally. Fresh strict workspace Clippy, formatting, dependency policy,
+all three inventories, and diff checks pass. Exact unchanged engine sources and
+Native names retain their accepted results without another local engine run.
+All seventeen hosted jobs and four complete 15,997-variant corpus gates remain
+required. Defaults, selected limits, dependencies, profiles, ordinary stacks,
+and three-worker execution are unchanged.
+
 ## WeakMap fixtures
 
 One hundred thirty-nine whole unchanged originals at the existing pin retain
@@ -41,9 +73,10 @@ prefixes, license, and revision remain exact.
 The programs exercise constructor ordering and iterator closing, method metadata,
 receiver brands, object and non-registered Symbol keys, registered-Symbol rejection,
 callback validation and reentrancy, subclassing, and reflection. Of 141 reviewed
-whole originals, two remain deferred: proto-from-ctor-realm.js needs
-$262.createRealm, and weakmap.js needs global enumeration. No original is adapted
-or partially credited. The corpus now has 8270 fixtures and 8251 reviewed sources,
+whole originals, two were initially deferred: proto-from-ctor-realm.js needs
+$262.createRealm, while weakmap.js is now admitted in the global-descriptor cohort.
+No original is adapted or partially credited. That admission brought the corpus
+to 8270 fixtures and 8251 reviewed sources,
 requiring 15979 variants: 14446 harness positives, 1525 parse negatives, four raw
 positives, and four runtime negatives.
 
@@ -3886,8 +3919,8 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 15979 variants from 8251 reviewed sources:
-14446 harness positives, 1525 reviewed parse negatives, four raw positives, and
+The `spite-test262` command runs 15997 variants from 8260 reviewed sources:
+14464 harness positives, 1525 reviewed parse negatives, four raw positives, and
 four runtime negatives. The cohort sections above describe the admitted whole
 originals and deferred prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

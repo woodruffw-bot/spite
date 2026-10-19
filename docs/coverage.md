@@ -15550,9 +15550,10 @@ Review of 141 whole originals at the existing pin selects 139 unchanged fixtures
 retaining 107,724 bytes. Their prescribed modes add 277 variants: 138 sources run
 in normal and strict mode, and the one onlyStrict source runs strictly. They reuse
 five already vendored helpers; all fifteen helpers, previous originals, license,
-revision, and inventory prefixes remain exact. Two originals remain deferred:
-one needs $262.createRealm and one needs global property enumeration. Neither is
-adapted or partially credited.
+revision, and inventory prefixes remain exact. Two originals were deferred at
+that admission: one needs $262.createRealm and one needed global property
+enumeration. The latter
+is admitted below after its prerequisite; neither original is adapted.
 
 The cohort covers constructor ordering and iterator closing, method metadata and
 brands, object and valid weak Symbol identities, registered-Symbol rejection,
@@ -15631,6 +15632,40 @@ and 897 unchanged files. All 734 snapshot files remain exact. The two-commit
 series changes 53 unique Rust paths and three documents; 871 Rust files are
 unchanged from its published base. No default quota, selected allowance,
 dependency, profile, stack, worker, or full hosted corpus coverage changes.
-All seventeen hosted jobs and four full 15,979-variant corpus gates remain
-required for the final metadata commit; no intermediate cleanup own-CI result
-is claimed.
+The final metadata commit passes all seventeen hosted jobs, including four
+complete 15,979-variant corpus gates and all 5,730 Native cases on each platform
+and toolchain. No intermediate cleanup own-CI result is claimed. Workflow time
+was 649 seconds versus 631 for its parent; summed runner wall time was 6,447
+versus 6,245 seconds. These different hosted runs establish no isolated speedup.
+
+## Global descriptor Test262 originals
+
+Nine whole unchanged originals at the existing pin cover the global binding
+descriptors of WeakMap, WeakSet, DataView, ArrayBuffer, Promise, Proxy, WeakRef,
+FinalizationRegistry, and Atomics. They retain 5,385 bytes and add eighteen required
+normal/strict variants. The existing complete sta.js, assert.js, and
+propertyHelper.js helpers remain unchanged; no helper is added. Every earlier
+original, inventory prefix, license, and revision remains exact.
+
+These cases exercise standard global reflection and property attributes.
+Atomics also retains its ordinary non-callable/non-constructible namespace
+checks. The cohort establishes no deferred Promise, Proxy, weak-reference,
+finalization, shared-memory, or atomic algorithm support. WeakMap's formerly
+deferred global-enumeration original is now included; its separate foreign-realm
+original still needs $262.createRealm and remains deferred.
+
+The corpus now contains 8279 fixtures, fifteen helpers, 8260 reviewed sources,
+and 15997 required variants: 14464 harness positives, 1525 parse negatives, four
+raw positives, and four runtime negatives. Only three numeric assertions change
+in the two Rust inventory files. Runtime and runner behavior, all 5,730 Native
+names, 924 Rust source paths, and 734 snapshot files remain unchanged.
+
+Both toolchains pass all eighteen new variants. Stable passes all 35 Test262
+package tests, including the complete 15,997-variant corpus in 377.92 seconds.
+MSRV passes the 34 nonfull package tests; only the full pinned-corpus case is
+filtered locally. Fresh strict workspace Clippy, formatting, dependency policy,
+all three inventories, and diff checks pass. Exact unchanged engine sources and
+Native names retain their accepted results without another local engine run.
+All seventeen hosted jobs and four complete 15,997-variant corpus gates remain
+required. Defaults, selected limits, dependencies, profiles, ordinary stacks,
+and three-worker execution are unchanged.
