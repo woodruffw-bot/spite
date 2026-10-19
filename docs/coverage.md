@@ -15439,5 +15439,33 @@ files are unchanged. Compilation required a concrete unwind-test payload and
 equivalent Option visitor syntax. Narrow lint annotations document that Symbol
 retirement never affects key equality or hashing. No assertions, selected
 budgets, default quotas, dependencies, profiles, or worker settings changed.
-The separate hosted gate must still execute the complete Native inventory and
-four full 15,226-variant corpus gates.
+The separate hosted gate passes all seventeen jobs, including the complete
+5,705-name Native inventory per platform/toolchain, 73 framework checks, four
+documentation gates, and four full 15,226-variant corpus gates. Workflow elapsed
+time is 554 seconds versus 545 for the encoding-fixture parent; summed runner
+wall time is 6,060 versus 6,294 seconds. These mixed observations do not isolate
+a speedup.
+
+## Shared exhaustive Unicode test predicates
+
+Two private, non-inlined test helpers share the original independent literal
+predicates across four exhaustive Unicode cases. Every point loop, flag, input,
+expected formula, work charge, limit, assertion, and test name is retained. The
+test source shrinks by 341,018 bytes; its production prefix and all other Rust
+sources remain byte-exact. No production lookup table supplies an oracle.
+
+Both toolchains pass all 1,026 exact Core names. Stable's Core-only command takes
+249.60 seconds, with a 166-second build summary and 82.75 seconds of execution.
+Rust 1.85 takes 256.10 seconds, with a 153-second build and 102.06 seconds of
+execution. The preceding foundation commands reported 311/496 seconds of build
+time and 80.04/103.80 seconds of Core execution, but built three packages in a
+different incremental context. These measurements are not a controlled compiler
+comparison, and no hosted speed gain is inferred.
+
+Fresh strict all-target workspace Clippy, formatting, dependency policy, all
+three inventories, and diff checks pass. The sole Rust change preserves the
+production prefix, all 921 other Rust sources, all 734 snapshot files, and the
+5,705-name Native inventory. Runtime and other-crate local evidence carries
+from the exact parent sources. The separate own hosted gate must still retain
+all Native cases and four full 15,226-variant corpus runs. No profile, stack,
+worker, dependency, selected limit, or default quota changes.
