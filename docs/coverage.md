@@ -47,7 +47,7 @@ not an alternative language specification.
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15098 reviewed Test262 variants, twelve pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 15226 reviewed Test262 variants, thirteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15352,4 +15352,56 @@ add exactly one unit and 23 integration groups. The expected workspace Native
 inventory is 5,678: 1,022 Core and 4,656 REST, including 3,829 Runtime integration
 cases, 370 Runtime units, and 457 other REST names. There are 913 Rust files;
 900 unowned sources and all 734 snapshot files are unchanged. The separate
-full hosted gate remains required before accepting the published commit.
+hosted gate passes all seventeen jobs, including the exact 5,678 Native names
+per platform/toolchain, all 73 framework checks, four documentation gates, and
+four complete 15,098-variant corpus gates. Workflow elapsed time is 647 seconds
+versus the preceding 612; summed runner wall time falls from 6,742 to 6,021
+seconds. These mixed observations do not establish an isolated speedup.
+
+## Uint8Array encoding Test262 originals
+
+Sixty-four complete unchanged originals cover all six hexadecimal and Base64
+methods at the existing Test262 revision. They retain 61,195 fixture bytes and
+add 64 normal Script plus 64 StrictScript variants. The whole unchanged
+16,526-byte testTypedArray.js helper is the thirteenth harness file; no production
+loader or runner allowlist changes. All prior originals, rows, helpers, license,
+and pin are preserved.
+
+The reviewed files cover metadata, nonconstructibility, intrinsic results,
+non-String inputs, exact vectors, alphabets, whitespace, tail modes, padding and
+overflow, option effects, offsets/capacity, unchanged tails, partial writes, and
+Number-content receiver brands with Float16 and resizable argument factories.
+They do not establish BigInt receiver-brand coverage. Two misleadingly named Hex
+illegal-characters originals reach only parity errors; separate setter originals
+check even-length bad pairs and prefix writes. Four detachment-hook and two
+immutable-buffer originals remain wholly deferred, without passing credit.
+
+The expanded inventory contains 7893 fixtures, thirteen helpers, 7874 reviewed
+sources, and 15226 required variants: 13693 harness positives, 1525 parse
+negatives, four raw positives, and four runtime negatives. The README's current
+aggregate now agrees with the machine inventory; earlier admission inventories
+and measured worker comparisons retain their historical counts. Runtime defaults,
+selected test limits, profiles, workers, dependencies, and all 734 snapshots remain
+unchanged. Both toolchains pass all 128 newly admitted normal/strict variants,
+including complete helper loading for both brand originals. Both full package
+gates pass all 35 tests across seven targets and all 15226 corpus variants, with
+every non-passing outcome at zero. Corpus execution takes 330.78 seconds on stable
+and 346.16 seconds on Rust 1.85. Documentation tests, fresh affected Test262
+workspace Clippy, formatting, dependency policy, and all inventories pass.
+
+## MSRV dependency-cache reuse
+
+The complete Base64 push passes all seventeen hosted jobs: exact 5,654 Native
+names per platform/toolchain, the one reviewed encoding-wrapper replacement,
+four documentation gates, all 73 framework checks, and four full 15,098-variant
+corpus gates. All three eligible Windows MSRV roles restore the preceding Hex
+dependency cache. Their mandatory pinned-Cargo preclean succeeds with zero
+workspace outputs, Runtime compiles freshly, all tests pass, and the successful
+post-test clean removes workspace outputs before each new cache save.
+
+This workflow finishes in 612 seconds versus the preceding cold run's 647.
+Summed runner wall time increases from 6,385 to 6,742 seconds. Collection changes
+are mixed across roles, and implementation/code-generation cost, 25 added Native
+cases, one replacement, and hosted scheduling also differ. The evidence proves
+safe cache reuse, with no uniform or isolated causal speedup claim. No test,
+Realm isolation, default quota, profile, stack, or worker setting is weakened.

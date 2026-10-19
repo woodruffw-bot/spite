@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 7829 unmodified test fixtures and twelve harness files come from
+These 7893 unmodified test fixtures and thirteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -14,10 +14,11 @@ Reports retain manifest order and every per-variant outcome. I/O, review, and
 thread-creation errors fail the gate; worker panics propagate. The library's
 `run_corpus` API and the CLI use serial execution.
 
-The gate uses three workers on the standard four-CPU public CI runners. Both
-stable and Rust 1.85 pass all 35 package tests across seven targets, including
-all 15098 variants, with every non-passing outcome at zero. With identical
-inputs, profiles, assertions and ordinary stacks, local corpus execution changed
+The gate uses three workers on the standard four-CPU public CI runners. The
+earlier three-worker comparison passed all 35 package tests across seven targets
+on stable and Rust 1.85, including its then-current 15098 variants, with every
+non-passing outcome at zero. With identical inputs, profiles, assertions and
+ordinary stacks, local corpus execution changed
 from 400.50s to 368.43s on stable and 434.43s to 365.71s on Rust 1.85. These
 individual observations do not guarantee the same gain on other machines.
 
@@ -27,6 +28,38 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## Uint8Array hex and Base64 fixtures
+
+Sixty-four complete unchanged originals at the existing pin cover all six
+Uint8Array encoding methods. They retain 61,195 fixture bytes and add 128 normal
+and strict harness-positive variants. The whole 16,526-byte testTypedArray.js
+helper is admitted unchanged as the thirteenth harness file. The twelve prior
+helpers, license, revision, and every earlier fixture and inventory row remain
+unchanged. No runner allowlist, runtime implementation, default quota, selected
+test limit, dependency, profile, or worker setting changes.
+
+The programs cover descriptors and nonconstructibility, intrinsic static results,
+object-input rejection without coercion, exact vectors, alphabets, ASCII
+whitespace, tail modes and padding, options effects, view offsets, bounded
+consumption, preserved target tails, completed-prefix writes before SyntaxError,
+and incompatible Number-content receiver brands. The brand helper includes
+Float16 and resizable argument factories; these two originals do not cover BigInt
+receiver brands. Both Hex illegal-characters originals test parity only because
+every input has odd length. Separate even-length cases check actual bad pairs.
+
+Six complete originals remain deferred: four need the unavailable $262 detachment
+hook and two need immutable backing stores. No original is rewritten, reduced,
+skipped, or credited for Unsupported. The inventory is 7893 fixtures, thirteen
+helpers, 7874 reviewed sources and 15226 variants: 13693 harness positives,
+1525 parse negatives, four raw positives and four runtime negatives.
+
+Stable and Rust 1.85 each pass all 128 newly admitted normal/strict variants,
+including both brand originals with the entire testTypedArray.js helper loaded.
+Both toolchains also pass all 35 package tests across seven targets, including
+all 15226 corpus variants with no non-passing outcomes. Corpus execution takes
+330.78 seconds on stable and 346.16 seconds on Rust 1.85. Documentation tests,
+workspace Clippy, formatting, dependency policy, and inventory checks pass.
 
 ## Ordinary DataView fixtures
 
@@ -3796,44 +3829,13 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 13680 variants from 7101 reviewed sources: the eleven
-raw hashbang fixtures, ten BigInt parse-negative files in both Script modes,
-eleven arrow parse-negative files in their prescribed Script modes, and fourteen
-new.target parse-negative files in both Script modes, plus nine positive function
-and capture tests, 40 call/construction iterable-spread tests, 30 call/construction
-object-spread tests, 133 Reflect call, construction, prototype, extensibility, descriptor, and property tests, 325 Math numeric/metadata tests, 154 Iterator constructor/acquisition/sequencing/consumption/reflection tests, twelve Boolean tests, 63 Number tests, ten numeric parsing
-tests, five global numeric predicate tests, 58 URI encoding and 107 URI decoding tests, 43 Error and AggregateError tests, 140 JSON builtin tests, 200 Map and Map Iterator tests, 191 Function builtin tests, 353 Set and Set Iterator tests, 48 BigInt API tests, 173 Object tests,
-430 String and String iterator tests, 713 Array and Array iterator tests
-(including fifteen nested object-spread files),
-19 tagged-template tests, 27 optional-chaining files (16 positive and 11 parse-negative),
-34 Symbol tests, 27 object method/accessor tests, and 75 for-of files (53 positive
-and 22 parse-negative), plus seven rest-parameter positives and twelve parameter
-parse negatives, and 56 for-in files (36 positive and 20 parse-negative), plus
-101 with-statement files (85 positive and 16 parse-negative), and 82 catch-binding
-files (71 positive and 11 parse-negative), and 154 lexical declaration pattern
-files (142 positive and 12 parse-negative), and 77 var declaration pattern
-files (71 positive and six parse-negative), and 507 formal binding pattern
-files (426 positive and 81 parse-negative), and 335 destructuring assignment
-files (258 positive and 77 parse-negative), and 514 synchronous loop pattern
-files (426 positive and 88 parse-negative), and 190 eval intrinsic/direct/indirect
-files (187 positive and three runtime-negative), and 22 super-expression positives,
-and 528 Date timestamp/UTC/local-calendar/metadata files, and 39 class
-definition/name-binding/strict-mode files (37 positive and two
-parse-negative), and 66 public-field execution/ASI files (58 positive and eight
-parse-negative), and 24 static initialization block files (14 positive and ten
-parse-negative), and 48 private element parse-negative files, and 56 private-field
-execution files, and 128 private method/accessor execution files, and 83 WeakSet
-files, and 337 RegExp literal boundary, flag, core Pattern, class-range, named
-capture, and Unicode property files (nineteen positives and 318 parse negatives),
-plus 273 RegExp builtin positives for escape, construction, slots, native exec,
-named result groups and generic matching operations.
-The method/accessor files
-cover computed key conversion and exceptions, numeric/string/escaped names,
-reserved method names, and closure scope. Eight Object entries/values files use
-accessor literals to test live enumeration changes and abrupt reads.
-That means four raw positives,
-12203 positives using the upstream harness, 1469 reviewed parse-negative variants,
-and four runtime-negative variants.
+The `spite-test262` command runs 15226 variants from 7874 reviewed sources:
+13693 harness positives, 1525 reviewed parse negatives, four raw positives, and
+four runtime negatives. The cohort sections above describe the admitted whole
+originals and deferred prerequisites; `runner.tsv` enumerates every source and
+expected outcome. Nineteen other fixtures remain component regressions outside
+this execution inventory.
+
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
 references, and Use Strict Directives with non-simple parameters. Each error is checked at the
@@ -3841,7 +3843,6 @@ intended token; unsupported bodies or unrelated syntax cannot substitute for it.
 NewTarget reviews cover Script/arrow-only scope, escaped grammar terminals, and
 assignment/prefix/postfix targets, including parenthesized forms. Invalid assignment
 diagnostics highlight the rejected target rather than the following RHS token.
-The other nineteen files remain component regressions, outside this result count.
 `runner.tsv` records exact rejection byte ranges and messages for negative tests.
 Strict variants adjust these ranges only for the prescribed directive prefix.
 No test bodies are rewritten, and parse-negative tests never evaluate harness code.
