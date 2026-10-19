@@ -674,7 +674,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement object-key WeakMap construction, branded lookup/mutation and upserts, iterable closing, subclassing, and reflection.
 - [x] Implement WeakMap non-registered Symbol keys and upserts with sound conditional object/Symbol reachability.
 - [x] Implement WeakRef construction and deref for object/non-registered Symbol targets, with explicit kept-object checkpoints and checked collection lifetimes.
-- [ ] Implement FinalizationRegistry construction, registration, unregistration, weak cells, and host-scheduled cleanup jobs.
+- [x] Implement FinalizationRegistry construction, branded register/unregister, object/non-registered Symbol weak cells, and explicit host cleanup jobs with kept-object checkpoints.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
 
 ## 5. Modules and suspended execution

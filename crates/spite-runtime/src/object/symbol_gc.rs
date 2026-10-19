@@ -6,7 +6,7 @@ mod hooks;
 mod tests;
 mod walk;
 
-use super::{entry::Entry, weak_map::WeakMapData};
+use super::{entry::Entry, finalization_registry::WeakTarget, weak_map::WeakMapData};
 use crate::Value;
 use spite_core::{JsSymbol, SymbolCollectionGuard, SymbolCollectionPin, WeakJsSymbol};
 use spite_heap::{Collection, Error, Handle, Heap, SweepSession, Trace};
@@ -161,6 +161,14 @@ struct Cleanup {
     symbol_ids: Vec<usize>,
 }
 
+struct RegistryCleanup {
+    slot: usize,
+    clear: Vec<usize>,
+    cleared: usize,
+    enqueue: Option<Handle>,
+    discarded_targets: Vec<WeakTarget>,
+}
+
 fn census(session: &SweepSession<'_, Entry>, work: &mut Work) -> Result<Universe, Error> {
     let mut universe = Universe::new();
     for slot in 0..session.slot_count() {
@@ -231,6 +239,7 @@ struct Collector<'heap> {
     work: Work,
     pending: Vec<Pending>,
     waiting: Vec<Vec<Edge>>,
+    reached_registries: Vec<(usize, Handle)>,
 }
 
 impl Collector<'_> {
@@ -240,6 +249,15 @@ impl Collector<'_> {
             Edge::Object(value) => {
                 let index = self.session.index(&value)?;
                 if !self.session.is_marked(index) {
+                    if matches!(self.session.entry(index), Some(Entry::Object(object))
+                        if object.finalization_registry.is_some())
+                    {
+                        self.work.charge(1)?;
+                        // Checked, unrooted metadata: only first-marked registries
+                        // reach the planner, including late ephemeron activations.
+                        self.work
+                            .push(&mut self.reached_registries, (index, value))?;
+                    }
                     self.work.push(&mut self.pending, Pending::Object(index))?;
                     self.session.mark(index)?;
                 }
@@ -397,6 +415,87 @@ impl Collector<'_> {
         }
         Ok(cleanup)
     }
+
+    fn registry_cleanup(&mut self, jobs: &mut Vec<Handle>) -> Result<Vec<RegistryCleanup>, Error> {
+        let mut plans = Vec::new();
+        let mut additions = 0usize;
+        for (slot, handle) in &self.reached_registries {
+            self.work.charge(1)?;
+            let Some(Entry::Object(object)) = self.session.entry(*slot) else {
+                return Err(Error::CollectionState);
+            };
+            let data = object
+                .finalization_registry
+                .as_ref()
+                .ok_or(Error::CollectionState)?;
+            let mut clear = Vec::new();
+            let mut already_cleared = 0usize;
+            for (index, cell) in data.cells.iter().enumerate() {
+                self.work.charge(1)?;
+                let keep = match &cell.target {
+                    None => {
+                        already_cleared = already_cleared
+                            .checked_add(1)
+                            .ok_or(Error::CollectionState)?;
+                        continue;
+                    }
+                    Some(WeakTarget::Object(key)) => match self.session.index(key) {
+                        Ok(index) => self.session.is_marked(index),
+                        Err(Error::StaleHandle) => false,
+                        Err(error) => return Err(error),
+                    },
+                    Some(WeakTarget::Symbol(key)) => {
+                        // Every marked candidate has a live pin. The final gate
+                        // rechecks owners before retirement; a concurrent closed
+                        // collector counts our pin as an external owner. No weak
+                        // upgrade or owning Symbol clone enters this plan.
+                        self.universe.candidates[self.universe.id(key)?].marked
+                    }
+                };
+                if !keep {
+                    self.work.push(&mut clear, index)?;
+                }
+            }
+            if already_cleared != data.cleared {
+                return Err(Error::CollectionState);
+            }
+            let cleared = already_cleared
+                .checked_add(clear.len())
+                .ok_or(Error::CollectionState)?;
+            let enqueue = if cleared != 0 && !data.pending {
+                self.work.charge(1)?;
+                additions = additions.checked_add(1).ok_or(Error::Capacity)?;
+                Some(handle.clone())
+            } else {
+                None
+            };
+            if !clear.is_empty() || enqueue.is_some() {
+                let mut discarded_targets = Vec::new();
+                self.work.charge(clear.len())?;
+                discarded_targets
+                    .try_reserve_exact(clear.len())
+                    .map_err(|_| Error::Capacity)?;
+                self.work.push(
+                    &mut plans,
+                    RegistryCleanup {
+                        slot: *slot,
+                        clear,
+                        cleared,
+                        enqueue,
+                        discarded_targets,
+                    },
+                )?;
+            }
+        }
+        // Retry after late external owners can reach further registries. Every
+        // attempt recomputes masks and reserves its full actual append count
+        // before the next irreversible gate, never after a partial commit.
+        if additions > jobs.capacity() - jobs.len() {
+            self.work.charge(jobs.len())?;
+        }
+        jobs.try_reserve(additions).map_err(|_| Error::Capacity)?;
+        Ok(plans)
+    }
 }
 
 fn validate_index(map: &WeakMapData, work: &mut Work) -> Result<(), Error> {
@@ -494,6 +593,7 @@ fn final_attempt(
 
 pub(super) fn collect(
     heap: &mut Heap<Entry>,
+    jobs: &mut Vec<Handle>,
     roots: Vec<Handle>,
     maximum: usize,
 ) -> Result<Collection, Error> {
@@ -516,6 +616,7 @@ pub(super) fn collect(
         work,
         pending: Vec::new(),
         waiting,
+        reached_registries: Vec::new(),
     };
     for root in roots {
         collector.work.charge(1)?;
@@ -540,6 +641,7 @@ pub(super) fn collect(
     loop {
         collector.exhaust()?;
         let cleanup = collector.cleanup()?;
+        let registries = collector.registry_cleanup(jobs)?;
         #[cfg(test)]
         hooks::before_recheck();
         let recheck = collector
@@ -564,6 +666,37 @@ pub(super) fn collect(
             // unlocked. The prepared masks/index invariant was validated above.
             #[cfg(test)]
             hooks::after_commit();
+            for plan in registries {
+                let RegistryCleanup {
+                    slot,
+                    clear,
+                    cleared,
+                    enqueue,
+                    mut discarded_targets,
+                } = plan;
+                {
+                    let Some(Entry::Object(object)) = collector.session.entry_mut(slot) else {
+                        unreachable!("prepared reached registry");
+                    };
+                    let data = object
+                        .finalization_registry
+                        .as_mut()
+                        .expect("prepared registry slot");
+                    for index in clear {
+                        if let Some(target) = data.cells[index].target.take() {
+                            discarded_targets.push(target);
+                        }
+                    }
+                    data.cleared = cleared;
+                    if let Some(handle) = enqueue {
+                        data.pending = true;
+                        jobs.push(handle);
+                    }
+                }
+                // Weak allocation destructors run outside the record borrow,
+                // with reserved capacity and no Symbol gate held.
+                drop(discarded_targets);
+            }
             for plan in cleanup {
                 if let Some(Entry::Object(object)) = collector.session.entry_mut(plan.slot) {
                     if let Some(map) = &mut object.weak_map {

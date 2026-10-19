@@ -219,6 +219,10 @@ pub struct Objects {
     // One-way: only a committed private WeakMap Symbol insertion/overwrite
     // sets this. Never reset it after deletion or collection.
     pub(super) symbol_keys_ever_stored: bool,
+    // Actual jobs strongly root only registries already marked by collection.
+    pub(super) finalization_jobs: Vec<Handle>,
+    pub(super) finalization_active_held: Option<Handle>,
+    pub(super) finalization_registries_ever_stored: bool,
 }
 
 impl Objects {
@@ -234,6 +238,9 @@ impl Objects {
             max_properties,
             roots: Vec::new(),
             symbol_keys_ever_stored: false,
+            finalization_jobs: Vec::new(),
+            finalization_active_held: None,
+            finalization_registries_ever_stored: false,
         }
     }
 
@@ -1309,9 +1316,9 @@ impl Objects {
         roots: impl IntoIterator<Item = &'a Handle>,
         max_work: usize,
     ) -> Result<Collection, spite_heap::Error> {
-        if !self.symbol_keys_ever_stored {
-            // With no Symbol-key ephemerons ever stored, physical Arc drops
-            // cannot lose a local conditional value by Symbol-key activation.
+        if !self.symbol_keys_ever_stored && !self.finalization_registries_ever_stored {
+            // With no registries or Symbol-key ephemerons ever stored, physical
+            // Arc drops cannot lose a local conditional value by activation.
             // Keep the existing collector and work accounting exactly intact;
             // ordinary Symbols/WeakSet keys need no census or retirement gate.
             let remaining = max_work
@@ -1359,8 +1366,32 @@ impl Objects {
                 .map_err(|_| spite_heap::Error::Capacity)?;
             retained.push(root.clone());
         }
+        // Captures belong to this heap context, so raw Objects-only collection
+        // observes the same strong jobs as Realm::collect. No owning Symbol or
+        // arbitrary caller iterator survives into the collector's commit gate.
+        for root in self
+            .finalization_jobs
+            .iter()
+            .chain(self.finalization_active_held.iter())
+        {
+            remaining = remaining.checked_sub(1).ok_or(spite_heap::Error::Limit)?;
+            if retained.len() == retained.capacity() {
+                remaining = remaining
+                    .checked_sub(retained.len())
+                    .ok_or(spite_heap::Error::Limit)?;
+            }
+            retained
+                .try_reserve(1)
+                .map_err(|_| spite_heap::Error::Capacity)?;
+            retained.push(root.clone());
+        }
         let prepaid = max_work - remaining;
-        let mut result = super::symbol_gc::collect(&mut self.heap, retained, remaining)?;
+        let mut result = super::symbol_gc::collect(
+            &mut self.heap,
+            &mut self.finalization_jobs,
+            retained,
+            remaining,
+        )?;
         result.work_used += prepaid;
         Ok(result)
     }

@@ -34,7 +34,8 @@ impl RootedValue {
 impl Realm {
     /// Reads a string- or symbol-keyed property with JavaScript Get semantics, including
     /// inherited accessors and the original receiver. Each host call may execute
-    /// JavaScript getters and resets the work allowance if `max_steps` is enabled.
+    /// JavaScript getters and resets the work allowance if `max_steps` is enabled,
+    /// except during a cleanup job whose callbacks share one allowance.
     ///
     /// The result is unrooted; use [`Self::root_value`] across explicit collection.
     /// Nullish values throw TypeError, and invalid object handles are rejected.
@@ -48,7 +49,9 @@ impl Realm {
             self.objects.inspect(handle).map_err(Error::InvalidObject)?;
         }
         self.initialize_realm()?;
-        self.remaining_steps = self.limits.max_steps;
+        if !self.finalization_cleanup_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
         let span = Span::new(0, 0);
         self.tick(span)?;
         Self::require_object_coercible(value, span)?;
@@ -508,7 +511,7 @@ impl Realm {
     /// groups several domains into one synchronous sequence must wait until the
     /// complete sequence finishes before calling their checkpoints.
     pub fn clear_kept_objects(&mut self) -> Result<(), Error> {
-        if self.call_depth != 0 || self.evaluation_depth != 0 {
+        if self.call_depth != 0 || self.evaluation_depth != 0 || self.finalization_cleanup_active {
             return Err(Error::Host {
                 span: Span::new(0, 0),
                 message: "cannot clear kept objects during active execution".into(),

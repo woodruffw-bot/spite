@@ -3,6 +3,7 @@
 use super::super::{
     CollectionKey, OrdinaryObject, PrimitiveData, Property,
     entry::Entry,
+    finalization_registry::WeakTarget,
     iterator::{HelperClosure, IteratorState},
     private::PrivateElement,
 };
@@ -127,6 +128,7 @@ fn object_symbols(
         weak_map,
         // Only WeakJsSymbol/Handle identities, never an owning Symbol wrapper.
         weak_ref: _,
+        finalization_registry,
         weak_set: _,
         immutable_prototype: _,
         arguments: _,
@@ -182,6 +184,13 @@ fn object_symbols(
             for key in set.index.keys() {
                 visit(collection_symbol(key))?;
             }
+        }
+    }
+    // Cells' held values are unconditional strong fields of a reached
+    // registry, and physical owners even in an unreachable registry record.
+    if let Some(registry) = finalization_registry {
+        for cell in &registry.cells {
+            visit(symbol(&cell.held))?;
         }
     }
     if matches!(mode, Mode::Physical) {
@@ -257,6 +266,16 @@ pub(super) fn weak_symbols(
         if let Some(map) = &object.weak_map {
             for (key, _) in &map.symbol_entries {
                 visit(Some(key))?;
+            }
+        }
+        if let Some(registry) = &object.finalization_registry {
+            for cell in &registry.cells {
+                for weak in [cell.target.as_ref(), cell.token.as_ref()] {
+                    visit(match weak {
+                        Some(WeakTarget::Symbol(symbol)) => Some(symbol),
+                        Some(WeakTarget::Object(_)) | None => None,
+                    })?;
+                }
             }
         }
     }

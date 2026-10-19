@@ -7449,8 +7449,8 @@ before changing the index. Collection charges for weak storage without marking
 keys. Presenting a live key preserves identity through cleanup; no enumeration or
 liveness observation is exposed. Constructor acquisition and iterator closing
 follow the ordinary Set sequence, including host-abort propagation and default
-derived forwarding. WeakMap's ephemerons and WeakRef use the lifetime rules below;
-FinalizationRegistry remains separate work.
+derived forwarding. WeakMap's ephemerons, WeakRef and FinalizationRegistry use the lifetime rules
+below.
 
 Object-key WeakMapData uses a dense vector of key/value entries and a hash index
 (24.3). Heap handles preserve key identity without rooting their objects. The
@@ -7495,7 +7495,7 @@ sweeping add an explicit spite_heap::Error::CollectionState variant.
 
 JavaScript Symbol-key insertion activates this joint collector. Collection is
 explicitly requested by the host between evaluations. WeakRef uses the same
-Symbol retirement protocol; FinalizationRegistry remains unimplemented.
+Symbol retirement protocol; FinalizationRegistry uses the same weak identities.
 Resource quotas remain opt-in.
 
 ## WeakRef and kept objects
@@ -7528,6 +7528,39 @@ The current Realm heaps and execution domains are independent. Hosts grouping
 several domains into one synchronous sequence must wait for the entire sequence
 before clearing each domain. Shared-Agent and foreign-realm coordination remain
 deferred. No automatic collection, default quota or cleanup scheduling is added.
+
+## FinalizationRegistry and explicit cleanup jobs
+
+FinalizationRegistry implements construction, register and unregister (26.2).
+Targets and optional unregister tokens are objects or non-registered Symbols,
+including well-known Symbols. Held values can be any value except the target
+itself. Methods require the receiver's own registry slot; public properties and
+Proxy wrappers cannot supply it. Registration does not add targets to kept
+objects, and token death alone does not unregister a cell.
+
+A reachable registry strongly retains its callback and held values, while its
+targets and tokens remain weak. Successful collection clears dead targets and
+queues cleanup captures without running JavaScript. A queued capture keeps the
+registry and callback alive. Before removing a selected cell, the driver retains
+its held argument through the callback; unregister removes all matching cells,
+including cleared cells awaiting delivery.
+
+The host explicitly calls Realm::run_finalization_cleanup_job at an idle turn.
+It runs at most one queued registry job and returns NoJob, Completed, or
+Reported(Error). NoJob is inert. An outer Err denotes active-execution refusal
+or preflight failure before the job starts, preserving queued captures and cells.
+A started job reports its first abrupt completion and leaves later pending cells
+queued; a removed cell is not retried. Each callback receives undefined as this
+and exactly one held value. Object values in returned errors must be rooted by
+the host before a later explicit collection.
+
+Cleanup delivery is neither automatic nor guaranteed, and job order is
+unspecified. The driver neither collects nor clears kept objects. The embedding
+ends the full synchronous sequence with Realm::clear_kept_objects, explicitly
+collects, and schedules a later cleanup turn. Kept roots survive every callback
+and reentry until that explicit checkpoint. One opt-in job work allowance spans
+all callbacks and host reentry, with no per-callback reset. Realm execution
+context is restored on normal and abrupt exit.
 
 ## ArrayBuffer
 
@@ -9405,10 +9438,11 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise, SharedArrayBuffer, FinalizationRegistry, and Atomics retain
+Promise, SharedArrayBuffer, and Atomics retain
 explicit Unsupported results for their deferred bodies after ordinary argument
 evaluation and the specified call/new prefix checks. Proxy algorithms are
-described below; WeakRef's lifetime behavior is described above. The two species
+described below; WeakRef and FinalizationRegistry lifetimes are described above.
+The two species
 accessors return their original receiver. The
 metadata adds 45 rooted intrinsic objects; global mutation or deletion cannot
 unroot them.

@@ -25,6 +25,7 @@ mod data_view;
 mod date;
 mod dynamic;
 mod error;
+mod finalization_registry;
 mod global_metadata;
 mod instance;
 mod iterator;

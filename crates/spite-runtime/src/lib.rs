@@ -24,12 +24,14 @@ mod with;
 use environment::{BindingState, EnvironmentHandle};
 pub use time_zone::{TimeZone, TimeZoneError};
 pub mod object;
+mod realm_finalization;
 mod realm_object;
 mod realm_proxy;
 mod realm_typed_array;
 #[cfg(test)]
 mod typed_array_tests;
 mod value;
+pub use realm_finalization::FinalizationCleanupOutcome;
 pub use realm_object::RootedValue;
 pub use spite_heap::{Collection, Handle as ObjectHandle};
 pub use value::{ConversionError, Value};
@@ -289,6 +291,8 @@ pub struct Realm {
     template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
     // 9.11: retained until the embedding explicitly ends its synchronous sequence.
     kept_alive: Vec<RootedValue>,
+    // One host cleanup job is one execution sequence and one work allowance.
+    finalization_cleanup_active: bool,
     time_zone: Option<TimeZone>,
 }
 
@@ -315,6 +319,7 @@ impl Realm {
             intrinsics: None,
             template_map: Vec::new(),
             kept_alive: Vec::new(),
+            finalization_cleanup_active: false,
             time_zone: None,
         }
     }
@@ -347,14 +352,25 @@ impl Realm {
     /// Evaluates a Script already validated by the parser.
     pub fn evaluate(&mut self, script: &Script) -> Result<Value, Error> {
         self.initialize_realm()?;
-        self.variable_environment = self.scopes.first().cloned();
-        self.remaining_steps = self.limits.max_steps;
+        let caller_variable =
+            std::mem::replace(&mut self.variable_environment, self.scopes.first().cloned());
+        let caller_strict = self.strict;
+        if !self.finalization_cleanup_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
         self.strict = script.is_strict();
-        self.instantiate_global(script)?;
-        let completion = self.statements(script.statements())?;
-        // Validated Scripts cannot leave an unhandled control transfer.
-        debug_assert_eq!(completion.kind, CompletionKind::Normal);
-        Ok(completion.value.unwrap_or(Value::Undefined))
+        let result = (|| {
+            self.instantiate_global(script)?;
+            let completion = self.statements(script.statements())?;
+            // Validated Scripts cannot leave an unhandled control transfer.
+            debug_assert_eq!(completion.kind, CompletionKind::Normal);
+            Ok(completion.value.unwrap_or(Value::Undefined))
+        })();
+        if self.finalization_cleanup_active {
+            self.variable_environment = caller_variable;
+            self.strict = caller_strict;
+        }
+        result
     }
 
     fn exception(kind: ExceptionKind, span: Span, message: impl Into<String>) -> Error {

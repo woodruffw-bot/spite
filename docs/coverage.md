@@ -34,7 +34,7 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer, FinalizationRegistry and Atomics graphs with deferred bodies |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer and Atomics graphs with deferred bodies |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
@@ -44,6 +44,7 @@ not an alternative language specification.
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
+| FinalizationRegistry | Construction, branded register/unregister, object and non-registered Symbol weak cells, strongly retained callbacks/held values, queued cleanup captures and an explicit host cleanup-job API |
 | Map | Canonical keys, hash-indexed ordered storage, construction and closing, branded keyed methods and size, live keys/values/entries and forEach, computed insertion, intrinsic groupBy, and full reflection |
 | RegExp | String-only escape encoding; native construction and literal evaluation, original slots, getters and branding; ordinary-mode literal matching, fixed class/escape/dot sequences and top-level alternatives with outer anchors and word boundaries, single-atom greedy/lazy quantifiers with fixed ordinary continuations, ordered captures, lastIndex state and match/indices Arrays; generic test/match/search/replace/split/matchAll and a branded iterator; broader Pattern matching remains pending |
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
@@ -15824,7 +15825,7 @@ independent host roots. Abrupt evaluations do not implicitly clear targets.
 
 The current independent Realm domains retain their existing boundaries;
 shared-Agent coordination and foreign-realm execution remain deferred.
-FinalizationRegistry and cleanup jobs remain separate implementation work.
+FinalizationRegistry cleanup uses the explicit host scheduling described below.
 No new Test262 originals are included in this implementation commit.
 
 Both toolchains pass all 408 Runtime units, including six new private lifetime
@@ -15854,8 +15855,8 @@ The existing WeakRef/prop-desc.js stays exactly once. All four required harness
 files, the license, revision and earlier corpus inputs remain unchanged.
 
 The foreign-realm prototype original still needs $262.createRealm. The complete
-branded-receiver original that constructs FinalizationRegistry remains deferred
-until that constructor is implemented. No branch is trimmed or counted partly.
+branded-receiver original that constructs FinalizationRegistry is not part of
+this fixture cohort. No branch is trimmed or counted partly.
 These fixtures establish live-target language behavior; deterministic collection,
 kept-object checkpoints and expired-target behavior remain covered by the
 separate Runtime tests.
@@ -15873,6 +15874,45 @@ The corpus contains 8,391 fixtures, sixteen helpers, 8,372 reviewed sources and
 and four runtime negatives. Only three numeric assertions change in the two
 Rust inventory tests. The engine, runner, all 5,806 Native names, 932 Rust paths,
 734 external snapshots and 549 initial realm objects retain the accepted WeakRef
-implementation results. All seventeen child CI jobs and all four full
-16,221-variant gates remain required before the next push. Defaults, dependencies,
-profiles, native stacks and worker counts remain unchanged.
+implementation results. All seventeen jobs and all four full 16,221-variant
+gates passed in [CI run 39206672501](https://github.com/woodruffw-bot/spite/actions/runs/39206672501).
+Defaults, dependencies, profiles, native stacks and worker counts remain unchanged.
+
+## FinalizationRegistry and host cleanup delivery
+
+FinalizationRegistry construction and branded register/unregister support object
+and non-registered Symbol targets and tokens (26.2). Held values and callbacks
+are strong registry edges; targets and tokens are weak. Collection can clear
+unreachable targets and queue registry captures without executing callbacks.
+Queued captures and in-flight held arguments remain rooted until their cleanup
+step finishes. Registration does not keep its target, and unregister removes
+all matching cells before or after target clearing.
+
+Realm::run_finalization_cleanup_job explicitly runs at most one queued registry
+job. Its NoJob, Completed and Reported(Error) outcomes distinguish an empty queue,
+normal completion and a started job's first abrupt completion. Outer Err is a
+pre-job refusal or preparation failure. Removed cells are never retried; later
+pending cells remain queued. Delivery order and eventual delivery are not
+guaranteed, and no callback runs automatically from evaluation or collection.
+
+Hosts retain explicit kept-object checkpoints across the whole synchronous
+sequence, including cleanup callbacks and reentry. The driver does not clear
+kept roots or collect. All callbacks and host reentry share the same selected
+opt-in job work allowance. Existing defaults and dependencies are unchanged.
+
+Both toolchains pass all 422 Runtime units, including fourteen new private
+cases, and all thirty focused integration groups. The full stable suite passes
+all 3,942 integration tests in 205.79 seconds, using the exact focused-test
+binary. Both toolchains also pass thirteen CLI tests, Runtime documentation
+checks, and all 34 ordinary Test262 package controls across seven executables,
+with only the existing full-corpus case filtered locally. One new inline insta
+snapshot passes with updates disabled; all 734 external snapshots are unchanged.
+Formatting, strict workspace Clippy, dependency policy, inventory and source
+checks pass.
+
+The implementation adds fourteen private tests and thirty integration groups,
+bringing the expected Native inventory to 5,850, with 936 Rust sources and 549
+initial Realm objects. Corpus contents remain at 8,372 reviewed sources and
+16,221 variants. No duplicate local full-corpus or Core/Heap replay is needed.
+All seventeen hosted jobs and all four full 16,221-variant corpus gates remain
+required for this implementation commit; hosted results are pending.

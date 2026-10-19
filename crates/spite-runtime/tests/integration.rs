@@ -948,6 +948,8 @@ mod typed_array_sort;
 #[path = "cases/uint8_base64.rs"]
 mod uint8_base64;
 
+#[path = "cases/finalization_registry.rs"]
+mod finalization_registry;
 #[path = "cases/uint8_hex.rs"]
 mod uint8_hex;
 #[path = "cases/updates.rs"]

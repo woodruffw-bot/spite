@@ -75,6 +75,8 @@ impl ErrorIntrinsics {
 
 impl Realm {
     /// Obtains a JavaScript exception value, resetting any opted-in work allowance.
+    /// During an active finalization cleanup job, conversion instead shares the
+    /// existing job allowance, just like host evaluation and property reads.
     ///
     /// Thrown values retain their identity. Each conversion of a host-described
     /// built-in exception creates a fresh Error instance with its intrinsic
@@ -86,7 +88,9 @@ impl Realm {
             return Ok(None);
         }
         self.initialize_realm()?;
-        self.remaining_steps = self.limits.max_steps;
+        if !self.finalization_cleanup_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
         match error {
             Error::Exception {
                 kind,

@@ -168,6 +168,8 @@ pub(crate) struct GlobalMetadataIntrinsics {
     // Already rooted in objects; retain this exact fallback independently of globals.
     pub weak_ref_prototype: ObjectHandle,
     pub finalization_registry: ObjectHandle,
+    // This exact prototype is already rooted in objects, independently of globals.
+    pub finalization_registry_prototype: ObjectHandle,
     pub atomics: ObjectHandle,
     // Four prototypes and 35 distinct method/getter objects remain rooted even
     // after scripts replace their configurable properties and global bindings.
@@ -395,6 +397,7 @@ impl Realm {
             weak_ref,
             weak_ref_prototype,
             finalization_registry,
+            finalization_registry_prototype,
             atomics,
             objects,
         })
