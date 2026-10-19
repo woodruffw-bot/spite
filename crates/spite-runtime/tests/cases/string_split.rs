@@ -168,9 +168,10 @@ fn opted_in_host_failures_skip_pending_handlers() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("gap");
     realm.eval("let flag=0").unwrap();
     assert!(matches!(
-        realm.eval("try{'a'.split({[Symbol.split](){Proxy;}});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{'a'.split({[Symbol.split](){gap;}});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

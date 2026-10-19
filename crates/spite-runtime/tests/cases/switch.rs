@@ -252,8 +252,9 @@ fn all_abrupt_exits_restore_the_outer_environment() {
         Err(Error::Thrown(Value::Number(2.0)))
     );
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
+    realm.reserve_unsupported_global("gap");
     assert!(matches!(
-        realm.eval("switch (0) { case Proxy: let x; }"),
+        realm.eval("switch (0) { case gap: let x; }"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));

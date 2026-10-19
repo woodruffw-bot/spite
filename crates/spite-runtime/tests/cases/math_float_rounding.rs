@@ -65,10 +65,11 @@ fn numeric_conversion_is_once_and_ignores_receiver_and_extra_arguments() {
             ));
         }
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("gap");
         realm.eval("let flag=0;").unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try{{Math.{method}({{valueOf(){{Proxy;}}}});}}catch{{flag=1;}}finally{{flag=2;}}"
+                "try{{Math.{method}({{valueOf(){{gap;}}}});}}catch{{flag=1;}}finally{{flag=2;}}"
             )),
             Err(Error::Unsupported { .. })
         ));

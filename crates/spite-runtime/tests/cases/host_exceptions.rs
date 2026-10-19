@@ -42,9 +42,10 @@ fn explicit_throws_retain_identity_and_host_failures_have_no_javascript_value() 
         realm.exception_value(&Error::Thrown(Value::Number(7.0))),
         Ok(Some(Value::Number(7.0)))
     );
+    realm.reserve_unsupported_global("gap");
     for error in [
         realm.eval("let =").unwrap_err(),
-        realm.eval("Proxy").unwrap_err(),
+        realm.eval("gap").unwrap_err(),
         Error::Limit {
             span: Span::new(0, 0),
             message: "host abort".into(),

@@ -135,9 +135,12 @@ fn incomplete_intrinsics_and_host_gaps_skip_pending_handlers() {
         "Reflect.ownKeys(Array)",
         "Reflect.getOwnPropertyDescriptor(Array,'fromAsync')",
         "Reflect.defineProperty(Array,'fromAsync',{value:7})",
-        "Reflect.defineProperty({},'x',{get value(){Proxy;}})",
+        "Reflect.defineProperty({},'x',{get value(){gap;}})",
     ] {
         let mut realm = Realm::default();
+        if operation.contains("gap") {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(

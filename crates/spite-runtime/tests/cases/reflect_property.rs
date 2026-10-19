@@ -120,13 +120,16 @@ fn metadata_and_retained_methods_survive_public_deletion() {
 #[test]
 fn unsupported_keys_getters_and_intrinsic_mutations_skip_pending_handlers() {
     for operation in [
-        "Reflect.get({get x(){Proxy;}},'x')",
-        "Reflect.has({},{toString(){Proxy;}})",
-        "Reflect.deleteProperty({},{toString(){Proxy;}})",
+        "Reflect.get({get x(){gap;}},'x')",
+        "Reflect.has({},{toString(){gap;}})",
+        "Reflect.deleteProperty({},{toString(){gap;}})",
         "Reflect.get(Array,'fromAsync')",
         "Reflect.deleteProperty(Array,'fromAsync')",
     ] {
         let mut realm = Realm::default();
+        if operation.contains("gap") {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(

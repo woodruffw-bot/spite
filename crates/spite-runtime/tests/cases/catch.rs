@@ -155,7 +155,7 @@ fn execution_order_and_block_scopes_are_preserved() {
 
 #[test]
 fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
-    for failure in ["Proxy;", "for (;;) ;"] {
+    for failure in ["gap;", "for (;;) ;"] {
         for in_catch in [false, true] {
             let mut realm = Realm::new(Limits {
                 // This explicitly opted-in budget permits intrinsic setup, then
@@ -163,6 +163,9 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
                 max_steps: (failure == "for (;;) ;").then_some(1024),
                 ..Limits::default()
             });
+            if failure == "gap;" {
+                realm.reserve_unsupported_global("gap");
+            }
             realm.eval("let x = 1;").unwrap();
             realm.eval("let flag = 0;").unwrap();
             let inner = if in_catch {
@@ -172,7 +175,7 @@ fn host_failures_in_body_or_catch_abort_pending_handlers_and_finalizers() {
             };
             let source = format!("try {{ {inner} }} catch {{ flag = 8; }} finally {{ flag = 7; }}");
             let error = realm.eval(&source).unwrap_err();
-            if failure == "Proxy;" {
+            if failure == "gap;" {
                 assert!(matches!(error, Error::Unsupported { .. }));
             } else {
                 assert!(matches!(error, Error::Limit { .. }));

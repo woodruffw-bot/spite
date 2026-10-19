@@ -101,7 +101,8 @@ fn element_errors_close_but_step_errors_leave_the_iterator_open() {
 #[test]
 fn host_failures_skip_cleanup_and_handlers_and_cannot_be_masked_during_close() {
     let mut realm = Realm::default();
-    realm.eval("let flag=0,closed=0,items={[Symbol.iterator](){return {next(){Proxy;},return(){closed++;return {};}};}};").unwrap();
+    realm.reserve_unsupported_global("gap");
+    realm.eval("let flag=0,closed=0,items={[Symbol.iterator](){return {next(){gap;},return(){closed++;return {};}};}};").unwrap();
     assert!(matches!(
         realm.eval("try{Math.sumPrecise(items);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
@@ -110,7 +111,7 @@ fn host_failures_skip_cleanup_and_handlers_and_cannot_be_masked_during_close() {
         realm.eval("flag===0 && closed===0"),
         Ok(Value::Boolean(true))
     );
-    realm.eval("items={[Symbol.iterator](){return {next(){return {value:{}};},return(){closed++;Proxy;}};}};").unwrap();
+    realm.eval("items={[Symbol.iterator](){return {next(){return {value:{}};},return(){closed++;gap;}};}};").unwrap();
     assert!(matches!(
         realm.eval("try{Math.sumPrecise(items);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

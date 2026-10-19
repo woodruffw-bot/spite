@@ -324,12 +324,15 @@ fn finalizer_errors_restore_the_outer_environment() {
 
 #[test]
 fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
-    for (body, is_limit) in [("Proxy;", false), ("'ab';", true), ("for (;;) ;", true)] {
+    for (body, is_limit) in [("gap;", false), ("'ab';", true), ("for (;;) ;", true)] {
         let mut realm = Realm::new(Limits {
             max_steps: (body == "for (;;) ;").then_some(1024),
             max_string_units: (body == "'ab';").then_some(1),
             ..Limits::default()
         });
+        if !is_limit {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let x = 1;").unwrap();
         realm.eval("let flag = 0;").unwrap();
         let source = format!(
@@ -350,11 +353,14 @@ fn host_failures_abort_without_running_or_being_overridden_by_finalizers() {
 
 #[test]
 fn host_failure_in_a_finalizer_stops_outer_finalizers() {
-    for (finalizer, is_limit) in [("Proxy;", false), ("for (;;) ;", true)] {
+    for (finalizer, is_limit) in [("gap;", false), ("for (;;) ;", true)] {
         let mut realm = Realm::new(Limits {
             max_steps: is_limit.then_some(1024),
             ..Limits::default()
         });
+        if !is_limit {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let x = 1;").unwrap();
         realm.eval("let flag = 0;").unwrap();
         let source = format!(

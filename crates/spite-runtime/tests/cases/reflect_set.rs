@@ -168,11 +168,14 @@ fn missing_intrinsic_descriptors_and_unsupported_setters_skip_pending_handlers()
     for operation in [
         "Reflect.set(Array,'fromAsync',1)",
         "Reflect.set({},'fromAsync',1,Array)",
-        "Reflect.set({set x(v){Proxy;}},'x',1)",
-        "Reflect.set({},'length',{valueOf(){Proxy;}},[])",
+        "Reflect.set({set x(v){gap;}},'x',1)",
+        "Reflect.set({},'length',{valueOf(){gap;}},[])",
         "Array.fromAsync=1",
     ] {
         let mut realm = Realm::default();
+        if operation.contains("gap") {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(

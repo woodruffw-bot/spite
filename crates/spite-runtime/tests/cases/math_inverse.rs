@@ -156,7 +156,8 @@ fn unary_conversions_are_once_and_host_failures_skip_pending_handlers() {
         .chain(["Math.atan2(o,0)".into(), "Math.atan2(NaN,o)".into()])
     {
         let mut realm = Realm::default();
-        realm.eval("let flag=0,o={valueOf(){Proxy;}};").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm.eval("let flag=0,o={valueOf(){gap;}};").unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"

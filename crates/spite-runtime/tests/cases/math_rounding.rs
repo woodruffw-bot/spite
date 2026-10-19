@@ -108,10 +108,11 @@ fn invalid_numeric_conversions_throw_and_host_gaps_skip_handlers() {
             "Number.isNaN(Math.{method}()) && Number.isNaN(Math.{method}(undefined)) && Math.{method}(null)===0 && Math.{method}(true)===1 && Math.{method}('2')==={expected}"
         ));
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("gap");
         realm.eval("let flag=0").unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try{{Math.{method}({{valueOf(){{Proxy;}}}});}}catch{{flag=1;}}finally{{flag=2;}}"
+                "try{{Math.{method}({{valueOf(){{gap;}}}});}}catch{{flag=1;}}finally{{flag=2;}}"
             )),
             Err(Error::Unsupported { .. })
         ));

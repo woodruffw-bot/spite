@@ -358,14 +358,12 @@ fn resource_failures_are_host_errors_and_restore_scopes() {
 
 #[test]
 fn unsupported_features_cannot_masquerade_as_runtime_exceptions() {
-    assert!(matches!(
-        Realm::default().eval("Proxy"),
-        Err(Error::Unsupported { .. })
-    ));
-    assert!(matches!(
-        Realm::default().eval("Proxy"),
-        Err(Error::Unsupported { .. })
-    ));
+    let mut realm = Realm::default();
+    realm.reserve_unsupported_global("gap");
+    assert!(matches!(realm.eval("gap"), Err(Error::Unsupported { .. })));
+    let mut realm = Realm::default();
+    realm.reserve_unsupported_global("gap");
+    assert!(matches!(realm.eval("gap"), Err(Error::Unsupported { .. })));
     for name in ["console", "process", "require", "setTimeout", "fetch"] {
         exception(name, ExceptionKind::ReferenceError);
     }

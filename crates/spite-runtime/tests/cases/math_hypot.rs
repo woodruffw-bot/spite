@@ -57,7 +57,8 @@ fn conversions_are_ordered_once_and_precede_numeric_shortcuts() {
 fn unsupported_conversion_remains_a_host_failure_after_infinity_or_nan() {
     for first in ["NaN", "Infinity"] {
         let mut realm = Realm::default();
-        realm.eval("let flag=0,o={valueOf(){Proxy;}};").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm.eval("let flag=0,o={valueOf(){gap;}};").unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{Math.hypot({first},o);}}catch{{flag=1;}}finally{{flag=2;}}"

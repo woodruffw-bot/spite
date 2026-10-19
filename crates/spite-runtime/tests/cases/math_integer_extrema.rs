@@ -126,7 +126,8 @@ fn integer_conversions_reject_bigints_symbols_and_preserve_host_abort() {
         "Math.imul(0,o)",
     ] {
         let mut realm = Realm::default();
-        realm.eval("let flag=0,o={valueOf(){Proxy;}};").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm.eval("let flag=0,o={valueOf(){gap;}};").unwrap();
         assert!(
             matches!(
                 realm.eval(&format!(

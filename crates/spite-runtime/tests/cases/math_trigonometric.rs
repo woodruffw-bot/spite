@@ -82,7 +82,8 @@ fn conversion_is_once_with_number_hint_and_no_receiver_or_extra_coercion() {
 fn host_gaps_during_conversion_skip_javascript_handlers() {
     for method in METHODS {
         let mut realm = Realm::default();
-        realm.eval("let flag=0,o={valueOf(){Proxy;}};").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm.eval("let flag=0,o={valueOf(){gap;}};").unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{Math.{method}(o);}}catch{{flag=1;}}finally{{flag=2;}}"

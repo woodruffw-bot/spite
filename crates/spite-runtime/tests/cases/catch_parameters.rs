@@ -146,14 +146,17 @@ fn rethrows_and_finalizers_observe_restored_environments() {
 fn host_abort_restores_both_catch_scopes_and_skips_pending_handlers() {
     for body in [
         "while (true) {}",
-        "Proxy",
+        "gap",
         "try { throw 2; } catch (inner) { while (true) {} }",
     ] {
-        let is_limit = body != "Proxy";
+        let is_limit = body != "gap";
         let mut realm = Realm::new(Limits {
             max_steps: is_limit.then_some(1_000),
             ..Limits::default()
         });
+        if !is_limit {
+            realm.reserve_unsupported_global("gap");
+        }
         realm.eval("let e = 3; let flag = 0;").unwrap();
         let result = realm.eval(&format!("try {{ try {{ throw 7; }} catch (e) {{ {body} }} }} catch {{ flag = 1; }} finally {{ flag = 2; }}"));
         if is_limit {

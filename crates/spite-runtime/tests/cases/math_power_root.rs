@@ -84,7 +84,8 @@ fn sqrt_converts_once_and_skips_extra_argument_conversion() {
 fn unsupported_conversions_abort_without_running_handlers_or_finalizers() {
     for expression in ["Math.pow(o,0)", "Math.pow(NaN,o)", "Math.sqrt(o)"] {
         let mut realm = Realm::default();
-        realm.eval("let flag=0,o={valueOf(){Proxy;}};").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm.eval("let flag=0,o={valueOf(){gap;}};").unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
