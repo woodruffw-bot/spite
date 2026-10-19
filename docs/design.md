@@ -9385,3 +9385,23 @@ lookup and typeof rules. Lexical bindings remain separate from global properties
 Configured host reservations still report explicit host gaps and install no
 properties. Names outside the selected edition receive no implicit reservation.
 The incomplete Array constructor retains its separate fromAsync barrier.
+
+## Private Proxy state and dispatch boundaries
+
+Proxy records retain a checked target/handler pair and the target's callable and
+constructible capabilities (10.5 and 28.2). A single optional pair represents
+revocation, so the two slots cannot be partially cleared. Revoker functions trace
+their captured Proxy, and collection follows live target/handler handles without
+introducing physical Symbol cells. Clearing the capture releases those edges.
+
+Revocation validates the handles and charges optional work before changing any
+state. The capture and pair are then cleared without allocation, callbacks, or
+fallible operations; repeated revocation is inert. Cached call/construct
+capabilities survive revocation and do not copy Array or other target brands.
+
+Ordinary property operations stop at direct or inherited Proxy records and
+require Realm dispatch. Revoked records throw TypeError; live records retain
+explicit Unsupported behavior until trap algorithms are implemented. Existing
+read-only, accessor, TypedArray, and Array-length decisions keep their required
+ordering. Ordinary prototype-cycle traversal stops at a Proxy candidate.
+Public Proxy construction and Proxy.revocable remain deferred in this stage.

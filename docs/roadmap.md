@@ -134,6 +134,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute non-strict calls with object receivers and mapped arguments, including alias detachment.
 - [x] Add the ordinary global object, property-backed global bindings, globalThis, and nullish/global receivers.
 - [x] Materialize edition-17 global intrinsic metadata and implement complete ordinary global reflection, enumeration, mutation, and deletion.
+- [x] Add checked Proxy target/handler storage, failure-atomic revocation, GC tracing, cached call/construct capabilities, and ordinary internal-method dispatch boundaries.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.
 - [x] Add String calls/construction, UTF-16 indexed wrappers, branded methods, and boxed receivers.

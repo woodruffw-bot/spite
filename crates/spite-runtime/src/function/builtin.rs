@@ -1,6 +1,6 @@
 //! Native algorithms are kept out of the recursive script dispatch frame.
 
-use super::{Builtin, Callable, FunctionText, number};
+use super::{Builtin, FunctionText, number};
 use crate::{Error, ExceptionKind, Realm, Value, object::CallbackKind};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
@@ -202,10 +202,16 @@ impl Realm {
                 // an observable read of the mutable public name property.
                 let callable = if let Value::Object(object) = &this {
                     self.object_work(span, |objects, _| {
-                        Ok(objects
-                            .inspect(object)?
-                            .callable()
-                            .map(Callable::source_text))
+                        let record = objects.inspect(object)?;
+                        Ok(if let Some(callable) = record.callable() {
+                            Some(callable.source_text())
+                        } else if record.is_callable() {
+                            // Callable Proxy capabilities survive revocation;
+                            // no target/handler access or observable Get occurs.
+                            Some(FunctionText::Native(""))
+                        } else {
+                            None
+                        })
                     })?
                 } else {
                     None

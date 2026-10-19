@@ -113,6 +113,7 @@ fn object_symbols(
         max_properties: _,
         callable,
         constructible: _,
+        proxy: _,
         primitive_data,
         date_value: _,
         array_buffer: _,
@@ -209,7 +210,11 @@ fn object_symbols(
         // Parsed AST, source text and environment/home-object handles do not
         // own runtime Symbols. Their referenced heap records are traced normally.
         Some(
-            Callable::Builtin(_) | Callable::Arrow(_) | Callable::Ordinary(_) | Callable::Method(_),
+            Callable::Builtin(_)
+            | Callable::Arrow(_)
+            | Callable::Ordinary(_)
+            | Callable::Method(_)
+            | Callable::ProxyRevoker(_),
         )
         | None => visit(None)?,
     }

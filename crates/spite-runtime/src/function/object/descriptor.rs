@@ -56,8 +56,16 @@ impl Realm {
         let key = key.into();
         self.check_missing_intrinsic_mutation(object, &key, span)?;
         let action = self.object_work(span, |objects, budget| {
-            objects.typed_array_define_action(object, &key, &descriptor, budget)
+            if objects.proxy_state(object, budget)?.is_some() {
+                return Ok(None);
+            }
+            objects
+                .typed_array_define_action(object, &key, &descriptor, budget)
+                .map(Some)
         })?;
+        let Some(action) = action else {
+            return self.proxy_define_property(object, key, descriptor, span);
+        };
         match action {
             crate::object::TypedArrayDefineAction::Ordinary => {}
             crate::object::TypedArrayDefineAction::Done(result) => return Ok(result),

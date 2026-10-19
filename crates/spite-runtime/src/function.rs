@@ -37,6 +37,7 @@ pub(crate) use method::MethodFunction;
 mod number;
 mod object;
 mod ordinary;
+mod proxy;
 mod reflect;
 mod regexp;
 mod set;
@@ -904,6 +905,7 @@ mod tests;
 #[derive(Clone, Debug)]
 pub(crate) enum Callable {
     Builtin(Builtin),
+    ProxyRevoker(Option<ObjectHandle>),
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
@@ -920,7 +922,7 @@ impl Callable {
     fn source_text(&self) -> FunctionText {
         match self {
             Self::Builtin(builtin) => FunctionText::Native(builtin.initial_name()),
-            Self::Bound(_) => FunctionText::Native(""),
+            Self::Bound(_) | Self::ProxyRevoker(_) => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1389,19 +1391,40 @@ impl Realm {
         let mut arguments = arguments.into_iter();
         loop {
             // 13.3.6.2: callers evaluate arguments before entering this callable check.
-            let callable = if let Value::Object(object) = &function {
+            let (callable, proxy) = if let Value::Object(object) = &function {
                 self.object_work(span, |objects, budget| {
-                    objects
+                    // Capability is immutable, including for revoked Proxies.
+                    if !objects.inspect(object)?.is_callable() {
+                        return Ok((None, None));
+                    }
+                    let proxy = objects.proxy_state(object, budget)?;
+                    if proxy.is_some() {
+                        return Ok((None, proxy));
+                    }
+                    let callable = objects
                         .inspect(object)?
                         .callable()
                         .map(|callable| callable.copy_with_budget(budget))
-                        .transpose()
+                        .transpose()?;
+                    Ok((callable, None))
                 })?
             } else {
-                None
+                (None, None)
             };
+            if let Some(proxy) = proxy {
+                return self.proxy_unimplemented_invocation(proxy, span);
+            }
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
+                Some(Callable::ProxyRevoker(_)) => {
+                    let Value::Object(revoker) = function else {
+                        unreachable!("revoker is callable")
+                    };
+                    self.object_work(span, |objects, budget| {
+                        objects.revoke_proxy_from(&revoker, budget)
+                    })?;
+                    return Ok(Value::Undefined);
+                }
                 Some(Callable::ClassConstructor(_)) => {
                     return Err(Self::exception(
                         ExceptionKind::TypeError,

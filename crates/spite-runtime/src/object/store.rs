@@ -51,6 +51,8 @@ pub enum Error {
     NotCallable,
     /// A valid handle refers to a different kind of runtime heap entry.
     WrongKind,
+    /// An exotic internal method needs the Realm to execute its JavaScript hooks.
+    RequiresRuntime,
     /// Array length has not been converted to an integral Number in the u32 range.
     /// JavaScript's two observable numeric conversions belong to the Realm layer.
     UnnormalizedArrayLength,
@@ -67,6 +69,7 @@ impl fmt::Display for Error {
             Self::PropertyLimit => f.write_str("object property limit exceeded"),
             Self::NotCallable => f.write_str("function handle must be callable"),
             Self::WrongKind => f.write_str("heap entry has the wrong kind"),
+            Self::RequiresRuntime => f.write_str("object internal method requires the Realm"),
             Self::UnnormalizedArrayLength => {
                 f.write_str("array length requires a preconverted u32 Number")
             }
@@ -576,6 +579,9 @@ impl Objects {
     ) -> Result<Handle, Error> {
         budget.charge(1)?;
         let target = self.inspect(&bound.target)?;
+        if target.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if !target.is_callable() {
             return Err(Error::NotCallable);
         }
@@ -591,6 +597,56 @@ impl Objects {
         object.callable = Some(Callable::Bound(bound));
         object.constructible = constructible;
         Ok(self.heap.insert(Entry::Object(object))?)
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "public Proxy creation is a later increment")
+    )]
+    pub(crate) fn create_proxy(
+        &mut self,
+        target: &Handle,
+        handler: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        let target_record = self.inspect(target)?;
+        let callable = target_record.is_callable();
+        let constructible = target_record.is_constructor();
+        self.inspect(handler)?;
+        budget.charge(3)?;
+        let mut record = OrdinaryObject::with_property_limit(None, self.max_properties);
+        record.proxy = Some(super::proxy::ProxyData {
+            snapshot: Some(super::ProxySnapshot {
+                target: target.clone(),
+                handler: handler.clone(),
+            }),
+            callable,
+        });
+        record.constructible = constructible;
+        Ok(self.heap.insert(Entry::Object(record))?)
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "public Proxy creation is a later increment")
+    )]
+    pub(crate) fn create_proxy_revoker(
+        &mut self,
+        function_prototype: &Handle,
+        proxy: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        if !self.inspect(proxy)?.is_proxy() {
+            return Err(Error::WrongKind);
+        }
+        self.inspect(function_prototype)?;
+        budget.charge(2)?;
+        let mut record = OrdinaryObject::with_property_limit(
+            Some(function_prototype.clone()),
+            self.max_properties,
+        );
+        record.callable = Some(Callable::ProxyRevoker(Some(proxy.clone())));
+        Ok(self.heap.insert(Entry::Object(record))?)
     }
 
     pub(crate) fn create_object_prototype(&mut self) -> Result<Handle, Error> {
@@ -755,7 +811,11 @@ impl Objects {
     /// Prevents extensions, returning false when a TypedArray's buffer is resizable.
     /// Rejection preserves extensibility and existing property attributes.
     pub fn prevent_extensions(&mut self, object: &Handle) -> Result<bool, Error> {
-        if let Some(data) = self.inspect(object)?.typed_array_data() {
+        let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
+        if let Some(data) = record.typed_array_data() {
             let buffer = self
                 .inspect(data.buffer())?
                 .array_buffer_data()
@@ -781,6 +841,9 @@ impl Objects {
     ) -> Result<bool, Error> {
         budget.charge(1)?;
         let current = self.inspect(object)?;
+        if current.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if let Some(prototype) = prototype {
             self.inspect(prototype)?;
         }
@@ -796,7 +859,13 @@ impl Objects {
             if parent == object {
                 return Ok(false);
             }
-            next = self.inspect(parent)?.prototype();
+            let record = self.inspect(parent)?;
+            // 10.1.2.1 stops when [[GetPrototypeOf]] is not the ordinary method,
+            // including a revoked Proxy; it does not invoke or validate it.
+            if record.is_proxy() {
+                break;
+            }
+            next = record.prototype();
         }
         self.object_mut(object)?.prototype = prototype.cloned();
         Ok(true)
@@ -819,6 +888,9 @@ impl Objects {
         let key = key.into();
         let mut descriptor = descriptor.into().normalize();
         let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if record.typed_array_data().is_some() {
             match self.typed_array_define_action(object, &key, &descriptor, budget)? {
                 super::TypedArrayDefineAction::Ordinary => {}
@@ -934,6 +1006,9 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<Vec<PropertyKey>, Error> {
         let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if record.typed_array_data().is_some() {
             return self.typed_array_own_keys(object, budget);
         }
@@ -963,6 +1038,9 @@ impl Objects {
     ) -> Result<bool, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if record.typed_array_data().is_some() {
             if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
                 return self.typed_array_has_index(object, index, budget);
@@ -981,6 +1059,9 @@ impl Objects {
     ) -> Result<Option<Property>, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if record.typed_array_data().is_some() {
             if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
                 return self.typed_array_get_own_element(object, index, budget);
@@ -1104,6 +1185,9 @@ impl Objects {
             return Ok(SetAction::Done(false));
         };
         let destination = self.inspect(receiver)?;
+        if destination.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         let array_length = destination.is_array() && super::array::is_length(&key);
         let own_writable =
             if let Some(index) = self.typed_array_numeric_index(receiver, &key, budget)? {
@@ -1167,6 +1251,9 @@ impl Objects {
     ) -> Result<bool, Error> {
         let key = key.into();
         let record = self.inspect(object)?;
+        if record.is_proxy() {
+            return Err(Error::RequiresRuntime);
+        }
         if record.typed_array_data().is_some() {
             if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
                 return self
@@ -1266,6 +1353,9 @@ impl Objects {
         let mut next = Some(object);
         while let Some(handle) = next {
             let record = self.inspect(handle)?;
+            if record.is_proxy() {
+                return Err(Error::RequiresRuntime);
+            }
             if record.typed_array_data().is_some() {
                 if let Some(index) = self.typed_array_numeric_index(handle, key, budget)? {
                     return Ok(Some(FoundProperty::Element(handle.clone(), index)));

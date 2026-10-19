@@ -158,14 +158,20 @@ impl Realm {
         let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
-            let (own, numeric_absence) = self.object_work(span, |objects, budget| {
+            let (own, numeric_absence, proxy) = self.object_work(span, |objects, budget| {
+                if objects.proxy_state(&handle, budget)?.is_some() {
+                    return Ok((false, false, true));
+                }
                 let own = objects.has_own(&handle, key, budget)?;
                 let numeric_absence = !own
                     && objects
                         .typed_array_numeric_index(&handle, key, budget)?
                         .is_some();
-                Ok((own, numeric_absence))
+                Ok((own, numeric_absence, false))
             })?;
+            if proxy {
+                return self.proxy_has_property(&handle, crate::realm_proxy::owned_key(key), span);
+            }
             if own || self.missing_intrinsic_property(&handle, key) {
                 return Ok(true);
             }
@@ -257,17 +263,25 @@ impl Realm {
         let mut current = target.clone();
         let descriptor = loop {
             let action = self.object_work(span, |objects, budget| {
-                objects.typed_array_set_action(
-                    &current,
-                    &key,
-                    if let Value::Object(receiver) = &receiver {
-                        Some(receiver)
-                    } else {
-                        None
-                    },
-                    budget,
-                )
+                if objects.proxy_state(&current, budget)?.is_some() {
+                    return Ok(None);
+                }
+                objects
+                    .typed_array_set_action(
+                        &current,
+                        &key,
+                        if let Value::Object(receiver) = &receiver {
+                            Some(receiver)
+                        } else {
+                            None
+                        },
+                        budget,
+                    )
+                    .map(Some)
             })?;
+            let Some(action) = action else {
+                return self.proxy_set_property(&current, key, value, receiver, span);
+            };
             match action {
                 object::TypedArraySetAction::Ordinary => {}
                 object::TypedArraySetAction::Done(result) => return Ok(result),
@@ -325,7 +339,18 @@ impl Realm {
         if let Value::Object(object) = base {
             self.check_global_property_operation(object, key, span)?;
             self.check_missing_intrinsic_mutation(object, key, span)?;
-            return self.object_work(span, |objects, budget| objects.delete(object, key, budget));
+            let result = self.object_work(span, |objects, budget| {
+                if objects.proxy_state(object, budget)?.is_some() {
+                    return Ok(None);
+                }
+                objects.delete(object, key, budget).map(Some)
+            })?;
+            return match result {
+                Some(result) => Ok(result),
+                None => {
+                    self.proxy_delete_property(object, crate::realm_proxy::owned_key(key), span)
+                }
+            };
         }
         self.tick(span)?;
         Ok(
@@ -366,14 +391,25 @@ impl Realm {
         let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
-            let (own, numeric_absence) = self.object_work(span, |objects, budget| {
+            let (own, numeric_absence, proxy) = self.object_work(span, |objects, budget| {
+                if objects.proxy_state(&handle, budget)?.is_some() {
+                    return Ok((None, false, true));
+                }
                 let own = objects.get_own(&handle, key, budget)?;
                 let numeric_absence = own.is_none()
                     && objects
                         .typed_array_numeric_index(&handle, key, budget)?
                         .is_some();
-                Ok((own, numeric_absence))
+                Ok((own, numeric_absence, false))
             })?;
+            if proxy {
+                return self.proxy_get_property(
+                    &handle,
+                    crate::realm_proxy::owned_key(key),
+                    receiver,
+                    span,
+                );
+            }
             if let Some(property) = own {
                 return match property {
                     Property::Data(data) => Ok(data.value),
@@ -489,6 +525,9 @@ impl Realm {
                     span,
                     message: error.to_string(),
                 }
+            }
+            object::Error::RequiresRuntime => {
+                Self::unsupported(span, "object internal method requires Realm dispatch")
             }
             object::Error::NotCallable | object::Error::WrongKind => {
                 unreachable!("realm operations validate function callability before storage")
@@ -737,7 +776,16 @@ impl Realm {
                 "own keys of this incomplete intrinsic are not implemented",
             ));
         }
-        self.object_work(span, |objects, budget| objects.own_keys(object, budget))
+        let result = self.object_work(span, |objects, budget| {
+            if objects.proxy_state(object, budget)?.is_some() {
+                return Ok(None);
+            }
+            objects.own_keys(object, budget).map(Some)
+        })?;
+        match result {
+            Some(result) => Ok(result),
+            None => self.proxy_own_property_keys(object, span),
+        }
     }
 
     pub(crate) fn own_property_descriptor<'key>(
@@ -747,8 +795,19 @@ impl Realm {
         span: Span,
     ) -> Result<Option<Property>, Error> {
         let key = key.into();
-        let property =
-            self.object_work(span, |objects, budget| objects.get_own(object, key, budget))?;
+        let property = self.object_work(span, |objects, budget| {
+            if objects.proxy_state(object, budget)?.is_some() {
+                return Ok(None);
+            }
+            objects.get_own(object, key, budget).map(Some)
+        })?;
+        let Some(property) = property else {
+            return self.proxy_own_property_descriptor(
+                object,
+                crate::realm_proxy::owned_key(key),
+                span,
+            );
+        };
         if property.is_none() && self.missing_intrinsic_property(object, key) {
             return Err(Self::unsupported(
                 span,

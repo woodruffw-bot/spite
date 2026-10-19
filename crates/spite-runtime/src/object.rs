@@ -36,6 +36,8 @@ pub(crate) use iterator::{
 };
 pub(crate) use map::CollectionKey;
 mod private;
+mod proxy;
+pub(crate) use proxy::{ProxySnapshot, ProxyState};
 mod regexp;
 pub(crate) use regexp::{RegExpData, RegExpMatcher, RegExpMatcherBody, RegExpNamedGroup};
 mod set;
@@ -86,6 +88,7 @@ pub struct OrdinaryObject {
     max_properties: Option<usize>,
     callable: Option<Callable>,
     constructible: bool,
+    proxy: Option<proxy::ProxyData>,
     primitive_data: Option<PrimitiveData>,
     date_value: Option<Box<f64>>,
     array_buffer: Option<ArrayBufferData>,
@@ -124,6 +127,7 @@ impl OrdinaryObject {
             max_properties,
             callable: None,
             constructible: false,
+            proxy: None,
             primitive_data: None,
             date_value: None,
             array_buffer: None,
@@ -145,18 +149,23 @@ impl OrdinaryObject {
     }
 
     /// Returns the unrooted prototype handle, or `None` for a null prototype.
+    /// This is physical inspection, not a Proxy's [[GetPrototypeOf]] operation.
     pub fn prototype(&self) -> Option<&Handle> {
         self.prototype.as_ref()
     }
 
     /// Returns whether the object has a [[Call]] internal method.
     pub fn is_callable(&self) -> bool {
-        self.callable.is_some()
+        self.callable.is_some() || self.proxy.as_ref().is_some_and(|proxy| proxy.callable)
     }
 
     /// Returns whether the object has a [[Construct]] internal method.
     pub fn is_constructor(&self) -> bool {
         self.constructible
+    }
+
+    pub(crate) fn is_proxy(&self) -> bool {
+        self.proxy.is_some()
     }
 
     /// Returns whether the object has the ErrorData internal slot.
@@ -293,7 +302,8 @@ impl OrdinaryObject {
         }
     }
 
-    /// Returns whether new own properties may be created.
+    /// Returns the physical record's extensibility bit.
+    /// Proxy [[IsExtensible]] requires the Realm rather than this inspection.
     pub fn is_extensible(&self) -> bool {
         self.extensible
     }
@@ -397,7 +407,8 @@ impl Trace for OrdinaryObject {
             | Callable::Arrow(_)
             | Callable::Ordinary(_)
             | Callable::Method(_)
-            | Callable::ClassConstructor(_) => None,
+            | Callable::ClassConstructor(_)
+            | Callable::ProxyRevoker(_) => None,
             Callable::Bound(bound) => Some(bound),
         });
         let capture = match self.callable.as_ref() {
@@ -407,6 +418,7 @@ impl Trace for OrdinaryObject {
             }
             Some(Callable::Method(method)) => Some(&method.code.environment.0),
             Some(Callable::ClassConstructor(class)) => Some(&class.method.code.environment.0),
+            Some(Callable::ProxyRevoker(proxy)) => proxy.as_ref(),
             Some(Callable::Builtin(_)) | None => None,
         };
         let home_object = match &self.callable {
@@ -415,6 +427,12 @@ impl Trace for OrdinaryObject {
             _ => None,
         };
         std::iter::once(self.prototype.as_ref())
+            .chain(self.proxy.iter().flat_map(|proxy| {
+                proxy
+                    .snapshot
+                    .iter()
+                    .flat_map(|snapshot| [Some(&snapshot.target), Some(&snapshot.handler)])
+            }))
             .chain(self.primitive_data.iter().map(|_| None))
             .chain(self.data_view.iter().map(|data| Some(data.buffer())))
             .chain(self.typed_array.iter().map(|data| Some(data.buffer())))

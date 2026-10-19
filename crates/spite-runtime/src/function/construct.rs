@@ -64,14 +64,22 @@ impl Realm {
             ));
         }
         loop {
-            let callable = self.object_work(span, |objects, budget| {
-                objects
+            let (callable, proxy) = self.object_work(span, |objects, budget| {
+                let proxy = objects.proxy_state(&function, budget)?;
+                if proxy.is_some() {
+                    return Ok((None, proxy));
+                }
+                let callable = objects
                     .inspect(&function)?
                     .callable()
-                    .expect("constructor has call metadata")
-                    .copy_with_budget(budget)
+                    .expect("ordinary constructor has call metadata")
+                    .copy_with_budget(budget)?;
+                Ok((Some(callable), None))
             })?;
-            match callable {
+            if let Some(proxy) = proxy {
+                return self.proxy_unimplemented_invocation(proxy, span);
+            }
+            match callable.expect("non-Proxy constructor metadata") {
                 Callable::Builtin(Builtin::Function) => {
                     return self.dynamic_function(Some(new_target), arguments.into_iter(), span);
                 }
@@ -102,6 +110,8 @@ impl Realm {
                 Callable::ClassConstructor(class) if class.derived && class.default => {
                     // The default derived closure forwards the argument List;
                     // no rest binding or Array iterator is observable (15.7.14).
+                    // This record was certified as an ordinary class above;
+                    // its superclass may be a Proxy handled by the next loop.
                     let superclass = self.object_work(span, |objects, budget| {
                         budget.charge(1)?;
                         Ok(objects

@@ -25,6 +25,7 @@ use environment::{BindingState, EnvironmentHandle};
 pub use time_zone::{TimeZone, TimeZoneError};
 pub mod object;
 mod realm_object;
+mod realm_proxy;
 mod realm_typed_array;
 #[cfg(test)]
 mod typed_array_tests;

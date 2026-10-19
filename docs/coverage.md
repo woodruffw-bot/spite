@@ -15666,6 +15666,41 @@ MSRV passes the 34 nonfull package tests; only the full pinned-corpus case is
 filtered locally. Fresh strict workspace Clippy, formatting, dependency policy,
 all three inventories, and diff checks pass. Exact unchanged engine sources and
 Native names retain their accepted results without another local engine run.
-All seventeen hosted jobs and four complete 15,997-variant corpus gates remain
-required. Defaults, selected limits, dependencies, profiles, ordinary stacks,
+The fixture commit passes all seventeen hosted jobs, four complete
+15,997-variant corpus gates, and all 5,730 Native cases on each platform and
+toolchain. Defaults, selected limits, dependencies, profiles, ordinary stacks,
 and three-worker execution are unchanged.
+
+## Private Proxy state and revocation
+
+Checked target/handler storage, revoker capture, cached callable/constructible
+capabilities, and GC tracing establish the Proxy object foundation. Nine new
+unit groups exercise revocation at full capacity, pre-mutation work failures,
+repeated revocation, capability retention, raw property boundaries, prototype
+cycles, traced object edges, and Symbol ephemerons. JavaScript trap algorithms
+and public construction remain deferred.
+
+Both toolchains pass all 399 Runtime units and 115 representative integration
+cases. The original stable unit/focused results are retained through an exact
+whole-module inverse of the sole non-test lint attribute; their test and runtime
+bodies are unchanged. Fresh strict workspace Clippy passes after that correction,
+and MSRV builds and passes the corrected source. The single full stable run
+passes all 3,854 integration cases in 242.94 seconds using an independently
+pinned final-source binary.
+
+All 13 CLI cases, 34 nonfull Test262 controls, and Runtime documentation checks
+pass on both toolchains. Only the full pinned-corpus case is filtered from those
+local runner controls. Formatting, dependency policy, all three inventories, and
+diff checks pass. The initial unused-payload warning is preserved; a variant-only
+cfg_attr(not(test), expect(dead_code)) documents the private-stage boundary.
+The next public trap implementation reads the payload and removes the attribute.
+
+Native names total 5,739, retaining all previous names and adding nine private
+units. The 927 Rust sources comprise twelve owned paths and 915 unchanged files;
+all 734 external snapshots and 549 initial realm objects remain exact. Corpus
+fixtures/helpers and all 15,997 variants are unchanged. Local coverage retains
+the accepted unchanged Core/Heap results; full corpus and full MSRV integration
+remain hosted gates. All seventeen hosted jobs and four complete corpus gates
+remain required for this foundation commit.
+Defaults, selected quotas, dependencies, profiles, ordinary stacks, and worker
+counts are unchanged.
