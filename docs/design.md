@@ -9429,6 +9429,25 @@ remain outside this entry. Parser string-property early errors remain distinct
 from unsupported valid syntax and optional host limits; dependencies and default
 resource policy are unchanged.
 
+## A one-character UnicodeSets string class followed by an ordinary checked class
+
+The reverse v/vi pair entry proves a complete q-aware prefix followed by an
+ordinary non-q checked suffix with a nested class or set operator. Every q
+alternative must decode to one original Unicode character. A prepaid 4N framing
+scan borrows both component boundaries; both components then compile in source
+order, including the suffix after an empty prefix or impossible outside gate.
+Operand-wise simple folding precedes algebra and complement
+([CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset)).
+
+Canonical outside line/word assertions and complete enclosing captures reuse
+the existing pair representation and result projection. Search preserves original
+UTF-16 context, overlapping retry, four-unit sticky accounting, and the approved
+initial low-surrogate rewind. The Runtime tries this proof after earlier v/vi
+proofs. Existing public compilers, scanner bodies, callbacks, storage, and search
+remain unchanged. Flat suffixes, partial captures, repetition, extra atoms,
+noncanonical assertions, empty or longer q alternatives, and string properties
+remain outside this entry. Default resource policy and dependencies are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

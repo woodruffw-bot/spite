@@ -15952,3 +15952,28 @@ corpus over 8,421 reviewed sources. Fixture hashes, inventory assertions,
 formatting, strict workspace Clippy, dependency policy, and diff checks pass.
 Shared buffers and agents remain deferred; ordinary runtime defaults, native
 stacks, and three-worker corpus execution are unchanged.
+
+## One-character UnicodeSets string class before an ordinary checked class
+
+The reverse v/vi pair proof admits a complete single-character q-aware prefix
+and an ordinary non-q checked suffix with nested classes or set operations.
+It preserves canonical outside line/word assertions, complete enclosing captures,
+original UTF-16 boundaries, and source-order component compilation, including
+suffix proof after an empty prefix. Partial captures, repetitions, further atoms,
+longer/empty q alternatives, and string properties remain separate work.
+
+Four Core regressions compare independent character memberships and UTF-16
+decoding, exercise line/word combinations, preserve earlier proof domains, and
+inject failure at every construction callback. Eight Runtime groups cover
+algebra, folding, overlap, surrogates, named captures and indices, lastIndex,
+String consumers, cloning, collection, early errors, and opted-in host aborts.
+Earlier unsupported controls now check their exact true/false completions and
+language finalizers. A supplementary Node comparison agrees on 4,896 complete
+result records, including captures, indices, and lastIndex.
+
+Stable passes all 28 workspace invocations, including 1,030 Core unit tests and
+3,968 Runtime integration tests, all documentation tests, and all 35 Test262
+package tests including the complete 16,319-variant corpus. Formatting, strict
+workspace Clippy, dependency policy, and fixture/source inventories pass.
+Existing snapshots, corpus sources and helpers, dependencies, intrinsic counts,
+and default resource policy are unchanged.

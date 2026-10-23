@@ -823,6 +823,8 @@ mod regexp_unicode_sets_bmp_character_sets;
 mod regexp_unicode_sets_bmp_literals;
 #[path = "cases/regexp_unicode_soft_dotted_properties.rs"]
 mod regexp_unicode_soft_dotted_properties;
+#[path = "cases/regexp_unicode_string_then_checked_class.rs"]
+mod regexp_unicode_string_then_checked_class;
 #[path = "cases/regexp_unicode_surrogate_literals.rs"]
 mod regexp_unicode_surrogate_literals;
 #[path = "cases/regexp_unicode_terminal_punctuation_properties.rs"]

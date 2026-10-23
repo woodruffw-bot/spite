@@ -1664,7 +1664,6 @@ fn flat_then_checked_v_set_pair_state_context_and_consumers() {
         r"/[a]+[b--c]/v.test('ac')",
         r"/[a][c--b]?/v.test('ac')",
         r"/[][[\p{RGI_Emoji}]]/v.test('ac')",
-        r"/[\q{a}][[b]]/v.test('ab')",
         r"/[\p{RGI_Emoji}][[b]]/v.test('ab')",
     ] {
         assert!(
@@ -2080,7 +2079,6 @@ fn flat_then_checked_v_set_pair_word_state_context_and_consumers() {
         r"/\b[a]+[[b]]/v.test('ab')",
         r"/\b[a][[b]]?/v.test('ab')",
         r"/\b[][[\p{RGI_Emoji}]]/v.test('ab')",
-        r"/\b[\q{a}][[a--a]]/v.test('ab')",
         r"/\b[\p{RGI_Emoji}][[a--a]]/v.test('ab')",
     ] {
         assert!(
@@ -9872,8 +9870,6 @@ fn single_character_v_string_then_flat_class_state_context_and_consumers() {
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     for source in [
-        r"/[\q{a}][[b]]/v.test('ab')",
-        r"/[\q{a}][b&&b]/v.test('ab')",
         r"/([\q{a}])[b]/v.test('ab')",
         r"/[\q{a}]([b])/v.test('ab')",
         r"/[\q{a}]+[b]/v.test('ab')",
@@ -10358,8 +10354,6 @@ fn single_character_v_string_class_pair_state_context_and_consumers() {
         ));
     }
     for source in [
-        r"/[\q{a}][[b]]/v.test('ab')",
-        r"/[\q{a}][b&&b]/v.test('ab')",
         r"/([\q{a}])[\q{b}]/v.test('ab')",
         r"/[\q{a}]([\q{b}])/v.test('ab')",
         r"/[\q{a}]+[\q{b}]/v.test('ab')",
@@ -10618,8 +10612,6 @@ fn checked_class_then_single_character_v_string_state_context_and_consumers() {
         ));
     }
     for source in [
-        r"/[\q{a}][[b]]/v.test('ab')",
-        r"/[\q{a}][b&&b]/v.test('ab')",
         r"/([[a]])[\q{b}]/v.test('ab')",
         r"/[[a]]([\q{b}])/v.test('ab')",
         r"/(?:[[a]][\q{b}])+/v.test('ab')",
