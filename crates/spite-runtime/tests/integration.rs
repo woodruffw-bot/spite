@@ -803,6 +803,8 @@ mod regexp_unicode_pure_empty_patterns;
 mod regexp_unicode_q_string_operations;
 #[path = "cases/regexp_unicode_quantified_empty_sequence_nullable_alternatives.rs"]
 mod regexp_unicode_quantified_empty_sequence_nullable_alternatives;
+#[path = "cases/regexp_unicode_quantified_empty_sequence_nullable_string_classes.rs"]
+mod regexp_unicode_quantified_empty_sequence_nullable_string_classes;
 #[path = "cases/regexp_unicode_quotation_mark_properties.rs"]
 mod regexp_unicode_quotation_mark_properties;
 #[path = "cases/regexp_unicode_radical_properties.rs"]

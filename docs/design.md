@@ -10441,7 +10441,14 @@ budgets, earliest starts, original character ranges and outside word/line gates.
 Quantified-empty recognition has its own conservative linear work reservation;
 prior constructor domains and callback traces are unchanged. Empty choices,
 capturing empty groups, assertions and partial captures retain separate proofs.
-Runtime selection is separate.
+
+Runtime selects the simple and counted quantified-empty constructors after the
+unquantified sequence entries. Existing capture projection and String consumers
+preserve all outer-count families, required empty/undefined captures, exact
+optional budgets, earliest starts, original UTF-16 ranges, names/indices,
+lastIndex, clones and collection. Huge inner empty counts remain effect-free and
+flat. Former quantified-empty rejections complete with exact values and eval
+finalizers; opt-in host aborts preserve atomic state.
 
 ## Global intrinsic metadata and enumeration
 

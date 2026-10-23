@@ -17839,3 +17839,28 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime quantified empty sequences beside string classes
+
+Runtime now selects nullable singleton-q and character-result v/vi classes beside
+quantified noncapturing empty sequences under all simple and braced outer counts.
+Six groups check 27 outer modes in both branch orders, zero/required captures,
+mandatory priority, optional progress, exact decimal budgets, earliest starts,
+original supplementary ranges, names/indices, source metadata, lastIndex, String
+consumers, clones and collection. Thirty-nine former literal rejection controls
+and six inner-branch controls complete as successful programs with checked
+finalizers; two dynamic unequal ranges retain exact optional budgets. Empty
+choices and capturing/asserted/consuming empty branches remain deferred. A
+20,000-digit inner empty count and outer decimal borrow stay flat. Opt-in
+construction and search aborts preserve atomic state under unchanged limits.
+
+All 117,312 differential records across 312 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes. Controls keep the empty branch unquantified; the complete effect-free
+proof and independent Core oracle verify original inner/outer count semantics.
+Stable passes all 425 Runtime unit cases, 244 affected integration cases and
+1,533 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories and diff
+checks pass. Runtime inventory is 518 case files and 4,180 integration cases.
+Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.
