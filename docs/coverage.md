@@ -16317,3 +16317,27 @@ Stable passes all 425 Runtime unit cases and 1,371 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core scalar-left UnicodeSets string operations
+
+The scalar-left proof compiles positive intersection/subtraction chains whose
+first operand is a q-free character set. Later nested finite/scalar expressions
+are projected to characters, with every empty/long q branch completely decoded.
+Only singleton branches enter canonical interval algebra. Full v/vi validation
+proves legal complements; string properties and other root shapes remain outside
+the proof. Runtime selection is a separate step.
+
+Three Core groups compare independent character predicates and nested finite-set
+projections across all start offsets and sticky/i/m modes. They cover unions,
+intersections, subtractions and legal nested complements, scalar properties,
+empty classes and words, strict complete proof after an empty result, canonical
+ASCII closure, outside gates, paired/lone/braced surrogate identity, cancellation
+and recovery at every callback, 20,000 nested operand levels, and 20,000-character
+ignored words with compact checked work and flat clone/drop storage.
+
+Stable passes all 1,061 Core and 425 Runtime unit cases and 164 affected Runtime
+integration cases. All 1,344 prior eight-string/four-checked-class API construction,
+bound, and match records remain unchanged. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Runtime selection, snapshots, corpus sources and helpers,
+dependencies, intrinsic counts, and default resource policy are unchanged.

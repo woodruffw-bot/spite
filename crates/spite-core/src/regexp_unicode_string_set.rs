@@ -873,15 +873,15 @@ fn finite_operand<E>(
     Ok(Some(true))
 }
 
-struct Framing<'a> {
-    body: &'a [u16],
-    start_anchor: bool,
-    end_anchor: bool,
-    start_word: Option<bool>,
-    end_word: Option<bool>,
+pub(crate) struct Framing<'a> {
+    pub(crate) body: &'a [u16],
+    pub(crate) start_anchor: bool,
+    pub(crate) end_anchor: bool,
+    pub(crate) start_word: Option<bool>,
+    pub(crate) end_word: Option<bool>,
 }
 
-fn frame_source<'a, E>(
+pub(crate) fn frame_source<'a, E>(
     source: &'a JsString,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Framing<'a>>, RegExpUnicodeSetCompileError<E>> {

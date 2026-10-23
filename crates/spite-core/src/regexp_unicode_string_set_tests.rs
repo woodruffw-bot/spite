@@ -2,6 +2,8 @@ use super::*;
 
 #[path = "regexp_unicode_finite_string_operations_tests.rs"]
 mod finite_operations;
+#[path = "regexp_unicode_scalar_left_string_operations_tests.rs"]
+mod scalar_left_operations;
 #[path = "regexp_unicode_scalar_rhs_string_operations_tests.rs"]
 mod scalar_rhs_operations;
 

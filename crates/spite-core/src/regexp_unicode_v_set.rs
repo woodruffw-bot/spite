@@ -53,6 +53,13 @@ enum Operator {
     Subtraction,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum StringOperands {
+    None,
+    SingleCharacter,
+    Projected,
+}
+
 enum Term {
     Raw(ClassAtom),
     Range(u32, u32),
@@ -97,6 +104,74 @@ struct Builder<'a, F> {
 }
 
 impl RegExpUnicodeClassMatcher {
+    /// Compiles positive operation chains whose first operand is character-only.
+    ///
+    /// Requires a complete validated v/vi Pattern. The outer class starts with
+    /// a q-free character operand followed by intersection or subtraction. Its
+    /// result is therefore character-only, even when later nested expressions
+    /// contain empty or longer q members. At least one such member is required.
+    /// Character projection commutes with union, intersection and subtraction;
+    /// ignored string branches are still completely decoded and proved. String
+    /// properties, scalar/string unions at the root, negated roots, additional
+    /// atoms and repetition remain separate proofs. Canonical outside line/word
+    /// assertions and caller-projected whole-body captures retain their ranges.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_scalar_left_string_operations_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        let Some(frame) = crate::regexp_unicode_string_set::frame_source(source, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        let body = frame.body;
+        if body.len() < 2 || body[0] != 0x5b || body[1] == 0x5e || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let inner = &body[1..body.len() - 1];
+        let first_end = if inner.first() == Some(&0x5b) {
+            let Some(end) = crate::regexp_unicode_class_literal::class_end(inner, 0) else {
+                return Ok(None);
+            };
+            end
+        } else {
+            let mut probe = Builder {
+                units: inner,
+                at: 0,
+                ignore_case,
+                charge: &mut charge,
+            };
+            if !matches!(probe.term(), Some(Term::Raw(_))) {
+                return Ok(None);
+            }
+            probe.at
+        };
+        if !inner
+            .get(first_end..)
+            .is_some_and(|tail| tail.starts_with(&[0x26, 0x26]) || tail.starts_with(&[0x2d, 0x2d]))
+        {
+            return Ok(None);
+        }
+        let Some(mut matcher) = Self::compile_v_set_units_with_string_operands_and_work(
+            body,
+            ignore_case,
+            multiline,
+            StringOperands::Projected,
+            true,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        matcher.start_anchor = frame.start_anchor;
+        matcher.end_anchor = frame.end_anchor;
+        matcher.start_word = frame.start_word;
+        matcher.end_word = frame.end_word;
+        Ok(Some(matcher))
+    }
+
     // One complete class/property escape, borrowed from a validated operand.
     pub(crate) fn compile_scalar_atom_units_with_work<E>(
         units: &[u16],
@@ -354,7 +429,7 @@ impl RegExpUnicodeClassMatcher {
             units,
             ignore_case,
             multiline,
-            false,
+            StringOperands::None,
             true,
             charge,
         )
@@ -370,7 +445,7 @@ impl RegExpUnicodeClassMatcher {
             units,
             ignore_case,
             multiline,
-            true,
+            StringOperands::SingleCharacter,
             true,
             charge,
         )
@@ -387,7 +462,7 @@ impl RegExpUnicodeClassMatcher {
             units,
             ignore_case,
             false,
-            false,
+            StringOperands::None,
             false,
             charge,
         )
@@ -397,7 +472,7 @@ impl RegExpUnicodeClassMatcher {
         units: &[u16],
         ignore_case: bool,
         multiline: bool,
-        allow_string_operands: bool,
+        strings: StringOperands,
         require_shape: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
@@ -427,6 +502,7 @@ impl RegExpUnicodeClassMatcher {
         let mut parents = Vec::new();
         let mut eligible = false;
         let mut has_string_operand = false;
+        let mut has_variable_string = false;
         let ranges;
         loop {
             if builder.units.get(builder.at) == Some(&0x5d) {
@@ -436,10 +512,10 @@ impl RegExpUnicodeClassMatcher {
                 builder.at += 1;
                 let mut completed = builder.finish(current.expression)?;
                 let Some(mut parent) = parents.pop() else {
-                    let eligible = if allow_string_operands {
-                        has_string_operand
-                    } else {
-                        eligible
+                    let eligible = match strings {
+                        StringOperands::None => eligible,
+                        StringOperands::SingleCharacter => has_string_operand,
+                        StringOperands::Projected => has_variable_string,
                     };
                     if builder.at != builder.units.len() || (require_shape && !eligible) {
                         return Ok(None);
@@ -466,15 +542,25 @@ impl RegExpUnicodeClassMatcher {
                     builder.at += usize::from(inverted);
                     current = Frame::new(inverted);
                 } else {
-                    let term = if allow_string_operands
+                    let term = if strings != StringOperands::None
                         && builder
                             .units
                             .get(builder.at..)
                             .is_some_and(|tail| tail.starts_with(&[0x5c, 0x71, 0x7b]))
                     {
                         builder.at += 3;
-                        let Some(ranges) = builder.single_character_string_ranges(true)? else {
-                            return Ok(None);
+                        let ranges = if strings == StringOperands::Projected {
+                            let Some((ranges, variable)) = builder.projected_string_ranges()?
+                            else {
+                                return Ok(None);
+                            };
+                            has_variable_string |= variable;
+                            ranges
+                        } else {
+                            let Some(ranges) = builder.single_character_string_ranges(true)? else {
+                                return Ok(None);
+                            };
+                            ranges
                         };
                         has_string_operand = true;
                         Term::Closed(ranges)
@@ -719,6 +805,45 @@ pub(crate) fn single_string_character(units: &[u16], at: &mut usize) -> Option<u
 }
 
 impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
+    // Only the scalar-left proof uses projection. Simple folding preserves a
+    // word's character count, so empty/longer words cannot become characters.
+    // The full source is prepaid; discarded branches still decode to their end.
+    fn projected_string_ranges(&mut self) -> Checked<Option<(Intervals, bool)>, E> {
+        let mut ranges = Vec::new();
+        let mut first = None;
+        let mut longer = false;
+        let mut variable = false;
+        loop {
+            let Some(&unit) = self.units.get(self.at) else {
+                return Ok(None);
+            };
+            if matches!(unit, 0x7c | 0x7d) {
+                if let Some(point) = first.filter(|_| !longer) {
+                    self.reserve(&mut ranges, 1)?;
+                    ranges.push((point, point));
+                } else {
+                    variable = true;
+                }
+                self.at += 1;
+                if unit == 0x7d {
+                    break;
+                }
+                first = None;
+                longer = false;
+            } else {
+                let Some(point) = single_string_character(self.units, &mut self.at) else {
+                    return Ok(None);
+                };
+                if first.is_some() {
+                    longer = true
+                } else {
+                    first = Some(point)
+                }
+            }
+        }
+        self.close(ranges).map(|ranges| Some((ranges, variable)))
+    }
+
     // Both callers prove the same one-character alternatives. The standalone
     // entry has already stripped its final brace; algebra operands consume it.
     fn single_character_string_ranges(&mut self, braced: bool) -> Checked<Option<Intervals>, E> {

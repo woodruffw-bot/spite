@@ -9667,6 +9667,33 @@ search-work accounting. Zero-width bounds continue to distinguish an empty set
 from a retained empty member. Unsupported operands are still proved after an
 empty intermediate result and preserve the host-error completion category.
 
+## Scalar-left string operations and character projection
+
+A separate Core entry proves a positive class whose first operand is q-free and
+character-only, followed by intersection or subtraction. The root's result is
+therefore a subset of that first character set. Later operands may contain nested
+unions, intersections, subtractions, scalar properties, ranges, and q disjunctions.
+At least one q member must be empty or longer. Whole-Pattern v/vi validation is
+required; string properties, root unions or negation, additional atoms, and
+repetition remain separate proofs. Runtime selection is a later step.
+
+Character projection commutes with set union, intersection, and subtraction.
+Every q branch is decoded to its end, but only branches containing one character
+contribute intervals. Simple folding preserves character count, so empty and
+longer words can be discarded before canonical interval operations without
+turning a string into a character. Nested complements retain the normal character
+universe; full validation proves that each complemented result contains no strings.
+Separate braced surrogate escapes remain two characters and cannot become a
+projected supplementary character.
+
+The checked parser has separate no-string, singleton-string, and projection
+modes. Earlier entries retain their existing domains and callback sequences.
+The projection mode reuses charged, fallible interval/frame storage and never
+stores a long word or expands scalar ranges. Scalar-first framing borrows source
+and preserves canonical outside word/line gates. Empty projected results remain
+consuming classes that never match, including on empty input. Deep parsing,
+search, clone, and drop remain iterative, and quotas and dependencies are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
