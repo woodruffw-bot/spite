@@ -615,6 +615,8 @@ mod regexp_unicode_changes_uppercased_properties;
 mod regexp_unicode_character_anchors;
 #[path = "cases/regexp_unicode_character_folding.rs"]
 mod regexp_unicode_character_folding;
+#[path = "cases/regexp_unicode_character_string_unions.rs"]
+mod regexp_unicode_character_string_unions;
 #[path = "cases/regexp_unicode_character_word_boundaries.rs"]
 mod regexp_unicode_character_word_boundaries;
 #[path = "cases/regexp_unicode_class_anchors.rs"]

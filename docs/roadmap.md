@@ -636,6 +636,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile standalone positive v/vi ClassStringDisjunction classes with empty or multi-character members into a checked Core matcher, preserving longest-member priority, simple folding, and outside assertions.
 - [x] Connect empty and multi-character standalone ClassStringDisjunction matching to Runtime RegExp execution and String consumers, preserving whole-body captures, indices, lastIndex, and Unicode empty-match advancement.
 - [x] Match unions of adjacent ClassStringDisjunction operands in one positive v/vi class, including empty and multi-character members, shared longest-member priority, outside assertions, and complete whole-body captures.
+- [x] Match ordinary literal characters beside empty or multi-character ClassStringDisjunction operands in positive v/vi classes, preserving operand order, longest-member priority, outside assertions, and complete whole-body captures.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

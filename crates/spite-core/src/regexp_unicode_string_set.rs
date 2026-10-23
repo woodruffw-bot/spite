@@ -15,8 +15,9 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 /// Immutable forward matcher for a complete positive v/vi `\q` string class.
 ///
 /// Requires complete validated v/vi Pattern input. Separate constructors prove
-/// one ClassStringDisjunction operand or a union of adjacent string operands,
-/// with at least one empty or multi-character alternative overall. Canonical
+/// one ClassStringDisjunction operand, adjacent string operands, or strings
+/// beside ordinary literal characters, with an empty or longer q member.
+/// Canonical
 /// outside line/word assertions are admitted. Captures,
 /// repetitions, further consuming terms, other class algebra and string properties
 /// remain separate caller proofs. Complete enclosing captures may be projected
@@ -54,7 +55,7 @@ impl RegExpUnicodeStringSetMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_domain(source, ignore_case, multiline, false, charge)
+        Self::compile_domain(source, ignore_case, multiline, Domain::Single, charge)
     }
 
     /// Compiles a positive class consisting of at least two adjacent `\q`
@@ -71,14 +72,30 @@ impl RegExpUnicodeStringSetMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_domain(source, ignore_case, multiline, true, charge)
+        Self::compile_domain(source, ignore_case, multiline, Domain::Strings, charge)
+    }
+
+    /// Compiles a positive class containing ordinary literal characters and
+    /// ClassStringDisjunction operands, with an empty or longer q member.
+    ///
+    /// All operands contribute to the same union. Character-class escapes,
+    /// properties, ranges, nesting and intersection/subtraction decline. The
+    /// earlier q-only constructors keep their exact proof domains.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_character_union_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain(source, ignore_case, multiline, Domain::Characters, charge)
     }
 
     fn compile_domain<E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
-        union: bool,
+        domain: Domain,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -122,93 +139,90 @@ impl RegExpUnicodeStringSetMatcher {
         let Some(body) = units.get(begin..end) else {
             return Ok(None);
         };
-        if !body.starts_with(&[0x5b, 0x5c, 0x71, 0x7b]) || !body.ends_with(&[0x7d, 0x5d]) {
-            return Ok(None);
-        }
-        let inner = &body[4..body.len() - 2];
-        let mut terminal = Vec::new();
-        charge(1).map_err(RegExpUnicodeSetCompileError::Work)?;
-        terminal
-            .try_reserve(1)
-            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
-        terminal.push(false);
-        let mut edges = HashMap::new();
-        let mut at = 0;
-        let mut node = 0;
-        let mut length = 0usize;
-        let mut max_characters = 0;
-        let mut has_strings = false;
-        let mut has_union = false;
-        loop {
-            // Only an unescaped closing brace followed immediately by another
-            // complete q prefix separates operands. The character decoder
-            // consumes escaped braces and backslashes before we reach here.
-            let next_operand = union && inner[at..].starts_with(&[0x7d, 0x5c, 0x71, 0x7b]);
-            if at == inner.len() || inner.get(at) == Some(&0x7c) || next_operand {
-                charge(1).map_err(RegExpUnicodeSetCompileError::Work)?;
-                terminal[node] = true;
-                has_strings |= length != 1;
-                max_characters = max_characters.max(length);
-                node = 0;
-                length = 0;
-                if at == inner.len() {
-                    break;
-                }
-                at += if next_operand { 4 } else { 1 };
-                has_union |= next_operand;
-                continue;
-            }
-            let Some(point) = single_string_character(inner, &mut at) else {
+        let inner = if domain == Domain::Characters {
+            if body.len() < 2 || body[0] != 0x5b || body[1] == 0x5e || body.last() != Some(&0x5d) {
                 return Ok(None);
-            };
-            let point = if ignore_case {
-                charge(2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize)
-                    .map_err(RegExpUnicodeSetCompileError::Work)?;
-                regexp_canonicalize_character(point, true, true)
-            } else {
-                point
-            };
-            charge(1).map_err(RegExpUnicodeSetCompileError::Work)?;
-            node = if let Some(&next) = edges.get(&(node, point)) {
-                next
-            } else {
-                let next = terminal.len();
-                let needed = next
-                    .checked_add(1)
-                    .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
-                let edge_needed = edges
-                    .len()
-                    .checked_add(1)
-                    .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
-                let movement = if needed > terminal.capacity() {
-                    terminal.len()
+            }
+            &body[1..body.len() - 1]
+        } else {
+            if !body.starts_with(&[0x5b, 0x5c, 0x71, 0x7b]) || !body.ends_with(&[0x7d, 0x5d]) {
+                return Ok(None);
+            }
+            &body[4..body.len() - 2]
+        };
+        let mut builder = TrieBuilder::new(ignore_case, charge)?;
+        let mut at = 0;
+        let proved = if domain == Domain::Characters {
+            let mut has_q = false;
+            let mut has_character = false;
+            while at < inner.len() {
+                if inner[at..].starts_with(&[0x5c, 0x71, 0x7b]) {
+                    has_q = true;
+                    at += 3;
+                    loop {
+                        let Some(&unit) = inner.get(at) else {
+                            return Ok(None);
+                        };
+                        if matches!(unit, 0x7c | 0x7d) {
+                            builder.finish_member()?;
+                            at += 1;
+                            if unit == 0x7d {
+                                break;
+                            }
+                        } else {
+                            let Some(point) = single_string_character(inner, &mut at) else {
+                                return Ok(None);
+                            };
+                            builder.push(point)?;
+                        }
+                    }
                 } else {
-                    0
-                };
-                let rehash = if edge_needed > edges.capacity() {
-                    edges.len()
+                    // Two raw ampersands form intersection, never two literal
+                    // operands. The decoder rejects ranges and nested classes.
+                    if inner[at..].starts_with(&[0x26, 0x26]) {
+                        return Ok(None);
+                    }
+                    let Some(point) = single_string_character(inner, &mut at) else {
+                        return Ok(None);
+                    };
+                    builder.push(point)?;
+                    builder.finish_member()?;
+                    has_character = true;
+                }
+            }
+            has_q && has_character
+        } else {
+            let mut proved = domain == Domain::Single;
+            loop {
+                // Escaped braces/backslashes are consumed by the decoder;
+                // only a raw closing brace can separate adjacent q operands.
+                let next_operand =
+                    domain == Domain::Strings && inner[at..].starts_with(&[0x7d, 0x5c, 0x71, 0x7b]);
+                if at == inner.len() || inner.get(at) == Some(&0x7c) || next_operand {
+                    builder.finish_member()?;
+                    if at == inner.len() {
+                        break;
+                    }
+                    at += if next_operand { 4 } else { 1 };
+                    proved |= next_operand;
                 } else {
-                    0
-                };
-                charge(movement.saturating_add(rehash).saturating_add(2))
-                    .map_err(RegExpUnicodeSetCompileError::Work)?;
-                terminal
-                    .try_reserve(1)
-                    .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
-                edges
-                    .try_reserve(1)
-                    .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
-                terminal.push(false);
-                edges.insert((node, point), next);
-                next
-            };
-            length = length
-                .checked_add(1)
-                .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
-        }
-        if !has_strings || (union && !has_union) {
+                    let Some(point) = single_string_character(inner, &mut at) else {
+                        return Ok(None);
+                    };
+                    builder.push(point)?;
+                }
+            }
+            proved
+        };
+        if !proved || !builder.has_strings {
             return Ok(None);
         }
+        let TrieBuilder {
+            edges,
+            terminal,
+            max_characters,
+            ..
+        } = builder;
         Ok(Some(Self {
             program: Arc::new(Program {
                 edges,
@@ -294,6 +308,105 @@ impl RegExpUnicodeStringSetMatcher {
             let &first = units.get(candidate)?;
             candidate += unicode_input_character(units, candidate, first).1;
         }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Domain {
+    Single,
+    Strings,
+    Characters,
+}
+
+struct TrieBuilder<F> {
+    edges: HashMap<(usize, u32), usize>,
+    terminal: Vec<bool>,
+    node: usize,
+    length: usize,
+    max_characters: usize,
+    has_strings: bool,
+    ignore_case: bool,
+    charge: F,
+}
+
+impl<E, F: FnMut(usize) -> Result<(), E>> TrieBuilder<F> {
+    fn new(ignore_case: bool, mut charge: F) -> Result<Self, RegExpUnicodeSetCompileError<E>> {
+        let mut terminal = Vec::new();
+        charge(1).map_err(RegExpUnicodeSetCompileError::Work)?;
+        terminal
+            .try_reserve(1)
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        terminal.push(false);
+        Ok(Self {
+            edges: HashMap::new(),
+            terminal,
+            node: 0,
+            length: 0,
+            max_characters: 0,
+            has_strings: false,
+            ignore_case,
+            charge,
+        })
+    }
+
+    fn finish_member(&mut self) -> Result<(), RegExpUnicodeSetCompileError<E>> {
+        (self.charge)(1).map_err(RegExpUnicodeSetCompileError::Work)?;
+        self.terminal[self.node] = true;
+        self.has_strings |= self.length != 1;
+        self.max_characters = self.max_characters.max(self.length);
+        self.node = 0;
+        self.length = 0;
+        Ok(())
+    }
+
+    fn push(&mut self, point: u32) -> Result<(), RegExpUnicodeSetCompileError<E>> {
+        let point = if self.ignore_case {
+            (self.charge)(2 + (usize::BITS - SIMPLE_CASE_FOLD.len().leading_zeros()) as usize)
+                .map_err(RegExpUnicodeSetCompileError::Work)?;
+            regexp_canonicalize_character(point, true, true)
+        } else {
+            point
+        };
+        (self.charge)(1).map_err(RegExpUnicodeSetCompileError::Work)?;
+        self.node = if let Some(&next) = self.edges.get(&(self.node, point)) {
+            next
+        } else {
+            let next = self.terminal.len();
+            let needed = next
+                .checked_add(1)
+                .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+            let edge_needed = self
+                .edges
+                .len()
+                .checked_add(1)
+                .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+            let movement = if needed > self.terminal.capacity() {
+                self.terminal.len()
+            } else {
+                0
+            };
+            let rehash = if edge_needed > self.edges.capacity() {
+                self.edges.len()
+            } else {
+                0
+            };
+            (self.charge)(movement.saturating_add(rehash).saturating_add(2))
+                .map_err(RegExpUnicodeSetCompileError::Work)?;
+            self.terminal
+                .try_reserve(1)
+                .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+            self.edges
+                .try_reserve(1)
+                .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+            self.terminal.push(false);
+            self.edges.insert((self.node, point), next);
+            next
+        };
+        self.length = self
+            .length
+            .checked_add(1)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(())
     }
 }
 

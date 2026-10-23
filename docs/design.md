@@ -9516,6 +9516,28 @@ projection, search bounds, RegExpBuiltinExec, and String consumers. Ordinary
 character/property operands, nesting, intersection/subtraction, further atoms,
 and repetition remain separate proofs. No dependencies or default quotas change.
 
+## Ordinary literal characters beside UnicodeSets strings
+
+A separate checked entry admits positive v/vi unions of ordinary literal
+ClassSetCharacters and q operands, with at least one literal operand and an empty
+or longer q member. The shared decoder preserves escaped delimiters, fixed-pair
+and braced-surrogate distinctions, backspace, null, and raw constructor line
+terminators. Each literal becomes a one-character member; q alternatives retain
+their own boundaries. Both enter the same trie in source order.
+
+The trie builder centralizes checked folding, prefix insertion, terminal marking,
+and fallible growth. Earlier single-q and q-only-union framing and callback
+sequences are unchanged. All members follow
+[CompileAtom](https://262.ecma-international.org/17.0/#sec-compileatom)'s
+longer-string, singleton, empty priority. Outside assertions can still reject a
+longer member and select a shorter literal or the empty member.
+
+The Runtime tries this entry after q-only proofs and reuses the existing variable
+string search, capture projection, and work accounting. Raw intersection is
+explicitly rejected; class escapes, properties, ranges, nested classes,
+intersection/subtraction, further atoms, and repetition remain separate proofs.
+Dependencies, shared-allocation boundaries, and default resource policy are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

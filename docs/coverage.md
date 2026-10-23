@@ -16066,3 +16066,29 @@ UnicodeSets/string-class integration cases. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
 intrinsic counts, and default resource policy are unchanged.
+
+## Ordinary literal characters beside UnicodeSets strings
+
+The positive v/vi proof admits ordinary literal ClassSetCharacters before,
+between, or after q operands, with an empty or longer q member overall. A shared
+checked trie builder preserves source-order construction, folded membership,
+longest-member priority, and shorter/empty outside-assertion continuations.
+Earlier public constructors keep their proof domains and callback sequences.
+
+Three Core groups use an independent decoded-sequence oracle across all start
+offsets and sticky modes, cover escaped boundaries, line/word gates, case folds,
+surrogates and backspace, keep other grammar closed, inject cancellation at every
+constructor callback, and compile a 20,000-literal flat class. Five Runtime groups
+cover priorities, names and indices, lastIndex and surrogate rewind, constructor
+lines, all String consumers, merged-q equivalence, collection, exact former
+Unsupported completions with finalizers, deferred syntax, and opt-in cancellation.
+All 96 captured construction-work and match transcripts from the earlier APIs
+agree before and after the trie-builder refactor.
+
+The mixed-literal spellings also agree on all 11,392 complete records against
+the stored ordinary-class engine controls, including captures, indices, and
+lastIndex. Stable passes all 1,043 Core unit cases, all 423 Runtime unit cases,
+and 133 UnicodeSets/string-class integration cases. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories, and diff checks pass. Snapshots, corpus sources and helpers,
+dependencies, intrinsic counts, and default resource policy are unchanged.
