@@ -2130,6 +2130,61 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles positive open-count repetition of a singleton-q class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Braced {m,} requires a positive lower bound, including padded and
+    /// unrepresentable counts and lazy forms. Source branch priority, mandatory
+    /// empty captures, optional progress checks and canonical outside word/line
+    /// gates retain their existing semantics. Every q member must be a single
+    /// character, and every class leaf is proved before search.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_open_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::PositiveOpen,
+            charge,
+        )
+    }
+
+    /// Compiles positive open-count repetition of a character-result class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a raw empty alternative and a bare class whose static
+    /// MayContainStrings result is false and which contains an empty/long q
+    /// member. Positive braced {m,}, including padded/unrepresentable bounds and
+    /// lazy forms, reuses mandatory branch priority, optional progress checks,
+    /// final original capture ranges and canonical outside word/line gates.
+    /// Required empty captures stay defined, even after consuming characters.
+    /// Every leaf is compiled behind empty-first choices. Finite upper bounds,
+    /// zero lower bounds, simple quantifiers, branch-local captures/assertions,
+    /// grouped/extra empty alternatives and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_open_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::PositiveOpen,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2210,6 +2265,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }
             if bounds == NullableProof::OneIteration
                 && (minimum != Some(1) || maximum != Some(1) || body.get(atom_end) != Some(&0x7b))
+            {
+                continue;
+            }
+            if bounds == NullableProof::PositiveOpen
+                && (minimum == Some(0)
+                    || body.get(atom_end) != Some(&0x7b)
+                    || end.checked_sub(2).and_then(|at| body.get(at)) != Some(&0x2c)
+                    || body.get(end - 1) != Some(&0x7d))
             {
                 continue;
             }

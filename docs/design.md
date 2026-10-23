@@ -9917,6 +9917,33 @@ String consumers, replacement callbacks, lastIndex, clones, collection and host
 aborts reuse their existing paths. Former Unsupported {1}/{1,1} expressions
 complete finalizers normally.
 
+## Positive open-count nullable string classes
+
+Separate Core entries prove positive {m,} repetition of a raw empty alternative
+beside a bare singleton-q or character-result v/vi class. Padded lower bounds,
+lower bounds exceeding native integers, and lazy forms share the existing
+nullable search. Complete ordinary/noncapturing wrappers and canonical outside
+word/line gates retain their earlier scope. Zero lower bounds, finite upper
+bounds, simple quantifiers, branch-local captures/assertions, grouped/extra empty
+alternatives and additional atoms remain separate proofs. Every class operand
+is compiled even behind mandatory empty-first choices.
+
+Character-first mandatory iterations prefer characters before empty choices.
+When fewer characters are consumed than the minimum, the last required empty
+iteration defines an empty capture at the whole-match end. This count uses
+decoded characters, not UTF-16 width. Empty-first mandatory iterations instead
+prefer empty choices; successful later optional characters can define the final
+capture. Lazy search retains mandatory source priority before optional stopping,
+and optional empty iterations remain rejected by RepeatMatcher's progress check.
+
+Unrepresentable positive minimums exceed every finite input character count.
+The existing count representation and linear matcher preserve their required
+empty choices and final original ranges without expanding counts or captures
+into matching state. The shared borrowed framing/wrapper scan precharges
+decimal scans. Earlier constructors retain their domains, exact work traces and
+results. Checked class storage, allocation boundaries, flat clone/drop,
+dependencies and resource defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

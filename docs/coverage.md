@@ -16787,3 +16787,34 @@ cases, and 1,419 Unicode integration cases. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
 intrinsic counts, and default resource policy are unchanged.
+
+## Core positive open-count nullable string classes
+
+Separate Core entries prove positive {m,} repetition of a raw empty alternative
+beside a singleton-q or character-result v/vi class, including padded or
+unrepresentable lower bounds and lazy forms. Mandatory source branch priority,
+optional-empty progress checks, complete wrappers and outside word/line gates
+reuse the existing matcher. Character-first bodies which consume fewer decoded
+characters than the minimum retain a final mandatory empty capture; empty-first
+bodies can retain a later optional character instead. Counts and captures never
+expand into matching state. Earlier domains stay closed; Runtime selection is
+separate.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, seven count forms,
+line/word gates, all starts and sticky/i/m modes. For overflowing minimums, a
+finite mandatory count above the entire input character count supplies the
+bounded-input oracle. Explicit cases distinguish source priority and decoded
+character count from UTF-16 width. Coverage includes required empty captures,
+complete unknown/string leaf proof, finite-upper-bound rejection, every
+constructor callback's cancellation/recovery, 20,000 complete wrappers,
+20,000-character discarded words and 20,000-digit overflowing lower bounds with
+linear checked construction work and flat clone/drop.
+
+All 3,976 prior eight-string/five-class/fifteen-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,088 Core and 425 Runtime unit cases and 212 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
