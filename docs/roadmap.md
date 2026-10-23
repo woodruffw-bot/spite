@@ -703,6 +703,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect nullable string classes beside quantified empty sequences to Runtime RegExp captures and String consumers under simple and all braced counts, preserving progress, captures, decimal budgets, UTF-16 ranges, names/indices, lastIndex, finalizers and opt-in abort propagation without expanding inner counts.
 - [x] Compile nullable singleton-q and character-result v classes beside effect-free empty choices under simple and all braced counts, using balanced edge scans to preserve complete q payloads, mandatory priority, progress, budgets, captures and outside gates without expanding choices or counts.
 - [x] Connect nullable string classes beside effect-free empty choices to Runtime RegExp captures and String consumers across simple and all braced counts, preserving q payload boundaries, captures, decimal budgets, UTF-16 ranges, names/indices, source metadata, lastIndex, finalizers and opt-in host aborts.
+- [x] Compile captures confined to the consuming branch of nullable singleton-q and character-result v repetition, preserving per-iteration clearing, whole-iteration captures, required final empties, all outer count families and original UTF-16 ranges with a flat capture-role table.
+- [ ] Connect consuming-branch nullable string-class captures to Runtime RegExp named indices and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

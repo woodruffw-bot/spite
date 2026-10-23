@@ -10478,6 +10478,28 @@ lastIndex. Former pure-choice rejections complete with exact results and eval
 finalizers; capturing or effectful choices retain separate proofs. Huge inner
 counts, clones, collection and opt-in host aborts reuse existing flat paths.
 
+## Captures confined to a nullable class's consuming branch
+
+A separate Core matcher proves complete capturing/noncapturing wrappers around
+one nullable singleton-q or character-result v/vi class with a raw empty
+alternative. Groups confined to the consuming branch are tracked independently
+from groups enclosing the complete atom. The flat parser records each original
+capture in source order and skips whole validated classes, including q payload
+punctuation. Captured empty branches, extra alternatives/atoms, inner assertions
+or quantifiers retain separate proofs; enclosing whole-match groups belong to
+the caller's existing prefix projection.
+
+A canonical complete-atom capture feeds the existing simple/counted matcher,
+retaining original class and count spelling and outside word/line gates. Its last
+iteration is a positive-width original character or a required empty selection.
+Complete-atom groups receive either range; character-only groups receive a range
+only for the consuming selection. No iterations leaves every inner capture
+undefined. This implements RepeatMatcher's clearing of all atom captures before
+each iteration, including a required final empty after earlier characters
+(22.2.2.3). The immutable role table and parser stack are source-sized and flat;
+matching adds no input-sized capture storage or native recursion. Prior matcher
+layouts, domains and work traces remain unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

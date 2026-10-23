@@ -17916,3 +17916,30 @@ tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime inventory is 519 case files and 4,186
 integration cases. Corpus sources and helpers, snapshots, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+## Core captures confined to a nullable class's consuming branch
+
+A separate Core matcher proves complete wrappers plus character-only captures
+around a nullable singleton-q or character-result v/vi class beside a raw empty
+alternative. A flat source-order role table projects complete-iteration captures
+independently from captures confined to the character branch. A required final
+empty clears the latter even after earlier consuming iterations; no iterations
+leaves all inner captures undefined. Existing matching and all outer count
+proofs are reused through one canonical projection marker.
+
+Three groups compare an independent recursive RepeatMatcher oracle that resets
+and writes actual capture vectors per selected branch across eight predicates,
+three mixed capturing/noncapturing layouts, both source orders, 23 simple/braced
+count forms, line/word gates, all starts and sticky/i/m modes across eight inputs.
+They also check every constructor callback's cancellation/recovery, closed
+capture/effect/leaf domains, 20,000 character captures, discarded characters and
+leading zeros, required final empty clearing, original UTF-16 ranges and flat
+clone/drop with conservative linear work.
+
+All 29,896 prior eight-string/five-class/fifty-nine-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,148 Core and 425 Runtime unit cases and 250 affected integration cases.
+Workspace documentation tests, workspace/included-source formatting, strict
+workspace Clippy, dependency policy, source/fixture inventories and diff checks
+pass. Runtime selection, snapshots, corpus sources and helpers, dependencies,
+intrinsic counts and default resource policy are unchanged.
