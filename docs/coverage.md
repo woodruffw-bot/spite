@@ -15977,3 +15977,23 @@ package tests including the complete 16,319-variant corpus. Formatting, strict
 workspace Clippy, dependency policy, and fixture/source inventories pass.
 Existing snapshots, corpus sources and helpers, dependencies, intrinsic counts,
 and default resource policy are unchanged.
+
+## Core matching for empty and multi-character UnicodeSets strings
+
+The checked Core API compiles one standalone positive v/vi q class containing
+empty or multi-character members. A flat prefix trie preserves longest-member
+priority, simple case folding, shorter/empty assertion fallback, and original
+UTF-16 boundaries without recursive construction or search-time allocations.
+Runtime selection remains a separate step; class algebra, properties of strings,
+extra atoms, and repetition remain outside this proof.
+
+Seven Core regression groups use an independent character-list oracle across
+all start offsets and both sticky/search modes, exhaustive canonical outside
+line/word assertion combinations, escaping and surrogate controls, simple-fold
+equivalences without full expansion, closed-domain checks, cancellation at every
+construction callback, and a 100,000-character member's compile/clone/match/drop.
+Earlier single-character proof domains remain unchanged.
+
+Stable passes all 1,037 Core unit tests and Core documentation tests. Formatting,
+strict workspace Clippy, dependency policy, and diff checks pass. Runtime and
+the conformance fixture inventory are unchanged in this foundation increment.

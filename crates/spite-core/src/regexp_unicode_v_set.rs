@@ -508,7 +508,7 @@ impl RegExpUnicodeClassMatcher {
 // ClassSetCharacter in ClassString context. Unicode identity escapes are narrower
 // than the legacy ordinary-atom helper; \b is backspace and \d/\p are not chars.
 // Adjacent fixed Unicode lead/trail escapes combine; braced escapes do not.
-fn single_string_character(units: &[u16], at: &mut usize) -> Option<u32> {
+pub(crate) fn single_string_character(units: &[u16], at: &mut usize) -> Option<u32> {
     let unit = *units.get(*at)?;
     *at += 1;
     if unit == 0x5c {

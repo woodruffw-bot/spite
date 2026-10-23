@@ -39,6 +39,7 @@ mod regexp_unicode_folded_literal;
 mod regexp_unicode_literal_class_pair;
 mod regexp_unicode_property_dot;
 mod regexp_unicode_repeated_atom;
+mod regexp_unicode_string_set;
 mod replacement;
 mod symbol;
 mod unicode;
@@ -98,6 +99,7 @@ pub use regexp_unicode_property_dot::{
 pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,
 };
+pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 #[doc(hidden)]

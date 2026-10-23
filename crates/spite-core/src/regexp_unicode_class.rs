@@ -15,6 +15,7 @@ use std::{ops::Range, sync::Arc};
 mod v_set;
 
 pub use v_set::RegExpUnicodeSetCompileError;
+pub(crate) use v_set::single_string_character;
 
 /// Immutable intervals for one flat u/v character set.
 ///

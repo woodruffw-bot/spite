@@ -9448,6 +9448,33 @@ remain unchanged. Flat suffixes, partial captures, repetition, extra atoms,
 noncanonical assertions, empty or longer q alternatives, and string properties
 remain outside this entry. Default resource policy and dependencies are unchanged.
 
+## Empty and multi-character UnicodeSets string alternatives
+
+Core provides a separate checked matcher for one complete positive v/vi class
+whose sole operand is a ClassStringDisjunction containing an empty or
+multi-character member. It shares the existing ClassSetCharacter decoder,
+including fixed-escape surrogate pairing and separate braced surrogate escapes.
+Each character receives simple folding before insertion into a flat prefix trie.
+Shared prefixes and duplicate alternatives reuse nodes; construction and drop
+do not recurse. Earlier character-only compilers retain their proof domains.
+
+At each original input position the matcher retains the longest member whose
+outside assertions succeed. A rejected longer member leaves shorter members
+and the empty member eligible, as required by
+[CompileAtom](https://262.ecma-international.org/17.0/#sec-compileatom).
+Canonical outside line and word assertions inspect original UTF-16 context.
+Initial low-surrogate offsets retain the approved leading-boundary behavior,
+including empty matches. Search allocates no state.
+
+Construction prepays borrowed framing/decoding and charges folding, trie
+lookups, writes, and possible vector movement or hash-index rebuilding before
+fallible reservations. The final Arc retains the existing shared-allocation
+boundary. Sticky work is bounded by one longest-member walk; searching work
+includes that walk at every candidate, including the final empty position.
+This Core foundation is not yet selected by Runtime. Class algebra, properties
+of strings, additional consuming terms, inner captures, and repetition remain
+outside this entry. Dependencies and default resource policy are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
