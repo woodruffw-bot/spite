@@ -10920,4 +10920,7 @@ iteration preserves original first-branch selection, source-order captures and
 UTF-16 ranges. Strict classes still prove every leaf even when the empty branch
 comes first. Source copies and inspection are precharged; clone/drop remain flat,
 and matching retains no capture history. Earlier constructor domains and work
-traces remain unchanged. Runtime selection remains a subsequent step.
+traces remain unchanged. Runtime selects root alternatives after the grouped
+single-iteration proofs using the original normalized source and no extra
+enclosing prefix. Existing named/indices projection, String consumers and Unicode
+empty advancement retain their shared execution path.

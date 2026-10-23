@@ -18621,3 +18621,28 @@ workspace/included-source formatting, strict workspace Clippy, dependency policy
 source/fixture inventories and diff checks pass. Runtime selection, snapshots,
 corpus sources/helpers, dependencies, intrinsic counts and default resource
 policy are unchanged.
+
+
+## Runtime captures in one ungrouped nullable alternative
+
+Runtime selects root alternatives after the grouped single-iteration proofs,
+retaining the complete normalized source and original lexical capture table.
+Five integration groups cover four predicates, six mixed layouts and both orders,
+including zero captures, character-only and empty-only captures, conditional
+before/after points, optional/later undefined slots and empty-only layouts with
+no participating capture. Supplementary/lone-surrogate ranges, folding, escaped
+names, metadata and lastIndex retain existing behavior. String consumers,
+callbacks, clones and collection preserve branch priority and Unicode empty
+advancement. Valid branch assertions, references and unsupported terms remain
+host failures; early syntax errors remain JavaScript exceptions. Deep branch
+tables, discarded words and large inner counts stay flat. Opt-in constructor
+and matchAll collection aborts retain the original RegExp state and bypass
+JavaScript handlers without changing limits.
+
+All 57,024 differential records across 132 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes. Stable
+passes all 431 Runtime unit cases and 322 affected integration cases. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 532 case
+files and 4,258 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.
