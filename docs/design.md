@@ -11081,3 +11081,21 @@ full normalized source. Prefix roles already own every original enclosing slot,
 so no generic enclosing captures are added again. Existing single-class result
 projection, named aliases, String consumers and opt-in abort propagation remain
 shared.
+
+
+## Line gates surrounding complete asserted-class wrappers
+
+A separate Core constructor combines canonical outer ^/$ assertions with
+complete ordinary wrappers whose retained body already has word or line gates.
+Original root disjunctions decline before any framing movement. The v-aware
+wrapper scan recovers prefix captures; outer line gates move through only that
+complete chain. Equal inner line gates are idempotent at the same input position
+(22.2.2.4), while canonical inner word gates retain their order.
+
+The complete combined body must pass the existing outside-assertion proof. Its
+selected original class range supplies unchanged whole-prefix and point captures
+(22.2.2.7), including empty members. Quantified/partial chains, inner assertions,
+references, nullable root alternatives and unknown leaves remain separate proofs.
+Original-source work is precharged before recovery, copying and role allocation;
+body compilation, flat storage and earlier constructor work remain shared.
+Runtime surrounding-line selection remains a subsequent step.

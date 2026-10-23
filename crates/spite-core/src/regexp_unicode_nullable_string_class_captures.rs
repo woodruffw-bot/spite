@@ -477,6 +477,66 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves line assertions surrounding complete asserted-class wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Canonical
+    /// outer ^/$ gates commute through complete unquantified wrappers; any
+    /// equal inner line gates are idempotent at the same input position. Inner
+    /// word gates retain their order and every original capture slot remains
+    /// unchanged (22.2.2.4, 22.2.2.7). Root disjunctions decline before movement,
+    /// and the entire retained body must pass the existing assertion proof.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_surrounding_line_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(8).saturating_add(64))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let start = units.first() == Some(&0x5e);
+        let end = units.last() == Some(&0x24) && !super::escaped(units, units.len() - 1);
+        if !start && !end {
+            return Ok(None);
+        }
+        let Some(wrapped) = units.get(usize::from(start)..units.len() - usize::from(end)) else {
+            return Ok(None);
+        };
+        let Some((body, captures)) = enclosed_v_group_body(wrapped) else {
+            return Ok(None);
+        };
+        let body = &wrapped[body];
+        let mut canonical = Vec::with_capacity(units.len());
+        if start && body.first() != Some(&0x5e) {
+            canonical.push(0x5e);
+        }
+        canonical.extend_from_slice(body);
+        let inner_end = body.last() == Some(&0x24) && !super::escaped(body, body.len() - 1);
+        if end && !inner_end {
+            canonical.push(0x24);
+        }
+        let canonical = JsString::from_code_units(canonical);
+        let Some(mut plan) = Self::compile_with_outer_assertions_and_work(
+            &canonical,
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if captures != 0 {
+            let mut roles = vec![CaptureRole::Iteration; captures];
+            roles.extend_from_slice(&plan.captures);
+            plan.captures = roles.into_boxed_slice();
+        }
+        Ok(Some(plan))
+    }
+
     fn compile_single<E>(
         source: &JsString,
         ignore_case: bool,

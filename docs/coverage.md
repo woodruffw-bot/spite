@@ -18959,3 +18959,23 @@ tests, strict workspace Clippy, formatting, dependency policy, source/fixture
 inventories and diff checks pass. Runtime inventory is 538 case files and 4,286
 integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+## Core line gates surrounding complete asserted string-class wrappers
+
+Three groups compare 27 class families, six capture layouts, ten inner gate
+profiles, three outer line profiles and three mixed wrapper chains against
+independent continuation and capture-tree evaluation. Eight inputs, all starts
+and sticky/i/m modes retain combined scope, lexical prefix ranges, optional
+masks and original Unicode endpoints. Exact cases cover duplicate inner/outer
+line gates, contradictory continuations, rejected starts, escaped parentheses
+and 20,000 complete prefix captures with flat clone/drop. Every constructor/
+search cancellation prefix and recovery is checked. Earlier/unwrapped shapes,
+root choices, partial/quantified wrappers, inner assertions, references,
+counts, outside word gates and unknown leaves remain separate closed controls.
+
+Stable passes all 1,206 Core unit cases and 431 Runtime unit cases. All 44,616
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.
