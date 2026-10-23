@@ -10171,6 +10171,24 @@ clones/collection and opt-in host-abort propagation reuse existing paths. The
 earlier exact-zero grouped-empty rejection now completes with its exact value and
 finalizer effects; positive counts and other empty-branch shapes remain separate.
 
+## One-minimum open string-class counts beside grouped empty alternatives
+
+Separate Core entries admit {1,} around a bare singleton-q or character-result
+v/vi class and a nested noncapturing empty alternative, including padded/lazy
+forms. Complete wrappers and canonical outside word/line gates reuse the
+independent empty-shape and count proofs. Exact/finite and other positive minima,
+empty sequences/choices/quantifiers, partial captures and further atoms remain
+separate proofs; every class leaf is compiled behind empty-first choices.
+
+RepeatMatcher retains a mandatory empty iteration's defined empty captures.
+Optional empty iterations fail the progress guard before overwriting a consumed
+iteration's original character capture (22.2.2.3). Source branch priority,
+greedy/lazy stopping, UTF-16 boundaries and outside gates reuse existing linear
+search. Constructor work precharges grouped-branch and decimal scans separately;
+counts and groups never expand matching state. Earlier domains/work traces,
+checked class storage, flat clone/drop, dependencies and resource defaults are
+unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

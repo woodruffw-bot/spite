@@ -17270,3 +17270,31 @@ strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 507 case files and 4,114 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Core one-minimum open string classes beside grouped empty alternatives
+
+Separate Core entries prove {1,} around a bare singleton-q or character-result
+v/vi class and a nested noncapturing empty alternative, including padded/lazy
+forms. Mandatory empty iterations export defined empty captures, while optional
+empty iterations cannot overwrite the last original character. Source branch
+priority, greedy/lazy stopping, canonical outside word/line gates and original
+UTF-16 ranges reuse existing linear search and capture projection. Every class
+operand is compiled behind empty-first choices. Counts and groups never expand
+matching state.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, padded greedy/lazy
+open counts, line/word gates, all starts and sticky/i/m modes. Coverage checks
+required empty captures at a supplementary leading boundary, complete unknown
+and string-valued leaf proof, other-bound/partial-shape rejection, every
+constructor callback's cancellation/recovery, 20,000 complete capturing wrappers,
+20,000-character discarded words and 20,000 leading count zeros with linear
+checked work and flat clone/drop.
+
+All 10,504 prior eight-string/five-class/thirty-one-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,112 Core and 425 Runtime unit cases and 178 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

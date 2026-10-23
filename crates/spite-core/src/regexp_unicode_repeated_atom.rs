@@ -2600,6 +2600,68 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles {1,} nullable singleton-q counts beside nested noncapturing empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and an effect-free nested empty group
+    /// alternative under {1,}, including padded/lazy forms. A mandatory empty
+    /// iteration exports defined empty inner captures; optional empty iterations
+    /// cannot overwrite the last selected original character. Source branch
+    /// priority and canonical outside word/line gates reuse linear search.
+    /// Every class operand is proved before matching. Other counts, empty
+    /// sequences/choices/quantifiers and partial captures remain separate proofs.
+    /// Source storage and clone/drop are flat and counts are never expanded.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_minimum_open_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::OneMinimumOpen,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles {1,} nullable character-result counts beside nested noncapturing empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and an effect-free nested empty group
+    /// alternative under {1,}, including padded/lazy forms. A mandatory empty
+    /// iteration exports defined empty inner captures; optional empty iterations
+    /// cannot overwrite the last selected original character. Source branch
+    /// priority and canonical outside word/line gates reuse linear search.
+    /// Every class operand is proved before matching. Other counts, empty
+    /// sequences/choices/quantifiers and partial captures remain separate proofs.
+    /// Source storage and clone/drop are flat and counts are never expanded.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_minimum_open_noncapturing_empty_nullable_character_result_v_set_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::OneMinimumOpen,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
