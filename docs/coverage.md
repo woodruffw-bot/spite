@@ -18317,3 +18317,30 @@ cases. Workspace documentation tests, formatting, strict workspace Clippy,
 dependency policy, source/fixture inventories and diff checks pass. Runtime
 inventory is 526 case files and 4,228 integration cases. Corpus sources/helpers,
 snapshots, dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core empty point captures around consuming class repetitions
+
+A separate constructor proves one repeated consuming class with captured empty
+sequences before/after it. The flat role and interval tables preserve original
+lexical slots, optional/later undefined groups and actual last-character UTF-16
+points. Canonicalization retains outside gates and exact outer counts without
+introducing a nullable branch or expanding counts. Existing nullable constructor
+domains and callback traces remain separate.
+
+Three groups compare an independent executable sequence-capture tree across
+eight predicates, six layouts, two root wrapper forms, 14 outer count families,
+line/word gates, all starts and sticky/i/m modes over eight inputs. Cancellation
+checks every constructor callback and recovery. Structural cases cover 20,000
+deep prefix/sibling suffix captures, flat clone/drop, zero iterations, impossible
+huge positive counts, 20,000-digit inner counts and supplementary interior starts.
+Closed-shape controls retain nullable choices, unknown/string-valued classes,
+assertions, references, extra consuming terms and unquantified bodies.
+
+All 35,048 prior API records preserve exact constructor/search work, capture
+counts and projection, including the nullable boundary-capture API. Stable passes
+all 1,170 Core and 430 Runtime unit cases. Workspace documentation tests,
+workspace/included-source formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime selection, snapshots,
+corpus sources/helpers, dependencies, intrinsic counts and default resource
+policy are unchanged.

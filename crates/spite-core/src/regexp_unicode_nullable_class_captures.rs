@@ -1,4 +1,4 @@
-//! Capture projection for a nullable UnicodeSets character-class repetition.
+//! Capture projection for UnicodeSets character-class repetition.
 
 use super::{
     RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher, escaped, quantifier,
@@ -27,6 +27,7 @@ enum CaptureProof {
     EmptyChoices,
     EmptyCaptureEffects,
     BoundaryCaptures,
+    RepeatedClass,
 }
 
 #[derive(Clone, Copy)]
@@ -253,7 +254,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         // Edge parity, both token interpretations, group/class walks and the
         // flat capture table are covered before structural inspection.
         let factor = match proof {
-            CaptureProof::BoundaryCaptures => 80,
+            CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass => 80,
             CaptureProof::EmptyCaptureEffects => 64,
             CaptureProof::EmptyChoices => 40,
             CaptureProof::QuantifiedSequence => 32,
@@ -298,18 +299,26 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                         | CaptureProof::EmptyChoices
                         | CaptureProof::EmptyCaptureEffects
                         | CaptureProof::BoundaryCaptures
+                        | CaptureProof::RepeatedClass
                 ),
                 matches!(
                     proof,
                     CaptureProof::EmptyChoices
                         | CaptureProof::EmptyCaptureEffects
                         | CaptureProof::BoundaryCaptures
+                        | CaptureProof::RepeatedClass
                 ),
                 matches!(
                     proof,
-                    CaptureProof::EmptyCaptureEffects | CaptureProof::BoundaryCaptures
+                    CaptureProof::EmptyCaptureEffects
+                        | CaptureProof::BoundaryCaptures
+                        | CaptureProof::RepeatedClass
                 ),
-                proof == CaptureProof::BoundaryCaptures,
+                matches!(
+                    proof,
+                    CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass
+                ),
+                proof == CaptureProof::RepeatedClass,
             ) else {
                 continue;
             };
@@ -318,7 +327,10 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             } else {
                 CaptureRole::Character
             };
-            let present = if proof == CaptureProof::BoundaryCaptures {
+            let present = if matches!(
+                proof,
+                CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass
+            ) {
                 parsed.boundary_captures
             } else if proof == CaptureProof::EmptyCaptureEffects {
                 parsed
@@ -344,18 +356,23 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                 continue;
             }
             let class = &body[parsed.class];
-            let length = begin + class.len() + (body.len() - atom_end) + (units.len() - end) + 7;
+            let consuming = proof == CaptureProof::RepeatedClass;
+            let length = begin
+                + class.len()
+                + (body.len() - atom_end)
+                + (units.len() - end)
+                + if consuming { 2 } else { 7 };
             // One copy plus JsString's code-unit storage conversion. Counts and
             // source spellings are retained without expansion or normalization.
             charge(length.saturating_mul(2)).map_err(RegExpUnicodeSetCompileError::Work)?;
             let mut canonical = Vec::with_capacity(length);
             canonical.extend_from_slice(&units[..begin]);
             canonical.push(0x28);
-            if parsed.empty_first {
+            if !consuming && parsed.empty_first {
                 canonical.extend_from_slice(&[0x28, 0x3f, 0x3a, 0x29, 0x7c]);
             }
             canonical.extend_from_slice(class);
-            if !parsed.empty_first {
+            if !consuming && !parsed.empty_first {
                 canonical.extend_from_slice(&[0x7c, 0x28, 0x3f, 0x3a, 0x29]);
             }
             canonical.push(0x29);
@@ -364,13 +381,22 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             debug_assert_eq!(canonical.len(), length);
             let canonical = JsString::from_code_units(canonical);
             let counted = body.get(atom_end) == Some(&0x7b);
-            let singleton = if counted {
+            let singleton = if consuming {
+                RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_v_set_with_single_character_strings_and_work(&canonical,ignore_case,multiline,&mut charge)?
+            } else if counted {
                 RegExpUnicodeRepeatedAtomMatcher::compile_counted_noncapturing_empty_sequence_nullable_v_set_with_single_character_strings_and_work(&canonical,ignore_case,multiline,&mut charge)?
             } else {
                 RegExpUnicodeRepeatedAtomMatcher::compile_noncapturing_empty_sequence_nullable_v_set_with_single_character_strings_and_work(&canonical,ignore_case,multiline,&mut charge)?
             };
             let matcher = if singleton.is_some() {
                 singleton
+            } else if consuming {
+                RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_character_result_v_set_with_work(
+                    &canonical,
+                    ignore_case,
+                    multiline,
+                    &mut charge,
+                )?
             } else if counted {
                 RegExpUnicodeRepeatedAtomMatcher::compile_counted_noncapturing_empty_sequence_nullable_character_result_v_set_with_work(&canonical,ignore_case,multiline,&mut charge)?
             } else {
@@ -432,6 +458,75 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
     }
 }
 
+/// A consuming UnicodeSets class repetition with empty point captures.
+///
+/// Empty sequences may occur before or after the sole class, including nested
+/// captures, choices and validated greedy/lazy counts. At least one empty
+/// capture is required. Every selected outer iteration consumes one character;
+/// captures use its UTF-16 start/end, or remain undefined after zero iterations.
+/// Storage, clone and drop remain flat and proportional to the source.
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeRepeatedClassCaptureMatcher {
+    matcher: RegExpUnicodeNullableClassCaptureMatcher,
+}
+
+impl RegExpUnicodeRepeatedClassCaptureMatcher {
+    /// Proves a character class with empty sibling captures and one outer count.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The class
+    /// must have singleton q operands or a statically character-only result;
+    /// unknown/string-valued leaves decline even under zero counts. Canonical
+    /// outside word/line gates and enclosing captures retain their existing
+    /// caller proofs. Class-containing choices/inner counts, assertions,
+    /// references and additional consuming terms remain separate proofs.
+    ///
+    /// RepeatMatcher clears captures before each iteration. Optional empty
+    /// subgroups fail its progress check; required empty iterations select the
+    /// first successful alternative (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        RegExpUnicodeNullableClassCaptureMatcher::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::RepeatedClass,
+            charge,
+        )
+        .map(|plan| plan.map(|matcher| Self { matcher }))
+    }
+
+    /// Number of original captures inside the repeated atom.
+    pub fn capture_count(&self) -> usize {
+        self.matcher.capture_count()
+    }
+
+    /// Finds the repetition and its last consuming iteration.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedAtomMatch>, E> {
+        self.matcher
+            .find_with_captures_and_work(input, start, sticky, charge)
+    }
+
+    /// Projects a zero-based original capture from the final iteration.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        iteration: Option<&Range<usize>>,
+    ) -> Option<Range<usize>> {
+        self.matcher.capture_range(index, iteration)
+    }
+}
+
 // Groups containing the class capture either the whole iteration or only the
 // character. The separate empty-capture proof also accepts wholly empty groups
 // on the opposite side of the separator. Additional consuming alternatives and
@@ -443,6 +538,7 @@ fn parse_body(
     choices: bool,
     effects: bool,
     boundary: bool,
+    consuming: bool,
 ) -> Option<Parsed> {
     if units.first() != Some(&0x28) || units.last() != Some(&0x29) {
         return None;
@@ -585,17 +681,20 @@ fn parse_body(
         // branches. Every other bar must lie wholly on the empty side.
         for &(at, owner) in &bars {
             if class_owners[owner] {
-                if separator.replace(at).is_some() {
+                if consuming || separator.replace(at).is_some() {
                     return None;
                 }
                 separator_owner = Some(owner);
             }
         }
-        let split = separator?;
+        let split = if consuming { None } else { Some(separator?) };
         for (at, owner) in bars {
             if !class_owners[owner] {
-                if !boundary && (split < class.start) != (at < split) {
-                    return None;
+                if !boundary {
+                    let split = split?;
+                    if (split < class.start) != (at < split) {
+                        return None;
+                    }
                 }
                 choice_empty = true;
                 if effects {
@@ -606,7 +705,7 @@ fn parse_body(
             }
         }
     }
-    let split = separator?;
+    let split = if consuming { None } else { Some(separator?) };
     let owner_bounds = separator_owner.and_then(|start| {
         completed
             .iter()
@@ -617,7 +716,7 @@ fn parse_body(
     let mut boundary_captures = false;
     for (frame, end, quantified, zero_minimum) in completed {
         let contains_class = frame.start < class.start && class.end <= end;
-        let contains_split = frame.start < split && split < end;
+        let contains_split = split.is_some_and(|split| frame.start < split && split < end);
         let role = if contains_class {
             if quantified {
                 return None;
@@ -631,33 +730,44 @@ fn parse_body(
             if contains_split {
                 return None;
             }
-            let (owner_start, owner_end) = owner_bounds?;
-            let inside_owner = frame.start > owner_start && end < owner_end;
-            let on_empty_side = if split < class.start {
-                end < split
-            } else {
-                frame.start > split
-            };
-            let role = if inside_owner && on_empty_side {
-                CaptureRole::Empty
-            } else if boundary {
-                if end < owner_start {
+            let role = if consuming {
+                if end < class.start {
                     CaptureRole::StartPoint
-                } else if frame.start > owner_end {
-                    CaptureRole::EndPoint
-                } else if end < class.start {
-                    CaptureRole::CharacterStartPoint
                 } else if frame.start >= class.end {
-                    CaptureRole::CharacterEndPoint
+                    CaptureRole::EndPoint
                 } else {
                     return None;
                 }
             } else {
-                if !on_empty_side || (frame.capture.is_some() && !inside_owner) {
-                    return None;
+                let split = split?;
+                let (owner_start, owner_end) = owner_bounds?;
+                let inside_owner = frame.start > owner_start && end < owner_end;
+                let on_empty_side = if split < class.start {
+                    end < split
+                } else {
+                    frame.start > split
+                };
+                if inside_owner && on_empty_side {
+                    CaptureRole::Empty
+                } else if boundary {
+                    if end < owner_start {
+                        CaptureRole::StartPoint
+                    } else if frame.start > owner_end {
+                        CaptureRole::EndPoint
+                    } else if end < class.start {
+                        CaptureRole::CharacterStartPoint
+                    } else if frame.start >= class.end {
+                        CaptureRole::CharacterEndPoint
+                    } else {
+                        return None;
+                    }
+                } else {
+                    if !on_empty_side || (frame.capture.is_some() && !inside_owner) {
+                        return None;
+                    }
+                    // Capture-free epsilon siblings remain transparent.
+                    CaptureRole::Empty
                 }
-                // Capture-free epsilon siblings remain transparent.
-                CaptureRole::Empty
             };
             if frame.capture.is_some()
                 && matches!(
@@ -706,7 +816,7 @@ fn parse_body(
         }
     }
     Some(Parsed {
-        empty_first: split < class.start,
+        empty_first: split.is_some_and(|split| split < class.start),
         grouped_empty,
         quantified_empty,
         choice_empty,
@@ -747,4 +857,5 @@ fn empty_group_quantifier(units: &[u16], start: usize) -> Option<(usize, bool)> 
 mod tests {
     include!("regexp_unicode_nullable_class_capture_tests.rs");
     include!("regexp_unicode_nullable_boundary_capture_tests.rs");
+    include!("regexp_unicode_repeated_class_capture_tests.rs");
 }

@@ -10682,7 +10682,8 @@ leave all inner groups undefined. Existing outer counts, optional budgets,
 mandatory branch priority, line/word gates and original UTF-16 ranges reuse the
 same matcher. Linear precharges cover owner, count and interval scans; matching
 adds no capture history and clone/drop remain flat and source-sized. Earlier
-constructor domains and work traces remain unchanged. Runtime selects this proof after conditional empty-capture effects. Projection
+constructor domains and work traces remain unchanged. Runtime selects this proof
+after conditional empty-capture effects. Projection
 keeps source-order named and unnamed slots, before/after UTF-16 points and
 character-only participation through RegExp and String consumers, callbacks,
 clones and collection. The nested-alternative suffix reproducer now returns its
@@ -10793,3 +10794,23 @@ implementation exposes one realm; foreign-realm intrinsic normalization remains
 deferred.
 Resource quotas remain opt-in, and the initial realm retains the same 549
 intrinsic objects.
+
+
+## Empty point captures around consuming class repetitions
+
+A separate Core matcher proves a repeated class with captured empty sequences
+before or after it. Exactly one class consumes on every selected iteration;
+class-containing alternatives and inner counts remain outside this proof. The
+same validated singleton-q and static character-result class checks apply even
+under zero or impossible counts. At least one original empty capture is required.
+
+The flat group and interval tables retain character wrappers, before/after
+points and optional/later-alternative undefined slots. A synthetic complete
+capture around the class records the last consuming iteration. Canonicalization
+retains the original outer count and outside word/line gates without introducing
+an empty branch or expanding numeric bounds. Zero iterations leave all inner
+slots undefined; impossible positive counts fail through the existing consuming
+repetition matcher (22.2.2.3). Construction, clone and drop remain source-sized,
+and matching retains no input-sized capture history. Earlier nullable
+constructors retain their domains and callback traces. Runtime selection remains
+a subsequent step.

@@ -98,7 +98,7 @@ pub use regexp_unicode_property_dot::{
 };
 pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeRepeatedAtomMatch,
-    RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};

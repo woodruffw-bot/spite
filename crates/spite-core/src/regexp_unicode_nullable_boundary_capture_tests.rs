@@ -74,6 +74,9 @@ impl BoundaryTree {
         match self {
             Self::Empty => Some(at),
             Self::Class(_) => {
+                if !consuming {
+                    return None;
+                }
                 let (mut point, next) = oracle.point(at)?;
                 if oracle.i {
                     point = match point {
