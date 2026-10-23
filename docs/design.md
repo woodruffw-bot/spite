@@ -10239,7 +10239,14 @@ input character count and never expands matching state.
 Exact/finite counts, partial captures, other empty-branch shapes and further atoms
 retain separate proofs. Earlier constructor domains/work traces, checked class
 storage, flat clone/drop, dependencies and resource defaults are unchanged.
-Runtime selection is separate.
+
+Runtime selects the grouped-empty positive open proofs after grouped-empty
+exact-one counts. Existing result projection retains final required empty
+captures or original supplementary character ranges, including when the minimum
+overflows native storage. Names/indices, padded/lazy source, String consumers and
+replacements, lastIndex, clones/collection and opt-in host-abort propagation reuse
+existing paths. Earlier grouped {2,} rejections complete with exact values and
+finalizer effects; finite/exact counts and other branch shapes remain separate.
 
 ## Global intrinsic metadata and enumeration
 

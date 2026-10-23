@@ -17414,3 +17414,32 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime positive open string classes beside grouped empty alternatives
+
+Runtime selects the singleton-q and character-result grouped-empty positive open
+proofs after grouped-empty exact-one counts. Six integration groups cover
+represented and overflowing minima, mandatory branch priority, final required
+empty captures versus original character captures, decoded supplementary counts
+and leading boundaries, padded/lazy source, outside word/line gates, folding,
+lone surrogates, enclosing captures, escaped names, frozen lastIndex, String
+consumers and replacements, clones/collection, former Unsupported finalizers,
+complete unknown/string leaf proof, remaining finite/exact bounds and partial or
+other-empty shapes, early errors, 1,000 complete capturing wrappers, long
+discarded words and 20,000-digit counts under defaults, and atomic opt-in
+construction/search aborts with a short-match probe over the same argument.
+Both earlier grouped {2,} rejections complete with exact values and finalizer
+effects; remaining controls require an exact two-iteration count.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including captures, undefined markers, named-key
+presence/order, original indices, sticky starts and lastIndex. Original Node
+differs on 420 ignoreCase singleton-q folding records (228 Latin and 192
+supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases, 196 affected integration cases, and
+1,485 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 510 case files and 4,132 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
