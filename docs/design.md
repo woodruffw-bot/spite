@@ -10585,6 +10585,25 @@ UTF-16 values, lastIndex, clones and collection. Former quantified-empty
 rejections complete their exact results and eval finalizers; opt-in host aborts
 preserve atomic state. Huge inner counts remain effect-free and flat.
 
+## Character captures beside effect-free empty choices
+
+A separate Core constructor proves character-only captures opposite noncapturing
+empty choices with nesting, siblings and validated simple/braced counts. Every
+alternative is empty and contributes no captures or assertions, so inner branch
+priority cannot change the empty selection (RepeatMatcher, 22.2.2.3).
+
+The parser marks active group ancestors when it skips the sole complete class.
+A bar owned by a marked group is the consuming-versus-empty separator; exactly
+one such bar is permitted. All remaining bars must lie wholly on the empty side.
+Class payload punctuation never enters that scan. Group spans still require
+transparent unquantified character wrappers, and empty-side captures/effects
+retain separate proofs. Linear precharges cover source-sized owner markers,
+count scans and group walks. Canonical projection retains existing outer count
+priority, progress, optional budgets, required clearing, original ranges and
+outside gates without expanding inner choices or counts. Prior constructor
+domains/work remain unchanged; clone/drop stay flat. Runtime selection is
+separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

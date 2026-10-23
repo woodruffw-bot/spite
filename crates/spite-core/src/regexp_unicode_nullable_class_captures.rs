@@ -19,6 +19,7 @@ enum CaptureProof {
     EmptyCaptures,
     NoncapturingSequence,
     QuantifiedSequence,
+    EmptyChoices,
 }
 
 #[derive(Clone, Copy)]
@@ -32,6 +33,7 @@ struct Parsed {
     empty_first: bool,
     grouped_empty: bool,
     quantified_empty: bool,
+    choice_empty: bool,
     captures: Vec<CaptureRole>,
 }
 
@@ -150,6 +152,31 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         )
     }
 
+    /// Proves character captures beside effect-free noncapturing empty choices.
+    ///
+    /// The empty side contains at least one choice in a noncapturing group, with
+    /// optional nesting, siblings and validated simple/braced greedy/lazy counts.
+    /// Every choice is empty and contributes no captures or assertions. There is
+    /// exactly one class-versus-empty separator; payload bars inside the whole
+    /// validated class do not participate in this proof. Character-side groups
+    /// remain unquantified transparent wrappers. Other requirements match
+    /// `compile_with_noncapturing_empty_branch_and_work` (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_noncapturing_empty_choices_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::EmptyChoices,
+            charge,
+        )
+    }
+
     fn compile_capture_proof<E>(
         source: &JsString,
         ignore_case: bool,
@@ -160,10 +187,10 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         let units = source.code_units();
         // Edge parity, both token interpretations, group/class walks and the
         // flat capture table are covered before structural inspection.
-        let factor = if proof == CaptureProof::QuantifiedSequence {
-            32
-        } else {
-            16
+        let factor = match proof {
+            CaptureProof::EmptyChoices => 40,
+            CaptureProof::QuantifiedSequence => 32,
+            _ => 16,
         };
         charge(units.len().saturating_mul(factor)).map_err(RegExpUnicodeSetCompileError::Work)?;
         let mut begin = usize::from(units.first() == Some(&0x5e));
@@ -198,7 +225,11 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             let Some(parsed) = parse_body(
                 &body[..atom_end],
                 proof != CaptureProof::Raw,
-                proof == CaptureProof::QuantifiedSequence,
+                matches!(
+                    proof,
+                    CaptureProof::QuantifiedSequence | CaptureProof::EmptyChoices
+                ),
+                proof == CaptureProof::EmptyChoices,
             ) else {
                 continue;
             };
@@ -210,9 +241,12 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             if !parsed.captures.contains(&required)
                 || (matches!(
                     proof,
-                    CaptureProof::NoncapturingSequence | CaptureProof::QuantifiedSequence
+                    CaptureProof::NoncapturingSequence
+                        | CaptureProof::QuantifiedSequence
+                        | CaptureProof::EmptyChoices
                 ) && (!parsed.grouped_empty || parsed.captures.contains(&CaptureRole::Empty)))
                 || (proof == CaptureProof::QuantifiedSequence && !parsed.quantified_empty)
+                || (proof == CaptureProof::EmptyChoices && !parsed.choice_empty)
             {
                 continue;
             }
@@ -304,8 +338,14 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
 
 // Groups containing the class capture either the whole iteration or only the
 // character. The separate empty-capture proof also accepts wholly empty groups
-// on the opposite side of the separator. No other tokens or alternatives pass.
-fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<Parsed> {
+// on the opposite side of the separator. Additional consuming alternatives and
+// other terms retain separate proofs.
+fn parse_body(
+    units: &[u16],
+    empty_captures: bool,
+    quantifiers: bool,
+    choices: bool,
+) -> Option<Parsed> {
     if units.first() != Some(&0x28) || units.last() != Some(&0x29) {
         return None;
     }
@@ -314,6 +354,14 @@ fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<
     let mut completed = Vec::new();
     let mut class = None::<Range<usize>>;
     let mut separator = None;
+    let mut bars = Vec::new();
+    // Active ancestors at the sole class identify separator-owning groups.
+    // Earlier constructors allocate no marker storage and keep their probes.
+    let mut class_owners = if choices {
+        vec![false; units.len()]
+    } else {
+        Vec::new()
+    };
     let mut at = 0;
     while at < units.len() {
         match units[at] {
@@ -355,10 +403,17 @@ fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<
                 if depth != 0 {
                     return None;
                 }
+                if choices {
+                    for frame in &frames {
+                        class_owners[frame.start] = true;
+                    }
+                }
                 class = Some(start..at);
             }
             0x7c => {
-                if frames.is_empty() || separator.replace(at).is_some() {
+                if choices {
+                    bars.push((at, frames.last()?.start));
+                } else if frames.is_empty() || separator.replace(at).is_some() {
                     return None;
                 }
                 at += 1;
@@ -402,6 +457,25 @@ fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<
         return None;
     }
     let class = class?;
+    let mut choice_empty = false;
+    if choices {
+        // A bar owned by a class ancestor separates the consuming and empty
+        // branches. Every other bar must lie wholly on the empty side.
+        for &(at, owner) in &bars {
+            if class_owners[owner] && separator.replace(at).is_some() {
+                return None;
+            }
+        }
+        let split = separator?;
+        for (at, owner) in bars {
+            if !class_owners[owner] {
+                if (split < class.start) != (at < split) {
+                    return None;
+                }
+                choice_empty = true;
+            }
+        }
+    }
     let split = separator?;
     let mut grouped_empty = false;
     let mut quantified_empty = false;
@@ -438,6 +512,7 @@ fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<
         empty_first: split < class.start,
         grouped_empty,
         quantified_empty,
+        choice_empty,
         class,
         captures,
     })
