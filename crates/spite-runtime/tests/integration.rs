@@ -763,6 +763,8 @@ mod regexp_unicode_property_dot;
 mod regexp_unicode_pure_empty_disjunctions;
 #[path = "cases/regexp_unicode_pure_empty_patterns.rs"]
 mod regexp_unicode_pure_empty_patterns;
+#[path = "cases/regexp_unicode_q_string_operations.rs"]
+mod regexp_unicode_q_string_operations;
 #[path = "cases/regexp_unicode_quantified_empty_sequence_nullable_alternatives.rs"]
 mod regexp_unicode_quantified_empty_sequence_nullable_alternatives;
 #[path = "cases/regexp_unicode_quotation_mark_properties.rs"]

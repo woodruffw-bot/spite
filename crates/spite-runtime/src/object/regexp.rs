@@ -673,6 +673,43 @@ mod tests {
     use super::*;
 
     #[test]
+    fn string_operation_empty_set_and_empty_member_share_bounds_but_not_results() {
+        for (source, empty_member) in [(r"[\q{ab}&&\q{cd}]", false), (r"[\q{|ab}--\q{ab}]", true)] {
+            let source = JsString::from(source);
+            let body = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+                &source,
+                false,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeStringSet(body), 2);
+            assert_eq!(matcher.search_work(true, 0, usize::MAX), 1);
+            assert_eq!(matcher.search_work(false, 0, usize::MAX), usize::MAX);
+            for remaining in 0..5 {
+                assert_eq!(matcher.search_work(true, source.len(), remaining), 1);
+                assert_eq!(
+                    matcher.search_work(false, source.len(), remaining),
+                    remaining + 2
+                );
+            }
+            let input = JsString::from("😀");
+            let found = matcher
+                .find_with_work(&input, 1, true, |_| Err::<(), ()>(()))
+                .unwrap();
+            if empty_member {
+                let found = found.unwrap();
+                assert_eq!(found.range, 0..0);
+                assert_eq!(found.capture(0), Some(0..0));
+                assert_eq!(found.capture(1), Some(0..0));
+            } else {
+                assert!(found.is_none());
+            }
+        }
+    }
+
+    #[test]
     fn variable_string_scalar_work_covers_consuming_members_beside_empty_strings() {
         let source = JsString::from(r"[\q{}\p{Any}]");
         let body = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(

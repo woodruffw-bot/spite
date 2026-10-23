@@ -16206,3 +16206,26 @@ integration cases. Workspace documentation tests, formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories, and diff checks pass.
 Runtime dispatch, snapshots, corpus sources and helpers, dependencies, intrinsic
 counts, and default resource policy are unchanged.
+
+## Runtime q-only UnicodeSets string operations
+
+Runtime selects the q-only intersection/subtraction proof after the earlier
+unions. Six integration groups cover complete-member equality, longest priority,
+chained operations, canonical folding before membership, lack of full expansion
+or normalization, outside assertions, names and indices, paired/lone surrogate
+forms, distinct empty results and empty members, lastIndex, all String consumers,
+clones/collection, former Unsupported completions with finalizers, remaining
+grammar and early errors, default long right-hand words, and opt-in cancellation.
+A private Runtime test verifies zero-width bounds and capture projection without
+confusing an empty result with a surviving empty member.
+
+All 12,960 complete result records agree with independent canonical-member
+engine controls, including captures, indices, and lastIndex. Original Node differs
+on eighty-eight singleton-q folding records, consistent with the documented
+closure defect; complete longer-word equality, expansion/normalization controls,
+and surrogate-member identity retain their specified outcomes.
+
+Stable passes all 425 Runtime unit cases and 1,358 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.

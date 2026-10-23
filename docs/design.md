@@ -9603,11 +9603,13 @@ empty intermediate result. Final maximum length considers retained members, so
 discarded long words do not enlarge search bounds. Search and whole-body ranges
 reuse the existing immutable matcher.
 
-This Core foundation is not yet selected by Runtime. Scalar or nested operands,
-mixed operators, negation, string properties, further atoms, and repetition remain
-separate proofs. Buffer growth is fallible and charged before mutation; the final
-shared allocation retains its existing boundary. Dependencies and default quotas
-are unchanged.
+Runtime selects this proof after the earlier union entries, projects complete
+whole-body captures, and reuses RegExpBuiltinExec and String consumers. Empty
+results and surviving empty members share zero consumption bounds but retain
+distinct failure/match behavior. Scalar or nested operands, mixed operators,
+negation, string properties, further atoms, and repetition remain separate proofs.
+Buffer growth is fallible and charged before mutation; the final shared allocation
+retains its existing boundary. Dependencies and default quotas are unchanged.
 
 ## Global intrinsic metadata and enumeration
 

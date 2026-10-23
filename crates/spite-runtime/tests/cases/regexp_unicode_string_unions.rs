@@ -58,7 +58,6 @@ fn union_results_equal_one_disjunction_and_string_consumers_advance_empty_matche
 #[test]
 fn union_proof_keeps_other_operands_and_repetition_pending_and_cancels_without_mutation() {
     for source in [
-        r"/[\q{ab}&&\q{cd}]/v.test('ab')",
         r"/[\q{ab}\q{cd}]+/v.test('ab')",
         r"/[\q{ab}\q{cd}]x/v.test('abx')",
     ] {
