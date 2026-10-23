@@ -9984,6 +9984,31 @@ String consumers, replacements, lastIndex, cloning, collection and host-abort
 propagation retain their existing paths. Former Unsupported {m}/{m,m} expressions
 with represented bounds above one complete finalizers normally.
 
+## Unrepresentable exact nullable string-class counts
+
+Separate Core entries prove {m}/{m,m} when the exact bound exceeds native count
+storage around a raw empty alternative and a bare singleton-q or character-result
+v/vi class. A borrowed decimal comparison trims leading zeros and requires equal
+range endpoints; open and unequal overflowing ranges retain separate proofs.
+Padded and lazy forms preserve complete wrappers and canonical outside word/line
+gates. Other bounds, simple quantifiers, branch-local captures/assertions,
+grouped/extra empty alternatives and further atoms remain separate proofs.
+Every class operand is compiled behind empty-first choices.
+
+Every possible consumed character is mandatory below this exact overflowing
+count. The constructor therefore encodes source branch order in the existing
+greedy search field, independently of the source quantifier's greedy flag.
+Character-first bodies choose the longest accepted run at a candidate start and
+retain a final required empty capture. Empty-first bodies choose the shortest;
+when outside gates require characters, the last selected character defines the
+inner capture. Original source metadata remains a caller responsibility.
+
+The shared borrowed framing/wrapper scan precharges decimal parsing and exact
+equality checks without expanding counts or captures. Existing linear matching,
+checked class storage, allocation boundaries and flat clone/drop are reused.
+Earlier constructors retain their domains, exact work traces and results.
+Dependencies and resource defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

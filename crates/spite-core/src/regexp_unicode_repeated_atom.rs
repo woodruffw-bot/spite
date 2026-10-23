@@ -2239,6 +2239,62 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles an unrepresentable exact count of a singleton-q class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Braced {m} or {m,m} must exceed native count storage, with numerically
+    /// equal range endpoints after trimming leading zeros. Padded/lazy forms
+    /// preserve mandatory source priority, defined empty captures and canonical
+    /// outside word/line gates. Every q member is one character and every class
+    /// operand is proved. Counts and captures never expand into matching state.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_exact_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::UnrepresentableExact,
+            charge,
+        )
+    }
+
+    /// Compiles an unrepresentable exact count of a character-result class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a raw empty alternative and a bare class with a false
+    /// static MayContainStrings result and an empty/long q member. Braced {m}
+    /// and numerically equal {m,m} require overflowing bounds; padded/lazy forms
+    /// retain mandatory source priority independently of quantifier greediness.
+    /// Every leaf is compiled behind empty-first choices. Original ranges and
+    /// required empty captures reuse existing flat search and capture storage.
+    /// Represented/unequal/open bounds, simple quantifiers, partial captures,
+    /// grouped/extra empty alternatives and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_exact_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::UnrepresentableExact,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2337,6 +2393,28 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             {
                 continue;
             }
+            let unrepresentable_exact = if bounds == NullableProof::UnrepresentableExact
+                && minimum.is_none()
+                && maximum.is_none()
+                && body.get(atom_end) == Some(&0x7b)
+            {
+                // A comma scan, both zero-prefix scans and equality take <=3N.
+                charge((end - atom_end).saturating_mul(3))
+                    .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+                let digits = &body[atom_end + 1..end - 1];
+                if let Some(comma) = digits.iter().position(|&unit| unit == 0x2c) {
+                    let first = &digits[..comma];
+                    let last = &digits[comma + 1..];
+                    !last.is_empty() && significant(first) == significant(last)
+                } else {
+                    true
+                }
+            } else {
+                false
+            };
+            if bounds == NullableProof::UnrepresentableExact && !unrepresentable_exact {
+                continue;
+            }
             let (mut at, mut wrappers, mut captures) = (0, 0, 0);
             while body.get(at) == Some(&0x28) {
                 if body.get(at + 1) == Some(&0x3f) {
@@ -2382,7 +2460,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 atom: Atom::Class(atom),
                 minimum,
                 maximum,
-                greedy,
+                // Every possible consumed character is mandatory below this
+                // exact overflowing count. Encode its branch order, so no
+                // optional-phase greediness can reorder those choices.
+                greedy: if unrepresentable_exact {
+                    order == EmptyBranchOrder::Last
+                } else {
+                    greedy
+                },
                 start_anchor,
                 multiline,
                 end_anchor,
