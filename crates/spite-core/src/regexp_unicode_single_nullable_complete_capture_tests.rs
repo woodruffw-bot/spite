@@ -242,7 +242,7 @@ fn single_nullable_complete_capture_proof_keeps_partial_root_scope_and_unknown_s
         r"(?:[\q{a}]|)+",
         r"(?:[\q{a}]|){0}",
         r"(?:[\q{a}]|)x",
-        r"(?:[\q{a}]|)\1",
+        r"((?:[\q{a}]|))\1",
         r"(?:[\q{a}]|\b)",
         r"(?:[\q{a}][\q{b}]|)",
         r"(?:[\q{a}]?|)",

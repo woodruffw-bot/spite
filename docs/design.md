@@ -10899,4 +10899,6 @@ captures project that whole range, and zero-capture patterns expose only the
 whole match. Branch/boundary capture constructors retain their separate domains.
 Source counts, clone/drop and matching state remain flat; no input-sized capture
 history is introduced. Earlier API domains and work traces remain unchanged.
-Runtime selection remains a subsequent step.
+Runtime selects the complete/zero-capture proof after branch captures using the
+original normalized source. Result arrays retain zero-capture length, undefined
+unnamed group maps and complete named/indices aliases through String consumers.

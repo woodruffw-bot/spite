@@ -18562,3 +18562,31 @@ workspace/included-source formatting, strict workspace Clippy, dependency policy
 source/fixture inventories and diff checks pass. Runtime selection, snapshots,
 corpus sources/helpers, dependencies, intrinsic counts and default resource
 policy are unchanged.
+
+
+## Runtime complete captures in one unquantified nullable group
+
+Runtime selects complete/zero captures after branch captures with the original
+normalized source. Five integration groups cover four predicates, six
+capture-free empty layouts, four unnamed/named wrapper forms and both orders.
+Zero-capture matches retain one result element and undefined group maps;
+complete captures retain the whole original range and named/indices aliases.
+Supplementary/lone-surrogate boundaries, folding, escaped names, outside-gate
+backtracking, metadata and lastIndex remain shared. String consumers verify
+zero-capture and named callback argument counts, split results and Unicode empty
+advancement. Clones and collection preserve results. Supported programs finish
+finalizers; root assertion scope and unsupported terms retain separate proofs.
+Deep complete wrappers, capture-free large counts, discarded words and opt-in
+constructor/search aborts remain flat and preserve atomic state under unchanged
+limits.
+
+All 33,696 differential records across 78 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes. The comparison
+also checks absence/presence of named group maps and their own properties.
+Stable passes all 431 Runtime unit cases and 317 affected integration cases.
+The valid-reference Core rejection control additionally passes after separating
+an absent-reference JavaScript syntax error. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories
+and diff checks pass. Runtime inventory is 531 case files and 4,253 integration
+cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
+default resource policy are unchanged.
