@@ -34,13 +34,14 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise, SharedArrayBuffer and Atomics graphs with deferred bodies |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise and SharedArrayBuffer graphs with deferred bodies |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
+| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, and non-shared wait/waitAsync rejection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
@@ -15916,3 +15917,23 @@ initial Realm objects. Corpus contents remain at 8,372 reviewed sources and
 16,221 variants. No duplicate local full-corpus or Core/Heap replay is needed.
 All seventeen hosted jobs and all four full 16,221-variant corpus gates remain
 required for this implementation commit; hosted results are pending.
+
+## Ordinary-buffer Atomics execution
+
+Atomics implements load, store, exchange, compareExchange, add, sub, and, or,
+and xor on ordinary buffers for all eight integer TypedArray kinds (25.4).
+IsLockFree uses stable target flags, notify returns zero after its specified
+conversions, and wait/waitAsync reject ordinary buffers before argument coercion.
+Shared buffers, wait queues, agents, and memory-model integration remain deferred.
+
+Eighteen integration groups cover every kind, signed/unsigned overflow, exact
+64-bit BigInts, store's untruncated result, byte comparison, conversion ordering,
+detachment, resize/regrowth, captured lengths, incompatible brands and Proxies,
+public-property poisoning, large sparse offsets, collection, and opted-in host
+aborts without mutation. A supplementary Node comparison agrees on all 5,400
+arithmetic and comparison results. Intrinsic identities, descriptors, realm entry
+counts, defaults, production dependencies, and snapshots are unchanged.
+
+Stable passes all 28 workspace test invocations, including all 3,960 Runtime
+integration tests and 422 Runtime unit tests. Documentation tests, formatting,
+strict workspace Clippy, dependency policy, and fixture/source inventories pass.

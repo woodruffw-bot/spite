@@ -9438,10 +9438,11 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise, SharedArrayBuffer, and Atomics retain
+Promise and SharedArrayBuffer retain
 explicit Unsupported results for their deferred bodies after ordinary argument
 evaluation and the specified call/new prefix checks. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
+Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
 accessors return their original receiver. The
 metadata adds 45 rooted intrinsic objects; global mutation or deletion cannot
@@ -9454,6 +9455,32 @@ lookup and typeof rules. Lexical bindings remain separate from global properties
 Configured host reservations still report explicit host gaps and install no
 properties. Names outside the selected edition receive no implicit reservation.
 The incomplete Array constructor retains its separate fromAsync barrier.
+
+## Atomics on ordinary buffers
+
+Atomics implements the ordinary ArrayBuffer paths of 25.4 for all eight
+unclamped integer and BigInt TypedArray kinds. ValidateIntegerTypedArray and
+ValidateAtomicAccess require real internal slots, capture the original length,
+and convert the index before converting values. RevalidateAtomicAccess checks
+the live buffer only after every operand conversion, including both operands of
+compareExchange. Detached or out-of-bounds views throw TypeError; a lost index
+in an otherwise valid tracking view throws RangeError. Public properties,
+prototype inheritance, and Proxy wrappers cannot substitute for internal slots.
+
+Load, store, exchange, compareExchange, add, sub, and, or, and xor share the
+existing native-endian element codecs and checked sparse-buffer access. Modular
+fixed-width arithmetic preserves all 64 BigInt bits. Read-modify-write methods
+return the old element; store returns ToIntegerOrInfinity or ToBigInt before
+element-width truncation, without reading or decoding the overwritten element.
+No JavaScript executes between the final buffer read and write. Optional work,
+BigInt, and backing-page allocation failures remain host failures.
+
+Notify accepts Int32Array and BigInt64Array, converts index and count, and returns
+positive zero for ordinary buffers without post-conversion revalidation. Wait
+and waitAsync reject those buffers before index, value, or timeout conversion.
+IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
+for widths one, two, and eight; width four always returns true. Shared buffers,
+wait queues, agents, and their memory-model events remain deferred.
 
 ## Private Proxy state and dispatch boundaries
 

@@ -168,19 +168,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get.call({})",
         "SharedArrayBuffer.prototype.grow.call({},0)",
         "SharedArrayBuffer.prototype.slice.call({},0,0)",
-        "Atomics.add()",
-        "Atomics.and()",
-        "Atomics.compareExchange()",
-        "Atomics.exchange()",
-        "Atomics.isLockFree()",
-        "Atomics.load()",
-        "Atomics.or()",
-        "Atomics.store()",
-        "Atomics.sub()",
-        "Atomics.wait()",
-        "Atomics.waitAsync()",
-        "Atomics.notify()",
-        "Atomics.xor()",
     ];
     let mut realm = Realm::default();
     realm.eval("let flag=0,hits=0,order=0;function NewTarget(){}let bound=NewTarget.bind(null);Object.defineProperty(bound,'prototype',{get(){order+=100;throw 7;}})").unwrap();

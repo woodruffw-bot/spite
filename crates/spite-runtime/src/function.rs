@@ -10,6 +10,7 @@ mod arguments;
 mod array;
 mod array_buffer;
 mod arrow;
+mod atomics;
 mod bigint;
 mod boolean;
 mod bound;

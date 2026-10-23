@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/atomics.rs"]
+mod atomics;
+
 #[path = "cases/aggregate_errors.rs"]
 mod aggregate_errors;
 #[path = "cases/array_at.rs"]

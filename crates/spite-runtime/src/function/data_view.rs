@@ -358,7 +358,7 @@ impl Realm {
         })
     }
 
-    fn data_view_buffer_work<T>(
+    pub(super) fn buffer_value_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Objects, &mut Budget) -> Result<T, ArrayBufferError>,
@@ -467,14 +467,14 @@ impl Realm {
             .checked_add(index)
             .ok_or_else(|| Self::data_view_range(span))?;
         if matches!(member, Member::Get(_)) {
-            let bytes = self.data_view_buffer_work(span, |objects, budget| {
+            let bytes = self.buffer_value_work(span, |objects, budget| {
                 objects.read_array_buffer_bytes(&witness.buffer, buffer_index, size, budget)
             })?;
             self.integer_work(span, |budget| element.decode(bytes, little_endian, budget))
         } else {
             let bytes =
                 self.integer_work(span, |budget| element.encode(value, little_endian, budget))?;
-            self.data_view_buffer_work(span, |objects, budget| {
+            self.buffer_value_work(span, |objects, budget| {
                 objects.write_array_buffer_bytes(
                     &witness.buffer,
                     buffer_index,

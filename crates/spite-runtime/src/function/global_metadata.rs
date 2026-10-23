@@ -1,9 +1,9 @@
 //! Edition-17 intrinsic metadata for deferred globals and generic species getters.
 //!
 //! Ordinary metadata objects expose the specified reflection graph. The
-//! generic species getters run their algorithms. Proxy creation/revocation are
-//! routed to their complete algorithms; the remaining deferred constructors and
-//! methods report host Unsupported and cannot create unbranded fake instances.
+//! Generic species getters, Proxy and weak-reference operations, and ordinary
+//! buffer Atomics run their algorithms. Deferred constructors and methods report
+//! host Unsupported and cannot create unbranded fake instances.
 
 use super::Builtin;
 use crate::{
@@ -479,6 +479,7 @@ impl Realm {
         &mut self,
         member: Member,
         receiver: Value,
+        arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
         match member {
@@ -487,6 +488,19 @@ impl Realm {
             // receiver branding, coercion, allocation, or species recursion.
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
             Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
+            Member::AtomicsAdd
+            | Member::AtomicsAnd
+            | Member::AtomicsCompareExchange
+            | Member::AtomicsExchange
+            | Member::AtomicsIsLockFree
+            | Member::AtomicsLoad
+            | Member::AtomicsOr
+            | Member::AtomicsStore
+            | Member::AtomicsSub
+            | Member::AtomicsWait
+            | Member::AtomicsWaitAsync
+            | Member::AtomicsNotify
+            | Member::AtomicsXor => self.atomics_method(member, arguments, span),
             _ => Err(Self::unsupported(
                 span,
                 format!("{} is not implemented", member.name()),

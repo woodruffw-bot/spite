@@ -44,7 +44,7 @@ impl Realm {
                 span,
             ),
             Builtin::GlobalMetadataMember(member) => {
-                self.global_metadata_method(member, this, span)
+                self.global_metadata_method(member, this, arguments, span)
             }
             Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
             Builtin::Date => self.date_format_local(
