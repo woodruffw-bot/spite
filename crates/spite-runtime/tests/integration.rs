@@ -741,6 +741,8 @@ mod regexp_unicode_noncapturing_empty_sequence_nullable_alternatives;
 mod regexp_unicode_noncharacter_properties;
 #[path = "cases/regexp_unicode_nullable_alternatives.rs"]
 mod regexp_unicode_nullable_alternatives;
+#[path = "cases/regexp_unicode_nullable_character_results.rs"]
+mod regexp_unicode_nullable_character_results;
 #[path = "cases/regexp_unicode_one_iteration_nullable_alternatives.rs"]
 mod regexp_unicode_one_iteration_nullable_alternatives;
 #[path = "cases/regexp_unicode_one_minimum_open_nullable_alternatives.rs"]

@@ -16598,3 +16598,26 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime nullable character-result alternatives
+
+Runtime selects complete wrapped raw-empty alternatives beside character-result
+v/vi classes after the wrapped repetition proof. Six integration groups cover
+source branch order, greedy/lazy selection, optional-empty progress rejection,
+required defined-empty versus zero-iteration undefined captures, present named
+keys and indices, enclosing captures, supplementary case folding, paired/lone
+surrogates, frozen lastIndex, String consumers and replacement callbacks,
+clones/collection, finalizers, complete leaf proof behind empty-first branches,
+remaining atom shapes, early errors, 1,000 complete wrappers, long discarded
+words under defaults, and atomic opt-in construction/search aborts.
+
+All 85,728 complete result records across 228 pattern/control pairs agree with
+independent character classes, including capture values, undefined markers,
+named-key presence/order, original indices, sticky starts and lastIndex. Original
+Node differs on 348 ignoreCase singleton-q folding records (84 Latin and 264
+supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases and 1,401 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.

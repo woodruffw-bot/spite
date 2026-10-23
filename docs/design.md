@@ -9817,8 +9817,14 @@ The constructor shares borrowed edge/quantifier/wrapper scans with the earlier
 singleton-q entry and selects the character-result leaf proof. Existing nullable
 branch-order state, linear matching, captures, checked interval/frame growth,
 allocation boundaries, clone/drop, and old constructor domains/callbacks are
-reused. Runtime selection is a later step. Dependencies and resource defaults
-are unchanged.
+reused. Dependencies and resource defaults are unchanged.
+
+Runtime selects this proof after wrapped character-result repetition. The
+existing repeated-atom body combines final-iteration captures with complete
+enclosing captures. Required empty captures remain empty strings and zero-count
+captures remain undefined in numeric/named results and indices. String consumers,
+replacement callbacks, clones, collection, lastIndex and host-abort propagation
+reuse their existing paths.
 
 ## Global intrinsic metadata and enumeration
 
