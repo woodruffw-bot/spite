@@ -118,7 +118,7 @@ fn exactly_one_grouped_empty_proofs_finish_finalizers_and_keep_other_domains_def
     for source in [
         r"/((?:)|[\q{ab}&&\q{cd}]){1}/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){1,1}/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:)){1}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:)?){1}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){1}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){1}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){1}/v.test('a')",

@@ -18052,3 +18052,22 @@ documentation tests, workspace/included-source formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories and diff checks pass.
 Runtime selection, snapshots, corpus sources/helpers, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+## Runtime character captures beside noncapturing empty sequences
+
+Runtime now selects character-only captures beside nested/sibling unquantified
+noncapturing empty groups. Six integration groups cover 27 outer count modes,
+both source orders, required final empty clearing, zero-iteration undefined
+slots, complete and character-only capture aliases, original UTF-16 text and
+indices, source metadata, lastIndex, String consumers, clones and collection.
+Forty-three former literal rejection controls and eight inner controls (20
+distinct complete programs and four branches) are preserved as successes with
+checked finalizers. Large capture tables, discarded words, padded/overflowing
+counts and opt-in constructor/search aborts retain flat storage and atomic state.
+
+Stable passes all 428 Runtime unit cases and 268 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is
+522 case files and 4,204 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

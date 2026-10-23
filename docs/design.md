@@ -10554,7 +10554,12 @@ Simple and every braced outer count, outside word/line gates, mandatory priority
 optional budgets, original UTF-16 ranges and required empty clearing reuse the
 same matcher. Construction precharges cover the span walk and role table;
 source-sized storage, clone and drop remain flat. Prior constructors keep their
-domains and exact work traces. Runtime selection is separate.
+domains and exact work traces. Runtime selects this constructor after the raw-empty and empty-capture proofs.
+Existing projection preserves source-order character slots, undefined results
+after required final empties, enclosing captures and named/indices aliases.
+RegExp and String consumers retain original text, source/flags, lastIndex,
+clones and collection. Former grouped-empty rejections complete their exact
+results and eval finalizers; opt-in host aborts preserve atomic state.
 
 ## Global intrinsic metadata and enumeration
 

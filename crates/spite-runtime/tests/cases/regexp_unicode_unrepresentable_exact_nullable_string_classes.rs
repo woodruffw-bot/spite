@@ -124,7 +124,7 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
     for inner in [
         r"|[\q{ab}&&\q{cd}]",
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"([\q{a|ab}&&a])|(?:)",
+        r"([\q{a|ab}&&a])|(?:)?",
         r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
@@ -139,8 +139,8 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
         );
     }
     for source in [
-        r"/(([\q{a|b}])|(?:)){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/(([\q{a|ab}&&a])|(?:)){888888888888888888888888888888,999999999999999999999999999999999999999}/v.test('a')",
+        r"/(([\q{a|b}])|(?:)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:)?){888888888888888888888888888888,999999999999999999999999999999999999999}/v.test('a')",
     ] {
         assert!(
             matches!(
