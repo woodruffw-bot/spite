@@ -8420,3 +8420,11 @@ test/built-ins/Atomics/waitAsync/non-shared-bufferdata-throws.js	-	-	-
 test/built-ins/Atomics/xor/bigint/non-shared-bufferdata.js	-	-	-
 test/built-ins/Atomics/xor/non-shared-bufferdata.js	-	-	-
 test/built-ins/Atomics/xor/non-shared-int-views-throws.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-difference-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-class-escape-intersection-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-difference-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-intersection-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-property-escape-difference-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/character-property-escape-intersection-string-literal.js	-	-	-

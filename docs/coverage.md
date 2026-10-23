@@ -16417,3 +16417,24 @@ Stable passes all 425 Runtime unit cases and 1,383 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Pinned scalar-left UnicodeSets operation fixtures
+
+Eight whole unchanged generated originals add sixteen default/strict variants
+for scalar-left character, digit-range, digit-escape, and ASCII_Hex_Digit
+intersections/subtractions with q singleton and multi-character keycap members.
+They retain all 7,042 original source bytes and use the existing original
+regExpUtils.js helper. Earlier manifest/review prefixes, all sixteen helpers,
+the license, revision, and runtime defaults are unchanged. Other generated q
+unions, surviving string-left results, and string properties remain deferred.
+
+The inventory is 8,448 fixtures, sixteen helpers, 8,429 reviewed sources, and
+16,335 variants: 14,802 harness positives, 1,525 parse negatives, four raw
+positives, and four runtime negatives. The complete originals already pass all
+sixteen normal/strict modes with original harness files in fresh default realms.
+
+Stable passes all 35 Test262 package tests, including the complete 16,335-variant
+corpus with every non-passing count at zero. Formatting, strict workspace Clippy,
+dependency policy, fixture hashes, reviewed inventory assertions, workspace
+documentation tests, and diff checks pass. Runtime defaults, ordinary stacks,
+three-worker corpus execution, and earlier corpus entries are unchanged.

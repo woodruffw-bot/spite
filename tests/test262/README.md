@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8440 unmodified test fixtures and sixteen harness files come from
+These 8448 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,30 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## Scalar-left UnicodeSets string-operation fixtures
+
+Eight whole unchanged generated originals cover scalar-left difference and
+intersection with q singleton and multi-character keycap members. Their first
+operands are a literal, digit range, digit escape, or ASCII_Hex_Digit property;
+anchored positive repetition exercises the projected character result. All
+7,042 source bytes, metadata, assertions, and match/nonmatch arrays are preserved.
+They use the existing unchanged regExpUtils.js helper at the current pin.
+
+The sixteen default/strict variants pass in independent default realms. No
+unsupported result satisfies a negative assertion. Other generated q unions,
+string-left operations with surviving strings, and string-property operands
+remain outside this selection. Earlier manifest/review prefixes, all sixteen
+helpers, the revision and license are unchanged.
+
+The current inventory contains 8,448 fixtures, sixteen helpers, 8,429 reviewed
+sources, and 16,335 variants: 14,802 harness positives, 1,525 parse negatives,
+four raw positives, and four runtime negatives.
+
+Stable passes all 35 Test262 package tests, including the complete 16,335-variant
+corpus. Formatting, strict workspace Clippy, dependency policy, fixture hashes,
+inventory assertions, documentation tests, and diff checks pass. Runtime defaults,
+ordinary stacks, three-worker corpus execution, and earlier fixtures are unchanged.
 
 ## Ordinary-buffer Atomics fixtures
 

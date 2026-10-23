@@ -8455,3 +8455,11 @@ script-pass	7a61cadc34b83336f84177578d3cd84afa561d8d51ff8b14b0d7474e886ebce8	tes
 script-pass	efc0964c4fd0fb38359a07bef2a744c1763f3358c6f064928fe619166abf4545	test/built-ins/Atomics/xor/bigint/non-shared-bufferdata.js
 script-pass	e86b49e14de3664948a4e0d4fb0df78628e9aadde258b4b05c7788de58824198	test/built-ins/Atomics/xor/non-shared-bufferdata.js
 script-pass	9e05650d1e2cc1153d71e9535f110faa53473c3ac78ee4ba81066d0b8c225bbb	test/built-ins/Atomics/xor/non-shared-int-views-throws.js
+script-pass	115122a331d43d59d49a81d97be4eacecc31321530e32aa36a99bef4a089f7cc	test/built-ins/RegExp/unicodeSets/generated/character-class-difference-string-literal.js
+script-pass	896e34adc0304cf11332d037ad3564030423cb8521155319874012b8367cddfa	test/built-ins/RegExp/unicodeSets/generated/character-class-intersection-string-literal.js
+script-pass	684d3d725c52562f0520dedcc4b2bcdb2a479ab871d24822420fd450f94c1065	test/built-ins/RegExp/unicodeSets/generated/character-class-escape-difference-string-literal.js
+script-pass	81a70cda0cd3c77b62f33853bfaf671b77812154e67285f63e31689025681199	test/built-ins/RegExp/unicodeSets/generated/character-class-escape-intersection-string-literal.js
+script-pass	0554caf0a46e078eed13597a73d3e2e1bab1aa774ede9c106b1a3284db4c6f92	test/built-ins/RegExp/unicodeSets/generated/character-difference-string-literal.js
+script-pass	175a51d89f4d2c7f4873427e271d79d6f804e0e6cb3bdb3aa0dd58051c3034e2	test/built-ins/RegExp/unicodeSets/generated/character-intersection-string-literal.js
+script-pass	2f2fc5539a9e719eaf7954cae65991165a44c95f0a386ae43f65c53e10798094	test/built-ins/RegExp/unicodeSets/generated/character-property-escape-difference-string-literal.js
+script-pass	15c01759f5b9feae1a95114a14d0385af180d5cb38d6ef6dc1c37ffc9a954a1b	test/built-ins/RegExp/unicodeSets/generated/character-property-escape-intersection-string-literal.js
