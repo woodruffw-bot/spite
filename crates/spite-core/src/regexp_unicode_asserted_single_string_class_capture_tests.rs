@@ -197,6 +197,30 @@ fn asserted_single_string_class_retries_shorter_members_and_searches_after_rejec
             assert_eq!(plan.capture_range(2, &range), Some(range.end..range.end));
         }
     }
+    // RegExpBuiltinExec advances failed Unicode starts by code point (22.2.7.2,
+    // 22.2.7.3). V8 incorrectly finds an empty \B match inside the second pair.
+    let plan = Single::compile_with_outer_assertions_and_work(
+        &JsString::from(r"()([\q{|a|ab}])()\B"),
+        false,
+        false,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+    .unwrap();
+    let input = JsString::from("😀a😀!");
+    for start in [2, 3, 4] {
+        for sticky in [false, true] {
+            let found = plan
+                .find_with_captures_and_work(&input, start, sticky, |_| Ok::<(), ()>(()))
+                .unwrap();
+            assert_eq!(found, (!sticky).then_some(5..5));
+            if let Some(range) = found {
+                for slot in 0..3 {
+                    assert_eq!(plan.capture_range(slot, &range), Some(5..5));
+                }
+            }
+        }
+    }
 }
 
 #[test]

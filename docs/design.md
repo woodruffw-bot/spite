@@ -11042,4 +11042,19 @@ member therefore leaves shorter members eligible, and their selected original
 UTF-16 endpoints supply complete and point capture ranges. Empty membership no
 longer guarantees success at the first boundary when gates are present, so work
 uses the full search bound in that case. Plain single-class constructors retain
-their domain and callbacks. Runtime assertion selection remains a subsequent step.
+their domain and callbacks.
+
+Runtime selects the assertion proof after the plain single-class proof on the
+full normalized source. The existing single-class body delegates gated search
+and projects captures from the selected member. Shared RegExp/String paths
+retain names/indices, empty advancement, lastIndex and opt-in host aborts.
+
+
+Unicode failed-search candidates advance by code point (RegExpBuiltinExec and
+AdvanceStringIndex, 22.2.7.2, 22.2.7.3). For an empty-capable class followed by
+\B on `😀a😀!`, searching from index 2 fails at the word boundary and advances
+past the second complete pair to index 5. V8 instead tests index 4 inside that
+pair. This is separate from the approved initial-offset leading-boundary rule
+and is not adopted. Core and Runtime regressions retain index 5 and reject the
+corresponding sticky start. Differential controls use independent native sticky
+matching with explicit Unicode candidate advancement and initial normalization.

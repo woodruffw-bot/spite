@@ -173,8 +173,8 @@ fn single_string_class_proofs_finish_finalizers_and_keep_other_features_separate
         r"var marker=0,m;try{m=/()([\q{ab}&&\q{cd}])()/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
     );
     for pattern in [
-        r"^()([\q{a|ab}])",
-        r"()([\q{|ab}])$",
+        r"^()\b([\q{a|ab}])",
+        r"()([\q{|ab}])\b()$",
         r"()([\q{a|ab}])\1",
         r"()([\q{a|ab}])+()",
         r"()([\q{|ab}]){0}()",

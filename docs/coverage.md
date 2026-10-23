@@ -18881,3 +18881,36 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime outside assertions around single string-class captures
+
+Five regression groups check 27 class families and six complete/point/optional
+capture layouts under leading, trailing and paired line gates, plus exact word
+gate continuations. Cases retain shorter eligible members, rejected empty-start
+search, empty endpoints, CRLF/multiline behavior, original supplementary ranges,
+escaped names, folding and read-only lastIndex. Consumer cases cover matchAll,
+callback/template replacement, split, search, clones and collection. Deep
+captures, long words and opt-in constructor/exec/matchAll aborts retain flat
+state. Two former plain-class outer-assertion rejections have exact success and
+finalizer regressions; replacement controls retain inner assertion scope. Root
+alternatives, references, counts, further consuming terms/classes and unknown
+leaves retain separate unsupported controls.
+
+All 139,968 exact differential records over 324 class/capture/gate pairs match
+independent finite-alternative native sticky controls with explicit specified
+Unicode search advancement and approved initial-offset normalization. Ten gate
+combinations cover eight inputs, all starts and sticky/i/m flags. Raw V8 search
+incorrectly admitted an interior surrogate position for an empty \B result;
+Core/Runtime specification regressions require the next complete boundary, also
+through matchAll. No comparison rows are excluded. Fourteen fixed consumer
+programs additionally match reference controls.
+
+Stable passes all 431 Runtime unit cases and all 1,577 Unicode RegExp integration
+cases. After adding the specification regressions, all three affected Core groups
+and ten affected Runtime cases pass. All 35 conformance-profile Test262 runner/
+integration tests pass, including 16,343 reviewed variants. Workspace
+documentation tests, strict workspace Clippy, formatting, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 537 case
+files and 4,283 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.
