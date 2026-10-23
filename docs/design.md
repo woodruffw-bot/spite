@@ -10187,7 +10187,15 @@ greedy/lazy stopping, UTF-16 boundaries and outside gates reuse existing linear
 search. Constructor work precharges grouped-branch and decimal scans separately;
 counts and groups never expand matching state. Earlier domains/work traces,
 checked class storage, flat clone/drop, dependencies and resource defaults are
-unchanged. Runtime selection is separate.
+unchanged.
+
+Runtime selects the grouped-empty {1,} proofs after grouped-empty zero-minimum
+counts. Existing capture projection and String consumers preserve mandatory empty
+versus skipped undefined captures, original supplementary ranges, names and
+indices, source metadata, lastIndex and clone/collection behavior. Opt-in host
+aborts retain atomic effects. Earlier {1,} grouped-empty rejections complete with
+their exact values and finalizer effects; exact/finite counts and other branch
+shapes remain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 

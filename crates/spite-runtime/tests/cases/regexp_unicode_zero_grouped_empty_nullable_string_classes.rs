@@ -104,6 +104,7 @@ fn string_consumers_replacements_clones_and_collection_keep_undefined_empty_matc
 #[test]
 fn zero_grouped_empty_proofs_finish_finalizers_and_prove_all_unreachable_leaves() {
     for source in [
+        r"/([\q{a|b}]|(?:)){1,}/v.test('a')",
         r"/([\q{a|b}]|(?:)){0}/v.test('a')",
         r"/([\q{a}]|(?:(?:))){0,3}/v.test('aaa')",
         r"/(?:((?:)|[\q{ab}&&a])){000,}/v.exec('X')[1]===undefined",
@@ -130,7 +131,7 @@ fn zero_grouped_empty_proofs_finish_finalizers_and_prove_all_unreachable_leaves(
         r"/([\q{a|ab}&&a]||(?:)){0}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){0}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){0}[b]/v.test('ab')",
-        r"/([\q{a|b}]|(?:)){1,}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){1}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2,3}/v.test('a')",
     ] {
         assert!(
