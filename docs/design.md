@@ -10539,6 +10539,23 @@ lastIndex, clones and collection reuse the same ranges. Required empty-only
 groups and undefined character-only groups remain distinct through finalizers.
 Opt-in constructor/search aborts retain atomic state under unchanged limits.
 
+## Character captures beside noncapturing empty sequences
+
+A separate Core constructor extends character-only captures to a nonempty
+sequence of unquantified noncapturing empty groups on the opposite alternative.
+Nesting and siblings contribute no captures or effects, so the existing final
+iteration marker and character-capture projection apply unchanged
+(RepeatMatcher, 22.2.2.3). The flat group-span proof records an actual grouped
+empty side, requires a character-only capture and rejects any empty-side capture.
+Groups beside the character, choices, inner quantifiers/assertions and unknown
+class leaves retain separate proofs.
+
+Simple and every braced outer count, outside word/line gates, mandatory priority,
+optional budgets, original UTF-16 ranges and required empty clearing reuse the
+same matcher. Construction precharges cover the span walk and role table;
+source-sized storage, clone and drop remain flat. Prior constructors keep their
+domains and exact work traces. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

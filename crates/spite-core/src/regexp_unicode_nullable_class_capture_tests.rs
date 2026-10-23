@@ -766,3 +766,276 @@ fn empty_branch_capture_proofs_keep_other_effects_and_leaf_domains_closed() {
         );
     }
 }
+#[test]
+fn partial_captures_beside_noncapturing_empty_sequences_follow_independent_branch_oracle() {
+    let classes: [(&str, Predicate); 8] = [
+        (r"[\q{a|b}]", |p| p == 97 || p == 98),
+        (r"[\q{a|b|ab}&&\p{Any}]", |p| p == 97 || p == 98),
+        (r"[\q{ab}&&a]", |_| false),
+        (r"[^\q{ab}&&a]", |_| true),
+        (r"[\q{😀|😀x}&&\p{Any}]", |p| p == 0x1f600),
+        (r"[\q{\u{10428}|ab}&&\p{Any}]", |p| p == 0x10428),
+        (r"[\q{s|k}]", |p| p == 0x73 || p == 0x6b),
+        (r"[\q{\(|\)|a}]", |p| p == 0x28 || p == 0x29 || p == 97),
+    ];
+    let limit = usize::MAX as u128;
+    let huge = 10u128.pow(30);
+    for (class, contains) in classes {
+        for (open, close, roots, inner_open, inner_close, inner_captures) in [
+            ("(", ")", 1, "(", ")", 1),
+            ("(?:", ")", 0, "((", "))", 2),
+            ("((?:", "))", 1, "(?:((", ")))", 2),
+        ] {
+            for empty_first in [false, true] {
+                for (count, minimum, optional, greedy) in [
+                    ("*".to_owned(), Some(0), None, true),
+                    ("*?".to_owned(), Some(0), None, false),
+                    ("+".to_owned(), Some(1), None, true),
+                    ("+?".to_owned(), Some(1), None, false),
+                    ("?".to_owned(), Some(0), Some(1), true),
+                    ("??".to_owned(), Some(0), Some(1), false),
+                    ("{0}".to_owned(), Some(0), Some(0), true),
+                    ("{0,3}?".to_owned(), Some(0), Some(3), false),
+                    ("{01,001}?".to_owned(), Some(1), Some(0), false),
+                    ("{1,}".to_owned(), Some(1), None, true),
+                    ("{2,2}?".to_owned(), Some(2), Some(0), false),
+                    ("{2,3}".to_owned(), Some(2), Some(1), true),
+                    ("{2,3}?".to_owned(), Some(2), Some(1), false),
+                    ("{3,}?".to_owned(), Some(3), None, false),
+                    (format!("{{0,{huge}}}"), Some(0), None, true),
+                    (format!("{{1,{huge}}}?"), Some(1), None, false),
+                    (format!("{{{limit},{}}}", limit + 1), None, Some(1), true),
+                    (format!("{{{limit},{}}}?", limit + 1), None, Some(1), false),
+                    (format!("{{{huge}}}?"), None, Some(0), false),
+                    (format!("{{00{huge},0{huge}}}"), None, Some(0), true),
+                    (format!("{{{huge},}}?"), None, None, false),
+                    (format!("{{{huge},{}}}", huge + 1), None, Some(1), true),
+                    (format!("{{{huge},{}}}?", huge + 1), None, Some(1), false),
+                ] {
+                    for (prefix, suffix, anchors, words) in [
+                        ("", "", false, [None, None]),
+                        (r"^\b", r"\b$", true, [Some(true), Some(true)]),
+                        (r"\B", r"\b", false, [Some(false), Some(true)]),
+                    ] {
+                        for i in [false, true] {
+                            for m in [false, true] {
+                                let branch = format!("{inner_open}{class}{inner_close}");
+                                let branch = if empty_first {
+                                    format!("(?:(?:))(?:)|{branch}")
+                                } else {
+                                    format!("{branch}|(?:(?:))(?:)")
+                                };
+                                let source =
+                                    format!("{prefix}{open}{branch}{close}{count}{suffix}");
+                                let plan =
+                                    Matcher::compile_with_noncapturing_empty_branch_and_work(
+                                        &JsString::from(source.as_str()),
+                                        i,
+                                        m,
+                                        |_| Ok::<(), ()>(()),
+                                    )
+                                    .unwrap()
+                                    .unwrap();
+                                assert_eq!(plan.capture_count(), roots + inner_captures);
+                                for input in [
+                                    JsString::from(""),
+                                    JsString::from("aaab!aba"),
+                                    JsString::from("A😀😀aa"),
+                                    JsString::from("!\r\naaa\u{2028}!"),
+                                    JsString::from("ſK"),
+                                    JsString::from("𐐀𐐨!"),
+                                    JsString::from("(a))!"),
+                                    JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+                                ] {
+                                    let minimum = minimum.unwrap_or(input.len() + 1);
+                                    let oracle = Oracle {
+                                        input: &input,
+                                        contains,
+                                        minimum,
+                                        maximum: optional.map(|n| minimum + n),
+                                        greedy,
+                                        empty_first,
+                                        roots,
+                                        captures: roots + inner_captures,
+                                        empty_slots: &[],
+                                        i,
+                                        m,
+                                        anchors,
+                                        words,
+                                    };
+                                    for start in 0..=input.len() + 1 {
+                                        for sticky in [false, true] {
+                                            let found = plan
+                                                .find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(()),
+                                                )
+                                                .unwrap();
+                                            let projected = found.map(|found| Expected {
+                                                captures: (0..plan.capture_count())
+                                                    .map(|slot| {
+                                                        plan.capture_range(
+                                                            slot,
+                                                            found.atom_capture.as_ref(),
+                                                        )
+                                                    })
+                                                    .collect(),
+                                                range: found.range,
+                                            });
+                                            assert_eq!(
+                                                projected,
+                                                oracle.find(start, sticky),
+                                                "{source} i={i} m={m} {input:?} start={start} sticky={sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn partial_captures_beside_empty_sequences_cancel_each_callback_and_keep_large_sources_flat() {
+    for pattern in [
+        r"^\b(([\q{a|b}])|(?:(?:))(?:)){2,3}?\b$",
+        r"(?:(?:)|(([\q{ab}&&a]))){0}",
+        r"(((?:(?:))(?:)|([\q{😀|😀x}&&\p{Any}]))){999999999999999999999999999999,1000000000000000000000000000000}?",
+    ] {
+        let source = JsString::from(pattern);
+        let mut complete = Vec::new();
+        Matcher::compile_with_noncapturing_empty_branch_and_work(&source, true, true, |n| {
+            complete.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = Matcher::compile_with_noncapturing_empty_branch_and_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    seen.push(n);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(
+                matches!(result,Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at==fail)
+            );
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        Matcher::compile_with_noncapturing_empty_branch_and_work(&source, true, true, |n| {
+            recovered.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(complete, recovered);
+    }
+    for empty_first in [false, true] {
+        for deep in [false, true] {
+            let empty = if deep {
+                format!("{}{}", "(?:".repeat(20_000), ")".repeat(20_000))
+            } else {
+                "(?:)".repeat(20_000)
+            };
+            let character = format!(
+                r"{}[\q{{a|b|ab}}&&\p{{Any}}]{}",
+                "(".repeat(20_000),
+                ")".repeat(20_000)
+            );
+            let branch = if empty_first {
+                format!("{empty}|{character}")
+            } else {
+                format!("{character}|{empty}")
+            };
+            let source = format!(
+                "({branch}){{999999999999999999999999999999,1000000000000000000000000000000}}"
+            );
+            let source = JsString::from(source.as_str());
+            let mut work = 0;
+            let original = Matcher::compile_with_noncapturing_empty_branch_and_work(
+                &source,
+                false,
+                false,
+                |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+            assert!(work < source.len() * 144 + 1024, "{work}");
+            let plan = original.clone();
+            drop(original);
+            assert_eq!(plan.capture_count(), 20_001);
+            let found = plan
+                .find_with_captures_and_work(&JsString::from("aaa"), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, 0..if empty_first { 1 } else { 3 });
+            assert_eq!(
+                plan.capture_range(0, found.atom_capture.as_ref()),
+                Some(if empty_first { 0..1 } else { 3..3 })
+            );
+            for slot in 1..=20_000 {
+                assert_eq!(
+                    plan.capture_range(slot, found.atom_capture.as_ref()),
+                    if empty_first { Some(0..1) } else { None }
+                );
+            }
+            assert_eq!(
+                plan.capture_range(20_001, found.atom_capture.as_ref()),
+                None
+            );
+        }
+    }
+}
+
+#[test]
+fn partial_captures_beside_empty_sequences_keep_other_capture_effect_and_leaf_domains_closed() {
+    for source in [
+        r"([\q{a|b}]|(?:))+",
+        r"(([\q{a|b}])|)+",
+        r"(([\q{a|b}])|())+",
+        r"(([\q{a|b}])|(?:)*)+",
+        r"(([\q{a|b}])|(?:|))+",
+        r"(([\q{a|b}])|(?:))?()+",
+        r"((?:)([\q{a|b}])|(?:))+",
+        r"(([\q{a|b}])(?:)|(?:))+",
+        r"(([\q{a|b}])||(?:))+",
+        r"((\b[\q{a|b}])|(?:))+",
+        r"(([\q{a|b}])+|(?:))+",
+        r"(([\q{a|b}])|\b(?:))+",
+        r"(([\q{ab}&&\q{cd}])|(?:)){0}",
+        r"((?:)|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])){0}",
+        r"(([\q{a|b}])|(?:))+[b]",
+        r"(([\q{a|b}])|(?:))",
+        r"(([\q{a|b}])|(?:))+(?:)",
+    ] {
+        assert!(
+            Matcher::compile_with_noncapturing_empty_branch_and_work(
+                &JsString::from(source),
+                true,
+                true,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none(),
+            "{source}"
+        );
+    }
+}

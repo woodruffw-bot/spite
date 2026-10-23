@@ -13,6 +13,13 @@ enum CaptureRole {
     Empty,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CaptureProof {
+    Raw,
+    EmptyCaptures,
+    NoncapturingSequence,
+}
+
 #[derive(Clone, Copy)]
 struct Frame {
     start: usize,
@@ -22,6 +29,7 @@ struct Frame {
 struct Parsed {
     class: Range<usize>,
     empty_first: bool,
+    grouped_empty: bool,
     captures: Vec<CaptureRole>,
 }
 
@@ -60,7 +68,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_capture_proof(source, ignore_case, multiline, false, charge)
+        Self::compile_capture_proof(source, ignore_case, multiline, CaptureProof::Raw, charge)
     }
 
     /// Proves captures on an unquantified empty branch beside a character class.
@@ -82,14 +90,44 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_capture_proof(source, ignore_case, multiline, true, charge)
+        Self::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::EmptyCaptures,
+            charge,
+        )
+    }
+
+    /// Proves character-only captures beside an unquantified noncapturing empty sequence.
+    ///
+    /// The empty branch contains a nonempty sequence of balanced noncapturing
+    /// groups, including nesting and siblings. At least one character-only
+    /// capture is required. Captured empty groups, inner quantifiers/choices,
+    /// assertions and empty groups on the character branch retain separate
+    /// proofs. All outside count/gate and projection requirements match
+    /// `compile_with_work` (RepeatMatcher, 22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_noncapturing_empty_branch_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::NoncapturingSequence,
+            charge,
+        )
     }
 
     fn compile_capture_proof<E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
-        empty_captures: bool,
+        proof: CaptureProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -125,15 +163,18 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             let Some((atom_end, _, _)) = quantifier(body, token_end) else {
                 continue;
             };
-            let Some(parsed) = parse_body(&body[..atom_end], empty_captures) else {
+            let Some(parsed) = parse_body(&body[..atom_end], proof != CaptureProof::Raw) else {
                 continue;
             };
-            let required = if empty_captures {
+            let required = if proof == CaptureProof::EmptyCaptures {
                 CaptureRole::Empty
             } else {
                 CaptureRole::Character
             };
-            if !parsed.captures.contains(&required) {
+            if !parsed.captures.contains(&required)
+                || (proof == CaptureProof::NoncapturingSequence
+                    && (!parsed.grouped_empty || parsed.captures.contains(&CaptureRole::Empty)))
+            {
                 continue;
             }
             let class = &body[parsed.class];
@@ -316,6 +357,7 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
     }
     let class = class?;
     let split = separator?;
+    let mut grouped_empty = false;
     for (frame, end) in completed {
         let contains_class = frame.start < class.start && class.end <= end;
         let contains_split = frame.start < split && split < end;
@@ -332,6 +374,7 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
                 frame.start > split
             }
         {
+            grouped_empty = true;
             CaptureRole::Empty
         } else {
             return None;
@@ -342,6 +385,7 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
     }
     Some(Parsed {
         empty_first: split < class.start,
+        grouped_empty,
         class,
         captures,
     })
