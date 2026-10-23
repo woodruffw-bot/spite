@@ -10993,4 +10993,10 @@ The constructors share complete class compilation, opposite empty-membership
 checks and bounded-prefix matching with root alternatives. Existing root
 constructors retain their exact accepted domain and callback traces. No source
 wrapper is peeled, captures are not renumbered and no per-match capture history
-is allocated. Runtime grouped selection remains a subsequent step.
+is allocated.
+
+Runtime attempts grouped proofs after both root proofs on the full normalized
+source. Existing matcher bodies retain lexical capture slots, including complete
+original wrappers and unwrapped sibling points. The nonempty range or explicit
+class-selection flag continues through shared result/indices construction and
+String consumers without adding per-match storage.

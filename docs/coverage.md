@@ -18784,3 +18784,28 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime grouped unquantified string-class captures
+
+Five regression groups cover 27 class families, an explicit zero-width class
+selection, six capture layouts and both branch orders with complete enclosing
+captures and unconditional before/after points. Cases retain lexical named
+aliases, longest/original UTF-16 words, defined empty versus undefined groups,
+optional/later masks, surrogate starts, escaped names, folding and read-only
+lastIndex. String consumer cases exercise matchAll, callback/template replace,
+split and search, plus clones and collection. Deep complete owners, long words,
+finalizers and opt-in constructor aborts preserve original state. Class counts,
+assertions, references, extra terms/alternatives and unknown leaves remain
+separate unsupported controls.
+
+All 46,656 exact differential records over 108 grouped class/capture/order pairs
+match independent ordinary-alternative controls across eight inputs, all starts
+and sticky/i/m flags. Records retain complete/conditional/unconditional capture
+values, group key order, every index and lastIndex. Twelve fixed consumer
+programs also match reference controls. Stable passes all 431 Runtime unit cases
+and all five new integration groups. Workspace documentation tests, strict
+workspace Clippy, formatting, dependency policy, source/fixture inventories and
+diff checks pass. Runtime inventory is 535 case files and 4,273 integration
+cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
+default resource policy are unchanged.

@@ -735,7 +735,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile root string-class alternatives containing empty members with explicit selected-branch identity, preserving defined zero-width class captures, longest-member priority, flat masks and bounded work.
 - [x] Execute empty-member string-class root alternatives through Runtime RegExp captures and String consumers, preserving defined empty captures, indices, branch priority, Unicode progress and opt-in aborts.
 - [x] Compile grouped unquantified string-class/empty alternatives, preserving complete enclosing captures, conditional class/empty slots, unconditional sibling points and explicit empty-member identity.
-- [ ] Execute grouped unquantified string-class alternatives through Runtime RegExp and String consumers.
+- [x] Execute grouped unquantified string-class alternatives through Runtime RegExp and String consumers, preserving enclosing/sibling ranges, empty-member identity, names/indices, Unicode progress and opt-in aborts.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
