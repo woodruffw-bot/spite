@@ -1931,3 +1931,91 @@ fn empty_capture_effects_keep_assertions_references_character_effects_and_leaves
         );
     }
 }
+
+#[test]
+fn nullable_capture_proofs_keep_observable_empty_captures_inside_the_alternative_owner() {
+    macro_rules! rejects {
+        ($source:expr; $($factory:ident),+ $(,)?) => {
+            $(assert!(Matcher::$factory(&$source, false, false, |_| Ok::<(), ()>(())).unwrap().is_none(),
+                "{} {:?}", stringify!($factory), $source);)+
+        };
+    }
+    for source in [
+        r"(?:(?:[\q{a}]|)())+",
+        r"(?:()(?:|[\q{a}]))+",
+        r"(?:(?:([\q{a}])|)(?:(())?))+",
+        r"(?:(?:(())+?)(?:|([\q{a}]))){2,3}",
+    ] {
+        let source = JsString::from(source);
+        rejects!(source;
+            compile_with_work,
+            compile_with_empty_branch_captures_and_work,
+            compile_with_noncapturing_empty_branch_and_work,
+            compile_with_quantified_noncapturing_empty_branch_and_work,
+            compile_with_noncapturing_empty_choices_and_work,
+            compile_with_empty_capture_effects_and_work,
+        );
+    }
+    for (source, whole, character, empty) in [
+        (r"(?:(?:([\q{a}])|())){3}", 0..2, None, Some(2..2)),
+        (r"(?:(?:()|([\q{a}]))){2,3}", 0..1, Some(0..1), None),
+    ] {
+        let plan = Matcher::compile_with_empty_branch_captures_and_work(
+            &JsString::from(source),
+            false,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let found = plan
+            .find_with_captures_and_work(&JsString::from("aa"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, whole);
+        let character_slot = usize::from(source.contains("()|"));
+        assert_eq!(
+            plan.capture_range(character_slot, found.atom_capture.as_ref()),
+            character
+        );
+        assert_eq!(
+            plan.capture_range(1 - character_slot, found.atom_capture.as_ref()),
+            empty
+        );
+    }
+    macro_rules! admits_transparent {
+        ($factory:ident, $source:literal, $whole:expr, $character:expr) => {
+            let plan =
+                Matcher::$factory(&JsString::from($source), false, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap();
+            let found = plan
+                .find_with_captures_and_work(&JsString::from("aa"), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, $whole);
+            assert_eq!(
+                plan.capture_range(0, found.atom_capture.as_ref()),
+                Some($character)
+            );
+        };
+    }
+    admits_transparent!(
+        compile_with_noncapturing_empty_branch_and_work,
+        r"(?:(?:([\q{a}])|)(?:))+",
+        0..2,
+        1..2
+    );
+    admits_transparent!(
+        compile_with_quantified_noncapturing_empty_branch_and_work,
+        r"(?:(?:([\q{a}])|)(?:)*?)+",
+        0..2,
+        1..2
+    );
+    admits_transparent!(
+        compile_with_noncapturing_empty_choices_and_work,
+        r"(?:(?:|)*?(?:|([\q{a}]))){2,3}",
+        0..1,
+        0..1
+    );
+}

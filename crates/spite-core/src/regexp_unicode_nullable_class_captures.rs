@@ -415,6 +415,7 @@ fn parse_body(
     };
     let mut class = None::<Range<usize>>;
     let mut separator = None;
+    let mut separator_owner = None;
     let mut bars = Vec::new();
     // Active ancestors at the sole class identify separator-owning groups.
     // Earlier constructors allocate no marker storage and keep their probes.
@@ -477,8 +478,12 @@ fn parse_body(
             0x7c => {
                 if choices {
                     bars.push((at, frames.last()?.start));
-                } else if frames.is_empty() || separator.replace(at).is_some() {
-                    return None;
+                } else {
+                    let owner = frames.last()?.start;
+                    if separator.replace(at).is_some() {
+                        return None;
+                    }
+                    separator_owner = Some(owner);
                 }
                 at += 1;
             }
@@ -531,8 +536,11 @@ fn parse_body(
         // A bar owned by a class ancestor separates the consuming and empty
         // branches. Every other bar must lie wholly on the empty side.
         for &(at, owner) in &bars {
-            if class_owners[owner] && separator.replace(at).is_some() {
-                return None;
+            if class_owners[owner] {
+                if separator.replace(at).is_some() {
+                    return None;
+                }
+                separator_owner = Some(owner);
             }
         }
         let split = separator?;
@@ -551,6 +559,11 @@ fn parse_body(
         }
     }
     let split = separator?;
+    let owner_bounds = separator_owner.and_then(|start| {
+        completed
+            .iter()
+            .find_map(|(frame, end, _, _)| (frame.start == start).then_some((start, *end)))
+    });
     let mut grouped_empty = false;
     let mut quantified_empty = false;
     for (frame, end, quantified, zero_minimum) in completed {
@@ -572,6 +585,14 @@ fn parse_body(
                 frame.start > split
             }
         {
+            // A group outside the alternative's owner runs independently of
+            // the selected branch. Its point needs a separate projection.
+            if frame.capture.is_some() {
+                let (owner_start, owner_end) = owner_bounds?;
+                if frame.start <= owner_start || end >= owner_end {
+                    return None;
+                }
+            }
             grouped_empty = true;
             quantified_empty |= quantified;
             if effects && zero_minimum {

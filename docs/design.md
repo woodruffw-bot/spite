@@ -10638,6 +10638,22 @@ priority, optional budgets, gates and original UTF-16 ranges reuse the same
 matcher. Prior constructors retain their domains and exact work traces. Runtime
 selection is separate.
 
+## Ownership of nullable empty captures
+
+An empty capture can use the empty-branch role only when its group lies inside
+the group owning the class/empty separator. A sibling outside that owner executes
+independently of the chosen alternative. For example, the capture in
+(?:(?:class|)())+ is defined after consuming characters and denotes the last
+iteration's end point; treating it as empty-branch-only would incorrectly leave
+it undefined (22.2.2.3).
+
+The parser records the separator's owner and resolves its closing boundary from
+the flat group table. Captured empty groups outside those bounds retain a
+separate point-projection proof. Capture-free empty siblings remain transparent,
+and nested wrappers around the complete alternative keep their iteration roles.
+This guard adds one linear span walk under existing construction charges and
+preserves valid constructor work traces, counts, matching and source metadata.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

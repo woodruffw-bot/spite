@@ -18207,3 +18207,25 @@ documentation tests, workspace/included-source formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories and diff checks pass.
 Runtime selection, snapshots, corpus sources/helpers, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+## Nullable empty-capture ownership correction
+
+The capture proof now records the group owning the class/empty separator and
+requires branch-only empty captures to stay inside that group. An independent
+ordinary-class control for (?:(?:class|)())+ on aa defines the capture at [2,2];
+the earlier proof incorrectly returned undefined by treating an unconditional
+suffix as part of the empty alternative. These point-capture shapes now remain
+explicitly unsupported. Transparent capture-free siblings retain their existing
+results.
+
+A regression group rejects four outside-owner capture shapes across all six
+capture constructors and preserves two nested capture layouts and three
+transparent sibling layouts. A Runtime projection unit checks required empty
+parents with undefined optional children under required and zero outer
+iterations. Stable passes all 1,164 Core and 429 Runtime unit cases. All 34,312
+prior API records retain exact construction/search work and capture projection.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Corpus sources/helpers,
+snapshots, dependencies, intrinsic counts and default resource policy are
+unchanged.
