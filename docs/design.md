@@ -10345,7 +10345,11 @@ scan and decimal proof independently. Counts, groups and discarded strings do no
 expand state. Unknown class leaves remain unproved behind empty-first choices;
 both-overflowing finite bounds, partial captures and other empty shapes retain
 separate proofs. Prior constructor domains and work traces remain unchanged.
-Runtime selection is separate.
+Runtime selects these proofs after grouped-empty represented finite ranges.
+Existing capture projection and consumers preserve exact optional budgets,
+mandatory priority, earliest starts and original UTF-16 ranges. Earlier upper-bound
+rejections complete with their expected values and finalizer effects. Names,
+indices, lastIndex, clones, collection and opt-in host aborts reuse existing paths.
 
 ## Global intrinsic metadata and enumeration
 

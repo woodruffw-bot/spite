@@ -17643,3 +17643,25 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime overflowing upper bounds beside grouped empty alternatives
+
+Runtime now selects grouped-empty nullable singleton-q and character-result v/vi
+ranges with represented positive lower bounds and finite overflowing maxima.
+Six groups cover exact decimal optional budgets, mandatory source priority,
+earliest cross-phase starts, line/word gates, supplementary ranges, names/indices,
+padded/lazy source, lastIndex, String consumers, clones, collection and opt-in
+host aborts. Seventeen earlier rejection controls now defer both-overflowing
+bounds; their four distinct original sources complete successfully with checked
+finalizer effects. Unknown/string leaves and other empty shapes remain deferred.
+
+All 66,928 differential records across 178 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes. Node exhausts its native stack on the original huge grouped counts; the
+independent recursive Core oracle verifies their branch and count semantics.
+Stable passes all 425 Runtime unit cases, 220 affected integration cases and
+1,509 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories and diff
+checks pass. Runtime inventory is 514 case files and 4,156 integration cases.
+Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.
