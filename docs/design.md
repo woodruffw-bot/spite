@@ -9974,7 +9974,15 @@ The shared borrowed framing/wrapper scan precharges decimal scans and retains
 exact bounds without expanding them. Earlier constructors keep their domains,
 work traces and results. Existing linear search, checked class storage,
 allocation boundaries, flat clone/drop, dependencies and resource defaults are
-unchanged. Runtime selection is separate.
+unchanged.
+
+Runtime selects the positive exact-count proofs after positive open counts.
+Existing capture projection combines final mandatory empty or original character
+ranges with complete enclosing captures. Padded and largest represented bounds
+keep their original source metadata. Named indices, supplementary escaped names,
+String consumers, replacements, lastIndex, cloning, collection and host-abort
+propagation retain their existing paths. Former Unsupported {m}/{m,m} expressions
+with represented bounds above one complete finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 
