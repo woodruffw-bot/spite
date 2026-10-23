@@ -10879,4 +10879,6 @@ undefined when the opposite branch succeeds. Existing interval masks preserve
 required, optional and later-choice participation without expanding counts
 (RepeatMatcher, 22.2.2.3). Source framing, root assertion-scope guards, strict
 class leaves and UTF-16 projection remain shared. Earlier API domains and work
-traces remain unchanged. Runtime selection remains a subsequent step.
+traces remain unchanged. Runtime selects the branch-only proof after boundary
+captures using the complete normalized source and no extra enclosing prefix.
+Named/indices projection and RegExp/String execution reuse the same result path.

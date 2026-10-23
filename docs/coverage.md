@@ -18511,3 +18511,28 @@ workspace/included-source formatting, strict workspace Clippy, dependency policy
 source/fixture inventories and diff checks pass. Runtime selection, snapshots,
 corpus sources/helpers, dependencies, intrinsic counts and default resource
 policy are unchanged.
+
+
+## Runtime branch-only captures in one unquantified nullable group
+
+Runtime selects branch-only captures after boundary captures, preserving the
+complete normalized source and its original capture table. Five integration
+groups cover four predicates, six layouts, three wrapper forms and both orders.
+Character-only, empty-only, required, optional and later-choice slots retain
+source-order named/indices aliases, including matches where every branch slot is
+undefined. Original supplementary/lone-surrogate ranges, folding, escaped names,
+outside-gate backtracking, metadata and lastIndex remain shared. String consumers,
+callbacks, clones and collection preserve participation and Unicode empty-match
+advancement. Supported programs finish finalizers; unsupported terms remain host
+failures. Deep capture tables, discarded words, large inner counts and opt-in
+constructor/search aborts stay flat and preserve atomic state under unchanged
+limits.
+
+All 33,696 differential records across 78 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes, including
+empty-only layouts with no participating branch capture. Stable passes all 431
+Runtime unit cases and 312 affected integration cases. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. Runtime inventory is 530 case files and 4,248
+integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
+counts and default resource policy are unchanged.

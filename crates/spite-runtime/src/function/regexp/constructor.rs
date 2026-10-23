@@ -2208,13 +2208,22 @@ impl Realm {
         // root alternative whose assertions belong to only one branch (22.2.2).
         let matcher = if matcher.is_none() && flags.code_units().contains(&u16::from(b'v')) {
             let body = self.object_work(span, |_, budget| {
-                RegExpUnicodeNullableClassCaptureMatcher::compile_single_with_boundary_empty_captures_and_work(
+                if let Some(body) = RegExpUnicodeNullableClassCaptureMatcher::compile_single_with_boundary_empty_captures_and_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeNullableClassCaptures(body)));
+                }
+                RegExpUnicodeNullableClassCaptureMatcher::compile_single_branch_captures_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
                  .map(|body| body.map(RegExpMatcherBody::UnicodeNullableClassCaptures))
+
             })?;
             if body.is_some() {
                 enclosing_captures = 0;
