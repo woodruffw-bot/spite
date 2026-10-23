@@ -146,7 +146,7 @@ fn complete_unrepresentable_finite_proofs_finish_finalizers_without_hiding_unkno
         r"|[\q{ab}&&\q{cd}]",
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:X|)?",
-        r"[\q{a|b}]|()?",
+        r"[\q{a|b}]|(\b)?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
     ] {

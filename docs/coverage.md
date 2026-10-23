@@ -18229,3 +18229,37 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Corpus sources/helpers,
 snapshots, dependencies, intrinsic counts and default resource policy are
 unchanged.
+
+
+## Runtime captures in quantified empty branches and choices
+
+Runtime now selects conditional captures in quantified empty branches and
+choices. Six groups exercise 27 outer modes, six manually specified named
+participation layouts and both branch orders. They distinguish required empty
+parents, optional/later undefined children, character-only groups and
+zero-iteration slots; all lexical names/indices remain present. Supplementary
+interior starts, lone surrogates, escaped names, original case-folded text, source
+metadata and lastIndex retain existing ranges. String consumers, positional and
+named replacement arguments, callbacks, clones and collection preserve capture
+participation even when every branch capture is undefined.
+
+Sixty-three literal rejection controls and 30 inner controls (22 distinct
+programs and six branches) remain preserved as successes with checked finalizers.
+Two dynamic unequal ranges additionally preserve exact optional budgets, values
+and finalizers. Large optional capture layouts, discarded words and 20,000-digit
+zero/positive inner counts remain flat. Unsupported assertions, references,
+consuming terms and misplaced captures remain separate from JavaScript syntax
+errors. Opt-in constructor/search aborts preserve atomic state with unchanged
+limits.
+
+All 75,168 differential records across 174 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes. Controls
+retain required, optional and later-alternative capture participation while
+replacing huge empty counts with equivalent finite counts. Stable passes all 429
+Runtime unit cases and 286 affected integration cases. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. The ownership milestone additionally passes
+all 35 conformance-profile Test262 runner/integration tests and 16,343 reviewed
+variants with this runtime selection. Runtime inventory is 525 case files and
+4,222 integration cases. Corpus sources/helpers, snapshots, dependencies,
+intrinsic counts and default resource policy are unchanged.

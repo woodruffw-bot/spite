@@ -112,7 +112,7 @@ fn complete_nullable_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
         r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('aaa')",
         r"/(([\q{a|ab}&&a])|(?:X|)?)+/v.test('a')",
-        r"/([\q{a|ab}&&a]|()?)+/v.test('a')",
+        r"/([\q{a|ab}&&a]|(\b)?)+/v.test('a')",
         r"/([\q{a|ab}&&a]||)+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|)+/v.test('a')",
         r"/\b^([\q{a|ab}&&a]|)+/v.test('a')",

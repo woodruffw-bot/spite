@@ -32,19 +32,19 @@ fn overflowing_exact_counts_keep_mandatory_source_priority_independent_of_greedi
 }
 
 #[test]
-fn numeric_endpoint_equality_preserves_source_and_defers_unequal_captured_empty_choice_ranges() {
+fn numeric_endpoint_equality_preserves_source_and_executes_unequal_captured_empty_choice_ranges() {
     let huge = "9".repeat(40);
     check(&format!(
         "let r=/(?<each>[\\q{{a|b|ab}}&&\\p{{Any}}]|(?:(?:))){{000{huge},0{huge}}}?/dvg,a=r.exec('abX'),b=r.exec('abX');r.source.includes('000{huge},0{huge}') && r.source.endsWith('?') && a[0]==='ab' && a.groups.each==='' && a.indices[1][0]===2 && b.index===2 && b[0]==='' && b.groups.each==='' && r.lastIndex===2"
     ));
-    for (lower, upper) in [
-        (huge.clone(), format!("{huge}0")),
-        ("8".repeat(40), format!("{}9", "8".repeat(39))),
+    for (lower, upper, whole) in [
+        (huge.clone(), format!("{huge}0"), "ab"),
+        ("8".repeat(40), format!("{}9", "8".repeat(39)), "a"),
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
-        assert!(matches!(realm.eval(&format!(r"marker=1;try{{/((?:|())|[\q{{a|b}}]){{{lower},{upper}}}/v.test('ab')}}catch{{marker=2}}finally{{marker=3}}")),Err(Error::Unsupported{..})));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+        assert_eq!(realm.eval(&format!(r"marker=1;try{{let r=/((?:|())|[\q{{a|b}}]){{{lower},{upper}}}/dv,m=r.exec('ab');m[0]==='{whole}' && m[1]==='{whole}'.slice(-1) && m[2]===undefined && m.indices[2]===undefined}}catch{{marker=2}}finally{{marker=3}}")),Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     check(&format!(
         "let r=/(?<each>(?:(?:))|[\\q{{ab}}&&a]){{{huge}}}/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{{writable:false}});let caught=false;try{{r.exec('😀')}}catch(e){{caught=e instanceof TypeError}}caught && r.lastIndex===1"
@@ -124,10 +124,10 @@ fn overflowing_exact_grouped_proofs_finish_finalizers_and_prove_unknown_leaves()
         r"(?:)|[\q{ab}&&\q{cd}]",
         r"(?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:X|)?",
-        r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|()?",
+        r"[\q{a|b}]|(?:\b|())",
+        r"[\q{a|b}]|(?:\b|())",
+        r"[\q{a|b}]|(?:\b|())",
+        r"[\q{a|b}]|(\b)?",
         r"[\q{a|ab}&&a]||(?:)",
         r"\b[\q{a|ab}&&a]|(?:)",
     ] {
@@ -141,8 +141,8 @@ fn overflowing_exact_grouped_proofs_finish_finalizers_and_prove_unknown_leaves()
         );
     }
     for source in [
-        r"/([\q{a|b}]|(?:|())){99999999999999999999999999999999999999992,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/([\q{a|b}]|(?:|())){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')",
+        r"/([\q{a|b}]|(?:\b|())){99999999999999999999999999999999999999992,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/([\q{a|b}]|(?:\b|())){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')",
     ] {
         assert!(
             matches!(

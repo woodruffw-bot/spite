@@ -10635,8 +10635,13 @@ Linear precharges cover owner markers, count scans, interval tables and sweeps.
 Counts and choices never expand, clone/drop remain flat and source-sized, and
 matching adds no input-sized capture history. Existing outer counts, mandatory
 priority, optional budgets, gates and original UTF-16 ranges reuse the same
-matcher. Prior constructors retain their domains and exact work traces. Runtime
-selection is separate.
+matcher. Prior constructors retain their domains and exact work traces. Runtime selects this constructor after capture-free empty choices. Existing
+projection preserves required empty parents, undefined optional/later children,
+source-order names/indices and enclosing ranges. String consumers and callbacks
+retain every lexical capture slot even when all branch captures are undefined.
+Original UTF-16 text, source metadata, lastIndex, clones and collection remain
+shared. Huge inner counts and opt-in constructor/search aborts stay flat and
+atomic. Former captured-effect rejections complete exact results and finalizers.
 
 ## Ownership of nullable empty captures
 
