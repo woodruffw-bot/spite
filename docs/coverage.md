@@ -17791,3 +17791,27 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime braced counts beside noncapturing empty sequences
+
+Runtime now selects all braced count families for nullable singleton-q and
+character-result v/vi classes beside noncapturing empty sequences. Six groups
+cover 21 padded/lazy count forms in both source orders, zero versus required
+captures, mandatory priority, exact optional budgets, earliest cross-phase
+starts, source/flag metadata, supplementary ranges, named indices, lastIndex,
+String consumers, clones and collection. Twenty-eight former literal rejections
+and three inner-branch controls are preserved as complete successful programs
+with checked finalizers. Two dynamic unequal ranges verify exact decimal budgets.
+Unknown leaves remain unproved even under {0}; early errors precede effects.
+A 20,000-digit borrow stays flat, and opt-in construction/search aborts retain
+atomic state under unchanged limits.
+
+All 76,704 differential records across 204 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes. Stable passes all 425 Runtime unit cases, 238 affected integration cases
+and 1,527 Unicode integration cases. The conformance profile passes all 35
+Test262 runner/integration tests and all 16,343 reviewed variants. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 517 case
+files and 4,174 integration cases. Corpus sources and helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

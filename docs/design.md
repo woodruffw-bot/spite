@@ -10415,7 +10415,14 @@ required empty/undefined captures and original character ranges reuse
 RepeatMatcher (22.2.2.3). Endpoint classification has a separate linear work
 charge; prior constructor domains and callback traces are unchanged. Simple
 quantifiers, quantified/choice empty groups and partial captures retain separate
-entries or proofs. Runtime selection is separate.
+entries or proofs.
+
+Runtime selects the counted empty-sequence constructors after simple sequence
+quantifiers. Capture projection and String consumers preserve every count
+family's required empty/undefined and original character captures, optional
+budgets, earliest starts, named indices and lastIndex. Former braced sequence
+rejections complete with exact results and eval finalizers. Source metadata,
+clones, collection and opt-in host aborts reuse existing paths.
 
 ## Global intrinsic metadata and enumeration
 
