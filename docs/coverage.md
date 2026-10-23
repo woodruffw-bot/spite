@@ -17443,3 +17443,32 @@ strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 510 case files and 4,132 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Core represented positive exact counts beside grouped empty alternatives
+
+Separate Core entries prove {m} and {m,m} with represented m greater than one
+around a bare singleton-q or character-result v/vi class and a nested
+noncapturing empty alternative, including padded/lazy forms. Mandatory source
+branch priority determines endpoints independently of quantifier greediness.
+Character-first choices retain final required empty captures below the minimum;
+empty-first choices retain a required empty or last original character capture.
+Existing linear search retains earliest starts, outside word/line gates and
+actual-end trimming in original UTF-16 ranges. Every class operand is compiled
+behind empty-first choices; counts never expand matching state.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, padded greedy/lazy
+exact/equal-range forms, line/word gates, all starts and sticky/i/m modes.
+Coverage checks the largest represented count, supplementary actual-end trimming,
+required empty captures, complete unknown/string leaf proof, other-bound and
+partial-shape rejection, every constructor callback's cancellation/recovery,
+20,000 complete capturing wrappers, 20,000-character discarded words and 20,000
+leading count zeros with linear checked work and flat clone/drop.
+
+All 14,008 prior eight-string/five-class/thirty-seven-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,121 Core and 425 Runtime unit cases and 196 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

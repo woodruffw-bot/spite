@@ -10248,6 +10248,24 @@ replacements, lastIndex, clones/collection and opt-in host-abort propagation reu
 existing paths. Earlier grouped {2,} rejections complete with exact values and
 finalizer effects; finite/exact counts and other branch shapes remain separate.
 
+## Represented positive exact counts beside grouped empty alternatives
+
+Separate Core entries admit {m} and {m,m} with represented m greater than one
+around a bare singleton-q or character-result v/vi class and a nested
+noncapturing empty alternative, including padded/lazy forms. All iterations are
+mandatory, so source branch priority determines accepted endpoints independently
+of quantifier greediness. Character-first choices retain a final required empty
+capture when fewer than m characters consume; empty-first choices retain a
+required empty or last original character capture (22.2.2.3).
+
+Existing linear search retains earliest starts, canonical outside word/line gates
+and original supplementary ranges, including candidate trimming at actual input
+ends. Every class leaf is compiled behind empty-first choices. Complete wrappers,
+borrowed group recovery, work callbacks, checked class storage and flat clone/drop
+are reused. Other counts and partial/other-empty shapes retain separate proofs.
+Counts never expand matching state and earlier domains/work traces, dependencies
+and resource defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
