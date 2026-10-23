@@ -10366,7 +10366,12 @@ captures reuse the existing flat matcher. Every class leaf must be proved behind
 empty-first choices. Counts, groups and discarded words never expand state.
 Earlier constructor domains/work traces, class storage and resource defaults are
 unchanged. Partial captures and other empty shapes retain separate proofs.
-Runtime selection is separate.
+Runtime selects these proofs after grouped-empty overflowing upper bounds.
+Capture projection and String consumers retain exact optional budgets, mandatory
+priority, earliest starts, required empty captures and original supplementary
+ranges. Former unequal-range rejections complete with exact results and eval
+finalizer effects. Padded/lazy source, names/indices, lastIndex, clones, collection
+and opt-in host aborts reuse existing paths.
 
 ## Global intrinsic metadata and enumeration
 

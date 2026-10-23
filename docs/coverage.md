@@ -17689,3 +17689,31 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime two overflowing finite bounds beside grouped empty alternatives
+
+Runtime now selects finite nullable singleton-q and character-result v/vi ranges
+with two overflowing unequal bounds beside nested noncapturing empty groups.
+Six groups preserve exact decimal optional budgets, mandatory source priority,
+earliest cross-phase starts, supplementary captures, line/word gates, padded/lazy
+source, names/indices, lastIndex, String consumers, clones and collection.
+Twenty former rejection controls now defer empty sequences; their six distinct
+original sources complete with checked finalizer effects. Two dynamic unequal
+ranges additionally verify exact empty-first results after endpoint comparison.
+A 20,000-digit borrow retains an optional budget of one with flat storage.
+Construction and execution cancellation retain atomic effects under unchanged
+opt-in limits; the execution regression uses the first overflowing bounds and
+separate setup evaluations to isolate matching work.
+
+All 66,928 differential records across 178 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes. Stable passes all 425 Runtime unit cases, 226 affected integration cases
+and 1,515 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories and diff
+checks pass. Runtime inventory is 515 case files and 4,162 integration cases.
+Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.
+
+The conformance profile also passes all 35 Test262 runner/integration tests and
+all 16,343 reviewed variants. The pinned 8,452 fixtures, 16 helpers and 8,433
+reviewed entries remain unchanged.

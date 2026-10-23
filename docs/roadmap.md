@@ -694,7 +694,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile finite grouped-empty nullable string-class ranges with represented positive lower bounds and overflowing upper bounds, preserving exact decimal optional budgets, mandatory priority, earliest starts, required captures and complete leaf proof.
 - [x] Connect grouped-empty nullable string-class ranges with overflowing upper bounds to Runtime RegExp captures and String consumers, preserving decimal optional budgets, earliest starts, required captures, original UTF-16 ranges, lastIndex and eval finalizers.
 - [x] Compile finite grouped-empty nullable string-class ranges with two overflowing unequal bounds, preserving exact decimal differences, mandatory priority, earliest starts, required captures and complete leaf proof without expanding counts.
-- [ ] Connect finite grouped-empty nullable string-class ranges with two overflowing bounds to Runtime RegExp captures and String consumers.
+- [x] Connect finite grouped-empty nullable string-class ranges with two overflowing bounds to Runtime RegExp captures and String consumers, preserving exact decimal differences, mandatory priority, earliest starts, required captures, original UTF-16 ranges, lastIndex and eval finalizers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
