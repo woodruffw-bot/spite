@@ -153,7 +153,7 @@ fn nonempty_word_root_consumers_callbacks_clones_and_collection_keep_variable_wi
 }
 
 #[test]
-fn nonempty_word_root_proofs_finish_finalizers_and_keep_empty_class_ambiguity_separate() {
+fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate() {
     check(
         r"var marker=0,m;try{m=/([\q{ab}&&\q{cd}])|()/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
@@ -164,8 +164,8 @@ fn nonempty_word_root_proofs_finish_finalizers_and_keep_empty_class_ambiguity_se
         r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
     for pattern in [
-        r"([\q{|a|ab}])|()",
-        r"()|([\q{|ab}])",
+        r"([\q{|a|ab}])\b|()",
+        r"()|\b([\q{|ab}])",
         r"^([\q{ab}])|()",
         r"([\q{ab}])|()$",
         r"([\q{ab}])|()\1",

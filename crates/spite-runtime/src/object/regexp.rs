@@ -12,11 +12,11 @@ use spite_core::{
     RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,
     RegExpUnicodeClassPairMatcher, RegExpUnicodeClassSequenceMatcher,
     RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
-    RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
-    RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodeNullableClassCaptureMatcher,
-    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
-    RegExpUnicodeStringSetMatcher,
+    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
+    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
+    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeStringSetMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -47,6 +47,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeRepeatedAtom(RegExpUnicodeRepeatedAtomMatcher),
     UnicodeNullableClassCaptures(RegExpUnicodeNullableClassCaptureMatcher),
     UnicodeNullableStringClassCaptures(RegExpUnicodeNullableStringClassCaptureMatcher),
+    UnicodeEmptyStringClassCaptures(RegExpUnicodeEmptyStringClassCaptureMatcher),
     UnicodeRepeatedClassCaptures(RegExpUnicodeRepeatedClassCaptureMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
@@ -96,6 +97,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeRepeatedAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeNullableClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeNullableStringClassCaptures(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodeEmptyStringClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeRepeatedClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
@@ -180,6 +182,20 @@ impl RegExpMatcher {
                         capture_count: self.capture_count,
                         dynamic_captures: None,
                         atom_capture: found.atom_capture,
+                    })
+                });
+        }
+        if let RegExpMatcherBody::UnicodeEmptyStringClassCaptures(matcher) = &self.body {
+            return matcher
+                .find_with_captures_and_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: usize::from(found.class_selected),
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
                     })
                 });
         }
@@ -394,6 +410,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
@@ -470,6 +487,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_) => 0,
             RegExpMatcherBody::Literal(_)
             | RegExpMatcherBody::UnicodeEmpty(_)
@@ -578,6 +596,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
             | RegExpMatcherBody::Prefixed(_)
@@ -653,6 +672,9 @@ impl RegExpMatch<'_> {
             }
             RegExpMatcherBody::UnicodeNullableStringClassCaptures(matcher) => {
                 return matcher.capture_range(index, self.atom_capture.as_ref());
+            }
+            RegExpMatcherBody::UnicodeEmptyStringClassCaptures(matcher) => {
+                return matcher.capture_range(index, &self.range, self.branch != 0);
             }
             RegExpMatcherBody::UnicodeRepeatedClassCaptures(matcher) => {
                 return matcher.capture_range(index, self.atom_capture.as_ref());

@@ -10967,4 +10967,12 @@ precede its empty member; original root empty-first order still skips the class
 query. Tagged projection retains lexical slots and optional/later masks without
 allocating a capture vector or input history per match. Root assertion/reference/
 count scopes remain separate. Source-sized clone/drop and bounded-prefix work
-precharges are unchanged. Runtime selection remains a subsequent step.
+precharges are unchanged.
+
+Runtime selects the empty-member proof after the nonempty proof on the complete
+normalized source. The match stores class selection in the existing branch
+selector, so zero-width class captures project from the whole-match range
+without a per-match capture allocation. RegExp results, named indices, String
+consumers, clones and collection continue through their shared paths. Earlier
+successful constructors retain their work traces; new attempts and matching
+remain covered by opt-in host work limits.

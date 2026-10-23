@@ -18735,3 +18735,28 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime tagged root captures for classes containing empty members
+
+Five regression groups cover thirteen class families across six capture layouts
+and both branch orders, plus an explicit unmatched word selecting the class
+empty member. They check defined zero-width values and indices, longest words,
+branch-specific points, absent group maps, lexical slots, supplementary starts,
+escaped names, folding, lone surrogates and read-only lastIndex. Consumer cases
+exercise matchAll, match, search, split, callback/template replacement, clones
+and collection. Deep captures, long words and opt-in constructor/collection
+aborts retain flat storage and original state. Previously unsupported root
+empty-member controls now have exact success/finalizer regressions; assertions,
+references, class counts, extra terms/alternatives and unknown leaves retain
+separate unsupported controls. Invalid syntax remains a catchable SyntaxError.
+
+All 67,392 exact differential records over 156 class/capture/order pairs match
+independent ordinary-alternative controls across eight inputs, all starts,
+sticky/search and i/m flags. Records include defined-empty versus undefined
+captures, named key order/values, every index, absent group maps and lastIndex.
+Stable passes all 431 Runtime unit cases and the five new integration groups.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is
+534 case files and 4,268 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.
