@@ -16182,3 +16182,27 @@ Stable passes all 424 Runtime unit cases and 1,352 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core q-only UnicodeSets string operations
+
+The positive flat proof admits homogeneous intersection or subtraction chains
+between q operands containing an empty or longer member. The first operand owns
+the trie; later operands probe it without inserting right-only words. Checked
+marks and matched-terminal lists apply set operations, and final search bounds
+use retained member lengths. Shared borrowed framing preserves earlier proof
+shapes and callback order. Runtime selection is a separate increment.
+
+Three Core groups compare independent canonical word-set operations, every
+initial offset and sticky mode, outside assertions, empty/consuming members,
+folding, escaping, surrogate forms, repeated operations, complete operand proof
+after empty intermediates, cancellation at every construction callback, a
+60,000-character right-only word with linear checked work, and removal of a
+20,000-character member from the final consumption bound.
+
+All 340 captured work, search-bound, and match transcripts from the five earlier
+APIs agree before and after shared framing. Stable passes all 1,052 Core unit
+cases, 424 Runtime unit cases, and 145 existing UnicodeSets/string-class
+integration cases. Workspace documentation tests, formatting, strict workspace
+Clippy, dependency policy, source/fixture inventories, and diff checks pass.
+Runtime dispatch, snapshots, corpus sources and helpers, dependencies, intrinsic
+counts, and default resource policy are unchanged.

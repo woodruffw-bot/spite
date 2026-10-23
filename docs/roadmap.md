@@ -641,6 +641,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect interval/string union plans to Runtime RegExp execution and String consumers, preserving whole-body captures, indices, lastIndex, and checked empty/consuming search bounds.
 - [x] Compile positive nested v/vi unions of empty or multi-character q members with characters, ranges, escapes, and character properties into flat Core interval/trie plans.
 - [x] Connect positive nested variable-string unions to Runtime RegExp execution and String consumers, preserving captures, indices, lastIndex, Unicode empty-match advancement, and default deep-class execution.
+- [x] Compile positive flat chains of q-only intersections or subtractions with empty or multi-character operand members, canonical word-set equality, complete operand proof, and active-member search bounds.
+- [ ] Connect q-only variable-string intersections and subtractions to Runtime RegExp execution and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

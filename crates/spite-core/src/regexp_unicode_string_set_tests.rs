@@ -7,6 +7,279 @@ fn compile(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatch
     .unwrap()
 }
 
+fn compile_operations(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
+    RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+}
+
+#[test]
+fn q_only_operations_match_independent_canonical_word_sets() {
+    type Word<'a> = &'a [u32];
+    type Words<'a> = &'a [Word<'a>];
+    type Sets<'a> = &'a [Words<'a>];
+    struct Case<'a> {
+        source: &'a str,
+        left: Words<'a>,
+        right: Sets<'a>,
+        subtract: bool,
+        gates: Gates,
+    }
+    let plain = Gates::default();
+    let base: Words<'_> = &[&[97], &[97, 98], &[97, 98, 99], &[]];
+    let cases = [
+        Case {
+            source: r"[\q{a|ab|abc|}&&\q{ab|}]",
+            left: base,
+            right: &[&[&[97, 98], &[]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{a|ab|abc|}--\q{ab|}]",
+            left: base,
+            right: &[&[&[97, 98], &[]]],
+            subtract: true,
+            gates: plain,
+        },
+        Case {
+            source: r"^[\q{K|sK|}&&\q{k|ſK|}]\b$",
+            left: &[&[75], &[115, 75], &[]],
+            right: &[&[&[107], &[383, 8490], &[]]],
+            subtract: false,
+            gates: Gates {
+                i: true,
+                m: true,
+                anchors: [true, true],
+                words: [None, Some(true)],
+            },
+        },
+        Case {
+            source: r"[\q{a|ab}&&\q{abc}]",
+            left: &[&[97], &[97, 98]],
+            right: &[&[&[97, 98, 99]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{|ab}--\q{ab}]",
+            left: &[&[], &[97, 98]],
+            right: &[&[&[97, 98]]],
+            subtract: true,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{a|ab|abc}&&\q{a|ab}&&\q{ab}]",
+            left: &base[..3],
+            right: &[&[&[97], &[97, 98]], &[&[97, 98]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{a|ab|abc|abcd}--\q{a}--\q{abc}]",
+            left: &[&[97], &[97, 98], &[97, 98, 99], &[97, 98, 99, 100]],
+            right: &[&[&[97]], &[&[97, 98, 99]]],
+            subtract: true,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{\uD83D\uDE00x|🚀|}&&\q{😀x|}]",
+            left: &[&[0x1f600, 120], &[0x1f680], &[]],
+            right: &[&[&[0x1f600, 120], &[]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{\u{D800}\u{DC00}|ab}&&\q{\uD800\uDC00|ab}]",
+            left: &[&[0xd800, 0xdc00], &[97, 98]],
+            right: &[&[&[0x10000], &[97, 98]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{a\|b|ab}&&\q{a\|b}]",
+            left: &[&[97, 124, 98], &[97, 98]],
+            right: &[&[&[97, 124, 98]]],
+            subtract: false,
+            gates: plain,
+        },
+        Case {
+            source: r"[\q{a!|a}&&\q{a!|a}]\b",
+            left: &[&[97, 33], &[97]],
+            right: &[&[&[97, 33], &[97]]],
+            subtract: false,
+            gates: Gates {
+                words: [None, Some(true)],
+                ..plain
+            },
+        },
+        Case {
+            source: r"[\q{sK|K|}--\q{ſK}]",
+            left: &[&[115, 75], &[75], &[]],
+            right: &[&[&[383, 8490]]],
+            subtract: true,
+            gates: Gates { i: true, ..plain },
+        },
+    ];
+    for case in cases {
+        let mut words = case.left.to_vec();
+        for right in case.right {
+            words.retain(|left| {
+                let present = right.iter().any(|right| {
+                    left.len() == right.len()
+                        && left.iter().zip(*right).all(|(&a, &b)| {
+                            if case.gates.i {
+                                fold(a) == fold(b)
+                            } else {
+                                a == b
+                            }
+                        })
+                });
+                present != case.subtract
+            });
+        }
+        let plan = compile_operations(case.source, case.gates.i, case.gates.m).unwrap();
+        for input in [
+            JsString::from(""),
+            JsString::from("xabcd!abc!"),
+            JsString::from("a!a|b"),
+            JsString::from("A😀x🚀"),
+            JsString::from("ſK"),
+            JsString::from("ſKẞA"),
+            JsString::from("!\r\nab\u{2028}!"),
+            JsString::from("𐀀ab"),
+            JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+        ] {
+            for start in 0..=input.len() + 1 {
+                for sticky in [false, true] {
+                    assert_eq!(
+                        plan.find(&input, start, sticky),
+                        oracle(&input, start, sticky, &words, case.gates),
+                        "{} {input:?} start={start} sticky={sticky}",
+                        case.source
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn q_operation_scope_and_empty_intermediates_require_every_complete_operand() {
+    for source in [
+        r"[\q{ab}]",
+        r"[\q{ab}\q{cd}]",
+        r"[\q{a}&&\q{a}]",
+        r"[\q{ab}&&[\q{ab}]]",
+        r"[\q{ab}&&\p{Any}]",
+        r"[[\q{ab}]--\q{ab}]",
+        r"[\q{ab}&&\q{cd}&&\p{RGI_Emoji}]",
+        r"[\q{ab}&&\q{ab}--\q{ab}]",
+        r"[^\q{ab}&&\q{a}]",
+        r"[\q{ab}&&\q{ab}]+",
+        r"[\q{ab}--\q{ab}][a]",
+        r"\b^[\q{ab}&&\q{ab}]",
+    ] {
+        assert!(compile_operations(source, true, true).is_none(), "{source}");
+    }
+    let empty = compile_operations(r"[\q{ab}&&\q{cd}]", false, false).unwrap();
+    assert_eq!(empty.max_match_code_units(), 0);
+    assert_eq!(empty.find(&JsString::from("abcd"), 0, false), None);
+    let zero = compile_operations(r"[\q{|ab}--\q{ab}]", false, false).unwrap();
+    assert_eq!(zero.max_match_code_units(), 0);
+    assert_eq!(zero.find(&JsString::from("😀"), 1, true), Some(0..0));
+}
+
+#[test]
+fn q_operations_cancel_every_phase_and_avoid_retaining_rhs_only_words() {
+    for source in [
+        r"[\q{ab|abc|}&&\q{ab|}&&\q{}]",
+        r"[\q{sK|K|}--\q{ſK}--\q{k}]",
+    ] {
+        let source = JsString::from(source);
+        let mut complete = Vec::new();
+        let plan = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+            &source,
+            true,
+            true,
+            |work| {
+                complete.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(complete[0], source.len() * 4);
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+                &source,
+                true,
+                true,
+                |work| {
+                    seen.push(work);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(matches!(result,Err(RegExpUnicodeSetCompileError::Work(at)) if at==fail));
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        let retry = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+            &source,
+            true,
+            true,
+            |work| {
+                recovered.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(recovered, complete);
+        for text in ["", "ab", "ABC", "ſK", "😀"] {
+            let input = JsString::from(text);
+            assert_eq!(plan.find(&input, 0, false), retry.find(&input, 0, false));
+        }
+    }
+    let right = "x".repeat(60_000);
+    let source = JsString::from(format!(r"[\q{{ab}}--\q{{{right}}}]").as_str());
+    let mut work = 0usize;
+    let plan = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+        &source,
+        false,
+        false,
+        |n| {
+            work += n;
+            Ok::<(), ()>(())
+        },
+    )
+    .unwrap()
+    .unwrap();
+    assert!(
+        work < source.len() * 8 + 256,
+        "right-only words must be probed without node insertion: {work}"
+    );
+    assert_eq!(plan.max_match_code_units(), 4);
+    assert_eq!(plan.find(&JsString::from("ab"), 0, true), Some(0..2));
+    let left = "a".repeat(20_000);
+    let plan =
+        compile_operations(&format!(r"[\q{{a|{left}}}--\q{{{left}}}]"), false, false).unwrap();
+    assert_eq!(plan.max_match_code_units(), 2);
+    assert_eq!(
+        plan.find(&JsString::from(left.as_str()), 0, true),
+        Some(0..1)
+    );
+}
+
 fn compile_scalars(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
     RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
         &JsString::from(source),

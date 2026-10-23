@@ -9586,6 +9586,29 @@ bounds, RegExpBuiltinExec, and String consumers. Negated child classes, set
 operations, string properties, further atoms, and repetition remain deferred;
 dependencies and default quotas are unchanged.
 
+## Intersections and subtractions of UnicodeSets string operands
+
+Core adds a separate positive flat proof for homogeneous chains of q-only
+intersections or subtractions. At least one operand member must be empty or
+multi-character. Shared framing retains the earlier constructors' canonical
+outside assertions and work sequence. The first operand builds a trie with
+unique terminal/length records. Later operands decode and fold completely while
+probing that trie; right-only words never allocate nodes or retain source copies.
+
+Checked membership marks and a reusable list deduplicate successful right-hand
+probes. Subtraction clears those terminal bits; intersection retains marked
+active members. Marks are cleared through the matched list, rather than by
+resetting the full trie for each operand. Every later operand is proved after an
+empty intermediate result. Final maximum length considers retained members, so
+discarded long words do not enlarge search bounds. Search and whole-body ranges
+reuse the existing immutable matcher.
+
+This Core foundation is not yet selected by Runtime. Scalar or nested operands,
+mixed operators, negation, string properties, further atoms, and repetition remain
+separate proofs. Buffer growth is fallible and charged before mutation; the final
+shared allocation retains its existing boundary. Dependencies and default quotas
+are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
