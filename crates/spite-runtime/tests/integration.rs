@@ -815,6 +815,8 @@ mod regexp_unicode_repeated_atoms;
 mod regexp_unicode_scalar_classes;
 #[path = "cases/regexp_unicode_scalar_literals.rs"]
 mod regexp_unicode_scalar_literals;
+#[path = "cases/regexp_unicode_scalar_string_unions.rs"]
+mod regexp_unicode_scalar_string_unions;
 #[path = "cases/regexp_unicode_script_extensions.rs"]
 mod regexp_unicode_script_extensions;
 #[path = "cases/regexp_unicode_sentence_terminal_properties.rs"]

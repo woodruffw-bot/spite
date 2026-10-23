@@ -69,8 +69,6 @@ fn former_controls_complete_finalizers_and_unproved_algebra_remains_unsupported(
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[a-z\q{ab}]/v.test('ab')",
-        r"/[\q{ab}\d]/v.test('ab')",
         r"/[a&&\q{ab}]/v.test('ab')",
         r"/[\q{ab}&&a]/v.test('ab')",
         r"/[\q{ab}--a]/v.test('ab')",

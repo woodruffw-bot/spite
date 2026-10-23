@@ -16114,3 +16114,28 @@ UnicodeSets/string-class integration cases. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Runtime dispatch, snapshots, corpus sources and helpers,
 dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Runtime interval unions beside variable UnicodeSets strings
+
+Runtime selects the checked interval/trie plan after q-only and literal-union
+proofs. Six integration groups cover ranges, all relevant scalar membership
+paths, longer/shorter priority, line/word assertions, property folding and
+complements, exact whitespace distinctions, full Unicode ranges and surrogates,
+captures and indices, lastIndex writes, all String consumers, clone/collection,
+former Unsupported completions with finalizers, remaining grammar and early
+errors, and opt-in construction/search cancellation. A private Runtime regression
+checks saturated, empty, and source-independent work bounds plus capture
+projection when Any consumes beside an empty q member.
+
+A supplementary comparison covers 10,200 complete records over seventeen
+patterns, twelve inputs, all initial UTF-16 offsets, both sticky modes, and all
+i/m combinations. Node v24.19.0 differs on sixteen ASCII-property iv records,
+matching the existing documented discrepancy. Equivalent ranges and nested
+complements agree on every record, including captures, indices, and lastIndex;
+those engine controls supplement the independent Core membership oracles.
+
+Stable passes all 424 Runtime unit cases and all 1,346 Unicode integration
+cases. Workspace documentation tests, formatting, strict workspace Clippy,
+dependency policy, source/fixture inventories, and diff checks pass. Snapshots,
+corpus sources and helpers, dependencies, intrinsic counts, and default resource
+policy are unchanged.

@@ -9557,10 +9557,13 @@ scalar membership lookup and a two-unit consuming candidate even when every q
 member is empty. The existing shared-allocation boundaries and fallible interval,
 trie-node, and hash-index reservations remain explicit.
 
-This Core foundation is not yet selected by Runtime. Nested classes, set
-operations, properties of strings, further atoms, and repetition remain separate
-proofs. Earlier public constructors retain their domains and work callbacks.
-Dependencies and default resource policy are unchanged.
+Runtime selects this plan after the earlier q-only and literal-union entries.
+Complete enclosing captures reuse the existing result projection. Search work
+includes interval membership, a possible initial surrogate rewind, and the final
+empty candidate. Opt-in failures precede search and lastIndex writes. Nested
+classes, set operations, properties of strings, further atoms, and repetition
+remain separate proofs. Earlier public constructors retain their domains and
+work callbacks. Dependencies and default resource policy are unchanged.
 
 ## Global intrinsic metadata and enumeration
 

@@ -673,6 +673,51 @@ mod tests {
     use super::*;
 
     #[test]
+    fn variable_string_scalar_work_covers_consuming_members_beside_empty_strings() {
+        let source = JsString::from(r"[\q{}\p{Any}]");
+        let body = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+            &source,
+            false,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeStringSet(body), 2);
+        for source_len in [0, source.len(), usize::MAX] {
+            for remaining in 0..10 {
+                assert_eq!(
+                    matcher.search_work(true, source_len, remaining),
+                    3.min(remaining + 2)
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, remaining),
+                    remaining + 2
+                );
+            }
+            assert_eq!(matcher.search_work(true, source_len, usize::MAX), 3);
+            assert_eq!(
+                matcher.search_work(false, source_len, usize::MAX),
+                usize::MAX
+            );
+        }
+        let input = JsString::from("😀");
+        let found = matcher
+            .find_with_work(&input, 1, true, |_| Err::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 0..2);
+        assert_eq!(found.capture(0), Some(0..2));
+        assert_eq!(found.capture(1), Some(0..2));
+        let found = matcher
+            .find_with_work(&input, 2, true, |_| Err::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 2..2);
+        assert_eq!(found.capture(1), Some(2..2));
+    }
+
+    #[test]
     fn variable_string_work_bounds_include_empty_candidates_and_pair_rewind() {
         for (pattern, max_units) in [(r"[\q{}]", 0usize), (r"[\q{|😀x|a}]", 4)] {
             let source = JsString::from(pattern);
