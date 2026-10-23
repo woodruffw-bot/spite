@@ -10040,7 +10040,16 @@ The shared borrowed framing/wrapper scan precharges decimal parsing without
 expanding counts or captures. Existing linear search, checked class storage,
 allocation boundaries and flat clone/drop are reused. Earlier constructors
 retain their domains, exact work traces and results. Dependencies and resource
-defaults are unchanged. Runtime selection is separate.
+defaults are unchanged.
+
+Runtime selects the represented finite-range proofs after overflowing exact
+counts. Existing capture projection combines final mandatory empty or original
+character ranges with complete enclosing captures and named indices. Phase
+comparison retains earlier matches found through mandatory backtracking, including
+sticky and supplementary starts. String consumers, replacements, source metadata,
+lastIndex, cloning, collection and host-abort propagation retain their existing
+paths. Former Unsupported represented finite ranges complete finalizers normally;
+overflowing unequal ranges retain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 

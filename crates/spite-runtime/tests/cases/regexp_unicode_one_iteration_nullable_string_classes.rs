@@ -98,6 +98,9 @@ fn consumers_replacements_clones_and_collection_retain_exactly_one_branch_result
 #[test]
 fn complete_exactly_one_proofs_finish_finalizers_and_do_not_hide_deferred_leaves() {
     for source in [
+        r"/([\q{a|b}]|){2,3}/v.test('a')",
+        r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",
+        r"/([\q{a|b}]|){1,2}/v.test('a')",
         r"/([\q{a|b}]|){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
         r"/([\q{a}]|){1}/v.test('')",
@@ -120,9 +123,9 @@ fn complete_exactly_one_proofs_finish_finalizers_and_do_not_hide_deferred_leaves
     for source in [
         r"/(|[\q{ab}&&\q{cd}]){1}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){1}/v.test('')",
-        r"/([\q{a|b}]|){2,3}/v.test('a')",
-        r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",
-        r"/([\q{a|b}]|){1,2}/v.test('a')",
+        r"/([\q{a|b}]|){2,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/([\q{a|ab}&&a]|){2,99999999999999999999999999999999999999993}/v.test('aaa')",
+        r"/([\q{a|b}]|){1,99999999999999999999999999999999999999992}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,999999999999999999999999999999999999999}/v.test('a')",
         r"/(([\q{a|ab}&&a])|){1}/v.test('a')",
         r"/([\q{a|b}]|()){1}/v.test('a')",

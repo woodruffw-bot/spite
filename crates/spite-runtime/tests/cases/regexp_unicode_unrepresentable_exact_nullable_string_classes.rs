@@ -106,6 +106,7 @@ fn consumers_replacements_clones_and_collection_retain_overflowing_exact_capture
 fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
     let huge = "9".repeat(40);
     for source in [
+        r"/([\q{a|b}]|){2,3}/v.test('a')".to_owned(),
         r"/([\q{a|b}]|){999999999999999999999999999999999999999}/v.test('a')".to_owned(),
         format!(r"/(?<each>|[\q{{ab}}&&a]){{000{huge},0{huge}}}?/v.exec('X').groups.each===''"),
     ] {
@@ -138,7 +139,7 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
         );
     }
     for source in [
-        r"/([\q{a|b}]|){2,3}/v.test('a')",
+        r"/([\q{a|b}]|){2,99999999999999999999999999999999999999993}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,999999999999999999999999999999999999999}/v.test('a')",
     ] {
         assert!(

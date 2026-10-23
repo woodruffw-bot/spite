@@ -104,6 +104,8 @@ fn string_consumers_replacements_clones_and_collection_keep_undefined_empty_matc
 #[test]
 fn exact_zero_proofs_finish_finalizers_and_never_hide_unsupported_leaves_or_early_errors() {
     for source in [
+        r"/([\q{a|b}]|){2,3}/v.test('a')",
+        r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",
         r"/([\q{a|b}]|){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
         r"/([\q{a}]|){0}/v.test('')",
@@ -127,8 +129,8 @@ fn exact_zero_proofs_finish_finalizers_and_never_hide_unsupported_leaves_or_earl
     for source in [
         r"/(|[\q{ab}&&\q{cd}]){0}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){0}/v.test('')",
-        r"/([\q{a|b}]|){2,3}/v.test('a')",
-        r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",
+        r"/([\q{a|b}]|){2,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/([\q{a|ab}&&a]|){2,99999999999999999999999999999999999999993}/v.test('aaa')",
         r"/(([\q{a|ab}&&a])|){0}/v.test('a')",
         r"/([\q{a|b}]|()){0}/v.test('a')",
         r"/([\q{a|ab}&&a]||){0}/v.test('a')",

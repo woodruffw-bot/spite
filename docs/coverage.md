@@ -17001,3 +17001,33 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime represented positive finite nullable string-class ranges
+
+Runtime selects the singleton-q and character-result represented positive finite
+range proofs after overflowing exact counts. Six integration groups cover exact
+optional budgets versus mandatory branch priority, lazy stopping, earliest
+cross-phase candidates, required empty captures, outside word/line gates,
+supplementary folding and original ranges, largest represented bounds,
+enclosing captures, escaped names, frozen lastIndex, String consumers and
+replacements, clones/collection, former Unsupported finalizers, complete
+unknown/string leaf proof, remaining overflowing bounds and partial atom shapes,
+early errors, 1,000 complete wrappers, long discarded words and 20,000 leading
+count zeros under defaults, and atomic opt-in construction/search aborts with a
+short-match probe over the same argument. Earlier finite-range rejection
+controls now complete with exact values and finalizer effects; remaining controls
+use overflowing upper bounds.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including captures, undefined markers, named-key
+presence/order, original indices, sticky starts and lastIndex. Original Node
+differs on 388 ignoreCase singleton-q folding records (228 Latin and 160
+supplementary Deseret), matching the documented defect without a new exception.
+Largest represented bounds have separate direct specification cases.
+
+Stable passes all 425 Runtime unit cases, 137 focused nullable integration cases,
+and 1,443 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 503 case files and 4,090 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
