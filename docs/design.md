@@ -10081,6 +10081,30 @@ collection and opt-in host-abort propagation reuse existing paths. Former
 Unsupported overflowing-maximum expressions complete finalizers normally; ranges
 whose lower and upper bounds both overflow retain separate proofs.
 
+## Finite nullable string-class ranges with two overflowing bounds
+
+Separate Core entries prove {m,n} around a raw empty alternative and a bare
+singleton-q or character-result v/vi class when both bounds exceed native storage
+and are numerically unequal. Borrowed endpoint comparison trims leading zeros;
+decimal subtraction retains the exact optional budget n-m when represented.
+The existing finite optional-phase state also covers one-unit differences across
+arbitrarily long decimal borrows. An overflowing difference exceeds every possible
+input character count and needs no additional limit state.
+
+Every consumed character can be mandatory below the overflowing minimum.
+Character-first priority therefore chooses descending accepted endpoints
+independently of source laziness. Empty-first choices preserve optional progress,
+lazy stopping and earliest cross-phase candidates. Existing capture projection
+retains final required empty or original character ranges (22.2.2.3). Complete
+wrappers and canonical outside word/line gates reuse existing linear search.
+Every class operand is compiled before matching, including discarded words and
+empty-first alternatives; unknown leaves and partial captures remain separate.
+
+The constructor precharges comparison/subtraction and reuses borrowed decimal
+storage, checked class allocation and flat clone/drop. Earlier constructor domains,
+exact work traces, dependencies and resource defaults are unchanged. Runtime
+selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

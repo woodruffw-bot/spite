@@ -673,6 +673,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect represented positive finite nullable string-class ranges to Runtime RegExp captures and String consumers, preserving exact optional budgets, earliest cross-phase candidates, mandatory empty captures, original UTF-16 ranges, named indices, lastIndex, and eval finalizers.
 - [x] Compile nullable singleton-q and character-result v ranges with a represented positive minimum and overflowing finite maximum, retaining exact decimal optional budgets, source priority, final captures, and complete leaf proof.
 - [x] Connect overflowing-maximum nullable string-class ranges to Runtime RegExp captures and String consumers, preserving exact optional budgets across the native limit, earliest starts, mandatory empty captures, original source and UTF-16 indices, lastIndex, and eval finalizers.
+- [x] Compile finite nullable singleton-q and character-result v ranges with two overflowing unequal bounds, retaining exact decimal optional budgets, mandatory source priority independently of laziness, final empty/original character captures, and complete leaf proof.
+- [ ] Connect two-overflow-bound finite nullable string-class ranges to Runtime RegExp captures and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

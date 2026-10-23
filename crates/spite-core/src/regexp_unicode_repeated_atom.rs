@@ -2402,6 +2402,66 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles finite nullable singleton-q ranges with two overflowing unequal bounds.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a raw empty alternative under {m,n}.
+    /// Both finite bounds exceed native storage and are numerically unequal.
+    /// Borrowed decimal subtraction retains exact optional budgets, including
+    /// padded endpoints and differences that fit native storage. All consumed
+    /// characters can be mandatory: character-first priority is independent of
+    /// laziness, while empty-first choices retain optional progress and outside
+    /// word/line gates. Final captures and linear search reuse existing state.
+    /// Every class operand is proved before matching. Other counts, partial
+    /// captures and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_finite_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::UnrepresentableFinite,
+            charge,
+        )
+    }
+
+    /// Compiles finite nullable character-result ranges with two overflowing unequal bounds.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a raw empty alternative under {m,n}.
+    /// Both finite bounds exceed native storage and are numerically unequal.
+    /// Borrowed decimal subtraction retains exact optional budgets, including
+    /// padded endpoints and differences that fit native storage. All consumed
+    /// characters can be mandatory: character-first priority is independent of
+    /// laziness, while empty-first choices retain optional progress and outside
+    /// word/line gates. Final captures and linear search reuse existing state.
+    /// Every class operand is proved before matching. Other counts, partial
+    /// captures and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_finite_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::UnrepresentableFinite,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2528,6 +2588,30 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if bounds == NullableProof::UnrepresentableExact && !unrepresentable_exact {
                 continue;
             }
+            let unrepresentable_finite = if bounds == NullableProof::UnrepresentableFinite
+                && minimum.is_none()
+                && maximum.is_none()
+                && body.get(atom_end) == Some(&0x7b)
+            {
+                // Comma/zero-prefix scans, equality and borrowed subtraction
+                // take <=5N, including the native difference conversion.
+                charge((end - atom_end).saturating_mul(5))
+                    .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+                let digits = &body[atom_end + 1..end - 1];
+                digits
+                    .iter()
+                    .position(|&unit| unit == 0x2c)
+                    .and_then(|comma| {
+                        let first = significant(&digits[..comma]);
+                        let last = significant(&digits[comma + 1..]);
+                        (!last.is_empty() && first != last).then(|| decimal_difference(first, last))
+                    })
+            } else {
+                None
+            };
+            if bounds == NullableProof::UnrepresentableFinite && unrepresentable_finite.is_none() {
+                continue;
+            }
             let overflowing_maximum = if bounds == NullableProof::OverflowingMaximum
                 && minimum.is_some_and(|minimum| minimum > 0)
                 && maximum.is_none()
@@ -2582,7 +2666,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 continue;
             };
             let order = if order == EmptyBranchOrder::First {
-                if let Some(Some(optional)) = overflowing_maximum {
+                if let Some(Some(optional)) = overflowing_maximum.or(unrepresentable_finite) {
                     EmptyBranchOrder::FirstFiniteOptional(optional)
                 } else {
                     order
@@ -2606,10 +2690,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 atom: Atom::Class(atom),
                 minimum,
                 maximum,
-                // Every possible consumed character is mandatory below this
-                // exact overflowing count. Encode its branch order, so no
-                // optional-phase greediness can reorder those choices.
-                greedy: if unrepresentable_exact {
+                // An overflowing minimum leaves every consumed character
+                // potentially mandatory. Preserve character-first choices
+                // independently of optional-phase source greediness.
+                greedy: if unrepresentable_exact
+                    || (unrepresentable_finite.is_some() && order == EmptyBranchOrder::Last)
+                {
                     order == EmptyBranchOrder::Last
                 } else {
                     greedy

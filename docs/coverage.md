@@ -17092,3 +17092,34 @@ strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 504 case files and 4,096 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Core finite nullable string-class ranges with two overflowing bounds
+
+Separate Core entries prove {m,n} around a raw empty alternative and a singleton-q
+or character-result v/vi class when both finite bounds exceed native storage and
+are numerically unequal. Borrowed comparison trims leading zeros; decimal
+subtraction retains exact optional budgets, including small differences between
+overflowing endpoints. Character-first choices remain mandatory independently of
+laziness, while empty-first choices retain optional progress, earliest phases and
+outside gates. Existing linear search and final empty/original character capture
+projection reuse flat count state.
+
+Three Core groups compare an independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, eight overflowing
+range spellings, line/word gates, all starts and sticky/i/m modes. Coverage checks
+one/three-iteration optional budgets, represented and overflowing differences,
+earlier higher-phase candidates, supplementary actual-end ranges, mandatory
+empty captures, complete unknown/string leaf proof, other-bound rejection, every
+constructor callback's cancellation/recovery, 20,000 complete wrappers,
+20,000-character discarded words, 20,000 leading endpoint zeros and a one-unit
+difference borrowing across 20,000 digits with linear checked work and flat
+clone/drop. Finite oracle counts above every input character count preserve
+mandatory choices without traversing source-sized iteration counts.
+
+All 7,576 prior eight-string/five-class/twenty-five-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,103 Core and 425 Runtime unit cases and 160 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
