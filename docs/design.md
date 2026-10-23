@@ -10835,4 +10835,6 @@ consuming terms still decline. Strict class validation proves every leaf even
 when its character result is empty. Source copies are precharged before
 allocation, all group tables remain flat, and numeric counts never expand.
 Earlier repeated/nullable entry points retain their domains and work traces.
-Runtime selection remains a subsequent step.
+Runtime selects the single-iteration proof after repeated consuming captures and
+uses the same source-order projection, metadata and RegExp/String execution
+paths. No new result representation or capture history is required.
