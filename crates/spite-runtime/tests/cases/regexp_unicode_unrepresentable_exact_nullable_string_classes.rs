@@ -32,7 +32,7 @@ fn overflowing_exact_counts_keep_mandatory_source_priority_independent_of_greedi
 }
 
 #[test]
-fn numeric_endpoint_equality_preserves_original_source_and_rejects_unequal_ranges() {
+fn numeric_endpoint_equality_preserves_original_source_and_unequal_range_finalizers() {
     let huge = "9".repeat(40);
     check(&format!(
         "let r=/(?<each>[\\q{{a|b|ab}}&&\\p{{Any}}]|){{000{huge},0{huge}}}?/dvg,a=r.exec('abX'),b=r.exec('abX');r.source.includes('000{huge},0{huge}') && r.source.endsWith('?') && a[0]==='ab' && a.groups.each==='' && a.indices[1][0]===2 && b.index===2 && b[0]==='' && b.groups.each==='' && r.lastIndex===2"
@@ -43,8 +43,8 @@ fn numeric_endpoint_equality_preserves_original_source_and_rejects_unequal_range
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
-        assert!(matches!(realm.eval(&format!(r"marker=1;try{{/(|[\q{{a|b}}]){{{lower},{upper}}}/v.test('ab')}}catch{{marker=2}}finally{{marker=3}}")), Err(Error::Unsupported { .. })));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+        assert_eq!(realm.eval(&format!(r"marker=1;try{{/(|[\q{{a|b}}]){{{lower},{upper}}}/v.test('ab')}}catch{{marker=2}}finally{{marker=3}}")), Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     check(&format!(
         "let r=/(?<each>|[\\q{{ab}}&&a]){{{huge}}}/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{{writable:false}});let caught=false;try{{r.exec('😀')}}catch(e){{caught=e instanceof TypeError}}caught && r.lastIndex===1"
@@ -139,8 +139,8 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
         );
     }
     for source in [
-        r"/([\q{a|b}]|){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/([\q{a|ab}&&a]|){888888888888888888888888888888,999999999999999999999999999999999999999}/v.test('a')",
+        r"/(([\q{a|b}])|){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|){888888888888888888888888888888,999999999999999999999999999999999999999}/v.test('a')",
     ] {
         assert!(
             matches!(

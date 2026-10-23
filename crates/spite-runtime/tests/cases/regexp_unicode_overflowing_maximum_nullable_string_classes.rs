@@ -164,7 +164,7 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
             "{source}"
         );
     }
-    assert!(matches!(Realm::default().eval(r"/([\q{a|b}]|){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')"),Err(Error::Unsupported{..})));
+    assert!(matches!(Realm::default().eval(r"/(([\q{a|b}])|){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')"),Err(Error::Unsupported{..})));
     for pattern in [r"([^\q{ab}]|)", r"([\q{ab}&&a--a]|)", r"([\q{\d}&&a]|)"] {
         let source = JsString::from(
             format!(

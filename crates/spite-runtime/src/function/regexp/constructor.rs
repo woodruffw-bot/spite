@@ -1779,6 +1779,26 @@ impl Realm {
                     {
                         return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
                     }
+                    if let Some(body) = RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_v_set_with_single_character_strings_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
+                    }
+                    if let Some(body) = RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_finite_nullable_character_result_v_set_with_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    )
+                    .map_err(unicode_set_compile_error)?
+                    {
+                        return Ok(Some(RegExpMatcherBody::UnicodeRepeatedAtom(body)));
+                    }
                 }
                 Ok(None)
             })?;

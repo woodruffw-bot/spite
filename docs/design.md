@@ -10102,8 +10102,15 @@ empty-first alternatives; unknown leaves and partial captures remain separate.
 
 The constructor precharges comparison/subtraction and reuses borrowed decimal
 storage, checked class allocation and flat clone/drop. Earlier constructor domains,
-exact work traces, dependencies and resource defaults are unchanged. Runtime
-selection is separate.
+exact work traces, dependencies and resource defaults are unchanged.
+
+Runtime selects these two proofs after overflowing-maximum ranges. Existing
+capture projection, named indices and String consumers retain mandatory empty
+captures, original supplementary character ranges and earliest cross-phase
+matches. Original padded/lazy source metadata, lastIndex, cloning, collection and
+opt-in host-abort propagation reuse existing paths. Earlier unequal overflowing
+range expressions now complete their exact results and finalizers; partial
+capture/empty-branch shapes and unknown class leaves retain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 

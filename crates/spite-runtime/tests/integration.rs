@@ -873,6 +873,8 @@ mod regexp_unicode_unrepresentable_exact_nullable_alternatives;
 mod regexp_unicode_unrepresentable_exact_nullable_string_classes;
 #[path = "cases/regexp_unicode_unrepresentable_finite_nullable_alternatives.rs"]
 mod regexp_unicode_unrepresentable_finite_nullable_alternatives;
+#[path = "cases/regexp_unicode_unrepresentable_finite_nullable_string_classes.rs"]
+mod regexp_unicode_unrepresentable_finite_nullable_string_classes;
 #[path = "cases/regexp_unicode_uppercase_properties.rs"]
 mod regexp_unicode_uppercase_properties;
 #[path = "cases/regexp_unicode_v_sets.rs"]
