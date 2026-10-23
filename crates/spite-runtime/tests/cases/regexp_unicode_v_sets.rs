@@ -9183,8 +9183,10 @@ fn wrapped_single_character_v_string_repetition_state_context_and_consumers() {
             "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
         ));
     }
-    {
-        let source = r"/([\q{a}]|)+/v.test('a')";
+    for source in [
+        r"/([\q{a}]|)+/v.test('a')",
+        r"/([\q{a}&&[]&&\q{bc}]){0}/v.test('')",
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert_eq!(
@@ -9209,7 +9211,6 @@ fn wrapped_single_character_v_string_repetition_state_context_and_consumers() {
         r"/a([\q{b}])+/v.test('ab')",
         r"/([\q{}]){0}/v.test('')",
         r"/([\q{a|bc}]){0}/v.test('')",
-        r"/([\q{a}&&[]&&\q{bc}]){0}/v.test('')",
         r"/([\q{a}--a--\p{RGI_Emoji}]){0}/v.test('')",
         r"/\b^([\q{a}])+/v.test('a')",
         r"/([\q{a}])+$$/v.test('a')",

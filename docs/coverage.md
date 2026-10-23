@@ -16547,3 +16547,28 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime repeated character-result capture wrappers
+
+Runtime selects the wrapped character-result proof after the unwrapped proof.
+Six integration groups cover complete inner versus enclosing captures,
+greedy/lazy/bounded final iterations, supplementary escaped names, noncapturing
+wrappers, undefined zero-iteration captures and present named keys, huge bounds,
+supplementary case folding, paired/lone/braced surrogates, strict lastIndex writes,
+String consumers and replacements using numeric/named captures, clones/collection,
+former Unsupported finalizers, complete zero-bound proof, remaining atom shapes,
+early errors, 1,000 complete capture wrappers, long discarded words under defaults,
+and opt-in atomic construction/search aborts. The older wrapped singleton-q
+zero-count control migrates to its exact completion and finalizer expectations.
+
+All 23,688 complete capture records agree with independent character controls,
+including original ranges, final-iteration values, undefined captures, named-key
+presence/order, indices and lastIndex. Original Node differs on 84 ignoreCase
+singleton-q folding records (twenty Latin and sixty-four supplementary Deseret),
+matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases and 1,395 Unicode integration cases.
+The 124 affected/new integration cases pass their corrected focused replay.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.

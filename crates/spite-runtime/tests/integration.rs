@@ -869,6 +869,8 @@ mod regexp_unicode_whitespace_properties;
 mod regexp_unicode_word_asserted_whole_captures;
 #[path = "cases/regexp_unicode_word_assertions.rs"]
 mod regexp_unicode_word_assertions;
+#[path = "cases/regexp_unicode_wrapped_character_results.rs"]
+mod regexp_unicode_wrapped_character_results;
 #[path = "cases/regexp_unicode_xid_continue_properties.rs"]
 mod regexp_unicode_xid_continue_properties;
 #[path = "cases/regexp_unicode_xid_start_properties.rs"]

@@ -9773,7 +9773,7 @@ must have a false static MayContainStrings result and an empty/long q member.
 Canonical optional outside word/line gates retain whole-repetition scope. Inner
 assertions, partial captures, alternatives, additional atoms, string properties,
 and conservative string results remain separate proofs, including under zero
-or impossible bounds. Runtime selection is a later step.
+or impossible bounds.
 
 Every complete inner capture selects the final original consumed character.
 Zero iterations leave those captures undefined, including when the projected
@@ -9787,6 +9787,13 @@ singleton-q constructor. Explicit class proof selection retains that entry's
 domain, callback sequence, and capture results. Existing checked interval/frame
 storage, error categories, flat search/clone/drop, allocation boundaries,
 dependencies and resource defaults are unchanged.
+
+Runtime selects the wrapped proof after unwrapped character-result repetition.
+The existing UnicodeRepeatedAtom body combines final-iteration inner captures
+with complete enclosing captures. Normalized named groups retain their original
+keys, including supplementary escaped names. Zero-iteration inner captures stay
+undefined in arrays, groups and indices, with named keys present. lastIndex,
+String consumers, cloned matchers and collection reuse their existing paths.
 
 ## Global intrinsic metadata and enumeration
 

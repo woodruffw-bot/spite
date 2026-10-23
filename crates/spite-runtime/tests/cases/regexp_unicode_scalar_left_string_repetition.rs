@@ -79,6 +79,7 @@ fn repeated_projection_string_consumers_clones_and_collection_keep_metadata_and_
 #[test]
 fn former_controls_finish_finalizers_and_zero_counts_still_require_complete_class_proof() {
     for (source, expected) in [
+        (r"/([\p{Any}--\q{ab}])+/v.test('ab')", true),
         (r"/[^\p{Any}--\q{ab}]+/v.test('ab')", false),
         (r"/[[a\q{ab}]&&[a-z]]+/v.test('ab')", true),
         (r"/[\p{Any}--\q{ab}]+/v.test('ab')", true),
@@ -98,7 +99,6 @@ fn former_controls_finish_finalizers_and_zero_counts_still_require_complete_clas
     }
     for source in [
         r"/[[]&&\q{ab}&&\p{RGI_Emoji}]{0}/v.test('')",
-        r"/([\p{Any}--\q{ab}])+/v.test('ab')",
         r"/[\p{Any}--\q{ab}]+[a]/v.test('aba')",
         r"/\b^[\p{Any}--\q{ab}]+/v.test('ab')",
     ] {

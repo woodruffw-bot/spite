@@ -91,6 +91,7 @@ fn consumers_clones_collection_and_direct_eval_retain_character_result_metadata(
 fn former_unsupported_results_complete_finalizers_while_conservative_and_unknown_operands_stay_distinct()
  {
     for (source, expected) in [
+        (r"/([\q{ab}&&a])+/v.test('ab')", false),
         (r"/[^\q{ab}&&a]/v.test('a')", true),
         (r"/[^\q{ab}&&a]{0}/v.test('')", true),
         (r"/[\q{a}&&[]&&\q{b|cd}]{0}/v.test('')", true),
@@ -112,7 +113,6 @@ fn former_unsupported_results_complete_finalizers_while_conservative_and_unknown
         r"/[\q{ab}--\q{ab}]*/v.test('')",
         r"/[[\q{ab}&&a]\q{ab}]+/v.test('ab')",
         r"/[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]{0}/v.test('')",
-        r"/([\q{ab}&&a])+/v.test('ab')",
         r"/\b^[\q{ab}&&a]+/v.test('ab')",
         r"/[\q{ab}&&a]+$\b/v.test('ab')",
         r"/[\q{ab}&&a]+[b]/v.test('ab')",
