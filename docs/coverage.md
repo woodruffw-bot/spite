@@ -16498,3 +16498,26 @@ groups pass focused replays. Workspace documentation tests, formatting, strict
 workspace Clippy, dependency policy, source/fixture inventories, and diff checks
 pass. Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and
 default resource policy are unchanged.
+
+## Pinned string-first character-result intersection fixtures
+
+Four whole unchanged generated originals add eight normal/strict variants for
+q strings intersected with a literal, digit range, digit escape, or
+ASCII_Hex_Digit property, followed by anchored positive repetition. Singleton
+members survive; the complete keycap string stays distinct from its first digit.
+All 3,277 original bytes, assertions, metadata and match/nonmatch arrays are
+preserved. The existing original regExpUtils.js helper, all sixteen helpers,
+license, revision, earlier manifest/review prefixes, and runtime defaults are
+unchanged. Surviving string-first differences and other string results remain
+outside this selection. All eight candidate modes pass with original helpers in
+fresh default realms.
+
+The inventory is 8,452 fixtures, sixteen helpers, 8,433 reviewed sources, and
+16,343 variants: 14,810 harness positives, 1,525 parse negatives, four raw
+positives, and four runtime negatives.
+
+Stable passes all 35 Test262 package tests, including the full 16,343-variant
+corpus with every non-passing count at zero. Formatting, strict workspace Clippy,
+dependency policy, fixture hashes and reviewed inventory assertions, workspace
+documentation tests, and diff checks pass. Runtime defaults, ordinary stacks,
+three-worker corpus execution, and earlier corpus entries are unchanged.

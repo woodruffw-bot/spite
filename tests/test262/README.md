@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8448 unmodified test fixtures and sixteen harness files come from
+These 8452 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,29 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## String-first character-result intersection fixtures
+
+Four whole unchanged generated originals add eight normal/strict variants for
+q strings intersected with a literal, digit range, digit escape, or
+ASCII_Hex_Digit property. Their false MayContainStrings result permits anchored
+character repetition. Singleton members survive the intersection; the complete
+multi-character keycap member remains distinct from its initial digit.
+
+All 3,277 original bytes, metadata, assertions, and match/nonmatch arrays are
+preserved. The existing unchanged regExpUtils.js helper, earlier inventory
+prefixes, all sixteen helpers, revision and license are unchanged. The complete
+originals pass eight normal/strict variants in fresh default realms. String-first
+subtractions and other surviving string results remain outside this selection.
+
+The current inventory contains 8,452 fixtures, sixteen helpers, 8,433 reviewed
+sources, and 16,343 variants: 14,810 harness positives, 1,525 parse negatives,
+four raw positives, and four runtime negatives.
+
+Stable passes all 35 Test262 package tests, including the complete 16,343-variant
+corpus with every non-passing count at zero. Formatting, strict workspace Clippy,
+dependency policy, fixture hashes and inventory assertions, documentation tests,
+and diff checks pass. Defaults, ordinary stacks, and three-worker execution are unchanged.
 
 ## Scalar-left UnicodeSets string-operation fixtures
 

@@ -8428,3 +8428,7 @@ test/built-ins/RegExp/unicodeSets/generated/character-difference-string-literal.
 test/built-ins/RegExp/unicodeSets/generated/character-intersection-string-literal.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/character-property-escape-difference-string-literal.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/character-property-escape-intersection-string-literal.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-class.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-class-escape.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character.js	-	-	-
+test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-property-escape.js	-	-	-
