@@ -877,6 +877,8 @@ mod regexp_unicode_surrogate_literals;
 mod regexp_unicode_terminal_punctuation_properties;
 #[path = "cases/regexp_unicode_unified_ideograph_properties.rs"]
 mod regexp_unicode_unified_ideograph_properties;
+#[path = "cases/regexp_unicode_unrepresentable_exact_grouped_empty_nullable_string_classes.rs"]
+mod regexp_unicode_unrepresentable_exact_grouped_empty_nullable_string_classes;
 #[path = "cases/regexp_unicode_unrepresentable_exact_nullable_alternatives.rs"]
 mod regexp_unicode_unrepresentable_exact_nullable_alternatives;
 #[path = "cases/regexp_unicode_unrepresentable_exact_nullable_string_classes.rs"]

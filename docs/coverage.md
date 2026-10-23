@@ -17532,3 +17532,36 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime overflowing exact counts beside grouped empty alternatives
+
+Runtime selects the singleton-q and character-result grouped-empty overflowing
+exact proofs after represented exact counts. Six integration groups cover padded
+numeric endpoint equality, deferred unequal overflowing ranges, mandatory source
+priority independently of greediness, required final empty captures, original
+source and lazy markers, outside word/line gates, supplementary folding and
+ranges, enclosing captures, escaped names, lone surrogates, frozen lastIndex,
+String consumers and replacements, clones/collection, former Unsupported
+finalizers, complete unknown/string leaf proof, remaining unequal bounds and
+partial/other-empty shapes, early errors, 1,000 complete capturing wrappers,
+long discarded words, 20,000-digit counts and 20,000 leading endpoint zeros under
+defaults, and atomic opt-in construction/search aborts with a short-match probe
+over the same argument. The earlier overflowing exact rejection completes with
+its exact value and finalizer effects; the remaining control requires unequal
+endpoints.
+
+All 28,576 complete result records across 76 pattern/control pairs agree with
+independent finite exact-count character controls. Sixteen mandatory iterations
+exceed every input's character count and preserve source choices, capture values,
+named-key presence/order, original indices, sticky starts and lastIndex.
+Literal/range/padded counts also have direct specification cases; no Node
+behavior exception is added.
+
+Stable passes all 425 Runtime unit cases, 208 affected integration cases, and
+1,497 Unicode integration cases. All 35 Test262 package tests pass in the
+conformance profile, including the unchanged full 16,343-variant corpus with
+every non-passing count at zero. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 512 case files and 4,144 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

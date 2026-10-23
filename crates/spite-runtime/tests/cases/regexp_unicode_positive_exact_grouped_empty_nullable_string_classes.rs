@@ -107,6 +107,7 @@ fn consumers_replacements_clones_and_collection_preserve_exact_count_results() {
 #[test]
 fn positive_exact_grouped_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
+        r"/([\q{a|b}]|(?:)){999999999999999999999999999999999999999}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){03,003}?/v.test('aaa')",
         r"/(?<each>(?:(?:))|[\q{ab}&&a]){0002}?/v.exec('X').groups.each===''",
@@ -135,7 +136,7 @@ fn positive_exact_grouped_proofs_finish_finalizers_and_keep_other_domains_deferr
         r"/([\q{a|ab}&&a]|(?:)){2}[b]/v.test('ab')",
         r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){999999999999999999999999999999999999999}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){999999999999999999999999999999999999999,9999999999999999999999999999999999999990}/v.test('a')",
     ] {
         assert!(
             matches!(

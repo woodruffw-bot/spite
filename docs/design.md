@@ -10292,7 +10292,15 @@ ranges. Every class leaf is compiled behind empty-first choices.
 Complete wrappers, borrowed group recovery, comparison work callbacks, checked
 class storage and flat clone/drop are reused. Counts never expand matching state.
 Earlier constructor domains/work traces, dependencies and resource defaults are
-unchanged. Runtime selection is separate.
+unchanged.
+
+Runtime selects the grouped-empty overflowing exact proofs after represented
+exact counts. Existing result projection and String consumers retain numeric
+endpoint equality, mandatory source priority and required final empty captures
+or original supplementary ranges. Source/flags, names and indices, lastIndex,
+clones/collection and opt-in host-abort propagation reuse existing paths. The
+earlier overflowing exact rejection completes with its exact value and finalizer
+effects; unequal overflowing ranges and other branch shapes remain separate.
 
 ## Global intrinsic metadata and enumeration
 
