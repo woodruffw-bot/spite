@@ -931,6 +931,8 @@ mod regexp_unicode_surrounding_line_string_class_captures;
 mod regexp_unicode_surrounding_word_string_class_captures;
 #[path = "cases/regexp_unicode_terminal_punctuation_properties.rs"]
 mod regexp_unicode_terminal_punctuation_properties;
+#[path = "cases/regexp_unicode_unconditional_assertion_string_class_captures.rs"]
+mod regexp_unicode_unconditional_assertion_string_class_captures;
 #[path = "cases/regexp_unicode_unified_ideograph_properties.rs"]
 mod regexp_unicode_unified_ideograph_properties;
 #[path = "cases/regexp_unicode_unrepresentable_exact_grouped_empty_nullable_string_classes.rs"]

@@ -188,13 +188,19 @@ fn nested_assertion_string_class_values_aliases_consumers_and_scope_preserve_ori
     check(&format!(
         "var r=new RegExp({pattern:?},'dvg');r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.layer===''&&m.groups.enclosing===''&&m.groups.part===''&&m.indices.groups.part[0]===5&&r.lastIndex===5"
     ));
+    check(
+        r"var marker=0,m;try{m=/(^()([\q{a|ab}])()$)()/dv.exec('ab')}finally{marker=3}marker===3&&m.length===6&&m[0]==='ab'&&m[1]==='ab'&&m[2]===''&&m[3]==='ab'&&m[4]===''&&m[5]===''&&m.indices[5][0]===2",
+    );
+    check(
+        r"var marker=0,m;try{m=/^\b\B((()([\q{a|ab}])()))$/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
+    );
     for pattern in [
         r"\b(^(\B()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])())$)\b",
         r"\b(^(\B()([\q{a|ab}])\1)$)\b",
         r"\b(^(\B()([\q{a|ab}])+())$)\b",
         r"\b(^(\B()[\q{a|ab}]|())$)\b",
-        r"(^()([\q{a|ab}])()$)()",
-        r"^\b\B((()([\q{a|ab}])()))$",
+        r"(^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)()",
+        r"^\b\B((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))$",
     ] {
         let mut realm = Realm::default();
         assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");

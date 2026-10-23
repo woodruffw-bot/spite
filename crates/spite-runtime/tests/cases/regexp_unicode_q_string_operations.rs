@@ -82,6 +82,7 @@ fn consumers_clones_and_collection_use_the_filtered_member_plan() {
 #[test]
 fn former_controls_complete_finalizers_and_non_q_algebra_and_early_errors_stay_distinct() {
     for (source, expected) in [
+        (r"/\b^[\q{ab}&&\q{ab}]/v.test('ab')", true),
         (r"/[\q{ab}&&\p{Any}]/v.test('ab')", false),
         (r"/[[\q{ab}]&&[\q{ab}]]/v.test('ab')", true),
         (r"/[\q{ab}&&\q{ab}]/v.test('ab')", true),
@@ -103,7 +104,7 @@ fn former_controls_complete_finalizers_and_non_q_algebra_and_early_errors_stay_d
         r"/[\q{ab}&&\q{cd}&&\p{RGI_Emoji}]/v.test('')",
         r"/[\q{ab}--\q{ab}]+/v.test('ab')",
         r"/[\q{ab}--\q{ab}][a]/v.test('aba')",
-        r"/\b^[\q{ab}&&\q{ab}]/v.test('ab')",
+        r"/\b^[\q{ab}&&\q{ab}&&\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
             matches!(

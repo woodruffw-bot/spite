@@ -78,6 +78,7 @@ fn consumers_clones_and_collection_use_the_positive_nested_plan() {
 #[test]
 fn former_controls_complete_finalizers_and_other_algebra_remains_pending() {
     for (source, expected) in [
+        (r"/\b^[[\q{ab}]]/v.test('ab')", true),
         (r"/[[\q{ab}]--[a-z]]/v.test('ab')", true),
         (r"/[[\q{ab}]&&[\q{ab}]]/v.test('ab')", true),
         (r"/[[\q{ab}]]/v.test('ab')", true),
@@ -102,7 +103,7 @@ fn former_controls_complete_finalizers_and_other_algebra_remains_pending() {
         r"/[[\q{ab}]]+/v.test('ab')",
         r"/[[\q{ab}]][a]/v.test('aba')",
         r"/(?:[[\q{ab}]])+/v.test('ab')",
-        r"/\b^[[\q{ab}]]/v.test('ab')",
+        r"/\b^[[\q{ab}]&&\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
             matches!(

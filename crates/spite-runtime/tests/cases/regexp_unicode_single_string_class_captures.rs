@@ -172,9 +172,15 @@ fn single_string_class_proofs_finish_finalizers_and_keep_other_features_separate
     check(
         r"var marker=0,m;try{m=/()([\q{ab}&&\q{cd}])()/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
     );
+    check(
+        r"var marker=0,m;try{m=/^()\b([\q{a|ab}])/dv.exec('ab!')}finally{marker=3}marker===3&&m.length===3&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m.indices[2][1]===2",
+    );
+    check(
+        r"var marker=0,m;try{m=/()([\q{|ab}])\b()$/dv.exec('!ab')}finally{marker=3}marker===3&&m.length===4&&m.index===1&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===''&&m.indices[3][0]===3&&/()([\q{|ab}])\b()$/v.exec('!')===null",
+    );
     for pattern in [
-        r"^()\b([\q{a|ab}])",
-        r"()([\q{|ab}])\b()$",
+        r"^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
+        r"()([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])\b()$",
         r"()([\q{a|ab}])\1",
         r"()([\q{a|ab}])+()",
         r"()([\q{|ab}]){0}()",

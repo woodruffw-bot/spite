@@ -122,6 +122,8 @@ fn string_consumers_advance_empty_matches_by_original_unicode_character() {
 #[test]
 fn former_unsupported_patterns_complete_finalizers_but_unproved_patterns_do_not() {
     for (source, expected) in [
+        (r"/[\q{ab}]$\b/v.test('ab')", true),
+        (r"/\b^[\q{ab}]/v.test('ab')", true),
         (r"/[\q{}]/v.test('')", true),
         (r"/[\q{a|ab}]/v.test('ab')", true),
         (r"/[\q{\u{D800}\u{DC00}}]/v.test('𐀀')", false),
@@ -142,8 +144,8 @@ fn former_unsupported_patterns_complete_finalizers_but_unproved_patterns_do_not(
         r"/[\q{}]a/v.test('a')",
         r"/a[\q{ab}]/v.test('aab')",
         r"/([\q{ab}])x/v.test('abx')",
-        r"/\b^[\q{ab}]/v.test('ab')",
-        r"/[\q{ab}]$\b/v.test('ab')",
+        r"/\b^[\q{ab}&&\p{RGI_Emoji}]/v.test('ab')",
+        r"/[\q{ab}&&\p{RGI_Emoji}]$\b/v.test('ab')",
         r"/[\p{RGI_Emoji}]/v.test('😀')",
     ] {
         let mut realm = Realm::default();

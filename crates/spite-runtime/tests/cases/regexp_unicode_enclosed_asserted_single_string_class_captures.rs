@@ -157,12 +157,18 @@ fn enclosed_asserted_single_string_class_values_consumers_and_scope_keep_prefix_
     check(
         r"var marker=0,m;try{m=/((^()([\q{|a|ab}])()$))/dv.exec('')}finally{marker=3}marker===3&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===''&&m[5]===''&&m.indices[1][0]===0",
     );
+    check(
+        r"var marker=0,m;try{m=/((^()([\q{a|ab}])()$)())/dv.exec('ab')}finally{marker=3}marker===3&&m.length===7&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]==='ab'&&m[5]===''&&m[6]===''&&m.indices[6][0]===2",
+    );
+    check(
+        r"var marker=0,m;try{m=/(^()\b([\q{a|ab}])$)/dv.exec('ab')}finally{marker=3}marker===3&&m.length===4&&m[0]==='ab'&&m[1]==='ab'&&m[2]===''&&m[3]==='ab'&&m.indices[3][1]===2",
+    );
     for pattern in [
         r"(^()([\q{a|ab}])|())",
         r"(()([\q{a|ab}])|()$)",
         r"(^()([\q{a|ab}])()$)+",
-        r"((^()([\q{a|ab}])()$)())",
-        r"(^()\b([\q{a|ab}])$)",
+        r"((^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)())",
+        r"(^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])$)",
         r"(^()([\q{a|ab}])\1$)",
         r"(^()([\q{a|ab}])+()$)",
         r"(^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)",

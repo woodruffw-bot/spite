@@ -78,6 +78,7 @@ fn consumers_clones_and_collection_use_the_complete_interval_string_plan() {
 #[test]
 fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_stay_distinct() {
     for (source, expected) in [
+        (r"/\b^[\q{ab}\d]/v.test('ab')", true),
         (r"/[\q{ab}--\d]/v.test('ab')", true),
         (r"/[\q{ab}&&\p{Any}]/v.test('ab')", false),
         (r"/[a-z\q{ab}]/v.test('ab')", true),
@@ -99,7 +100,7 @@ fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_sta
         r"/[\q{ab}\d]+/v.test('ab')",
         r"/[\q{ab}\d]{0}/v.test('')",
         r"/[\q{ab}\d]x/v.test('abx')",
-        r"/\b^[\q{ab}\d]/v.test('ab')",
+        r"/\b^[\q{ab}\d\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
             matches!(

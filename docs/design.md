@@ -11167,5 +11167,8 @@ the entire shadow and original class compile successfully; unknown leaves,
 references and extra consuming terms cannot become supported through false gates.
 The new constructor precharges source-sized work and reuses the established
 allocation-free search and capture projection. Earlier public constructors retain
-their accepted domains and callback transcripts. Runtime sibling selection is a
-subsequent step.
+their accepted domains and callback transcripts. Runtime selects the sibling
+proof after the earlier nested-wrapper proof on the full normalized source. The
+same body owns all lexical slots, named index aliases, String consumers, Unicode
+progress and opt-in host abort behavior. Optional assertion groups and
+assertion-bearing choices continue to report separate host unsupported errors.

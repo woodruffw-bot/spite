@@ -189,9 +189,15 @@ fn asserted_single_string_class_proofs_finish_finalizers_and_keep_inner_scope_cl
     check(
         r"var marker=0,m;try{m=/()([\q{|ab}])$/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m.index===1&&m[1]===''&&m[2]===''&&m.indices[2][0]===1",
     );
+    check(
+        r"var marker=0,m;try{m=/^()\b([\q{a|ab}])$/dv.exec('ab')}finally{marker=3}marker===3&&m.length===3&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m.indices[2][1]===2&&/^()\b([\q{a|ab}])$/v.exec('ab!')===null",
+    );
+    check(
+        r"var marker=0,m;try{m=/()([\q{|ab}])\b()$/dv.exec('!ab')}finally{marker=3}marker===3&&m.length===4&&m.index===1&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===''&&m.indices[3][0]===3&&/()([\q{|ab}])\b()$/v.exec('!')===null",
+    );
     for pattern in [
-        r"^()\b([\q{a|ab}])$",
-        r"()([\q{|ab}])\b()$",
+        r"^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])$",
+        r"()([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])\b()$",
         r"^()([\q{a|ab}])\1$",
         r"^()([\q{a|ab}])+()$",
         r"^()([\q{|ab}]){0}()$",

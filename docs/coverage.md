@@ -19118,3 +19118,37 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime required assertion siblings around a single string class
+
+Three groups retain 27 class families, six layouts, line/word profiles and three
+mixed wrapper shapes with additional named assertion siblings. They verify all
+lexical values and index aliases, optional/later pure-empty masks, original
+source metadata and empty or contradictory results. Exact cases include positive
+empty counts beyond machine range, duplicate predicates, backspace escapes,
+shorter eligible words, supplementary inside-pair starts, escaped names, matchAll,
+callback replacement, search, split, clones and collection. A specification
+witness retains Unicode candidate boundaries after failed empty assertions.
+Sixteen old host-unsupported controls in eleven earlier files become exact
+success or normal-finalizer witnesses, including reordered outside gates;
+replacements retain unsupported class leaves. Deep
+prefixes, long words and opt-in constructor/exec aborts retain flat state and
+original bindings/lastIndex. Optional/zero-minimum assertion groups, assertion
+choices, reversed line gates, unknown leaves, references and class counts remain
+separate host-unsupported controls, including under false predicates.
+
+All 139,968 exact required-sibling differential records over 324 class/capture/
+gate pairs match independent finite-alternative native sticky controls with
+explicit Unicode candidate advancement and initial normalization. Six shapes
+include enclosing groups, duplicate/contradictory gates and positive counts;
+native controls replace huge pure-empty counts with equivalent bounded counts.
+Twelve fixed consumer programs and all sixteen migrated controls agree with
+native references. Stable passes all 431 Runtime unit cases. The full Unicode
+selection passes 1,586 cases; its six stale rejection groups pass after updating
+only their expectations, covering all 1,592 cases without further matcher changes.
+All three new groups pass. Workspace documentation tests, strict workspace Clippy,
+formatting, dependency policy, source/fixture inventories and diff checks pass.
+Runtime inventory is 542 case files and 4,298 integration cases. Corpus sources/
+helpers, snapshots, dependencies, intrinsic counts and default resource policy
+are unchanged.
