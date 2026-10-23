@@ -10134,7 +10134,14 @@ iterations keep inner captures undefined, and consumed iterations retain the
 last original character range (22.2.2.3). Branch priority, earliest starts and
 whole-repetition gates reuse existing kernels. Prior constructor domains/work
 traces, flat clone/drop, dependencies and resource defaults are unchanged.
-Runtime selection is separate.
+
+Runtime selects the grouped-empty proofs after raw nullable count proofs.
+Existing result projection preserves defined empty versus undefined inner
+captures and original supplementary ranges. Source/flags, names and indices,
+String consumers and replacements, lastIndex, clones/collection and opt-in
+host-abort propagation reuse existing paths. The former grouped-empty rejection
+completes with its exact value and finalizer effects; empty sequences/choices,
+quantified empty branches, braced counts and partial captures remain separate.
 
 ## Global intrinsic metadata and enumeration
 

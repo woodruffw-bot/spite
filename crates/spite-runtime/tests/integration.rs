@@ -735,6 +735,8 @@ mod regexp_unicode_noncapturing_branch_scoped_assertions;
 mod regexp_unicode_noncapturing_branch_sequence_words;
 #[path = "cases/regexp_unicode_noncapturing_empty_alternatives.rs"]
 mod regexp_unicode_noncapturing_empty_alternatives;
+#[path = "cases/regexp_unicode_noncapturing_empty_nullable_string_classes.rs"]
+mod regexp_unicode_noncapturing_empty_nullable_string_classes;
 #[path = "cases/regexp_unicode_noncapturing_empty_sequence_nullable_alternatives.rs"]
 mod regexp_unicode_noncapturing_empty_sequence_nullable_alternatives;
 #[path = "cases/regexp_unicode_noncharacter_properties.rs"]

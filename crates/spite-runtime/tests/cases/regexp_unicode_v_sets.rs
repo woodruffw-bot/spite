@@ -9415,7 +9415,7 @@ fn raw_empty_single_character_v_string_repetition_state_context_and_consumers() 
         r"/(([\q{a}])|){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
         r"/(([\q{a}])|)+/v.test('a')",
         r"/([\q{a}]|())+/v.test('a')",
-        r"/(?:[\q{a}]|(?:))+/v.test('a')",
+        r"/(?:[\q{a}]|(?:)(?:))+/v.test('a')",
         r"/([\q{a}]||)+/v.test('a')",
         r"/(|[\q{a}]|)+/v.test('a')",
         r"/([\q{a}]|b)+/v.test('ab')",

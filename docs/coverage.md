@@ -17183,3 +17183,32 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime nullable string classes beside nested noncapturing empty groups
+
+Runtime selects the singleton-q and character-result grouped-empty proofs after
+raw nullable count proofs. Six integration groups cover mandatory source priority
+and optional progress, greedy/lazy choices, required empty versus undefined
+captures, enclosing captures and named-key presence, outside word/line gates,
+supplementary folding and original ranges, lone surrogates, escaped names, frozen
+lastIndex, String consumers and replacements, clones/collection, former
+Unsupported finalizers, complete unknown/string leaf proof, remaining empty
+sequences/choices/quantifiers, braced bounds and partial captures, early errors,
+1,000 complete captures beside 1,000 nested empty groups in both branch orders,
+long discarded words under defaults, and atomic opt-in construction/search aborts
+with a short-match probe over the same argument. The earlier grouped-empty
+rejection now completes with its exact value and finalizer effects; its remaining
+control requires a sibling empty sequence.
+
+All 66,928 complete result records across 178 pattern/control pairs agree with
+independent character classes, including captures, undefined markers, named-key
+presence/order, original indices, sticky starts and lastIndex. Original Node
+differs on 528 ignoreCase singleton-q folding records (360 Latin and 168
+supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases, 172 affected integration cases, and
+1,461 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 506 case files and 4,108 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
