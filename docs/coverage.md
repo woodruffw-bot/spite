@@ -16621,3 +16621,31 @@ Stable passes all 425 Runtime unit cases and 1,401 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core zero-minimum braced nullable string classes
+
+Separate Core entries prove zero-minimum braced repetition of a raw empty
+alternative beside a singleton-q or character-result v/vi class. Complete
+wrappers, outside word/line gates, optional-empty progress checks, undefined
+zero-iteration captures, final original character ranges, and full class proof
+under exact zero reuse the existing representation and matcher. Exact/padded
+zero, finite/unbounded or overflowing upper bounds and lazy forms never expand
+source counts into matching state. Earlier simple-quantifier domains stay closed.
+Runtime selection is separate.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, nine count forms,
+line/word gates, all starts and sticky/i/m modes. They check supplementary case
+folding, paired/lone surrogate ranges, undefined zero captures, conservative
+string and unknown-property rejection under zero, closed proof domains,
+cancellation/recovery at every constructor callback, 20,000 complete wrappers,
+20,000-character discarded words and 20,000-digit upper bounds with linear
+checked construction work and flat clone/drop storage.
+
+All 2,584 prior eight-string/five-class/nine-repetition API construction, work,
+bounds, capture and match records remain unchanged. Stable passes all 1,079 Core
+and 425 Runtime unit cases and 194 affected Runtime integration cases. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories, and diff checks pass. Runtime selection, snapshots,
+corpus sources and helpers, dependencies, intrinsic counts, and default resource
+policy are unchanged.

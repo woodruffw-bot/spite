@@ -1937,6 +1937,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             ignore_case,
             multiline,
             ClassProof::SingleCharacterStrings,
+            NullableProof::Raw,
             charge,
         )
     }
@@ -1965,6 +1966,60 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             ignore_case,
             multiline,
             ClassProof::CharacterResultStrings,
+            NullableProof::Raw,
+            charge,
+        )
+    }
+
+    /// Compiles zero-minimum braced repetition of a singleton-q class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Only braced counts with a zero lower bound are admitted, including exact
+    /// zero, padded/overflowing upper bounds and lazy forms. Every q member must
+    /// be a single character. All leaves are compiled even under exact zero.
+    /// Optional empty iterations are rejected before exporting captures.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_zero_minimum_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::ZeroMinimum,
+            charge,
+        )
+    }
+
+    /// Compiles zero-minimum braced repetition of a character-result class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers surround one raw empty alternative beside a bare class whose
+    /// static MayContainStrings result is false and which contains an empty/long
+    /// q member. Canonical outside word/line gates retain whole-repetition scope.
+    /// Exact zero, padded/overflowing upper bounds and lazy forms preserve
+    /// progress checks, undefined zero-iteration captures and final original
+    /// character ranges. Every class operand is proved even under exact zero.
+    /// Positive lower bounds, simple quantifiers, branch-local captures,
+    /// grouped/extra empty branches and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_zero_minimum_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::ZeroMinimum,
             charge,
         )
     }
@@ -1974,14 +2029,21 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         ignore_case: bool,
         multiline: bool,
         proof: ClassProof,
+        bounds: NullableProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
         // Edge parity scans <=2N, both simple-token parity scans <=2N and
         // both opener/closing walks <=4N; reserve 2N for boundary recognition.
-        // Braced tokens decline before the general quantifier helper is called.
+        // Simple proofs decline braced tokens before the quantifier helper.
         charge(units.len().saturating_mul(10))
             .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        if bounds == NullableProof::ZeroMinimum {
+            // One full decimal parse and one simple-token retry take <=8N.
+            // Source counts are compared and retained without expansion.
+            charge(units.len().saturating_mul(8))
+                .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        }
         let start_anchor = units.first() == Some(&0x5e);
         let end_anchor = units.last() == Some(&0x24) && !escaped(units, units.len() - 1);
         let mut begin = usize::from(start_anchor);
@@ -2016,16 +2078,22 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             (Some(body.len()), true),
         ] {
             let Some(end) = end else { continue };
-            if !end
-                .checked_sub(1)
-                .and_then(|at| body.get(at))
-                .is_some_and(|unit| matches!(*unit, 0x2a | 0x2b | 0x3f))
+            if bounds == NullableProof::Raw
+                && !end
+                    .checked_sub(1)
+                    .and_then(|at| body.get(at))
+                    .is_some_and(|unit| matches!(*unit, 0x2a | 0x2b | 0x3f))
             {
                 continue;
             }
             let Some((atom_end, minimum, maximum)) = quantifier(body, end) else {
                 continue;
             };
+            if bounds == NullableProof::ZeroMinimum
+                && (minimum != Some(0) || body.get(atom_end) != Some(&0x7b))
+            {
+                continue;
+            }
             let (mut at, mut wrappers, mut captures) = (0, 0, 0);
             while body.get(at) == Some(&0x28) {
                 if body.get(at + 1) == Some(&0x3f) {

@@ -9826,6 +9826,30 @@ captures remain undefined in numeric/named results and indices. String consumers
 replacement callbacks, clones, collection, lastIndex and host-abort propagation
 reuse their existing paths.
 
+## Zero-minimum braced nullable string classes
+
+Separate Core entries admit braced counts with a zero lower bound around one raw
+empty alternative and one bare singleton-q or character-result v/vi class. The
+class proofs retain their separate domains. Complete ordinary/noncapturing
+wrappers and canonical outside word/line gates retain their existing scope.
+Positive lower bounds, simple quantifiers, branch-local captures/assertions,
+grouped/extra empty alternatives, and additional atoms remain separate proofs.
+
+Exact zero, padded counts, finite/unbounded upper bounds, upper bounds exceeding
+native integers, and lazy forms reuse the existing nullable repetition and
+capture representation. All iterations are optional, so RepeatMatcher's progress
+check rejects the raw empty branch before captures can escape. Zero iterations
+leave inner captures undefined; successful iterations retain the final original
+character range. Every class operand is still compiled under exact zero and
+behind empty-first alternatives. A projected q empty member never makes the
+character branch nullable.
+
+The shared borrowed framing/wrapper scan selects the new count proof explicitly
+and precharges its decimal scans. Counts, wrappers and captures never expand
+into matching state. Earlier constructors retain their domains, callback traces
+and results. Checked class storage, allocation boundaries, flat search/clone/drop,
+dependencies and resource defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
