@@ -9952,6 +9952,30 @@ even when the whole match consumed characters. lastIndex, cloning, collection
 and host-abort propagation reuse their existing paths. Former Unsupported {m,}
 expressions with larger minimums complete finalizers normally.
 
+## Representable positive exact nullable string-class counts
+
+Separate Core entries prove {m} and {m,m} repetition with a represented bound
+greater than one around a raw empty alternative and a bare singleton-q or
+character-result v/vi class. Padded bounds and lazy forms preserve complete
+ordinary/noncapturing wrappers and canonical outside word/line gates. Other
+counts, simple quantifiers, branch-local captures/assertions, grouped/extra empty
+alternatives and further atoms remain separate proofs. Every class operand is
+compiled even behind an empty-first mandatory choice.
+
+All iterations are mandatory. At each candidate input start, the existing matcher
+selects the longest accepted character run for character-first bodies and the
+shortest for empty-first bodies, independently of quantifier greediness. Fewer
+consumed decoded characters than the exact count leave a final required empty capture for
+character-first bodies. Empty-first bodies retain the last selected character
+when outside gates require consumption. Original supplementary ranges and
+complete enclosing captures keep their separate meanings.
+
+The shared borrowed framing/wrapper scan precharges decimal scans and retains
+exact bounds without expanding them. Earlier constructors keep their domains,
+work traces and results. Existing linear search, checked class storage,
+allocation boundaries, flat clone/drop, dependencies and resource defaults are
+unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

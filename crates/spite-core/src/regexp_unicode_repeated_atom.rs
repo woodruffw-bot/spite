@@ -2185,6 +2185,60 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles representable exact counts above one of a singleton-q class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Braced {m} and {m,m} require a represented bound greater than one,
+    /// including padded/lazy forms. Every iteration is mandatory, so source
+    /// branch priority determines empty/character captures independently of
+    /// greediness. Every q member must be a single character. Canonical outside
+    /// word/line gates retain whole-repetition scope and all leaves are compiled.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_exact_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::PositiveExact,
+            charge,
+        )
+    }
+
+    /// Compiles representable exact counts above one of a character-result class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a raw empty alternative and a bare class with a false
+    /// static MayContainStrings result and an empty/long q member. Braced {m}
+    /// and {m,m}, including padded/lazy forms, require a represented bound above
+    /// one. Mandatory source priority retains final empty or original character
+    /// captures independently of greediness. Canonical outside word/line gates
+    /// retain their scope and every leaf is compiled behind empty-first choices.
+    /// Other bounds, simple quantifiers, branch-local captures/assertions,
+    /// grouped/extra empty alternatives and additional atoms remain separate.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_exact_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::PositiveExact,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2273,6 +2327,13 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     || body.get(atom_end) != Some(&0x7b)
                     || end.checked_sub(2).and_then(|at| body.get(at)) != Some(&0x2c)
                     || body.get(end - 1) != Some(&0x7d))
+            {
+                continue;
+            }
+            if bounds == NullableProof::PositiveExact
+                && (!minimum.is_some_and(|minimum| minimum > 1)
+                    || minimum != maximum
+                    || body.get(atom_end) != Some(&0x7b))
             {
                 continue;
             }
