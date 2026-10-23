@@ -17155,3 +17155,31 @@ strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 505 case files and 4,102 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Core nullable string classes beside nested noncapturing empty groups
+
+Separate Core entries prove a bare singleton-q or character-result v/vi class
+beside an empty alternative made only of nested noncapturing groups under
+*, + or ?, including lazy forms. Complete capturing/noncapturing wrappers and
+canonical outside word/line gates retain their scope. One initial opener walk
+and one empty-first recovery pass distinguish branch groups from complete
+wrappers; edge scans prove the entire empty group and bare class. No repeated
+depth probes, native recursion or expanded capture storage are added.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, all six simple
+quantifier forms, outside line/word gates, all starts and sticky/i/m modes.
+Coverage checks several empty-group depths, required empty versus undefined
+captures, q payload separators, supplementary actual-end ranges, complete
+unknown/string leaf proof, raw/sequence/choice/quantified-empty and braced-bound
+rejection, every constructor callback's cancellation/recovery, 20,000 complete
+capturing wrappers beside 20,000 nested empty groups in both branch orders, and
+20,000-character discarded words with linear checked work and flat clone/drop.
+
+All 8,488 prior eight-string/five-class/twenty-seven-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,106 Core and 425 Runtime unit cases and 166 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

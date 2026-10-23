@@ -10112,6 +10112,30 @@ opt-in host-abort propagation reuse existing paths. Earlier unequal overflowing
 range expressions now complete their exact results and finalizers; partial
 capture/empty-branch shapes and unknown class leaves retain separate proofs.
 
+## Nullable string classes beside nested noncapturing empty groups
+
+Separate Core entries prove one bare singleton-q or character-result v/vi class
+and an empty branch made only of one or more nested noncapturing groups under
+*, + or ?, including lazy forms. Complete capturing/noncapturing wrappers and
+canonical outside word/line gates retain their existing scope. Sibling empty
+sequences, empty choices/quantifiers, branch-local captures/assertions, braced
+counts, further atoms and unknown class leaves retain separate proofs.
+
+The constructor walks initial openers once. When empty-first groups belong to
+the branch rather than complete repeated wrappers, one closing run recovers
+their noncapturing prefix without repeatedly probing each depth. Edge branch
+scans then prove the complete empty group and the entire remaining class,
+including q payload separators and discarded words. Construction precharges the
+additional linear scans and adds no recursion or expanded capture storage.
+
+Existing RepeatMatcher search rejects optional empty iterations before exporting
+captures. A required plus iteration keeps defined empty captures; skipped zero
+iterations keep inner captures undefined, and consumed iterations retain the
+last original character range (22.2.2.3). Branch priority, earliest starts and
+whole-repetition gates reuse existing kernels. Prior constructor domains/work
+traces, flat clone/drop, dependencies and resource defaults are unchanged.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
