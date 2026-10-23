@@ -11121,3 +11121,21 @@ Runtime selects this proof after surrounding line gates on the full normalized
 source. The same capture body retains lexical prefix names and original source
 metadata, including when contradictory gates select a never-matching plan.
 RegExp/String consumers and opt-in abort propagation stay shared.
+
+
+## Canonical assertion layers between complete class wrappers
+
+A separate Core constructor indexes group-closing positions with one v-aware
+pass, then advances inward through canonical assertion frames and complete
+ordinary wrappers. Nested classes and escape pairs remain opaque. Group lookup
+avoids rescanning bodies when gates interrupt the wrapper chain; all framing,
+source copies and prefix roles retain source-sized storage and bounded work.
+
+Predicates on each side accumulate as a conjunction (22.2.2.4). Complete wrapper
+captures retain lexical whole-range roles (22.2.2.7), even when a complete class
+capture itself becomes part of the recovered prefix. The entire remaining body
+must still pass the single-class proof. Contradictory word gates are lowered only
+after full class validation. Noncanonical layers, partial/quantified wrappers,
+root choices, inner assertions, references, counts and unknown leaves stay closed.
+Earlier constructors retain their domains and callbacks. Runtime nested-framing
+selection remains a subsequent step.

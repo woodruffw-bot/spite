@@ -19050,3 +19050,23 @@ groups. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. Runtime
 inventory is 540 case files and 4,292 integration cases. Corpus sources/helpers,
 snapshots, dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core assertion layers between complete string-class wrappers
+
+Three groups compare 27 class families, six layouts, ten inner and ten outer
+profiles, three middle profiles and three wrapper shapes against independent
+layer conjunction and capture-tree evaluation. Eight inputs, all starts and
+sticky/i/m modes retain duplicates, contradictions, empty members, shorter
+eligible words and Unicode ranges. A structural witness uses 20,000 individually
+gated captures with flat clone/drop; exact data includes nested class brackets
+and escaped parentheses. Every constructor/search callback cancellation prefix
+and recovery is checked. Unknown leaves and references still decline under
+contradictions, with root choices, partial/quantified wrappers, noncanonical
+layers, class counts and plain/earlier domains retained as closed controls.
+
+Stable passes all 1,212 Core unit cases and 431 Runtime unit cases. All 46,088
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.

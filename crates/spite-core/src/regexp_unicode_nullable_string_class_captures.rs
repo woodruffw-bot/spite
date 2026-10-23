@@ -636,6 +636,120 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves canonical assertion layers interleaved with complete wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. A single
+    /// v-aware delimiter pass indexes group ends; framing then advances inward
+    /// without rescanning nested bodies. Ordinary unquantified whole wrappers
+    /// preserve lexical whole-range captures (22.2.2.7). Canonical predicates on
+    /// each side form a conjunction (22.2.2.4), including false word conflicts.
+    /// Every retained class/body is proved before lowering a false conjunction.
+    /// Partial/quantified wrappers, root choices, inner assertions, references,
+    /// counts and unknown leaves retain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_nested_assertion_wrappers_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(32).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(closes) = single_v_group_closes(units) else {
+            return Ok(None);
+        };
+        let (mut begin, mut end, mut captures, mut wrappers) =
+            (0usize, units.len(), 0usize, 0usize);
+        let (mut start_line, mut end_line) = (false, false);
+        let (mut start_words, mut end_words) = (0u8, 0u8);
+        loop {
+            let Some(frame) = single_word_gate_frame(&units[begin..end]) else {
+                return Ok(None);
+            };
+            start_line |= frame.start_line;
+            end_line |= frame.end_line;
+            if let Some(word) = frame.start_word {
+                start_words |= if word { 1 } else { 2 };
+            }
+            if let Some(word) = frame.end_word {
+                end_words |= if word { 1 } else { 2 };
+            }
+            let base = begin;
+            begin = base + frame.body.start;
+            end = base + frame.body.end;
+            let tail = &units[begin..end];
+            let width = if tail.starts_with(&[0x28, 0x3f, 0x3a]) {
+                3
+            } else if tail.first() == Some(&0x28) && tail.get(1) != Some(&0x3f) {
+                1
+            } else {
+                break;
+            };
+            if closes.get(begin) != Some(&(end - 1)) {
+                break;
+            }
+            wrappers += 1;
+            captures += usize::from(width == 1);
+            begin += width;
+            end -= 1;
+        }
+        if wrappers == 0 || (!start_line && !end_line && start_words == 0 && end_words == 0) {
+            return Ok(None);
+        }
+        let payload = &units[begin..end];
+        let mut plan = if start_words == 3 || end_words == 3 {
+            let body = JsString::from_code_units(payload.to_vec());
+            let Some(mut plan) =
+                Self::compile_with_work(&body, ignore_case, multiline, &mut charge)?
+            else {
+                return Ok(None);
+            };
+            let never = JsString::from(r"\b[\q{}]\B");
+            let Some(never) = compile_string_class(&never, ignore_case, multiline, &mut charge)?
+            else {
+                return Ok(None);
+            };
+            plan.class = never;
+            plan
+        } else {
+            let mut canonical = Vec::with_capacity(units.len());
+            if start_line {
+                canonical.push(0x5e);
+            }
+            if start_words != 0 {
+                canonical.extend_from_slice(&[0x5c, if start_words == 1 { 0x62 } else { 0x42 }]);
+            }
+            canonical.extend_from_slice(payload);
+            if end_words != 0 {
+                canonical.extend_from_slice(&[0x5c, if end_words == 1 { 0x62 } else { 0x42 }]);
+            }
+            if end_line {
+                canonical.push(0x24);
+            }
+            let canonical = JsString::from_code_units(canonical);
+            let Some(plan) = Self::compile_with_outer_assertions_and_work(
+                &canonical,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+            else {
+                return Ok(None);
+            };
+            plan
+        };
+        if captures != 0 {
+            let mut roles = vec![CaptureRole::Iteration; captures];
+            roles.extend_from_slice(&plan.captures);
+            plan.captures = roles.into_boxed_slice();
+        }
+        Ok(Some(plan))
+    }
+
     fn compile_single<E>(
         source: &JsString,
         ignore_case: bool,
@@ -844,4 +958,41 @@ fn single_word_gate_frame(units: &[u16]) -> Option<SingleWordGateFrame> {
         start_word,
         end_word,
     })
+}
+
+// Group delimiters in validated v source are indexed once. Nested classes and
+// escape pairs remain opaque; ordinary-frame eligibility is checked separately.
+fn single_v_group_closes(units: &[u16]) -> Option<Vec<usize>> {
+    let mut closes = vec![0; units.len()];
+    let mut stack = Vec::new();
+    let (mut class, mut at) = (0usize, 0usize);
+    while let Some(&unit) = units.get(at) {
+        if unit == 0x5c {
+            units.get(at + 1)?;
+            at += 2;
+            continue;
+        }
+        if unit == 0x5b {
+            class += 1;
+            at += 1;
+            continue;
+        }
+        if class != 0 {
+            if unit == 0x5d {
+                class -= 1;
+            }
+            at += 1;
+            continue;
+        }
+        match unit {
+            0x28 => stack.push(at),
+            0x29 => {
+                let open = stack.pop()?;
+                closes[open] = at;
+            }
+            _ => {}
+        }
+        at += 1;
+    }
+    (class == 0 && stack.is_empty()).then_some(closes)
 }
