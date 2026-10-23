@@ -9764,6 +9764,30 @@ atoms; only zero-iteration repetition yields empty results. Names, indices,
 lastIndex, String consumers, and direct-eval completions keep their existing
 contracts. Former host Unsupported completions execute finalizers normally.
 
+## Captures inside repeated character-result classes
+
+A separate Core entry proves complete capturing/noncapturing wrappers around one
+bare character-result v/vi class, followed by one existing greedy/lazy quantifier.
+The caller validates the entire Pattern and normalizes named captures. The leaf
+must have a false static MayContainStrings result and an empty/long q member.
+Canonical optional outside word/line gates retain whole-repetition scope. Inner
+assertions, partial captures, alternatives, additional atoms, string properties,
+and conservative string results remain separate proofs, including under zero
+or impossible bounds. Runtime selection is a later step.
+
+Every complete inner capture selects the final original consumed character.
+Zero iterations leave those captures undefined, including when the projected
+class is empty. Noncapturing wrappers add no capture. The existing repeated-atom
+representation stores a capture count and one final-iteration range; captures
+and decimal counts never expand into matching state. Complete enclosing captures
+remain a caller proof and may cover the entire repeated range instead.
+
+The wrapped constructor shares borrowed framing/wrapper scans with the earlier
+singleton-q constructor. Explicit class proof selection retains that entry's
+domain, callback sequence, and capture results. Existing checked interval/frame
+storage, error categories, flat search/clone/drop, allocation boundaries,
+dependencies and resource defaults are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

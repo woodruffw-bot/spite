@@ -1770,6 +1770,50 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_wrapped_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            charge,
+        )
+    }
+
+    /// Compiles complete wrappers around one repeated character-result v class.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// ordinary/noncapturing wrapper surrounds a bare class with a false static
+    /// MayContainStrings result and an empty or longer q member, followed by one
+    /// existing greedy/lazy quantifier. Each inner capture selects the final
+    /// complete original character, or is undefined after zero iterations.
+    /// Canonical outside line/word gates apply to the entire repetition; outer
+    /// captures remain a caller proof. Partial groups, internal assertions, extra
+    /// atoms, string properties and conservative string results remain separate
+    /// proofs, including under zero or impossible bounds. Source stays borrowed
+    /// and counts/wrappers never expand into recursive matching storage.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_wrapped_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_wrapped_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            charge,
+        )
+    }
+
+    fn compile_wrapped_string_class_repetition_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        proof: ClassProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -1842,9 +1886,13 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }
             // A bare complete leaf prevents the class helper's optional ^/$
             // from accepting any assertion inside the repeated wrappers.
-            let Some(atom) = RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
-                leaf, ignore_case, false, &mut charge,
-            )? else { continue };
+            let atom = match proof {
+                ClassProof::Checked => RegExpUnicodeClassMatcher::compile_v_set_units_with_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::SingleCharacterStrings => RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::ScalarLeftStrings => RegExpUnicodeClassMatcher::compile_scalar_left_string_operations_units_with_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::CharacterResultStrings => RegExpUnicodeClassMatcher::compile_character_result_v_set_units_with_work(leaf, ignore_case, false, &mut charge),
+            };
+            let Some(atom) = atom? else { continue };
             return Ok(Some(Self {
                 atom: Atom::Class(atom),
                 minimum,

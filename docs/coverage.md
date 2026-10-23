@@ -16521,3 +16521,29 @@ corpus with every non-passing count at zero. Formatting, strict workspace Clippy
 dependency policy, fixture hashes and reviewed inventory assertions, workspace
 documentation tests, and diff checks pass. Runtime defaults, ordinary stacks,
 three-worker corpus execution, and earlier corpus entries are unchanged.
+
+## Core repeated character-result capture wrappers
+
+The wrapped proof admits complete ordinary/noncapturing wrappers around one
+character-result v/vi class and one existing quantifier. It requires validated
+input and normalized capture names. Each inner capture selects the last complete
+original character; zero iterations leave captures undefined. Outside word/line
+gates apply to the whole repetition. Counts, wrappers and captures stay flat,
+source stays borrowed, and Runtime selection is separate.
+
+Three Core groups compare an independent UTF-16/count endpoint oracle and final
+character decoder across six projected predicates, four wrapper layouts, seven
+quantifiers, line/word gates, all sticky/i/m modes and input starts. They cover
+supplementary case folding, paired/lone surrogate ranges, empty projected classes,
+zero/huge counts, capture absence, complete proof under zero bounds, closed
+constructor domains, every callback's cancellation/recovery, 20,000 complete
+capture wrappers, and 20,000-character discarded words with linear checked work
+and flat clone/drop storage.
+
+All 2,136 prior eight-string/five-class/seven-repetition API construction,
+bounds, captures, work, and match records remain unchanged. Stable passes all
+1,073 Core and 425 Runtime unit cases and 182 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

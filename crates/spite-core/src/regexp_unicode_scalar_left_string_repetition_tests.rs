@@ -3,6 +3,9 @@ use super::*;
 #[path = "regexp_unicode_character_result_repetition_tests.rs"]
 mod character_result;
 
+#[path = "regexp_unicode_wrapped_character_result_tests.rs"]
+mod wrapped_character_result;
+
 #[derive(Clone, Copy, Default)]
 struct Gates {
     anchors: bool,
@@ -33,6 +36,7 @@ fn fold(point: u32) -> u32 {
         65..=90 => point + 32,
         0x17f => 115,
         0x212a => 107,
+        0x10400..=0x10427 => point + 0x28,
         _ => point,
     }
 }
