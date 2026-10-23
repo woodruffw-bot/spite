@@ -96,6 +96,8 @@ fn complete_one_open_proofs_finish_finalizers_and_never_hide_unknown_or_string_l
     for source in [
         r"/([\q{a}]|){1,}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,}/v.test('aaa')",
+        r"/([\q{a|b}]|){1}/v.test('a')",
+        r"/([\q{a|b}]|){1,1}/v.test('a')",
         r"/(?<each>|[\q{ab}&&a]){1,}?/v.exec('X').groups.each===''",
     ] {
         let mut realm = Realm::default();
@@ -112,9 +114,9 @@ fn complete_one_open_proofs_finish_finalizers_and_never_hide_unknown_or_string_l
     for source in [
         r"/(|[\q{ab}&&\q{cd}]){1,}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){1,}?/v.test('')",
-        r"/([\q{a|b}]|){1}/v.test('a')",
+        r"/([\q{a|b}]|){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
-        r"/([\q{a|b}]|){1,1}/v.test('a')",
+        r"/([\q{a|b}]|){2,2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,999999999999999999999999999999999999999}/v.test('a')",
         r"/(([\q{a|ab}&&a])|){1,}/v.test('a')",
         r"/([\q{a|b}]|()){1,}/v.test('a')",

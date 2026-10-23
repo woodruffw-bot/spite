@@ -9910,7 +9910,12 @@ precharges decimal scans. Counts never expand into matching state. Earlier
 simple, zero-minimum and one-minimum-open constructors retain their domains,
 exact work traces and results. Checked class storage, allocation boundaries,
 flat clone/drop, dependencies and resource defaults are unchanged. Runtime
-selection is separate.
+selects the two exactly-one proofs after one-minimum open braced repetition.
+Existing capture projection combines selected empty/character inner ranges with
+complete enclosing captures. Normalized supplementary names, named indices,
+String consumers, replacement callbacks, lastIndex, clones, collection and host
+aborts reuse their existing paths. Former Unsupported {1}/{1,1} expressions
+complete finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 

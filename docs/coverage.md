@@ -16759,3 +16759,31 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime exactly-one braced nullable string classes
+
+Runtime selects the singleton-q and character-result {1}/{1,1} proofs after
+one-minimum open counts. Six integration groups cover padded and lazy spellings,
+mandatory source branch priority independently of greediness, outside word/line
+gates and backtracking, Latin long-s/Kelvin and supplementary folding, defined
+empty versus zero-count undefined captures, complete enclosing captures,
+supplementary escaped names, paired/lone/braced surrogates, frozen lastIndex,
+String consumers and replacements whose results distinguish exact from open
+counts, clones/collection, former Unsupported finalizers, complete leaf proof
+behind mandatory empty-first choices, remaining count/atom shapes, early errors,
+1,000 complete wrappers, long discarded words and 20,000 leading count zeros
+under defaults, and atomic opt-in construction/search aborts. Earlier {1}/{1,1}
+rejection controls now finish with their exact values and finalizer effects;
+remaining exact/range controls require larger counts.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including capture values, undefined markers,
+named-key presence/order, original indices, sticky starts and lastIndex. Original
+Node differs on 216 ignoreCase singleton-q folding records (152 Latin and
+64 supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases, 130 corrected focused integration
+cases, and 1,419 Unicode integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
+intrinsic counts, and default resource policy are unchanged.

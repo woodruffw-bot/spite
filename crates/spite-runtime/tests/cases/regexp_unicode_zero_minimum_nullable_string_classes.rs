@@ -107,6 +107,7 @@ fn exact_zero_proofs_finish_finalizers_and_never_hide_unsupported_leaves_or_earl
         r"/([\q{a}]|){0}/v.test('')",
         r"/([\q{a|b}]|){0}/v.test('aaa')",
         r"/([\q{a|ab}&&a]|){1,}/v.test('aaa')",
+        r"/([\q{a|b}]|){1}/v.test('a')",
         r"/(|[\q{ab}&&a]){0,}/v.test('')",
         r"/(?<each>[\q{ab}&&a]|){0}/v.exec('X').groups.each===undefined",
     ] {
@@ -124,7 +125,7 @@ fn exact_zero_proofs_finish_finalizers_and_never_hide_unsupported_leaves_or_earl
     for source in [
         r"/(|[\q{ab}&&\q{cd}]){0}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){0}/v.test('')",
-        r"/([\q{a|b}]|){1}/v.test('a')",
+        r"/([\q{a|b}]|){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
         r"/(([\q{a|ab}&&a])|){0}/v.test('a')",
         r"/([\q{a|b}]|()){0}/v.test('a')",
