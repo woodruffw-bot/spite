@@ -183,6 +183,7 @@ fn checked_v_set_error_categories_and_effects() {
         ));
     }
     for (pattern, expected) in [
+        (r"[[a--a]&&[\q{ab}]]", false),
         (r"[\q{}&&a]", false),
         (r"[a--a--\q{ab}]", false),
         (r"[a&&b&&\q{ab}]", false),
@@ -202,7 +203,6 @@ fn checked_v_set_error_categories_and_effects() {
     check(r"!/\b[a--b]\b/v.test('b')");
     for pattern in [
         r"[\p{RGI_Emoji}&&a]",
-        r"[[a--a]&&[\q{ab}]]",
         r"[[][^][\p{RGI_Emoji}]]",
         "([a--b])+",
     ] {
@@ -8489,6 +8489,7 @@ fn single_character_v_string_operands_state_context_and_consumers() {
         ));
     }
     for (source, expected) in [
+        (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),
         (r"/[\q{a|b}]+/v.test('ab')", true),
         (r"/[[\q{a|b}]]{0}/v.test('')", true),
         (r"/a[\q{b}]/v.test('ab')", true),
@@ -8521,7 +8522,6 @@ fn single_character_v_string_operands_state_context_and_consumers() {
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     for source in [
-        r"/[[a--a]&&[\q{ab}]]/v.test('a')",
         r"/[^\q{ab}&&a]/v.test('a')",
         r"/[[\q{a|b}]&&[\p{RGI_Emoji}]]/v.test('a')",
         r"/\b^[\q{a}&&a]/v.test('a')",

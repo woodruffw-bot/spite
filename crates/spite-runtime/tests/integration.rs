@@ -819,6 +819,8 @@ mod regexp_unicode_repeated_atom_word_boundaries;
 mod regexp_unicode_repeated_atoms;
 #[path = "cases/regexp_unicode_scalar_classes.rs"]
 mod regexp_unicode_scalar_classes;
+#[path = "cases/regexp_unicode_scalar_left_string_operations.rs"]
+mod regexp_unicode_scalar_left_string_operations;
 #[path = "cases/regexp_unicode_scalar_literals.rs"]
 mod regexp_unicode_scalar_literals;
 #[path = "cases/regexp_unicode_scalar_rhs_string_operations.rs"]

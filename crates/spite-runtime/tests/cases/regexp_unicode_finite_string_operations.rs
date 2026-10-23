@@ -81,6 +81,7 @@ fn consumers_clones_and_collection_keep_filtered_words_and_capture_metadata() {
 #[test]
 fn former_unsupported_controls_finish_finalizers_and_remaining_grammar_is_proved_completely() {
     for (source, expected) in [
+        (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),
         (r"/[[\q{ab}]--[^a]]/v.test('ab')", true),
         (r"/[[]&&[\q{ab}]&&[\p{Any}]]/v.test('')", false),
         (r"/[[\q{ab}]&&[a-z]]/v.test('ab')", false),
@@ -102,7 +103,6 @@ fn former_unsupported_controls_finish_finalizers_and_remaining_grammar_is_proved
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[[a--a]&&[\q{ab}]]/v.test('a')",
         r"/[[\q{ab}]--[\q{ab}]]+/v.test('ab')",
         r"/[[\q{ab}]--[\q{ab}]][a]/v.test('aba')",
         r"/\b^[[\q{ab}]&&[\q{ab}]]/v.test('ab')",

@@ -9675,7 +9675,7 @@ therefore a subset of that first character set. Later operands may contain neste
 unions, intersections, subtractions, scalar properties, ranges, and q disjunctions.
 At least one q member must be empty or longer. Whole-Pattern v/vi validation is
 required; string properties, root unions or negation, additional atoms, and
-repetition remain separate proofs. Runtime selection is a later step.
+repetition remain separate proofs.
 
 Character projection commutes with set union, intersection, and subtraction.
 Every q branch is decoded to its end, but only branches containing one character
@@ -9693,6 +9693,13 @@ stores a long word or expands scalar ranges. Scalar-first framing borrows source
 and preserves canonical outside word/line gates. Empty projected results remain
 consuming classes that never match, including on empty input. Deep parsing,
 search, clone, and drop remain iterative, and quotas and dependencies are unchanged.
+
+Runtime selects this proof after the string-set operation proofs and reuses the
+UnicodeClass matcher body, capture projection, and charged search dispatch. Every
+successful result consumes one complete original input character. Empty projected
+sets never produce an empty match, and retained q empty members cannot make a
+scalar-left result nullable. String consumers and cloned matchers share the same
+immutable interval plan.
 
 ## Global intrinsic metadata and enumeration
 

@@ -91,6 +91,8 @@ fn string_consumers_clones_and_collection_share_the_filtered_member_plan() {
 #[test]
 fn former_controls_complete_finalizers_while_remaining_domains_and_early_errors_stay_distinct() {
     for (source, expected) in [
+        (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),
+        (r"/[[a-z]&&\q{ab}]/v.test('ab')", false),
         (r"/[\q{ab}&&\p{Any}]/v.test('ab')", false),
         (r"/[\q{ab}--\d]/v.test('ab')", true),
         (r"/[[\q{ab}]--[a-z]]/v.test('ab')", true),
@@ -108,10 +110,8 @@ fn former_controls_complete_finalizers_while_remaining_domains_and_early_errors_
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[[a-z]&&\q{ab}]/v.test('ab')",
         r"/[\q{a|ab}&&[a-z\q{ab}]]/v.test('ab')",
         r"/[[]&&\p{Any}&&\p{RGI_Emoji}&&\q{ab}]/v.test('')",
-        r"/[[a--a]&&[\q{ab}]]/v.test('a')",
         r"/[\q{ab}--\d]+/v.test('ab')",
         r"/[\q{ab}--\d][a]/v.test('aba')",
         r"/\b^[\q{ab}--\d]/v.test('ab')",

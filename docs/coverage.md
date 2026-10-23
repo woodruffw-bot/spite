@@ -16341,3 +16341,28 @@ bound, and match records remain unchanged. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Runtime selection, snapshots, corpus sources and helpers,
 dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Runtime scalar-left UnicodeSets string operations
+
+Runtime selects scalar-left string operations after the string-set operation
+proofs, using the existing UnicodeClass body. Six integration groups cover
+projection through nested unions and operations, legal complements, literal and
+class-escape first operands, absence of empty matches, folded scalar/q equality,
+property complements, distinct whitespace and normalization, original-input
+names/indices and paired/lone/braced surrogates, strict lastIndex writes, String
+consumers, clones/collection, former Unsupported completions with finalizers,
+complete later-operand proof, remaining grammar and early errors, deep/long right
+operands under defaults, and opt-in aborts preserving assignment and lastIndex.
+
+All 13,680 complete result records agree with independent final-character
+controls, including captures, indices, and lastIndex. Original Node differs on
+98 records: 72 singleton-q folding and 26 ASCII-property folding records,
+consistent with the documented closure defects. Controls preserve the specified
+canonical membership without adding an exception.
+
+Stable passes all 425 Runtime unit cases and the final 1,377-case Unicode
+integration replay. The quota regression prepares a small case-sensitive plan so
+its unchanged opt-in allowance reaches the intended search cancellation.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
