@@ -10947,4 +10947,6 @@ the bounded class prefix before querying it. The empty branch guarantees success
 at that first valid boundary, so searching and sticky modes need no candidate
 history. Class programs share flat trie storage; captures clone/drop as flat
 source-sized data. Earlier constructor/search work traces remain unchanged.
-Runtime selection remains a subsequent step.
+Runtime selects the string-class proof after character-only root alternatives.
+A separate matcher body delegates bounded work and source-order projection;
+metadata, named indices, String consumers, clones and collection remain shared.

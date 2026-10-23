@@ -18676,3 +18676,32 @@ Workspace documentation tests, workspace/included-source formatting, strict
 workspace Clippy, dependency policy, source/fixture inventories and diff checks
 pass. Runtime selection, snapshots, corpus sources/helpers, dependencies,
 intrinsic counts and default resource policy are unchanged.
+
+
+## Runtime root captures for nonempty string-class results
+
+A separate runtime body selects nonempty-result string classes after the earlier
+character-only root proof. Five integration groups cover fourteen string-set
+classes, six mixed layouts and both orders. Longest members and original
+variable-width UTF-16 ranges retain character/empty/point/undefined capture
+participation and source-order named aliases. Supplementary/lone-surrogate words,
+folding, escaped names, scalar unions, finite operations and removed empty members
+retain existing class semantics. Classes that can consume empty strings remain
+unsupported by this projection. String consumers, callbacks, clones and
+collection preserve word ranges and Unicode empty advancement. Valid assertions,
+references, additional terms and unknown leaves remain host failures; early
+syntax errors remain JavaScript exceptions. Deep capture tables, a 20,000-character
+word and opt-in constructor/collection aborts remain flat and preserve original
+RegExp state under unchanged limits. One former root rejection control is
+preserved as a finite empty-set success with checked captures, indices and a
+completed finalizer.
+
+All 72,576 differential records across 168 pairs agree with independent finite
+ordinary-alternative/count controls over all starts and sticky/i/m modes. Two
+batches cover every string-set constructor family and retain longest-member
+priority, mixed capture slots and absent named group maps. Stable passes all 431
+Runtime unit cases and 327 affected integration cases. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. Runtime inventory is 533 case files and 4,263
+integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
+counts and default resource policy are unchanged.

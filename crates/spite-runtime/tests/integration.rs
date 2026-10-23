@@ -751,6 +751,8 @@ mod regexp_unicode_noncapturing_empty_nullable_string_classes;
 mod regexp_unicode_noncapturing_empty_sequence_nullable_alternatives;
 #[path = "cases/regexp_unicode_noncharacter_properties.rs"]
 mod regexp_unicode_noncharacter_properties;
+#[path = "cases/regexp_unicode_nonempty_string_root_captures.rs"]
+mod regexp_unicode_nonempty_string_root_captures;
 #[path = "cases/regexp_unicode_nullable_alternatives.rs"]
 mod regexp_unicode_nullable_alternatives;
 #[path = "cases/regexp_unicode_nullable_boundary_captures.rs"]

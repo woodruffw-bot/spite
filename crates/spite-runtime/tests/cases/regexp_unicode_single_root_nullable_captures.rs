@@ -169,7 +169,7 @@ fn root_nullable_proofs_finish_finalizers_and_keep_branch_assertions_in_scope() 
         r"([\q{a}])|()\1",
         r"([\q{a}])|([\q{b}])",
         r"([\q{a}])|()|()",
-        r"([\q{ab}&&\q{cd}])|()",
+        r"([\q{ab}&&\p{RGI_Emoji}])|()",
         r"()|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
     ] {
         let mut realm = Realm::default();

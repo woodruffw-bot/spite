@@ -17,9 +17,9 @@ use spite_core::{
     RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
     RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
     RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodeNullableClassCaptureMatcher,
-    RegExpUnicodePropertyDotMatcher, RegExpUnicodeRepeatedAtomMatcher,
-    RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeSetCompileError,
-    RegExpUnicodeStringSetMatcher, Span, regexp_outer_group_body,
+    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodePropertyDotMatcher,
+    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
+    RegExpUnicodeSetCompileError, RegExpUnicodeStringSetMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -2232,13 +2232,22 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeNullableClassCaptures(body)));
                 }
-                RegExpUnicodeNullableClassCaptureMatcher::compile_single_root_alternative_with_work(
+
+                if let Some(body) = RegExpUnicodeNullableClassCaptureMatcher::compile_single_root_alternative_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeNullableClassCaptures(body)));
+                }
+                RegExpUnicodeNullableStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeNullableClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeNullableStringClassCaptures))
 
             })?;
             if body.is_some() {
