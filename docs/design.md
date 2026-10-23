@@ -9580,9 +9580,11 @@ child classes contribute no members. An empty scalar portion is omitted from
 the new plan, preserving zero consumption bounds for q-only empty unions.
 Earlier flat constructors keep their exact domains and work callbacks. Outside
 assertions, simple folding, longest-member priority, and original UTF-16 ranges
-reuse the existing interval/trie matcher. Runtime selection remains a separate
-increment. Negated child classes, set operations, string properties, further
-atoms, and repetition remain deferred; dependencies and default quotas are unchanged.
+reuse the existing interval/trie matcher. Runtime selects this proof after the
+earlier flat entries and reuses their whole-body capture projection, search-work
+bounds, RegExpBuiltinExec, and String consumers. Negated child classes, set
+operations, string properties, further atoms, and repetition remain deferred;
+dependencies and default quotas are unchanged.
 
 ## Global intrinsic metadata and enumeration
 

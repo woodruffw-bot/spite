@@ -751,6 +751,8 @@ mod regexp_unicode_pattern_white_space_properties;
 mod regexp_unicode_positive_exact_nullable_alternatives;
 #[path = "cases/regexp_unicode_positive_finite_nullable_alternatives.rs"]
 mod regexp_unicode_positive_finite_nullable_alternatives;
+#[path = "cases/regexp_unicode_positive_nested_string_unions.rs"]
+mod regexp_unicode_positive_nested_string_unions;
 #[path = "cases/regexp_unicode_positive_open_nullable_alternatives.rs"]
 mod regexp_unicode_positive_open_nullable_alternatives;
 #[path = "cases/regexp_unicode_positive_pure_empty_sequences.rs"]

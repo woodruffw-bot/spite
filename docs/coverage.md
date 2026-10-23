@@ -16161,3 +16161,24 @@ UnicodeSets/string-class integration cases. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Runtime dispatch, snapshots, corpus sources and helpers,
 dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Runtime positive nested UnicodeSets string unions
+
+Runtime selects the positive nested proof after earlier flat entries. Six
+integration groups cover shared member priority, scalar siblings and empty
+children, escaped brackets, surrogate rewind, empty/consuming captures and indices,
+property folding and complements, line/word assertions, all String consumers,
+clone/collection, former Unsupported controls with finalizers, remaining grammar
+and early errors, opt-in host cancellation, and default execution of 3,000 nested
+classes. Existing result projection and work accounting are reused.
+
+A supplementary comparison agrees on all 11,016 complete records against
+ordinary-character, range/complement, and impossible-member controls. Original
+Node differs on eighteen singleton-q folding records, sixteen ASCII-property iv
+records, and sixteen braced-surrogate records, matching the documented engine
+issues. Captures, indices, and lastIndex are included in every comparison.
+
+Stable passes all 424 Runtime unit cases and 1,352 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.

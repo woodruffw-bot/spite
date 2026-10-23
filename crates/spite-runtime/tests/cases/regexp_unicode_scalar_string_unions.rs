@@ -93,7 +93,6 @@ fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_sta
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[[a-z]\q{ab}]/v.test('ab')",
         r"/[\q{ab}&&\p{Any}]/v.test('ab')",
         r"/[\q{ab}--\d]/v.test('ab')",
         r"/[\q{ab}\p{RGI_Emoji}]/v.test('ab')",

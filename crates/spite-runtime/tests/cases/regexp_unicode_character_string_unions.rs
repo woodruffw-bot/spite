@@ -72,7 +72,6 @@ fn former_controls_complete_finalizers_and_unproved_algebra_remains_unsupported(
         r"/[a&&\q{ab}]/v.test('ab')",
         r"/[\q{ab}&&a]/v.test('ab')",
         r"/[\q{ab}--a]/v.test('ab')",
-        r"/[\q{ab}[a]]/v.test('ab')",
         r"/[a\q{ab}]+/v.test('ab')",
         r"/[a\q{ab}]x/v.test('abx')",
     ] {

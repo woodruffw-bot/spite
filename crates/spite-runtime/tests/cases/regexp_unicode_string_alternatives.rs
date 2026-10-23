@@ -137,7 +137,6 @@ fn former_unsupported_patterns_complete_finalizers_but_unproved_patterns_do_not(
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[[\q{ab}]]/v.test('ab')",
         r"/[\q{ab}&&\q{ab}]/v.test('ab')",
         r"/[\q{ab}]+/v.test('ab')",
         r"/[\q{ab}]{0}/v.test('')",
