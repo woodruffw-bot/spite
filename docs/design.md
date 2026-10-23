@@ -10319,8 +10319,15 @@ original UTF-16 ranges, including supplementary actual-end trimming (22.2.2.3).
 Exact/open and overflowing bounds, partial captures, other empty-branch shapes
 and further atoms retain separate proofs. Counts and captures never expand
 matching state. Earlier domains/work traces, checked class storage, flat
-clone/drop, dependencies and resource defaults are unchanged. Runtime selection
-is separate.
+clone/drop, dependencies and resource defaults are unchanged.
+
+Runtime selects the grouped-empty represented finite proofs after overflowing
+exact counts. Existing capture projection and String consumers retain exact
+optional budgets, earliest cross-phase starts, required empty captures and
+original supplementary ranges. Padded/lazy source, names/indices, lastIndex,
+clones/collection and opt-in host-abort propagation reuse existing paths. Earlier
+finite-range rejections complete with exact values and finalizer effects;
+overflowing upper bounds and other branch shapes retain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 

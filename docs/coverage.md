@@ -17594,3 +17594,27 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime represented finite ranges beside grouped empty alternatives
+
+Runtime now selects represented positive finite ranges around a singleton-q or
+character-result v/vi class beside nested noncapturing empty groups. Six groups
+cover exact optional budgets, mandatory branch priority, earliest cross-phase
+starts, outside line/word gates, supplementary ranges, named captures and indices,
+padded/lazy source, lastIndex, String consumers, clones, collection, finalizers
+and opt-in host aborts. Earlier finite-range rejection controls now complete with
+their expected results and finalizer effects; overflowing maxima retain separate
+proofs.
+
+All 46,624 differential records across 124 pattern/control pairs agree with
+independent character-class controls, including all starts and sticky/i/m modes.
+Raw Node singleton-q ignoreCase results differ in 388 records (228 Latin and 160
+Deseret); character controls and the independent Core oracle agree with the
+specification's folding and original UTF-16 capture ranges.
+
+Stable passes all 425 Runtime unit cases, 214 affected integration cases and
+1,503 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories and diff
+checks pass. Runtime inventory is 513 case files and 4,150 integration cases.
+Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.

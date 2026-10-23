@@ -123,9 +123,9 @@ fn complete_grouped_one_open_proofs_finish_finalizers_and_keep_other_domains_def
         r"/([\q{a|ab}&&a]||(?:)){1,}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){1,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1,}[b]/v.test('ab')",
-        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
-        r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,99999999999999999999999999999999999999993}/v.test('a')",
+        r"/([\q{a|ab}&&a]|(?:)){1,99999999999999999999999999999999999999992}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,99999999999999999999999999999999999999993}/v.test('a')",
     ] {
         assert!(
             matches!(
