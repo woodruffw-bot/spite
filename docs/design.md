@@ -10329,6 +10329,24 @@ clones/collection and opt-in host-abort propagation reuse existing paths. Earlie
 finite-range rejections complete with exact values and finalizer effects;
 overflowing upper bounds and other branch shapes retain separate proofs.
 
+## Overflowing upper bounds beside grouped empty alternatives
+
+Separate Core constructors prove a represented positive lower bound and a finite
+upper bound beyond native storage around a singleton-q or character-result v/vi
+class beside nested noncapturing empty groups. The same complete wrapper, class
+and outside-gate proofs apply. Borrowed decimal subtraction preserves an exact
+optional budget when the difference fits native storage, including a difference
+of one across the native boundary. Larger differences cannot constrain the
+available input. Mandatory branch priority, greedy/lazy phases, earliest starts
+and required empty/original character captures follow RepeatMatcher (22.2.2.3).
+
+The constructors reuse the existing flat matcher and charge the nested-empty
+scan and decimal proof independently. Counts, groups and discarded strings do not
+expand state. Unknown class leaves remain unproved behind empty-first choices;
+both-overflowing finite bounds, partial captures and other empty shapes retain
+separate proofs. Prior constructor domains and work traces remain unchanged.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
