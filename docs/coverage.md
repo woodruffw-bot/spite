@@ -18933,3 +18933,29 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime complete wrappers around asserted single string-class captures
+
+Three groups cover 27 class families and six capture layouts under three line
+gate profiles and three mixed complete wrapper shapes. They check every lexical
+named slot, whole/point/optional/later range, longest and empty member, prefix
+index alias, source metadata and unmatched-word case. Exact examples include
+shorter eligible words, empty endpoints, supplementary inside-pair starts,
+escaped wrapper names, callback/template replacement, split, search, matchAll,
+clones and collection. Deep prefixes, long-word search and opt-in constructor/
+exec aborts retain flat state. Finalizers complete normally for supported
+patterns; branch-local gates, quantified/partial wrappers, inner assertions,
+references, class counts and unknown leaves keep separate unsupported controls.
+
+All 139,968 exact complete-wrapper differential records over 324 class/capture/
+gate pairs match independent finite-alternative native sticky controls with
+explicit Unicode candidate advancement and initial normalization. Records cover
+eight inputs, all starts and sticky/i/m flags, retaining complete prefix values,
+lexical names, every index and lastIndex. Nine fixed consumer programs match
+reference controls. Stable passes all 431 Runtime unit cases and all 1,580 Unicode
+RegExp integration cases, including the three new groups. Workspace documentation
+tests, strict workspace Clippy, formatting, dependency policy, source/fixture
+inventories and diff checks pass. Runtime inventory is 538 case files and 4,286
+integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
+counts and default resource policy are unchanged.

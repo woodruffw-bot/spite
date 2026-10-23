@@ -741,7 +741,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile canonical outside word/line assertions around single string-class captures, preserving scope, eligible shorter members, empty-member search, original endpoints and bounded work.
 - [x] Execute outside assertions around single string-class captures through Runtime RegExp and String consumers, preserving shorter eligible words, empty endpoint captures, m/i gates, Unicode starts and atomic opt-in aborts.
 - [x] Compile complete ordinary wrappers around asserted single string-class captures, preserving whole-range prefix slots, nested v-class delimiters, empty matches and linear recovery.
-- [ ] Execute complete wrappers around asserted single string-class captures through Runtime RegExp and String consumers.
+- [x] Execute complete wrappers around asserted single string-class captures through Runtime RegExp and String consumers, preserving lexical prefix slots, named aliases, empty ranges, Unicode progress and atomic host aborts.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

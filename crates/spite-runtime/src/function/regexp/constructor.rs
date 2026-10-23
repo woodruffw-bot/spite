@@ -2286,7 +2286,16 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeSingleStringClassCaptures(body)));
                 }
-                RegExpUnicodeSingleStringClassCaptureMatcher::compile_with_outer_assertions_and_work(
+
+                if let Some(body) = RegExpUnicodeSingleStringClassCaptureMatcher::compile_with_outer_assertions_and_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeSingleStringClassCaptures(body)));
+                }
+                RegExpUnicodeSingleStringClassCaptureMatcher::compile_enclosed_outer_assertions_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),

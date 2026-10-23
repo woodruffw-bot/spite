@@ -673,6 +673,8 @@ mod regexp_unicode_empty_literals;
 mod regexp_unicode_empty_sequence_nullable_string_classes;
 #[path = "cases/regexp_unicode_empty_string_root_captures.rs"]
 mod regexp_unicode_empty_string_root_captures;
+#[path = "cases/regexp_unicode_enclosed_asserted_single_string_class_captures.rs"]
+mod regexp_unicode_enclosed_asserted_single_string_class_captures;
 #[path = "cases/regexp_unicode_enclosing_pure_empty_patterns.rs"]
 mod regexp_unicode_enclosing_pure_empty_patterns;
 #[path = "cases/regexp_unicode_extended_pictographic_properties.rs"]

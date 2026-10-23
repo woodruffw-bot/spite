@@ -11074,4 +11074,10 @@ flat prefix of whole-range roles preserves original capture slots and defined
 empty ranges (22.2.2.7). No wrapper is peeled repeatedly; clone/drop remain flat.
 Construction precharges the original source scans, copy and prefix roles before
 allocation, then delegates body work unchanged. Earlier constructors retain their
-accepted domains and callbacks. Runtime wrapper selection remains a subsequent step.
+accepted domains and callbacks.
+
+Runtime selects complete-wrapper proof after ordinary outside assertions on the
+full normalized source. Prefix roles already own every original enclosing slot,
+so no generic enclosing captures are added again. Existing single-class result
+projection, named aliases, String consumers and opt-in abort propagation remain
+shared.
