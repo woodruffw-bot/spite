@@ -98,6 +98,7 @@ fn consumers_replacements_clones_and_collection_retain_exactly_one_branch_result
 #[test]
 fn exactly_one_grouped_empty_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
+        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:)){1}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){01,001}?/v.test('aaa')",
@@ -126,8 +127,8 @@ fn exactly_one_grouped_empty_proofs_finish_finalizers_and_keep_other_domains_def
         r"/(\b[\q{a|ab}&&a]|(?:)){1}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1}[b]/v.test('ab')",
         r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
     ] {
         assert!(
             matches!(

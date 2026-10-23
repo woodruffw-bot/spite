@@ -95,6 +95,7 @@ fn consumers_replacements_clones_and_collection_keep_final_required_empty_values
 #[test]
 fn complete_positive_open_grouped_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
+        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){03,}/v.test('aaa')",
         r"/(?<each>(?:(?:))|[\q{ab}&&a]){999999999999999999999999999999999999999,}?/v.exec('X').groups.each===''",
@@ -122,7 +123,7 @@ fn complete_positive_open_grouped_proofs_finish_finalizers_and_keep_other_domain
         r"/(\b[\q{a|ab}&&a]|(?:)){2,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2,}[b]/v.test('ab')",
         r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
     ] {
         assert!(

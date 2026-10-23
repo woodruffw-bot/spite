@@ -17472,3 +17472,33 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime represented positive exact counts beside grouped empty alternatives
+
+Runtime selects the singleton-q and character-result grouped-empty represented
+exact proofs after grouped-empty positive open counts. Six integration groups
+cover mandatory source priority independently of greediness, exact/equal-range
+and padded source, final required empty versus original character captures,
+largest represented counts, supplementary actual-end trimming and leading
+boundaries, outside word/line gates, folding, enclosing captures, escaped names,
+frozen lastIndex, String consumers and replacements, clones/collection, former
+Unsupported finalizers, complete unknown/string leaf proof, remaining unequal or
+overflowing counts and partial/other-empty shapes, early errors, 1,000 complete
+capturing wrappers, long discarded words and 20,000 leading count zeros under
+defaults, and atomic opt-in construction/search aborts with a short-match probe
+over the same argument. Earlier exact-two rejections complete with their exact
+values and finalizer effects; remaining controls require unequal finite bounds.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including captures, undefined markers, named-key
+presence/order, original indices, sticky starts and lastIndex. Original Node
+differs on 280 ignoreCase singleton-q folding records (152 Latin and 128
+supplementary Deseret), matching the documented defect without a new exception.
+Largest represented bounds have separate direct specification cases.
+
+Stable passes all 425 Runtime unit cases, 202 affected integration cases, and
+1,491 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 511 case files and 4,138 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

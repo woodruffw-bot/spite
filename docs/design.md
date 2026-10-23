@@ -10264,7 +10264,16 @@ ends. Every class leaf is compiled behind empty-first choices. Complete wrappers
 borrowed group recovery, work callbacks, checked class storage and flat clone/drop
 are reused. Other counts and partial/other-empty shapes retain separate proofs.
 Counts never expand matching state and earlier domains/work traces, dependencies
-and resource defaults are unchanged. Runtime selection is separate.
+and resource defaults are unchanged.
+
+Runtime selects the grouped-empty represented exact proofs after grouped-empty
+positive open counts. Existing capture projection and String consumers retain
+mandatory source order, final required empty captures and original supplementary
+ranges, including actual-end trimming and largest represented counts. Padded/lazy
+source, names/indices, lastIndex, clones/collection and opt-in host-abort
+propagation reuse existing paths. Earlier exact-count rejections complete with
+exact values and finalizer effects; unequal finite and overflowing exact counts
+and other branch shapes remain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 

@@ -85,6 +85,8 @@ fn grouped_empty_consumers_replacements_clones_and_collection_keep_empty_and_und
 #[test]
 fn grouped_empty_complete_proofs_finish_finalizers_and_keep_other_shapes_deferred() {
     for source in [
+        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
+        r"/([\q{a|ab}&&a]|(?:)){2}/v.test('a')",
         r"/([\q{a|b}]|(?:)){1}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1,}/v.test('a')",
@@ -117,8 +119,8 @@ fn grouped_empty_complete_proofs_finish_finalizers_and_keep_other_shapes_deferre
         r"/([\q{a|ab}&&a]||(?:))+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:))+/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:))+[b]/v.test('ab')",
-        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
-        r"/([\q{a|ab}&&a]|(?:)){2}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
+        r"/([\q{a|ab}&&a]|(?:)){2,3}/v.test('a')",
     ] {
         assert!(
             matches!(

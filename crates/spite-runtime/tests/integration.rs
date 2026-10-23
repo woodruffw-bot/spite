@@ -765,6 +765,8 @@ mod regexp_unicode_overflowing_maximum_nullable_string_classes;
 mod regexp_unicode_pattern_syntax_properties;
 #[path = "cases/regexp_unicode_pattern_white_space_properties.rs"]
 mod regexp_unicode_pattern_white_space_properties;
+#[path = "cases/regexp_unicode_positive_exact_grouped_empty_nullable_string_classes.rs"]
+mod regexp_unicode_positive_exact_grouped_empty_nullable_string_classes;
 #[path = "cases/regexp_unicode_positive_exact_nullable_alternatives.rs"]
 mod regexp_unicode_positive_exact_nullable_alternatives;
 #[path = "cases/regexp_unicode_positive_exact_nullable_string_classes.rs"]
