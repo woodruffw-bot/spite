@@ -9644,7 +9644,7 @@ one operand requires the scalar proof and a q member is empty or longer. Later
 finite operands remain eligible. Scalar operands include class/property escapes
 and q-free classes with ranges, nested algebra, or negation. Scalar-left sets,
 mixed scalar/q unions within a right operand, inner string operations, additional
-atoms, and repetition remain separate proofs. Runtime selection is a later step.
+atoms, and repetition remain separate proofs.
 
 Borrowed operand boundaries reuse the checked character compiler. Its new scalar
 entry admits flat classes without changing the earlier checked entry domains or
@@ -9660,6 +9660,12 @@ is prepaid, and checked marks reuse the existing operation application. Search
 retains the final active-word width, including zero for an empty result. Every
 later operand is still proved after an empty intermediate set. Search, clone,
 and drop keep their flat representation; default quotas and dependencies are unchanged.
+
+Runtime selects the scalar-right proof after the finite-only operation proof.
+It reuses the UnicodeStringSet body, enclosing capture projection, and existing
+search-work accounting. Zero-width bounds continue to distinguish an empty set
+from a retained empty member. Unsupported operands are still proved after an
+empty intermediate result and preserve the host-error completion category.
 
 ## Global intrinsic metadata and enumeration
 

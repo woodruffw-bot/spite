@@ -16294,3 +16294,26 @@ remain unchanged. Workspace documentation tests, formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories, and diff checks pass.
 Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
 counts, and default resource policy are unchanged.
+
+## Runtime scalar-right UnicodeSets string operations
+
+Runtime selects finite-left operations with scalar right operands after the
+finite-only proof. Seven integration groups cover complete-member filtering,
+finite/scalar chains, longest surviving words, folded property complements,
+Greek micro-sign closure, distinct space properties, outside assertions,
+original-input names/indices and surrogate boundaries, braced-surrogate identity,
+empty results versus empty members, strict lastIndex failures, String consumers,
+clones/collection, former Unsupported completions with finalizers, complete later
+operand proof, remaining domains and early errors, deep scalar operands under
+defaults, and opt-in construction/search aborts preserving prior state.
+
+All 15,040 complete result records agree with independent final-member controls,
+including captures, indices, and lastIndex. Original Node differs on 185 records:
+89 singleton-q folding, 64 ASCII-property folding, and 32 braced-surrogate identity
+records, matching the previously documented defects. Corrected controls retain
+edition-17 folding and complete-member identity without adding an exception.
+
+Stable passes all 425 Runtime unit cases and 1,371 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.

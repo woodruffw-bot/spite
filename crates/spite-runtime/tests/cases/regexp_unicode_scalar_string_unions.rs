@@ -78,6 +78,8 @@ fn consumers_clones_and_collection_use_the_complete_interval_string_plan() {
 #[test]
 fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_stay_distinct() {
     for (source, expected) in [
+        (r"/[\q{ab}--\d]/v.test('ab')", true),
+        (r"/[\q{ab}&&\p{Any}]/v.test('ab')", false),
         (r"/[a-z\q{ab}]/v.test('ab')", true),
         (r"/[\q{ab}\d]/v.test('ab')", true),
         (r"/[\q{ab}\d]/v.test('ac')", false),
@@ -93,8 +95,6 @@ fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_sta
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for source in [
-        r"/[\q{ab}&&\p{Any}]/v.test('ab')",
-        r"/[\q{ab}--\d]/v.test('ab')",
         r"/[\q{ab}\p{RGI_Emoji}]/v.test('ab')",
         r"/[\q{ab}\d]+/v.test('ab')",
         r"/[\q{ab}\d]{0}/v.test('')",
