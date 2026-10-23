@@ -11101,3 +11101,20 @@ body compilation, flat storage and earlier constructor work remain shared.
 Runtime selects this proof after enclosed assertions on the full normalized
 source. Prefix slots remain owned by the same matcher body, with shared named
 indices, String consumers, Unicode progress and opt-in abort propagation.
+
+
+## Word gates surrounding complete asserted-class wrappers
+
+A separate Core constructor combines canonical outer word/line assertions with
+complete wrappers and their retained canonical gates. Equal word predicates on
+the same side are idempotent; opposite predicates on that side are a false
+conjunction at the same input position (22.2.2.4). Line gates retain their existing
+conjunction semantics, and lexical prefix captures retain their original ranges.
+
+Contradictions still require the entire original class/body proof, including
+every leaf, reference and count check. Only after that proof does the plan replace
+the class with a fixed empty-word atom guarded by opposite word predicates. This
+reuses the existing matcher without adding per-match state or skipping unknown
+leaves. Consistent gates delegate ordinary assertion compilation. Flat wrapper
+recovery, source precharges and earlier constructor callbacks remain unchanged.
+Runtime surrounding-word selection remains a subsequent step.

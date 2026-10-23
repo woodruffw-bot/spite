@@ -537,6 +537,105 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves canonical word gates surrounding complete asserted-class wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Equal word
+    /// gates on the same side are idempotent; opposite word gates on that side
+    /// form a false conjunction (22.2.2.4). The complete retained class/body is
+    /// proved even for a contradiction before selecting a never-matching plan.
+    /// Complete lexical wrapper captures and original ranges remain unchanged.
+    /// Root choices, class counts, inner assertions and unknown leaves stay
+    /// separate proofs. At least one original outside word gate is required.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_surrounding_word_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(8).saturating_add(96))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(outer) = single_word_gate_frame(units) else {
+            return Ok(None);
+        };
+        if outer.start_word.is_none() && outer.end_word.is_none() {
+            return Ok(None);
+        }
+        let Some(wrapped) = units.get(outer.body) else {
+            return Ok(None);
+        };
+        let Some((body, captures)) = enclosed_v_group_body(wrapped) else {
+            return Ok(None);
+        };
+        let body = &wrapped[body];
+        let Some(inner) = single_word_gate_frame(body) else {
+            return Ok(None);
+        };
+        let Some(payload) = body.get(inner.body) else {
+            return Ok(None);
+        };
+        let conflict = outer
+            .start_word
+            .zip(inner.start_word)
+            .is_some_and(|(a, b)| a != b)
+            || outer
+                .end_word
+                .zip(inner.end_word)
+                .is_some_and(|(a, b)| a != b);
+        let mut plan = if conflict {
+            // Validate every original class leaf before lowering false gates.
+            let body = JsString::from_code_units(payload.to_vec());
+            let Some(mut plan) =
+                Self::compile_with_work(&body, ignore_case, multiline, &mut charge)?
+            else {
+                return Ok(None);
+            };
+            let never = JsString::from(r"\b[\q{}]\B");
+            let Some(never) = compile_string_class(&never, ignore_case, multiline, &mut charge)?
+            else {
+                return Ok(None);
+            };
+            plan.class = never;
+            plan
+        } else {
+            let mut canonical = Vec::with_capacity(units.len());
+            if outer.start_line || inner.start_line {
+                canonical.push(0x5e);
+            }
+            if let Some(word) = outer.start_word.or(inner.start_word) {
+                canonical.extend_from_slice(&[0x5c, if word { 0x62 } else { 0x42 }]);
+            }
+            canonical.extend_from_slice(payload);
+            if let Some(word) = outer.end_word.or(inner.end_word) {
+                canonical.extend_from_slice(&[0x5c, if word { 0x62 } else { 0x42 }]);
+            }
+            if outer.end_line || inner.end_line {
+                canonical.push(0x24);
+            }
+            let canonical = JsString::from_code_units(canonical);
+            let Some(plan) = Self::compile_with_outer_assertions_and_work(
+                &canonical,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+            else {
+                return Ok(None);
+            };
+            plan
+        };
+        if captures != 0 {
+            let mut roles = vec![CaptureRole::Iteration; captures];
+            roles.extend_from_slice(&plan.captures);
+            plan.captures = roles.into_boxed_slice();
+        }
+        Ok(Some(plan))
+    }
+
     fn compile_single<E>(
         source: &JsString,
         ignore_case: bool,
@@ -705,4 +804,44 @@ fn enclosed_v_group_body(units: &[u16]) -> Option<(Range<usize>, usize)> {
         begin += width;
     }
     Some((begin..units.len() - complete, captures))
+}
+
+struct SingleWordGateFrame {
+    body: Range<usize>,
+    start_line: bool,
+    end_line: bool,
+    start_word: Option<bool>,
+    end_word: Option<bool>,
+}
+fn single_word_gate_frame(units: &[u16]) -> Option<SingleWordGateFrame> {
+    let start_line = units.first() == Some(&0x5e);
+    let end_line = units.last() == Some(&0x24) && !super::escaped(units, units.len() - 1);
+    let mut begin = usize::from(start_line);
+    let mut end = units.len() - usize::from(end_line);
+    let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+        Some([0x5c, word @ (0x62 | 0x42)]) => {
+            begin += 2;
+            Some(*word == 0x62)
+        }
+        _ => None,
+    };
+    let end_word = if end >= begin + 2
+        && units[end - 2] == 0x5c
+        && matches!(units[end - 1], 0x62 | 0x42)
+        && !super::escaped(units, end - 2)
+    {
+        let word = units[end - 1] == 0x62;
+        end -= 2;
+        Some(word)
+    } else {
+        None
+    };
+    units.get(begin..end)?;
+    Some(SingleWordGateFrame {
+        body: begin..end,
+        start_line,
+        end_line,
+        start_word,
+        end_word,
+    })
 }
