@@ -148,7 +148,7 @@ fn complete_grouped_unequal_overflowing_proofs_finish_finalizers_and_prove_every
     for inner in [
         r"(?:(?:))|[\q{ab}&&\q{cd}]",
         r"(?:(?:))|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"([\q{a|b}])|(?:(?:)?)",
+        r"([\q{a|b}])|(?:|(?:)?)",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",

@@ -114,7 +114,7 @@ fn complete_positive_open_grouped_proofs_finish_finalizers_and_keep_other_domain
     for source in [
         r"/((?:)|[\q{ab}&&\q{cd}]){2,}/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){3,}/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:)?){2,}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:|)?){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",

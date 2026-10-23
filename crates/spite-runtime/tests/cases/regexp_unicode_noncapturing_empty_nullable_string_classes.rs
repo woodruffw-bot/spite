@@ -111,7 +111,7 @@ fn grouped_empty_complete_proofs_finish_finalizers_and_keep_other_shapes_deferre
     for source in [
         r"/((?:)|[\q{ab}&&\q{cd}])+/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])+?/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:)?)+/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:|)?)+/v.test('a')",
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",

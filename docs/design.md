@@ -10578,8 +10578,12 @@ outside gates and source-order capture roles. Earlier outer matcher semantics
 therefore retain mandatory priority, progress, optional budgets, required empty
 clearing and original ranges. Linear precharges cover count scans and span walks
 without expanding counts; clone/drop and storage remain flat and source-sized.
-Earlier constructors preserve their domains and work traces. Runtime selection
-is separate.
+Earlier constructors preserve their domains and work traces. Runtime selects this proof after unquantified noncapturing empty sequences.
+Existing projection and String consumers preserve character-only participation,
+required final empty clearing, source-order names/indices, original source and
+UTF-16 values, lastIndex, clones and collection. Former quantified-empty
+rejections complete their exact results and eval finalizers; opt-in host aborts
+preserve atomic state. Huge inner counts remain effect-free and flat.
 
 ## Global intrinsic metadata and enumeration
 

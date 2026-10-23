@@ -245,7 +245,7 @@ fn partial_noncapturing_capture_complete_proofs_finish_finalizers_and_keep_empty
     }
     for inner in [
         r"([\q{a|b}])|()?",
-        r"([\q{a|b}])|(?:)?",
+        r"([\q{a|b}])|(?:|)?",
         r"([\q{a|b}])|(?:(?:(?:))(?:)|(?:(?:))(?:))",
         r"([\q{a|b}])+|(?:(?:))(?:)",
         r"\b([\q{a|b}])|(?:(?:))(?:)",

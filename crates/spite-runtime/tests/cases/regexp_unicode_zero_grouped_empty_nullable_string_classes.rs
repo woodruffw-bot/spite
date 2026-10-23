@@ -125,7 +125,7 @@ fn zero_grouped_empty_proofs_finish_finalizers_and_prove_all_unreachable_leaves(
     for source in [
         r"/((?:)|[\q{ab}&&\q{cd}]){0}/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){0}/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:)?){0}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:|)?){0}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
