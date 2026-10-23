@@ -205,6 +205,9 @@ fn single_nullable_point_scope_guard_keeps_assertions_and_host_failures_separate
     check(
         r"var marker=0,value;try{var m=/()(?:[\q{a}]|)()/dv.exec('a');value=m[1]===''&&m.indices[2][0]===1}finally{marker=3}value&&marker===3",
     );
+    check(
+        r"var marker=0,m;try{m=/()(?:[\q{ab}&&\q{cd}]|)/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0",
+    );
     for pattern in [
         r"^()[\q{a}]|()",
         r"()[\q{a}]|()$",
@@ -214,7 +217,7 @@ fn single_nullable_point_scope_guard_keeps_assertions_and_host_failures_separate
         r"()(?:[\q{a}]|)\1",
         r"()(?:[\q{a}]|)x",
         r"()(?:[\q{a}][\q{b}]|)",
-        r"()(?:[\q{ab}&&\q{cd}]|)",
+        r"()(?:[\q{ab}&&\q{cd}&&\p{RGI_Emoji}]|)",
         r"()(?:[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|)",
     ] {
         let mut realm = Realm::default();
