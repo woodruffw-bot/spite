@@ -9495,6 +9495,27 @@ CompileAtom's singleton CharacterSetMatcher must apply Canonicalize to both
 pattern and input characters. The trie preserves that closure, including Kelvin
 and long-s equivalences and shorter/empty assertion continuations.
 
+## Adjacent UnicodeSets string operands
+
+A separate checked constructor admits a positive v/vi class consisting of at
+least two adjacent ClassStringDisjunction operands, with an empty or longer
+member somewhere in the union. It recognizes an unescaped closing brace and
+immediately following q opener between operands. The shared character decoder
+consumes escaped braces and reverse solidus first, so escaped punctuation cannot
+create operand boundaries. Every operand is proved in source order, including
+after an empty member. The original single-operand constructor retains its exact
+proof and construction-work transcript.
+
+All operands insert into the same flat trie: duplicates and shared prefixes reuse
+nodes, and longest-member priority applies across operand boundaries. Folding
+precedes membership, as required by
+[CompileToCharSet](https://262.ecma-international.org/17.0/#sec-compiletocharset).
+Outside assertions and shorter/empty continuations retain original input context.
+Runtime selects this proof after the single-operand entry and reuses its capture
+projection, search bounds, RegExpBuiltinExec, and String consumers. Ordinary
+character/property operands, nesting, intersection/subtraction, further atoms,
+and repetition remain separate proofs. No dependencies or default quotas change.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

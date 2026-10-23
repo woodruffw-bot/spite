@@ -7,6 +7,163 @@ fn compile(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatch
     .unwrap()
 }
 
+fn compile_union(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
+    RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+}
+
+#[test]
+fn adjacent_string_operands_share_longest_priority_and_independent_membership() {
+    let plain = Gates::default();
+    let cases: [(&str, &[&[u32]], Gates); 7] = [
+        (
+            r"[\q{a}\q{ab|abc}]",
+            &[&[97], &[97, 98], &[97, 98, 99]],
+            plain,
+        ),
+        (r"[\q{|}\q{ab|a}]", &[&[], &[], &[97, 98], &[97]], plain),
+        (
+            r"^\b[\q{a!}\q{a|}]\b$",
+            &[&[97, 33], &[97], &[]],
+            Gates {
+                m: true,
+                anchors: [true, true],
+                words: [Some(true), Some(true)],
+                ..plain
+            },
+        ),
+        (r"[\q{a\}}\q{\{b}]", &[&[97, 125], &[123, 98]], plain),
+        (
+            r"[\q{\uD83D\uDE00x}\q{🚀}]",
+            &[&[0x1f600, 120], &[0x1f680]],
+            plain,
+        ),
+        (
+            r"[\q{sK}\q{k|ßa}]",
+            &[&[115, 75], &[107], &[223, 97]],
+            Gates { i: true, ..plain },
+        ),
+        (
+            r"[\q{\u{D800}\u{DC00}}\q{ab}]",
+            &[&[0xd800, 0xdc00], &[97, 98]],
+            plain,
+        ),
+    ];
+    for (source, choices, gates) in cases {
+        assert!(compile(source, gates.i, gates.m).is_none(), "{source}");
+        let matcher = compile_union(source, gates.i, gates.m).unwrap();
+        for text in [
+            "",
+            "xabc!ab",
+            "a!",
+            "x\r\na\u{2028}z",
+            "a}{b",
+            "A😀x🚀",
+            "ſKẞA",
+            "𐀀ab",
+        ] {
+            let input = JsString::from(text);
+            for start in 0..=input.len() + 1 {
+                for sticky in [false, true] {
+                    assert_eq!(
+                        matcher.find(&input, start, sticky),
+                        oracle(&input, start, sticky, choices, gates),
+                        "{source} {text:?} start={start} sticky={sticky}"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn string_union_domain_requires_multiple_q_operands_and_a_variable_member() {
+    for source in [
+        r"[\q{ab}]",
+        r"[\q{}]",
+        r"[\q{a}\q{b}]",
+        r"[^\q{ab}\q{cd}]",
+        r"[[\q{ab}\q{cd}]]",
+        r"[\q{ab}a\q{cd}]",
+        r"[\q{ab}&&\q{cd}]",
+        r"[\q{ab}--\q{cd}]",
+        r"[\q{ab}\p{Any}]",
+        r"[\q{ab}\q{cd}]+",
+        r"[\q{ab}\q{cd}]x",
+        r"\b^[\q{ab}\q{cd}]",
+    ] {
+        assert!(compile_union(source, true, true).is_none(), "{source}");
+    }
+    let matcher = compile_union(r"[\q{}\q{}]", false, false).unwrap();
+    assert_eq!(matcher.max_match_code_units(), 0);
+    assert_eq!(matcher.find(&JsString::from("😀"), 1, true), Some(0..0));
+}
+
+#[test]
+fn string_union_checks_later_operands_after_empty_and_recovers_from_every_abort() {
+    let source = JsString::from(r"^\b[\q{}\q{ab|abc}\q{sK|ſk}]\b$");
+    let mut complete = Vec::new();
+    let matcher = RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+        &source,
+        true,
+        true,
+        |work| {
+            complete.push(work);
+            Ok::<(), usize>(())
+        },
+    )
+    .unwrap()
+    .unwrap();
+    for fail in 1..=complete.len() {
+        let mut seen = Vec::new();
+        let result = RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+            &source,
+            true,
+            true,
+            |work| {
+                seen.push(work);
+                if seen.len() == fail {
+                    Err(fail)
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(matches!(result,Err(RegExpUnicodeSetCompileError::Work(at)) if at==fail));
+        assert_eq!(seen, complete[..fail]);
+    }
+    let mut rebuilt = Vec::new();
+    let recovered = RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+        &source,
+        true,
+        true,
+        |work| {
+            rebuilt.push(work);
+            Ok::<(), usize>(())
+        },
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(rebuilt, complete);
+    assert_eq!(matcher.max_match_code_units(), 6);
+    for text in ["", "ab", "abc", "ſK", "x\r\nab\u{2028}y"] {
+        let input = JsString::from(text);
+        assert_eq!(
+            matcher.find(&input, 0, false),
+            recovered.find(&input, 0, false)
+        );
+    }
+    let source = format!("[{}]", r"\q{ab}".repeat(20_000));
+    let matcher = compile_union(&source, false, false).unwrap();
+    assert_eq!(matcher.max_match_code_units(), 4);
+    assert_eq!(matcher.find(&JsString::from("ab"), 0, true), Some(0..2));
+}
+
 #[derive(Clone, Copy, Default)]
 struct Gates {
     i: bool,

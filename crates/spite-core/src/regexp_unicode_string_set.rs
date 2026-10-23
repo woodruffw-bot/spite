@@ -12,12 +12,13 @@ use crate::{
 };
 use std::{collections::HashMap, ops::Range, sync::Arc};
 
-/// Immutable forward matcher for one complete v/vi `\q` string class.
+/// Immutable forward matcher for a complete positive v/vi `\q` string class.
 ///
-/// Requires complete validated v/vi Pattern input. The class has exactly one
-/// ClassStringDisjunction operand and at least one empty or multi-character
-/// alternative. Canonical outside line/word assertions are admitted. Captures,
-/// repetitions, further consuming terms, class algebra and string properties
+/// Requires complete validated v/vi Pattern input. Separate constructors prove
+/// one ClassStringDisjunction operand or a union of adjacent string operands,
+/// with at least one empty or multi-character alternative overall. Canonical
+/// outside line/word assertions are admitted. Captures,
+/// repetitions, further consuming terms, other class algebra and string properties
 /// remain separate caller proofs. Complete enclosing captures may be projected
 /// by the caller. Earlier character-only compilers retain their domains.
 #[derive(Clone, Debug)]
@@ -39,7 +40,7 @@ struct Program {
 }
 
 impl RegExpUnicodeStringSetMatcher {
-    /// Compiles the complete borrowed class with checked construction work.
+    /// Compiles a complete borrowed single-q class with checked construction work.
     ///
     /// The prefix trie preserves shared prefixes without source/input copies or
     /// recursive nodes. Both vector and hash-index growth reserve fallibly.
@@ -51,6 +52,33 @@ impl RegExpUnicodeStringSetMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain(source, ignore_case, multiline, false, charge)
+    }
+
+    /// Compiles a positive class consisting of at least two adjacent `\q`
+    /// operands, with at least one empty or multi-character member overall.
+    ///
+    /// The union shares prefix storage and longest-member priority across all
+    /// operands. Every complete operand is decoded in source order, including
+    /// after an empty member. Other class operands and set operations decline.
+    /// The standalone constructor retains its single-operand proof domain.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_string_union_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain(source, ignore_case, multiline, true, charge)
+    }
+
+    fn compile_domain<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        union: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -110,8 +138,13 @@ impl RegExpUnicodeStringSetMatcher {
         let mut length = 0usize;
         let mut max_characters = 0;
         let mut has_strings = false;
+        let mut has_union = false;
         loop {
-            if at == inner.len() || inner.get(at) == Some(&0x7c) {
+            // Only an unescaped closing brace followed immediately by another
+            // complete q prefix separates operands. The character decoder
+            // consumes escaped braces and backslashes before we reach here.
+            let next_operand = union && inner[at..].starts_with(&[0x7d, 0x5c, 0x71, 0x7b]);
+            if at == inner.len() || inner.get(at) == Some(&0x7c) || next_operand {
                 charge(1).map_err(RegExpUnicodeSetCompileError::Work)?;
                 terminal[node] = true;
                 has_strings |= length != 1;
@@ -121,7 +154,8 @@ impl RegExpUnicodeStringSetMatcher {
                 if at == inner.len() {
                     break;
                 }
-                at += 1;
+                at += if next_operand { 4 } else { 1 };
+                has_union |= next_operand;
                 continue;
             }
             let Some(point) = single_string_character(inner, &mut at) else {
@@ -172,7 +206,7 @@ impl RegExpUnicodeStringSetMatcher {
                 .checked_add(1)
                 .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
         }
-        if !has_strings {
+        if !has_strings || (union && !has_union) {
             return Ok(None);
         }
         Ok(Some(Self {

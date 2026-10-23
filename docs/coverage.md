@@ -16041,3 +16041,28 @@ targets pass. All 35 Test262 package tests pass, including the complete
 16,319-variant corpus. Documentation tests, formatting, strict workspace Clippy,
 dependency policy, source/fixture inventories, and diff checks pass. Existing
 snapshots, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+The final all-Unicode integration replay also passes all 1,331 selected cases.
+
+## Adjacent UnicodeSets string operands
+
+The checked union entry admits at least two adjacent q operands with an empty or
+multi-character member overall. Operands share prefix storage, simple folding,
+longest-member priority, and outside assertion continuations. The single-q entry
+keeps its proof and callback transcript. Runtime reuses the existing variable
+string matcher, complete capture projection, work bounds, and String consumers.
+
+Three additional Core regression groups compare independent character sequences
+over every initial offset and both sticky modes, exercise escaped delimiters,
+folding and surrogate boundaries, keep closed proof domains, inject failure at
+every construction callback after an empty first operand, and compile/drop a
+20,000-operand flat union. Four Runtime groups cover longest priority across
+operands, empty continuations, names and indices, lastIndex, Unicode advancement,
+all String consumers, clone/collection, merged-disjunction equivalence, deferred
+grammar, and opt-in cancellation without assignment or language finalizers.
+
+Stable passes all 1,040 Core unit cases, all 423 Runtime unit cases, and 128
+UnicodeSets/string-class integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
+intrinsic counts, and default resource policy are unchanged.

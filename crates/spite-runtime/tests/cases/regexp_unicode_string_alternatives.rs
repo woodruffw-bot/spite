@@ -139,7 +139,6 @@ fn former_unsupported_patterns_complete_finalizers_but_unproved_patterns_do_not(
     for source in [
         r"/[[\q{ab}]]/v.test('ab')",
         r"/[\q{ab}&&\q{ab}]/v.test('ab')",
-        r"/[\q{ab}\q{cd}]/v.test('ab')",
         r"/[\q{ab}a]/v.test('ab')",
         r"/[\q{ab}]+/v.test('ab')",
         r"/[\q{ab}]{0}/v.test('')",
