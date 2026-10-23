@@ -19175,3 +19175,35 @@ validate in native v/vi modes. Workspace documentation tests, strict workspace
 Clippy, formatting, dependency policy, source/fixture inventories and diff checks
 pass. No Runtime selection, corpus fixture, snapshot, dependency or default quota
 changes.
+
+
+## Runtime line predicates at either single-class endpoint
+
+Three groups retain 33 class/input witnesses, six capture layouts, three gate
+profiles and three enclosing shapes. Finite-alternative native references supply
+explicit expected strings for newline-bearing classes and empty or absent
+members. Every lexical value, named index alias, optional/later pure-empty mask,
+original source and sticky failure state is retained. Exact consumers cover
+non-multiline end/start gates, shorter newline members, empty-line conjunctions,
+huge positive empty counts, duplicate/false gates, supplementary initial offsets,
+escaped names, matchAll, callback replacement, search, split, clones and collection.
+Two earlier rejection controls become normal finalizer/null witnesses, with
+unknown-leaf replacements retained. Deep captures, long members and opt-in
+constructor/exec aborts preserve flat state and original bindings/lastIndex.
+Optional/zero-minimum assertions, assertion choices, references, class counts and
+unknown leaves remain separate host unsupported controls, including under false
+gates.
+
+All 230,400 exact endpoint-line differential records over 384 class/capture/gate
+pairs match independent finite-alternative native sticky controls with explicit
+Unicode candidate advancement and initial normalization. They cover 32 class
+families, twelve inputs, all starts and sticky/i/m flags, including positive
+counts and nested enclosing shapes. Twelve fixed consumer programs match native
+references; huge pure-empty counts use equivalent bounded reference counts.
+Stable passes all 431 Runtime unit cases and all 1,595 Unicode RegExp integration
+cases, including the three new groups. The conformance profile passes all 35
+harness/corpus checks, including every one of the 16,343 reviewed corpus variants.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is
+543 case files and 4,301 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

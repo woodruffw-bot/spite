@@ -192,14 +192,20 @@ fn unconditional_assertion_string_class_required_captures_consumers_and_scope() 
     check(&format!(
         "var r=new RegExp({pattern:?},'dvg');r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.head===''&&m.groups.part===''&&m.groups.tail===''&&m.indices.groups.part[0]===5&&r.lastIndex===5"
     ));
+    check(
+        r"var marker=0,m,r;try{r=/([\q{a|ab}])(^)/dvg;r.lastIndex=1;m=r.exec('ab')}finally{marker=3}marker===3&&m===null&&r.lastIndex===0",
+    );
+    check(
+        r"var marker=0,m,r;try{r=/($)([\q{a|ab}])/dvg;r.lastIndex=1;m=r.exec('ab')}finally{marker=3}marker===3&&m===null&&r.lastIndex===0",
+    );
     for pattern in [
         r"(\b)?([\q{a|ab}])",
         r"(^){0}([\q{a|ab}])",
         r"(\b|)([\q{a|ab}])",
         r"(|\b)([\q{a|ab}])",
         r"((^))?([\q{a|ab}])",
-        r"([\q{a|ab}])(^)",
-        r"($)([\q{a|ab}])",
+        r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])(^)",
+        r"($)([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
         r"(\b)(\B)([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
         r"(\b)(\B)([\q{a|ab}])\1",
         r"(\b)(\B)([\q{a|ab}])+",

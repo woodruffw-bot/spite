@@ -11195,4 +11195,6 @@ predicates can hold at one empty line boundary, so they are conjoined without
 word-style contradiction lowering. Required empty capture counts and lexical
 point ranges retain the established proof; optional assertions, assertion choices,
 references, class counts and unknown leaves remain closed, including under false
-word predicates. Runtime selection is a subsequent step.
+word predicates. Runtime selects this proof after the earlier canonical sibling
+proof on the full normalized source. The shared capture body retains original
+metadata, lexical indices, String consumer behavior and opt-in host aborts.
