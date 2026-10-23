@@ -80,6 +80,7 @@ fn consumers_clones_and_collection_use_consuming_character_results() {
 #[test]
 fn former_unsupported_controls_finish_finalizers_and_complete_later_proof_and_early_errors() {
     for (source, expected) in [
+        (r"/[^\p{Any}&&\q{ab}]/v.test('ab')", true),
         (r"/[\p{Any}--\q{ab}]+/v.test('ab')", true),
         (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),
         (r"/[[a-z]&&\q{ab}]/v.test('ab')", false),
@@ -101,7 +102,6 @@ fn former_unsupported_controls_finish_finalizers_and_complete_later_proof_and_ea
     for source in [
         r"/[[]&&[\q{ab}]&&\p{RGI_Emoji}]/v.test('')",
         r"/[[a\q{ab}]&&[a-z\q{ab}]]/v.test('ab')",
-        r"/[^\p{Any}&&\q{ab}]/v.test('ab')",
         r"/[\p{Any}--\q{ab}][a]/v.test('aba')",
         r"/\b^[\p{Any}--\q{ab}]/v.test('ab')",
     ] {

@@ -652,7 +652,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile quantified scalar-left string-set operations with exact greedy/lazy bounds, canonical outside word/line gates, and nonnullable projected character atoms, including empty result sets and huge decimal bounds.
 - [x] Connect quantified scalar-left string-set operations to Runtime RegExp execution and String consumers, preserving whole-repetition captures, exact bounds, original UTF-16 ranges, empty iterations, and lastIndex.
 - [x] Compile whole v/vi classes and quantified classes with a false static MayContainStrings result and variable q members, using canonical character projection through nested unions, intersections, subtractions, and legal complements.
-- [ ] Connect static character-result string-set proofs to Runtime RegExp execution and String consumers.
+- [x] Connect static character-result string-set proofs to Runtime RegExp execution and String consumers, including whole-body captures, legal complements, exact quantified bounds, original UTF-16 ranges, lastIndex, and eval completions.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

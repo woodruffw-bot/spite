@@ -9754,8 +9754,15 @@ gates and caller-projected whole-body captures retain their scope. A paired
 repetition entry uses the same proof with existing greedy/lazy exact bounds;
 projected classes remain consuming character atoms and zero bounds still require
 complete proof. Inner repeated wrappers and further atoms remain separate.
-Runtime selection is a later step. Source stays borrowed, all storage stays flat,
+Source stays borrowed, all storage stays flat,
 and dependencies, allocation boundaries, and default quotas are unchanged.
+
+Runtime selects character-result class and repetition proofs after the earlier
+scalar-left proofs. They reuse UnicodeClass/UnicodeRepeatedAtom bodies, enclosing
+capture projection and charged search. Empty character sets remain nonnullable
+atoms; only zero-iteration repetition yields empty results. Names, indices,
+lastIndex, String consumers, and direct-eval completions keep their existing
+contracts. Former host Unsupported completions execute finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 

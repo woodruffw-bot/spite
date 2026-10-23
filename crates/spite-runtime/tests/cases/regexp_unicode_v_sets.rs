@@ -8489,6 +8489,7 @@ fn single_character_v_string_operands_state_context_and_consumers() {
         ));
     }
     for (source, expected) in [
+        (r"/[^\q{ab}&&a]/v.test('a')", true),
         (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),
         (r"/[\q{a|b}]+/v.test('ab')", true),
         (r"/[[\q{a|b}]]{0}/v.test('')", true),
@@ -8522,7 +8523,6 @@ fn single_character_v_string_operands_state_context_and_consumers() {
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     for source in [
-        r"/[^\q{ab}&&a]/v.test('a')",
         r"/[[\q{a|b}]&&[\p{RGI_Emoji}]]/v.test('a')",
         r"/\b^[\q{a}&&a]/v.test('a')",
         r"/[\q{a}&&a]$\b/v.test('a')",
@@ -8735,7 +8735,12 @@ fn single_character_v_string_repetition_state_context_and_consumers() {
             "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
         ));
     }
-    for source in [r"/([\q{a}])+/v.test('a')", r"/(?:[\q{a}])+/v.test('a')"] {
+    for source in [
+        r"/([\q{a}])+/v.test('a')",
+        r"/(?:[\q{a}])+/v.test('a')",
+        r"/[^\q{ab}&&a]{0}/v.test('')",
+        r"/[\q{a}&&[]&&\q{b|cd}]{0}/v.test('')",
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert_eq!(
@@ -8751,9 +8756,7 @@ fn single_character_v_string_repetition_state_context_and_consumers() {
         r"/[\q{}]{0}/v.test('')",
         r"/[\q{a|}]*/v.test('a')",
         r"/[\q{a|bc}]{0}/v.test('')",
-        r"/[\q{a}&&[]&&\q{b|cd}]{0}/v.test('')",
         r"/[\q{a}--a--\p{RGI_Emoji}]{0}/v.test('')",
-        r"/[^\q{ab}&&a]{0}/v.test('')",
         r"/[\q{a|bc}]{999999999999999999999999}/v.test('a')",
         r"/[\q{a}]+b/v.test('ab')",
         r"/a[\q{b}]+/v.test('ab')",

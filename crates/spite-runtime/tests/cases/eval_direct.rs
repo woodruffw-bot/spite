@@ -88,6 +88,7 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
         ));
     }
     for (pattern, input, expected) in [
+        (r"[^\q{ab}&&a]", "a", true),
         ("[a&&b]", "a", false),
         ("[[a]b]", "a", true),
         ("[[a]b]", "b", true),
@@ -100,7 +101,8 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
             "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
         ));
     }
-    for pattern in [r"([\u{1f600}])+b", r"[^\q{ab}&&a]"] {
+    {
+        let pattern = r"([\u{1f600}])+b";
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         let code = format!("marker=1; /{pattern}/v.test('a');");

@@ -16471,3 +16471,30 @@ by outside framing. Workspace documentation tests, formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories, and diff checks pass.
 Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
 counts, and default resource policy are unchanged.
+
+## Runtime static character-result UnicodeSets expressions
+
+Runtime selects the character-result class and repetition proofs after the
+scalar-left proofs. Six integration groups cover nested masked unions and
+complements, string-first intersections, quantified priority and keycap identity,
+canonical property folding and Greek closure, normalization, original-input
+names/indices and paired/lone/braced surrogates, empty sets versus zero iterations,
+huge bounds, strict lastIndex writes, String consumers, clones/collection, direct
+eval and finalizers, complete zero-count proof, conservative true containment,
+unknown properties, assertion-order scope, early errors, deep/long default inputs,
+and opt-in aborts preserving assignment and lastIndex. Prior eval and UnicodeSets
+Unsupported controls migrate to exact completion and finalizer expectations.
+
+All 16,112 complete result records agree with independent final-character and
+repetition controls, including captures, indices, and lastIndex. Original Node
+differs on 152 ignoreCase records within the documented q/property folding
+defects; literal controls retain edition-17 behavior without a new exception.
+Four additional whole upstream string-first intersection originals also pass
+all eight normal/strict variants with unchanged original helpers.
+
+Stable passes all 425 Runtime unit cases and the final 1,389-case Unicode replay.
+All sixteen direct-eval cases and eighteen corrected character-result/scalar-left
+groups pass focused replays. Workspace documentation tests, formatting, strict
+workspace Clippy, dependency policy, source/fixture inventories, and diff checks
+pass. Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and
+default resource policy are unchanged.
