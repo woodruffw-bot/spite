@@ -9708,7 +9708,7 @@ one existing greedy/lazy quantifier. The class retains its positive q-free first
 operand and at least one empty/long q member. Canonical optional outside line/word
 gates apply to the entire repetition. Atom-internal wrappers, further atoms,
 string properties, and other root set shapes remain separate proofs. Whole-body
-captures remain a caller proof; Runtime selection is a later step.
+captures remain a caller proof.
 
 Character projection proves the atom consumes one complete original character.
 An empty q member cannot introduce an empty iteration. An empty projected class
@@ -9723,6 +9723,11 @@ copy, new atom representation, search algorithm, dependency, or default quota.
 Its checked/singleton-string/scalar-left class selection preserves older entry
 domains and callback sequences. Interval/frame growth and deep parsing retain
 their checked work/capacity contracts, and search, clone, and drop stay flat.
+
+Runtime selects the quantified proof after the unquantified scalar-left proof.
+It reuses the UnicodeRepeatedAtom body, whole-body capture projection and charged
+incremental search. Result arrays, named indices, lastIndex and String consumers
+retain their existing contracts for consuming and zero-iteration results.
 
 ## Global intrinsic metadata and enumeration
 

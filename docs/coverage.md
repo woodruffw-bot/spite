@@ -16391,3 +16391,29 @@ documentation tests, formatting, strict workspace Clippy, dependency policy,
 source/fixture inventories, and diff checks pass. Runtime selection, snapshots,
 corpus sources and helpers, dependencies, intrinsic counts, and default resource
 policy are unchanged.
+
+## Runtime quantified scalar-left UnicodeSets string operations
+
+Runtime selects quantified scalar-left classes after their unquantified proof.
+Six integration groups cover greedy/lazy and bounded character priority,
+scalar/string keycap membership, nonnullable q-empty atoms versus zero iterations,
+empty projected classes, huge bounds, whole-repetition word/line assertions,
+folding, original-input captures/indices, supplementary/lone/braced surrogates,
+strict lastIndex writes, every String consumer, clones/collection, former
+Unsupported completions with finalizers, complete zero-count proof, remaining
+shapes and early errors, deep/long inputs under defaults, and opt-in atomic aborts.
+
+Eight whole unchanged upstream scalar-left difference/intersection originals
+also pass all sixteen normal/strict variants in fresh default realms with the
+existing original sta/assert/regExpUtils helpers. They remain outside the corpus
+until a separate inventory change; no source branch or helper is trimmed.
+
+All 16,512 complete result records agree with independent final-character
+repetition controls, including captures, indices, and lastIndex. Original Node
+differs on 96 records: 48 singleton-q folding and 48 ASCII-property folding
+records, matching the documented defects without a new exception.
+
+Stable passes all 425 Runtime unit cases and 1,383 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
