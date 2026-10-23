@@ -11172,3 +11172,27 @@ proof after the earlier nested-wrapper proof on the full normalized source. The
 same body owns all lexical slots, named index aliases, String consumers, Unicode
 progress and opt-in host abort behavior. Optional assertion groups and
 assertion-bearing choices continue to report separate host unsupported errors.
+
+
+Core `compile_reversed_line_assertions_with_work` extends the required-sibling
+proof to ^ after the class and $ before it, requiring at least one such predicate.
+The two constructors share a source scan while the earlier entry retains its
+canonical-side domain and exact charge callbacks. Freshly compiled string-set
+programs acquire two immutable endpoint flags before sharing: $ at the match
+start and ^ at each possible member end. Existing constructors initialize both
+flags to false. Search work accounts for each new predicate, and empty-member
+search still advances by Unicode code point when a gate rejects a candidate.
+No state is allocated or mutated during matching.
+
+ECMA-262 edition 17 22.2.2.4 CompileAssertion applies line predicates at their
+actual positions even when they surround an empty term. With multiline matching,
+`($)([\q{\n|\na}])(^)` on `\na!` rejects the longer member and retains the
+newline member ending at the next line start. The matcher tests these predicates
+before choosing the longest eligible member. Without multiline matching, $
+before a class restricts its start to input end, while ^ after it restricts its
+end to zero; neither justifies discarding the original class proof. Both line
+predicates can hold at one empty line boundary, so they are conjoined without
+word-style contradiction lowering. Required empty capture counts and lexical
+point ranges retain the established proof; optional assertions, assertion choices,
+references, class counts and unknown leaves remain closed, including under false
+word predicates. Runtime selection is a subsequent step.

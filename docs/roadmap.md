@@ -750,6 +750,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute canonical assertion layers interleaved with complete string-class wrappers through Runtime RegExp and String consumers, preserving layered scope, lexical aliases, contradictions, empty ranges and opt-in host aborts.
 - [x] Compile unconditional assertion siblings around a single string class, preserving required empty counts, lexical point captures, conjunctions and full leaf proof.
 - [x] Execute unconditional assertion siblings around a single string class through Runtime RegExp and String consumers, preserving mandatory point captures, positive counts, original metadata and opt-in host aborts.
+- [x] Compile mandatory line assertions after/before a single string class, preserving actual endpoints, shorter eligible members, empty ranges and prior callback domains.
+- [ ] Execute mandatory line assertions after/before a single string class through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

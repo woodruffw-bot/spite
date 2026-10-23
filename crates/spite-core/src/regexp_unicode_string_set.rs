@@ -37,6 +37,8 @@ struct Program {
     multiline: bool,
     start_anchor: bool,
     end_anchor: bool,
+    start_end_anchor: bool,
+    end_start_anchor: bool,
     start_word: Option<bool>,
     end_word: Option<bool>,
 }
@@ -272,6 +274,8 @@ impl RegExpUnicodeStringSetMatcher {
                 multiline,
                 start_anchor,
                 end_anchor,
+                start_end_anchor: false,
+                end_start_anchor: false,
                 start_word,
                 end_word,
             }),
@@ -439,6 +443,8 @@ impl RegExpUnicodeStringSetMatcher {
                 multiline,
                 start_anchor,
                 end_anchor,
+                start_end_anchor: false,
+                end_start_anchor: false,
                 start_word,
                 end_word,
             }),
@@ -604,6 +610,8 @@ impl RegExpUnicodeStringSetMatcher {
                 multiline,
                 start_anchor,
                 end_anchor,
+                start_end_anchor: false,
+                end_start_anchor: false,
                 start_word,
                 end_word,
             }),
@@ -618,7 +626,24 @@ impl RegExpUnicodeStringSetMatcher {
     /// Whether matching a class member also requires outside assertions.
     pub(crate) fn has_outside_assertions(&self) -> bool {
         let p = &self.program;
-        p.start_anchor || p.end_anchor || p.start_word.is_some() || p.end_word.is_some()
+        p.start_anchor
+            || p.end_anchor
+            || p.start_end_anchor
+            || p.end_start_anchor
+            || p.start_word.is_some()
+            || p.end_word.is_some()
+    }
+
+    /// Adds endpoint line predicates to a freshly compiled, uniquely owned plan.
+    pub(crate) fn with_endpoint_line_assertions(
+        mut self,
+        start_end_anchor: bool,
+        end_start_anchor: bool,
+    ) -> Option<Self> {
+        let program = Arc::get_mut(&mut self.program)?;
+        program.start_end_anchor = start_end_anchor;
+        program.end_start_anchor = end_start_anchor;
+        Some(self)
     }
 
     /// Bounds UTF-16 consumption per member; q-only empty sets return zero.
@@ -643,6 +668,7 @@ impl RegExpUnicodeStringSetMatcher {
                     .map_or(0, RegExpUnicodeClassMatcher::search_passes),
             )
             .saturating_add(usize::from(p.start_anchor) + usize::from(p.end_anchor))
+            .saturating_add(usize::from(p.start_end_anchor) + usize::from(p.end_start_anchor))
             .saturating_add(
                 8 * (usize::from(p.start_word.is_some()) + usize::from(p.end_word.is_some())),
             );
@@ -1198,9 +1224,13 @@ impl Program {
             self.start_anchor,
             self.end_anchor,
             self.multiline,
-        ) && self
-            .start_word
-            .is_none_or(|wanted| unicode_word_boundary(units, start, self.ignore_case) == wanted)
+        ) && (!self.start_end_anchor
+            || unicode_assertions_match(units, start, start, false, true, self.multiline))
+            && (!self.end_start_anchor
+                || unicode_assertions_match(units, end, end, true, false, self.multiline))
+            && self.start_word.is_none_or(|wanted| {
+                unicode_word_boundary(units, start, self.ignore_case) == wanted
+            })
             && self
                 .end_word
                 .is_none_or(|wanted| unicode_word_boundary(units, end, self.ignore_case) == wanted)

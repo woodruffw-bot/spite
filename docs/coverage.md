@@ -19152,3 +19152,26 @@ formatting, dependency policy, source/fixture inventories and diff checks pass.
 Runtime inventory is 542 case files and 4,298 integration cases. Corpus sources/
 helpers, snapshots, dependencies, intrinsic counts and default resource policy
 are unchanged.
+
+
+## Core line predicates at either single-class endpoint
+
+Three groups compare 32 class families, including five newline-bearing families,
+six capture layouts, 18 predicate profiles and three enclosing shapes against
+independent endpoint-gate and capture-tree oracles. Twelve inputs, all starts and
+sticky/i/m flags retain ordinary/reversed/duplicate line conjunctions, word gates,
+empty members, shorter eligible strings, Unicode normalization and lexical
+captures. Structural and exact cases cover 20,000 enclosing slots, positive empty
+counts beyond machine range, empty-line conjunctions and shorter eligible newline
+members. Constructor/search callback cancellation prefixes and recovery remain
+explicit. Earlier canonical-only domains, optional/zero-minimum assertions,
+assertion-bearing choices, references, class counts and unknown leaves remain
+closed, including under false word predicates.
+
+Stable passes all 1,218 Core unit cases and 431 Runtime unit cases. All 47,560
+prior public API records retain exact constructor/search work and capture
+projection, including the shared canonical sibling proof. All 32 class witnesses
+validate in native v/vi modes. Workspace documentation tests, strict workspace
+Clippy, formatting, dependency policy, source/fixture inventories and diff checks
+pass. No Runtime selection, corpus fixture, snapshot, dependency or default quota
+changes.

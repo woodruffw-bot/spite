@@ -765,6 +765,34 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_required_assertions(source, ignore_case, multiline, false, charge)
+    }
+
+    /// Proves mandatory assertion siblings with ^ after or $ before the class.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// such line predicate must occur; all other mandatory word/line predicates
+    /// and pure-empty capture terms follow the unconditional sibling proof.
+    /// End predicates are checked for every class member before longest-member
+    /// selection, so a rejected longer string can expose a shorter success.
+    /// Optional assertions, assertion choices and class counts remain separate.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_reversed_line_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_required_assertions(source, ignore_case, multiline, true, charge)
+    }
+
+    fn compile_required_assertions<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        reversed: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -781,6 +809,7 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         let mut frames = Vec::<UnconditionalAssertionFrame>::new();
         let (mut class_seen, mut asserted, mut start_line, mut end_line) =
             (false, false, false, false);
+        let (mut start_end_line, mut end_start_line) = (false, false);
         let (mut start_words, mut end_words, mut at) = (0u8, 0u8, 0usize);
         while let Some(&unit) = units.get(at) {
             if unit == 0x5b {
@@ -827,15 +856,23 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
             if unit == 0x5e || unit == 0x24 || word.is_some() {
                 if unit == 0x5e {
                     if class_seen {
-                        return Ok(None);
+                        if !reversed {
+                            return Ok(None);
+                        }
+                        end_start_line = true;
+                    } else {
+                        start_line = true;
                     }
-                    start_line = true;
                 }
                 if unit == 0x24 {
                     if !class_seen {
-                        return Ok(None);
+                        if !reversed {
+                            return Ok(None);
+                        }
+                        start_end_line = true;
+                    } else {
+                        end_line = true;
                     }
-                    end_line = true;
                 }
                 if let Some(word) = word {
                     let bits = if word { 1 } else { 2 };
@@ -905,7 +942,11 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
                 }
             }
         }
-        if !asserted || !class_seen || !frames.is_empty() {
+        if !asserted
+            || !class_seen
+            || !frames.is_empty()
+            || (reversed && !start_end_line && !end_start_line)
+        {
             return Ok(None);
         }
         shadow.push(0x29);
@@ -941,6 +982,13 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
                 multiline,
                 charge,
             )?
+        };
+        let class = if reversed {
+            class.and_then(|class| {
+                class.with_endpoint_line_assertions(start_end_line, end_start_line)
+            })
+        } else {
+            class
         };
         Ok(class.map(|class| Self {
             class,
