@@ -11137,5 +11137,7 @@ capture itself becomes part of the recovered prefix. The entire remaining body
 must still pass the single-class proof. Contradictory word gates are lowered only
 after full class validation. Noncanonical layers, partial/quantified wrappers,
 root choices, inner assertions, references, counts and unknown leaves stay closed.
-Earlier constructors retain their domains and callbacks. Runtime nested-framing
-selection remains a subsequent step.
+Earlier constructors retain their domains and callbacks. Runtime selects nested
+framing after the earlier surrounding-gate proofs on the full normalized source.
+The same capture body owns all recovered lexical slots and keeps shared named
+indices, String consumers, Unicode progress and opt-in host abort behavior.

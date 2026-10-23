@@ -739,6 +739,8 @@ mod regexp_unicode_lowercase_properties;
 mod regexp_unicode_mandatory_pure_empty_sequences;
 #[path = "cases/regexp_unicode_math_properties.rs"]
 mod regexp_unicode_math_properties;
+#[path = "cases/regexp_unicode_nested_assertion_string_class_captures.rs"]
+mod regexp_unicode_nested_assertion_string_class_captures;
 #[path = "cases/regexp_unicode_noncapturing_branch_assertion_sequences.rs"]
 mod regexp_unicode_noncapturing_branch_assertion_sequences;
 #[path = "cases/regexp_unicode_noncapturing_branch_assertions.rs"]

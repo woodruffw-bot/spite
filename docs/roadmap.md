@@ -747,7 +747,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile word assertions surrounding complete asserted string-class wrappers, preserving duplicate/contradictory predicates, complete leaf proof, lexical prefix ranges and bounded work.
 - [x] Execute word assertions surrounding complete asserted string-class wrappers through Runtime RegExp and String consumers, preserving duplicates/contradictions, original metadata, prefix ranges, indices and opt-in host aborts.
 - [x] Compile canonical assertion layers interleaved with complete string-class wrappers, retaining conjunctions, lexical prefix ranges, full leaf proof and linear delimiter recovery.
-- [ ] Execute canonical assertion layers interleaved with complete string-class wrappers through Runtime RegExp and String consumers.
+- [x] Execute canonical assertion layers interleaved with complete string-class wrappers through Runtime RegExp and String consumers, preserving layered scope, lexical aliases, contradictions, empty ranges and opt-in host aborts.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

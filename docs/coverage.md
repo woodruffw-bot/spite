@@ -19070,3 +19070,29 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime assertion layers between complete string-class wrappers
+
+Three groups retain 27 class families, six layouts, line/word profiles and three
+mixed wrapper shapes with an additional named assertion layer. They verify all
+lexical values and index aliases, optional/later masks, original source metadata
+and empty or contradictory results. Exact cases include shorter eligible words,
+supplementary inside-pair starts, escaped layer names, matchAll, callback
+replacement, search, split, clones and collection. A specification witness keeps
+failed Unicode candidates outside surrogate interiors. Deep individually gated
+prefixes, long words and opt-in constructor/exec aborts preserve flat state and
+original bindings/lastIndex. The resource witness remains within its setup
+budget without changing the budget. Unknown leaves, references, counts, partial
+wrappers and noncanonical layers retain separate host-unsupported controls.
+
+All 139,968 exact nested-framing differential records over 324 class/capture/gate
+pairs match independent finite-alternative native sticky controls with explicit
+Unicode candidate advancement and initial normalization. They retain all slots,
+named index aliases, lastIndex and original source metadata across eight inputs,
+all starts and sticky/i/m flags. Stable passes all 431 Runtime unit cases and all
+1,589 Unicode RegExp integration cases, including the three new groups. Workspace
+documentation tests, strict workspace Clippy, formatting, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 541 case
+files and 4,295 integration cases. Corpus sources/helpers, snapshots, dependencies,
+intrinsic counts and default resource policy are unchanged.
