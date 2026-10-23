@@ -118,7 +118,7 @@ fn complete_grouped_positive_finite_proofs_finish_finalizers_and_keep_overflowin
     for source in [
         r"/((?:)|[\q{ab}&&\q{cd}]){2,3}/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){3,4}/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:|)?){2,3}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:X|)?){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",

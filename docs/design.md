@@ -10601,8 +10601,12 @@ retain separate proofs. Linear precharges cover source-sized owner markers,
 count scans and group walks. Canonical projection retains existing outer count
 priority, progress, optional budgets, required clearing, original ranges and
 outside gates without expanding inner choices or counts. Prior constructor
-domains/work remain unchanged; clone/drop stay flat. Runtime selection is
-separate.
+domains/work remain unchanged; clone/drop stay flat. Runtime selects this constructor after quantified noncapturing empty sequences.
+Projection preserves source-order character groups and aliases, undefined slots
+after required final empties, original UTF-16 text/indices and enclosing ranges.
+RegExp and String consumers retain source metadata, lastIndex, clones and
+collection. Former pure-choice rejections complete their exact results and eval
+finalizers; huge inner counts and opt-in host aborts stay flat and atomic.
 
 ## Global intrinsic metadata and enumeration
 

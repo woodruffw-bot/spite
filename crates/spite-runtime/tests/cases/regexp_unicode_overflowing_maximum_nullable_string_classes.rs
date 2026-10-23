@@ -150,7 +150,7 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
     for inner in [
         r"|[\q{ab}&&\q{cd}]",
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"([\q{a|b}])|(?:|)?",
+        r"([\q{a|b}])|(?:X|)?",
         r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
@@ -164,7 +164,7 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
             "{source}"
         );
     }
-    assert!(matches!(Realm::default().eval(r"/(([\q{a|b}])|(?:|)?){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')"),Err(Error::Unsupported{..})));
+    assert!(matches!(Realm::default().eval(r"/(([\q{a|b}])|(?:X|)?){999999999999999999999999999999999999999,9999999999999999999999999999999999999999}/v.test('a')"),Err(Error::Unsupported{..})));
     for pattern in [r"([^\q{ab}]|)", r"([\q{ab}&&a--a]|)", r"([\q{\d}&&a]|)"] {
         let source = JsString::from(
             format!(

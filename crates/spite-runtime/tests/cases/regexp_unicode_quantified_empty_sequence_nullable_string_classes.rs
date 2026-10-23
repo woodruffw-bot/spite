@@ -238,7 +238,7 @@ fn quantified_sequence_complete_proofs_finish_finalizers_and_keep_choices_deferr
     for inner in [
         r"(?:)*|[\q{ab}&&\q{cd}]",
         r"(?:)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"([\q{a|b}])|(?:|)*",
+        r"([\q{a|b}])|(?:X|)*",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|()?",

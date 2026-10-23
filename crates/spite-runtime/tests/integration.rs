@@ -771,6 +771,8 @@ mod regexp_unicode_overflowing_maximum_grouped_empty_nullable_string_classes;
 mod regexp_unicode_overflowing_maximum_nullable_alternatives;
 #[path = "cases/regexp_unicode_overflowing_maximum_nullable_string_classes.rs"]
 mod regexp_unicode_overflowing_maximum_nullable_string_classes;
+#[path = "cases/regexp_unicode_partial_empty_choices.rs"]
+mod regexp_unicode_partial_empty_choices;
 #[path = "cases/regexp_unicode_partial_noncapturing_empty.rs"]
 mod regexp_unicode_partial_noncapturing_empty;
 #[path = "cases/regexp_unicode_partial_nullable_class_captures.rs"]
