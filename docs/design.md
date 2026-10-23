@@ -11229,5 +11229,8 @@ state without allocating during matching. Full constructor proof still rejects
 unknown leaves in false or unselected alternatives. Callback failures abort
 before a result is returned. Grouped root choices, assertion-bearing optional
 terms/choices and class repetition remain separate proofs. Earlier constructor
-domains and callback transcripts are unchanged. Runtime selection remains a
-subsequent step.
+domains and callback transcripts are unchanged. Runtime selects the asserted-root
+proof after the earlier single-class endpoint proofs on the full normalized
+source. A dedicated body stores the selected class/empty tag and projects all
+original lexical slots and named index aliases without capture history. String
+consumers, cloning, collection and opt-in host aborts share existing paths.

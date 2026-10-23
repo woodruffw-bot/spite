@@ -163,11 +163,23 @@ fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate(
     check(
         r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
+    check(
+        r"var marker=0,m;try{m=/([\q{|a|ab}])\b|()/dv.exec('ab!')}finally{marker=3}var e=/([\q{|a|ab}])\b|()/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/()|\b([\q{|ab}])/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/^([\q{ab}])|()/dv.exec('ab!')}finally{marker=3}var e=/^([\q{ab}])|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/([\q{ab}])|()$/dv.exec('ab!')}finally{marker=3}var e=/([\q{ab}])|()$/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===1&&e.indices[2][0]===1",
+    );
     for pattern in [
-        r"([\q{|a|ab}])\b|()",
-        r"()|\b([\q{|ab}])",
-        r"^([\q{ab}])|()",
-        r"([\q{ab}])|()$",
+        r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])\b|()",
+        r"()|\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
+        r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
+        r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()$",
         r"([\q{ab}])|()\1",
         r"([\q{ab}])x|()",
         r"([\q{ab}])?|()",

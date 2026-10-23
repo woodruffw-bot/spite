@@ -174,9 +174,15 @@ fn empty_member_root_proofs_finish_finalizers_and_keep_other_features_separate()
     check(
         r"var m=/(?<part>[\q{}--\q{}])|(?<empty>)/dv.exec('!');m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===0",
     );
+    check(
+        r"var marker=0,m;try{m=/^([\q{|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/([\q{|ab}])|()$/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+    );
     for pattern in [
-        r"^([\q{|ab}])|()",
-        r"([\q{|ab}])|()$",
+        r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
+        r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()$",
         r"([\q{|ab}])|()\1",
         r"([\q{|ab}])x|()",
         r"([\q{|ab}])?|()",

@@ -571,6 +571,8 @@ mod regexp_unicode_arabic_script;
 mod regexp_unicode_ascii_hex_properties;
 #[path = "cases/regexp_unicode_asserted_single_string_class_captures.rs"]
 mod regexp_unicode_asserted_single_string_class_captures;
+#[path = "cases/regexp_unicode_asserted_string_class_root_captures.rs"]
+mod regexp_unicode_asserted_string_class_root_captures;
 #[path = "cases/regexp_unicode_assertion_sequences.rs"]
 mod regexp_unicode_assertion_sequences;
 #[path = "cases/regexp_unicode_assigned_properties.rs"]

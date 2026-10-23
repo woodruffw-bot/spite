@@ -753,7 +753,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile mandatory line assertions after/before a single string class, preserving actual endpoints, shorter eligible members, empty ranges and prior callback domains.
 - [x] Execute mandatory line assertions after/before a single string class through Runtime RegExp and String consumers, retaining actual endpoints, shorter eligible members, named aliases and host aborts.
 - [x] Compile two root string-class/empty alternatives with branch-specific mandatory assertions, preserving source-order choice, empty class identity, lexical slots and bounded searches.
-- [ ] Execute two root string-class/empty alternatives with branch-specific mandatory assertions through Runtime RegExp and String consumers.
+- [x] Execute two root string-class/empty alternatives with branch-specific mandatory assertions through Runtime RegExp and String consumers, preserving branch identity, lexical indices, original metadata, Unicode progress and host aborts.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

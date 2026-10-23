@@ -9,7 +9,8 @@ use spite_core::{
     RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher, RegExpUnicodeCharacterMatcher,
+    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
+    RegExpUnicodeAssertedStringClassAlternativeMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
     RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher,
     RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,
@@ -2338,13 +2339,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeSingleStringClassCaptures(body)));
                 }
-                RegExpUnicodeSingleStringClassCaptureMatcher::compile_reversed_line_assertions_with_work(
+                if let Some(body) = RegExpUnicodeSingleStringClassCaptureMatcher::compile_reversed_line_assertions_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeSingleStringClassCaptures(body)));
+                }
+                RegExpUnicodeAssertedStringClassAlternativeMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeSingleStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedStringClassAlternatives))
 
             })?;
             if body.is_some() {

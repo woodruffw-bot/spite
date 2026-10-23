@@ -172,8 +172,11 @@ fn surrounding_line_string_class_values_consumers_and_scope_preserve_original_sl
     check(
         r"var marker=0,m;try{m=/^((\b()([\q{a|ab}])())())$/dv.exec('ab')}finally{marker=3}marker===3&&m.length===7&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]==='ab'&&m[5]===''&&m[6]===''&&m.indices[6][0]===2",
     );
+    check(
+        r"var marker=0,m;try{m=/^()[\q{a|ab}]|()$/dv.exec('ab!')}finally{marker=3}var e=/^()[\q{a|ab}]|()$/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===3&&e.indices[2][0]===3",
+    );
     for pattern in [
-        r"^()[\q{a|ab}]|()$",
+        r"^()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()$",
         r"^((()[\q{a|ab}]|()))$",
         r"^((()([\q{a|ab}])()))+$",
         r"^((\b()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])())())$",

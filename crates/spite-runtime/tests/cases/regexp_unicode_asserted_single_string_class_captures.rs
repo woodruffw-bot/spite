@@ -195,6 +195,12 @@ fn asserted_single_string_class_proofs_finish_finalizers_and_keep_inner_scope_cl
     check(
         r"var marker=0,m;try{m=/()([\q{|ab}])\b()$/dv.exec('!ab')}finally{marker=3}marker===3&&m.length===4&&m.index===1&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===''&&m.indices[3][0]===3&&/()([\q{|ab}])\b()$/v.exec('!')===null",
     );
+    check(
+        r"var marker=0,m;try{m=/^()([\q{a|ab}])|()/dv.exec('ab!')}finally{marker=3}var e=/^()([\q{a|ab}])|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===undefined&&e[3]===''&&e.index===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/()([\q{a|ab}])|()$/dv.exec('ab!')}finally{marker=3}var e=/()([\q{a|ab}])|()$/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===undefined&&e[3]===''&&e.index===1",
+    );
     for pattern in [
         r"^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])$",
         r"()([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])\b()$",
@@ -204,8 +210,8 @@ fn asserted_single_string_class_proofs_finish_finalizers_and_keep_inner_scope_cl
         r"^()([\q{a|ab}])x$",
         r"^()([\q{|ab}])([\q{cd}])$",
         r"^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$",
-        r"^()([\q{a|ab}])|()",
-        r"()([\q{a|ab}])|()$",
+        r"^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
+        r"()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()$",
     ] {
         let mut realm = Realm::default();
         assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
