@@ -716,6 +716,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile captures in quantified empty branches and choices, preserving optional/later-alternative undefined slots, required first-alternative captures, all outer counts and source-sized interval masks.
 - [x] Require branch-only empty captures to stay inside the separator-owning group, preserving transparent capture-free siblings and deferring unconditional sibling points.
 - [x] Execute captures in quantified empty branches and choices, preserving required empty parents, undefined optional/later groups, all lexical named/indices slots, String consumers and atomic host aborts.
+- [x] Compile empty point captures before/after a class or its nullable alternative, preserving conditional character-side points, unconditional sibling points, optional/later undefined groups and original UTF-16 endpoints.
 - [ ] Connect consuming-branch nullable string-class captures to Runtime RegExp named indices and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

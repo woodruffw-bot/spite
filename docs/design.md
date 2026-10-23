@@ -10659,6 +10659,32 @@ and nested wrappers around the complete alternative keep their iteration roles.
 This guard adds one linear span walk under existing construction charges and
 preserves valid constructor work traces, counts, matching and source metadata.
 
+## Empty point captures beside nullable alternatives
+
+A separate Core constructor proves captured empty siblings before or after the
+class or the group owning its nullable alternative. At least one such boundary
+capture is required. Empty terms may contain nested groups, counts and choices,
+but no assertions, references or consuming terms; class-containing wrappers
+remain unquantified and exactly one alternative separates class and empty sides.
+
+The owner bounds distinguish unconditional siblings from siblings in the
+character branch. Unconditional captures use the selected iteration's start or
+end point on either branch; character-side empty groups use those points only
+when the class consumes. Empty-branch groups retain their existing empty role.
+Optional groups and later epsilon alternatives still receive the permanently
+undefined role through the flat interval sweep (22.2.2.3).
+
+The synthetic final-iteration marker supplies both endpoints even when there are
+no class captures. Thus a prefix before the nested alternative denotes the last
+iteration's start, and a suffix after it denotes the last iteration's end, rather
+than a whole-run boundary inferred from capture position. Zero outer iterations
+leave all inner groups undefined. Existing outer counts, optional budgets,
+mandatory branch priority, line/word gates and original UTF-16 ranges reuse the
+same matcher. Linear precharges cover owner, count and interval scans; matching
+adds no capture history and clone/drop remain flat and source-sized. Earlier
+constructor domains and work traces remain unchanged. Runtime selection is
+separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

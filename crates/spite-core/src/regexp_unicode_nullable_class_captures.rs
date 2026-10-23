@@ -12,6 +12,10 @@ enum CaptureRole {
     Character,
     Empty,
     Never,
+    StartPoint,
+    EndPoint,
+    CharacterStartPoint,
+    CharacterEndPoint,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -22,6 +26,7 @@ enum CaptureProof {
     QuantifiedSequence,
     EmptyChoices,
     EmptyCaptureEffects,
+    BoundaryCaptures,
 }
 
 #[derive(Clone, Copy)]
@@ -36,15 +41,17 @@ struct Parsed {
     grouped_empty: bool,
     quantified_empty: bool,
     choice_empty: bool,
+    boundary_captures: bool,
     captures: Vec<CaptureRole>,
 }
 
-/// A nullable UnicodeSets class repetition with captures confined to either branch.
+/// A nullable UnicodeSets class repetition with flat branch and boundary captures.
 ///
 /// Complete wrappers capture the last iteration, including required empty
 /// iterations. Groups confined to the character branch are undefined when the
-/// last iteration selects the empty branch. Construction, clone and drop use
-/// flat source-sized storage; matching reuses the existing linear matcher.
+/// last iteration selects the empty branch. Empty siblings retain their
+/// conditional or unconditional start/end points. Construction, clone and drop
+/// use flat source-sized storage; matching reuses the existing linear matcher.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeNullableClassCaptureMatcher {
     matcher: RegExpUnicodeRepeatedAtomMatcher,
@@ -207,6 +214,34 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         )
     }
 
+    /// Proves empty captures before or after the class or its nullable alternative.
+    ///
+    /// At least one such boundary capture is required. Empty sibling groups may
+    /// nest, repeat or contain choices, but have no assertions, references or
+    /// consuming terms. Character wrappers remain unquantified, and exactly one
+    /// alternative separates the class from an empty branch. Other outer-count
+    /// and gate requirements match `compile_with_work`.
+    ///
+    /// Siblings outside the alternative run on either branch; empty siblings on
+    /// the character branch participate only when it consumes. Their ranges are
+    /// the selected iteration's start/end points. Zero-minimum groups and later
+    /// empty alternatives remain undefined (RepeatMatcher, 22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_boundary_empty_captures_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::BoundaryCaptures,
+            charge,
+        )
+    }
+
     fn compile_capture_proof<E>(
         source: &JsString,
         ignore_case: bool,
@@ -218,6 +253,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         // Edge parity, both token interpretations, group/class walks and the
         // flat capture table are covered before structural inspection.
         let factor = match proof {
+            CaptureProof::BoundaryCaptures => 80,
             CaptureProof::EmptyCaptureEffects => 64,
             CaptureProof::EmptyChoices => 40,
             CaptureProof::QuantifiedSequence => 32,
@@ -261,12 +297,19 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                     CaptureProof::QuantifiedSequence
                         | CaptureProof::EmptyChoices
                         | CaptureProof::EmptyCaptureEffects
+                        | CaptureProof::BoundaryCaptures
                 ),
                 matches!(
                     proof,
-                    CaptureProof::EmptyChoices | CaptureProof::EmptyCaptureEffects
+                    CaptureProof::EmptyChoices
+                        | CaptureProof::EmptyCaptureEffects
+                        | CaptureProof::BoundaryCaptures
                 ),
-                proof == CaptureProof::EmptyCaptureEffects,
+                matches!(
+                    proof,
+                    CaptureProof::EmptyCaptureEffects | CaptureProof::BoundaryCaptures
+                ),
+                proof == CaptureProof::BoundaryCaptures,
             ) else {
                 continue;
             };
@@ -275,7 +318,9 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             } else {
                 CaptureRole::Character
             };
-            let present = if proof == CaptureProof::EmptyCaptureEffects {
+            let present = if proof == CaptureProof::BoundaryCaptures {
+                parsed.boundary_captures
+            } else if proof == CaptureProof::EmptyCaptureEffects {
                 parsed
                     .captures
                     .iter()
@@ -372,15 +417,17 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
     ) -> Option<Range<usize>> {
         let role = self.captures.get(index)?;
         let range = iteration?;
-        if match role {
-            CaptureRole::Iteration => true,
-            CaptureRole::Character => !range.is_empty(),
-            CaptureRole::Empty => range.is_empty(),
-            CaptureRole::Never => false,
-        } {
-            Some(range.clone())
-        } else {
-            None
+        match role {
+            CaptureRole::Iteration => Some(range.clone()),
+            CaptureRole::Character => (!range.is_empty()).then(|| range.clone()),
+            CaptureRole::Empty => range.is_empty().then(|| range.clone()),
+            CaptureRole::Never => None,
+            CaptureRole::StartPoint => Some(range.start..range.start),
+            CaptureRole::EndPoint => Some(range.end..range.end),
+            CaptureRole::CharacterStartPoint => {
+                (!range.is_empty()).then_some(range.start..range.start)
+            }
+            CaptureRole::CharacterEndPoint => (!range.is_empty()).then_some(range.end..range.end),
         }
     }
 }
@@ -395,6 +442,7 @@ fn parse_body(
     quantifiers: bool,
     choices: bool,
     effects: bool,
+    boundary: bool,
 ) -> Option<Parsed> {
     if units.first() != Some(&0x28) || units.last() != Some(&0x29) {
         return None;
@@ -546,7 +594,7 @@ fn parse_body(
         let split = separator?;
         for (at, owner) in bars {
             if !class_owners[owner] {
-                if (split < class.start) != (at < split) {
+                if !boundary && (split < class.start) != (at < split) {
                     return None;
                 }
                 choice_empty = true;
@@ -566,6 +614,7 @@ fn parse_body(
     });
     let mut grouped_empty = false;
     let mut quantified_empty = false;
+    let mut boundary_captures = false;
     for (frame, end, quantified, zero_minimum) in completed {
         let contains_class = frame.start < class.start && class.end <= end;
         let contains_split = frame.start < split && split < end;
@@ -578,31 +627,55 @@ fn parse_body(
             } else {
                 CaptureRole::Character
             }
-        } else if !contains_split
-            && if split < class.start {
+        } else {
+            if contains_split {
+                return None;
+            }
+            let (owner_start, owner_end) = owner_bounds?;
+            let inside_owner = frame.start > owner_start && end < owner_end;
+            let on_empty_side = if split < class.start {
                 end < split
             } else {
                 frame.start > split
-            }
-        {
-            // A group outside the alternative's owner runs independently of
-            // the selected branch. Its point needs a separate projection.
-            if frame.capture.is_some() {
-                let (owner_start, owner_end) = owner_bounds?;
-                if frame.start <= owner_start || end >= owner_end {
+            };
+            let role = if inside_owner && on_empty_side {
+                CaptureRole::Empty
+            } else if boundary {
+                if end < owner_start {
+                    CaptureRole::StartPoint
+                } else if frame.start > owner_end {
+                    CaptureRole::EndPoint
+                } else if end < class.start {
+                    CaptureRole::CharacterStartPoint
+                } else if frame.start >= class.end {
+                    CaptureRole::CharacterEndPoint
+                } else {
                     return None;
                 }
+            } else {
+                if !on_empty_side || (frame.capture.is_some() && !inside_owner) {
+                    return None;
+                }
+                // Capture-free epsilon siblings remain transparent.
+                CaptureRole::Empty
+            };
+            if frame.capture.is_some()
+                && matches!(
+                    role,
+                    CaptureRole::StartPoint
+                        | CaptureRole::EndPoint
+                        | CaptureRole::CharacterStartPoint
+                        | CaptureRole::CharacterEndPoint
+                )
+            {
+                boundary_captures = true;
             }
             grouped_empty = true;
             quantified_empty |= quantified;
             if effects && zero_minimum {
-                // A zero-minimum empty quantifier cannot pass the progress
-                // check, including its own capture and every descendant.
                 disabled_ends[frame.start] = disabled_ends[frame.start].max(end + 1);
             }
-            CaptureRole::Empty
-        } else {
-            return None;
+            role
         };
         if let Some(index) = frame.capture {
             captures[index] = role;
@@ -617,7 +690,17 @@ fn parse_body(
                 cursor += 1;
             }
             if start < disabled_end {
-                debug_assert_eq!(captures[index], CaptureRole::Empty);
+                debug_assert!(
+                    captures[index] == CaptureRole::Empty
+                        || (boundary
+                            && matches!(
+                                captures[index],
+                                CaptureRole::StartPoint
+                                    | CaptureRole::EndPoint
+                                    | CaptureRole::CharacterStartPoint
+                                    | CaptureRole::CharacterEndPoint
+                            ))
+                );
                 captures[index] = CaptureRole::Never;
             }
         }
@@ -627,6 +710,7 @@ fn parse_body(
         grouped_empty,
         quantified_empty,
         choice_empty,
+        boundary_captures,
         class,
         captures,
     })
@@ -662,4 +746,5 @@ fn empty_group_quantifier(units: &[u16], start: usize) -> Option<(usize, bool)> 
 #[cfg(test)]
 mod tests {
     include!("regexp_unicode_nullable_class_capture_tests.rs");
+    include!("regexp_unicode_nullable_boundary_capture_tests.rs");
 }

@@ -18263,3 +18263,29 @@ all 35 conformance-profile Test262 runner/integration tests and 16,343 reviewed
 variants with this runtime selection. Runtime inventory is 525 case files and
 4,222 integration cases. Corpus sources/helpers, snapshots, dependencies,
 intrinsic counts and default resource policy are unchanged.
+
+
+## Core empty point captures beside nullable alternatives
+
+A separate constructor proves empty captures before/after a class or its
+nullable alternative. Source owner bounds distinguish character-only start/end
+points from unconditional sibling points. Existing interval masks preserve
+optional/later undefined slots, and the final iteration marker supplies actual
+UTF-16 endpoints without whole-run inference or input-sized capture history.
+Earlier branch-only constructors retain their closed ownership domains.
+
+Three groups use an independent executable capture-tree oracle that records
+sequence entry/exit and clears repeated subtrees, instead of computing production
+source-role classifications. The matrix covers eight predicates, six mixed
+layouts, two root wrapper forms, both orders, 14 representative outer counts,
+line/word gates, all starts and sticky/i/m modes across eight inputs. Cancellation
+and structural cases exercise every constructor callback, nonnullable/consuming/
+asserted/unknown shapes, 20,000 deep prefix or sibling suffix captures in both
+orders, large counts, flat clone/drop and linear work.
+
+All 34,312 prior API records retain exact construction/search work and capture
+projection. Stable passes all 1,167 Core and 429 Runtime unit cases and 286
+affected integration cases. Workspace documentation tests, workspace/included-
+source formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. Runtime selection, snapshots, corpus sources/
+helpers, dependencies, intrinsic counts and default resource policy are unchanged.
