@@ -18452,3 +18452,31 @@ documentation tests, workspace/included-source formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories and diff checks pass.
 Runtime selection, snapshots, corpus sources/helpers, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+## Runtime empty point captures around a single nullable class group
+
+Runtime selects one required nullable iteration after unquantified consuming
+captures, retaining the complete normalized source and its alternative owner. Five integration groups cover four predicates, six named layouts,
+three wrapper forms and both branch orders. Character-only empty points remain
+undefined on the empty branch; unconditional before/after points remain defined
+at the actual UTF-16 boundary. Required/optional/later groups retain lexical
+named and positional slots. Supplementary interior starts, lone surrogates,
+folding, escaped names, mandatory branch backtracking through outside gates,
+source metadata and lastIndex retain existing behavior. String consumers and
+callbacks preserve branch participation and advance empty matches by Unicode
+characters. Clones and collection keep original values and aliases. Root
+alternatives retain separate assertion-scope proofs; unsupported terms remain
+host failures. Large flat capture layouts, discarded words, 20,000-digit inner
+counts and opt-in constructor/search aborts preserve atomic state under
+unchanged limits. One former inner rejection control remains preserved as exact
+consuming/empty successes with checked values, indices and finalizers.
+
+All 33,696 differential records across 78 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes, retaining
+both branch orders and unwrapped/complete-wrapper forms. Stable passes all 431
+Runtime unit cases and 307 affected integration cases. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. Runtime inventory is 529 case files and 4,243
+integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
+counts and default resource policy are unchanged.

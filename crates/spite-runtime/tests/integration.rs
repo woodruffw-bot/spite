@@ -893,6 +893,8 @@ mod regexp_unicode_sets_bmp_character_sets;
 mod regexp_unicode_sets_bmp_literals;
 #[path = "cases/regexp_unicode_single_class_captures.rs"]
 mod regexp_unicode_single_class_captures;
+#[path = "cases/regexp_unicode_single_nullable_boundary_captures.rs"]
+mod regexp_unicode_single_nullable_boundary_captures;
 #[path = "cases/regexp_unicode_soft_dotted_properties.rs"]
 mod regexp_unicode_soft_dotted_properties;
 #[path = "cases/regexp_unicode_string_alternatives.rs"]

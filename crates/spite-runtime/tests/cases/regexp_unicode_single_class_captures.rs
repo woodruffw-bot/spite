@@ -124,7 +124,7 @@ fn single_point_capture_proofs_finish_supported_finalizers_and_keep_other_terms_
         r"()[\q{a}]x",
         r"()[\q{a}][\q{b}]",
         r"()[\q{a}]?",
-        r"()(?:[\q{a}]|)",
+        r"(\b)(?:[\q{a}]|)",
         r"()[\q{ab}&&\q{cd}]",
         r"()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
     ] {

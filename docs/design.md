@@ -10856,5 +10856,9 @@ to only one branch; moving it outside a synthetic wrapper would change its scope
 class-versus-empty separator therefore belongs to an explicit original group.
 Source framing/copies share the existing exact-single-iteration helper without
 changing earlier API work traces. Counts, clone/drop and role masks remain flat
-and source-sized; matching adds no capture history. Runtime selection remains a
-subsequent step.
+and source-sized; matching adds no capture history. Runtime selects this proof
+after unquantified consuming captures. It passes the complete normalized source
+to Core: removing complete wrappers could expose the original grouped alternative
+to the root-alternative guard. The Core table includes those captures, so Runtime
+adds no separate enclosing prefix. Named/indices projection, String consumers,
+empty-match advancement, clones and collection retain the shared execution path.

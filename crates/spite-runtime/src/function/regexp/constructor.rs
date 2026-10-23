@@ -2204,6 +2204,25 @@ impl Realm {
         } else {
             matcher
         };
+        // Retain the original alternative owner. Wrapper removal can expose a
+        // root alternative whose assertions belong to only one branch (22.2.2).
+        let matcher = if matcher.is_none() && flags.code_units().contains(&u16::from(b'v')) {
+            let body = self.object_work(span, |_, budget| {
+                RegExpUnicodeNullableClassCaptureMatcher::compile_single_with_boundary_empty_captures_and_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeNullableClassCaptures))
+            })?;
+            if body.is_some() {
+                enclosing_captures = 0;
+            }
+            body
+        } else {
+            matcher
+        };
         // Unicode literal concatenations resolve capture boundaries in original
         // input characters, rather than folded/source UTF-16 widths (22.2.2.7.3).
         let matcher = if matcher.is_none() && unicode {
