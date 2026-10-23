@@ -753,6 +753,8 @@ mod regexp_unicode_one_minimum_open_nullable_alternatives;
 mod regexp_unicode_one_open_nullable_string_classes;
 #[path = "cases/regexp_unicode_overflowing_maximum_nullable_alternatives.rs"]
 mod regexp_unicode_overflowing_maximum_nullable_alternatives;
+#[path = "cases/regexp_unicode_overflowing_maximum_nullable_string_classes.rs"]
+mod regexp_unicode_overflowing_maximum_nullable_string_classes;
 #[path = "cases/regexp_unicode_pattern_syntax_properties.rs"]
 mod regexp_unicode_pattern_syntax_properties;
 #[path = "cases/regexp_unicode_pattern_white_space_properties.rs"]

@@ -17061,3 +17061,34 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime nullable string-class ranges with overflowing finite maxima
+
+Runtime selects the singleton-q and character-result overflowing-maximum proofs
+after represented finite ranges. Six integration groups cover exact optional
+budgets across the native limit, required empty captures and source priority
+independently of laziness, earlier higher-phase candidates, outside word/line
+gates, supplementary folding and original ranges, enclosing captures, escaped
+names, padded/lazy source metadata, frozen lastIndex, String consumers and
+replacements, clones/collection, former Unsupported finalizers, complete
+unknown/string leaf proof, remaining two-overflow-bound and partial atom shapes,
+early errors, 1,000 complete wrappers, long discarded words, 20,000-digit upper
+bounds and 20,000 leading lower-bound zeros under defaults, and atomic opt-in
+construction/search aborts with a short-match probe over the same argument.
+Twenty-four older rejection controls now use two overflowing unequal bounds;
+their eleven distinct original expressions complete with exact values and
+finalizer effects.
+
+All 66,928 complete result records across 178 pattern/control pairs agree with
+independent finite character controls. Controls retain small exact optional
+budgets across the native boundary, and replace unreachable huge limits with
+finite bounds above every input's character count. Capture values, named-key
+presence/order, original indices, sticky starts and lastIndex agree. No Node
+behavior exception is added.
+
+Stable passes all 425 Runtime unit cases, 160 affected integration cases, and
+1,449 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 504 case files and 4,096 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

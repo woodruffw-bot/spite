@@ -10071,7 +10071,15 @@ linear search and final empty/original character capture projection (22.2.2.3).
 The constructor precharges decimal comparison/subtraction in addition to existing
 framing and count parsing. Counts never expand into iterations or captures, and
 flat clone/drop, prior constructor domains/work traces, allocation boundaries,
-dependencies and resource defaults are unchanged. Runtime selection is separate.
+dependencies and resource defaults are unchanged.
+
+Runtime selects these two proofs after represented finite ranges. Existing result
+projection retains mandatory empty captures and original supplementary character
+ranges, including the leading boundary when a Unicode start lies inside a pair.
+String consumers, replacements, names/indices, source metadata, lastIndex, clones,
+collection and opt-in host-abort propagation reuse existing paths. Former
+Unsupported overflowing-maximum expressions complete finalizers normally; ranges
+whose lower and upper bounds both overflow retain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 
