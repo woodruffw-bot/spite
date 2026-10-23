@@ -16731,3 +16731,31 @@ cases, and 1,413 Unicode integration cases. Workspace documentation tests,
 formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
 and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
 intrinsic counts, and default resource policy are unchanged.
+
+## Core exactly-one braced nullable string classes
+
+Separate Core entries prove {1} and {1,1} repetition of a raw empty alternative
+beside a singleton-q or character-result v/vi class, including padded and lazy
+forms. Every iteration is mandatory, so source branch priority determines the
+selected empty or consuming range independently of quantifier greediness.
+Complete wrappers, outside word/line gates, defined empty captures, original
+character ranges, full class proof and constant capture/count storage reuse the
+existing matcher. Earlier constructor domains stay closed; Runtime selection is
+separate.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, eight exact/range
+spellings, line/word gates, all starts and sticky/i/m modes. They check required
+empty captures, ignored greedy/lazy reordering of mandatory choices,
+supplementary folding, paired/lone surrogate ranges, complete unknown/string
+leaf proof, other-count rejection, every constructor callback's
+cancellation/recovery, 20,000 complete wrappers, 20,000-character discarded words
+and 20,000 leading count zeros with linear checked work and flat clone/drop.
+
+All 3,448 prior eight-string/five-class/thirteen-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,085 Core and 425 Runtime unit cases and 206 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

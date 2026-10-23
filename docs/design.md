@@ -9888,6 +9888,30 @@ including normalized supplementary names. String consumers, replacement
 callbacks, lastIndex, clones, collection and host-abort propagation reuse their
 existing paths. Former Unsupported {1,} expressions complete finalizers normally.
 
+## Exactly-one braced nullable string classes
+
+Separate Core entries prove {1} and {1,1} repetition of one raw empty alternative
+beside a bare singleton-q or character-result v/vi class, including padded and
+lazy forms. Complete ordinary/noncapturing wrappers and canonical outside
+word/line gates retain their earlier scope. Other counts, simple quantifiers,
+branch-local captures/assertions, grouped/extra empty alternatives and additional
+atoms remain separate proofs. Every class operand is compiled even when the
+empty-first branch can satisfy the only required iteration.
+
+Every iteration is mandatory, so the quantifier's greedy flag cannot reorder
+the body's choices. The existing matcher finds consuming and empty candidates
+in separate linear passes: the earliest input start wins and source branch order
+breaks a tie. Successful complete inner captures retain the selected original
+character range or a defined empty range. Existing representation, linear search
+and capture projection are reused without per-capture matching state.
+
+The shared borrowed framing/wrapper scan selects this braced-count proof and
+precharges decimal scans. Counts never expand into matching state. Earlier
+simple, zero-minimum and one-minimum-open constructors retain their domains,
+exact work traces and results. Checked class storage, allocation boundaries,
+flat clone/drop, dependencies and resource defaults are unchanged. Runtime
+selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
