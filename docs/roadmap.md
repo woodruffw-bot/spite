@@ -713,6 +713,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute character-only captures beside quantified noncapturing empty groups, preserving all outer counts, original named/indices values, String consumers, finalizers and atomic host aborts.
 - [x] Compile character-only captures beside effect-free noncapturing empty choices, preserving nested/sibling quantified groups, exact separator ownership, all outer counts and flat source-sized state.
 - [x] Execute character-only captures beside effect-free noncapturing empty choices, preserving all outer counts, original captures/indices, String consumers, finalizers and atomic host aborts.
+- [x] Compile captures in quantified empty branches and choices, preserving optional/later-alternative undefined slots, required first-alternative captures, all outer counts and source-sized interval masks.
 - [ ] Connect consuming-branch nullable string-class captures to Runtime RegExp named indices and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

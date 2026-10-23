@@ -10608,6 +10608,36 @@ RegExp and String consumers retain source metadata, lastIndex, clones and
 collection. Former pure-choice rejections complete their exact results and eval
 finalizers; huge inner counts and opt-in host aborts stay flat and atomic.
 
+## Captures in quantified empty branches and choices
+
+A separate Core constructor proves captured empty branches containing nested or
+sibling quantifiers and choices opposite one character class. At least one
+empty-only capture and one empty-side quantifier/choice are required. Every
+empty alternative contains only groups and validated counts; assertions,
+references, consuming terms and character-side empty groups/quantifiers retain
+separate proofs.
+
+Within the empty side, a zero-minimum empty group cannot pass RepeatMatcher's
+progress check, so it and its descendants never participate. Required empty
+group iterations select the first empty alternative. Every alternative has the
+same input point and the continuation reads only input gates, so later choices
+cannot turn a failed continuation into a successful capture profile (22.2.2.3).
+
+Flat group-end and capture-start tables resolve source intervals disabled by
+zero-minimum groups and later empty alternatives. One ordered sweep merges
+these intervals and marks their capture roles permanently undefined. Other
+empty-only roles receive the final empty iteration point; character-only roles
+receive only positive-width ranges. Complete iterations and enclosing captures
+retain their separate projection. All atom captures clear before each outer
+iteration, including required final empties after earlier characters.
+
+Linear precharges cover owner markers, count scans, interval tables and sweeps.
+Counts and choices never expand, clone/drop remain flat and source-sized, and
+matching adds no input-sized capture history. Existing outer counts, mandatory
+priority, optional budgets, gates and original UTF-16 ranges reuse the same
+matcher. Prior constructors retain their domains and exact work traces. Runtime
+selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
