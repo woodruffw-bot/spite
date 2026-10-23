@@ -151,7 +151,7 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
         r"|[\q{ab}&&\q{cd}]",
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:)",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
     ] {

@@ -222,7 +222,7 @@ fn counted_sequence_complete_proofs_finish_finalizers_and_prove_every_leaf() {
         r"([\q{a|b}])|(?:)(?:)",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||(?:)(?:)",
         r"\b[\q{a|ab}&&a]|(?:)(?:)",
     ] {

@@ -122,7 +122,7 @@ fn complete_grouped_positive_finite_proofs_finish_finalizers_and_keep_overflowin
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,3}/v.test('a')",
-        r"/([\q{a|b}]|()){2,3}/v.test('a')",
+        r"/([\q{a|b}]|()?){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){2,3}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2,3}[b]/v.test('ab')",

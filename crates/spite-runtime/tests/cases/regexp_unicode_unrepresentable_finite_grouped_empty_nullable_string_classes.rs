@@ -152,7 +152,7 @@ fn complete_grouped_unequal_overflowing_proofs_finish_finalizers_and_prove_every
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||(?:(?:))",
         r"\b[\q{a|ab}&&a]|(?:(?:))",
     ] {

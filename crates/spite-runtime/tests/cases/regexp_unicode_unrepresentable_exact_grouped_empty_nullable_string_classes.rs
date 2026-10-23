@@ -127,7 +127,7 @@ fn overflowing_exact_grouped_proofs_finish_finalizers_and_prove_unknown_leaves()
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||(?:)",
         r"\b[\q{a|ab}&&a]|(?:)",
     ] {

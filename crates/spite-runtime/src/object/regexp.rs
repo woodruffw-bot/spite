@@ -3261,4 +3261,31 @@ mod tests {
         assert_eq!(found.capture(0), None);
         assert_eq!(found.capture(1), None);
     }
+
+    #[test]
+    fn unicode_nullable_empty_only_captures_project_required_optional_and_zero_iterations() {
+        for (source, whole, empty) in [
+            (r"(?:[\q{a|b}]|(())){3}", 0..2, Some(2..2)),
+            (r"(?:(())|[\q{a|b}]){2,3}", 0..1, None),
+            (r"(?:[\q{a|b}]|(())){0}", 0..0, None),
+        ] {
+            let body = RegExpUnicodeNullableClassCaptureMatcher::compile_with_empty_branch_captures_and_work(
+                &JsString::from(source), false, false, |_| Ok::<(), ()>(()),
+            ).unwrap().unwrap();
+            let matcher =
+                RegExpMatcher::new(RegExpMatcherBody::UnicodeNullableClassCaptures(body), 2);
+            assert_eq!(matcher.capture_count(), 4);
+            let input = JsString::from("ab");
+            let found = matcher
+                .find_with_work(&input, 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, whole);
+            assert_eq!(found.capture(0), Some(whole.clone()));
+            assert_eq!(found.capture(1), Some(whole));
+            assert_eq!(found.capture(2), empty);
+            assert_eq!(found.capture(3), empty);
+            assert_eq!(found.capture(4), None);
+        }
+    }
 }

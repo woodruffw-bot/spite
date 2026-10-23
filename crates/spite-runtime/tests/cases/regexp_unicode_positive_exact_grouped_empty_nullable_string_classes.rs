@@ -130,7 +130,7 @@ fn positive_exact_grouped_proofs_finish_finalizers_and_keep_other_domains_deferr
         r"/([\q{a|b}]|(?:|())){2}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2}/v.test('a')",
-        r"/([\q{a|b}]|()){2}/v.test('a')",
+        r"/([\q{a|b}]|()?){2}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){2}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2}[b]/v.test('ab')",

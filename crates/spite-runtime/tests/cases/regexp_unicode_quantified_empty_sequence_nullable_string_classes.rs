@@ -241,7 +241,7 @@ fn quantified_sequence_complete_proofs_finish_finalizers_and_keep_choices_deferr
         r"([\q{a|b}])|(?:)*",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|())",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|b}]|(?:)()*",
         r"[\q{a|ab}&&a]||(?:)*",
         r"\b[\q{a|ab}&&a]|(?:)*",

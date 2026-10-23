@@ -261,7 +261,7 @@ fn choice_sequence_complete_proofs_finish_finalizers_and_keep_captures_and_effec
         r"[\q{a|b}]|(?:|a)",
         r"[\q{a|b}]|(?:|())",
         r"[\q{a|b}]|(?:|\b)",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||(?:|)*",
         r"\b[\q{a|ab}&&a]|(?:|)*",
     ] {

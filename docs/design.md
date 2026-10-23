@@ -10531,7 +10531,13 @@ Simple and every braced outer count, optional budgets, outside word/line gates,
 UTF-16 ranges and source spellings reuse existing matching. Linear construction
 charges cover the extra span walk; captures, clone and drop remain flat and
 source-sized. Prior constructor domains and exact work traces remain unchanged.
-Runtime selection is separate.
+Runtime selects this proof after raw-empty character-only captures. Existing
+projection keeps whole-match enclosures separate and preserves source-order
+named and unnamed slots for complete iterations and either branch. String
+consumers, callback arguments, original source/flags and UTF-16 values, indices,
+lastIndex, clones and collection reuse the same ranges. Required empty-only
+groups and undefined character-only groups remain distinct through finalizers.
+Opt-in constructor/search aborts retain atomic state under unchanged limits.
 
 ## Global intrinsic metadata and enumeration
 

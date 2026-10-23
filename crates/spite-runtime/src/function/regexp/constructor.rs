@@ -2127,6 +2127,14 @@ impl Realm {
                     ).map_err(unicode_set_compile_error)? {
                         return Ok(Some(RegExpMatcherBody::UnicodeNullableClassCaptures(body)));
                     }
+                    if let Some(body) = RegExpUnicodeNullableClassCaptureMatcher::compile_with_empty_branch_captures_and_work(
+                        &matching_source,
+                        flags.code_units().contains(&u16::from(b'i')),
+                        flags.code_units().contains(&u16::from(b'm')),
+                        |work| budget.charge(work),
+                    ).map_err(unicode_set_compile_error)? {
+                        return Ok(Some(RegExpMatcherBody::UnicodeNullableClassCaptures(body)));
+                    }
                 }
                 Ok(None)
             })?;

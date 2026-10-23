@@ -129,7 +129,7 @@ fn zero_grouped_empty_proofs_finish_finalizers_and_prove_all_unreachable_leaves(
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){0}/v.test('a')",
-        r"/([\q{a|b}]|()){0}/v.test('a')",
+        r"/([\q{a|b}]|()?){0}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){0}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){0}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){0}[b]/v.test('ab')",

@@ -17996,3 +17996,26 @@ tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime selection, snapshots, corpus sources
 and helpers, dependencies, intrinsic counts and default resource policy are
 unchanged.
+
+
+## Runtime captures confined to a nullable class's empty branch
+
+Runtime now selects the nested/sibling empty-capture proof for nullable
+singleton-q and character-result v/vi classes under all outer count families.
+A projection unit case checks empty-only captures without character captures
+under required, optional and zero iterations. Six integration groups cover 27
+outer modes, both branch orders, source-order named/unnamed groups, nested and
+sibling empty groups, final required empty clearing, supplementary interior
+starts, lone surrogates, escaped names, original case-folded input and metadata.
+String consumers, replacement arguments, clones and collection preserve defined
+empty versus undefined slots. Sixteen former literal rejection controls and ten
+inner controls (eight distinct programs and two branches) remain preserved as
+complete successes with checked finalizers. Empty-side quantifiers/choices and
+other effects/leaves retain separate proofs. Large capture layouts, discarded
+words, padded/overflowing counts and opt-in constructor/search aborts remain flat
+and preserve atomic state under unchanged limits.
+
+Stable passes all 428 Runtime unit cases, 262 affected integration cases and
+1,551 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories and diff
+checks pass. Runtime inventory is 521 case files and 4,198 integration cases.

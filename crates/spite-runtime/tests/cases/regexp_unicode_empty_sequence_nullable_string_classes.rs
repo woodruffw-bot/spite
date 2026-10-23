@@ -109,7 +109,7 @@ fn sequence_empty_complete_proofs_finish_finalizers_and_keep_other_shapes_deferr
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",
         r"/([\q{a|b}]|(?:|()))+/v.test('a')",
-        r"/([\q{a|ab}&&a]|())+/v.test('a')",
+        r"/([\q{a|ab}&&a]|()?)+/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)(?:))+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)(?:))+/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)(?:))+[b]/v.test('ab')",

@@ -125,7 +125,7 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
         r"|[\q{ab}&&\q{cd}]",
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|ab}&&a])|(?:)",
-        r"[\q{a|b}]|()",
+        r"[\q{a|b}]|()?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
     ] {

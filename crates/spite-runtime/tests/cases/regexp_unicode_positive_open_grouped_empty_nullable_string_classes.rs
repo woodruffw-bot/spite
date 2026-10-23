@@ -118,7 +118,7 @@ fn complete_positive_open_grouped_proofs_finish_finalizers_and_keep_other_domain
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",
         r"/([\q{a|b}]|(?:|())){2,}/v.test('a')",
-        r"/([\q{a|b}]|()){2,}/v.test('a')",
+        r"/([\q{a|b}]|()?){2,}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){2,}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){2,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2,}[b]/v.test('ab')",
