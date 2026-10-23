@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8391 unmodified test fixtures and sixteen harness files come from
+These 8440 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,38 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+## Ordinary-buffer Atomics fixtures
+
+Forty-nine whole unchanged originals add 98 normal/strict variants. They cover
+Number and BigInt load/store/read-modify-write operations on ordinary buffers,
+incompatible element kinds, notify conversion order and captured lengths,
+non-shared wait/waitAsync rejection, namespace metadata, and isLockFree coercion
+and consistent Agent flags. The existing Atomics/prop-desc.js stays exactly once.
+
+The focused review read 53 complete originals from the namespace root,
+isLockFree, and non-shared-buffer selections. Fifty are eligible, including the
+existing descriptor original. Two excluded whole files construct SharedArrayBuffer:
+isLockFree/not-a-constructor.js and notify/non-shared-int-views.js. The detached
+notify length original requires the unavailable $262.detachArrayBuffer helper.
+No unsupported operation satisfies an assertion or receives conformance credit.
+
+The existing testTypedArray.js helper retains every constructor/factory selection,
+including available resizable, grown, and shrunk ordinary buffers. The BigInt
+isLockFree original's SharedArrayBuffer feature annotation is retained; its
+complete body reads constructor byte widths and never constructs a shared buffer.
+Historical algorithm excerpts and descriptions are unchanged. The pin, license,
+sixteen helpers, earlier inventory prefixes, and every source byte are preserved.
+
+The corpus now contains 8,440 fixtures, sixteen helpers, 8,421 reviewed sources,
+and 16,319 variants: 14,786 harness positives, 1,525 parse negatives, four raw
+positives, and four runtime negatives. This selection is not whole-suite Atomics
+coverage; shared memory and agents remain deferred.
+
+Stable passes all 35 Test262 package tests, including the complete 16,319-variant
+corpus. Formatting, strict workspace Clippy, dependency policy, fixture hashes,
+inventory assertions, and diff checks pass. Runtime defaults, ordinary stacks,
+three-worker corpus execution, and all earlier fixtures are unchanged.
 
 ## WeakRef constructor and deref fixtures
 

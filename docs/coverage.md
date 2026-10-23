@@ -51,7 +51,7 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16221 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16319 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 Debugger statements parse with ordinary ASI and produce an empty completion.
 This host has no active debugging facility (ECMA-262 14.16.1).
@@ -15937,3 +15937,18 @@ counts, defaults, production dependencies, and snapshots are unchanged.
 Stable passes all 28 workspace test invocations, including all 3,960 Runtime
 integration tests and 422 Runtime unit tests. Documentation tests, formatting,
 strict workspace Clippy, dependency policy, and fixture/source inventories pass.
+
+## Ordinary-buffer Atomics fixtures
+
+Forty-nine unchanged originals add 98 normal/strict variants for ordinary-buffer
+Atomics, non-shared waiting rejection, notify conversion order, namespace metadata,
+and isLockFree. The existing descriptor source remains once. The focused review
+and three whole-file exclusions are recorded in the
+[fixture inventory](../tests/test262/README.md#ordinary-buffer-atomics-fixtures).
+All sixteen harness files and the Test262 pin remain unchanged.
+
+Stable passes all 35 Test262 package tests, including the full 16,319-variant
+corpus over 8,421 reviewed sources. Fixture hashes, inventory assertions,
+formatting, strict workspace Clippy, dependency policy, and diff checks pass.
+Shared buffers and agents remain deferred; ordinary runtime defaults, native
+stacks, and three-worker corpus execution are unchanged.
