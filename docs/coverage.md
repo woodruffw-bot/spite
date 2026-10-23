@@ -17864,3 +17864,29 @@ strict workspace Clippy, dependency policy, source/fixture inventories and diff
 checks pass. Runtime inventory is 518 case files and 4,180 integration cases.
 Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Core effect-free empty choices beside string classes
+
+Four Core entries prove nullable singleton-q and character-result v/vi classes
+beside effect-free empty choices under simple or every braced outer count.
+Balanced edge scans locate complete empty branches independently of q payload
+bars and escaped parentheses. The complete empty/class proofs preserve mandatory
+priority, progress, optional budgets, earliest starts and captures without
+expanding choices or counts.
+
+Two independent recursive specification-oracle matrices cover eight predicates,
+including escaped parenthesis payloads, three wrapper layouts, both branch
+orders, all six simple modes and 21 braced count forms, outside line/word gates,
+all starts and sticky/i/m modes across eight inputs. A third group checks every
+constructor callback's cancellation/recovery, closed consuming/asserted/capture
+domains, unknown/string leaves, 20,000 complete capturing wrappers and nested
+groups, 20,000 flat quantified choices and discarded characters, and 20,000-digit
+inner empty counts with linear work and flat clone/drop.
+
+All 27,096 prior eight-string/five-class/fifty-five-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,145 Core and 425 Runtime unit cases and 244 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
+resource policy are unchanged.

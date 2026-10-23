@@ -8347,3 +8347,412 @@ fn quantified_empty_sequence_string_proofs_charge_all_work_and_keep_huge_empty_c
         }
     }
 }
+
+fn compile_empty_choice_string_with_work<E>(
+    source: &JsString,
+    i: bool,
+    m: bool,
+    singleton: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeRepeatedAtomMatcher>, crate::RegExpUnicodeSetCompileError<E>> {
+    if singleton {
+        RegExpUnicodeRepeatedAtomMatcher::compile_empty_choice_nullable_v_set_with_single_character_strings_and_work(source, i, m, charge)
+    } else {
+        RegExpUnicodeRepeatedAtomMatcher::compile_empty_choice_nullable_character_result_v_set_with_work(source, i, m, charge)
+    }
+}
+
+#[test]
+fn empty_choice_string_braces_follow_independent_progress_branch_and_capture_oracle() {
+    type Predicate = fn(u32) -> bool;
+    let classes: [(&str, Predicate, bool); 8] = [
+        (r"[\q{a|b}]", |p| p == 97 || p == 98, true),
+        (r"[\q{a|b|ab}&&\p{Any}]", |p| p == 97 || p == 98, false),
+        (r"[\q{ab}&&a]", |_| false, false),
+        (r"[^\q{ab}&&a]", |_| true, false),
+        (r"[\q{😀|😀x}&&\p{Any}]", |p| p == 0x1f600, false),
+        (r"[\q{\u{10428}|ab}&&\p{Any}]", |p| p == 0x10428, false),
+        (
+            r"[\q{\(|\)|a}]",
+            |p| p == 0x28 || p == 0x29 || p == 97,
+            true,
+        ),
+        (
+            r"[\q{\(|\)|ab}&&\p{Any}]",
+            |p| p == 0x28 || p == 0x29,
+            false,
+        ),
+    ];
+    for (class, contains, singleton) in classes {
+        for (open, close, captures) in [("(", ")", 1), ("((", "))", 2), ("(?:(?:", "))", 0)] {
+            for empty_first in [false, true] {
+                for (quantifier, minimum, maximum, greedy) in [
+                    ("*", 0, None, true),
+                    ("*?", 0, None, false),
+                    ("+", 1, None, true),
+                    ("+?", 1, None, false),
+                    ("?", 0, Some(1), true),
+                    ("??", 0, Some(1), false),
+                ] {
+                    for (prefix, suffix, anchors, words) in [
+                        ("", "", false, [None, None]),
+                        (r"^\b", r"\b$", true, [Some(true), Some(true)]),
+                        (r"\B", r"\b", false, [Some(false), Some(true)]),
+                    ] {
+                        for i in [false, true] {
+                            for m in [false, true] {
+                                let inner = if empty_first {
+                                    format!("(?:(?:|){{0,2}}(?:|){{0,2}})|{class}")
+                                } else {
+                                    format!("{class}|(?:(?:|){{0,2}}(?:|){{0,2}})")
+                                };
+                                let source =
+                                    format!("{prefix}{open}{inner}{close}{quantifier}{suffix}");
+                                let plan = compile_empty_choice_string_with_work(
+                                    &JsString::from(source.as_str()),
+                                    i,
+                                    m,
+                                    singleton,
+                                    |_| Ok::<(), ()>(()),
+                                )
+                                .unwrap()
+                                .unwrap();
+                                assert_eq!(plan.capture_count(), captures);
+                                for input in [
+                                    JsString::from(""),
+                                    JsString::from("aaab!aba"),
+                                    JsString::from("A😀😀aa"),
+                                    JsString::from("!\r\naaa\u{2028}!"),
+                                    JsString::from("ſK"),
+                                    JsString::from("(a))!"),
+                                    JsString::from("𐐀𐐨!"),
+                                    JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+                                ] {
+                                    let expected = Oracle::new(
+                                        &input,
+                                        contains,
+                                        Bounds {
+                                            minimum,
+                                            maximum,
+                                            greedy,
+                                        },
+                                        Gates {
+                                            anchors,
+                                            words,
+                                            i,
+                                            m,
+                                        },
+                                        empty_first,
+                                        captures,
+                                    );
+                                    for start in 0..=input.len() + 1 {
+                                        for sticky in [false, true] {
+                                            assert_eq!(
+                                                plan.find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                                expected.find(start, sticky),
+                                                "{source} i={i} m={m} {input:?} start={start} sticky={sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn compile_counted_empty_choice_string_with_work<E>(
+    source: &JsString,
+    i: bool,
+    m: bool,
+    singleton: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeRepeatedAtomMatcher>, crate::RegExpUnicodeSetCompileError<E>> {
+    if singleton {
+        RegExpUnicodeRepeatedAtomMatcher::compile_counted_empty_choice_nullable_v_set_with_single_character_strings_and_work(source, i, m, charge)
+    } else {
+        RegExpUnicodeRepeatedAtomMatcher::compile_counted_empty_choice_nullable_character_result_v_set_with_work(source, i, m, charge)
+    }
+}
+
+#[test]
+fn counted_empty_choice_string_braces_follow_independent_progress_branch_and_capture_oracle() {
+    type Predicate = fn(u32) -> bool;
+    let classes: [(&str, Predicate, bool); 8] = [
+        (r"[\q{a|b}]", |p| p == 97 || p == 98, true),
+        (r"[\q{a|b|ab}&&\p{Any}]", |p| p == 97 || p == 98, false),
+        (r"[\q{ab}&&a]", |_| false, false),
+        (r"[^\q{ab}&&a]", |_| true, false),
+        (r"[\q{😀|😀x}&&\p{Any}]", |p| p == 0x1f600, false),
+        (r"[\q{\u{10428}|ab}&&\p{Any}]", |p| p == 0x10428, false),
+        (
+            r"[\q{\(|\)|a}]",
+            |p| p == 0x28 || p == 0x29 || p == 97,
+            true,
+        ),
+        (
+            r"[\q{\(|\)|ab}&&\p{Any}]",
+            |p| p == 0x28 || p == 0x29,
+            false,
+        ),
+    ];
+    for (class, contains, singleton) in classes {
+        for (open, close, captures) in [("(", ")", 1), ("((", "))", 2), ("(?:(?:", "))", 0)] {
+            for empty_first in [false, true] {
+                let limit = usize::MAX as u128;
+                let huge = 10u128.pow(30);
+                for (quantifier, minimum, optional, greedy) in [
+                    ("{0}".to_owned(), Some(0), Some(0), true),
+                    ("{00,003}?".to_owned(), Some(0), Some(3), false),
+                    (format!("{{0,{huge}}}"), Some(0), None, true),
+                    ("{000,}".to_owned(), Some(0), None, true),
+                    ("{1}".to_owned(), Some(1), Some(0), true),
+                    ("{01,001}?".to_owned(), Some(1), Some(0), false),
+                    ("{1,}".to_owned(), Some(1), None, true),
+                    ("{2}".to_owned(), Some(2), Some(0), true),
+                    ("{02,002}?".to_owned(), Some(2), Some(0), false),
+                    ("{2,4}".to_owned(), Some(2), Some(2), true),
+                    ("{02,004}?".to_owned(), Some(2), Some(2), false),
+                    ("{3,}?".to_owned(), Some(3), None, false),
+                    (format!("{{1,{huge}}}?"), Some(1), None, false),
+                    (format!("{{{limit},{}}}", limit + 1), None, Some(1), true),
+                    (format!("{{{limit},{}}}?", limit + 1), None, Some(1), false),
+                    (format!("{{{huge},{}}}", huge + 1), None, Some(1), true),
+                    (format!("{{{huge},{}}}?", huge + 1), None, Some(1), false),
+                    (format!("{{{huge}}}?"), None, Some(0), false),
+                    (format!("{{000{huge},0{huge}}}"), None, Some(0), true),
+                    (format!("{{{huge},}}?"), None, None, false),
+                    (format!("{{{huge},{}}}?", huge * 100), None, None, false),
+                ] {
+                    for (prefix, suffix, anchors, words) in [
+                        ("", "", false, [None, None]),
+                        (r"^\b", r"\b$", true, [Some(true), Some(true)]),
+                        (r"\B", r"\b", false, [Some(false), Some(true)]),
+                    ] {
+                        for i in [false, true] {
+                            for m in [false, true] {
+                                let inner = if empty_first {
+                                    format!("(?:(?:|){{0,2}}(?:|){{0,2}})|{class}")
+                                } else {
+                                    format!("{class}|(?:(?:|){{0,2}}(?:|){{0,2}})")
+                                };
+                                let source =
+                                    format!("{prefix}{open}{inner}{close}{quantifier}{suffix}");
+                                let plan = compile_counted_empty_choice_string_with_work(
+                                    &JsString::from(source.as_str()),
+                                    i,
+                                    m,
+                                    singleton,
+                                    |_| Ok::<(), ()>(()),
+                                )
+                                .unwrap()
+                                .unwrap();
+                                assert_eq!(plan.capture_count(), captures);
+                                for input in [
+                                    JsString::from(""),
+                                    JsString::from("aaab!aba"),
+                                    JsString::from("A😀😀aa"),
+                                    JsString::from("!\r\naaa\u{2028}!"),
+                                    JsString::from("ſK"),
+                                    JsString::from("(a))!"),
+                                    JsString::from("𐐀𐐨!"),
+                                    JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+                                ] {
+                                    let minimum = minimum.unwrap_or(input.len() + 1);
+                                    let maximum = optional.map(|extra| minimum + extra);
+                                    let expected = Oracle::new(
+                                        &input,
+                                        contains,
+                                        Bounds {
+                                            minimum,
+                                            maximum,
+                                            greedy,
+                                        },
+                                        Gates {
+                                            anchors,
+                                            words,
+                                            i,
+                                            m,
+                                        },
+                                        empty_first,
+                                        captures,
+                                    );
+                                    for start in 0..=input.len() + 1 {
+                                        for sticky in [false, true] {
+                                            assert_eq!(
+                                                plan.find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                                expected.find(start, sticky),
+                                                "{source} i={i} m={m} {input:?} start={start} sticky={sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn compile_empty_choice_mode_with_work<E>(
+    source: &JsString,
+    singleton: bool,
+    counted: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeRepeatedAtomMatcher>, crate::RegExpUnicodeSetCompileError<E>> {
+    if counted {
+        compile_counted_empty_choice_string_with_work(source, true, true, singleton, charge)
+    } else {
+        compile_empty_choice_string_with_work(source, true, true, singleton, charge)
+    }
+}
+
+#[test]
+fn empty_choice_string_proofs_charge_all_work_and_keep_huge_empty_counts_flat() {
+    for counted in [false, true] {
+        let outer = if counted { "{2,3}" } else { "+" };
+        for (singleton, inner) in [
+            (true, r"(?:|)*?(?:|){0}|[\q{a|b}]"),
+            (
+                false,
+                r"[\q{ab}&&a]|(?:(?:|){0,999999999999999999999999999999999999999})??",
+            ),
+            (false, r"(?:(?:|){01,0001}?)(?:|)+|[^\q{ab}&&a]"),
+        ] {
+            let source = JsString::from(format!(r"^\b(({inner})){outer}?\b$").as_str());
+            let mut complete = Vec::new();
+            compile_empty_choice_mode_with_work(&source, singleton, counted, |n| {
+                complete.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap()
+            .unwrap();
+            assert_eq!(complete[..2], [source.len() * 10, source.len() * 40]);
+            if counted {
+                assert_eq!(complete[2], source.len() * 8);
+            }
+            for fail in 1..=complete.len() {
+                let mut seen = Vec::new();
+                let result =
+                    compile_empty_choice_mode_with_work(&source, singleton, counted, |n| {
+                        seen.push(n);
+                        if seen.len() == fail {
+                            Err(fail)
+                        } else {
+                            Ok(())
+                        }
+                    });
+                assert!(
+                    matches!(result,Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at==fail)
+                );
+                assert_eq!(seen, complete[..fail]);
+            }
+            let mut recovered = Vec::new();
+            compile_empty_choice_mode_with_work(&source, singleton, counted, |n| {
+                recovered.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap()
+            .unwrap();
+            assert_eq!(recovered, complete);
+        }
+        let empty = format!(
+            "{}{}(?:|){{{}}}",
+            "(?:".repeat(20_000),
+            ")".repeat(20_000),
+            "9".repeat(20_000)
+        );
+        for (source, captures, range, capture) in [
+            (
+                format!(
+                    r"{}{empty}|[\q{{a|ab}}&&a]{}{outer}",
+                    "(".repeat(20_000),
+                    ")".repeat(20_000)
+                ),
+                20_000,
+                if counted { 0..1 } else { 0..3 },
+                if counted { 0..1 } else { 2..3 },
+            ),
+            (
+                format!(r"({}|[\q{{ab}}&&a]){outer}?", "(?:|)*?".repeat(20_000)),
+                1,
+                0..0,
+                0..0,
+            ),
+            (
+                format!(r"((?:|){{0}}|[\q{{{}}}&&a]){outer}", "x".repeat(20_000)),
+                1,
+                0..0,
+                0..0,
+            ),
+        ] {
+            let source = JsString::from(source.as_str());
+            let mut work = 0;
+            let original = compile_empty_choice_mode_with_work(&source, false, counted, |n| {
+                work += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+            let bound = if counted { 82 } else { 68 };
+            assert!(
+                work < source.len() * bound + 1024,
+                "linear construction work: {work}"
+            );
+            let plan = original.clone();
+            drop(original);
+            assert_eq!(plan.capture_count(), captures);
+            let found = plan
+                .find_with_captures_and_work(&JsString::from("aaa"), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, range);
+            assert_eq!(found.atom_capture, Some(capture));
+        }
+        for inner in [
+            r"([\q{a|b}])|(?:|)*",
+            r"[\q{a|b}]|()",
+            r"[\q{a|b}]|(?:|)()*",
+            r"[\q{a|b}]|(?:|a)*",
+            r"[\q{a|b}]|(?:(?:|)|(?:a))*",
+            r"[\q{a|b}]|(?:\b)*",
+            r"[\q{a|b}]|",
+            r"|[\q{a|b}]",
+            r"[\q{a|b}]||(?:|)*",
+            r"(?:|)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
+            r"[\q{ab}&&\q{cd}]|(?:|)*",
+        ] {
+            for singleton in [false, true] {
+                let source = JsString::from(format!("({inner}){outer}").as_str());
+                assert!(
+                    compile_empty_choice_mode_with_work(&source, singleton, counted, |_| Ok::<
+                        (),
+                        (),
+                    >(
+                        ()
+                    ))
+                    .unwrap()
+                    .is_none(),
+                    "{source:?}"
+                );
+            }
+        }
+    }
+}

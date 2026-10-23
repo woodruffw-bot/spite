@@ -3341,6 +3341,130 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles nullable singleton-q classes beside effect-free empty choices.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of noncapturing
+    /// empty groups under *, + or ?, with an optional lazy marker. Empty groups
+    /// may nest, have siblings, choices and validated greedy/lazy or huge counts.
+    /// Every alternative must be empty and contribute no captures or assertions.
+    /// Balanced edge scans locate the complete empty branch independently of
+    /// bars and escaped parentheses in q payloads. Every class leaf is proved
+    /// behind empty-first choices. Existing repetition proofs preserve mandatory
+    /// priority, progress, budgets, earliest starts, captures and outside gates.
+    /// Consuming, asserted or capturing empty branches remain separate proofs.
+    /// Construction and clone/drop add no native recursion or expanded counts.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_empty_choice_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::Raw,
+            EmptyBranchProof::Choices,
+            charge,
+        )
+    }
+
+    /// Compiles nullable character-result classes beside effect-free empty choices.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of noncapturing
+    /// empty groups under *, + or ?, with an optional lazy marker. Empty groups
+    /// may nest, have siblings, choices and validated greedy/lazy or huge counts.
+    /// Every alternative must be empty and contribute no captures or assertions.
+    /// Balanced edge scans locate the complete empty branch independently of
+    /// bars and escaped parentheses in q payloads. Every class leaf is proved
+    /// behind empty-first choices. Existing repetition proofs preserve mandatory
+    /// priority, progress, budgets, earliest starts, captures and outside gates.
+    /// Consuming, asserted or capturing empty branches remain separate proofs.
+    /// Construction and clone/drop add no native recursion or expanded counts.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_empty_choice_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::Raw,
+            EmptyBranchProof::Choices,
+            charge,
+        )
+    }
+
+    /// Compiles nullable singleton-q classes beside effect-free empty choices.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of noncapturing
+    /// empty groups under a braced count, with an optional lazy marker. Empty groups
+    /// may nest, have siblings, choices and validated greedy/lazy or huge counts.
+    /// Every alternative must be empty and contribute no captures or assertions.
+    /// Balanced edge scans locate the complete empty branch independently of
+    /// bars and escaped parentheses in q payloads. Every class leaf is proved
+    /// behind empty-first choices. Existing repetition proofs preserve mandatory
+    /// priority, progress, budgets, earliest starts, captures and outside gates.
+    /// Consuming, asserted or capturing empty branches remain separate proofs.
+    /// Construction and clone/drop add no native recursion or expanded counts.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_counted_empty_choice_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::Counted,
+            EmptyBranchProof::Choices,
+            charge,
+        )
+    }
+
+    /// Compiles nullable character-result classes beside effect-free empty choices.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of noncapturing
+    /// empty groups under a braced count, with an optional lazy marker. Empty groups
+    /// may nest, have siblings, choices and validated greedy/lazy or huge counts.
+    /// Every alternative must be empty and contribute no captures or assertions.
+    /// Balanced edge scans locate the complete empty branch independently of
+    /// bars and escaped parentheses in q payloads. Every class leaf is proved
+    /// behind empty-first choices. Existing repetition proofs preserve mandatory
+    /// priority, progress, budgets, earliest starts, captures and outside gates.
+    /// Consuming, asserted or capturing empty branches remain separate proofs.
+    /// Construction and clone/drop add no native recursion or expanded counts.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_counted_empty_choice_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::Counted,
+            EmptyBranchProof::Choices,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -3374,6 +3498,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             // Each group/token is scanned a bounded number of times; neither
             // inner nor outer decimal counts are expanded.
             charge(units.len().saturating_mul(32))
+                .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        }
+        if empty == EmptyBranchProof::Choices {
+            // Quantified-empty recognition plus both balanced edge scans and
+            // choice-depth tracking stay linear across both token interpretations.
+            charge(units.len().saturating_mul(40))
                 .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
         }
         if bounds != NullableProof::Raw {
@@ -3606,7 +3736,9 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }
             if matches!(
                 empty,
-                EmptyBranchProof::Sequences | EmptyBranchProof::QuantifiedSequences
+                EmptyBranchProof::Sequences
+                    | EmptyBranchProof::QuantifiedSequences
+                    | EmptyBranchProof::Choices
             ) {
                 // A bare class ends in ], so an empty-first branch leaves only
                 // complete wrapper closes at the body's end. Recover its initial
@@ -3647,17 +3779,24 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 EmptyBranchProof::Nested
                     | EmptyBranchProof::Sequences
                     | EmptyBranchProof::QuantifiedSequences
+                    | EmptyBranchProof::Choices
             ) {
                 let nested_empty = |branch: &[u16]| {
                     if matches!(
                         empty,
-                        EmptyBranchProof::Sequences | EmptyBranchProof::QuantifiedSequences
+                        EmptyBranchProof::Sequences
+                            | EmptyBranchProof::QuantifiedSequences
+                            | EmptyBranchProof::Choices
                     ) {
                         return !branch.is_empty()
                             && pure_empty_groups(
                                 branch,
-                                empty == EmptyBranchProof::QuantifiedSequences,
-                                false,
+                                matches!(
+                                    empty,
+                                    EmptyBranchProof::QuantifiedSequences
+                                        | EmptyBranchProof::Choices
+                                ),
+                                empty == EmptyBranchProof::Choices,
                             );
                     }
                     let mut at = 0;
@@ -3670,16 +3809,44 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                         && branch.len() - at == depth
                         && branch[at..].iter().all(|&unit| unit == 0x29)
                 };
-                if let Some(separator) = inner
-                    .iter()
-                    .position(|&unit| unit == 0x7c)
-                    .filter(|&separator| nested_empty(&inner[..separator]))
+                // Only a completely proved empty edge supplies the separator.
+                // Its parentheses are syntax; punctuation in the class payload
+                // on the opposite edge cannot become an accepted delimiter.
+                let edge_separator = |reverse: bool| {
+                    let (open, close) = if reverse { (0x29, 0x28) } else { (0x28, 0x29) };
+                    let mut depth = 0usize;
+                    for offset in 0..inner.len() {
+                        let at = if reverse {
+                            inner.len() - offset - 1
+                        } else {
+                            offset
+                        };
+                        let unit = inner[at];
+                        if unit == open {
+                            depth += 1;
+                        } else if unit == close {
+                            depth = depth.checked_sub(1)?;
+                        } else if unit == 0x7c && depth == 0 {
+                            return Some(at);
+                        }
+                    }
+                    None
+                };
+                let first = if empty == EmptyBranchProof::Choices {
+                    edge_separator(false)
+                } else {
+                    inner.iter().position(|&unit| unit == 0x7c)
+                };
+                if let Some(separator) =
+                    first.filter(|&separator| nested_empty(&inner[..separator]))
                 {
                     (&inner[separator + 1..], EmptyBranchOrder::First)
-                } else if let Some(separator) = inner
-                    .iter()
-                    .rposition(|&unit| unit == 0x7c)
-                    .filter(|&separator| nested_empty(&inner[separator + 1..]))
+                } else if let Some(separator) = (if empty == EmptyBranchProof::Choices {
+                    edge_separator(true)
+                } else {
+                    inner.iter().rposition(|&unit| unit == 0x7c)
+                })
+                .filter(|&separator| nested_empty(&inner[separator + 1..]))
                 {
                     (&inner[..separator], EmptyBranchOrder::Last)
                 } else {

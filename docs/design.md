@@ -10450,6 +10450,27 @@ lastIndex, clones and collection. Huge inner empty counts remain effect-free and
 flat. Former quantified-empty rejections complete with exact values and eval
 finalizers; opt-in host aborts preserve atomic state.
 
+## Effect-free empty choices beside string classes
+
+Separate Core constructors prove a singleton-q or character-result v/vi class
+beside a nonempty sequence of effect-free noncapturing empty groups that may
+contain choices, nesting, siblings and validated greedy/lazy or huge counts.
+Every alternative must be empty and contribute no captures or assertions, so
+inner choice priority cannot change its empty result (RepeatMatcher, 22.2.2.3).
+Simple and every braced outer count family reuse existing matching state.
+
+Balanced scans from each edge locate a depth-zero separator. Only an edge that
+passes the complete empty proof supplies a delimiter; parentheses and bars in
+the opposite class payload cannot supply an accepted empty edge. The whole
+remaining class is compiled independently, including escaped parentheses in q
+payloads and unknown leaves behind empty-first choices. One-pass wrapper recovery
+preserves capture slots. Linear work charges cover edge/depth tracking and the
+empty proof without expanding counts or groups. Mandatory priority, progress,
+optional budgets, earliest starts, original ranges and outside word/line gates
+remain unchanged. Prior constructor domains/work traces remain fixed; consuming,
+asserted and capturing empty branches retain separate proofs. Runtime selection
+is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
