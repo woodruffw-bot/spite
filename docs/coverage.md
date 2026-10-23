@@ -19094,5 +19094,27 @@ all starts and sticky/i/m flags. Stable passes all 431 Runtime unit cases and al
 1,589 Unicode RegExp integration cases, including the three new groups. Workspace
 documentation tests, strict workspace Clippy, formatting, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 541 case
-files and 4,295 integration cases. Corpus sources/helpers, snapshots, dependencies,
-intrinsic counts and default resource policy are unchanged.
+files and 4,295 integration cases. The conformance profile passes all 35 harness
+and corpus checks, including every one of the 16,343 reviewed corpus variants.
+Corpus sources/helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.
+
+
+## Core unconditional assertion siblings around a single string class
+
+Three groups compare 27 class families, six capture layouts, ten gate profiles
+and three enclosing shapes with independent point-gate and capture-tree oracles.
+Eight inputs, all starts and sticky/i/m modes retain empty members, shorter
+eligible words, supplementary ranges, optional/later pure-empty captures and
+lexical enclosing slots. Structural witnesses cover 20,000 enclosing captures,
+positive empty counts beyond machine range, duplicate/contradictory predicates
+and backspace escapes inside q strings. Every constructor/search callback
+cancellation prefix and recovery is checked. Optional/zero-minimum assertion
+groups, assertion-bearing choices, reversed line gates, references, class counts
+and unknown leaves remain closed, including under false predicates.
+
+Stable passes all 1,215 Core unit cases and 431 Runtime unit cases. All 46,824
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.

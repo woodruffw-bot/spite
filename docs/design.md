@@ -11141,3 +11141,31 @@ Earlier constructors retain their domains and callbacks. Runtime selects nested
 framing after the earlier surrounding-gate proofs on the full normalized source.
 The same capture body owns all recovered lexical slots and keeps shared named
 indices, String consumers, Unicode progress and opt-in host abort behavior.
+
+
+The Core `compile_unconditional_assertions_with_work` proof admits word predicates
+and canonical-side line assertions in required empty siblings of one unquantified
+v/vi string class. For example, `(\b)([\q{a|ab}])(\b)` retains both defined
+empty capture slots and the longest class member whose end satisfies the final
+boundary. A flat source scan collects start/end conjunctions while copying an
+assertion-free shadow that preserves every group, choice, count and capture slot.
+The existing single-class body parser proves that shadow and assigns its lexical
+capture ranges. Nested v classes and escaped code units stay opaque to assertion
+recovery. Every assertion-bearing ancestor must be unconditional: it cannot own
+an alternative or have a zero-minimum quantifier. Positive empty-group counts
+repeat the same pure predicates at the same position, so their magnitude never
+expands construction, matching state or work. Class-bearing counts remain closed.
+
+ECMA-262 edition 17 22.2.2.3 CompileSubpattern, 22.2.2.4 CompileAssertion and
+22.2.2.3.1 RepeatMatcher determine capture entry/exit, conjunction and required
+empty repetition behavior. Before/after positions are exact because the proved
+spine contains one class and only pure empty terms. Only ^ before that class and
+$ after it are admitted; reversed line gates, assertion-bearing choices and
+optional assertion groups need different proofs. Duplicate predicates are
+idempotent. Contradictory word gates lower to a fixed never matcher only after
+the entire shadow and original class compile successfully; unknown leaves,
+references and extra consuming terms cannot become supported through false gates.
+The new constructor precharges source-sized work and reuses the established
+allocation-free search and capture projection. Earlier public constructors retain
+their accepted domains and callback transcripts. Runtime sibling selection is a
+subsequent step.

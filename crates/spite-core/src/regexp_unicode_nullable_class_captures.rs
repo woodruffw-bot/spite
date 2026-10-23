@@ -1165,4 +1165,5 @@ mod tests {
     include!("regexp_unicode_surrounding_line_string_class_capture_tests.rs");
     include!("regexp_unicode_surrounding_word_string_class_capture_tests.rs");
     include!("regexp_unicode_nested_assertion_string_class_capture_tests.rs");
+    include!("regexp_unicode_unconditional_assertion_string_class_capture_tests.rs");
 }

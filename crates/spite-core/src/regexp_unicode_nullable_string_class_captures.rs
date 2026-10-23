@@ -750,6 +750,204 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves unconditional word/line predicates on a single-class spine.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Assertions
+    /// may occur in required empty siblings and complete wrappers. Positive
+    /// empty-group counts repeat the same pure predicate at the same position;
+    /// zero-minimum counts and assertion-bearing choices stay separate proofs.
+    /// Only ^ before the class and $ after it are admitted. Every class/body is
+    /// proved before contradictory word predicates select a never match.
+    /// Captures retain original lexical slots and UTF-16 endpoints (22.2.2.3,
+    /// 22.2.2.4, 22.2.2.7); storage and construction remain flat and source-sized.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_unconditional_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(160).saturating_add(512))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        // Stripping predicates is sound only after every assertion-bearing
+        // ancestor proves mandatory participation. Preserve its group/capture
+        // structure so the shared parser still proves the entire class spine.
+        let mut shadow = Vec::with_capacity(units.len().saturating_add(4));
+        shadow.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+        let mut frames = Vec::<UnconditionalAssertionFrame>::new();
+        let (mut class_seen, mut asserted, mut start_line, mut end_line) =
+            (false, false, false, false);
+        let (mut start_words, mut end_words, mut at) = (0u8, 0u8, 0usize);
+        while let Some(&unit) = units.get(at) {
+            if unit == 0x5b {
+                if class_seen {
+                    return Ok(None);
+                }
+                let start = at;
+                let mut depth = 1usize;
+                at += 1;
+                while let Some(&unit) = units.get(at) {
+                    if unit == 0x5c {
+                        if units.get(at + 1).is_none() {
+                            return Ok(None);
+                        }
+                        at += 2;
+                        continue;
+                    }
+                    if unit == 0x5b {
+                        depth += 1;
+                    } else if unit == 0x5d {
+                        depth -= 1;
+                    }
+                    at += 1;
+                    if depth == 0 {
+                        break;
+                    }
+                }
+                if depth != 0 {
+                    return Ok(None);
+                }
+                shadow.extend_from_slice(&units[start..at]);
+                class_seen = true;
+                continue;
+            }
+            let word = if unit == 0x5c {
+                match units.get(at + 1) {
+                    Some(0x62) => Some(true),
+                    Some(0x42) => Some(false),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            if unit == 0x5e || unit == 0x24 || word.is_some() {
+                if unit == 0x5e {
+                    if class_seen {
+                        return Ok(None);
+                    }
+                    start_line = true;
+                }
+                if unit == 0x24 {
+                    if !class_seen {
+                        return Ok(None);
+                    }
+                    end_line = true;
+                }
+                if let Some(word) = word {
+                    let bits = if word { 1 } else { 2 };
+                    if class_seen {
+                        end_words |= bits;
+                    } else {
+                        start_words |= bits;
+                    }
+                }
+                asserted = true;
+                if let Some(frame) = frames.last_mut() {
+                    frame.asserted = true;
+                }
+                at += if word.is_some() { 2 } else { 1 };
+                continue;
+            }
+            match unit {
+                0x28 => {
+                    frames.push(UnconditionalAssertionFrame {
+                        asserted: false,
+                        choice: false,
+                    });
+                    shadow.push(unit);
+                    at += 1;
+                }
+                0x29 => {
+                    let Some(frame) = frames.pop() else {
+                        return Ok(None);
+                    };
+                    if frame.asserted && frame.choice {
+                        return Ok(None);
+                    }
+                    shadow.push(unit);
+                    at += 1;
+                    if frame.asserted {
+                        if matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+                            let Some((_, zero)) = super::empty_group_quantifier(units, at) else {
+                                return Ok(None);
+                            };
+                            if zero {
+                                return Ok(None);
+                            }
+                        }
+                        if let Some(parent) = frames.last_mut() {
+                            parent.asserted = true;
+                        }
+                    }
+                }
+                0x7c => {
+                    let Some(frame) = frames.last_mut() else {
+                        return Ok(None);
+                    };
+                    frame.choice = true;
+                    shadow.push(unit);
+                    at += 1;
+                }
+                0x5c => {
+                    let Some(pair) = units.get(at..at + 2) else {
+                        return Ok(None);
+                    };
+                    shadow.extend_from_slice(pair);
+                    at += 2;
+                }
+                _ => {
+                    shadow.push(unit);
+                    at += 1;
+                }
+            }
+        }
+        if !asserted || !class_seen || !frames.is_empty() {
+            return Ok(None);
+        }
+        shadow.push(0x29);
+        let Some(parsed) = parse_body(&shadow, true, true, true, true, true, true) else {
+            return Ok(None);
+        };
+        let class_units = &shadow[parsed.class];
+        let class = if start_words == 3 || end_words == 3 {
+            let original = JsString::from_code_units(class_units.to_vec());
+            if compile_string_class(&original, ignore_case, multiline, &mut charge)?.is_none() {
+                return Ok(None);
+            }
+            let never = JsString::from(r"\b[\q{}]\B");
+            compile_string_class(&never, ignore_case, multiline, charge)?
+        } else {
+            let mut canonical = Vec::with_capacity(units.len());
+            if start_line {
+                canonical.push(0x5e);
+            }
+            if start_words != 0 {
+                canonical.extend_from_slice(&[0x5c, if start_words == 1 { 0x62 } else { 0x42 }]);
+            }
+            canonical.extend_from_slice(class_units);
+            if end_words != 0 {
+                canonical.extend_from_slice(&[0x5c, if end_words == 1 { 0x62 } else { 0x42 }]);
+            }
+            if end_line {
+                canonical.push(0x24);
+            }
+            compile_string_class(
+                &JsString::from_code_units(canonical),
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        };
+        Ok(class.map(|class| Self {
+            class,
+            captures: parsed.captures.into_boxed_slice(),
+        }))
+    }
+
     fn compile_single<E>(
         source: &JsString,
         ignore_case: bool,
@@ -995,4 +1193,9 @@ fn single_v_group_closes(units: &[u16]) -> Option<Vec<usize>> {
         at += 1;
     }
     (class == 0 && stack.is_empty()).then_some(closes)
+}
+
+struct UnconditionalAssertionFrame {
+    asserted: bool,
+    choice: bool,
 }
