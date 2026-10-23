@@ -18,6 +18,7 @@ enum CaptureProof {
     Raw,
     EmptyCaptures,
     NoncapturingSequence,
+    QuantifiedSequence,
 }
 
 #[derive(Clone, Copy)]
@@ -30,6 +31,7 @@ struct Parsed {
     class: Range<usize>,
     empty_first: bool,
     grouped_empty: bool,
+    quantified_empty: bool,
     captures: Vec<CaptureRole>,
 }
 
@@ -123,6 +125,31 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         )
     }
 
+    /// Proves character captures beside quantified noncapturing empty groups.
+    ///
+    /// At least one group on the empty side has a validated greedy/lazy simple
+    /// or braced count; groups may nest or form sequences. The empty side has no
+    /// captures, choices, assertions or consuming terms, so every selected empty
+    /// branch has the same result regardless of inner count spelling or size.
+    /// Character-side groups remain unquantified transparent wrappers. All outer
+    /// counts, gates and capture requirements match
+    /// `compile_with_noncapturing_empty_branch_and_work` (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_quantified_noncapturing_empty_branch_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(
+            source,
+            ignore_case,
+            multiline,
+            CaptureProof::QuantifiedSequence,
+            charge,
+        )
+    }
+
     fn compile_capture_proof<E>(
         source: &JsString,
         ignore_case: bool,
@@ -133,7 +160,12 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         let units = source.code_units();
         // Edge parity, both token interpretations, group/class walks and the
         // flat capture table are covered before structural inspection.
-        charge(units.len().saturating_mul(16)).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let factor = if proof == CaptureProof::QuantifiedSequence {
+            32
+        } else {
+            16
+        };
+        charge(units.len().saturating_mul(factor)).map_err(RegExpUnicodeSetCompileError::Work)?;
         let mut begin = usize::from(units.first() == Some(&0x5e));
         let mut end = units.len()
             - usize::from(units.last() == Some(&0x24) && !escaped(units, units.len() - 1));
@@ -163,7 +195,11 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             let Some((atom_end, _, _)) = quantifier(body, token_end) else {
                 continue;
             };
-            let Some(parsed) = parse_body(&body[..atom_end], proof != CaptureProof::Raw) else {
+            let Some(parsed) = parse_body(
+                &body[..atom_end],
+                proof != CaptureProof::Raw,
+                proof == CaptureProof::QuantifiedSequence,
+            ) else {
                 continue;
             };
             let required = if proof == CaptureProof::EmptyCaptures {
@@ -172,8 +208,11 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                 CaptureRole::Character
             };
             if !parsed.captures.contains(&required)
-                || (proof == CaptureProof::NoncapturingSequence
-                    && (!parsed.grouped_empty || parsed.captures.contains(&CaptureRole::Empty)))
+                || (matches!(
+                    proof,
+                    CaptureProof::NoncapturingSequence | CaptureProof::QuantifiedSequence
+                ) && (!parsed.grouped_empty || parsed.captures.contains(&CaptureRole::Empty)))
+                || (proof == CaptureProof::QuantifiedSequence && !parsed.quantified_empty)
             {
                 continue;
             }
@@ -266,7 +305,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
 // Groups containing the class capture either the whole iteration or only the
 // character. The separate empty-capture proof also accepts wholly empty groups
 // on the opposite side of the separator. No other tokens or alternatives pass.
-fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
+fn parse_body(units: &[u16], empty_captures: bool, quantifiers: bool) -> Option<Parsed> {
     if units.first() != Some(&0x28) || units.last() != Some(&0x29) {
         return None;
     }
@@ -329,7 +368,7 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
                 if empty_captures {
                     // An empty-first group can close before the class is seen.
                     // Retain flat spans until both branches are known.
-                    completed.push((frame, at));
+                    completed.push((frame, at, false));
                 } else {
                     let span = class.as_ref()?;
                     if frame.start >= span.start || span.end > at {
@@ -345,6 +384,13 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
                     }
                 }
                 at += 1;
+                if quantifiers {
+                    let end = empty_group_quantifier_end(units, at)?;
+                    if end != at {
+                        completed.last_mut()?.2 = true;
+                        at = end;
+                    }
+                }
                 if frames.is_empty() && at != units.len() {
                     return None;
                 }
@@ -358,10 +404,14 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
     let class = class?;
     let split = separator?;
     let mut grouped_empty = false;
-    for (frame, end) in completed {
+    let mut quantified_empty = false;
+    for (frame, end, quantified) in completed {
         let contains_class = frame.start < class.start && class.end <= end;
         let contains_split = frame.start < split && split < end;
         let role = if contains_class {
+            if quantified {
+                return None;
+            }
             if contains_split {
                 CaptureRole::Iteration
             } else {
@@ -375,6 +425,7 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
             }
         {
             grouped_empty = true;
+            quantified_empty |= quantified;
             CaptureRole::Empty
         } else {
             return None;
@@ -386,9 +437,36 @@ fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
     Some(Parsed {
         empty_first: split < class.start,
         grouped_empty,
+        quantified_empty,
         class,
         captures,
     })
+}
+
+// Validated counts are scanned once forward and checked by the existing borrowed
+// quantifier parser. Their numeric magnitudes never expand source or state.
+fn empty_group_quantifier_end(units: &[u16], start: usize) -> Option<usize> {
+    let mut end = match units.get(start) {
+        Some(0x2a | 0x2b | 0x3f) => start + 1,
+        Some(0x7b) => {
+            let mut at = start + 1;
+            while matches!(units.get(at), Some(0x30..=0x39 | 0x2c)) {
+                at += 1;
+            }
+            if units.get(at) != Some(&0x7d) {
+                return None;
+            }
+            at + 1
+        }
+        _ => return Some(start),
+    };
+    if quantifier(units, end)?.0 != start {
+        return None;
+    }
+    if units.get(end) == Some(&0x3f) {
+        end += 1;
+    }
+    Some(end)
 }
 
 #[cfg(test)]

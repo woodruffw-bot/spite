@@ -18071,3 +18071,33 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is
 522 case files and 4,204 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+All 75,168 differential records across 174 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes, including conditional captures, named-group order, indices and lastIndex.
+
+## Core character captures beside quantified noncapturing empty groups
+
+A separate constructor proves character-only captures beside quantified nested
+or sibling noncapturing empty groups. At least one empty-side group has a
+validated simple or braced greedy/lazy count. Complete class and group-span
+proofs exclude empty-side captures/choices/assertions, character-side quantifiers
+and extra terms. The empty side has no effects and always denotes the same empty
+selection, so existing outer matching and capture projection remain applicable.
+Counts retain borrowed spelling and never expand into iterations or source.
+
+Three groups compare an independent capture-vector RepeatMatcher oracle across
+eight predicates, three mixed wrapper layouts, both orders, 23 outer count forms,
+line/word gates, all starts and sticky/i/m modes over eight inputs. Cancellation
+and structural cases exercise every constructor callback, closed effects/leaves,
+20,000 deep or sibling empty groups beside 20,000 character captures, 20,000-digit
+inner counts, flat clone/drop, required empty clearing and linear work.
+
+All 32,104 prior API records remain unchanged: 29,896 string/class/repetition
+records and 736 records for each earlier capture constructor, including exact
+construction/search work and projected captures. Stable passes all 1,157 Core
+and 428 Runtime unit cases and 268 affected integration cases. Workspace
+documentation tests, workspace/included-source formatting, strict workspace
+Clippy, dependency policy, source/fixture inventories and diff checks pass.
+Runtime selection, snapshots, corpus sources/helpers, dependencies, intrinsic
+counts and default resource policy are unchanged.

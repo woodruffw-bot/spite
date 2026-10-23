@@ -10561,6 +10561,26 @@ RegExp and String consumers retain original text, source/flags, lastIndex,
 clones and collection. Former grouped-empty rejections complete their exact
 results and eval finalizers; opt-in host aborts preserve atomic state.
 
+## Character captures beside quantified noncapturing empty groups
+
+A separate Core constructor proves quantified nested/sibling noncapturing empty
+groups opposite one class with character-only captures. At least one empty-side
+group carries a validated simple or braced greedy/lazy quantifier. Such a group
+has no captures, assertions, choices or consuming terms, so its count cannot
+change the branch's empty result (RepeatMatcher, 22.2.2.3).
+
+The flat parser scans each count token forward, checks it through the existing
+borrowed quantifier parser, and records which group carries it. Every quantified
+group must lie wholly on the empty side; quantified character wrappers and
+empty-side captures retain separate proofs. The canonical empty marker drops
+these effect-free inner counts and preserves original class/outer-count spelling,
+outside gates and source-order capture roles. Earlier outer matcher semantics
+therefore retain mandatory priority, progress, optional budgets, required empty
+clearing and original ranges. Linear precharges cover count scans and span walks
+without expanding counts; clone/drop and storage remain flat and source-sized.
+Earlier constructors preserve their domains and work traces. Runtime selection
+is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
