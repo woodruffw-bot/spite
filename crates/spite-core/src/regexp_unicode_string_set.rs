@@ -19,7 +19,7 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 /// beside ordinary scalar operands, with an empty or longer q member.
 /// Canonical
 /// outside line/word assertions are admitted. Captures,
-/// repetitions, further consuming terms, nesting, set operations and string properties
+/// repetitions, further consuming terms, negated nested classes, set operations and string properties
 /// remain separate caller proofs. Complete enclosing captures may be projected
 /// by the caller. Earlier character-only compilers retain their domains.
 #[derive(Clone, Debug)]
@@ -109,6 +109,29 @@ impl RegExpUnicodeStringSetMatcher {
         Self::compile_domain(source, ignore_case, multiline, Domain::Scalars, charge)
     }
 
+    /// Compiles positive nested unions containing an empty or longer q member.
+    ///
+    /// Requires at least one positive nested class. Literal characters, ranges,
+    /// character escapes and supported character properties share the same
+    /// union. Positive union associativity permits flat storage and two borrowed
+    /// source passes, independently of nesting depth. Negated nested classes,
+    /// set operations, string properties and repetition decline.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_positive_nested_union_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain(
+            source,
+            ignore_case,
+            multiline,
+            Domain::PositiveNested,
+            charge,
+        )
+    }
+
     fn compile_domain<E>(
         source: &JsString,
         ignore_case: bool,
@@ -157,7 +180,10 @@ impl RegExpUnicodeStringSetMatcher {
         let Some(body) = units.get(begin..end) else {
             return Ok(None);
         };
-        let mixed = matches!(domain, Domain::Characters | Domain::Scalars);
+        let mixed = matches!(
+            domain,
+            Domain::Characters | Domain::Scalars | Domain::PositiveNested
+        );
         let inner = if mixed {
             if body.len() < 2 || body[0] != 0x5b || body[1] == 0x5e || body.last() != Some(&0x5d) {
                 return Ok(None);
@@ -169,16 +195,28 @@ impl RegExpUnicodeStringSetMatcher {
             }
             &body[4..body.len() - 2]
         };
-        let scalars = if domain == Domain::Scalars {
-            let Some(plan) = RegExpUnicodeClassMatcher::compile_scalar_union_portion_with_work(
-                body,
-                ignore_case,
-                &mut charge,
-            )?
-            else {
+        let scalars = if matches!(domain, Domain::Scalars | Domain::PositiveNested) {
+            let plan = if domain == Domain::PositiveNested {
+                RegExpUnicodeClassMatcher::compile_positive_nested_string_union_portion_with_work(
+                    body,
+                    ignore_case,
+                    &mut charge,
+                )?
+            } else {
+                RegExpUnicodeClassMatcher::compile_scalar_union_portion_with_work(
+                    body,
+                    ignore_case,
+                    &mut charge,
+                )?
+            };
+            let Some(plan) = plan else {
                 return Ok(None);
             };
-            Some(plan)
+            if domain == Domain::PositiveNested && plan.is_empty_character_union() {
+                None
+            } else {
+                Some(plan)
+            }
         } else {
             None
         };
@@ -188,6 +226,12 @@ impl RegExpUnicodeStringSetMatcher {
             let mut has_q = false;
             let mut has_character = false;
             while at < inner.len() {
+                // The first pass proved every positive class boundary. The
+                // character/term decoders consume escaped brackets themselves.
+                if domain == Domain::PositiveNested && matches!(inner[at], 0x5b | 0x5d) {
+                    at += 1;
+                    continue;
+                }
                 if inner[at..].starts_with(&[0x5c, 0x71, 0x7b]) {
                     has_q = true;
                     at += 3;
@@ -209,7 +253,7 @@ impl RegExpUnicodeStringSetMatcher {
                         }
                     }
                 } else {
-                    if domain == Domain::Scalars {
+                    if matches!(domain, Domain::Scalars | Domain::PositiveNested) {
                         let Some(end) =
                             RegExpUnicodeClassMatcher::string_union_scalar_term_end(inner, at)
                         else {
@@ -232,7 +276,7 @@ impl RegExpUnicodeStringSetMatcher {
                     has_character = true;
                 }
             }
-            has_q && has_character
+            has_q && (has_character || domain == Domain::PositiveNested)
         } else {
             let mut proved = domain == Domain::Single;
             loop {
@@ -376,6 +420,7 @@ enum Domain {
     Strings,
     Characters,
     Scalars,
+    PositiveNested,
 }
 
 struct TrieBuilder<F> {

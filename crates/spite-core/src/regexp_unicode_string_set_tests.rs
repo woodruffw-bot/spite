@@ -17,6 +17,237 @@ fn compile_scalars(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeString
     .unwrap()
 }
 
+fn compile_nested(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
+    RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+}
+
+#[test]
+fn positive_nested_unions_match_independent_flat_member_sets() {
+    let plain = Gates::default();
+    type Case<'a> = (&'a str, &'a [&'a [u32]], Option<ScalarOracle>, Gates);
+    let cases: [Case<'_>; 10] = [
+        (r"[[\q{ab}]]", &[&[97, 98]], None, plain),
+        (r"[[\q{}][]]", &[&[]], None, plain),
+        (
+            r"[[\q{a}][\q{ab|abc}]]",
+            &[&[97], &[97, 98], &[97, 98, 99]],
+            None,
+            plain,
+        ),
+        (
+            r"[a[[\q{ab}]]b]",
+            &[&[97, 98]],
+            Some(ScalarOracle::Range(97, 98)),
+            plain,
+        ),
+        (
+            r"[[a-z][\q{ab|a!}]]\b",
+            &[&[97, 98], &[97, 33]],
+            Some(ScalarOracle::Range(97, 122)),
+            Gates {
+                i: true,
+                words: [None, Some(true)],
+                ..plain
+            },
+        ),
+        (
+            r"^\b[[a-z][\q{ab}]]\b$",
+            &[&[97, 98]],
+            Some(ScalarOracle::Range(97, 122)),
+            Gates {
+                m: true,
+                anchors: [true, true],
+                words: [Some(true), Some(true)],
+                ..plain
+            },
+        ),
+        (
+            r"[[\q{a\]b}][\[]]",
+            &[&[97, 93, 98]],
+            Some(ScalarOracle::Range(91, 91)),
+            plain,
+        ),
+        (
+            r"[[\q{}][\p{Any}]]",
+            &[&[]],
+            Some(ScalarOracle::Range(0, 0x10ffff)),
+            plain,
+        ),
+        (
+            r"[[\p{ASCII}][\q{ab}]]",
+            &[&[97, 98]],
+            Some(ScalarOracle::Ascii(true)),
+            Gates { i: true, ..plain },
+        ),
+        (
+            r"[[\u{D7FF}-\u{E000}][\q{ab}]]",
+            &[&[97, 98]],
+            Some(ScalarOracle::Range(0xd7ff, 0xe000)),
+            plain,
+        ),
+    ];
+    for (source, choices, scalar, gates) in cases {
+        assert!(compile(source, gates.i, gates.m).is_none(), "{source}");
+        assert!(
+            compile_union(source, gates.i, gates.m).is_none(),
+            "{source}"
+        );
+        assert!(
+            compile_character_union(source, gates.i, gates.m).is_none(),
+            "{source}"
+        );
+        assert!(
+            compile_scalars(source, gates.i, gates.m).is_none(),
+            "{source}"
+        );
+        let plan = compile_nested(source, gates.i, gates.m).unwrap();
+        for input in [
+            JsString::from(""),
+            JsString::from("xabc!ab"),
+            JsString::from("a!a]b["),
+            JsString::from("A😀x🚀"),
+            JsString::from("ſKẞA"),
+            JsString::from("!\r\nab\u{2028}!"),
+            JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+        ] {
+            let mut words = choices.iter().map(|s| s.to_vec()).collect::<Vec<_>>();
+            if let Some(scalar) = scalar {
+                for c in char::decode_utf16(input.code_units().iter().copied()) {
+                    let p = match c {
+                        Ok(c) => u32::from(c),
+                        Err(e) => u32::from(e.unpaired_surrogate()),
+                    };
+                    if scalar.contains(p, gates.i) {
+                        words.push(vec![p]);
+                    }
+                }
+            }
+            let choices = words.iter().map(Vec::as_slice).collect::<Vec<_>>();
+            for start in 0..=input.len() + 1 {
+                for sticky in [false, true] {
+                    assert_eq!(
+                        plan.find(&input, start, sticky),
+                        oracle(&input, start, sticky, &choices, gates),
+                        "{source} {input:?} start={start} sticky={sticky}"
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn nested_string_union_proof_requires_positive_nesting_and_a_variable_q_member() {
+    for source in [
+        r"[\q{ab}]",
+        r"[a\q{ab}]",
+        r"[\d\q{ab}]",
+        r"[[a-z]]",
+        r"[[\q{a}]]",
+        r"[[^a]\q{ab}]",
+        r"[[\q{ab}]&&[a-z]]",
+        r"[[\q{ab}]--[a-z]]",
+        r"[[\q{ab}][\p{RGI_Emoji}]]",
+        r"[[\q{ab}]]+",
+        r"[[\q{ab}]]x",
+        r"\b^[[\q{ab}]]",
+    ] {
+        assert!(compile_nested(source, true, true).is_none(), "{source}");
+    }
+    let empty = compile_nested(r"[[\q{}][\P{Any}]]", false, false).unwrap();
+    assert_eq!(empty.max_match_code_units(), 0);
+    assert_eq!(empty.find(&JsString::from("😀"), 1, true), Some(0..0));
+    let any = compile_nested(r"[[\q{}][\p{Any}]]", false, false).unwrap();
+    assert_eq!(any.max_match_code_units(), 2);
+    assert_eq!(any.find(&JsString::from("😀"), 1, true), Some(0..2));
+}
+
+#[test]
+fn positive_nested_string_unions_cancel_every_phase_and_keep_deep_storage_flat() {
+    for source in [
+        r"[[\q{}][a-z][\q{abc}]]",
+        r"^\b[[\p{Script=Greek}][\q{ab}]]\b$",
+    ] {
+        let source = JsString::from(source);
+        let mut complete = Vec::new();
+        let plan = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+            &source,
+            true,
+            true,
+            |work| {
+                complete.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(complete[0], source.len() * 4);
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+                &source,
+                true,
+                true,
+                |work| {
+                    seen.push(work);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(matches!(result,Err(RegExpUnicodeSetCompileError::Work(at)) if at==fail));
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        let retry = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+            &source,
+            true,
+            true,
+            |work| {
+                recovered.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(recovered, complete);
+        for text in ["", "ab", "ABC", "µ", "!\r\nab\u{2028}!"] {
+            let input = JsString::from(text);
+            assert_eq!(plan.find(&input, 0, false), retry.find(&input, 0, false));
+        }
+    }
+    let source =
+        JsString::from(format!(r"[{}\q{{ab}}{}]", "[".repeat(20_000), "]".repeat(20_000)).as_str());
+    let mut work = 0usize;
+    let original = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+        &source,
+        false,
+        false,
+        |n| {
+            work += n;
+            Ok::<(), ()>(())
+        },
+    )
+    .unwrap()
+    .unwrap();
+    assert!(
+        work < source.len() * 8 + 128,
+        "nested union construction must stay linear: {work}"
+    );
+    let plan = original.clone();
+    drop(original);
+    assert_eq!(plan.max_match_code_units(), 4);
+    assert_eq!(plan.find(&JsString::from("xab"), 0, false), Some(1..3));
+}
+
 #[derive(Clone, Copy)]
 enum ScalarOracle {
     Range(u32, u32),

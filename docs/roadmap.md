@@ -639,6 +639,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Match ordinary literal characters beside empty or multi-character ClassStringDisjunction operands in positive v/vi classes, preserving operand order, longest-member priority, outside assertions, and complete whole-body captures.
 - [x] Compile positive flat unions of empty or multi-character ClassStringDisjunction operands with ranges, character escapes, and supported Unicode character properties into compact Core interval/trie plans.
 - [x] Connect interval/string union plans to Runtime RegExp execution and String consumers, preserving whole-body captures, indices, lastIndex, and checked empty/consuming search bounds.
+- [x] Compile positive nested v/vi unions of empty or multi-character q members with characters, ranges, escapes, and character properties into flat Core interval/trie plans.
+- [ ] Connect positive nested variable-string unions to Runtime RegExp execution and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

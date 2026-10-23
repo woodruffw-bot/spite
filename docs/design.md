@@ -9565,6 +9565,25 @@ classes, set operations, properties of strings, further atoms, and repetition
 remain separate proofs. Earlier public constructors retain their domains and
 work callbacks. Dependencies and default resource policy are unchanged.
 
+## Positive nested unions containing UnicodeSets strings
+
+A separate Core proof admits positive nested v/vi unions containing an empty or
+longer q member. Positive union associativity lets every scalar operand share one
+interval set and every q alternative share one trie. A prepaid borrowed pass
+checks nesting with a depth counter, proves every q member and scalar term, and
+rejects negative child classes and all set operators. A second borrowed pass
+builds q members while skipping the already proved class boundaries and scalar
+terms. Character decoders consume escaped brackets before boundary handling.
+
+Construction, storage, search, and drop do not recurse with source depth. Empty
+child classes contribute no members. An empty scalar portion is omitted from
+the new plan, preserving zero consumption bounds for q-only empty unions.
+Earlier flat constructors keep their exact domains and work callbacks. Outside
+assertions, simple folding, longest-member priority, and original UTF-16 ranges
+reuse the existing interval/trie matcher. Runtime selection remains a separate
+increment. Negated child classes, set operations, string properties, further
+atoms, and repetition remain deferred; dependencies and default quotas are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

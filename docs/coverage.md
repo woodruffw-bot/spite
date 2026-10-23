@@ -16139,3 +16139,25 @@ cases. Workspace documentation tests, formatting, strict workspace Clippy,
 dependency policy, source/fixture inventories, and diff checks pass. Snapshots,
 corpus sources and helpers, dependencies, intrinsic counts, and default resource
 policy are unchanged.
+
+## Core positive nested UnicodeSets string unions
+
+The new positive nested v/vi union proof flattens q members and scalar operands
+into the existing trie/interval plan. A depth counter validates positive child
+classes without per-depth storage; escaped brackets remain characters. Empty
+scalar portions are omitted, retaining zero consumption for q-only empty unions.
+Earlier flat proof domains remain unchanged. Runtime selection is a separate step.
+
+Three Core regression groups compare independent member sets at every initial
+offset and sticky mode, cover ordinary/scalar siblings, line/word gates, folding,
+surrogates, escaped brackets and empty children, preserve proof boundaries, inject
+failure at every construction callback, and compile/clone/match/drop 20,000 nested
+classes with linear checked work and flat storage.
+
+All 240 captured construction-work, search-bound, and match transcripts from the
+four earlier APIs agree before and after the shared scalar proof changes. Stable
+passes all 1,049 Core unit cases, 424 Runtime unit cases, and 139 existing
+UnicodeSets/string-class integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Runtime dispatch, snapshots, corpus sources and helpers,
+dependencies, intrinsic counts, and default resource policy are unchanged.

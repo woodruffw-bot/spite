@@ -105,6 +105,23 @@ impl RegExpUnicodeClassMatcher {
         ignore_case: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
+        Self::compile_string_union_scalar_portion(units, ignore_case, false, charge)
+    }
+
+    pub(crate) fn compile_positive_nested_string_union_portion_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_string_union_scalar_portion(units, ignore_case, true, charge)
+    }
+
+    fn compile_string_union_scalar_portion<E>(
+        units: &[u16],
+        ignore_case: bool,
+        nested: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
         if units.len() < 2 || units[0] != 0x5b || units[1] == 0x5e || units.last() != Some(&0x5d) {
             return Ok(None);
         }
@@ -118,7 +135,28 @@ impl RegExpUnicodeClassMatcher {
         let mut frame = Frame::new(false);
         let mut has_q = false;
         let mut has_special = false;
+        let mut has_nested = false;
+        let mut depth = 0usize;
         while builder.at < builder.units.len() {
+            if nested && builder.units[builder.at] == 0x5b {
+                depth = depth
+                    .checked_add(1)
+                    .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+                has_nested = true;
+                builder.at += 1;
+                if builder.units.get(builder.at) == Some(&0x5e) {
+                    return Ok(None);
+                }
+                continue;
+            }
+            if nested && builder.units[builder.at] == 0x5d {
+                let Some(parent) = depth.checked_sub(1) else {
+                    return Ok(None);
+                };
+                depth = parent;
+                builder.at += 1;
+                continue;
+            }
             if builder.units[builder.at..].starts_with(&[0x5c, 0x71, 0x7b]) {
                 has_q = true;
                 builder.at += 3;
@@ -149,7 +187,7 @@ impl RegExpUnicodeClassMatcher {
                 builder.accept(&mut frame, term)?;
             }
         }
-        if !has_q || !has_special {
+        if !has_q || depth != 0 || !(if nested { has_nested } else { has_special }) {
             return Ok(None);
         }
         let ranges = builder.finish(frame.expression)?;
