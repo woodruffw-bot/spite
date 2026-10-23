@@ -10882,3 +10882,21 @@ class leaves and UTF-16 projection remain shared. Earlier API domains and work
 traces remain unchanged. Runtime selects the branch-only proof after boundary
 captures using the complete normalized source and no extra enclosing prefix.
 Named/indices projection and RegExp/String execution reuse the same result path.
+
+
+## Unquantified nullable groups with complete captures only
+
+A separate Core constructor proves one required nullable class group with no
+branch-local or boundary captures. There may be no original captures, or only
+complete enclosing captures. The flat role table must contain only complete
+iteration roles; its empty form retains a zero-capture pattern. Capture-free
+empty groups, choices and counts may surround the class or occupy its empty
+branch. Strict class checks, original alternative ownership, outside gates and
+exact-single framing remain shared (22.2.2.3).
+
+The synthetic marker still selects the final character or empty branch. Complete
+captures project that whole range, and zero-capture patterns expose only the
+whole match. Branch/boundary capture constructors retain their separate domains.
+Source counts, clone/drop and matching state remain flat; no input-sized capture
+history is introduced. Earlier API domains and work traces remain unchanged.
+Runtime selection remains a subsequent step.

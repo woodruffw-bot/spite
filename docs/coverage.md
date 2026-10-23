@@ -18536,3 +18536,29 @@ tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime inventory is 530 case files and 4,248
 integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+## Core complete captures in one unquantified nullable group
+
+A separate constructor requires a flat role table containing only complete
+iteration captures, including its zero-capture form. Existing single-iteration
+framing, root assertion-scope guards, strict classes and capture-free empty
+counts/choices preserve first-branch selection and exact whole-match ranges.
+Branch-local and boundary captures retain their separate constructors.
+
+Three groups compare the executable capture-tree oracle across eight predicates,
+six capture-free empty layouts, zero/one/two complete wrappers, both orders,
+line/word gates, all starts and sticky/i/m modes across eight inputs. Cancellation
+covers every callback and recovery. Structural cases exercise 20,000 deep whole
+captures, flat clone/drop, zero original captures, large capture-free inner
+counts and supplementary interior starts. Closed controls retain partial/boundary
+captures, root alternatives, existing outer counts, assertions, references,
+additional consuming terms and unknown/string-valued leaves.
+
+All 37,992 prior API records preserve exact construction/search work and capture
+projection, including single nullable branch captures. Stable passes all 1,182
+Core and 431 Runtime unit cases. Workspace documentation tests,
+workspace/included-source formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime selection, snapshots,
+corpus sources/helpers, dependencies, intrinsic counts and default resource
+policy are unchanged.

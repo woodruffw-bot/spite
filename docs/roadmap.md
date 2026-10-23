@@ -726,6 +726,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute empty point captures around a single nullable class group through RegExp and String consumers, preserving first-branch selection, conditional names/indices, empty-match advancement and atomic opt-in aborts.
 - [x] Compile character-only and empty-only captures in one unquantified nullable group, preserving required/optional/later capture participation, first-branch priority, exact UTF-16 ranges and flat source-sized state.
 - [x] Execute captures confined to one unquantified nullable group through RegExp and String consumers, preserving conditional names/indices, permanently undefined slots, empty advancement and atomic opt-in aborts.
+- [x] Compile one unquantified nullable class group with no captures or complete enclosing captures only, preserving first-branch priority, grouped empty terms, whole UTF-16 ranges and source-sized state.
+- [ ] Execute unquantified nullable class groups with no captures or complete enclosing captures through RegExp and String consumers.
 - [ ] Connect consuming-branch nullable string-class captures to Runtime RegExp named indices and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
