@@ -907,6 +907,8 @@ mod regexp_unicode_single_nullable_branch_captures;
 mod regexp_unicode_single_nullable_complete_captures;
 #[path = "cases/regexp_unicode_single_root_nullable_captures.rs"]
 mod regexp_unicode_single_root_nullable_captures;
+#[path = "cases/regexp_unicode_single_string_class_captures.rs"]
+mod regexp_unicode_single_string_class_captures;
 #[path = "cases/regexp_unicode_soft_dotted_properties.rs"]
 mod regexp_unicode_soft_dotted_properties;
 #[path = "cases/regexp_unicode_string_alternatives.rs"]

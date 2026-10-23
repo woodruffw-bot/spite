@@ -11018,4 +11018,10 @@ selection is unconditional, so empty members still define complete captures and
 point groups (22.2.2.3, 22.2.2.7). Work precedes boundary and prefix/search scans;
 empty-member classes need only the first boundary's bounded prefix. Storage,
 clone and drop remain flat and source-sized, and matching retains no capture
-history. Runtime selection remains a subsequent step.
+history.
+
+Runtime selects the single-class proof after grouped alternatives on the full
+normalized source. A distinct body delegates search work and projects captures
+from the selected class range. Shared result/indices construction and String
+consumers retain lexical names, empty advancement and lastIndex behavior.
+Search work is charged before matching; opt-in search aborts preserve state.

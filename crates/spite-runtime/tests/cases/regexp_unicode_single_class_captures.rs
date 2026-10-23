@@ -118,6 +118,9 @@ fn single_point_capture_proofs_finish_supported_finalizers_and_keep_other_terms_
     check(
         r"var marker=0,value;try{var m=/()[\q{a}]()/dv.exec('a');value=m[1]===''&&m.indices[2][0]===1}finally{marker=3}value&&marker===3",
     );
+    check(
+        r"var marker=0,m;try{m=/()[\q{ab}&&\q{cd}]/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
+    );
     for pattern in [
         r"()\b[\q{a}]",
         r"()[\q{a}]\1",
@@ -125,7 +128,7 @@ fn single_point_capture_proofs_finish_supported_finalizers_and_keep_other_terms_
         r"()[\q{a}][\q{b}]",
         r"()[\q{a}]?",
         r"(\b)(?:[\q{a}]|)",
-        r"()[\q{ab}&&\q{cd}]",
+        r"()[\q{ab}&&\q{cd}&&\p{RGI_Emoji}]",
         r"()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
     ] {
         let mut realm = Realm::default();

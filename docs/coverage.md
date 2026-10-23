@@ -18835,3 +18835,30 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No new
 Runtime selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime empty captures around a single string class
+
+Five regression groups cover 27 class families, explicit empty-member and
+unmatched-word cases, and six layouts of complete/point/optional/later captures.
+They check original longest words, empty and absent groups, named index aliases,
+no-group maps, search/sticky lastIndex, supplementary inside-pair starts, escaped
+names, folding, lone surrogates and read-only state. Consumer cases exercise
+matchAll, callback/template replace, split and search, plus clones and collection.
+Deep captures and long-word search retain flat state. Opt-in constructor, direct
+exec and matchAll aborts bypass JavaScript handlers and preserve original state.
+Finalizers run normally for supported matches and failures; assertions, counts,
+references, further terms/classes and unknown leaves remain unsupported controls.
+
+All 69,984 exact differential records over 162 class/capture pairs match
+independent ordinary-alternative controls across eight inputs, all starts and
+sticky/i/m flags. Records include empty/absent captures, group key order, every
+index, absent group maps and lastIndex. Fourteen fixed consumer programs match
+reference controls. The old known-empty-set single-class rejection now has an
+exact null-result/finalizer regression and a separate unknown-leaf control.
+Stable passes all 431 Runtime unit cases and all 1,572 Unicode RegExp integration
+cases, including the five new groups. Workspace documentation tests, strict
+workspace Clippy, formatting, dependency policy, source/fixture inventories and
+diff checks pass. Runtime inventory is 536 case files and 4,278 integration
+cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
+default resource policy are unchanged.
