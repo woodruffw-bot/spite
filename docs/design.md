@@ -11098,4 +11098,6 @@ selected original class range supplies unchanged whole-prefix and point captures
 references, nullable root alternatives and unknown leaves remain separate proofs.
 Original-source work is precharged before recovery, copying and role allocation;
 body compilation, flat storage and earlier constructor work remain shared.
-Runtime surrounding-line selection remains a subsequent step.
+Runtime selects this proof after enclosed assertions on the full normalized
+source. Prefix slots remain owned by the same matcher body, with shared named
+indices, String consumers, Unicode progress and opt-in abort propagation.

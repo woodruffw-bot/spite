@@ -18979,3 +18979,29 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime line gates surrounding complete asserted string-class wrappers
+
+Three groups check 27 class families, six capture layouts, three inner line
+profiles, three outer line profiles and three mixed wrapper chains. They retain
+every lexical named range, optional/later mask, empty member, prefix alias and
+source string. Exact examples include inner word gates, repeated line gates,
+contradictory continuations, supplementary inside-pair starts, escaped names,
+callback/template replacement, split, search, matchAll, clones and collection.
+Deep prefixes, long words and opt-in constructor/exec aborts preserve flat state
+and original bindings/lastIndex. Finalizers finish for supported patterns; root
+choices, partial/quantified chains, inner assertions, references and unknown
+leaves retain separate unsupported controls.
+
+All 139,968 exact surrounding-line differential records over 324 class/capture/
+gate pairs match independent finite-alternative native sticky controls with
+explicit Unicode candidate advancement and initial normalization. Records retain
+eight inputs, all starts, sticky/i/m flags, complete prefix values, lexical names,
+every index and lastIndex. Ten fixed consumer programs match reference controls.
+Stable passes all 431 Runtime unit cases and all 1,583 Unicode RegExp integration
+cases, including the three new groups. Workspace documentation tests, strict
+workspace Clippy, formatting, dependency policy, source/fixture inventories and
+diff checks pass. Runtime inventory is 539 case files and 4,289 integration
+cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
+default resource policy are unchanged.
