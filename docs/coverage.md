@@ -18705,3 +18705,33 @@ tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime inventory is 533 case files and 4,263
 integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+The published nonempty string-root Runtime selection additionally passes all
+1,557 Unicode RegExp integration cases and all 35 conformance-profile Test262
+runner/integration tests, including 16,343 reviewed variants.
+
+
+## Core tagged root captures for classes containing empty members
+
+A separate constructor requires the compiled class set to contain the empty
+string. Shared class compilation retains the nonempty constructor's callbacks;
+a tagged match explicitly distinguishes zero-width class selection from the root
+empty branch. Conditional class captures and points remain defined for an empty
+class member; opposite-branch and optional/later slots remain undefined.
+
+Three groups compare an independent finite-word matcher and executable capture
+tree over thirteen classes, six layouts, both orders, all starts and sticky/i/m
+modes across eight inputs. Families include unions, scalar/nested classes,
+finite operations, supplementary/folded words, empty-only classes and retained
+empty members. Cancellation checks every constructor/search callback and
+recovery. Structural cases exercise 20,000 deep class captures for both nonzero
+and zero-width class matches, flat clone/drop and a 20,000-character word.
+Closed controls retain nonempty/empty-set results, assertions, references,
+grouped patterns, class-bearing counts, multiple alternatives and unknown leaves.
+
+Stable passes all 1,191 Core unit cases and 431 Runtime unit cases. All 40,200
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.

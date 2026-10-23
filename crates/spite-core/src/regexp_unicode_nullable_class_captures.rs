@@ -8,7 +8,10 @@ use std::ops::Range;
 
 #[path = "regexp_unicode_nullable_string_class_captures.rs"]
 mod string_class_captures;
-pub use string_class_captures::RegExpUnicodeNullableStringClassCaptureMatcher;
+pub use string_class_captures::{
+    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeStringClassBranchMatch,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CaptureRole {
@@ -740,6 +743,24 @@ fn projected_capture_range(
     }
 }
 
+fn projected_selected_capture_range(
+    captures: &[CaptureRole],
+    index: usize,
+    range: &Range<usize>,
+    class_selected: bool,
+) -> Option<Range<usize>> {
+    match captures.get(index)? {
+        CaptureRole::Iteration => Some(range.clone()),
+        CaptureRole::Character => class_selected.then(|| range.clone()),
+        CaptureRole::Empty => (!class_selected).then(|| range.clone()),
+        CaptureRole::Never => None,
+        CaptureRole::StartPoint => Some(range.start..range.start),
+        CaptureRole::EndPoint => Some(range.end..range.end),
+        CaptureRole::CharacterStartPoint => class_selected.then_some(range.start..range.start),
+        CaptureRole::CharacterEndPoint => class_selected.then_some(range.end..range.end),
+    }
+}
+
 // Preserve outside framing while adding one exact, noncapturing iteration.
 fn single_capture_source<E>(
     source: &JsString,
@@ -1136,4 +1157,5 @@ mod tests {
     include!("regexp_unicode_single_nullable_complete_capture_tests.rs");
     include!("regexp_unicode_single_root_nullable_capture_tests.rs");
     include!("regexp_unicode_nonempty_string_root_capture_tests.rs");
+    include!("regexp_unicode_empty_string_root_capture_tests.rs");
 }

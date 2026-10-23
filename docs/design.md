@@ -10950,3 +10950,21 @@ source-sized data. Earlier constructor/search work traces remain unchanged.
 Runtime selects the string-class proof after character-only root alternatives.
 A separate matcher body delegates bounded work and source-order projection;
 metadata, named indices, String consumers, clones and collection remain shared.
+
+
+## Explicit selection for string classes containing empty members
+
+A separate Core matcher requires an empty member in the compiled class result
+and returns an explicit class-selected flag with the whole UTF-16 range. A
+zero-width class member therefore defines character-side captures and points,
+while the root empty alternative defines only its own captures. Equal-width
+results do not erase that distinction (22.2.2.3 and 22.2.2.7).
+
+Both string-root constructors share complete class compilation and flat source
+framing, then require opposite empty-member outcomes. The established nonempty
+constructor retains its fields, callbacks and projection. Longest class members
+precede its empty member; original root empty-first order still skips the class
+query. Tagged projection retains lexical slots and optional/later masks without
+allocating a capture vector or input history per match. Root assertion/reference/
+count scopes remain separate. Source-sized clone/drop and bounded-prefix work
+precharges are unchanged. Runtime selection remains a subsequent step.
