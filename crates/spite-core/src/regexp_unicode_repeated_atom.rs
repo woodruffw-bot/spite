@@ -14,7 +14,7 @@ mod nullable_class_captures;
 pub use nullable_class_captures::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableClassCaptureMatcher,
     RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
 };
 
 /// A selected Unicode repetition and the last captured atom iteration.

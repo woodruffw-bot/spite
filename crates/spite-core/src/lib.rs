@@ -100,7 +100,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableClassCaptureMatcher,
     RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedAtomMatch,
     RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};

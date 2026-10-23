@@ -174,69 +174,9 @@ fn compile_string_alternative<E>(
         return Ok(None);
     };
     let source = JsString::from_code_units(body[parsed.class.clone()].to_vec());
-    let mut class = RegExpUnicodeStringSetMatcher::compile_with_work(
-        &source,
-        ignore_case,
-        multiline,
-        &mut charge,
-    )?;
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_character_union_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_finite_string_operations_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    if class.is_none() {
-        class = RegExpUnicodeStringSetMatcher::compile_scalar_rhs_string_operations_with_work(
-            &source,
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
-    }
-    let Some(class) = class else { return Ok(None) };
+    let Some(class) = compile_string_class(&source, ignore_case, multiline, &mut charge)? else {
+        return Ok(None);
+    };
     if class.has_empty_member() != want_empty {
         return Ok(None);
     }
@@ -382,5 +322,164 @@ impl RegExpUnicodeEmptyStringClassCaptureMatcher {
         class_selected: bool,
     ) -> Option<Range<usize>> {
         projected_selected_capture_range(&self.captures, index, range, class_selected)
+    }
+}
+
+fn compile_string_class<E>(
+    source: &JsString,
+    ignore_case: bool,
+    multiline: bool,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeStringSetMatcher>, RegExpUnicodeSetCompileError<E>> {
+    let mut class = RegExpUnicodeStringSetMatcher::compile_with_work(
+        source,
+        ignore_case,
+        multiline,
+        &mut charge,
+    )?;
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_character_union_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_positive_nested_union_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_string_operations_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_finite_string_operations_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    if class.is_none() {
+        class = RegExpUnicodeStringSetMatcher::compile_scalar_rhs_string_operations_with_work(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?;
+    }
+    Ok(class)
+}
+
+/// One unquantified string class with complete and empty point captures.
+///
+/// Captures retain lexical slots and original UTF-16 ranges, including defined
+/// empty members. Optional/later empty groups remain undefined. Storage, clone
+/// and drop are flat and source-sized; matching allocates no capture history.
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeSingleStringClassCaptureMatcher {
+    class: RegExpUnicodeStringSetMatcher,
+    captures: Box<[CaptureRole]>,
+}
+impl RegExpUnicodeSingleStringClassCaptureMatcher {
+    /// Proves one string class with flat capturing/noncapturing empty siblings.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// enclosing captures and empty sibling points preserve group entry/exit
+    /// ranges (22.2.2.3, 22.2.2.7). Class members prefer the longest word, including
+    /// empty members. Complete class validation precedes matching. Assertions,
+    /// references, class-bearing counts, additional consuming terms and nullable
+    /// alternatives retain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-compileatom
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(96).saturating_add(256))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let mut body = Vec::with_capacity(units.len().saturating_add(4));
+        body.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+        body.extend_from_slice(units);
+        body.push(0x29);
+        let Some(parsed) = parse_body(&body, true, true, true, true, true, true) else {
+            return Ok(None);
+        };
+        let class_source = JsString::from_code_units(body[parsed.class].to_vec());
+        let Some(class) = compile_string_class(&class_source, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            class,
+            captures: parsed.captures.into_boxed_slice(),
+        }))
+    }
+
+    /// Number of original captures in lexical source order.
+    pub fn capture_count(&self) -> usize {
+        self.captures.len()
+    }
+
+    /// Finds the earliest start and longest class member with original ranges.
+    ///
+    /// Work is charged before Unicode boundary and bounded prefix/search scans.
+    /// Defined empty members retain class identity without width-based inference.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        charge(4)?;
+        let Some(start) = unicode_start(input, start) else {
+            return Ok(None);
+        };
+        let remaining = input.len() - start;
+        let first_only = sticky || self.class.has_empty_member();
+        let inspected = if first_only {
+            remaining.min(self.class.max_match_code_units())
+        } else {
+            remaining
+        }
+        .saturating_add(1);
+        charge(inspected.saturating_mul(self.class.search_passes(first_only)))?;
+        Ok(self.class.find(input, start, sticky))
+    }
+
+    /// Projects an original capture from the selected class member's range.
+    pub fn capture_range(&self, index: usize, range: &Range<usize>) -> Option<Range<usize>> {
+        projected_selected_capture_range(&self.captures, index, range, true)
     }
 }

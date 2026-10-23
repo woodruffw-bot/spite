@@ -11000,3 +11000,22 @@ source. Existing matcher bodies retain lexical capture slots, including complete
 original wrappers and unwrapped sibling points. The nonempty range or explicit
 class-selection flag continues through shared result/indices construction and
 String consumers without adding per-match storage.
+
+
+## Empty captures around one variable-width string class
+
+A separate single-class Core matcher proves one unquantified string class with
+complete enclosing captures and empty capturing/noncapturing siblings. The
+existing flat empty-group parser runs in consuming mode, preserving start/end
+points and optional/later undefined masks. Complete class compilation is shared
+with both nullable string-class matchers without changing their constructor
+callbacks. Assertions, references, class-bearing counts, nullable alternatives
+and additional consuming terms retain separate proofs.
+
+Matching delegates earliest-start/longest-member selection to the string-set
+matcher and projects every capture from the original UTF-16 class range. Class
+selection is unconditional, so empty members still define complete captures and
+point groups (22.2.2.3, 22.2.2.7). Work precedes boundary and prefix/search scans;
+empty-member classes need only the first boundary's bounded prefix. Storage,
+clone and drop remain flat and source-sized, and matching retains no capture
+history. Runtime selection remains a subsequent step.

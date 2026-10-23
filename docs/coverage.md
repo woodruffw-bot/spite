@@ -18809,3 +18809,29 @@ workspace Clippy, formatting, dependency policy, source/fixture inventories and
 diff checks pass. Runtime inventory is 535 case files and 4,273 integration
 cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
 default resource policy are unchanged.
+
+
+The broader grouped Runtime run passed 1,564 Unicode cases and exposed three
+stale rejection expectations for known empty-set class results. Those exact
+patterns now have success/capture/finalizer regressions; replacement controls
+retain unknown-leaf rejection even with disjoint finite operands. All 15 cases
+in the three affected single-nullable families pass after that migration.
+
+
+## Core empty captures around a single string class
+
+Three groups compare 27 class families and six capture trees against independent
+finite-word search and capture entry/exit evaluation, across eight inputs, all
+starts and sticky/i/m flags. They cover both empty-membership outcomes, empty
+sets, longest words, original UTF-16/folded values, enclosing/sibling points and
+optional/later masks. Every constructor/search callback cancellation prefix and
+recovery is checked for empty and nonempty classes. Structural cases retain flat
+clone/drop for 20,000 nested captures and search for a 20,000-character word.
+Nullable alternatives, class-bearing counts, assertions, references, further
+consuming terms/classes and unknown leaves remain closed controls.
+
+Stable passes all 1,197 Core unit cases and 431 Runtime unit cases. All 42,408
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No new
+Runtime selection, corpus fixture, snapshot, dependency or default quota changes.
