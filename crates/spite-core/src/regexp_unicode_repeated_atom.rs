@@ -3028,6 +3028,72 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles grouped-empty singleton-q ranges with two overflowing unequal bounds.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,n}.
+    /// Both finite bounds exceed native storage and are numerically unequal.
+    /// Borrowed decimal subtraction retains exact optional budgets, including
+    /// padded endpoints and differences that fit native storage. All consumed
+    /// characters can be mandatory: character-first priority is independent of
+    /// laziness, while empty-first choices retain optional progress and outside
+    /// word/line gates. Final captures and linear search reuse existing state.
+    /// Every class operand is proved before matching. Other counts, partial
+    /// captures and other empty shapes remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_finite_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::UnrepresentableFinite,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles grouped-empty character-result ranges with two overflowing unequal bounds.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,n}.
+    /// Both finite bounds exceed native storage and are numerically unequal.
+    /// Borrowed decimal subtraction retains exact optional budgets, including
+    /// padded endpoints and differences that fit native storage. All consumed
+    /// characters can be mandatory: character-first priority is independent of
+    /// laziness, while empty-first choices retain optional progress and outside
+    /// word/line gates. Final captures and linear search reuse existing state.
+    /// Every class operand is proved before matching. Other counts, partial
+    /// captures and other empty shapes remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_finite_noncapturing_empty_nullable_character_result_v_set_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::UnrepresentableFinite,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,

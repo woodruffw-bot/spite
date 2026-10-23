@@ -17665,3 +17665,27 @@ strict workspace Clippy, dependency policy, source/fixture inventories and diff
 checks pass. Runtime inventory is 514 case files and 4,156 integration cases.
 Corpus sources and helpers, snapshots, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Core two overflowing finite bounds beside grouped empty alternatives
+
+Separate Core constructors prove unequal finite endpoints that both exceed native
+storage around singleton-q and character-result v/vi classes beside nested
+noncapturing empty groups. Exact borrowed decimal differences preserve optional
+budgets while mandatory source priority and captures reuse the existing matcher.
+
+Three groups compare an independent recursive specification oracle across six
+predicates, three wrapper layouts, both branch orders, eight padded/lazy bound
+spellings, line/word gates, all starts and sticky/i/m modes. Regressions cover
+exact differences of one and three, earlier higher-phase candidates,
+supplementary ranges, mandatory final empty captures, complete unknown/string
+leaf proof, closed domains, every callback's cancellation/recovery, and 20,000
+wrappers, discarded characters and leading zeros. A 20,000-digit decimal borrow
+retains an optional budget of one with linear work and flat clone/drop.
+
+All 19,576 prior eight-string/five-class/forty-five-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,133 Core and 425 Runtime unit cases and 220 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
+resource policy are unchanged.

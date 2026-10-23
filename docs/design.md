@@ -10351,6 +10351,23 @@ mandatory priority, earliest starts and original UTF-16 ranges. Earlier upper-bo
 rejections complete with their expected values and finalizer effects. Names,
 indices, lastIndex, clones, collection and opt-in host aborts reuse existing paths.
 
+## Two overflowing finite bounds beside grouped empty alternatives
+
+Separate Core constructors prove numerically unequal finite bounds that both
+exceed native storage around a bare singleton-q or character-result v/vi class
+beside nested effect-free noncapturing empty groups. Borrowed decimal subtraction
+retains exact optional budgets, including a difference of one after a long borrow
+through zeros. Every consumed character can remain mandatory: character-first
+source priority is independent of laziness, while empty-first choices preserve
+optional progress and earliest cross-phase starts (RepeatMatcher, 22.2.2.3).
+
+Padded endpoints, outside word/line gates and required empty/original character
+captures reuse the existing flat matcher. Every class leaf must be proved behind
+empty-first choices. Counts, groups and discarded words never expand state.
+Earlier constructor domains/work traces, class storage and resource defaults are
+unchanged. Partial captures and other empty shapes retain separate proofs.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
