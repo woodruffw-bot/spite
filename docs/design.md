@@ -10838,3 +10838,23 @@ Earlier repeated/nullable entry points retain their domains and work traces.
 Runtime selects the single-iteration proof after repeated consuming captures and
 uses the same source-order projection, metadata and RegExp/String execution
 paths. No new result representation or capture history is required.
+
+
+## Empty point captures around a single nullable class group
+
+A separate Core entry point applies exactly one required iteration to a nullable
+class group with captured empty siblings. Complete enclosing wrappers are
+optional. Character-side points remain conditional, outside siblings retain
+unconditional start/end points, and optional/later-alternative groups stay
+undefined. Required first-branch selection, UTF-16 projection and strict
+character-class validation reuse the established nullable capture proof.
+
+A flat precharged scan declines top-level alternatives before outside assertions
+are extracted. In an unwrapped disjunction, a leading/trailing assertion belongs
+to only one branch; moving it outside a synthetic wrapper would change its scope
+(22.2.2). Grouped alternatives retain their original whole-pattern gates. The
+class-versus-empty separator therefore belongs to an explicit original group.
+Source framing/copies share the existing exact-single-iteration helper without
+changing earlier API work traces. Counts, clone/drop and role masks remain flat
+and source-sized; matching adds no capture history. Runtime selection remains a
+subsequent step.
