@@ -1158,4 +1158,5 @@ mod tests {
     include!("regexp_unicode_single_root_nullable_capture_tests.rs");
     include!("regexp_unicode_nonempty_string_root_capture_tests.rs");
     include!("regexp_unicode_empty_string_root_capture_tests.rs");
+    include!("regexp_unicode_grouped_string_capture_tests.rs");
 }

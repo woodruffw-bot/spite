@@ -1,4 +1,4 @@
-//! Root string-class alternatives with separate class/empty selection proofs.
+//! Unquantified string-class alternatives with explicit class/empty proofs.
 use super::{
     CaptureRole, has_root_alternative, parse_body, projected_capture_range,
     projected_selected_capture_range,
@@ -9,7 +9,7 @@ use crate::{
 };
 use std::ops::Range;
 
-/// One root string-class/empty alternative with flat original capture projection.
+/// An unquantified string-class/empty alternative with flat capture projection.
 ///
 /// The class result must exclude the empty string. Its nonzero selected range
 /// therefore distinguishes the consuming branch from the empty branch, including
@@ -40,7 +40,47 @@ impl RegExpUnicodeNullableStringClassCaptureMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        compile_string_root(source, ignore_case, multiline, false, charge).map(|plan| {
+        compile_string_alternative(
+            source,
+            ignore_case,
+            multiline,
+            AlternativeScope::Root,
+            false,
+            charge,
+        )
+        .map(|plan| {
+            plan.map(|plan| Self {
+                class: plan.class,
+                captures: plan.captures,
+                empty_first: plan.empty_first,
+            })
+        })
+    }
+
+    /// Proves one grouped class/empty alternative without a class-bearing count.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The full
+    /// source retains its alternative owner, complete enclosing captures and
+    /// empty sibling points. Class compilation and empty effects are shared
+    /// with `compile_with_work`; root alternatives, assertions, references and
+    /// additional consuming terms retain separate proofs. No source wrapper is
+    /// peeled, so enclosing ranges cover either selected branch (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-disjunction
+    pub fn compile_grouped_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        compile_string_alternative(
+            source,
+            ignore_case,
+            multiline,
+            AlternativeScope::Grouped,
+            false,
+            charge,
+        )
+        .map(|plan| {
             plan.map(|plan| Self {
                 class: plan.class,
                 captures: plan.captures,
@@ -101,22 +141,29 @@ impl RegExpUnicodeNullableStringClassCaptureMatcher {
     }
 }
 
-struct StringRootPlan {
+struct StringAlternativePlan {
     class: RegExpUnicodeStringSetMatcher,
     captures: Box<[CaptureRole]>,
     empty_first: bool,
 }
-fn compile_string_root<E>(
+#[derive(Clone, Copy)]
+enum AlternativeScope {
+    Root,
+    Grouped,
+}
+
+fn compile_string_alternative<E>(
     source: &JsString,
     ignore_case: bool,
     multiline: bool,
+    scope: AlternativeScope,
     want_empty: bool,
     mut charge: impl FnMut(usize) -> Result<(), E>,
-) -> Result<Option<StringRootPlan>, RegExpUnicodeSetCompileError<E>> {
+) -> Result<Option<StringAlternativePlan>, RegExpUnicodeSetCompileError<E>> {
     let units = source.code_units();
     charge(units.len().saturating_mul(96).saturating_add(256))
         .map_err(RegExpUnicodeSetCompileError::Work)?;
-    if !has_root_alternative(units) {
+    if has_root_alternative(units) != matches!(scope, AlternativeScope::Root) {
         return Ok(None);
     }
     let mut body = Vec::with_capacity(units.len().saturating_add(4));
@@ -193,14 +240,14 @@ fn compile_string_root<E>(
     if class.has_empty_member() != want_empty {
         return Ok(None);
     }
-    Ok(Some(StringRootPlan {
+    Ok(Some(StringAlternativePlan {
         class,
         captures: parsed.captures.into_boxed_slice(),
         empty_first: parsed.empty_first,
     }))
 }
 
-/// A root string-class match with explicit selected-alternative identity.
+/// A string-class match with explicit selected-alternative identity.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RegExpUnicodeStringClassBranchMatch {
     /// Complete original UTF-16 match range.
@@ -209,7 +256,7 @@ pub struct RegExpUnicodeStringClassBranchMatch {
     pub class_selected: bool,
 }
 
-/// A root string-class/empty alternative whose class contains the empty string.
+/// A string-class/empty alternative whose class contains the empty string.
 ///
 /// The explicit selected-branch result distinguishes a class capture of an empty
 /// member from the root empty alternative. Storage, clone and drop remain flat
@@ -237,7 +284,47 @@ impl RegExpUnicodeEmptyStringClassCaptureMatcher {
         multiline: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        compile_string_root(source, ignore_case, multiline, true, charge).map(|plan| {
+        compile_string_alternative(
+            source,
+            ignore_case,
+            multiline,
+            AlternativeScope::Root,
+            true,
+            charge,
+        )
+        .map(|plan| {
+            plan.map(|plan| Self {
+                class: plan.class,
+                captures: plan.captures,
+                empty_first: plan.empty_first,
+            })
+        })
+    }
+
+    /// Proves one grouped class/empty alternative without a class-bearing count.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The full
+    /// source retains its alternative owner, complete enclosing captures and
+    /// empty sibling points. Class compilation and empty effects are shared
+    /// with `compile_with_work`; root alternatives, assertions, references and
+    /// additional consuming terms retain separate proofs. No source wrapper is
+    /// peeled, so enclosing ranges cover either selected branch (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-disjunction
+    pub fn compile_grouped_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        compile_string_alternative(
+            source,
+            ignore_case,
+            multiline,
+            AlternativeScope::Grouped,
+            true,
+            charge,
+        )
+        .map(|plan| {
             plan.map(|plan| Self {
                 class: plan.class,
                 captures: plan.captures,
@@ -251,7 +338,7 @@ impl RegExpUnicodeEmptyStringClassCaptureMatcher {
         self.captures.len()
     }
 
-    /// Selects one root branch at the first valid Unicode boundary.
+    /// Selects a class/empty branch at the first valid Unicode boundary.
     ///
     /// Empty-first roots skip the class query. Otherwise the longest class word,
     /// including its empty member, retains class identity. Both sticky/searching

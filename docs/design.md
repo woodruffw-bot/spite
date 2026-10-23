@@ -10976,3 +10976,21 @@ without a per-match capture allocation. RegExp results, named indices, String
 consumers, clones and collection continue through their shared paths. Earlier
 successful constructors retain their work traces; new attempts and matching
 remain covered by opt-in host work limits.
+
+
+## Grouped unquantified string-class alternatives
+
+Both string-class capture matchers expose a separate grouped constructor. A
+flat source scan requires no root disjunction, then the same noncapturing frame
+retains the original inner separator owner. Complete enclosing captures cover
+either selected branch; empty sibling captures retain unconditional points,
+while class-side points and empty-branch slots retain conditional participation
+(22.2.2.3, 22.2.2.7). Nested captures, choices and empty counts share the existing
+flat role/mask proof. Class-containing counts, assertions, references and further
+consuming terms remain separate proofs.
+
+The constructors share complete class compilation, opposite empty-membership
+checks and bounded-prefix matching with root alternatives. Existing root
+constructors retain their exact accepted domain and callback traces. No source
+wrapper is peeled, captures are not renumbered and no per-match capture history
+is allocated. Runtime grouped selection remains a subsequent step.

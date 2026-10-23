@@ -18760,3 +18760,27 @@ Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is
 534 case files and 4,268 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+The published empty-member Runtime selection additionally passes all 1,562
+Unicode RegExp integration cases and all 35 conformance-profile Test262
+runner/integration tests, including 16,343 reviewed variants.
+
+
+## Core grouped unquantified string-class captures
+
+Two independent finite-word/capture-tree oracle groups cover 27 class families,
+six layouts, four enclosing/sibling frames, both branch orders, all starts and
+sticky/i/m modes across eight inputs. They distinguish empty class membership
+from root empty selection, complete enclosing ranges, conditional points and
+unconditional siblings, including optional/later undefined slots. A third group
+checks every constructor/search cancellation prefix and recovery for both
+empty-membership outcomes, plus flat clone/drop with 20,000 enclosing captures.
+Counts containing the class, root alternatives, assertions, references, extra
+consuming terms and additional alternatives retain closed controls.
+
+Stable passes all 1,194 Core unit cases and 431 Runtime unit cases. All 40,936
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.
