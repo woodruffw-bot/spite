@@ -97,6 +97,44 @@ struct Builder<'a, F> {
 }
 
 impl RegExpUnicodeClassMatcher {
+    // One complete class/property escape, borrowed from a validated operand.
+    pub(crate) fn compile_scalar_atom_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        let mut builder = Builder {
+            units,
+            at: 0,
+            ignore_case,
+            charge,
+        };
+        builder.work(units.len().saturating_mul(4))?;
+        let Some(term) = builder.term() else {
+            return Ok(None);
+        };
+        if builder.at != units.len()
+            || !matches!(
+                term,
+                Term::Raw(ClassAtom::Escape(_) | ClassAtom::Property(_))
+            )
+        {
+            return Ok(None);
+        }
+        let ranges = builder.close_term(term)?;
+        builder.work(ranges.len())?;
+        Ok(Some(Self {
+            ranges: ranges.into(),
+            inverted: false,
+            start_anchor: false,
+            end_anchor: false,
+            multiline: false,
+            ignore_case,
+            start_word: None,
+            end_word: None,
+        }))
+    }
+
     // Scalar portion of one complete positive flat class containing q strings.
     // The caller separately compiles all q alternatives. No string is removed
     // from source and no ranges are expanded into individual characters.
@@ -317,6 +355,7 @@ impl RegExpUnicodeClassMatcher {
             ignore_case,
             multiline,
             false,
+            true,
             charge,
         )
     }
@@ -332,6 +371,24 @@ impl RegExpUnicodeClassMatcher {
             ignore_case,
             multiline,
             true,
+            true,
+            charge,
+        )
+    }
+
+    // Character-only scalar operands include flat classes as well as algebra.
+    // Earlier checked constructors keep their existing shape requirement.
+    pub(crate) fn compile_scalar_class_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_v_set_units_with_string_operands_and_work(
+            units,
+            ignore_case,
+            false,
+            false,
+            false,
             charge,
         )
     }
@@ -341,6 +398,7 @@ impl RegExpUnicodeClassMatcher {
         ignore_case: bool,
         multiline: bool,
         allow_string_operands: bool,
+        require_shape: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
         let start_anchor = units.first() == Some(&0x5e);
@@ -383,7 +441,7 @@ impl RegExpUnicodeClassMatcher {
                     } else {
                         eligible
                     };
-                    if builder.at != builder.units.len() || !eligible {
+                    if builder.at != builder.units.len() || (require_shape && !eligible) {
                         return Ok(None);
                     }
                     // The root's inversion remains the matcher's flag. A child

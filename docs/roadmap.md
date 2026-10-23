@@ -645,6 +645,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect q-only variable-string intersections and subtractions to Runtime RegExp execution and String consumers, preserving whole-body captures, active-member bounds, lastIndex, and distinct empty-set/empty-member behavior.
 - [x] Compile homogeneous set-operation chains over finite q/literal operands and positive nested finite unions, with streamed members, complete operand proof, canonical equality, and active-member bounds.
 - [x] Connect finite nested/literal string-set operations to Runtime RegExp execution and String consumers, with whole-body captures, active-member bounds, lastIndex, and distinct empty operands.
+- [x] Compile homogeneous finite-left string-set operation chains with character-only right operands, preserving compact scalar ranges, canonical membership, empty-word identity, and active-member bounds.
+- [ ] Connect scalar-right string-set operations to Runtime RegExp execution and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

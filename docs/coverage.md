@@ -16270,3 +16270,27 @@ Stable passes all 425 Runtime unit cases and 1,364 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core scalar-right UnicodeSets string operations
+
+The scalar-right proof filters a finite left operand through homogeneous chains
+of finite or character-only right operands. Borrowed scalar compilation admits
+class/property escapes and q-free flat, nested, algebraic, or negated classes.
+Root trie edges alone can be scalar members; empty and longer words retain their
+set identities. Scalar ranges are never expanded and earlier entry domains and
+work sequences are retained. Runtime selection is a separate step.
+
+Three Core groups compare independent tiny scalar predicates and finite word
+sets across all start offsets and sticky/i/m modes. They cover ranges, digit/word
+and space escapes, ASCII/Any/White_Space properties, complements, nested algebra,
+full Unicode ranges, original UTF-16 boundaries and lone/braced surrogates,
+finite/scalar chains, distinct empty results/empty words, closed domains, complete
+later-operand proof, cancellation/recovery at every callback, compact range work,
+and 20,000 nested scalar operand levels with linear work and flat clone/drop.
+
+Stable passes all 1,058 Core and 425 Runtime unit cases and 157 affected Runtime
+integration cases. All 784 prior seven-API construction, bound, and match records
+remain unchanged. Workspace documentation tests, formatting, strict workspace
+Clippy, dependency policy, source/fixture inventories, and diff checks pass.
+Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
+counts, and default resource policy are unchanged.

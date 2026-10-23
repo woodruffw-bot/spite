@@ -9636,6 +9636,31 @@ even when a prior operation leaves an empty set. An empty class contributes no
 member, while an empty q branch contributes the empty word; both may have zero
 maximum width but produce different match results.
 
+## Character-only right operands in finite string-set operations
+
+A separate Core proof admits character-only right operands in a positive,
+homogeneous intersection/subtraction chain with a finite left operand. At least
+one operand requires the scalar proof and a q member is empty or longer. Later
+finite operands remain eligible. Scalar operands include class/property escapes
+and q-free classes with ranges, nested algebra, or negation. Scalar-left sets,
+mixed scalar/q unions within a right operand, inner string operations, additional
+atoms, and repetition remain separate proofs. Runtime selection is a later step.
+
+Borrowed operand boundaries reuse the checked character compiler. Its new scalar
+entry admits flat classes without changing the earlier checked entry domains or
+callbacks. All new interval and frame buffers grow fallibly with prior work
+charges. Ranges stay compact; the trie retains only first-operand words.
+
+Character-only sets contain one-character words. Filtering therefore visits
+active terminal root edges and leaves empty/longer words out of scalar membership,
+even when a longer word starts with an admitted character. Matching uses canonical
+member equality before each operation, including property folding and complement
+order under vi. Hash-map traversal work uses capacity, scalar lookup/folding work
+is prepaid, and checked marks reuse the existing operation application. Search
+retains the final active-word width, including zero for an empty result. Every
+later operand is still proved after an empty intermediate set. Search, clone,
+and drop keep their flat representation; default quotas and dependencies are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

@@ -2,6 +2,8 @@ use super::*;
 
 #[path = "regexp_unicode_finite_string_operations_tests.rs"]
 mod finite_operations;
+#[path = "regexp_unicode_scalar_rhs_string_operations_tests.rs"]
+mod scalar_rhs_operations;
 
 fn compile(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
     RegExpUnicodeStringSetMatcher::compile_with_work(&JsString::from(source), i, m, |_| {

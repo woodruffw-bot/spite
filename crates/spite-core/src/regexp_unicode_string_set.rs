@@ -290,6 +290,36 @@ impl RegExpUnicodeStringSetMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_finite_operations_domain(source, ignore_case, multiline, false, charge)
+    }
+
+    /// Compiles finite left operands filtered by character-only right operands.
+    ///
+    /// The positive outer class is a homogeneous intersection/subtraction chain.
+    /// The left operand is a q disjunction or positive finite q/literal union,
+    /// with an empty or longer q member somewhere in the chain. Later operands
+    /// may also be finite or character-only classes and class/property escapes.
+    /// At least one later operand requires the scalar proof. Scalar classes may
+    /// nest, negate, or use character-only set operations, but contain no q.
+    /// Ranges are kept as intervals and only one-character words can belong to
+    /// a scalar set. Further atoms and repetition remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_scalar_rhs_string_operations_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_finite_operations_domain(source, ignore_case, multiline, true, charge)
+    }
+
+    fn compile_finite_operations_domain<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        scalar_rhs: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Framing {
@@ -327,11 +357,32 @@ impl RegExpUnicodeStringSetMatcher {
         marked.resize(builder.terminal.len(), false);
         let mut matched = Vec::new();
         let mut active = members.len();
+        let mut has_scalar_rhs = false;
         loop {
             if StringSetOperator::at(inner, at) != Some(operator) {
                 return Ok(None);
             }
             at += 2;
+            let scalar = if scalar_rhs {
+                scalar_operand(inner, &mut at, ignore_case, &mut builder.charge)?
+            } else {
+                None
+            };
+            if let Some(scalar) = scalar {
+                has_scalar_rhs = true;
+                builder.mark_scalar_members(&scalar, &mut marked, &mut matched)?;
+                builder.apply_operation(
+                    operator,
+                    &mut members,
+                    &mut marked,
+                    &mut matched,
+                    &mut active,
+                )?;
+                if at == inner.len() {
+                    break;
+                }
+                continue;
+            }
             let mut node = if active == 0 { None } else { Some(0) };
             let mut length = 0usize;
             let Some(complex) = finite_operand(inner, &mut at, |event| {
@@ -365,7 +416,7 @@ impl RegExpUnicodeStringSetMatcher {
                 break;
             }
         }
-        if !extended || !builder.has_strings {
+        if !(if scalar_rhs { has_scalar_rhs } else { extended }) || !builder.has_strings {
             return Ok(None);
         }
         (builder.charge)(members.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
@@ -648,6 +699,86 @@ impl RegExpUnicodeStringSetMatcher {
 enum WordEvent {
     Point(u32),
     End,
+}
+
+fn mark_terminal_node<E>(
+    node: Option<usize>,
+    terminal: &[bool],
+    marked: &mut [bool],
+    matched: &mut Vec<usize>,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<(), RegExpUnicodeSetCompileError<E>> {
+    let Some(node) = node.filter(|&node| terminal[node] && !marked[node]) else {
+        return Ok(());
+    };
+    let needed = matched
+        .len()
+        .checked_add(1)
+        .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+    let movement = if needed > matched.capacity() {
+        matched.len()
+    } else {
+        0
+    };
+    charge(movement.saturating_add(2)).map_err(RegExpUnicodeSetCompileError::Work)?;
+    matched
+        .try_reserve(1)
+        .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+    matched.push(node);
+    marked[node] = true;
+    Ok(())
+}
+
+fn scalar_operand<E>(
+    units: &[u16],
+    at: &mut usize,
+    ignore_case: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeClassMatcher>, RegExpUnicodeSetCompileError<E>> {
+    let begin = *at;
+    let end;
+    let matcher = if units.get(begin) == Some(&0x5b) {
+        let Some(class_end) = crate::regexp_unicode_class_literal::class_end(units, begin) else {
+            return Ok(None);
+        };
+        let mut finite_end = begin;
+        if finite_operand(units, &mut finite_end, |_| {
+            Ok::<(), RegExpUnicodeSetCompileError<E>>(())
+        })?
+        .is_some()
+        {
+            return Ok(None);
+        }
+        end = class_end;
+        RegExpUnicodeClassMatcher::compile_scalar_class_units_with_work(
+            &units[begin..end],
+            ignore_case,
+            charge,
+        )?
+    } else {
+        let Some(tail) = units.get(begin..) else {
+            return Ok(None);
+        };
+        end = match tail.get(..2) {
+            Some([0x5c, 0x64 | 0x44 | 0x73 | 0x53 | 0x77 | 0x57]) => begin + 2,
+            Some([0x5c, 0x70 | 0x50]) if tail.get(2) == Some(&0x7b) => {
+                let Some(close) = tail.iter().position(|&unit| unit == 0x7d) else {
+                    return Ok(None);
+                };
+                begin + close + 1
+            }
+            _ => return Ok(None),
+        };
+        RegExpUnicodeClassMatcher::compile_scalar_atom_units_with_work(
+            &units[begin..end],
+            ignore_case,
+            charge,
+        )?
+    };
+    if matcher.is_some() {
+        *at = end;
+    }
+    Ok(matcher)
 }
 
 // These lexers borrow a prepaid complete source. Callback state owns all trie
@@ -948,24 +1079,35 @@ impl<E, F: FnMut(usize) -> Result<(), E>> TrieBuilder<F> {
     ) -> Result<(), RegExpUnicodeSetCompileError<E>> {
         (self.charge)(1).map_err(RegExpUnicodeSetCompileError::Work)?;
         self.has_strings |= length != 1;
-        let Some(node) = node.filter(|&node| self.terminal[node] && !marked[node]) else {
-            return Ok(());
-        };
-        let needed = matched
-            .len()
-            .checked_add(1)
-            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
-        let movement = if needed > matched.capacity() {
-            matched.len()
-        } else {
-            0
-        };
-        (self.charge)(movement.saturating_add(2)).map_err(RegExpUnicodeSetCompileError::Work)?;
-        matched
-            .try_reserve(1)
-            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
-        matched.push(node);
-        marked[node] = true;
+        mark_terminal_node(node, &self.terminal, marked, matched, &mut self.charge)
+    }
+
+    fn mark_scalar_members(
+        &mut self,
+        scalar: &RegExpUnicodeClassMatcher,
+        marked: &mut [bool],
+        matched: &mut Vec<usize>,
+    ) -> Result<(), RegExpUnicodeSetCompileError<E>> {
+        // HashMap iteration visits capacity, and scalar lookup includes folding.
+        // Root edges represent exactly the one-character words, never empty or
+        // longer members, including unmatchable separate braced surrogates.
+        (self.charge)(
+            self.edges
+                .capacity()
+                .saturating_mul(scalar.search_passes().saturating_add(2)),
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?;
+        for (&(parent, point), &node) in &self.edges {
+            if parent == 0 && self.terminal[node] && scalar.matches_original_character(point) {
+                mark_terminal_node(
+                    Some(node),
+                    &self.terminal,
+                    marked,
+                    matched,
+                    &mut self.charge,
+                )?;
+            }
+        }
         Ok(())
     }
 
