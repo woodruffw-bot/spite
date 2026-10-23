@@ -94,6 +94,7 @@ fn consumers_replacements_clones_and_collection_preserve_required_empty_capture_
 #[test]
 fn complete_grouped_one_open_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
+        r"/([\q{a|b}]|(?:)){1}/v.test('a')",
         r"/([\q{a|b}]|(?:)){1,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){01,}/v.test('aaa')",
         r"/(?<each>(?:(?:))|[\q{ab}&&a]){0001,}?/v.exec('X').groups.each===''",
@@ -120,7 +121,7 @@ fn complete_grouped_one_open_proofs_finish_finalizers_and_keep_other_domains_def
         r"/([\q{a|ab}&&a]||(?:)){1,}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){1,}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1,}[b]/v.test('ab')",
-        r"/([\q{a|b}]|(?:)){1}/v.test('a')",
+        r"/([\q{a|b}]|(?:)){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2,}/v.test('a')",
     ] {

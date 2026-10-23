@@ -17357,3 +17357,31 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime exactly-one string classes beside grouped empty alternatives
+
+Runtime selects the singleton-q and character-result grouped-empty exact-one
+proofs after grouped-empty {1,} counts. Six integration groups cover mandatory
+source priority independently of greediness, padded exact/equal-range source,
+defined empty versus original character captures, outside word/line gates,
+supplementary folding and original ranges, enclosing captures, escaped names,
+frozen lastIndex, String consumers and replacements, clones/collection, former
+Unsupported finalizers, complete unknown/string leaf proof, remaining larger
+counts and partial/other-empty shapes, early errors, 1,000 complete capturing
+wrappers, long discarded words and 20,000 leading count zeros under defaults,
+and atomic opt-in construction/search aborts with a short-match probe over the
+same argument. Earlier exact-one rejections complete with their exact values and
+finalizer effects; remaining controls require two iterations.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including captures, undefined markers, named-key
+presence/order, original indices, sticky starts and lastIndex. Original Node
+differs on 216 ignoreCase singleton-q folding records (152 Latin and 64
+supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases, 190 affected integration cases, and
+1,479 Unicode integration cases. Workspace documentation tests, formatting,
+strict workspace Clippy, dependency policy, source/fixture inventories, and diff
+checks pass. The grouped Runtime target contains 509 case files and 4,126 tests.
+Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

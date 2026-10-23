@@ -10211,7 +10211,15 @@ and flat clone/drop are reused. Every class leaf is compiled behind empty-first
 choices. Other counts, partial captures, empty sequences/choices/quantifiers and
 further atoms retain separate proofs. Counts do not expand matching state and
 earlier constructor domains/work traces, dependencies and resource defaults are
-unchanged. Runtime selection is separate.
+unchanged.
+
+Runtime selects the grouped-empty exact-one proofs after grouped-empty {1,}
+counts. Existing capture projection and String consumers preserve mandatory
+source priority, defined empty captures and original supplementary ranges.
+Padded/lazy source metadata, names/indices, lastIndex, clones/collection and
+opt-in host-abort propagation reuse existing paths. Earlier exact-one rejections
+complete with exact values and finalizer effects; larger counts and other
+empty-branch/partial capture shapes retain separate proofs.
 
 ## Global intrinsic metadata and enumeration
 
