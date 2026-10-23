@@ -10509,6 +10509,30 @@ flags, lastIndex, replacement callback arguments and clone/collection behavior.
 Opt-in constructor and search aborts preserve atomic state through existing
 work callbacks. Other empty-branch shapes retain separate capture proofs.
 
+## Captures confined to a nullable class's empty branch
+
+A separate Core constructor adds complete capturing/noncapturing empty groups on
+the alternative opposite one singleton-q or character-result v/vi class. The
+empty branch may contain nested and sibling groups but no inner quantifiers,
+choices, assertions or consuming terms. At least one empty-only capture is
+required; character-only captures are optional. Empty groups beside the class
+retain a separate proof because their boundary depends on placement.
+
+A flat group-span table resolves empty-first groups after the class is known.
+Every group must enclose the class or lie wholly on the empty side of the sole
+separator. Source-order roles distinguish complete iteration, character-only and
+empty-only captures. The existing canonical marker selects the last branch:
+empty-only groups receive its empty point and remain undefined after consuming
+iterations; character-only groups receive only positive-width ranges. All atom
+captures remain undefined when no iteration occurs. Required final empties clear
+prior characters and define empty groups as RepeatMatcher requires (22.2.2.3).
+
+Simple and every braced outer count, optional budgets, outside word/line gates,
+UTF-16 ranges and source spellings reuse existing matching. Linear construction
+charges cover the extra span walk; captures, clone and drop remain flat and
+source-sized. Prior constructor domains and exact work traces remain unchanged.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

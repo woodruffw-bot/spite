@@ -10,6 +10,7 @@ use std::ops::Range;
 enum CaptureRole {
     Iteration,
     Character,
+    Empty,
 }
 
 #[derive(Clone, Copy)]
@@ -24,7 +25,7 @@ struct Parsed {
     captures: Vec<CaptureRole>,
 }
 
-/// A nullable UnicodeSets class repetition with captures confined to its character branch.
+/// A nullable UnicodeSets class repetition with captures confined to either branch.
 ///
 /// Complete wrappers capture the last iteration, including required empty
 /// iterations. Groups confined to the character branch are undefined when the
@@ -57,6 +58,38 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(source, ignore_case, multiline, false, charge)
+    }
+
+    /// Proves captures on an unquantified empty branch beside a character class.
+    ///
+    /// The empty branch contains only balanced capturing/noncapturing groups,
+    /// including nested or sibling empty groups. At least one empty-only capture
+    /// is required. Complete-atom and character-only captures retain independent
+    /// roles. Choices, inner quantifiers/assertions and empty groups on the
+    /// character branch retain separate proofs. Other requirements and outside
+    /// count/gate semantics are the same as `compile_with_work`.
+    ///
+    /// RepeatMatcher clears captures before each iteration: selecting an empty
+    /// branch defines its groups at the current point and leaves character-only
+    /// groups undefined, including after earlier consuming iterations (22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_with_empty_branch_captures_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_capture_proof(source, ignore_case, multiline, true, charge)
+    }
+
+    fn compile_capture_proof<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        empty_captures: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -92,10 +125,15 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             let Some((atom_end, _, _)) = quantifier(body, token_end) else {
                 continue;
             };
-            let Some(parsed) = parse_body(&body[..atom_end]) else {
+            let Some(parsed) = parse_body(&body[..atom_end], empty_captures) else {
                 continue;
             };
-            if !parsed.captures.contains(&CaptureRole::Character) {
+            let required = if empty_captures {
+                CaptureRole::Empty
+            } else {
+                CaptureRole::Character
+            };
+            if !parsed.captures.contains(&required) {
                 continue;
             }
             let class = &body[parsed.class];
@@ -172,7 +210,11 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
     ) -> Option<Range<usize>> {
         let role = self.captures.get(index)?;
         let range = iteration?;
-        if *role == CaptureRole::Iteration || !range.is_empty() {
+        if match role {
+            CaptureRole::Iteration => true,
+            CaptureRole::Character => !range.is_empty(),
+            CaptureRole::Empty => range.is_empty(),
+        } {
             Some(range.clone())
         } else {
             None
@@ -180,15 +222,16 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
     }
 }
 
-// Every group must contain the sole class. A group that also contains the
-// separator captures the whole iteration; the others capture only its character.
-// This excludes captures/effects on the empty side and sibling consuming atoms.
-fn parse_body(units: &[u16]) -> Option<Parsed> {
+// Groups containing the class capture either the whole iteration or only the
+// character. The separate empty-capture proof also accepts wholly empty groups
+// on the opposite side of the separator. No other tokens or alternatives pass.
+fn parse_body(units: &[u16], empty_captures: bool) -> Option<Parsed> {
     if units.first() != Some(&0x28) || units.last() != Some(&0x29) {
         return None;
     }
     let mut frames = Vec::<Frame>::new();
     let mut captures = Vec::new();
+    let mut completed = Vec::new();
     let mut class = None::<Range<usize>>;
     let mut separator = None;
     let mut at = 0;
@@ -242,17 +285,23 @@ fn parse_body(units: &[u16]) -> Option<Parsed> {
             }
             0x29 => {
                 let frame = frames.pop()?;
-                let span = class.as_ref()?;
-                if frame.start >= span.start || span.end > at {
-                    return None;
-                }
-                if let Some(index) = frame.capture {
-                    captures[index] =
-                        if separator.is_some_and(|split| frame.start < split && split < at) {
-                            CaptureRole::Iteration
-                        } else {
-                            CaptureRole::Character
-                        };
+                if empty_captures {
+                    // An empty-first group can close before the class is seen.
+                    // Retain flat spans until both branches are known.
+                    completed.push((frame, at));
+                } else {
+                    let span = class.as_ref()?;
+                    if frame.start >= span.start || span.end > at {
+                        return None;
+                    }
+                    if let Some(index) = frame.capture {
+                        captures[index] =
+                            if separator.is_some_and(|split| frame.start < split && split < at) {
+                                CaptureRole::Iteration
+                            } else {
+                                CaptureRole::Character
+                            };
+                    }
                 }
                 at += 1;
                 if frames.is_empty() && at != units.len() {
@@ -267,6 +316,30 @@ fn parse_body(units: &[u16]) -> Option<Parsed> {
     }
     let class = class?;
     let split = separator?;
+    for (frame, end) in completed {
+        let contains_class = frame.start < class.start && class.end <= end;
+        let contains_split = frame.start < split && split < end;
+        let role = if contains_class {
+            if contains_split {
+                CaptureRole::Iteration
+            } else {
+                CaptureRole::Character
+            }
+        } else if !contains_split
+            && if split < class.start {
+                end < split
+            } else {
+                frame.start > split
+            }
+        {
+            CaptureRole::Empty
+        } else {
+            return None;
+        };
+        if let Some(index) = frame.capture {
+            captures[index] = role;
+        }
+    }
     Some(Parsed {
         empty_first: split < class.start,
         class,
