@@ -17741,3 +17741,27 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime noncapturing empty sequences beside string classes
+
+Runtime now selects nullable singleton-q and character-result v/vi classes beside
+noncapturing empty sequences under simple greedy/lazy quantifiers. Six groups
+cover branch priority, optional progress, required empty versus undefined
+captures, original supplementary/lone-surrogate ranges, named indices, lastIndex,
+String consumers, replacement callbacks, clones, collection and opt-in host
+aborts. Two earlier sibling-sequence rejections complete with checked finalizer
+effects. Unknown/string leaves, braced counts and other empty shapes remain
+separate proofs. Deep wrappers and nested/sibling empty groups stay flat.
+
+All 66,928 differential records across 178 pattern/control pairs agree with
+independent character-class controls across all starts and sticky/i/m modes.
+Raw Node singleton-q ignoreCase behavior differs in 528 records (360 Latin and
+168 Deseret); the controls and independent Core oracle agree with specification
+folding and original UTF-16 capture ranges.
+
+Stable passes all 425 Runtime unit cases, 232 affected integration cases and
+1,521 Unicode integration cases, including the refined quantified-empty rejection.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is
+516 case files and 4,168 integration cases. Corpus sources and helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

@@ -10390,7 +10390,14 @@ recovers discarded openers once and proves they are noncapturing. Both branch
 scans and the empty proof remain linear; deeply nested groups and capture slots
 never expand matching state or native recursion. Earlier constructor domains and
 work traces are unchanged. Braced counts, quantified/choice empty groups and
-partial captures retain separate proofs. Runtime selection is separate.
+partial captures retain separate proofs.
+
+Runtime selects the empty-sequence proofs after grouped-empty finite ranges.
+Existing capture projection and String consumers preserve required empty versus
+undefined captures, original supplementary/lone-surrogate ranges, names/indices,
+lastIndex, replacement values, clones and collection. Earlier sibling-sequence
+rejections complete with exact values and eval finalizers. Construction and
+matching host aborts preserve atomic effects under opt-in limits.
 
 ## Global intrinsic metadata and enumeration
 
