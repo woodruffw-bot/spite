@@ -769,6 +769,8 @@ mod regexp_unicode_overflowing_maximum_grouped_empty_nullable_string_classes;
 mod regexp_unicode_overflowing_maximum_nullable_alternatives;
 #[path = "cases/regexp_unicode_overflowing_maximum_nullable_string_classes.rs"]
 mod regexp_unicode_overflowing_maximum_nullable_string_classes;
+#[path = "cases/regexp_unicode_partial_nullable_class_captures.rs"]
+mod regexp_unicode_partial_nullable_class_captures;
 #[path = "cases/regexp_unicode_pattern_syntax_properties.rs"]
 mod regexp_unicode_pattern_syntax_properties;
 #[path = "cases/regexp_unicode_pattern_white_space_properties.rs"]

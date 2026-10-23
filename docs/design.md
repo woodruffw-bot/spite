@@ -10498,7 +10498,16 @@ undefined. This implements RepeatMatcher's clearing of all atom captures before
 each iteration, including a required final empty after earlier characters
 (22.2.2.3). The immutable role table and parser stack are source-sized and flat;
 matching adds no input-sized capture storage or native recursion. Prior matcher
-layouts, domains and work traces remain unchanged. Runtime selection is separate.
+layouts, domains and work traces remain unchanged.
+
+Runtime selects this matcher after existing nullable empty-choice proofs. The
+synthetic iteration marker stays private: whole-match enclosures retain their
+prefix ranges, and each original atom capture uses its source-order role.
+Undefined character-only slots remain present in named groups and indices.
+RegExpBuiltinExec and String consumers preserve original UTF-16 text, source and
+flags, lastIndex, replacement callback arguments and clone/collection behavior.
+Opt-in constructor and search aborts preserve atomic state through existing
+work callbacks. Other empty-branch shapes retain separate capture proofs.
 
 ## Global intrinsic metadata and enumeration
 
