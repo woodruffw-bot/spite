@@ -1938,6 +1938,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::Raw,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -1967,6 +1968,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::Raw,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -1992,6 +1994,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::ZeroMinimum,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2020,6 +2023,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::ZeroMinimum,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2045,6 +2049,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::OneMinimumOpen,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2073,6 +2078,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::OneMinimumOpen,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2098,6 +2104,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::OneIteration,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2126,6 +2133,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::OneIteration,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2152,6 +2160,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::PositiveOpen,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2181,6 +2190,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::PositiveOpen,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2207,6 +2217,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::PositiveExact,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2235,6 +2246,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::PositiveExact,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2263,6 +2275,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::UnrepresentableExact,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2291,6 +2304,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::UnrepresentableExact,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2316,6 +2330,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::PositiveFinite,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2344,6 +2359,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::PositiveFinite,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2371,6 +2387,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::OverflowingMaximum,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2398,6 +2415,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::OverflowingMaximum,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2429,6 +2447,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::SingleCharacterStrings,
             NullableProof::UnrepresentableFinite,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2458,6 +2477,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             multiline,
             ClassProof::CharacterResultStrings,
             NullableProof::UnrepresentableFinite,
+            EmptyBranchProof::Raw,
             charge,
         )
     }
@@ -2485,7 +2505,8 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             ignore_case,
             multiline,
             ClassProof::SingleCharacterStrings,
-            NullableProof::TransparentEmpty,
+            NullableProof::Raw,
+            EmptyBranchProof::Nested,
             charge,
         )
     }
@@ -2513,7 +2534,68 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             ignore_case,
             multiline,
             ClassProof::CharacterResultStrings,
-            NullableProof::TransparentEmpty,
+            NullableProof::Raw,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles zero-minimum braced nullable singleton-q counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and an effect-free nested noncapturing
+    /// empty group branch. Braced {0}, {0,n} and {0,} include padded/lazy
+    /// forms and overflowing upper bounds. Optional empty iterations cannot
+    /// export captures; zero iterations leave all inner captures undefined.
+    /// Canonical outside word/line gates and original character ranges reuse
+    /// existing linear search. Every class operand is proved even under zero
+    /// counts. Other counts, empty sequences/choices and partial capture shapes
+    /// remain separate proofs; construction and clone/drop are iterative.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_zero_minimum_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::ZeroMinimum,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles zero-minimum braced nullable character-result counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and an effect-free nested noncapturing
+    /// empty group branch. Braced {0}, {0,n} and {0,} include padded/lazy
+    /// forms and overflowing upper bounds. Optional empty iterations cannot
+    /// export captures; zero iterations leave all inner captures undefined.
+    /// Canonical outside word/line gates and original character ranges reuse
+    /// existing linear search. Every class operand is proved even under zero
+    /// counts. Other counts, empty sequences/choices and partial capture shapes
+    /// remain separate proofs; construction and clone/drop are iterative.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_zero_minimum_noncapturing_empty_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::ZeroMinimum,
+            EmptyBranchProof::Nested,
             charge,
         )
     }
@@ -2524,6 +2606,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         multiline: bool,
         proof: ClassProof,
         bounds: NullableProof,
+        empty: EmptyBranchProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -2532,12 +2615,13 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         // Simple proofs decline braced tokens before the quantifier helper.
         charge(units.len().saturating_mul(10))
             .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
-        if bounds == NullableProof::TransparentEmpty {
+        if empty == EmptyBranchProof::Nested {
             // Both branch scans, empty-group proofs and recovery of initial
             // empty-first openers are linear across both token interpretations.
             charge(units.len().saturating_mul(12))
                 .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
-        } else if bounds != NullableProof::Raw {
+        }
+        if bounds != NullableProof::Raw {
             // One full decimal parse and one simple-token retry take <=8N.
             // Source counts are compared and retained without expansion.
             charge(units.len().saturating_mul(8))
@@ -2577,7 +2661,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             (Some(body.len()), true),
         ] {
             let Some(end) = end else { continue };
-            if matches!(bounds, NullableProof::Raw | NullableProof::TransparentEmpty)
+            if bounds == NullableProof::Raw
                 && !end
                     .checked_sub(1)
                     .and_then(|at| body.get(at))
@@ -2710,7 +2794,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 }
                 wrappers += 1;
             }
-            if bounds == NullableProof::TransparentEmpty {
+            if empty == EmptyBranchProof::Nested {
                 // Initial noncapturing openers can belong to the empty-first
                 // branch rather than complete wrappers. Recover them once;
                 // probing every opener separately would be quadratic in depth.
@@ -2740,7 +2824,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if wrappers == 0 || !body[inner_end..atom_end].iter().all(|&unit| unit == 0x29) {
                 continue;
             }
-            let (leaf, order) = if bounds == NullableProof::TransparentEmpty {
+            let (leaf, order) = if empty == EmptyBranchProof::Nested {
                 let nested_empty = |branch: &[u16]| {
                     let mut at = 0;
                     let mut depth = 0;

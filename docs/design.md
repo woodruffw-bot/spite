@@ -10143,6 +10143,27 @@ host-abort propagation reuse existing paths. The former grouped-empty rejection
 completes with its exact value and finalizer effects; empty sequences/choices,
 quantified empty branches, braced counts and partial captures remain separate.
 
+## Zero-minimum braced nullable string classes beside nested empty groups
+
+Separate Core entries admit {0}, {0,n} and {0,} around a bare singleton-q or
+character-result v/vi class and a nested noncapturing empty alternative, including
+padded/lazy forms and overflowing finite upper bounds. Empty-branch shape and
+count proof are independent constructor options; previous entries retain their
+domains and exact work traces. Complete wrappers and canonical outside word/line
+gates reuse the existing borrowed group scan and linear search.
+
+RepeatMatcher rejects optional empty iterations before exporting captures;
+zero selected iterations leave inner captures undefined while consumed iterations
+retain the last original character range (22.2.2.3). Exact zero bounds still
+compile every class operand, including unknown or string-valued leaves. Positive
+minima, empty sequences/choices/quantifiers, partial captures and further atoms
+retain separate proofs.
+
+Construction precharges the grouped-branch scans and decimal parsing separately.
+Counts and nested groups do not expand matching state. Checked class allocation,
+flat clone/drop, dependencies and resource defaults are unchanged. Runtime
+selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
