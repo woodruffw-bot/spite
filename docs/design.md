@@ -10862,3 +10862,21 @@ to Core: removing complete wrappers could expose the original grouped alternativ
 to the root-alternative guard. The Core table includes those captures, so Runtime
 adds no separate enclosing prefix. Named/indices projection, String consumers,
 empty-match advancement, clones and collection retain the shared execution path.
+
+
+## Captures confined to one unquantified nullable group's branches
+
+A separate Core constructor proves character-only and empty-only captures for
+one required nullable iteration. At least one original branch capture is
+required, including optional/later empty captures that never participate.
+Complete enclosing wrappers remain optional. Captured empty points beside the
+class or its owning alternative retain the separate boundary constructor.
+
+The flat parser enables existing empty-group count and choice effects, then
+requires a branch-only role table with no boundary capture. Complete iteration
+wrappers retain the original one-character or empty range; branch captures are
+undefined when the opposite branch succeeds. Existing interval masks preserve
+required, optional and later-choice participation without expanding counts
+(RepeatMatcher, 22.2.2.3). Source framing, root assertion-scope guards, strict
+class leaves and UTF-16 projection remain shared. Earlier API domains and work
+traces remain unchanged. Runtime selection remains a subsequent step.

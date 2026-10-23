@@ -28,6 +28,7 @@ enum CaptureProof {
     EmptyCaptureEffects,
     BoundaryCaptures,
     RepeatedClass,
+    BranchCaptures,
 }
 
 #[derive(Clone, Copy)]
@@ -277,6 +278,43 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         )
     }
 
+    /// Proves captures confined to branches of one unquantified nullable group.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// character-only or empty-only capture is required; optional/later empty
+    /// captures may always be undefined. Empty groups may nest, repeat or contain
+    /// choices. Captured empty siblings outside the empty branch retain the
+    /// separate single boundary-capture proof. Original complete wrappers are
+    /// optional, root alternatives decline, and outside word/line gates preserve
+    /// whole-pattern scope. References, internal assertions, further consuming
+    /// terms and class-containing inner counts retain separate proofs.
+    ///
+    /// Exactly one required iteration selects the first successful branch and
+    /// clears its captures (RepeatMatcher, 22.2.2.3).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_single_branch_captures_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(4).saturating_add(32))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(source.code_units()) {
+            return Ok(None);
+        }
+        let Some(canonical) = single_capture_source(source, &mut charge)? else {
+            return Ok(None);
+        };
+        Self::compile_capture_proof(
+            &canonical,
+            ignore_case,
+            multiline,
+            CaptureProof::BranchCaptures,
+            charge,
+        )
+    }
+
     fn compile_capture_proof<E>(
         source: &JsString,
         ignore_case: bool,
@@ -288,7 +326,9 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         // Edge parity, both token interpretations, group/class walks and the
         // flat capture table are covered before structural inspection.
         let factor = match proof {
-            CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass => 80,
+            CaptureProof::BoundaryCaptures
+            | CaptureProof::RepeatedClass
+            | CaptureProof::BranchCaptures => 80,
             CaptureProof::EmptyCaptureEffects => 64,
             CaptureProof::EmptyChoices => 40,
             CaptureProof::QuantifiedSequence => 32,
@@ -334,6 +374,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                         | CaptureProof::EmptyCaptureEffects
                         | CaptureProof::BoundaryCaptures
                         | CaptureProof::RepeatedClass
+                        | CaptureProof::BranchCaptures
                 ),
                 matches!(
                     proof,
@@ -341,16 +382,20 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
                         | CaptureProof::EmptyCaptureEffects
                         | CaptureProof::BoundaryCaptures
                         | CaptureProof::RepeatedClass
+                        | CaptureProof::BranchCaptures
                 ),
                 matches!(
                     proof,
                     CaptureProof::EmptyCaptureEffects
                         | CaptureProof::BoundaryCaptures
                         | CaptureProof::RepeatedClass
+                        | CaptureProof::BranchCaptures
                 ),
                 matches!(
                     proof,
-                    CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass
+                    CaptureProof::BoundaryCaptures
+                        | CaptureProof::RepeatedClass
+                        | CaptureProof::BranchCaptures
                 ),
                 proof == CaptureProof::RepeatedClass,
             ) else {
@@ -361,7 +406,15 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
             } else {
                 CaptureRole::Character
             };
-            let present = if matches!(
+            let present = if proof == CaptureProof::BranchCaptures {
+                !parsed.boundary_captures
+                    && parsed.captures.iter().any(|role| {
+                        matches!(
+                            role,
+                            CaptureRole::Character | CaptureRole::Empty | CaptureRole::Never
+                        )
+                    })
+            } else if matches!(
                 proof,
                 CaptureProof::BoundaryCaptures | CaptureProof::RepeatedClass
             ) {
@@ -974,4 +1027,5 @@ mod tests {
     include!("regexp_unicode_repeated_class_capture_tests.rs");
     include!("regexp_unicode_single_class_capture_tests.rs");
     include!("regexp_unicode_single_nullable_boundary_capture_tests.rs");
+    include!("regexp_unicode_single_nullable_branch_capture_tests.rs");
 }

@@ -18480,3 +18480,34 @@ tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime inventory is 529 case files and 4,243
 integration cases. Corpus sources/helpers, snapshots, dependencies, intrinsic
 counts and default resource policy are unchanged.
+
+
+The published single nullable Runtime selection additionally passes all 1,537
+Unicode RegExp integration cases and all 35 conformance-profile Test262
+runner/integration tests, including 16,343 reviewed variants.
+
+
+## Core branch-only captures in one unquantified nullable group
+
+A separate constructor proves original character-only and empty-only captures
+for one required nullable iteration, including always-undefined optional/later
+slots. A branch role must be present and boundary captures remain in their
+separate proof. The existing parser's flat count/choice masks and exact-single
+framing retain original wrappers, assertion scope and first-branch priority.
+
+Three groups compare the executable capture-tree oracle across eight predicates,
+six branch layouts, three wrapper forms, both orders, line/word gates, all starts
+and sticky/i/m modes over eight inputs. Cancellation covers every callback and
+recovery. Structural cases exercise 20,000 deep character-only or empty-only
+captures, flat clone/drop, large inner counts, permanently undefined slots and
+supplementary interior starts. Closed controls retain boundary/no-branch shapes,
+root alternatives, existing outer counts, extra consuming terms, references,
+assertions and unknown/string-valued classes.
+
+All 37,256 prior API records preserve exact construction/search work and capture
+projection, including single nullable boundary captures. Stable passes all 1,179
+Core and 431 Runtime unit cases. Workspace documentation tests,
+workspace/included-source formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime selection, snapshots,
+corpus sources/helpers, dependencies, intrinsic counts and default resource
+policy are unchanged.
