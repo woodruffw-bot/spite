@@ -2348,6 +2348,60 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles a positive nullable singleton-q class with an overflowing finite upper bound.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a raw empty alternative. Braced {m,n}
+    /// requires represented positive m and an unrepresentable finite n. Borrowed
+    /// decimal subtraction preserves the exact optional budget even when n-m
+    /// fits native storage. Padded/lazy forms, mandatory branch priority, final
+    /// empty/original character captures and canonical outside gates reuse the
+    /// existing linear matcher. Every class leaf is proved before search.
+    /// Other counts, partial captures and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_overflowing_maximum_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::OverflowingMaximum,
+            charge,
+        )
+    }
+
+    /// Compiles a positive nullable character-result class with an overflowing finite upper bound.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a bare class and a raw empty alternative. Braced {m,n}
+    /// requires represented positive m and an unrepresentable finite n. Borrowed
+    /// decimal subtraction preserves the exact optional budget even when n-m
+    /// fits native storage. Padded/lazy forms, mandatory branch priority, final
+    /// empty/original character captures and canonical outside gates reuse the
+    /// existing linear matcher. Every class leaf is proved before search.
+    /// Other counts, partial captures and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_overflowing_maximum_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::OverflowingMaximum,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2474,6 +2528,30 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if bounds == NullableProof::UnrepresentableExact && !unrepresentable_exact {
                 continue;
             }
+            let overflowing_maximum = if bounds == NullableProof::OverflowingMaximum
+                && minimum.is_some_and(|minimum| minimum > 0)
+                && maximum.is_none()
+                && body.get(atom_end) == Some(&0x7b)
+            {
+                // Comma/zero-prefix scans and borrowed decimal subtraction
+                // take <=5N, including the native difference conversion.
+                charge((end - atom_end).saturating_mul(5))
+                    .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+                let digits = &body[atom_end + 1..end - 1];
+                digits
+                    .iter()
+                    .position(|&unit| unit == 0x2c)
+                    .and_then(|comma| {
+                        let first = significant(&digits[..comma]);
+                        let last = significant(&digits[comma + 1..]);
+                        (!last.is_empty()).then(|| decimal_difference(first, last))
+                    })
+            } else {
+                None
+            };
+            if bounds == NullableProof::OverflowingMaximum && overflowing_maximum.is_none() {
+                continue;
+            }
             let (mut at, mut wrappers, mut captures) = (0, 0, 0);
             while body.get(at) == Some(&0x28) {
                 if body.get(at + 1) == Some(&0x3f) {
@@ -2502,6 +2580,15 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 (leaf, EmptyBranchOrder::Last)
             } else {
                 continue;
+            };
+            let order = if order == EmptyBranchOrder::First {
+                if let Some(Some(optional)) = overflowing_maximum {
+                    EmptyBranchOrder::FirstFiniteOptional(optional)
+                } else {
+                    order
+                }
+            } else {
+                order
             };
             // Only an edge separator denotes the raw empty branch. The whole
             // remaining bare class proves q payload bars and every later leaf.

@@ -17031,3 +17031,33 @@ strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 503 case files and 4,090 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Core nullable string-class ranges with overflowing finite maxima
+
+Separate Core entries prove {m,n} around a raw empty alternative and a singleton-q
+or character-result v/vi class when m is positive and represented and n exceeds
+native storage. Borrowed decimal subtraction retains the exact optional budget
+n-m when represented, including one optional iteration across the native limit.
+An overflowing difference exceeds every possible input character count. Existing
+linear phases preserve mandatory source priority, greedy/lazy stopping, earliest
+starts, required empty or original character captures and outside word/line gates.
+Counts and captures never expand into matching state.
+
+Three Core groups compare an independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, eight overflowing
+range spellings, line/word gates, all starts and sticky/i/m modes. Finite bounds
+above every input's character count preserve the bounded-input oracle's choices.
+Coverage includes exact small differences across the native limit, earlier
+higher-phase matches, supplementary actual-end ranges, mandatory empty captures,
+complete unknown/string leaf proof, other-bound rejection, every constructor
+callback's cancellation/recovery, 20,000 complete wrappers, 20,000-character
+discarded words and 20,000 leading count zeros with linear checked work and flat
+clone/drop.
+
+All 6,728 prior eight-string/five-class/twenty-three-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,100 Core and 425 Runtime unit cases and 154 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

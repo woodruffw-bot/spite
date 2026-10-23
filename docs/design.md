@@ -10051,6 +10051,28 @@ lastIndex, cloning, collection and host-abort propagation retain their existing
 paths. Former Unsupported represented finite ranges complete finalizers normally;
 overflowing unequal ranges retain separate proofs.
 
+## Nullable string-class ranges with overflowing finite maxima
+
+Separate Core entries prove a raw empty alternative and a bare singleton-q or
+character-result v/vi class under {m,n}, where m is positive and represented and
+n exceeds native storage. Complete ordinary/noncapturing wrappers and canonical
+outside word/line gates reuse the existing borrowed proof. Every class operand
+is compiled before matching, including empty-first choices and discarded words.
+Other bounds and partial capture shapes retain separate proofs.
+
+An overflowing maximum can still leave a small optional budget: native maximum
+m and mathematical n=m+1 allow one optional iteration. Borrowed decimal
+subtraction preserves n-m when represented; an overflowing difference exceeds
+every possible input character count. Empty-first greedy matching retains the
+exact optional phase and compares it with mandatory backtracking for the earliest
+start. Character-first mandatory priority and lazy stopping reuse existing
+linear search and final empty/original character capture projection (22.2.2.3).
+
+The constructor precharges decimal comparison/subtraction in addition to existing
+framing and count parsing. Counts never expand into iterations or captures, and
+flat clone/drop, prior constructor domains/work traces, allocation boundaries,
+dependencies and resource defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
