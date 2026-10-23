@@ -18914,3 +18914,22 @@ documentation tests, strict workspace Clippy, formatting, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 537 case
 files and 4,283 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core complete wrappers around asserted single string-class captures
+
+Three groups compare 27 class families, six capture layouts, ten gate profiles
+and three mixed complete wrapper chains against an independent executable
+capture tree and finite-word continuation oracle. Eight inputs, all starts and
+sticky/i/m modes retain lexical prefix captures, conditional points, empty
+members and Unicode boundaries. Structural cases use 20,000 enclosing captures
+with flat clone/drop, plus nested classes, escaped parentheses and code-point
+escapes in class words. Every constructor/search cancellation prefix and recovery
+is checked. Unwrapped/plain bodies, partial or quantified wrappers, branch-local
+gates, inner assertions, references, class counts and unknown leaves stay closed.
+
+Stable passes all 1,203 Core unit cases and 431 Runtime unit cases. All 43,880
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.

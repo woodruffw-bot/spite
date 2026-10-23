@@ -443,6 +443,40 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Self::compile_single(source, ignore_case, multiline, true, charge)
     }
 
+    /// Proves complete ordinary wrappers enclosing canonical outside assertions.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// unquantified capturing/noncapturing wrappers retain whole-match ranges
+    /// and original lexical slots (22.2.2.7). Three flat scans keep nested v
+    /// classes and escaped string data opaque; the complete retained body must
+    /// pass `compile_with_outer_assertions_and_work`. Branch-local assertions,
+    /// class-bearing counts, references and unknown leaves stay separate.
+    /// https://262.ecma-international.org/17.0/#sec-compileatom
+    pub fn compile_enclosed_outer_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(8).saturating_add(64))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some((body, captures)) = enclosed_v_group_body(source.code_units()) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[body].to_vec());
+        let Some(mut plan) =
+            Self::compile_with_outer_assertions_and_work(&body, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if captures != 0 {
+            let mut roles = vec![CaptureRole::Iteration; captures];
+            roles.extend_from_slice(&plan.captures);
+            plan.captures = roles.into_boxed_slice();
+        }
+        Ok(Some(plan))
+    }
+
     fn compile_single<E>(
         source: &JsString,
         ignore_case: bool,
@@ -544,4 +578,71 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
     pub fn capture_range(&self, index: usize, range: &Range<usize>) -> Option<Range<usize>> {
         projected_selected_capture_range(&self.captures, index, range, true)
     }
+}
+
+// Recover only complete ordinary wrappers in validated v source. Unlike the
+// legacy outer-group scanner, every nested class bracket remains opaque here.
+fn enclosed_v_group_body(units: &[u16]) -> Option<(Range<usize>, usize)> {
+    fn opener(units: &[u16], at: usize) -> Option<usize> {
+        let tail = units.get(at..)?;
+        if tail.starts_with(&[0x28, 0x3f, 0x3a]) {
+            Some(3)
+        } else if tail.first() == Some(&0x28) && tail.get(1) != Some(&0x3f) {
+            Some(1)
+        } else {
+            None
+        }
+    }
+    let mut opening_end = 0;
+    let mut leading = 0;
+    while let Some(width) = opener(units, opening_end) {
+        opening_end += width;
+        leading += 1;
+    }
+    if leading == 0 {
+        return None;
+    }
+    let (mut remaining, mut depth, mut class, mut complete, mut at) =
+        (leading, 0usize, 0usize, 0usize, 0usize);
+    while let Some(&unit) = units.get(at) {
+        at += 1;
+        if unit == 0x5c {
+            units.get(at)?;
+            at += 1;
+            continue;
+        }
+        if unit == 0x5b {
+            class += 1;
+            continue;
+        }
+        if class != 0 {
+            if unit == 0x5d {
+                class -= 1;
+            }
+            continue;
+        }
+        match unit {
+            0x28 => depth += 1,
+            0x29 => {
+                depth = depth.checked_sub(1)?;
+                if depth < remaining {
+                    remaining = depth;
+                    if at == units.len().checked_sub(depth)? {
+                        complete = complete.max(depth + 1);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    if depth != 0 || class != 0 || complete == 0 {
+        return None;
+    }
+    let (mut begin, mut captures) = (0, 0);
+    for _ in 0..complete {
+        let width = opener(units, begin)?;
+        captures += usize::from(width == 1);
+        begin += width;
+    }
+    Some((begin..units.len() - complete, captures))
 }

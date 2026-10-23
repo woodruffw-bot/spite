@@ -11058,3 +11058,20 @@ pair. This is separate from the approved initial-offset leading-boundary rule
 and is not adopted. Core and Runtime regressions retain index 5 and reject the
 corresponding sticky start. Differential controls use independent native sticky
 matching with explicit Unicode candidate advancement and initial normalization.
+
+
+## Complete wrappers around asserted single string classes
+
+A separate Core constructor recovers complete ordinary capturing/noncapturing
+wrappers around an asserted single-class body. A v-aware delimiter scan keeps
+all nested class brackets and escape pairs opaque. Three constant-space scans
+recover the maximum complete wrapper chain, then the entire retained body must
+pass the existing outside-assertion proof. Quantified wrappers, continuations,
+branch-local gates, inner assertions and unknown leaves remain separate proofs.
+
+Capturing wrappers precede every retained-body capture in lexical order, so a
+flat prefix of whole-range roles preserves original capture slots and defined
+empty ranges (22.2.2.7). No wrapper is peeled repeatedly; clone/drop remain flat.
+Construction precharges the original source scans, copy and prefix roles before
+allocation, then delegates body work unchanged. Earlier constructors retain their
+accepted domains and callbacks. Runtime wrapper selection remains a subsequent step.
