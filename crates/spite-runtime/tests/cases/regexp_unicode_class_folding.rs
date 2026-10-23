@@ -125,6 +125,9 @@ fn unicode_class_folding_large_sources_collection_and_unlimited_defaults() {
 
 #[test]
 fn unicode_class_folding_opted_work_and_unproved_syntax() {
+    check(
+        r"let m=/[\q{ab}]/iv.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /[\q{ab}]/iv.exec('AB')[0]==='AB'",
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -151,7 +154,6 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         r"/([a])+b/iu.exec('a')",
         r"/[a]+b/iv.exec('a')",
         r"/[a]b/iu.exec('ab')",
-        r"/[\q{ab}]/iv.exec('ab')",
     ] {
         assert!(
             matches!(

@@ -15997,3 +15997,47 @@ Earlier single-character proof domains remain unchanged.
 Stable passes all 1,037 Core unit tests and Core documentation tests. Formatting,
 strict workspace Clippy, dependency policy, and diff checks pass. Runtime and
 the conformance fixture inventory are unchanged in this foundation increment.
+
+## Runtime matching for empty and multi-character UnicodeSets strings
+
+Runtime selects the standalone positive v/vi q proof after the earlier
+character-only proofs. Complete enclosing captures, named groups, indices,
+lastIndex, clones, and all existing String consumers use the standard result
+path. Sticky work covers bounded member consumption and an empty candidate;
+search work includes end-of-input and initial surrogate rewind. Search precharge
+failures remain host aborts before matching or lastIndex mutation.
+
+Ten integration groups cover member priority and overlap, shorter/empty fallback
+through outside line/word assertions, simple case folding, escaping, surrogates,
+whole-body captures and descriptors, lastIndex coercion and writes, collection,
+Unicode empty-match advancement in match/replace/split/matchAll, exact former
+Unsupported completions with finalizers, remaining unproved syntax, parser early
+errors, opt-in construction/search cancellation, and default execution of a
+20,000-character member. A Runtime unit regression checks saturated and empty
+work bounds, source-length independence, pair rewind, and capture projection.
+
+The braced-surrogate control follows edition 17 CompileClassSetString and
+CompileAtom. V8 13.6 joins those q characters and disagrees with its own ordinary
+concatenation control; the specified negative result is retained, as explained
+in the design document. Adjacent fixed surrogate escapes remain one character.
+
+A supplementary comparison covers 11,392 complete result records over sixteen
+patterns, sixteen inputs, every initial UTF-16 offset, and both sticky modes
+under all i/m combinations. Original Node v24.19.0 differs in 130 records because
+of singleton-q case-fold closure and sixteen because of braced-surrogate joining.
+Equivalent ordinary-class spellings for singleton members and removal of the
+impossible braced-surrogate member agree on every complete record, including
+captures, indices, and lastIndex. These engine controls do not replace the
+independent Core oracle or specification regressions.
+
+The 33 q-bearing upstream generated UnicodeSets sources at the current pin also
+require class algebra, properties of strings, and/or repetition. No partial
+source is vendored as a conformance pass for this standalone increment.
+
+Stable passes 1,037 Core unit cases, 423 Runtime unit cases, and 3,978 Runtime
+integration cases. The six older Unsupported controls exposed by the full run
+are updated and explicitly replayed with all ten new groups; the other workspace
+targets pass. All 35 Test262 package tests pass, including the complete
+16,319-variant corpus. Documentation tests, formatting, strict workspace Clippy,
+dependency policy, source/fixture inventories, and diff checks pass. Existing
+snapshots, dependencies, intrinsic counts, and default resource policy are unchanged.

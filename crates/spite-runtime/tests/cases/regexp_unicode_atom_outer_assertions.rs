@@ -131,6 +131,9 @@ fn unicode_atom_outer_assertion_many_wrappers_collection_and_defaults() {
 
 #[test]
 fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
+    check(
+        r"let m=/^([\q{a\)b}])$/v.exec('a)b');m.length===2 && m[0]==='a)b' && m[1]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -154,7 +157,6 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         r"/^(.)(.)$/v.exec('AA')",
         r"/^(a|b)$/v.exec('a')",
         r"/^(^.$)$/u.exec('A')",
-        r"/^([\q{a\)b}])$/v.exec('a)b')",
     ] {
         assert!(
             matches!(

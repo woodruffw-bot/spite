@@ -9471,9 +9471,29 @@ lookups, writes, and possible vector movement or hash-index rebuilding before
 fallible reservations. The final Arc retains the existing shared-allocation
 boundary. Sticky work is bounded by one longest-member walk; searching work
 includes that walk at every candidate, including the final empty position.
-This Core foundation is not yet selected by Runtime. Class algebra, properties
-of strings, additional consuming terms, inner captures, and repetition remain
-outside this entry. Dependencies and default resource policy are unchanged.
+Runtime selects this proof after earlier v/vi entries, projects complete enclosing
+captures through the existing result representation, and reuses RegExpBuiltinExec
+and the String consumers. Sticky work includes one candidate and bounded member
+consumption; searching work includes the final empty candidate and a possible
+initial pair rewind. Opted-in precharge failures precede search and lastIndex
+writes. Class algebra, properties of strings, additional consuming terms, inner
+captures, and repetition remain outside this entry. Dependencies and default
+resource policy are unchanged.
+
+V8 13.6 (Node v24.19.0) joins adjacent braced surrogate escapes inside q strings:
+`[\q{\u{D800}\u{DC00}}]` matches U+10000 there, while its ordinary
+`\u{D800}\u{DC00}` concatenation correctly fails. Edition 17
+[CompileClassSetString](https://262.ecma-international.org/17.0/#sec-compileclasssetstring)
+concatenates two character sequences; CompileAtom invokes CharacterSetMatcher
+for each character. The first surrogate cannot match the decoded supplementary
+input character. This matcher keeps that specified failure. Adjacent fixed
+Unicode escapes still form one character through the grammar's RegExpUnicodeEscapeSequence.
+
+The same V8 version also omits case-fold closure for singleton q members beside
+longer strings: `[\q{a|ab}]` with vi fails on A, while `[a\q{ab}]` matches it.
+CompileAtom's singleton CharacterSetMatcher must apply Canonicalize to both
+pattern and input characters. The trie preserves that closure, including Kelvin
+and long-s equivalences and shorter/empty assertion continuations.
 
 ## Global intrinsic metadata and enumeration
 

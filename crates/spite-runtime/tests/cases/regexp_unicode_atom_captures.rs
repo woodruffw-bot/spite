@@ -125,6 +125,9 @@ fn unicode_atom_captures_many_wrappers_collection_and_defaults() {
 
 #[test]
 fn unicode_atom_captures_opted_work_and_unproved_syntax() {
+    check(
+        r"let m=/(?:[\q{a\)b}])/iv.exec('a)b');m.length===1 && m[0]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
+    );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -152,7 +155,6 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         r"/([a]|b)/iu.exec('a')",
         r"/^([a])+b$/iu.exec('a')",
         r"/(?=([a]))/iv.exec('a')",
-        r"/(?:[\q{a\)b}])/iv.exec('a)b')",
         r"/(.)(.)/u.exec('ab')",
     ] {
         assert!(

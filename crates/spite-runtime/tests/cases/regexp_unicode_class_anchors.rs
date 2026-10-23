@@ -129,6 +129,9 @@ fn unicode_class_assertion_large_sources_collection_and_unlimited_defaults() {
 
 #[test]
 fn unicode_class_assertion_opted_work_and_unproved_syntax() {
+    check(
+        r"let m=/^[\q{ab}]$/v.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /^[\q{ab}]$/v.exec('xab')===null",
+    );
     let original = Realm::default().eval(r"/^[a]b$/v.exec('ab')").unwrap();
     assert!(matches!(original, Value::Object(_)));
     check(
@@ -160,7 +163,6 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         r"/(^[a]$)+b/iu.exec('a')",
         r"/^([a])+b$/u.exec('a')",
         r"/^[a]+b$/u.exec('a')",
-        r"/^[\q{ab}]$/v.exec('ab')",
         r"/^[a]$|b/u.exec('b')",
     ] {
         assert!(

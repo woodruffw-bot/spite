@@ -14,7 +14,7 @@ use spite_core::{
     RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
     RegExpUnicodeFoldedLiteralMatcher, RegExpUnicodeLiteralClassPairMatcher,
     RegExpUnicodeLiteralClassPairWordMatcher, RegExpUnicodePropertyDotMatcher,
-    RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeStringSetMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -29,6 +29,7 @@ pub(crate) enum RegExpMatcherBody {
     Character(RegExpCharacterMatcher),
     UnicodeCharacter(RegExpUnicodeCharacterMatcher),
     UnicodeClass(RegExpUnicodeClassMatcher),
+    UnicodeStringSet(RegExpUnicodeStringSetMatcher),
     UnicodeClassLiteral(RegExpUnicodeClassLiteralMatcher),
     UnicodeClassPair(RegExpUnicodeClassPairMatcher),
     UnicodeLiteralClassPair(RegExpUnicodeLiteralClassPairMatcher),
@@ -75,6 +76,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Character(_)
             | RegExpMatcherBody::UnicodeCharacter(_)
             | RegExpMatcherBody::UnicodeClass(_)
+            | RegExpMatcherBody::UnicodeStringSet(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
             | RegExpMatcherBody::UnicodeClassPair(_)
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
@@ -368,6 +370,9 @@ impl RegExpMatcher {
                 (matcher.find(input, start, sticky)?, 0)
             }
             RegExpMatcherBody::UnicodeClass(matcher) => (matcher.find(input, start, sticky)?, 0),
+            RegExpMatcherBody::UnicodeStringSet(matcher) => {
+                (matcher.find(input, start, sticky)?, 0)
+            }
             RegExpMatcherBody::Prefixed(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::RepeatedLiteral(matcher) => (matcher.find(input, start, sticky)?, 0),
             RegExpMatcherBody::RepeatedSequence(matcher) => {
@@ -417,6 +422,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::Character(_) => 1,
             RegExpMatcherBody::UnicodeCharacter(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClass(matcher) => matcher.search_passes(),
+            RegExpMatcherBody::UnicodeStringSet(matcher) => matcher.search_passes(sticky),
             RegExpMatcherBody::UnicodeClassLiteral(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeClassPair(matcher) => matcher.search_passes(),
             RegExpMatcherBody::UnicodeLiteralClassPair(matcher) => matcher.search_passes(),
@@ -444,6 +450,19 @@ impl RegExpMatcher {
 
     /// Sticky repeated atoms can consume more input than their source length.
     pub fn search_work(&self, sticky: bool, source_len: usize, remaining: usize) -> usize {
+        if let RegExpMatcherBody::UnicodeStringSet(matcher) = &self.body {
+            // Include a possible initial low-surrogate rewind and the final
+            // candidate at input end, where an empty member can still match.
+            let remaining = remaining.saturating_add(2);
+            return if sticky {
+                matcher
+                    .max_match_code_units()
+                    .saturating_add(1)
+                    .min(remaining)
+            } else {
+                remaining
+            };
+        }
         if let RegExpMatcherBody::UnicodeClassSequence(matcher) = &self.body {
             // The proved term count bounds original UTF-16 width, including a
             // possible one-unit rewind at an initial low surrogate.
@@ -555,6 +574,7 @@ impl RegExpMatch<'_> {
             RegExpMatcherBody::Character(_)
             | RegExpMatcherBody::UnicodeCharacter(_)
             | RegExpMatcherBody::UnicodeClass(_)
+            | RegExpMatcherBody::UnicodeStringSet(_)
             | RegExpMatcherBody::UnicodeClassLiteral(_)
             | RegExpMatcherBody::UnicodeClassPair(_)
             | RegExpMatcherBody::UnicodeLiteralClassPair(_)
@@ -651,6 +671,59 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn variable_string_work_bounds_include_empty_candidates_and_pair_rewind() {
+        for (pattern, max_units) in [(r"[\q{}]", 0usize), (r"[\q{|😀x|a}]", 4)] {
+            let source = JsString::from(pattern);
+            let body =
+                RegExpUnicodeStringSetMatcher::compile_with_work(&source, false, false, |_| {
+                    Ok::<(), ()>(())
+                })
+                .unwrap()
+                .unwrap();
+            let passes = [body.search_passes(false), body.search_passes(true)];
+            let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeStringSet(body), 2);
+            for source_len in [0, source.len(), usize::MAX] {
+                for remaining in 0..10 {
+                    assert_eq!(
+                        matcher.search_work(true, source_len, remaining),
+                        (max_units + 1).min(remaining + 2)
+                    );
+                    assert_eq!(
+                        matcher.search_work(false, source_len, remaining),
+                        remaining + 2
+                    );
+                }
+                assert_eq!(
+                    matcher.search_work(true, source_len, usize::MAX),
+                    max_units + 1
+                );
+                assert_eq!(
+                    matcher.search_work(false, source_len, usize::MAX),
+                    usize::MAX
+                );
+            }
+            assert_eq!(matcher.search_passes(false), passes[0]);
+            assert_eq!(matcher.search_passes(true), passes[1]);
+            let input = JsString::from("😀x");
+            let found = matcher
+                .find_with_work(&input, 1, true, |_| Err::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            let wanted = if max_units == 0 { 0..0 } else { 0..3 };
+            assert_eq!(found.range, wanted);
+            assert_eq!(found.capture_count, 2);
+            assert_eq!(found.capture(0), Some(wanted.clone()));
+            assert_eq!(found.capture(1), Some(wanted));
+            assert_eq!(found.capture(2), None);
+            let found = matcher
+                .find_with_work(&input, input.len(), true, |_| Err::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, input.len()..input.len());
+        }
+    }
 
     #[test]
     fn literal_checked_pair_work_bound_covers_three_original_characters() {

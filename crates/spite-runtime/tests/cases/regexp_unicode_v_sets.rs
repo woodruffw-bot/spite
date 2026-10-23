@@ -8271,13 +8271,21 @@ fn single_character_v_strings_state_context_and_consumers() {
         Realm::default().eval(r#"/[\q{a}][b]/v.test('ab')"#),
         Ok(Value::Boolean(true))
     );
+    for (source, expected) in [
+        (r#"/[\q{}]/v.test('')"#, true),
+        (r#"/[\q{a|}]/v.test('a')"#, true),
+        (r#"/[\q{|a}]/v.test('a')"#, true),
+        (r#"/[\q{a|b|ab}]/v.test('a')"#, true),
+        (r#"/[\q{ab|c}]/v.test('ab')"#, true),
+        (r#"/[\q{\u{D800}\u{DC00}}]/v.test('\uD800\uDC00')"#, false),
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::Boolean(expected)),
+            "{source}"
+        );
+    }
     for source in [
-        r#"/[\q{}]/v.test('')"#,
-        r#"/[\q{a|}]/v.test('a')"#,
-        r#"/[\q{|a}]/v.test('a')"#,
-        r#"/[\q{a|b|ab}]/v.test('a')"#,
-        r#"/[\q{ab|c}]/v.test('ab')"#,
-        r#"/[\q{\u{D800}\u{DC00}}]/v.test('\uD800\uDC00')"#,
         r#"/([\q{a}])b/v.test('ab')"#,
         r#"/\b^[\q{a}]/v.test('a')"#,
         r#"/[\q{a}]$\b/v.test('a')"#,
