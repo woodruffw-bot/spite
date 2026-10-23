@@ -5642,3 +5642,380 @@ fn positive_exact_grouped_empty_string_braces_keep_mandatory_order_decoded_count
         );
     }
 }
+
+fn compile_unrepresentable_exact_grouped_empty_string_with_work<E>(
+    source: &JsString,
+    i: bool,
+    m: bool,
+    singleton: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeRepeatedAtomMatcher>, crate::RegExpUnicodeSetCompileError<E>> {
+    if singleton {
+        RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_exact_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work(source, i, m, charge)
+    } else {
+        RegExpUnicodeRepeatedAtomMatcher::compile_unrepresentable_exact_noncapturing_empty_nullable_character_result_v_set_with_work(source, i, m, charge)
+    }
+}
+
+#[test]
+fn unrepresentable_exact_grouped_empty_string_braces_follow_independent_progress_branch_and_capture_oracle()
+ {
+    type Predicate = fn(u32) -> bool;
+    let classes: [(&str, Predicate, bool); 6] = [
+        (r"[\q{a|b}]", |p| p == 97 || p == 98, true),
+        (r"[\q{a|b|ab}&&\p{Any}]", |p| p == 97 || p == 98, false),
+        (r"[\q{ab}&&a]", |_| false, false),
+        (r"[^\q{ab}&&a]", |_| true, false),
+        (r"[\q{😀|😀x}&&\p{Any}]", |p| p == 0x1f600, false),
+        (r"[\q{\u{10428}|ab}&&\p{Any}]", |p| p == 0x10428, false),
+    ];
+    for (class, contains, singleton) in classes {
+        for (open, close, captures) in [("(", ")", 1), ("((", "))", 2), ("(?:(?:", "))", 0)] {
+            for empty_first in [false, true] {
+                for (quantifier, greedy) in [
+                    ("{9999999999999999999999999999999999999999}", true),
+                    ("{9999999999999999999999999999999999999999}?", false),
+                    (
+                        "{9999999999999999999999999999999999999999,9999999999999999999999999999999999999999}",
+                        true,
+                    ),
+                    (
+                        "{0009999999999999999999999999999999999999999,09999999999999999999999999999999999999999}?",
+                        false,
+                    ),
+                ] {
+                    for (prefix, suffix, anchors, words) in [
+                        ("", "", false, [None, None]),
+                        (r"^\b", r"\b$", true, [Some(true), Some(true)]),
+                        (r"\B", r"\b", false, [Some(false), Some(true)]),
+                    ] {
+                        for i in [false, true] {
+                            for m in [false, true] {
+                                let inner = if empty_first {
+                                    format!("(?:(?:))|{class}")
+                                } else {
+                                    format!("{class}|(?:(?:))")
+                                };
+                                let source =
+                                    format!("{prefix}{open}{inner}{close}{quantifier}{suffix}");
+                                let plan =
+                                    compile_unrepresentable_exact_grouped_empty_string_with_work(
+                                        &JsString::from(source.as_str()),
+                                        i,
+                                        m,
+                                        singleton,
+                                        |_| Ok::<(), ()>(()),
+                                    )
+                                    .unwrap()
+                                    .unwrap();
+                                assert_eq!(plan.capture_count(), captures);
+                                for input in [
+                                    JsString::from(""),
+                                    JsString::from("aaab!aba"),
+                                    JsString::from("A😀😀aa"),
+                                    JsString::from("!\r\naaa\u{2028}!"),
+                                    JsString::from("ſK"),
+                                    JsString::from("𐐀𐐨!"),
+                                    JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+                                ] {
+                                    let expected = Oracle::new(
+                                        &input,
+                                        contains,
+                                        Bounds {
+                                            // Above every possible character count on this input,
+                                            // this finite exact count has the same mandatory choices.
+                                            minimum: input.len() + 1,
+                                            maximum: Some(input.len() + 1),
+                                            greedy,
+                                        },
+                                        Gates {
+                                            anchors,
+                                            words,
+                                            i,
+                                            m,
+                                        },
+                                        empty_first,
+                                        captures,
+                                    );
+                                    for start in 0..=input.len() + 1 {
+                                        for sticky in [false, true] {
+                                            assert_eq!(
+                                                plan.find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                                expected.find(start, sticky),
+                                                "{source} i={i} m={m} {input:?} start={start} sticky={sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn unrepresentable_exact_grouped_empty_string_braces_keep_numeric_equality_and_closed_proof_domains()
+ {
+    let huge = "9".repeat(40);
+    for (singleton, class) in [(true, r"[\q{a|b}]"), (false, r"[\q{a|b|ab}&&\p{Any}]")] {
+        for q in [
+            format!("{{{huge}}}"),
+            format!("{{{huge}}}?"),
+            format!("{{{huge},{huge}}}"),
+            format!("{{000{huge},0{huge}}}?"),
+        ] {
+            for empty_first in [false, true] {
+                let inner = if empty_first {
+                    format!("(?:(?:))|{class}")
+                } else {
+                    format!("{class}|(?:(?:))")
+                };
+                let source = JsString::from(format!("(({inner})){q}").as_str());
+                let plan = compile_unrepresentable_exact_grouped_empty_string_with_work(
+                    &source,
+                    false,
+                    false,
+                    singleton,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+                let found = plan
+                    .find_with_captures_and_work(&JsString::from("abX"), 0, true, |_| {
+                        Ok::<(), ()>(())
+                    })
+                    .unwrap()
+                    .unwrap();
+                let range = if empty_first { 0..0 } else { 0..2 };
+                assert_eq!(found.range, range);
+                assert_eq!(found.atom_capture, Some(range.end..range.end));
+                assert_eq!(plan.capture_count(), 2);
+                assert!(
+                    compile_positive_exact_string_with_work(
+                        &source,
+                        false,
+                        false,
+                        singleton,
+                        |_| Ok::<(), ()>(())
+                    )
+                    .unwrap()
+                    .is_none()
+                );
+                assert!(
+                    compile_positive_open_string_with_work(
+                        &source,
+                        false,
+                        false,
+                        singleton,
+                        |_| Ok::<(), ()>(())
+                    )
+                    .unwrap()
+                    .is_none()
+                );
+            }
+        }
+        for q in [
+            "*".to_owned(),
+            "+?".to_owned(),
+            "{0}".to_owned(),
+            "{2}".to_owned(),
+            format!("{{{}}}", usize::MAX),
+            format!("{{{huge},}}"),
+            format!("{{{huge},{huge}0}}"),
+            format!("{{{},{}9}}", "8".repeat(40), "8".repeat(39)),
+        ] {
+            let source = JsString::from(format!("({class}|(?:(?:))){q}").as_str());
+            assert!(
+                compile_unrepresentable_exact_grouped_empty_string_with_work(
+                    &source,
+                    false,
+                    false,
+                    singleton,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source:?}"
+            );
+        }
+        for inner in [
+            format!("({class})|(?:(?:))"),
+            format!("{class}|()"),
+            format!("{class}||(?:(?:))"),
+            format!(r"\b{class}|(?:(?:))"),
+            format!("{class}|[b]"),
+            r"(?:(?:))|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]".to_owned(),
+            r"[\q{ab}&&\q{cd}]|(?:(?:))".to_owned(),
+            r"[\q{}]|(?:(?:))".to_owned(),
+        ] {
+            let source = JsString::from(format!("({inner}){{{huge}}}").as_str());
+            assert!(
+                compile_unrepresentable_exact_grouped_empty_string_with_work(
+                    &source,
+                    true,
+                    true,
+                    singleton,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source:?}"
+            );
+        }
+    }
+    for (singleton, class) in [(true, r"[\q{a|ab}&&a]"), (false, r"[\q{a|b}]")] {
+        let source = JsString::from(format!("({class}|(?:(?:))){{{huge}}}").as_str());
+        assert!(
+            compile_unrepresentable_exact_grouped_empty_string_with_work(
+                &source,
+                false,
+                false,
+                singleton,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+}
+
+#[test]
+fn unrepresentable_exact_grouped_empty_string_braces_charge_every_scan_and_keep_all_storage_flat() {
+    let huge = "9".repeat(40);
+    for (singleton, pattern) in [
+        (
+            true,
+            format!(r"^\b(((?:(?:))|[\q{{a|b}}])){{{huge},{huge}}}?\b$"),
+        ),
+        (false, format!(r"(([\q{{ab}}&&a]|(?:(?:)))){{{huge}}}")),
+        (
+            false,
+            format!(r"(?:[^\q{{ab}}&&a]|(?:(?:))){{000{huge},0{huge}}}?"),
+        ),
+    ] {
+        let source = JsString::from(pattern.as_str());
+        let mut complete = Vec::new();
+        compile_unrepresentable_exact_grouped_empty_string_with_work(
+            &source,
+            true,
+            true,
+            singleton,
+            |n| {
+                complete.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            complete[..3],
+            [source.len() * 10, source.len() * 12, source.len() * 8]
+        );
+        assert!(complete[3] > 0 && complete[3] <= source.len() * 3);
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = compile_unrepresentable_exact_grouped_empty_string_with_work(
+                &source,
+                true,
+                true,
+                singleton,
+                |n| {
+                    seen.push(n);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(
+                matches!(result, Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at == fail)
+            );
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        compile_unrepresentable_exact_grouped_empty_string_with_work(
+            &source,
+            true,
+            true,
+            singleton,
+            |n| {
+                recovered.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(recovered, complete);
+    }
+    for (source, captures, range, capture) in [
+        (
+            format!(
+                r"{}[\q{{a|ab}}&&a]|(?:(?:)){}{{{huge}}}?",
+                "(".repeat(20_000),
+                ")".repeat(20_000)
+            ),
+            20_000,
+            0..3,
+            3..3,
+        ),
+        (
+            format!(r"((?:(?:))|[\q{{{}}}&&a]){{{huge}}}", "x".repeat(20_000)),
+            1,
+            0..0,
+            0..0,
+        ),
+        (
+            format!(r"([\q{{a|ab}}&&a]|(?:(?:))){{{}}}", "9".repeat(20_000)),
+            1,
+            0..3,
+            3..3,
+        ),
+        (
+            format!(
+                r"((?:(?:))|[\q{{a|ab}}&&a]){{000{huge},{}{huge}}}",
+                "0".repeat(20_000)
+            ),
+            1,
+            0..0,
+            0..0,
+        ),
+    ] {
+        let source = JsString::from(source.as_str());
+        let mut work = 0usize;
+        let original = compile_unrepresentable_exact_grouped_empty_string_with_work(
+            &source,
+            false,
+            false,
+            false,
+            |n| {
+                work += n;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert!(
+            work < source.len() * 44 + 1024,
+            "linear construction work: {work}"
+        );
+        let plan = original.clone();
+        drop(original);
+        assert_eq!(plan.capture_count(), captures);
+        let found = plan
+            .find_with_captures_and_work(&JsString::from("aaa"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, range);
+        assert_eq!(found.atom_capture, Some(capture));
+    }
+}

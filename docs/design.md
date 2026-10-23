@@ -10275,6 +10275,25 @@ propagation reuse existing paths. Earlier exact-count rejections complete with
 exact values and finalizer effects; unequal finite and overflowing exact counts
 and other branch shapes remain separate proofs.
 
+## Overflowing exact counts beside grouped empty alternatives
+
+Separate Core entries admit {m} and {m,m} with overflowing m around a bare
+singleton-q or character-result v/vi class and a nested noncapturing empty
+alternative, including padded/lazy forms. Borrowed decimal comparison trims
+leading zeros and proves range endpoints numerically equal. Unequal finite
+ranges and open counts retain separate proofs.
+
+Every possible consumed character is mandatory below this count. Source branch
+priority determines endpoints independently of greediness, retaining a final
+required empty or original character capture (22.2.2.3). Existing linear search
+retains earliest starts, canonical outside word/line gates and original UTF-16
+ranges. Every class leaf is compiled behind empty-first choices.
+
+Complete wrappers, borrowed group recovery, comparison work callbacks, checked
+class storage and flat clone/drop are reused. Counts never expand matching state.
+Earlier constructor domains/work traces, dependencies and resource defaults are
+unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

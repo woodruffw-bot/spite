@@ -2842,6 +2842,68 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles overflowing exact nullable singleton-q counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m} or {m,m}, with unrepresentable m. Borrowed
+    /// decimal comparison proves padded endpoint equality without expanding
+    /// counts. Mandatory source priority is independent of greediness and retains
+    /// final required empty or original character captures. Canonical outside
+    /// word/line gates reuse existing linear search. Every class leaf is proved
+    /// behind empty-first choices. Other counts and partial/other-empty shapes
+    /// remain separate proofs; storage and clone/drop are flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_exact_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::UnrepresentableExact,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles overflowing exact nullable character-result counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m} or {m,m}, with unrepresentable m. Borrowed
+    /// decimal comparison proves padded endpoint equality without expanding
+    /// counts. Mandatory source priority is independent of greediness and retains
+    /// final required empty or original character captures. Canonical outside
+    /// word/line gates reuse existing linear search. Every class leaf is proved
+    /// behind empty-first choices. Other counts and partial/other-empty shapes
+    /// remain separate proofs; storage and clone/drop are flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_unrepresentable_exact_noncapturing_empty_nullable_character_result_v_set_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::UnrepresentableExact,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
