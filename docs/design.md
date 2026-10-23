@@ -9625,9 +9625,16 @@ probes and reuse checked membership marks, active terminals, and retained-length
 bounds. Shared operation application keeps the earlier q-only proof's work
 sequence. Every operand is proved after an empty intermediate result. Ranges,
 class/property escapes, negation, inner operations, further atoms, and repetition
-remain separate proofs; this Core foundation is not yet selected by Runtime.
+remain separate proofs.
 Storage and drop remain flat, growth is fallible and prepaid, and dependencies
 and default quotas are unchanged.
+
+Runtime selects this proof after q-only string operations. It uses the existing
+UnicodeStringSet body, whole-body capture projection, and precharged search work;
+no new matcher dispatch or resource policy is needed. All operands are proved
+even when a prior operation leaves an empty set. An empty class contributes no
+member, while an empty q branch contributes the empty word; both may have zero
+maximum width but produce different match results.
 
 ## Global intrinsic metadata and enumeration
 

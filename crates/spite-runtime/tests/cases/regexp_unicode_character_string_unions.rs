@@ -57,24 +57,24 @@ fn string_consumers_and_merged_q_members_keep_names_indices_and_empty_advancemen
 
 #[test]
 fn former_controls_complete_finalizers_and_unproved_algebra_remains_unsupported() {
-    for source in [r"/[\q{ab}a]/v.test('ab')", r"/[\q{ab}a\q{cd}]/v.test('ab')"] {
+    for (source, expected) in [
+        (r"/[\q{ab}a]/v.test('ab')", true),
+        (r"/[\q{ab}a\q{cd}]/v.test('ab')", true),
+        (r"/[a&&\q{ab}]/v.test('ab')", false),
+        (r"/[\q{ab}&&a]/v.test('ab')", false),
+        (r"/[\q{ab}--a]/v.test('ab')", true),
+    ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert_eq!(
             realm.eval(&format!(
                 "marker=1;try{{{source};}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
-            Ok(Value::Boolean(true))
+            Ok(Value::Boolean(expected))
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
-    for source in [
-        r"/[a&&\q{ab}]/v.test('ab')",
-        r"/[\q{ab}&&a]/v.test('ab')",
-        r"/[\q{ab}--a]/v.test('ab')",
-        r"/[a\q{ab}]+/v.test('ab')",
-        r"/[a\q{ab}]x/v.test('abx')",
-    ] {
+    for source in [r"/[a\q{ab}]+/v.test('ab')", r"/[a\q{ab}]x/v.test('abx')"] {
         assert!(
             matches!(
                 Realm::default().eval(source),

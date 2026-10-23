@@ -663,6 +663,8 @@ mod regexp_unicode_enclosing_pure_empty_patterns;
 mod regexp_unicode_extended_pictographic_properties;
 #[path = "cases/regexp_unicode_extender_properties.rs"]
 mod regexp_unicode_extender_properties;
+#[path = "cases/regexp_unicode_finite_string_operations.rs"]
+mod regexp_unicode_finite_string_operations;
 #[path = "cases/regexp_unicode_folded_literal_anchors.rs"]
 mod regexp_unicode_folded_literal_anchors;
 #[path = "cases/regexp_unicode_folded_literals.rs"]

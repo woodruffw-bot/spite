@@ -183,6 +183,9 @@ fn checked_v_set_error_categories_and_effects() {
         ));
     }
     for (pattern, expected) in [
+        (r"[\q{}&&a]", false),
+        (r"[a--a--\q{ab}]", false),
+        (r"[a&&b&&\q{ab}]", false),
         ("[a--b]", true),
         ("[a&&b]", false),
         ("[[a]]", true),
@@ -198,9 +201,6 @@ fn checked_v_set_error_categories_and_effects() {
     }
     check(r"!/\b[a--b]\b/v.test('b')");
     for pattern in [
-        r"[a&&b&&\q{ab}]",
-        r"[a--a--\q{ab}]",
-        r"[\q{}&&a]",
         r"[\p{RGI_Emoji}&&a]",
         r"[[a--a]&&[\q{ab}]]",
         r"[[][^][\p{RGI_Emoji}]]",
@@ -8488,10 +8488,13 @@ fn single_character_v_string_operands_state_context_and_consumers() {
             "let marker=0,caught=false;try{{eval({code:?})}}catch(e){{caught=e instanceof SyntaxError}}caught&&marker===0"
         ));
     }
-    for source in [
-        r"/[\q{a|b}]+/v.test('ab')",
-        r"/[[\q{a|b}]]{0}/v.test('')",
-        r"/a[\q{b}]/v.test('ab')",
+    for (source, expected) in [
+        (r"/[\q{a|b}]+/v.test('ab')", true),
+        (r"/[[\q{a|b}]]{0}/v.test('')", true),
+        (r"/a[\q{b}]/v.test('ab')", true),
+        (r"/[a--a--\q{ab}]/v.test('a')", false),
+        (r"/[\q{}&&a]/v.test('a')", false),
+        (r"/[[\q{a|b}]--[\q{a|bc}]]/v.test('b')", true),
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
@@ -8499,7 +8502,7 @@ fn single_character_v_string_operands_state_context_and_consumers() {
             realm.eval(&format!(
                 "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
             )),
-            Ok(Value::Boolean(true)),
+            Ok(Value::Boolean(expected)),
             "{source}"
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
@@ -8519,10 +8522,7 @@ fn single_character_v_string_operands_state_context_and_consumers() {
     }
     for source in [
         r"/[[a--a]&&[\q{ab}]]/v.test('a')",
-        r"/[a--a--\q{ab}]/v.test('a')",
-        r"/[\q{}&&a]/v.test('a')",
         r"/[^\q{ab}&&a]/v.test('a')",
-        r"/[[\q{a|b}]--[\q{a|bc}]]/v.test('b')",
         r"/[[\q{a|b}]&&[\p{RGI_Emoji}]]/v.test('a')",
         r"/\b^[\q{a}&&a]/v.test('a')",
         r"/[\q{a}&&a]$\b/v.test('a')",

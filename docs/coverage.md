@@ -16251,3 +16251,22 @@ remain unchanged. Workspace documentation tests, formatting, strict workspace
 Clippy, dependency policy, source/fixture inventories, and diff checks pass.
 Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
 counts, and default resource policy are unchanged.
+
+## Runtime finite UnicodeSets string operations
+
+Runtime selects finite nested/literal operation operands after the q-only proof.
+Six integration groups cover complete-member equality, longest priority,
+homogeneous chains, canonical membership, outside assertions and original-input
+captures/indices, escaped delimiters, control characters, supplementary/lone
+surrogates, empty classes versus empty words, lastIndex and nonwritable failures,
+String consumers, clones/collection, former Unsupported completions with
+finalizers, complete later-operand proof, remaining grammar and early errors,
+3,000 nested operand levels under defaults, long right-hand words, and opt-in
+construction/search cancellation preserving assignment and lastIndex.
+
+All 14,400 complete result records agree with both original Node patterns and
+independent final-member controls, including captures, indices, and lastIndex.
+Stable passes all 425 Runtime unit cases and 1,364 Unicode integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
+and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
