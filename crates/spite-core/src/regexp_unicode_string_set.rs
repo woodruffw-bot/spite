@@ -885,7 +885,13 @@ pub(crate) fn frame_source<'a, E>(
     source: &'a JsString,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Framing<'a>>, RegExpUnicodeSetCompileError<E>> {
-    let units = source.code_units();
+    frame_units(source.code_units(), charge)
+}
+
+pub(crate) fn frame_units<'a, E>(
+    units: &'a [u16],
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Framing<'a>>, RegExpUnicodeSetCompileError<E>> {
     charge(units.len().saturating_mul(4)).map_err(RegExpUnicodeSetCompileError::Work)?;
     let start_anchor = units.first() == Some(&0x5e);
     let end_anchor = units.last() == Some(&0x24)

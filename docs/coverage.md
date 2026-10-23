@@ -16366,3 +16366,28 @@ its unchanged opt-in allowance reaches the intended search cancellation.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core quantified scalar-left UnicodeSets string operations
+
+The repetition proof admits one projected scalar-left class with one existing
+greedy/lazy quantifier and canonical outside word/line gates. Empty q alternatives
+cannot make the atom nullable. Empty projected classes permit only zero-iteration
+repetition results. Bounds retain their exact nonexpanding decimal semantics,
+and zero/impossible counts still require complete class proof. Borrowed unit
+framing and class compilation add no source copy. Runtime selection is separate.
+
+Three Core groups compare an independent UTF-16/count-endpoint oracle across five
+projected predicates, ten quantifier forms, four assertion layouts, all sticky/i/m
+modes and input start offsets. They also cover complete zero-bound proof, closed
+constructor domains, empty result sets, huge exact/ranged bounds, capture absence,
+paired/lone surrogate ranges, every construction callback's cancellation and
+recovery, 20,000 nested operand levels, and 20,000-character ignored words with
+linear checked construction work and flat clone/drop storage.
+
+All 1,856 prior eight-string/five-checked-class/five-repetition API construction,
+capture, work, and match records remain unchanged. Stable passes all 1,064 Core
+and 425 Runtime unit cases and 170 affected Runtime integration cases. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories, and diff checks pass. Runtime selection, snapshots,
+corpus sources and helpers, dependencies, intrinsic counts, and default resource
+policy are unchanged.

@@ -9701,6 +9701,29 @@ sets never produce an empty match, and retained q empty members cannot make a
 scalar-left result nullable. String consumers and cloned matchers share the same
 immutable interval plan.
 
+## Quantified scalar-left string operations
+
+A separate Core repetition entry compiles one projected scalar-left class with
+one existing greedy/lazy quantifier. The class retains its positive q-free first
+operand and at least one empty/long q member. Canonical optional outside line/word
+gates apply to the entire repetition. Atom-internal wrappers, further atoms,
+string properties, and other root set shapes remain separate proofs. Whole-body
+captures remain a caller proof; Runtime selection is a later step.
+
+Character projection proves the atom consumes one complete original character.
+An empty q member cannot introduce an empty iteration. An empty projected class
+cannot consume, so it only permits a repetition with a zero minimum to finish
+empty. Exact decimal bounds reuse the existing nonexpanding count representation
+and matching, including huge impossible minima and overflowing maxima. Even a
+zero count still requires complete class proof.
+
+Shared framing now has a borrowed-unit entry, and the scalar-left class proof
+exposes a matching internal unit entry. The repetition constructor adds no source
+copy, new atom representation, search algorithm, dependency, or default quota.
+Its checked/singleton-string/scalar-left class selection preserves older entry
+domains and callback sequences. Interval/frame growth and deep parsing retain
+their checked work/capacity contracts, and search, clone, and drop stay flat.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

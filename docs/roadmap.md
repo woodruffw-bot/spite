@@ -649,6 +649,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect scalar-right string-set operations to Runtime RegExp execution and String consumers, preserving original-input captures, final active widths, lastIndex, and complete operand proof.
 - [x] Compile positive scalar-left string-set intersection/subtraction chains by projecting later nested finite/scalar expressions to character members, with complete empty/long q decoding and canonical interval algebra.
 - [x] Connect scalar-left string-set operations to Runtime RegExp execution and String consumers, with consuming character results, complete whole-body captures, original UTF-16 ranges, and lastIndex.
+- [x] Compile quantified scalar-left string-set operations with exact greedy/lazy bounds, canonical outside word/line gates, and nonnullable projected character atoms, including empty result sets and huge decimal bounds.
+- [ ] Connect quantified scalar-left string-set operations to Runtime RegExp execution and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

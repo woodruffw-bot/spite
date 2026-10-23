@@ -120,10 +120,23 @@ impl RegExpUnicodeClassMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_scalar_left_string_operations_units_with_work(
+            source.code_units(),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
+    pub(crate) fn compile_scalar_left_string_operations_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
-        let Some(frame) = crate::regexp_unicode_string_set::frame_source(source, &mut charge)?
-        else {
+        let Some(frame) = crate::regexp_unicode_string_set::frame_units(units, &mut charge)? else {
             return Ok(None);
         };
         let body = frame.body;
