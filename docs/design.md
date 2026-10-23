@@ -11117,4 +11117,7 @@ the class with a fixed empty-word atom guarded by opposite word predicates. This
 reuses the existing matcher without adding per-match state or skipping unknown
 leaves. Consistent gates delegate ordinary assertion compilation. Flat wrapper
 recovery, source precharges and earlier constructor callbacks remain unchanged.
-Runtime surrounding-word selection remains a subsequent step.
+Runtime selects this proof after surrounding line gates on the full normalized
+source. The same capture body retains lexical prefix names and original source
+metadata, including when contradictory gates select a never-matching plan.
+RegExp/String consumers and opt-in abort propagation stay shared.

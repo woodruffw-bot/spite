@@ -19024,3 +19024,29 @@ prior public API records retain exact constructor/search work and capture
 projection. Workspace documentation tests, strict workspace Clippy, formatting,
 dependency policy, source/fixture inventories and diff checks pass. No Runtime
 selection, corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime word gates surrounding complete asserted string-class wrappers
+
+Three groups exercise 27 class families, six capture layouts, three outer line
+profiles, three wrapper chains and successful/empty/contradictory word modes.
+They retain every lexical value and named index alias, optional/later mask,
+original source string and sticky failure state. Exact examples check duplicate
+predicates, both contradiction sides, non-global lastIndex, shorter eligible
+words, empty members, supplementary starts, escaped names, matchAll, callback
+replacement, search, split, clones and collection. Contradictory patterns still
+complete finalizers normally; unknown leaves, references and counts retain host
+unsupported controls even under false gates. Deep prefixes, long words and
+opt-in constructor/exec aborts retain flat state and original bindings/lastIndex.
+
+All 139,968 exact surrounding-word differential records over 324 class/capture/
+gate pairs match independent finite-alternative native sticky controls with
+explicit Unicode candidate advancement and initial normalization. Records cover
+eight inputs, all starts and sticky/i/m flags, including duplicate and false
+conjunctions, complete prefix values, every index and lastIndex. Twelve fixed
+consumer programs match reference controls. Stable passes all 431 Runtime unit
+cases and all 1,586 Unicode RegExp integration cases, including the three new
+groups. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. Runtime
+inventory is 540 case files and 4,292 integration cases. Corpus sources/helpers,
+snapshots, dependencies, intrinsic counts and default resource policy are unchanged.
