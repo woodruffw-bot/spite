@@ -895,6 +895,8 @@ mod regexp_unicode_wrapped_character_results;
 mod regexp_unicode_xid_continue_properties;
 #[path = "cases/regexp_unicode_xid_start_properties.rs"]
 mod regexp_unicode_xid_start_properties;
+#[path = "cases/regexp_unicode_zero_grouped_empty_nullable_string_classes.rs"]
+mod regexp_unicode_zero_grouped_empty_nullable_string_classes;
 #[path = "cases/regexp_unicode_zero_minimum_nullable_alternatives.rs"]
 mod regexp_unicode_zero_minimum_nullable_alternatives;
 #[path = "cases/regexp_unicode_zero_minimum_nullable_string_classes.rs"]

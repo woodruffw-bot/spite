@@ -10161,8 +10161,15 @@ retain separate proofs.
 
 Construction precharges the grouped-branch scans and decimal parsing separately.
 Counts and nested groups do not expand matching state. Checked class allocation,
-flat clone/drop, dependencies and resource defaults are unchanged. Runtime
-selection is separate.
+flat clone/drop, dependencies and resource defaults are unchanged.
+
+Runtime selects the grouped-empty zero-minimum proofs after simple grouped-empty
+counts. Existing result projection and String consumers retain undefined inner
+captures after zero iterations, defined enclosing empty captures, original
+supplementary ranges and named-key presence. Original source/flags, lastIndex,
+clones/collection and opt-in host-abort propagation reuse existing paths. The
+earlier exact-zero grouped-empty rejection now completes with its exact value and
+finalizer effects; positive counts and other empty-branch shapes remain separate.
 
 ## Global intrinsic metadata and enumeration
 
