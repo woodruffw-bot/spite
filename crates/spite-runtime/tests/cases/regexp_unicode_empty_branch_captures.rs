@@ -213,7 +213,7 @@ fn complete_empty_capture_proofs_finish_finalizers_and_keep_effects_deferred() {
     for inner in [
         r"([\q{a|b}])|(\b)*",
         r"([\q{a|b}])|(\b()|)",
-        r"([\q{a|b}])()|()",
+        r"([\q{a|b}])(\b)|()",
         r"([\q{a|b}])|\b()",
         r"([\q{a|b}])+|()",
         r"|([\q{ab}&&\q{cd}])()",

@@ -18289,3 +18289,31 @@ affected integration cases. Workspace documentation tests, workspace/included-
 source formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories and diff checks pass. Runtime selection, snapshots, corpus sources/
 helpers, dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Runtime empty point captures beside nullable alternatives
+
+Runtime now selects conditional character-side and unconditional sibling point
+captures. A projection unit distinguishes the last supplementary character's
+start/end points from the full run and required final empty points. Six
+integration groups cover 27 outer modes, six named layouts, both orders,
+optional/later undefined captures, exact suffix/prefix ownership reproducers,
+zero iterations, supplementary interior starts, lone surrogates, escaped names,
+outside gates, source metadata and lastIndex. String consumers, callbacks,
+clones and collection preserve empty values and lexical slots. Two former inner
+rejection controls remain preserved as successes with checked finalizers; exact
+unconditional prefix/suffix programs additionally finish their finalizers.
+
+The original suffix reproducer now matches its independent ordinary-class
+control: (?:(?:class|)())+ on aa returns an empty capture at [2,2]. Prefix points
+use the last iteration's start instead of the full run's start. Large capture
+layouts, discarded words and 20,000-digit zero/positive inner counts stay flat;
+opt-in constructor/search aborts preserve atomic state under unchanged limits.
+
+All 75,168 differential records across 174 pattern/control pairs agree with
+independent ordinary-class controls, including finite equivalents of huge
+counts. Stable passes all 430 Runtime unit cases and 292 affected integration
+cases. Workspace documentation tests, formatting, strict workspace Clippy,
+dependency policy, source/fixture inventories and diff checks pass. Runtime
+inventory is 526 case files and 4,228 integration cases. Corpus sources/helpers,
+snapshots, dependencies, intrinsic counts and default resource policy are unchanged.

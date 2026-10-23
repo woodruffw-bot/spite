@@ -3316,4 +3316,44 @@ mod tests {
             assert_eq!(found.capture(5), None);
         }
     }
+
+    #[test]
+    fn unicode_nullable_boundary_captures_use_last_iteration_utf16_points() {
+        for (count, expected) in [
+            (
+                "+",
+                [
+                    Some(2..2),
+                    Some(2..2),
+                    Some(2..4),
+                    Some(4..4),
+                    None,
+                    Some(4..4),
+                ],
+            ),
+            (
+                "{3}",
+                [Some(4..4), None, None, None, Some(4..4), Some(4..4)],
+            ),
+        ] {
+            let source = format!(r"(?:()(?:()([\q{{😀}}])()|())()){count}");
+            let body = RegExpUnicodeNullableClassCaptureMatcher::compile_with_boundary_empty_captures_and_work(
+                &JsString::from(source.as_str()), false, false, |_| Ok::<(), ()>(()),
+            ).unwrap().unwrap();
+            let matcher =
+                RegExpMatcher::new(RegExpMatcherBody::UnicodeNullableClassCaptures(body), 1);
+            assert_eq!(matcher.capture_count(), 7);
+            let input = JsString::from("😀😀");
+            let found = matcher
+                .find_with_work(&input, 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.range, 0..4);
+            assert_eq!(found.capture(0), Some(0..4));
+            for (index, range) in expected.into_iter().enumerate() {
+                assert_eq!(found.capture(index + 1), range);
+            }
+            assert_eq!(found.capture(7), None);
+        }
+    }
 }

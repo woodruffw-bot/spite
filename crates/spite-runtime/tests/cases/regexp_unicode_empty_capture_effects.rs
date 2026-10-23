@@ -252,7 +252,7 @@ fn complete_empty_capture_effects_finish_finalizers_and_keep_other_terms_deferre
         r"[\q{a|b}]|(?=())",
         r"[\q{a|b}]|\1()?",
         r"[\q{a|b}]|x()?",
-        r"([\q{a|b}])()|()?",
+        r"([\q{a|b}])(\b)|()?",
         r"([\q{a|b}])+|()?",
         r"[\q{ab}&&\q{cd}]|()?",
         r"[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()?",

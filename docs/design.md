@@ -10682,8 +10682,12 @@ leave all inner groups undefined. Existing outer counts, optional budgets,
 mandatory branch priority, line/word gates and original UTF-16 ranges reuse the
 same matcher. Linear precharges cover owner, count and interval scans; matching
 adds no capture history and clone/drop remain flat and source-sized. Earlier
-constructor domains and work traces remain unchanged. Runtime selection is
-separate.
+constructor domains and work traces remain unchanged. Runtime selects this proof after conditional empty-capture effects. Projection
+keeps source-order named and unnamed slots, before/after UTF-16 points and
+character-only participation through RegExp and String consumers, callbacks,
+clones and collection. The nested-alternative suffix reproducer now returns its
+correct empty value and end-point indices. Original metadata and lastIndex
+remain shared; opt-in constructor/search aborts stay flat and atomic.
 
 ## Global intrinsic metadata and enumeration
 
