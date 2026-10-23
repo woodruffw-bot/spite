@@ -9942,7 +9942,15 @@ empty choices and final original ranges without expanding counts or captures
 into matching state. The shared borrowed framing/wrapper scan precharges
 decimal scans. Earlier constructors retain their domains, exact work traces and
 results. Checked class storage, allocation boundaries, flat clone/drop,
-dependencies and resource defaults are unchanged. Runtime selection is separate.
+dependencies and resource defaults are unchanged.
+
+Runtime selects the positive open-count proofs after exactly-one repetition.
+Existing capture projection combines final mandatory empty or original character
+ranges with complete enclosing captures, including supplementary names and
+indices. String consumers and replacement callbacks retain empty final captures
+even when the whole match consumed characters. lastIndex, cloning, collection
+and host-abort propagation reuse their existing paths. Former Unsupported {m,}
+expressions with larger minimums complete finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 

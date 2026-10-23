@@ -16818,3 +16818,34 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime positive open-count nullable string classes
+
+Runtime selects the singleton-q and character-result positive {m,} proofs after
+exactly-one counts. Six integration groups cover padded and unrepresentable
+minimums, mandatory source branch priority, greedy/lazy selection, final required
+empty captures after consuming characters, decoded character counts versus
+UTF-16 width, enclosing captures, outside word/line gates, long-s/Kelvin and
+supplementary folding, supplementary escaped names, paired/lone/braced surrogates,
+frozen lastIndex, String consumers and replacement callbacks distinguishing
+whole matches from final empty captures, clones/collection, former Unsupported
+finalizers, complete leaf proof behind mandatory empty-first choices, remaining
+finite-count/atom shapes, early errors, 1,000 complete wrappers, long discarded
+words and 20,000-digit minimums under defaults, and atomic opt-in construction
+and search aborts. A short match over the same long argument fits the search
+allowance before the scanning control aborts. Earlier {2,} rejection controls now
+finish with exact values and finalizer effects; remaining controls use finite
+upper bounds.
+
+All 46,624 complete bounded-open result records across 124 pattern/control pairs
+agree with independent character classes, including capture values, undefined
+markers, named-key presence/order, original indices, sticky starts and lastIndex.
+Original Node differs on 420 ignoreCase singleton-q folding records (228 Latin
+and 192 supplementary Deseret), matching the documented defect without a new
+exception. Unrepresentable counts have separate direct specification cases.
+
+Stable passes all 425 Runtime unit cases, 136 corrected focused integration
+cases, and 1,425 Unicode integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
+intrinsic counts, and default resource policy are unchanged.

@@ -94,6 +94,7 @@ fn consumers_replacements_clones_and_collection_preserve_required_empty_capture_
 #[test]
 fn complete_one_open_proofs_finish_finalizers_and_never_hide_unknown_or_string_leaves() {
     for source in [
+        r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
         r"/([\q{a}]|){1,}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,}/v.test('aaa')",
         r"/([\q{a|b}]|){1}/v.test('a')",
@@ -115,7 +116,7 @@ fn complete_one_open_proofs_finish_finalizers_and_never_hide_unknown_or_string_l
         r"/(|[\q{ab}&&\q{cd}]){1,}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){1,}?/v.test('')",
         r"/([\q{a|b}]|){2}/v.test('a')",
-        r"/([\q{a|ab}&&a]|){2,}/v.test('aaa')",
+        r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",
         r"/([\q{a|b}]|){2,2}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,999999999999999999999999999999999999999}/v.test('a')",
         r"/(([\q{a|ab}&&a])|){1,}/v.test('a')",
