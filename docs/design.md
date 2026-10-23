@@ -10817,3 +10817,22 @@ after the nullable capture constructors. Source-order projection retains named
 aliases, String consumer captures, callback arguments and original metadata.
 Enclosing whole-match captures remain independent; opted-in aborts preserve
 lastIndex and finalizers through the shared execution path.
+
+
+## Empty point captures around a single consuming class
+
+A separate Core entry point proves captured empty sequences around one class
+without an outer quantifier. Empty prefixes/suffixes need no complete enclosing
+wrapper. The constructor extracts only canonical outside line/word gates, wraps
+the borrowed body in a noncapturing group and delegates an exact single
+iteration to the existing consuming capture proof (22.2.2 and 22.2.2.3).
+
+The synthetic wrapper adds no lexical captures. Original character captures and
+empty before/after points retain actual UTF-16 ranges; optional groups and later
+empty alternatives remain undefined. No nullable alternative is introduced.
+Class-containing choices/counts, references, internal assertions and additional
+consuming terms still decline. Strict class validation proves every leaf even
+when its character result is empty. Source copies are precharged before
+allocation, all group tables remain flat, and numeric counts never expand.
+Earlier repeated/nullable entry points retain their domains and work traces.
+Runtime selection remains a subsequent step.

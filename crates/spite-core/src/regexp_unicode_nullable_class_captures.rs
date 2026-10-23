@@ -471,6 +471,57 @@ pub struct RegExpUnicodeRepeatedClassCaptureMatcher {
 }
 
 impl RegExpUnicodeRepeatedClassCaptureMatcher {
+    /// Proves one consuming class with empty captures and no outer quantifier.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Empty groups
+    /// may precede/follow the class without complete enclosing wrappers. Outside
+    /// line/word gates keep whole-pattern scope. This proof wraps only the body
+    /// and delegates an exact single iteration; source counts are never expanded.
+    /// Class-containing choices or counts, assertions, references, further
+    /// consuming terms and unknown/string-valued leaves retain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-patterns
+    pub fn compile_single_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        // Precharge outside edge scans and both source copies before allocation.
+        charge(units.len().saturating_mul(8).saturating_add(32))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut begin = usize::from(units.first() == Some(&0x5e));
+        let mut end = units.len()
+            - usize::from(units.last() == Some(&0x24) && !escaped(units, units.len() - 1));
+        if matches!(
+            units.get(begin..end).and_then(|body| body.get(..2)),
+            Some([0x5c, 0x62 | 0x42])
+        ) {
+            begin += 2;
+        }
+        if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && !escaped(units, end - 2)
+        {
+            end -= 2;
+        }
+        let Some(body) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let mut canonical = Vec::with_capacity(units.len().saturating_add(7));
+        canonical.extend_from_slice(&units[..begin]);
+        canonical.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+        canonical.extend_from_slice(body);
+        canonical.extend_from_slice(&[0x29, 0x7b, 0x31, 0x7d]);
+        canonical.extend_from_slice(&units[end..]);
+        Self::compile_with_work(
+            &JsString::from_code_units(canonical),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
     /// Proves a character class with empty sibling captures and one outer count.
     ///
     /// Requires validated v/vi input and normalized capture names. The class
@@ -858,4 +909,5 @@ mod tests {
     include!("regexp_unicode_nullable_class_capture_tests.rs");
     include!("regexp_unicode_nullable_boundary_capture_tests.rs");
     include!("regexp_unicode_repeated_class_capture_tests.rs");
+    include!("regexp_unicode_single_class_capture_tests.rs");
 }

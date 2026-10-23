@@ -18368,3 +18368,34 @@ documentation tests, formatting, strict workspace Clippy, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 527 case
 files and 4,233 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+The published consuming Runtime selection additionally passes all 1,527
+Unicode RegExp integration cases and all 35 conformance-profile Test262
+runner/integration tests, including 16,343 reviewed variants.
+
+
+## Core empty point captures around a single consuming class
+
+A separate constructor precharges outside framing and source copies, wraps only
+the body and delegates an exact single iteration. Empty prefixes/suffixes need
+no complete enclosing wrapper, and the synthetic noncapturing wrapper adds no
+slots. Strict class and flat capture participation proofs remain shared. Earlier
+repeated/nullable API domains and work traces remain separate.
+
+Three groups use the independent executable sequence-capture oracle across
+eight predicates, six layouts, three wrapper forms including no outer wrapper,
+outside line/word gates, sticky/i/m modes and all starts over eight inputs.
+Cancellation covers every callback and recovery. Structural cases exercise
+20,000 deep prefix/sibling suffix captures, flat clone/drop, large inner counts,
+supplementary interior starts and closed consuming/nullable/asserted/unknown
+shapes. The published runtime reproducer remains unsupported until the runtime
+selection increment.
+
+All 35,784 prior API records retain exact construction/search work, lexical
+capture counts and projection, including the consuming repetition API. Stable
+passes all 1,173 Core and 431 Runtime unit cases. Workspace documentation tests,
+workspace/included-source formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime selection, snapshots,
+corpus sources/helpers, dependencies, intrinsic counts and default resource
+policy are unchanged.
