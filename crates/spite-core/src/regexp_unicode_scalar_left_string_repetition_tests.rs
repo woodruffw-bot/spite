@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "regexp_unicode_character_result_repetition_tests.rs"]
+mod character_result;
+
 #[derive(Clone, Copy, Default)]
 struct Gates {
     anchors: bool,

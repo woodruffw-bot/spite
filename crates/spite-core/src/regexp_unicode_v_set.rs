@@ -58,6 +58,7 @@ enum StringOperands {
     None,
     SingleCharacter,
     Projected,
+    CharacterResult,
 }
 
 enum Term {
@@ -84,6 +85,7 @@ struct Frame {
     expression: Expression,
     inverted: bool,
     need_operand: bool,
+    may_contain_strings: bool,
 }
 
 impl Frame {
@@ -92,6 +94,7 @@ impl Frame {
             expression: Expression::Empty,
             inverted,
             need_operand: true,
+            may_contain_strings: false,
         }
     }
 }
@@ -104,6 +107,62 @@ struct Builder<'a, F> {
 }
 
 impl RegExpUnicodeClassMatcher {
+    /// Compiles a class whose static MayContainStrings result is false.
+    ///
+    /// Requires complete v/vi validation and at least one empty or longer q
+    /// member. Union combines containment with OR, intersection with AND, and
+    /// subtraction retains its left value. Only a proven character result may
+    /// discard non-character q members before canonical interval algebra.
+    /// Legal nested/root complements and outside word/line gates are admitted.
+    /// Conservative string results, string properties, additional atoms and
+    /// repetition remain separate proofs. Every operand is proved completely.
+    /// https://262.ecma-international.org/17.0/#sec-static-semantics-maycontainstrings
+    pub fn compile_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_character_result_v_set_units_with_work(
+            source.code_units(),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
+    pub(crate) fn compile_character_result_v_set_units_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        let Some(frame) = crate::regexp_unicode_string_set::frame_units(units, &mut charge)? else {
+            return Ok(None);
+        };
+        // Only outside gates may set flags. The delegated class entry also
+        // accepts ^/$, so retained assertions must not be overwritten here.
+        if frame.body.first() != Some(&0x5b) || frame.body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let Some(mut matcher) = Self::compile_v_set_units_with_string_operands_and_work(
+            frame.body,
+            ignore_case,
+            multiline,
+            StringOperands::CharacterResult,
+            true,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        matcher.start_anchor = frame.start_anchor;
+        matcher.end_anchor = frame.end_anchor;
+        matcher.start_word = frame.start_word;
+        matcher.end_word = frame.end_word;
+        Ok(Some(matcher))
+    }
+
     /// Compiles positive operation chains whose first operand is character-only.
     ///
     /// Requires a complete validated v/vi Pattern. The outer class starts with
@@ -522,6 +581,12 @@ impl RegExpUnicodeClassMatcher {
                 if current.need_operand && !matches!(current.expression, Expression::Empty) {
                     return Ok(None);
                 }
+                if strings == StringOperands::CharacterResult
+                    && current.inverted
+                    && current.may_contain_strings
+                {
+                    return Ok(None);
+                }
                 builder.at += 1;
                 let mut completed = builder.finish(current.expression)?;
                 let Some(mut parent) = parents.pop() else {
@@ -529,6 +594,9 @@ impl RegExpUnicodeClassMatcher {
                         StringOperands::None => eligible,
                         StringOperands::SingleCharacter => has_string_operand,
                         StringOperands::Projected => has_variable_string,
+                        StringOperands::CharacterResult => {
+                            has_variable_string && !current.may_contain_strings
+                        }
                     };
                     if builder.at != builder.units.len() || (require_shape && !eligible) {
                         return Ok(None);
@@ -541,7 +609,15 @@ impl RegExpUnicodeClassMatcher {
                 if current.inverted {
                     completed = builder.complement(&completed)?;
                 }
-                builder.accept(&mut parent, Term::Closed(completed))?;
+                if strings == StringOperands::CharacterResult {
+                    builder.accept_character_result(
+                        &mut parent,
+                        Term::Closed(completed),
+                        !current.inverted && current.may_contain_strings,
+                    )?;
+                } else {
+                    builder.accept(&mut parent, Term::Closed(completed))?;
+                }
                 current = parent;
                 continue;
             }
@@ -555,6 +631,7 @@ impl RegExpUnicodeClassMatcher {
                     builder.at += usize::from(inverted);
                     current = Frame::new(inverted);
                 } else {
+                    let mut operand_strings = false;
                     let term = if strings != StringOperands::None
                         && builder
                             .units
@@ -562,12 +639,16 @@ impl RegExpUnicodeClassMatcher {
                             .is_some_and(|tail| tail.starts_with(&[0x5c, 0x71, 0x7b]))
                     {
                         builder.at += 3;
-                        let ranges = if strings == StringOperands::Projected {
+                        let ranges = if matches!(
+                            strings,
+                            StringOperands::Projected | StringOperands::CharacterResult
+                        ) {
                             let Some((ranges, variable)) = builder.projected_string_ranges()?
                             else {
                                 return Ok(None);
                             };
                             has_variable_string |= variable;
+                            operand_strings = variable;
                             ranges
                         } else {
                             let Some(ranges) = builder.single_character_string_ranges(true)? else {
@@ -588,7 +669,11 @@ impl RegExpUnicodeClassMatcher {
                     {
                         return Ok(None);
                     }
-                    builder.accept(&mut current, term)?;
+                    if strings == StringOperands::CharacterResult {
+                        builder.accept_character_result(&mut current, term, operand_strings)?;
+                    } else {
+                        builder.accept(&mut current, term)?;
+                    }
                 }
                 continue;
             }
@@ -985,6 +1070,25 @@ impl<E, F: FnMut(usize) -> Result<(), E>> Builder<'_, F> {
         };
         frame.need_operand = false;
         Ok(())
+    }
+
+    fn accept_character_result(
+        &mut self,
+        frame: &mut Frame,
+        term: Term,
+        strings: bool,
+    ) -> Checked<(), E> {
+        // This is static containment, not actual membership or set emptiness.
+        // https://262.ecma-international.org/17.0/#sec-static-semantics-maycontainstrings
+        frame.may_contain_strings = match &frame.expression {
+            Expression::Empty => strings,
+            Expression::Single(_) | Expression::Union(_) => frame.may_contain_strings || strings,
+            Expression::Operation(Operator::Intersection, _) => {
+                frame.may_contain_strings && strings
+            }
+            Expression::Operation(Operator::Subtraction, _) => frame.may_contain_strings,
+        };
+        self.accept(frame, term)
     }
 
     fn union_term(&mut self, union: &mut Union, term: Term) -> Checked<(), E> {

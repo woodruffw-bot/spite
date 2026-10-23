@@ -16438,3 +16438,36 @@ corpus with every non-passing count at zero. Formatting, strict workspace Clippy
 dependency policy, fixture hashes, reviewed inventory assertions, workspace
 documentation tests, and diff checks pass. Runtime defaults, ordinary stacks,
 three-worker corpus execution, and earlier corpus entries are unchanged.
+
+## Core static character-result UnicodeSets expressions
+
+The character-result mode tracks the specification's conservative
+MayContainStrings flag through every class frame. A false final flag and at least
+one empty/long q member permit projection to canonical intervals, including
+string-first intersections, nested masked unions, and legal root/nested
+complements. A paired repetition constructor reuses the same proof and exact
+bounds. Full later-operand proof remains required. Earlier modes, dependencies,
+resource defaults, and Runtime selection are unchanged.
+
+Three class groups compare fifteen independent nested-set predicates across all
+UTF-16 start offsets and sticky/i/m modes. They cover union/intersection/left
+subtraction containment, conservative true flags despite empty actual sets,
+legal complements, distinct empty sets/words, folding, Greek micro closure,
+outside assertions, supplementary/lone/braced surrogates, every constructor
+callback's cancellation/recovery, deep classes, and long discarded words.
+
+Three repetition groups reuse an independent UTF-16/count endpoint oracle for
+new character-result shapes, greedy/lazy/zero/bounded quantifiers, line/word gates,
+all start offsets and sticky/i/m modes. They also cover exact huge counts,
+complete zero-bound proof, capture absence, conservative domain rejection,
+callback cancellation/recovery, 20,000 nested levels, and 20,000-character words
+with linear checked work and flat clone/drop storage.
+
+Stable passes all 1,070 Core and 425 Runtime unit cases and 176 affected Runtime
+integration cases. All 1,912 prior eight-string/five-class/six-repetition API
+construction, bounds, captures, work, and match records remain unchanged. The
+assertion-order regression verifies that retained ^/$ gates cannot be overwritten
+by outside framing. Workspace documentation tests, formatting, strict workspace
+Clippy, dependency policy, source/fixture inventories, and diff checks pass.
+Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
+counts, and default resource policy are unchanged.

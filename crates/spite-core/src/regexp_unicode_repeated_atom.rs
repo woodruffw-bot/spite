@@ -57,6 +57,7 @@ enum ClassProof {
     Checked,
     SingleCharacterStrings,
     ScalarLeftStrings,
+    CharacterResultStrings,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -1583,6 +1584,9 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 ClassProof::ScalarLeftStrings => RegExpUnicodeClassMatcher::compile_scalar_left_string_operations_units_with_work(
                     body, ignore_case, false, &mut charge,
                 ),
+                ClassProof::CharacterResultStrings => RegExpUnicodeClassMatcher::compile_character_result_v_set_units_with_work(
+                    body, ignore_case, false, &mut charge,
+                ),
             };
             let Some(atom) = atom? else {
                 continue;
@@ -1659,6 +1663,30 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             ignore_case,
             multiline,
             ClassProof::ScalarLeftStrings,
+            charge,
+        )
+    }
+
+    /// Compiles one quantified v/vi class with a static character-only result.
+    ///
+    /// Requires complete validation, MayContainStrings false, and at least one
+    /// empty or longer q member. The projected class is a consuming character
+    /// atom, including when its result is empty. Greedy/lazy exact bounds and
+    /// canonical outside word/line gates reuse the existing repetition proof.
+    /// Complete inner wrappers, string properties, further atoms and conservative
+    /// string results remain separate proofs, even under zero bounds.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
             charge,
         )
     }

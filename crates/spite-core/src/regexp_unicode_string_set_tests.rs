@@ -1,5 +1,7 @@
 use super::*;
 
+#[path = "regexp_unicode_character_result_tests.rs"]
+mod character_result;
 #[path = "regexp_unicode_finite_string_operations_tests.rs"]
 mod finite_operations;
 #[path = "regexp_unicode_scalar_left_string_operations_tests.rs"]

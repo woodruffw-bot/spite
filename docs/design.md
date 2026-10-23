@@ -9729,6 +9729,34 @@ It reuses the UnicodeRepeatedAtom body, whole-body capture projection and charge
 incremental search. Result arrays, named indices, lastIndex and String consumers
 retain their existing contracts for consuming and zero-iteration results.
 
+## Static character results of string-set expressions
+
+A separate Core proof accepts a whole validated v/vi class whose static
+MayContainStrings result is false and that contains an empty or longer q member.
+The checked interval compiler tracks containment in each iterative class frame:
+union uses OR, intersection uses AND, and subtraction retains its left operand's
+flag, following Static Semantics: MayContainStrings. The Parser uses the same rule;
+the compiler adds no crate dependency. A legal complement requires a false operand flag and yields a
+character-only set. Both root and nested complements are admitted.
+
+When the final result is proved character-only, character projection can discard
+empty/long q members throughout the expression before canonical interval
+algebra. This admits string-first intersections and nested unions whose string
+members are eliminated by character operands. The analysis remains conservative:
+this proof declines a q-only intersection marked true even if its actual result
+is empty. Every operand is still decoded and compiled after empty intermediates;
+string properties remain deferred even when static containment is false.
+
+The new mode reuses existing q decoding, fold closure, complements, interval
+algebra, checked frame growth, and original-input search. Older modes retain
+their selection and callback sequences. Canonical optional outside line/word
+gates and caller-projected whole-body captures retain their scope. A paired
+repetition entry uses the same proof with existing greedy/lazy exact bounds;
+projected classes remain consuming character atoms and zero bounds still require
+complete proof. Inner repeated wrappers and further atoms remain separate.
+Runtime selection is a later step. Source stays borrowed, all storage stays flat,
+and dependencies, allocation boundaries, and default quotas are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
