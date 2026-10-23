@@ -17717,3 +17717,27 @@ resource policy are unchanged.
 The conformance profile also passes all 35 Test262 runner/integration tests and
 all 16,343 reviewed variants. The pinned 8,452 fixtures, 16 helpers and 8,433
 reviewed entries remain unchanged.
+
+## Core noncapturing empty sequences beside string classes
+
+Separate Core constructors prove singleton-q and character-result v/vi classes
+beside nonempty effect-free noncapturing empty sequences under *, + or ? with an
+optional lazy marker. Sibling/nested groups reuse the existing complete iterative
+empty proof. One-pass wrapper recovery handles initial empty-first openers while
+preserving capture slots, branch priority and original ranges.
+
+Three groups compare the independent recursive specification oracle across six
+predicates, three wrapper layouts, both branch orders, all simple greedy/lazy
+quantifiers, line/word gates, all starts and sticky/i/m modes. They check required
+empty versus undefined captures, supplementary pair starts, complete unknown or
+string leaf proof, deferred braced and other empty shapes, every constructor
+callback's cancellation/recovery, and 20,000 complete capturing wrappers, nested
+empty groups and discarded characters with linear work and flat clone/drop.
+
+All 21,128 prior eight-string/five-class/forty-seven-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,136 Core and 425 Runtime unit cases and 226 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
+resource policy are unchanged.

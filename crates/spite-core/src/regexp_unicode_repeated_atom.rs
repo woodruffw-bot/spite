@@ -3094,6 +3094,64 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles a nullable singleton-q class beside noncapturing empty sequences.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of effect-free
+    /// noncapturing empty groups, with arbitrary nesting, under *, + or ? and an
+    /// optional lazy marker. Every class leaf is proved behind empty-first
+    /// choices. Mandatory priority, optional progress, captures and canonical
+    /// outside word/line gates reuse linear search. Quantified empty groups,
+    /// choices, capturing empty groups and partial captures remain separate
+    /// proofs. Construction and clone/drop add no native recursion.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_noncapturing_empty_sequence_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::Raw,
+            EmptyBranchProof::Sequences,
+            charge,
+        )
+    }
+
+    /// Compiles a nullable character-result class beside noncapturing empty sequences.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of effect-free
+    /// noncapturing empty groups, with arbitrary nesting, under *, + or ? and an
+    /// optional lazy marker. Every class leaf is proved behind empty-first
+    /// choices. Mandatory priority, optional progress, captures and canonical
+    /// outside word/line gates reuse linear search. Quantified empty groups,
+    /// choices, capturing empty groups and partial captures remain separate
+    /// proofs. Construction and clone/drop add no native recursion.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_noncapturing_empty_sequence_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::Raw,
+            EmptyBranchProof::Sequences,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -3113,6 +3171,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             // Both branch scans, empty-group proofs and recovery of initial
             // empty-first openers are linear across both token interpretations.
             charge(units.len().saturating_mul(12))
+                .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+        }
+        if empty == EmptyBranchProof::Sequences {
+            // Across both token interpretations, branch/empty scans take <=12N;
+            // trailing-close recovery and discarded-opener proof take <=4N.
+            charge(units.len().saturating_mul(16))
                 .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
         }
         if bounds != NullableProof::Raw {
@@ -3309,6 +3373,32 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                     }
                 }
             }
+            if empty == EmptyBranchProof::Sequences {
+                // A bare class ends in ], so an empty-first branch leaves only
+                // complete wrapper closes at the body's end. Recover its initial
+                // noncapturing openers once, including sibling empty groups.
+                let trailing = body[..atom_end]
+                    .iter()
+                    .rev()
+                    .take_while(|&&unit| unit == 0x29)
+                    .count();
+                if trailing < wrappers {
+                    let Some(width) = (wrappers - trailing).checked_mul(3) else {
+                        continue;
+                    };
+                    let Some(empty_start) = at.checked_sub(width) else {
+                        continue;
+                    };
+                    if !body[empty_start..at]
+                        .chunks_exact(3)
+                        .all(|chunk| chunk == [0x28, 0x3f, 0x3a])
+                    {
+                        continue;
+                    }
+                    wrappers = trailing;
+                    at = empty_start;
+                }
+            }
             let Some(inner_end) = atom_end.checked_sub(wrappers) else {
                 continue;
             };
@@ -3318,8 +3408,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if wrappers == 0 || !body[inner_end..atom_end].iter().all(|&unit| unit == 0x29) {
                 continue;
             }
-            let (leaf, order) = if empty == EmptyBranchProof::Nested {
+            let (leaf, order) = if matches!(
+                empty,
+                EmptyBranchProof::Nested | EmptyBranchProof::Sequences
+            ) {
                 let nested_empty = |branch: &[u16]| {
+                    if empty == EmptyBranchProof::Sequences {
+                        return !branch.is_empty() && pure_empty_groups(branch, false, false);
+                    }
                     let mut at = 0;
                     let mut depth = 0;
                     while branch.get(at..at + 3) == Some(&[0x28, 0x3f, 0x3a]) {

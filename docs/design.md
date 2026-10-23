@@ -10373,6 +10373,25 @@ ranges. Former unequal-range rejections complete with exact results and eval
 finalizer effects. Padded/lazy source, names/indices, lastIndex, clones, collection
 and opt-in host aborts reuse existing paths.
 
+## Noncapturing empty sequences beside string classes
+
+Separate Core constructors prove a bare singleton-q or character-result v/vi
+class beside a nonempty sequence of effect-free noncapturing empty groups under
+*, + or ?, with an optional lazy marker. The empty sequence may contain arbitrary
+nesting and siblings. Its complete iterative proof rejects captures, assertions,
+quantifiers and choices. The whole class is compiled even behind empty-first
+choices; unknown leaves remain unsupported. Mandatory branch priority, optional
+progress, required empty/undefined captures, original character ranges and
+canonical outside word/line gates reuse RepeatMatcher (22.2.2.3).
+
+Initial openers can belong to an empty-first branch. A bare class ends in ], so
+trailing body closes identify the complete wrappers in that case. The compiler
+recovers discarded openers once and proves they are noncapturing. Both branch
+scans and the empty proof remain linear; deeply nested groups and capture slots
+never expand matching state or native recursion. Earlier constructor domains and
+work traces are unchanged. Braced counts, quantified/choice empty groups and
+partial captures retain separate proofs. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
