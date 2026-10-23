@@ -2904,6 +2904,68 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles represented finite nullable singleton-q ranges beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,n}, with represented positive m and greater n.
+    /// Padded/lazy forms preserve mandatory branch priority, exact optional
+    /// budgets, earliest cross-phase starts and final required empty/original
+    /// character captures. Canonical outside word/line gates reuse linear search.
+    /// Every class leaf is proved behind empty-first choices. Other bounds and
+    /// partial/other-empty shapes remain separate proofs; counts never expand
+    /// matching state and source storage and clone/drop remain flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_finite_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::PositiveFinite,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles represented finite nullable character-result ranges beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,n}, with represented positive m and greater n.
+    /// Padded/lazy forms preserve mandatory branch priority, exact optional
+    /// budgets, earliest cross-phase starts and final required empty/original
+    /// character captures. Canonical outside word/line gates reuse linear search.
+    /// Every class leaf is proved behind empty-first choices. Other bounds and
+    /// partial/other-empty shapes remain separate proofs; counts never expand
+    /// matching state and source storage and clone/drop remain flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_finite_noncapturing_empty_nullable_character_result_v_set_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::PositiveFinite,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,

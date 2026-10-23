@@ -10302,6 +10302,26 @@ clones/collection and opt-in host-abort propagation reuse existing paths. The
 earlier overflowing exact rejection completes with its exact value and finalizer
 effects; unequal overflowing ranges and other branch shapes remain separate.
 
+## Represented finite ranges beside grouped empty alternatives
+
+Separate Core entries admit {m,n} with represented positive m and greater
+represented n around a bare singleton-q or character-result v/vi class and a
+nested noncapturing empty alternative, including padded/lazy forms. Complete
+wrappers and canonical outside word/line gates reuse the borrowed proof and
+existing linear search. Every class leaf is compiled behind empty-first choices.
+
+Mandatory source priority and the exact optional budget n-m retain the existing
+greedy/lazy phases. Earliest-start comparison allows mandatory backtracking to
+expose a candidate before the preferred optional phase's candidate. Final required
+empty or last original character captures retain decoded character counts and
+original UTF-16 ranges, including supplementary actual-end trimming (22.2.2.3).
+
+Exact/open and overflowing bounds, partial captures, other empty-branch shapes
+and further atoms retain separate proofs. Counts and captures never expand
+matching state. Earlier domains/work traces, checked class storage, flat
+clone/drop, dependencies and resource defaults are unchanged. Runtime selection
+is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
