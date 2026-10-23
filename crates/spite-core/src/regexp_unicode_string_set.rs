@@ -238,36 +238,134 @@ impl RegExpUnicodeStringSetMatcher {
                         .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
                 }
             }
-            match operator {
-                StringSetOperator::Subtraction => {
-                    (builder.charge)(matched.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
-                    for &node in &matched {
-                        builder.terminal[node] = false;
-                    }
-                    active -= matched.len();
-                }
-                StringSetOperator::Intersection if matched.len() != active => {
-                    (builder.charge)(members.len().saturating_mul(2))
-                        .map_err(RegExpUnicodeSetCompileError::Work)?;
-                    members.retain(|&(node, _)| {
-                        let keep = builder.terminal[node] && marked[node];
-                        builder.terminal[node] = keep;
-                        keep
-                    });
-                    active = matched.len();
-                }
-                StringSetOperator::Intersection => {}
-            }
-            (builder.charge)(matched.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
-            for &node in &matched {
-                marked[node] = false;
-            }
-            matched.clear();
+            builder.apply_operation(
+                operator,
+                &mut members,
+                &mut marked,
+                &mut matched,
+                &mut active,
+            )?;
             if at == inner.len() {
                 break;
             }
         }
         if !builder.has_strings {
+            return Ok(None);
+        }
+        (builder.charge)(members.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let max_characters = members
+            .iter()
+            .filter(|&&(node, _)| builder.terminal[node])
+            .map(|&(_, length)| length)
+            .max()
+            .unwrap_or(0);
+        let TrieBuilder {
+            edges, terminal, ..
+        } = builder;
+        Ok(Some(Self {
+            program: Arc::new(Program {
+                edges,
+                terminal,
+                scalars: None,
+                max_characters,
+                ignore_case,
+                multiline,
+                start_anchor,
+                end_anchor,
+                start_word,
+                end_word,
+            }),
+        }))
+    }
+
+    /// Compiles positive set-operation chains over finite character/string sets.
+    ///
+    /// Operands are q disjunctions, literal characters, or positive nested unions
+    /// of those members. At least one operand is not a bare q disjunction, and
+    /// at least one q member is empty or multi-character. Ranges, class/property
+    /// escapes, negation, inner set operations and repetition remain separate
+    /// proofs. Empty classes emit no members; empty q branches emit one.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_finite_string_operations_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(Framing {
+            body,
+            start_anchor,
+            end_anchor,
+            start_word,
+            end_word,
+        }) = frame_source(source, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        if body.len() < 2 || body[0] != 0x5b || body[1] == 0x5e || body.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let inner = &body[1..body.len() - 1];
+        let mut builder = TrieBuilder::new(ignore_case, charge)?;
+        let mut members = Vec::new();
+        let mut at = 0;
+        let Some(mut extended) = finite_operand(inner, &mut at, |event| match event {
+            WordEvent::Point(point) => builder.push(point),
+            WordEvent::End => builder.finish_left_member(&mut members),
+        })?
+        else {
+            return Ok(None);
+        };
+        let Some(operator) = StringSetOperator::at(inner, at) else {
+            return Ok(None);
+        };
+        (builder.charge)(builder.terminal.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut marked = Vec::new();
+        marked
+            .try_reserve(builder.terminal.len())
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        marked.resize(builder.terminal.len(), false);
+        let mut matched = Vec::new();
+        let mut active = members.len();
+        loop {
+            if StringSetOperator::at(inner, at) != Some(operator) {
+                return Ok(None);
+            }
+            at += 2;
+            let mut node = if active == 0 { None } else { Some(0) };
+            let mut length = 0usize;
+            let Some(complex) = finite_operand(inner, &mut at, |event| {
+                match event {
+                    WordEvent::Point(point) => {
+                        node = builder.probe(node, point)?;
+                        length = length
+                            .checked_add(1)
+                            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+                    }
+                    WordEvent::End => {
+                        builder.finish_probe_member(node, length, &mut marked, &mut matched)?;
+                        node = if active == 0 { None } else { Some(0) };
+                        length = 0;
+                    }
+                }
+                Ok(())
+            })?
+            else {
+                return Ok(None);
+            };
+            extended |= complex;
+            builder.apply_operation(
+                operator,
+                &mut members,
+                &mut marked,
+                &mut matched,
+                &mut active,
+            )?;
+            if at == inner.len() {
+                break;
+            }
+        }
+        if !extended || !builder.has_strings {
             return Ok(None);
         }
         (builder.charge)(members.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
@@ -547,6 +645,103 @@ impl RegExpUnicodeStringSetMatcher {
     }
 }
 
+enum WordEvent {
+    Point(u32),
+    End,
+}
+
+// These lexers borrow a prepaid complete source. Callback state owns all trie
+// and word-set work; positive nesting uses only a counter, never recursion.
+fn q_words<E>(
+    units: &[u16],
+    at: &mut usize,
+    emit: &mut impl FnMut(WordEvent) -> Result<(), RegExpUnicodeSetCompileError<E>>,
+) -> Result<Option<()>, RegExpUnicodeSetCompileError<E>> {
+    *at += 3;
+    loop {
+        let Some(&unit) = units.get(*at) else {
+            return Ok(None);
+        };
+        if matches!(unit, 0x7c | 0x7d) {
+            emit(WordEvent::End)?;
+            *at += 1;
+            if unit == 0x7d {
+                return Ok(Some(()));
+            }
+        } else {
+            let Some(point) = single_string_character(units, at) else {
+                return Ok(None);
+            };
+            emit(WordEvent::Point(point))?;
+        }
+    }
+}
+
+fn finite_operand<E>(
+    units: &[u16],
+    at: &mut usize,
+    mut emit: impl FnMut(WordEvent) -> Result<(), RegExpUnicodeSetCompileError<E>>,
+) -> Result<Option<bool>, RegExpUnicodeSetCompileError<E>> {
+    if units
+        .get(*at..)
+        .is_some_and(|tail| tail.starts_with(&[0x5c, 0x71, 0x7b]))
+    {
+        return q_words(units, at, &mut emit).map(|parsed| parsed.map(|()| false));
+    }
+    if units.get(*at) == Some(&0x5b) {
+        *at += 1;
+        let mut depth = 1usize;
+        if units.get(*at) == Some(&0x5e) {
+            return Ok(None);
+        }
+        while depth != 0 {
+            let Some(&unit) = units.get(*at) else {
+                return Ok(None);
+            };
+            match unit {
+                0x5b => {
+                    depth = depth
+                        .checked_add(1)
+                        .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+                    *at += 1;
+                    if units.get(*at) == Some(&0x5e) {
+                        return Ok(None);
+                    }
+                }
+                0x5d => {
+                    depth -= 1;
+                    *at += 1;
+                }
+                _ if units[*at..].starts_with(&[0x5c, 0x71, 0x7b]) => {
+                    if q_words(units, at, &mut emit)?.is_none() {
+                        return Ok(None);
+                    }
+                }
+                _ => {
+                    if StringSetOperator::at(units, *at).is_some() {
+                        return Ok(None);
+                    }
+                    let Some(point) = single_string_character(units, at) else {
+                        return Ok(None);
+                    };
+                    emit(WordEvent::Point(point))?;
+                    emit(WordEvent::End)?;
+                }
+            }
+        }
+    } else {
+        if StringSetOperator::at(units, *at).is_some() {
+            return Ok(None);
+        }
+        let Some(point) = single_string_character(units, at) else {
+            return Ok(None);
+        };
+        emit(WordEvent::Point(point))?;
+        emit(WordEvent::End)?;
+    }
+    Ok(Some(true))
+}
+
 struct Framing<'a> {
     body: &'a [u16],
     start_anchor: bool,
@@ -666,6 +861,42 @@ impl<E, F: FnMut(usize) -> Result<(), E>> TrieBuilder<F> {
             ignore_case,
             charge,
         })
+    }
+
+    fn apply_operation(
+        &mut self,
+        operator: StringSetOperator,
+        members: &mut Vec<(usize, usize)>,
+        marked: &mut [bool],
+        matched: &mut Vec<usize>,
+        active: &mut usize,
+    ) -> Result<(), RegExpUnicodeSetCompileError<E>> {
+        match operator {
+            StringSetOperator::Subtraction => {
+                (self.charge)(matched.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+                for &node in matched.iter() {
+                    self.terminal[node] = false;
+                }
+                *active -= matched.len();
+            }
+            StringSetOperator::Intersection if matched.len() != *active => {
+                (self.charge)(members.len().saturating_mul(2))
+                    .map_err(RegExpUnicodeSetCompileError::Work)?;
+                members.retain(|&(node, _)| {
+                    let keep = self.terminal[node] && marked[node];
+                    self.terminal[node] = keep;
+                    keep
+                });
+                *active = matched.len();
+            }
+            StringSetOperator::Intersection => {}
+        }
+        (self.charge)(matched.len()).map_err(RegExpUnicodeSetCompileError::Work)?;
+        for &node in matched.iter() {
+            marked[node] = false;
+        }
+        matched.clear();
+        Ok(())
     }
 
     fn finish_left_member(

@@ -16229,3 +16229,25 @@ Stable passes all 425 Runtime unit cases and 1,358 Unicode integration cases.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core finite operands in UnicodeSets string operations
+
+The finite-operation proof admits literal characters and positive nested unions
+of literal/q members in homogeneous intersection or subtraction chains. The
+borrowed event lexer streams each operand and distinguishes empty classes from
+empty q alternatives. Trie insertion, probing, checked marks, and active-length
+bounds share the q-only representation; earlier proof domains are unchanged.
+Runtime selection is a separate step.
+
+Three Core groups compare independent character/string sets across all start
+offsets and sticky modes, cover literals and nested siblings, canonical folding,
+line/word gates, escaped brackets, supplementary characters, empty operands,
+closed proof domains, cancellation at every constructor callback, and 20,000
+nested operand levels with linear checked work and flat clone/drop storage.
+
+Stable passes all 1,055 Core and 425 Runtime unit cases and 151 affected Runtime
+integration cases. All 528 prior six-API construction, bound, and match records
+remain unchanged. Workspace documentation tests, formatting, strict workspace
+Clippy, dependency policy, source/fixture inventories, and diff checks pass.
+Runtime selection, snapshots, corpus sources and helpers, dependencies, intrinsic
+counts, and default resource policy are unchanged.

@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "regexp_unicode_finite_string_operations_tests.rs"]
+mod finite_operations;
+
 fn compile(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
     RegExpUnicodeStringSetMatcher::compile_with_work(&JsString::from(source), i, m, |_| {
         Ok::<(), ()>(())

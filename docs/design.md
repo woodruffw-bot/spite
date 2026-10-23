@@ -9611,6 +9611,24 @@ negation, string properties, further atoms, and repetition remain separate proof
 Buffer growth is fallible and charged before mutation; the final shared allocation
 retains its existing boundary. Dependencies and default quotas are unchanged.
 
+## Finite nested and literal operands in string-set operations
+
+A separate Core proof extends homogeneous positive operation chains to literal
+characters and positive nested finite unions of characters and q disjunctions.
+At least one operand uses the extended shape and a q member is empty or longer.
+A borrowed event lexer emits points and member ends without constructing source
+strings. Positive nesting uses a counter. Empty classes emit no member event;
+empty q alternatives emit an end event, preserving their distinct set semantics.
+
+The first operand inserts unique words into the trie. Later operands stream
+probes and reuse checked membership marks, active terminals, and retained-length
+bounds. Shared operation application keeps the earlier q-only proof's work
+sequence. Every operand is proved after an empty intermediate result. Ranges,
+class/property escapes, negation, inner operations, further atoms, and repetition
+remain separate proofs; this Core foundation is not yet selected by Runtime.
+Storage and drop remain flat, growth is fallible and prepaid, and dependencies
+and default quotas are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
