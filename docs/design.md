@@ -9879,7 +9879,14 @@ The borrowed framing/wrapper scan selects this braced-count proof explicitly
 and precharges decimal scans. Earlier simple/zero-minimum constructors retain
 their domains, exact callback traces and results. Checked class storage,
 allocation boundaries, flat clone/drop, dependencies and resource defaults are
-unchanged. Runtime selection is separate.
+unchanged.
+
+Runtime selects the two one-minimum open-count proofs after the zero-minimum
+braced proofs. Existing repeated-atom capture projection combines required
+defined-empty or final-character inner captures with complete enclosing captures,
+including normalized supplementary names. String consumers, replacement
+callbacks, lastIndex, clones, collection and host-abort propagation reuse their
+existing paths. Former Unsupported {1,} expressions complete finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 

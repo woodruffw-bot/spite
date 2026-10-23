@@ -747,6 +747,8 @@ mod regexp_unicode_nullable_character_results;
 mod regexp_unicode_one_iteration_nullable_alternatives;
 #[path = "cases/regexp_unicode_one_minimum_open_nullable_alternatives.rs"]
 mod regexp_unicode_one_minimum_open_nullable_alternatives;
+#[path = "cases/regexp_unicode_one_open_nullable_string_classes.rs"]
+mod regexp_unicode_one_open_nullable_string_classes;
 #[path = "cases/regexp_unicode_overflowing_maximum_nullable_alternatives.rs"]
 mod regexp_unicode_overflowing_maximum_nullable_alternatives;
 #[path = "cases/regexp_unicode_pattern_syntax_properties.rs"]

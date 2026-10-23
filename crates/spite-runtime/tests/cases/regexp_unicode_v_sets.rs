@@ -9412,7 +9412,7 @@ fn raw_empty_single_character_v_string_repetition_state_context_and_consumers() 
     }
     for source in [
         r"/([\q{a}]|){1}/v.test('')",
-        r"/([\q{a}]|){1,}/v.test('a')",
+        r"/([\q{a}]|){2,}/v.test('a')",
         r"/(([\q{a}])|)+/v.test('a')",
         r"/([\q{a}]|())+/v.test('a')",
         r"/(?:[\q{a}]|(?:))+/v.test('a')",

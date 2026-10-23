@@ -16704,3 +16704,30 @@ documentation tests, formatting, strict workspace Clippy, dependency policy,
 source/fixture inventories, and diff checks pass. Runtime selection, snapshots,
 corpus sources and helpers, dependencies, intrinsic counts, and default resource
 policy are unchanged.
+
+## Runtime one-minimum open braced nullable string classes
+
+Runtime selects the singleton-q and character-result {1,} proofs after the
+zero-minimum braced proofs. Six integration groups cover padded lower counts,
+source branch priority, greedy/lazy selection, outside word/line gates, Latin
+long-s/Kelvin and supplementary folding, required defined-empty versus zero-count
+undefined captures, enclosing captures, supplementary escaped names, paired/lone
+and braced surrogates, frozen lastIndex, String consumers and replacement
+callbacks, clones/collection, former Unsupported finalizers, complete leaf proof
+behind mandatory empty-first choices, remaining count/atom shapes, early errors,
+1,000 complete wrappers, long discarded words and 20,000 leading count zeros
+under defaults, and atomic opt-in construction/search aborts. Earlier {1,}
+rejection controls now complete with their exact values and finalizer effects;
+remaining open-count controls require a larger positive minimum.
+
+All 46,624 complete result records across 124 pattern/control pairs agree with
+independent character classes, including capture values, undefined markers,
+named-key presence/order, original indices, sticky starts and lastIndex. Original
+Node differs on 388 ignoreCase singleton-q folding records (228 Latin and 160
+supplementary Deseret), matching the documented defect without a new exception.
+
+Stable passes all 425 Runtime unit cases, 124 corrected focused integration
+cases, and 1,413 Unicode integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Snapshots, corpus sources and helpers, dependencies,
+intrinsic counts, and default resource policy are unchanged.
