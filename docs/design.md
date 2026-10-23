@@ -9795,6 +9795,31 @@ keys, including supplementary escaped names. Zero-iteration inner captures stay
 undefined in arrays, groups and indices, with named keys present. lastIndex,
 String consumers, cloned matchers and collection reuse their existing paths.
 
+## Raw empty alternatives beside character-result classes
+
+A separate Core entry proves one raw empty alternative and one bare
+character-result v/vi class branch inside complete ordinary/noncapturing wrappers.
+The class must have a false static MayContainStrings result and an empty/long q
+member. Both `class|` and `|class` preserve their source order under *, + and ?,
+including lazy forms. Canonical optional outside line/word gates retain whole
+repetition scope. Named captures must already be normalized. Branch-local
+captures/assertions, extra/grouped empty alternatives, braced counts, string
+properties, conservative string results, and further atoms remain separate proofs.
+
+The explicit raw branch introduces nullability; projected q empty members cannot
+make the character branch nullable. RepeatMatcher's progress guard rejects
+optional empty iterations. A required empty plus iteration retains defined empty
+inner captures, whereas zero iterations leave them undefined. Successful complete
+wrappers share the final selected iteration's original range, including an empty
+range. Every class operand is compiled even behind an empty-first alternative.
+
+The constructor shares borrowed edge/quantifier/wrapper scans with the earlier
+singleton-q entry and selects the character-result leaf proof. Existing nullable
+branch-order state, linear matching, captures, checked interval/frame growth,
+allocation boundaries, clone/drop, and old constructor domains/callbacks are
+reused. Runtime selection is a later step. Dependencies and resource defaults
+are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

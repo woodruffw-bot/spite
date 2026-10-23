@@ -6,6 +6,9 @@ mod character_result;
 #[path = "regexp_unicode_wrapped_character_result_tests.rs"]
 mod wrapped_character_result;
 
+#[path = "regexp_unicode_nullable_character_result_tests.rs"]
+mod nullable_character_result;
+
 #[derive(Clone, Copy, Default)]
 struct Gates {
     anchors: bool,

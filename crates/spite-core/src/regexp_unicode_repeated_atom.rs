@@ -1930,6 +1930,50 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            charge,
+        )
+    }
+
+    /// Compiles one raw empty alternative beside one character-result v class.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// ordinary/noncapturing wrappers contain either the bare class then |, or
+    /// | then the class, followed by *, + or ?, including lazy forms. The class
+    /// must have a false static MayContainStrings result and an empty/long q
+    /// member. Canonical outside word/line gates apply to the whole repetition.
+    /// Required empty iterations retain defined empty captures; zero iterations
+    /// leave them undefined. Branch-local captures/assertions, extra branches,
+    /// grouped empty alternatives, braced counts, string properties, conservative
+    /// string results and further atoms remain separate proofs. All leaves are
+    /// compiled before matching, including behind the empty-first alternative.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            charge,
+        )
+    }
+
+    fn compile_nullable_string_class_repetition_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        proof: ClassProof,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -2016,9 +2060,13 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             if leaf.first() != Some(&0x5b) || leaf.last() != Some(&0x5d) {
                 continue;
             }
-            let Some(atom) = RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(
-                leaf, ignore_case, false, &mut charge,
-            )? else { continue };
+            let atom = match proof {
+                ClassProof::Checked => RegExpUnicodeClassMatcher::compile_v_set_units_with_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::SingleCharacterStrings => RegExpUnicodeClassMatcher::compile_v_set_units_with_single_character_strings_and_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::ScalarLeftStrings => RegExpUnicodeClassMatcher::compile_scalar_left_string_operations_units_with_work(leaf, ignore_case, false, &mut charge),
+                ClassProof::CharacterResultStrings => RegExpUnicodeClassMatcher::compile_character_result_v_set_units_with_work(leaf, ignore_case, false, &mut charge),
+            };
+            let Some(atom) = atom? else { continue };
             return Ok(Some(Self {
                 atom: Atom::Class(atom),
                 minimum,

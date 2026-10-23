@@ -16572,3 +16572,29 @@ The 124 affected/new integration cases pass their corrected focused replay.
 Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Snapshots, corpus sources
 and helpers, dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core nullable character-result alternatives
+
+The nullable proof admits one raw empty alternative beside one character-result
+v/vi class inside complete wrappers under greedy/lazy *, + or ?. Source branch
+order, whole-repetition assertions, progress guards, and original final-iteration
+captures reuse the existing matcher. Required empty plus iterations define empty
+captures; zero iterations leave captures undefined. Full class proof remains
+required behind the empty-first branch. Runtime selection is separate.
+
+Three Core groups use a small-input recursive specification backtracking oracle,
+independent of production's linear scan, to compare five class predicates,
+three wrapper layouts, both branch orders, six quantifiers, line/word gates,
+all starts and sticky/i/m modes. They cover paired/lone and supplementary-folded
+ranges, progress rejection, empty projected classes, zero versus required empty
+captures, closed constructor domains, complete leaf proof, cancellation/recovery
+at every constructor callback, 20,000 complete wrappers, and 20,000-character
+ignored words with linear checked work and flat clone/drop storage.
+
+All 2,472 prior eight-string/five-class/eight-repetition API construction,
+bounds, captures, work, and match records remain unchanged. Stable passes all
+1,076 Core and 425 Runtime unit cases and 188 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

@@ -655,6 +655,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Connect static character-result string-set proofs to Runtime RegExp execution and String consumers, including whole-body captures, legal complements, exact quantified bounds, original UTF-16 ranges, lastIndex, and eval completions.
 - [x] Compile complete ordinary/noncapturing wrappers around quantified character-result v classes, preserving final-iteration captures, undefined zero-iteration captures, canonical whole-repetition gates, and exact bounds.
 - [x] Connect wrapped character-result repetition to Runtime RegExp captures and String consumers, preserving final-iteration values, undefined zero-iteration captures, named indices, enclosing captures, original UTF-16 ranges, and lastIndex.
+- [x] Compile complete wrapped raw-empty alternatives beside character-result v classes under greedy/lazy *, + and ?, preserving branch priority, empty-iteration progress checks, whole-repetition gates, and defined-empty versus undefined captures.
+- [ ] Connect nullable character-result alternatives to Runtime RegExp captures and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
