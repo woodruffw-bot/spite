@@ -9538,6 +9538,30 @@ explicitly rejected; class escapes, properties, ranges, nested classes,
 intersection/subtraction, further atoms, and repetition remain separate proofs.
 Dependencies, shared-allocation boundaries, and default resource policy are unchanged.
 
+## Character ranges and properties beside UnicodeSets strings
+
+Core adds a separate proof for one complete positive flat v/vi class containing
+q strings and a range, character escape, or supported Unicode character property.
+Literal characters may also appear. At least one q member must be empty or
+multi-character. A borrowed pass proves all flat operands, validates q members,
+and compiles ordinary operands through the existing checked interval builder.
+A second prepaid pass builds the q trie and skips ordinary terms with the same
+scalar-term decoder. No source is rewritten or copied.
+
+The scalar portion batches duplicate escapes and properties, normalizes ranges,
+and applies the existing simple-fold/complement rules. Full Unicode ranges stay
+as intervals. Search compares scalar membership at the first input character
+and all eligible trie terminals, retaining the longest successful member under
+the original outside assertions. Empty q members remain last. The bounds include
+scalar membership lookup and a two-unit consuming candidate even when every q
+member is empty. The existing shared-allocation boundaries and fallible interval,
+trie-node, and hash-index reservations remain explicit.
+
+This Core foundation is not yet selected by Runtime. Nested classes, set
+operations, properties of strings, further atoms, and repetition remain separate
+proofs. Earlier public constructors retain their domains and work callbacks.
+Dependencies and default resource policy are unchanged.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

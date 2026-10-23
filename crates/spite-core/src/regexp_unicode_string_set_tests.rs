@@ -7,6 +7,243 @@ fn compile(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatch
     .unwrap()
 }
 
+fn compile_scalars(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
+    RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+}
+
+#[derive(Clone, Copy)]
+enum ScalarOracle {
+    Range(u32, u32),
+    Digit(bool),
+    Word,
+    Ascii(bool),
+    Greek,
+    Space(bool),
+}
+
+impl ScalarOracle {
+    // Handwritten membership for the input points used here. Whole Unicode
+    // property tables are independently covered by the class compiler tests.
+    fn contains(self, p: u32, i: bool) -> bool {
+        match self {
+            Self::Range(a, b) => (a..=b).contains(&p) || (i && (a..=b).contains(&fold(p))),
+            Self::Digit(positive) => (48..=57).contains(&p) == positive,
+            Self::Word => {
+                matches!(p,48..=57|65..=90|95|97..=122) || (i && matches!(p, 0x17f | 0x212a))
+            }
+            Self::Ascii(positive) => (p < 128 || (i && matches!(p, 0x17f | 0x212a))) == positive,
+            Self::Greek => matches!(p, 0x391 | 0x39c | 0x3b1 | 0x3bc) || (i && p == 0xb5),
+            Self::Space(property) => {
+                matches!(p,9..=13|32|0xa0|0x1680|0x2000..=0x200a|0x2028|0x2029|0x202f|0x205f|0x3000)
+                    || if property { p == 0x85 } else { p == 0xfeff }
+            }
+        }
+    }
+}
+
+#[test]
+fn scalar_ranges_escapes_and_properties_union_with_strings_using_independent_membership() {
+    use ScalarOracle as S;
+    let plain = Gates::default();
+    let folded = Gates { i: true, ..plain };
+    let ab: &[&[u32]] = &[&[97, 98]];
+    let cases: [(&str, &[&[u32]], S, Gates); 15] = [
+        (
+            r"[a-z\q{ab|a!}]",
+            &[&[97, 98], &[97, 33]],
+            S::Range(97, 122),
+            folded,
+        ),
+        (r"[\q{ab}\d]", ab, S::Digit(true), plain),
+        (r"[\D\q{ab}]", ab, S::Digit(false), plain),
+        (r"[\w\q{sK}]", &[&[115, 75]], S::Word, folded),
+        (r"[\P{ASCII}\q{ab}]", ab, S::Ascii(false), folded),
+        (r"[\q{ab}\p{ASCII}]", ab, S::Ascii(true), plain),
+        (r"[\q{ab}\p{Any}]", ab, S::Range(0, 0x10ffff), plain),
+        (
+            r"[\q{a!}\p{Any}]\b",
+            &[&[97, 33]],
+            S::Range(0, 0x10ffff),
+            Gates {
+                words: [None, Some(true)],
+                ..plain
+            },
+        ),
+        (
+            r"^\b[\q{ab}a-z]\b$",
+            ab,
+            S::Range(97, 122),
+            Gates {
+                m: true,
+                anchors: [true, true],
+                words: [Some(true), Some(true)],
+                ..plain
+            },
+        ),
+        (
+            r"[\q{ab}\u{D7FF}-\u{E000}]",
+            ab,
+            S::Range(0xd7ff, 0xe000),
+            plain,
+        ),
+        (
+            r"[\u{0}-\u{10FFFF}\q{ab}]",
+            ab,
+            S::Range(0, 0x10ffff),
+            folded,
+        ),
+        (r"[\q{}\p{Any}]", &[&[]], S::Range(0, 0x10ffff), plain),
+        (r"[\q{}\P{Any}]", &[&[]], S::Range(1, 0), plain),
+        (r"[\p{Script=Greek}\q{ab}]", ab, S::Greek, folded),
+        (r"[\q{ab}\s]", ab, S::Space(false), plain),
+    ];
+    for (source, choices, scalar, gates) in cases {
+        assert!(
+            compile_character_union(source, gates.i, gates.m).is_none(),
+            "{source}"
+        );
+        let plan = compile_scalars(source, gates.i, gates.m).unwrap();
+        for input in [
+            JsString::from(""),
+            JsString::from("xab!ab0_"),
+            JsString::from("A😀x🚀"),
+            JsString::from("ſKẞA"),
+            JsString::from("Μμµα"),
+            JsString::from("x\r\nab\u{2028}z"),
+            JsString::from("\t\u{85}\u{a0}\u{feff}"),
+            JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+        ] {
+            let mut words = choices.iter().map(|s| s.to_vec()).collect::<Vec<_>>();
+            for c in char::decode_utf16(input.code_units().iter().copied()) {
+                let p = match c {
+                    Ok(c) => u32::from(c),
+                    Err(e) => u32::from(e.unpaired_surrogate()),
+                };
+                if scalar.contains(p, gates.i) {
+                    words.push(vec![p]);
+                }
+            }
+            let choices = words.iter().map(Vec::as_slice).collect::<Vec<_>>();
+            for start in 0..=input.len() + 1 {
+                for sticky in [false, true] {
+                    assert_eq!(
+                        plan.find(&input, start, sticky),
+                        oracle(&input, start, sticky, &choices, gates),
+                        "{source} {input:?} start={start} sticky={sticky}"
+                    );
+                }
+            }
+        }
+    }
+    let es = compile_scalars(r"[\q{ab}\s]", false, false).unwrap();
+    let ucd = compile_scalars(r"[\q{ab}\p{White_Space}]", false, false).unwrap();
+    assert_eq!(es.find(&JsString::from("\u{feff}"), 0, true), Some(0..1));
+    assert_eq!(ucd.find(&JsString::from("\u{feff}"), 0, true), None);
+    assert_eq!(es.find(&JsString::from("\u{85}"), 0, true), None);
+    assert_eq!(ucd.find(&JsString::from("\u{85}"), 0, true), Some(0..1));
+}
+
+#[test]
+fn scalar_string_union_keeps_other_proofs_and_algebra_separate() {
+    for source in [
+        r"[\q{ab}]",
+        r"[\q{ab}a]",
+        r"[\q{ab}\q{cd}]",
+        r"[a-z]",
+        r"[\d\q{a}]",
+        r"[^\q{ab}\d]",
+        r"[[a-z]\q{ab}]",
+        r"[a-z&&\q{ab}]",
+        r"[\q{ab}--\d]",
+        r"[\q{ab}\p{RGI_Emoji}]",
+        r"[\q{ab}\d]+",
+        r"[\q{ab}\d]x",
+        r"\b^[\q{ab}\d]",
+    ] {
+        assert!(compile_scalars(source, true, true).is_none(), "{source}");
+    }
+    let plan = compile_scalars(r"[\q{}\p{Any}]", false, false).unwrap();
+    assert_eq!(plan.max_match_code_units(), 2);
+    assert_eq!(plan.find(&JsString::from("😀"), 1, true), Some(0..2));
+    assert_eq!(plan.find(&JsString::from(""), 0, true), Some(0..0));
+}
+
+#[test]
+fn scalar_string_union_checks_every_reservation_and_keeps_full_ranges_compact() {
+    for source in [r"[\q{}a-z\q{abc}]", r"[\p{Script=Greek}\q{ab}]"] {
+        let source = JsString::from(source);
+        let mut complete = Vec::new();
+        let plan = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+            &source,
+            true,
+            false,
+            |work| {
+                complete.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(complete[0], source.len() * 4);
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+                &source,
+                true,
+                false,
+                |work| {
+                    seen.push(work);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(matches!(result,Err(RegExpUnicodeSetCompileError::Work(at)) if at==fail));
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        let retry = RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
+            &source,
+            true,
+            false,
+            |work| {
+                recovered.push(work);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(recovered, complete);
+        for text in ["", "ab", "ABC", "µ", "😀"] {
+            let input = JsString::from(text);
+            assert_eq!(plan.find(&input, 0, false), retry.find(&input, 0, false));
+        }
+    }
+    let source = JsString::from(r"[\q{ab}\u{0}-\u{10FFFF}]");
+    let mut work = 0usize;
+    let plan =
+        RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(&source, true, false, |n| {
+            work += n;
+            Ok::<(), ()>(())
+        })
+        .unwrap()
+        .unwrap();
+    assert!(
+        work < 1_000_000,
+        "a full Unicode range must retain interval storage: {work}"
+    );
+    assert_eq!(plan.max_match_code_units(), 4);
+    assert_eq!(plan.find(&JsString::from("😀"), 1, true), Some(0..2));
+}
+
 fn compile_union(source: &str, i: bool, m: bool) -> Option<RegExpUnicodeStringSetMatcher> {
     RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
         &JsString::from(source),

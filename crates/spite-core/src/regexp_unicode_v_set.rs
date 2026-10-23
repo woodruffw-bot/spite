@@ -97,6 +97,87 @@ struct Builder<'a, F> {
 }
 
 impl RegExpUnicodeClassMatcher {
+    // Scalar portion of one complete positive flat class containing q strings.
+    // The caller separately compiles all q alternatives. No string is removed
+    // from source and no ranges are expanded into individual characters.
+    pub(crate) fn compile_scalar_union_portion_with_work<E>(
+        units: &[u16],
+        ignore_case: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        if units.len() < 2 || units[0] != 0x5b || units[1] == 0x5e || units.last() != Some(&0x5d) {
+            return Ok(None);
+        }
+        let mut builder = Builder {
+            units: &units[1..units.len() - 1],
+            at: 0,
+            ignore_case,
+            charge,
+        };
+        builder.work(units.len().saturating_mul(2))?;
+        let mut frame = Frame::new(false);
+        let mut has_q = false;
+        let mut has_special = false;
+        while builder.at < builder.units.len() {
+            if builder.units[builder.at..].starts_with(&[0x5c, 0x71, 0x7b]) {
+                has_q = true;
+                builder.at += 3;
+                loop {
+                    let Some(&unit) = builder.units.get(builder.at) else {
+                        return Ok(None);
+                    };
+                    if matches!(unit, 0x7c | 0x7d) {
+                        builder.at += 1;
+                        if unit == 0x7d {
+                            break;
+                        }
+                    } else if single_string_character(builder.units, &mut builder.at).is_none() {
+                        return Ok(None);
+                    }
+                }
+            } else {
+                if builder.operator().is_some() {
+                    return Ok(None);
+                }
+                let Some(term) = builder.term() else {
+                    return Ok(None);
+                };
+                has_special |= matches!(
+                    term,
+                    Term::Range(..) | Term::Raw(ClassAtom::Escape(_) | ClassAtom::Property(_))
+                );
+                builder.accept(&mut frame, term)?;
+            }
+        }
+        if !has_q || !has_special {
+            return Ok(None);
+        }
+        let ranges = builder.finish(frame.expression)?;
+        builder.work(ranges.len())?;
+        Ok(Some(Self {
+            ranges: ranges.into(),
+            inverted: false,
+            start_anchor: false,
+            end_anchor: false,
+            multiline: false,
+            ignore_case,
+            start_word: None,
+            end_word: None,
+        }))
+    }
+
+    // Borrowed, prepaid scalar lexing for the second q-trie construction pass.
+    pub(crate) fn string_union_scalar_term_end(units: &[u16], at: usize) -> Option<usize> {
+        let mut builder = Builder {
+            units,
+            at,
+            ignore_case: false,
+            charge: |_| Ok::<(), ()>(()),
+        };
+        builder.term()?;
+        Some(builder.at)
+    }
+
     /// Compiles a nested character-only v-mode set expression.
     ///
     /// The caller must validate the complete Pattern in v/vi mode. Operands are

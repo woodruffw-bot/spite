@@ -1,7 +1,7 @@
 //! A standalone ClassStringDisjunction with variable-length members (22.2.2.7).
 
 use crate::{
-    JsString, RegExpUnicodeSetCompileError,
+    JsString, RegExpUnicodeClassMatcher, RegExpUnicodeSetCompileError,
     case_data::SIMPLE_CASE_FOLD,
     regexp_canonicalize_character,
     regexp_literal::unicode_start,
@@ -16,10 +16,10 @@ use std::{collections::HashMap, ops::Range, sync::Arc};
 ///
 /// Requires complete validated v/vi Pattern input. Separate constructors prove
 /// one ClassStringDisjunction operand, adjacent string operands, or strings
-/// beside ordinary literal characters, with an empty or longer q member.
+/// beside ordinary scalar operands, with an empty or longer q member.
 /// Canonical
 /// outside line/word assertions are admitted. Captures,
-/// repetitions, further consuming terms, other class algebra and string properties
+/// repetitions, further consuming terms, nesting, set operations and string properties
 /// remain separate caller proofs. Complete enclosing captures may be projected
 /// by the caller. Earlier character-only compilers retain their domains.
 #[derive(Clone, Debug)]
@@ -31,6 +31,7 @@ pub struct RegExpUnicodeStringSetMatcher {
 struct Program {
     edges: HashMap<(usize, u32), usize>,
     terminal: Vec<bool>,
+    scalars: Option<RegExpUnicodeClassMatcher>,
     max_characters: usize,
     ignore_case: bool,
     multiline: bool,
@@ -91,6 +92,23 @@ impl RegExpUnicodeStringSetMatcher {
         Self::compile_domain(source, ignore_case, multiline, Domain::Characters, charge)
     }
 
+    /// Compiles a positive flat union of q strings with supported character
+    /// escapes, Unicode character properties, or ranges, optionally with literal
+    /// characters. At least one q member must be empty or multi-character.
+    ///
+    /// Scalar membership reuses checked, folded intervals. String properties,
+    /// nested classes, intersection/subtraction, and repetition remain separate
+    /// proofs. Earlier literal-only and q-only entries retain their domains.
+    /// https://262.ecma-international.org/17.0/#sec-compiletocharset
+    pub fn compile_scalar_union_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain(source, ignore_case, multiline, Domain::Scalars, charge)
+    }
+
     fn compile_domain<E>(
         source: &JsString,
         ignore_case: bool,
@@ -139,7 +157,8 @@ impl RegExpUnicodeStringSetMatcher {
         let Some(body) = units.get(begin..end) else {
             return Ok(None);
         };
-        let inner = if domain == Domain::Characters {
+        let mixed = matches!(domain, Domain::Characters | Domain::Scalars);
+        let inner = if mixed {
             if body.len() < 2 || body[0] != 0x5b || body[1] == 0x5e || body.last() != Some(&0x5d) {
                 return Ok(None);
             }
@@ -150,9 +169,22 @@ impl RegExpUnicodeStringSetMatcher {
             }
             &body[4..body.len() - 2]
         };
+        let scalars = if domain == Domain::Scalars {
+            let Some(plan) = RegExpUnicodeClassMatcher::compile_scalar_union_portion_with_work(
+                body,
+                ignore_case,
+                &mut charge,
+            )?
+            else {
+                return Ok(None);
+            };
+            Some(plan)
+        } else {
+            None
+        };
         let mut builder = TrieBuilder::new(ignore_case, charge)?;
         let mut at = 0;
-        let proved = if domain == Domain::Characters {
+        let proved = if mixed {
             let mut has_q = false;
             let mut has_character = false;
             while at < inner.len() {
@@ -177,6 +209,16 @@ impl RegExpUnicodeStringSetMatcher {
                         }
                     }
                 } else {
+                    if domain == Domain::Scalars {
+                        let Some(end) =
+                            RegExpUnicodeClassMatcher::string_union_scalar_term_end(inner, at)
+                        else {
+                            return Ok(None);
+                        };
+                        at = end;
+                        has_character = true;
+                        continue;
+                    }
                     // Two raw ampersands form intersection, never two literal
                     // operands. The decoder rejects ranges and nested classes.
                     if inner[at..].starts_with(&[0x26, 0x26]) {
@@ -220,13 +262,17 @@ impl RegExpUnicodeStringSetMatcher {
         let TrieBuilder {
             edges,
             terminal,
-            max_characters,
+            mut max_characters,
             ..
         } = builder;
+        if scalars.is_some() {
+            max_characters = max_characters.max(1);
+        }
         Ok(Some(Self {
             program: Arc::new(Program {
                 edges,
                 terminal,
+                scalars,
                 max_characters,
                 ignore_case,
                 multiline,
@@ -254,6 +300,11 @@ impl RegExpUnicodeStringSetMatcher {
         };
         let per_character = 3usize
             .saturating_add(folding)
+            .saturating_add(
+                p.scalars
+                    .as_ref()
+                    .map_or(0, RegExpUnicodeClassMatcher::search_passes),
+            )
             .saturating_add(usize::from(p.start_anchor) + usize::from(p.end_anchor))
             .saturating_add(
                 8 * (usize::from(p.start_word.is_some()) + usize::from(p.end_word.is_some())),
@@ -285,6 +336,14 @@ impl RegExpUnicodeStringSetMatcher {
             for _ in 0..p.max_characters {
                 let Some(&first) = units.get(at) else { break };
                 let (point, width) = unicode_input_character(units, at, first);
+                if at == candidate
+                    && p.scalars
+                        .as_ref()
+                        .is_some_and(|plan| plan.matches_original_character(point))
+                    && p.assertions_match(units, candidate, at + width)
+                {
+                    best = Some(at + width);
+                }
                 let point = if p.ignore_case {
                     regexp_canonicalize_character(point, true, true)
                 } else {
@@ -316,6 +375,7 @@ enum Domain {
     Single,
     Strings,
     Characters,
+    Scalars,
 }
 
 struct TrieBuilder<F> {

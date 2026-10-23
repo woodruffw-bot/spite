@@ -657,6 +657,10 @@ impl RegExpUnicodeClassMatcher {
         None
     }
 
+    pub(crate) fn matches_original_character(&self, value: u32) -> bool {
+        self.matches(value)
+    }
+
     fn matches(&self, value: u32) -> bool {
         let value = if self.ignore_case {
             regexp_canonicalize_character(value, true, true)

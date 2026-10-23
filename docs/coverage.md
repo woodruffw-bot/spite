@@ -16092,3 +16092,25 @@ and 133 UnicodeSets/string-class integration cases. Workspace documentation
 tests, formatting, strict workspace Clippy, dependency policy, source/fixture
 inventories, and diff checks pass. Snapshots, corpus sources and helpers,
 dependencies, intrinsic counts, and default resource policy are unchanged.
+
+## Core intervals beside variable UnicodeSets strings
+
+The new positive flat v/vi proof composes existing checked scalar intervals with
+the variable q trie. It admits ranges, character escapes, and supported Unicode
+character properties beside empty or longer q members, optionally with literal
+characters. Full Unicode ranges retain compact intervals. Nested classes, set
+operations, string properties, extra atoms, and repetition remain deferred;
+Runtime selection is a separate increment.
+
+Three additional Core groups compare independent scalar membership and character
+sequences at all initial offsets and sticky modes, cover fold/complement ordering,
+line/word assertions, paired/lone surrogates, empty/consuming priority, exact
+ECMAScript versus Unicode whitespace, proof boundaries, and cancellation at every
+construction callback. Full-range construction verifies compact checked work;
+an empty q member with Any still consumes a complete supplementary character.
+
+Stable passes all 1,046 Core unit cases, 423 Runtime unit cases, and 133 existing
+UnicodeSets/string-class integration cases. Workspace documentation tests,
+formatting, strict workspace Clippy, dependency policy, source/fixture inventories,
+and diff checks pass. Runtime dispatch, snapshots, corpus sources and helpers,
+dependencies, intrinsic counts, and default resource policy are unchanged.
