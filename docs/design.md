@@ -11234,3 +11234,24 @@ proof after the earlier single-class endpoint proofs on the full normalized
 source. A dedicated body stores the selected class/empty tag and projects all
 original lexical slots and named index aliases without capture history. String
 consumers, cloning, collection and opt-in host aborts share existing paths.
+
+
+Core `compile_grouped_with_work` on the asserted string-class alternative matcher
+proves a complete ordinary capturing/noncapturing wrapper chain around an
+otherwise accepted asserted root body. Three source-sized scans recover only
+complete wrappers with nested v classes and escaped q data opaque. The retained
+body must still pass the entire root proof; assertions remain on their original
+alternatives. Outside predicates, partial wrappers, outside empty siblings and
+choice counts remain separate proofs.
+
+ECMA-262 edition 17 22.2.2.7 CompileAtom gives each enclosing capture the complete
+selected range, including a selected empty alternative. A scalar prefix count
+and checked total slot count retain those original lexical positions ahead of
+both alternatives. Prefix projection always returns the whole range; only the
+inner alternative slots depend on the selected class/empty tag. For
+`(^([\q{a|ab}])$|(\b))` on `ab!`, the outer capture is defined empty and the
+class capture is undefined. Prefix construction, cloning and dropping remain
+flat, with no per-match storage added. Root construction initializes the prefix
+to zero and retains its accepted domain and exact callbacks; searching and
+branch-order decisions are unchanged. Runtime grouped selection remains a
+subsequent step.

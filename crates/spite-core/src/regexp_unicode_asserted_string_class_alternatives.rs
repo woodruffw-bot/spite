@@ -1,7 +1,7 @@
 //! A root choice between an asserted single string class and pure empty terms.
 use super::{
     JsString, RegExpUnicodeSetCompileError, RegExpUnicodeSingleStringClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch, unicode_start,
+    RegExpUnicodeStringClassBranchMatch, enclosed_v_group_body, unicode_start,
 };
 use std::ops::Range;
 
@@ -12,7 +12,8 @@ use std::ops::Range;
 /// pure empty terms and mandatory predicates. At least one predicate is required.
 /// Source order resolves ties at the earliest Unicode candidate. Explicit branch
 /// identity retains class captures even when the chosen class member is empty.
-/// Grouped choices and class repetition remain separate proofs (22.2.2.3–4).
+/// Complete wrappers use a separate constructor; choice counts remain separate
+/// proofs (22.2.2.3–4).
 /// https://262.ecma-international.org/17.0/#sec-compilepattern
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodeAssertedStringClassAlternativeMatcher {
@@ -20,6 +21,7 @@ pub struct RegExpUnicodeAssertedStringClassAlternativeMatcher {
     empty: RegExpUnicodeSingleStringClassCaptureMatcher,
     class_first: bool,
     captures: usize,
+    enclosing_captures: usize,
 }
 impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
     /// Proves both complete branches with source-sized construction work.
@@ -71,13 +73,51 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
             empty,
             class_first,
             captures,
+            enclosing_captures: 0,
         }))
     }
-    /// Counts original lexical captures in both alternatives.
+    /// Proves complete ordinary wrappers around an asserted root alternative.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// capturing/noncapturing wrappers retain whole-match ranges in lexical
+    /// prefix slots, including empty selected alternatives (22.2.2.7).
+    /// Three flat scans keep nested v classes and escaped string data opaque.
+    /// Outside predicates, partial wrappers and choice counts remain separate.
+    /// https://262.ecma-international.org/17.0/#sec-compileatom
+    pub fn compile_grouped_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(8).saturating_add(64))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some((body, enclosing_captures)) = enclosed_v_group_body(units) else {
+            return Ok(None);
+        };
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(units[body].to_vec()),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(enclosing_captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = enclosing_captures;
+        Ok(Some(plan))
+    }
+
+    /// Counts original lexical captures in wrappers and both alternatives.
     pub fn capture_count(&self) -> usize {
         self.captures
     }
-    /// Projects the selected branch; every unselected branch capture is absent.
+    /// Projects whole wrappers and the selected branch; unselected slots are absent.
     pub fn capture_range(
         &self,
         index: usize,
@@ -86,6 +126,10 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
         if index >= self.captures {
             return None;
         }
+        if index < self.enclosing_captures {
+            return Some(found.range.clone());
+        }
+        let index = index - self.enclosing_captures;
         let first = if self.class_first {
             self.class.capture_count()
         } else {
