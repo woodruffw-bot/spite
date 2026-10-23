@@ -18646,3 +18646,33 @@ documentation tests, formatting, strict workspace Clippy, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 532 case
 files and 4,258 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core root captures for nonempty string-class results
+
+A separate matcher compiles complete string classes through the eight established
+string-set proofs, then rejects a compiled empty member. Flat capture roles share
+the existing projection helper. Consuming words retain longest-member priority
+and original variable-width UTF-16 ranges; first empty alternatives skip querying
+the class. Work is charged before Unicode-boundary normalization and bounded
+prefix inspection, without input-sized capture history.
+
+Three groups compare an independent finite-word prefix matcher and executable
+capture tree over fourteen classes, six mixed layouts, both orders, all starts
+and sticky/i/m modes over eight inputs. Classes cover every existing string-set
+constructor family, shared-prefix words, scalar unions, finite operations,
+supplementary/Deseret/folded words, empty results and removed empty members.
+Cancellation covers every construction/search callback and recovery. Structural
+cases include 20,000 deep branch captures, flat clone/drop and a 20,000-character
+word. Closed controls retain class-empty ambiguity, root assertions, references,
+class-bearing inner counts, multiple class alternatives, grouped/nonstring
+patterns and unknown leaves.
+
+All 39,464 prior API records preserve exact construction/search work and capture
+projection through the shared range helper. Stable passes the 1,185 earlier Core
+unit cases and all three new string-root groups, including the focused rerun of
+the corrected empty-result membership control; all 431 Runtime unit cases pass.
+Workspace documentation tests, workspace/included-source formatting, strict
+workspace Clippy, dependency policy, source/fixture inventories and diff checks
+pass. Runtime selection, snapshots, corpus sources/helpers, dependencies,
+intrinsic counts and default resource policy are unchanged.

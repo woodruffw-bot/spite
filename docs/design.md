@@ -10924,3 +10924,27 @@ traces remain unchanged. Runtime selects root alternatives after the grouped
 single-iteration proofs using the original normalized source and no extra
 enclosing prefix. Existing named/indices projection, String consumers and Unicode
 empty advancement retain their shared execution path.
+
+
+## Root string-class alternatives with nonempty class results
+
+A separate Core matcher proves root string-class/empty alternatives with flat
+original capture roles. Existing single-q, union, nested-union, finite-operation
+and scalar-filtered string-set constructors compile the complete class. A shared
+internal query checks the compiled set's empty member; plans whose class can
+consume an empty string decline. This also admits empty operands removed by set
+operations, while keeping class-branch and empty-branch identity unambiguous.
+
+The consuming branch selects the existing trie's longest member, preserving
+original UTF-16 ranges across variable-width words (22.2.2.7). The empty branch
+retains first-branch priority. Character/point/empty/undefined role projection
+shares the existing source-order table through a common range helper. Root
+assertions are never moved and retain separate proofs. Every class leaf is
+compiled before branch selection, including empty-first alternatives.
+
+Matching normalizes the initial Unicode boundary before selection and charges
+the bounded class prefix before querying it. The empty branch guarantees success
+at that first valid boundary, so searching and sticky modes need no candidate
+history. Class programs share flat trie storage; captures clone/drop as flat
+source-sized data. Earlier constructor/search work traces remain unchanged.
+Runtime selection remains a subsequent step.

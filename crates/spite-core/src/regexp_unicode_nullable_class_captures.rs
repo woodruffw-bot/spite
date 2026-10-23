@@ -6,6 +6,10 @@ use super::{
 use crate::{JsString, RegExpUnicodeSetCompileError};
 use std::ops::Range;
 
+#[path = "regexp_unicode_nullable_string_class_captures.rs"]
+mod string_class_captures;
+pub use string_class_captures::RegExpUnicodeNullableStringClassCaptureMatcher;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CaptureRole {
     Iteration,
@@ -623,20 +627,7 @@ impl RegExpUnicodeNullableClassCaptureMatcher {
         index: usize,
         iteration: Option<&Range<usize>>,
     ) -> Option<Range<usize>> {
-        let role = self.captures.get(index)?;
-        let range = iteration?;
-        match role {
-            CaptureRole::Iteration => Some(range.clone()),
-            CaptureRole::Character => (!range.is_empty()).then(|| range.clone()),
-            CaptureRole::Empty => range.is_empty().then(|| range.clone()),
-            CaptureRole::Never => None,
-            CaptureRole::StartPoint => Some(range.start..range.start),
-            CaptureRole::EndPoint => Some(range.end..range.end),
-            CaptureRole::CharacterStartPoint => {
-                (!range.is_empty()).then_some(range.start..range.start)
-            }
-            CaptureRole::CharacterEndPoint => (!range.is_empty()).then_some(range.end..range.end),
-        }
+        projected_capture_range(&self.captures, index, iteration)
     }
 }
 
@@ -727,6 +718,25 @@ impl RegExpUnicodeRepeatedClassCaptureMatcher {
         iteration: Option<&Range<usize>>,
     ) -> Option<Range<usize>> {
         self.matcher.capture_range(index, iteration)
+    }
+}
+
+fn projected_capture_range(
+    captures: &[CaptureRole],
+    index: usize,
+    iteration: Option<&Range<usize>>,
+) -> Option<Range<usize>> {
+    let role = captures.get(index)?;
+    let range = iteration?;
+    match role {
+        CaptureRole::Iteration => Some(range.clone()),
+        CaptureRole::Character => (!range.is_empty()).then(|| range.clone()),
+        CaptureRole::Empty => range.is_empty().then(|| range.clone()),
+        CaptureRole::Never => None,
+        CaptureRole::StartPoint => Some(range.start..range.start),
+        CaptureRole::EndPoint => Some(range.end..range.end),
+        CaptureRole::CharacterStartPoint => (!range.is_empty()).then_some(range.start..range.start),
+        CaptureRole::CharacterEndPoint => (!range.is_empty()).then_some(range.end..range.end),
     }
 }
 
@@ -1125,4 +1135,5 @@ mod tests {
     include!("regexp_unicode_single_nullable_branch_capture_tests.rs");
     include!("regexp_unicode_single_nullable_complete_capture_tests.rs");
     include!("regexp_unicode_single_root_nullable_capture_tests.rs");
+    include!("regexp_unicode_nonempty_string_root_capture_tests.rs");
 }

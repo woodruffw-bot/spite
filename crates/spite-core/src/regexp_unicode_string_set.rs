@@ -610,6 +610,11 @@ impl RegExpUnicodeStringSetMatcher {
         }))
     }
 
+    /// Whether the underlying class contains the empty string, before assertions.
+    pub(crate) fn has_empty_member(&self) -> bool {
+        self.program.terminal[0]
+    }
+
     /// Bounds UTF-16 consumption per member; q-only empty sets return zero.
     pub fn max_match_code_units(&self) -> usize {
         self.program.max_characters.saturating_mul(2)

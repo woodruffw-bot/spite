@@ -12,7 +12,8 @@ use std::ops::Range;
 #[path = "regexp_unicode_nullable_class_captures.rs"]
 mod nullable_class_captures;
 pub use nullable_class_captures::{
-    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
+    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeRepeatedClassCaptureMatcher,
 };
 
 /// A selected Unicode repetition and the last captured atom iteration.
