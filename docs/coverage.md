@@ -16939,3 +16939,35 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories, and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.
+
+## Runtime unrepresentable exact nullable string-class counts
+
+Runtime selects the singleton-q and character-result overflowing {m}/{m,m}
+proofs after represented positive exact counts. Six integration groups cover
+padded endpoint equality, rejection of unequal overflowing ranges, mandatory
+source priority independently of greediness, original source and lazy markers,
+required empty captures after consumed characters, outside word/line gates,
+supplementary folding and ranges, enclosing captures, supplementary escaped
+names, lone surrogates, frozen lastIndex, String consumers and replacements
+which distinguish exact from open counts, clones/collection, former Unsupported
+finalizers, complete unknown/string leaf proof, remaining bounds/atom shapes,
+early errors, 1,000 complete wrappers, long discarded words, 20,000-digit counts
+and 20,000 leading endpoint zeros under defaults, and atomic opt-in construction
+and search aborts with a short-match probe over the same argument. The earlier
+overflowing exact rejection now completes with its exact value and finalizer
+state; the remaining control requires unequal overflowing bounds.
+
+All 28,576 complete result records across 76 pattern/control pairs agree with
+independent finite exact-count character controls. The controls use sixteen
+mandatory iterations, exceeding every input's character count and preserving the
+same branch choices, capture values, named-key presence/order, original indices,
+sticky starts and lastIndex. Literal/range/padded counts also have direct
+specification cases; no Node behavior exception is added.
+
+Stable passes all 425 Runtime unit cases, 148 corrected focused integration
+cases, and 1,437 Unicode integration cases. All 35 Test262 package tests pass,
+including the unchanged full 16,343-variant corpus with every non-passing count
+at zero. Workspace documentation tests, formatting, strict workspace Clippy,
+dependency policy, source/fixture inventories, and diff checks pass. Snapshots,
+corpus sources and helpers, dependencies, intrinsic counts, and default resource
+policy are unchanged.

@@ -668,7 +668,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile representable exact counts above one of nullable singleton-q and character-result v classes, preserving padded/equal-range spellings, mandatory source priority independently of greediness, final empty captures, and complete leaf proof.
 - [x] Connect representable positive exact nullable string-class counts to Runtime RegExp captures and String consumers, preserving mandatory source priority, final required empty captures, maximum represented counts, original UTF-16 ranges, named indices, lastIndex, and eval finalizers.
 - [x] Compile unrepresentable exact nullable singleton-q and character-result v counts, proving numeric equality of padded range endpoints and preserving mandatory branch priority, final empty captures, complete leaf proof, and flat count storage.
-- [ ] Connect unrepresentable exact nullable string-class counts to Runtime RegExp captures and String consumers.
+- [x] Connect unrepresentable exact nullable string-class counts to Runtime RegExp captures and String consumers, preserving numeric endpoint equality, mandatory branch priority, required empty captures, original padded/lazy source, UTF-16 ranges, named indices, lastIndex, and eval finalizers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

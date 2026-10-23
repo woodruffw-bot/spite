@@ -10007,7 +10007,16 @@ The shared borrowed framing/wrapper scan precharges decimal parsing and exact
 equality checks without expanding counts or captures. Existing linear matching,
 checked class storage, allocation boundaries and flat clone/drop are reused.
 Earlier constructors retain their domains, exact work traces and results.
-Dependencies and resource defaults are unchanged. Runtime selection is separate.
+Dependencies and resource defaults are unchanged.
+
+Runtime selects the overflowing exact-count proofs after represented positive
+exact counts. Original padded endpoints and lazy markers stay in source metadata
+while internal search encodes mandatory branch order. Existing capture projection
+combines final empty or original character ranges with enclosing captures, named
+indices and supplementary names. String consumers, replacements, lastIndex,
+cloning, collection and host-abort propagation retain their existing paths.
+Former Unsupported overflowing exact expressions complete finalizers normally;
+unequal overflowing ranges retain Unsupported results.
 
 ## Global intrinsic metadata and enumeration
 

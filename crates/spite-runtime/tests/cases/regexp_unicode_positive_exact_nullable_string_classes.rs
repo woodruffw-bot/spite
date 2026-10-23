@@ -107,6 +107,7 @@ fn consumers_replacements_clones_and_collection_preserve_exact_count_results() {
 #[test]
 fn complete_positive_exact_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
+        r"/([\q{a|b}]|){999999999999999999999999999999999999999}/v.test('a')",
         r"/([\q{a}]|){2}/v.test('')",
         r"/([\q{a|ab}&&a]|){2}/v.test('')",
         r"/([\q{a|b}]|){2}/v.test('a')",
@@ -129,7 +130,7 @@ fn complete_positive_exact_proofs_finish_finalizers_and_keep_other_domains_defer
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){3}?/v.test('')",
         r"/([\q{a|b}]|){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|){1,3}/v.test('aaa')",
-        r"/([\q{a|b}]|){999999999999999999999999999999999999999}/v.test('a')",
+        r"/([\q{a|b}]|){999999999999999999999999999999999999999,9999999999999999999999999999999999999990}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,999999999999999999999999999999999999999}/v.test('a')",
         r"/(([\q{a|ab}&&a])|){2}/v.test('a')",
         r"/([\q{a|b}]|()){2}/v.test('a')",
