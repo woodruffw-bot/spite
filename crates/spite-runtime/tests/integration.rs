@@ -659,6 +659,8 @@ mod regexp_unicode_emoji_presentation_properties;
 mod regexp_unicode_emoji_properties;
 #[path = "cases/regexp_unicode_empty_choice_nullable_alternatives.rs"]
 mod regexp_unicode_empty_choice_nullable_alternatives;
+#[path = "cases/regexp_unicode_empty_choice_nullable_string_classes.rs"]
+mod regexp_unicode_empty_choice_nullable_string_classes;
 #[path = "cases/regexp_unicode_empty_literals.rs"]
 mod regexp_unicode_empty_literals;
 #[path = "cases/regexp_unicode_empty_sequence_nullable_string_classes.rs"]

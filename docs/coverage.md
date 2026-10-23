@@ -17890,3 +17890,29 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime selection,
 snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
 resource policy are unchanged.
+
+## Runtime effect-free empty choices beside string classes
+
+Runtime now selects nullable singleton-q and character-result v/vi classes beside
+effect-free empty choices under simple and all braced outer counts. Six groups
+cover 27 outer modes and both source orders, including q payloads with escaped
+parentheses, earliest mandatory-backtracking candidates, zero/required captures,
+original supplementary ranges, names/indices, source metadata, lastIndex, String
+consumers, clones and collection. Forty-seven former literal rejection controls
+and 13 inner controls (14 distinct programs and three distinct inner branches)
+are preserved as complete successes with checked finalizers. Dynamic unequal
+ranges retain exact optional budgets. Capturing, asserted and consuming empty
+choices remain deferred. Huge inner counts and opt-in host aborts stay flat and
+preserve atomic state under unchanged limits.
+
+All 165,888 differential records across 384 pattern/control pairs agree with
+independent finite character-class controls across all starts and sticky/i/m
+modes. Additional payload classes and parenthesis input exercise balanced edge
+selection; controls keep their empty branches unquantified. Stable passes all
+425 Runtime unit cases, 250 affected integration cases and 1,539 Unicode
+integration cases. The conformance profile passes all 35 Test262
+runner/integration tests and all 16,343 reviewed variants. Workspace documentation
+tests, formatting, strict workspace Clippy, dependency policy, source/fixture
+inventories and diff checks pass. Runtime inventory is 519 case files and 4,186
+integration cases. Corpus sources and helpers, snapshots, dependencies, intrinsic
+counts and default resource policy are unchanged.

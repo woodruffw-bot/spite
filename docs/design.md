@@ -10468,8 +10468,15 @@ preserves capture slots. Linear work charges cover edge/depth tracking and the
 empty proof without expanding counts or groups. Mandatory priority, progress,
 optional budgets, earliest starts, original ranges and outside word/line gates
 remain unchanged. Prior constructor domains/work traces remain fixed; consuming,
-asserted and capturing empty branches retain separate proofs. Runtime selection
-is separate.
+asserted and capturing empty branches retain separate proofs.
+
+Runtime selects simple and counted empty-choice constructors after quantified
+empty sequences. Existing capture projection and String consumers retain all
+outer-count families, exact optional budgets, earliest starts, required empty or
+undefined captures, original UTF-16 ranges, names/indices, source metadata and
+lastIndex. Former pure-choice rejections complete with exact results and eval
+finalizers; capturing or effectful choices retain separate proofs. Huge inner
+counts, clones, collection and opt-in host aborts reuse existing flat paths.
 
 ## Global intrinsic metadata and enumeration
 
