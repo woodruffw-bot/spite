@@ -10221,6 +10221,26 @@ opt-in host-abort propagation reuse existing paths. Earlier exact-one rejections
 complete with exact values and finalizer effects; larger counts and other
 empty-branch/partial capture shapes retain separate proofs.
 
+## Positive open string-class counts beside grouped empty alternatives
+
+Separate Core entries admit {m,} with positive represented or overflowing m
+around a bare singleton-q or character-result v/vi class and a nested
+noncapturing empty alternative, including padded/lazy forms. Complete wrappers
+and canonical outside word/line gates reuse the existing borrowed proof and
+linear search. Every class leaf is compiled behind empty-first choices.
+
+With character-first mandatory choices, too few consumed characters leave a final
+required empty iteration and defined empty captures. Empty-first choices retain
+the last consumed original character, or a required empty capture when nothing
+consumes. Greedy/lazy priority and original UTF-16 boundaries reuse existing
+RepeatMatcher kernels (22.2.2.3). An overflowing minimum exceeds every finite
+input character count and never expands matching state.
+
+Exact/finite counts, partial captures, other empty-branch shapes and further atoms
+retain separate proofs. Earlier constructor domains/work traces, checked class
+storage, flat clone/drop, dependencies and resource defaults are unchanged.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

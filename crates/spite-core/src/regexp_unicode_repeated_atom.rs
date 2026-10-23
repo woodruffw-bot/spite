@@ -2720,6 +2720,66 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles positive open nullable singleton-q counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,}, with positive represented or overflowing m.
+    /// Padded/lazy forms preserve mandatory source priority and defined final
+    /// empty captures when too few characters satisfy the required iterations.
+    /// Optional progress, original character ranges and canonical outside gates
+    /// reuse existing linear search. Every class operand is proved before search.
+    /// Other counts and partial/other-empty shapes remain separate proofs.
+    /// Counts never expand state; source storage and clone/drop remain flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_open_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::PositiveOpen,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles positive open nullable character-result counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {m,}, with positive represented or overflowing m.
+    /// Padded/lazy forms preserve mandatory source priority and defined final
+    /// empty captures when too few characters satisfy the required iterations.
+    /// Optional progress, original character ranges and canonical outside gates
+    /// reuse existing linear search. Every class operand is proved before search.
+    /// Other counts and partial/other-empty shapes remain separate proofs.
+    /// Counts never expand state; source storage and clone/drop remain flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_open_noncapturing_empty_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::PositiveOpen,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
