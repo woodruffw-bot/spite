@@ -9,6 +9,10 @@ use crate::{
 };
 use std::ops::Range;
 
+#[path = "regexp_unicode_asserted_string_class_alternatives.rs"]
+mod asserted_alternatives;
+pub use asserted_alternatives::RegExpUnicodeAssertedStringClassAlternativeMatcher;
+
 /// An unquantified string-class/empty alternative with flat capture projection.
 ///
 /// The class result must exclude the empty string. Its nonzero selected range

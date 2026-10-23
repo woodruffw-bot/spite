@@ -9,6 +9,7 @@ use std::ops::Range;
 #[path = "regexp_unicode_nullable_string_class_captures.rs"]
 mod string_class_captures;
 pub use string_class_captures::{
+    RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
 };
@@ -1167,4 +1168,5 @@ mod tests {
     include!("regexp_unicode_nested_assertion_string_class_capture_tests.rs");
     include!("regexp_unicode_unconditional_assertion_string_class_capture_tests.rs");
     include!("regexp_unicode_reversed_line_string_class_capture_tests.rs");
+    include!("regexp_unicode_asserted_string_class_root_tests.rs");
 }

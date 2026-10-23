@@ -19207,3 +19207,27 @@ Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is
 543 case files and 4,301 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core asserted root string-class and empty alternatives
+
+Three groups compare 32 class families, six root capture layouts, twelve paired
+branch predicate profiles and both alternative orders against independent ordered
+choice, predicate evaluation and capture-tree oracles. Twelve inputs, all starts
+and sticky/i/m flags retain class-selected empty members, original empty branches,
+shorter eligible words, actual line endpoints, contradictions and Unicode ranges.
+Structural witnesses retain 20,000 class captures beside a separate empty-branch
+capture with flat clone/drop. Exact data checks earliest candidate selection,
+branch-specific undefined slots and escaped bars/parentheses. A 40,000-unit input
+keeps a winning first alternative's work bounded independently of its unused
+sibling. Every constructor/search callback cancellation prefix and recovery is
+checked. Plain earlier domains, grouped choices, extra root alternatives,
+assertion-bearing optional terms/choices, references, class counts, second classes
+and unknown leaves remain closed, including in false or unselected alternatives.
+
+Stable passes all 1,221 Core unit cases and 431 Runtime unit cases. All 48,296
+prior public API records retain exact constructor/search work and capture
+projection. Every new proof source witness validates in native v/vi modes.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. No Runtime selection,
+corpus fixture, snapshot, dependency or default quota changes.

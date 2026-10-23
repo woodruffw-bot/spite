@@ -11198,3 +11198,36 @@ references, class counts and unknown leaves remain closed, including under false
 word predicates. Runtime selects this proof after the earlier canonical sibling
 proof on the full normalized source. The shared capture body retains original
 metadata, lexical indices, String consumer behavior and opt-in host aborts.
+
+
+Core `RegExpUnicodeAssertedStringClassAlternativeMatcher` proves exactly two root
+alternatives: one supported unquantified string class with pure empty terms, and
+one entirely pure empty alternative. Either alternative may carry mandatory
+word/line predicates; at least one original predicate is required. A flat scan
+finds the sole root separator with nested v classes and escaped code units opaque.
+Both complete branches must compile before matching. The class branch reuses the
+single-class proof. Appending a synthetic sole `[\q{}]` outside the other
+branch's groups proves its original terms are all pure empty, retains its capture
+slots, and rejects any original class, reference or extra consuming term. Both
+plans remain immutable and source-sized.
+
+ECMA-262 edition 17 22.2.2.3 CompileSubpattern gives source-order alternatives
+priority at each candidate; 22.2.2.4 CompileAssertion retains predicates on their
+own branches. For `^([\q{a|ab}])$|(\b)` on `ab!`, the class alternative fails
+its end assertion and the empty alternative captures the boundary at zero.
+Captures in the unselected alternative remain undefined. Explicit class-selected
+identity distinguishes an empty class member from the original empty alternative,
+so their equal ranges cannot erase capture participation. Lexical slot offsets
+are checked sums of the two proved branches; no capture history is retained.
+
+Matching precharges initial Unicode normalization, then searches the original
+first alternative. A success at the initial candidate wins without searching the
+other alternative. Otherwise the second bounded search supplies its earliest
+success, and original source order resolves equal starts. This preserves Unicode
+candidate progress, longer/shorter eligible class members and flat immutable
+state without allocating during matching. Full constructor proof still rejects
+unknown leaves in false or unselected alternatives. Callback failures abort
+before a result is returned. Grouped root choices, assertion-bearing optional
+terms/choices and class repetition remain separate proofs. Earlier constructor
+domains and callback transcripts are unchanged. Runtime selection remains a
+subsequent step.
