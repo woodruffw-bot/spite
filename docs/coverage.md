@@ -16971,3 +16971,33 @@ at zero. Workspace documentation tests, formatting, strict workspace Clippy,
 dependency policy, source/fixture inventories, and diff checks pass. Snapshots,
 corpus sources and helpers, dependencies, intrinsic counts, and default resource
 policy are unchanged.
+
+## Core represented positive finite nullable string-class ranges
+
+Separate Core entries prove {m,n} around a raw empty alternative and a
+singleton-q or character-result v/vi class when both bounds are represented,
+the minimum is positive and the maximum is greater. Exact optional budgets,
+mandatory source priority, greedy/lazy phases, complete wrappers and outside
+word/line gates reuse the existing matcher. Both phases compare input starts,
+so mandatory backtracking can expose an earlier candidate than the initial
+optional-budget phase. Required empty or final original character captures
+retain their existing projection. Earlier domains and Runtime selection stay
+separate.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, eight finite-range
+spellings, line/word gates, all starts and sticky/i/m modes. They cover the
+largest represented bounds with a one-iteration optional budget, decoded
+supplementary ranges, earlier higher-phase candidates, mandatory empty captures,
+complete unknown/string leaf proof, overflowing/other-bound rejection, every
+constructor callback's cancellation/recovery, 20,000 complete wrappers,
+20,000-character discarded words and 20,000 leading lower-bound zeros with
+linear checked work and flat clone/drop.
+
+All 5,944 prior eight-string/five-class/twenty-one-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,097 Core and 425 Runtime unit cases and 230 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.

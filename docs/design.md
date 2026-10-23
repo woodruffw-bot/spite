@@ -10018,6 +10018,30 @@ cloning, collection and host-abort propagation retain their existing paths.
 Former Unsupported overflowing exact expressions complete finalizers normally;
 unequal overflowing ranges retain Unsupported results.
 
+## Represented positive finite nullable string-class ranges
+
+Separate Core entries prove {m,n} around a raw empty alternative and a bare
+singleton-q or character-result v/vi class when both bounds are represented,
+the minimum is positive and the maximum is greater. Padded/lazy forms preserve
+complete wrappers and canonical outside word/line gates. Other bounds, simple
+quantifiers, partial captures, grouped/extra empty alternatives and further atoms
+remain separate proofs. Every class operand is compiled behind empty-first
+mandatory choices.
+
+The existing matcher preserves mandatory source priority and the exact optional
+budget n-m. Greedy empty-first bodies try the optional character budget before
+backtracking mandatory empty choices to longer runs. Separate linear passes
+compare both phases by input start, so a later first-phase match cannot hide an
+earlier candidate found through mandatory backtracking. Character-first and lazy
+plans retain their existing mandatory/optional ordering and progress checks.
+Required empty or final original character captures reuse the existing projection.
+
+The shared borrowed framing/wrapper scan precharges decimal parsing without
+expanding counts or captures. Existing linear search, checked class storage,
+allocation boundaries and flat clone/drop are reused. Earlier constructors
+retain their domains, exact work traces and results. Dependencies and resource
+defaults are unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

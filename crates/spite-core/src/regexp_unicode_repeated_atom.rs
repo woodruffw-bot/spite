@@ -2295,6 +2295,59 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles represented positive finite ranges of a singleton-q class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Braced {m,n} requires represented positive m and greater represented n.
+    /// Padded/lazy forms retain mandatory source priority, exact optional budgets,
+    /// required empty captures and canonical outside word/line gates. Every q
+    /// member is one character and every class operand is proved before search.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_finite_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::PositiveFinite,
+            charge,
+        )
+    }
+
+    /// Compiles represented positive finite ranges of a character-result class or empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain a raw empty alternative and a bare class with a false
+    /// static MayContainStrings result and an empty/long q member. Braced {m,n}
+    /// requires represented positive m and greater represented n, including
+    /// padded/lazy forms. Mandatory source priority, exact optional budgets,
+    /// required empty/original character captures and canonical outside gates
+    /// reuse existing linear search. Every leaf is compiled behind empty-first
+    /// choices. Other counts, partial captures, grouped/extra empty alternatives
+    /// and further atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_positive_finite_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::PositiveFinite,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2390,6 +2443,12 @@ impl RegExpUnicodeRepeatedAtomMatcher {
                 && (!minimum.is_some_and(|minimum| minimum > 1)
                     || minimum != maximum
                     || body.get(atom_end) != Some(&0x7b))
+            {
+                continue;
+            }
+            if bounds == NullableProof::PositiveFinite
+                && (body.get(atom_end) != Some(&0x7b)
+                    || !matches!((minimum, maximum), (Some(minimum), Some(maximum)) if minimum > 0 && maximum > minimum))
             {
                 continue;
             }
