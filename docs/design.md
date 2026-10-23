@@ -10902,3 +10902,22 @@ history is introduced. Earlier API domains and work traces remain unchanged.
 Runtime selects the complete/zero-capture proof after branch captures using the
 original normalized source. Result arrays retain zero-capture length, undefined
 unnamed group maps and complete named/indices aliases through String consumers.
+
+
+## Ungrouped class-versus-empty alternatives
+
+A separate Core constructor proves one root alternative between a checked
+character class and empty terms. Original captures may be absent, character-only,
+empty-only, conditional points or permanently undefined slots. Unlike grouped
+single-iteration framing, this constructor first wraps the entire source and
+extracts no boundary assertions. A branch-local leading/trailing assertion
+therefore stays inside its original branch and retains a separate proof
+(22.2.2). Exactly one root alternative and one class-bearing branch are required;
+empty nested choices/counts retain existing flat masks.
+
+The synthetic noncapturing wrapper introduces no capture slots. One required
+iteration preserves original first-branch selection, source-order captures and
+UTF-16 ranges. Strict classes still prove every leaf even when the empty branch
+comes first. Source copies and inspection are precharged; clone/drop remain flat,
+and matching retains no capture history. Earlier constructor domains and work
+traces remain unchanged. Runtime selection remains a subsequent step.

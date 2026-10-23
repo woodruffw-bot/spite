@@ -18590,3 +18590,34 @@ formatting, strict workspace Clippy, dependency policy, source/fixture inventori
 and diff checks pass. Runtime inventory is 531 case files and 4,253 integration
 cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
 default resource policy are unchanged.
+
+
+The published complete/zero-capture Runtime selection additionally passes all
+1,547 Unicode RegExp integration cases and all 35 conformance-profile Test262
+runner/integration tests, including 16,343 reviewed variants.
+
+
+## Core captures in one ungrouped nullable alternative
+
+A separate constructor requires a root alternative and wraps the complete source
+without extracting any edge assertion. Existing grouped constructors retain
+their closed root-alternative domains. The flat parser proves one checked class
+and an empty branch, retaining zero/character/empty/conditional-point/undefined
+captures, lexical order and exact one-iteration priority.
+
+Three groups compare the executable capture-tree oracle across eight predicates,
+six mixed capture layouts, both orders, all starts and sticky/i/m modes over eight
+inputs. Cancellation checks every callback and recovery. Structural cases cover
+20,000 deep branch captures, flat clone/drop, large inner counts and supplementary
+interior starts. Closed controls include branch-local assertions at either edge
+or internally, grouped non-root patterns, multiple class/empty alternatives,
+references, further consuming terms, class-bearing inner counts and
+unknown/string-valued classes.
+
+All 38,728 prior API records preserve exact construction/search work and capture
+projection, including zero/complete unquantified captures. Stable passes all
+1,185 Core and 431 Runtime unit cases. Workspace documentation tests,
+workspace/included-source formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime selection, snapshots,
+corpus sources/helpers, dependencies, intrinsic counts and default resource
+policy are unchanged.
