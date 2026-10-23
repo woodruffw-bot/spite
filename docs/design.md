@@ -10399,6 +10399,24 @@ lastIndex, replacement values, clones and collection. Earlier sibling-sequence
 rejections complete with exact values and eval finalizers. Construction and
 matching host aborts preserve atomic effects under opt-in limits.
 
+## Braced counts beside noncapturing empty sequences
+
+Separate Core constructors combine the empty-sequence proof with every braced
+count family. They classify represented zero, exactly-one, positive exact,
+positive open and finite ranges from parsed bounds. Open overflowing minima
+remain open; finite overflowing endpoints use significant decimal digits to
+separate exact equality from unequal ranges. Existing count proofs then retain
+exact optional budgets, including a difference of one across the native boundary
+or after a long decimal borrow. No count is expanded.
+
+The same complete class and effect-free empty-sequence proofs apply to every
+family. Mandatory branch priority, optional progress, earliest cross-phase starts,
+required empty/undefined captures and original character ranges reuse
+RepeatMatcher (22.2.2.3). Endpoint classification has a separate linear work
+charge; prior constructor domains and callback traces are unchanged. Simple
+quantifiers, quantified/choice empty groups and partial captures retain separate
+entries or proofs. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

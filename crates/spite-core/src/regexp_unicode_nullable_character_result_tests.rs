@@ -7598,3 +7598,356 @@ fn empty_sequence_string_branches_charge_every_scan_and_keep_both_deep_edges_lin
     assert_eq!(found.range, 0..0);
     assert_eq!(found.atom_capture, Some(0..0));
 }
+
+fn compile_counted_empty_sequence_string_with_work<E>(
+    source: &JsString,
+    i: bool,
+    m: bool,
+    singleton: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<RegExpUnicodeRepeatedAtomMatcher>, crate::RegExpUnicodeSetCompileError<E>> {
+    if singleton {
+        RegExpUnicodeRepeatedAtomMatcher::compile_counted_noncapturing_empty_sequence_nullable_v_set_with_single_character_strings_and_work(source, i, m, charge)
+    } else {
+        RegExpUnicodeRepeatedAtomMatcher::compile_counted_noncapturing_empty_sequence_nullable_character_result_v_set_with_work(source, i, m, charge)
+    }
+}
+
+#[test]
+fn counted_empty_sequence_string_braces_follow_independent_progress_branch_and_capture_oracle() {
+    type Predicate = fn(u32) -> bool;
+    let classes: [(&str, Predicate, bool); 6] = [
+        (r"[\q{a|b}]", |p| p == 97 || p == 98, true),
+        (r"[\q{a|b|ab}&&\p{Any}]", |p| p == 97 || p == 98, false),
+        (r"[\q{ab}&&a]", |_| false, false),
+        (r"[^\q{ab}&&a]", |_| true, false),
+        (r"[\q{😀|😀x}&&\p{Any}]", |p| p == 0x1f600, false),
+        (r"[\q{\u{10428}|ab}&&\p{Any}]", |p| p == 0x10428, false),
+    ];
+    for (class, contains, singleton) in classes {
+        for (open, close, captures) in [("(", ")", 1), ("((", "))", 2), ("(?:(?:", "))", 0)] {
+            for empty_first in [false, true] {
+                let limit = usize::MAX as u128;
+                let huge = 10u128.pow(30);
+                for (quantifier, minimum, optional, greedy) in [
+                    ("{0}".to_owned(), Some(0), Some(0), true),
+                    ("{00,003}?".to_owned(), Some(0), Some(3), false),
+                    (format!("{{0,{huge}}}"), Some(0), None, true),
+                    ("{000,}".to_owned(), Some(0), None, true),
+                    ("{1}".to_owned(), Some(1), Some(0), true),
+                    ("{01,001}?".to_owned(), Some(1), Some(0), false),
+                    ("{1,}".to_owned(), Some(1), None, true),
+                    ("{2}".to_owned(), Some(2), Some(0), true),
+                    ("{02,002}?".to_owned(), Some(2), Some(0), false),
+                    ("{2,4}".to_owned(), Some(2), Some(2), true),
+                    ("{02,004}?".to_owned(), Some(2), Some(2), false),
+                    ("{3,}?".to_owned(), Some(3), None, false),
+                    (format!("{{1,{huge}}}?"), Some(1), None, false),
+                    (format!("{{{limit},{}}}", limit + 1), None, Some(1), true),
+                    (format!("{{{limit},{}}}?", limit + 1), None, Some(1), false),
+                    (format!("{{{huge},{}}}", huge + 1), None, Some(1), true),
+                    (format!("{{{huge},{}}}?", huge + 1), None, Some(1), false),
+                    (format!("{{{huge}}}?"), None, Some(0), false),
+                    (format!("{{000{huge},0{huge}}}"), None, Some(0), true),
+                    (format!("{{{huge},}}?"), None, None, false),
+                    (format!("{{{huge},{}}}?", huge * 100), None, None, false),
+                ] {
+                    for (prefix, suffix, anchors, words) in [
+                        ("", "", false, [None, None]),
+                        (r"^\b", r"\b$", true, [Some(true), Some(true)]),
+                        (r"\B", r"\b", false, [Some(false), Some(true)]),
+                    ] {
+                        for i in [false, true] {
+                            for m in [false, true] {
+                                let inner = if empty_first {
+                                    format!("(?:(?:)(?:))|{class}")
+                                } else {
+                                    format!("{class}|(?:(?:)(?:))")
+                                };
+                                let source =
+                                    format!("{prefix}{open}{inner}{close}{quantifier}{suffix}");
+                                let plan = compile_counted_empty_sequence_string_with_work(
+                                    &JsString::from(source.as_str()),
+                                    i,
+                                    m,
+                                    singleton,
+                                    |_| Ok::<(), ()>(()),
+                                )
+                                .unwrap()
+                                .unwrap();
+                                assert_eq!(plan.capture_count(), captures);
+                                for input in [
+                                    JsString::from(""),
+                                    JsString::from("aaab!aba"),
+                                    JsString::from("A😀😀aa"),
+                                    JsString::from("!\r\naaa\u{2028}!"),
+                                    JsString::from("ſK"),
+                                    JsString::from("𐐀𐐨!"),
+                                    JsString::from_code_units(vec![0xd800, 97, 0xdc00]),
+                                ] {
+                                    let minimum = minimum.unwrap_or(input.len() + 1);
+                                    let maximum = optional.map(|extra| minimum + extra);
+                                    let expected = Oracle::new(
+                                        &input,
+                                        contains,
+                                        Bounds {
+                                            minimum,
+                                            maximum,
+                                            greedy,
+                                        },
+                                        Gates {
+                                            anchors,
+                                            words,
+                                            i,
+                                            m,
+                                        },
+                                        empty_first,
+                                        captures,
+                                    );
+                                    for start in 0..=input.len() + 1 {
+                                        for sticky in [false, true] {
+                                            assert_eq!(
+                                                plan.find_with_captures_and_work(
+                                                    &input,
+                                                    start,
+                                                    sticky,
+                                                    |_| Ok::<(), ()>(())
+                                                )
+                                                .unwrap(),
+                                                expected.find(start, sticky),
+                                                "{source} i={i} m={m} {input:?} start={start} sticky={sticky}"
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn counted_empty_sequence_string_braces_charge_every_scan_and_keep_counts_and_groups_flat() {
+    for (singleton, pattern) in [
+        (true, r"^\b((?:)(?:)|[\q{a|b}]){00,003}?\b$"),
+        (
+            false,
+            r"([\q{ab}&&a]|(?:(?:)(?:))){2,999999999999999999999999999999}",
+        ),
+        (
+            false,
+            r"((?:)(?:)|[^\q{ab}&&a]){000999999999999999999999999999999,0999999999999999999999999999999}?",
+        ),
+    ] {
+        let source = JsString::from(pattern);
+        let mut complete = Vec::new();
+        compile_counted_empty_sequence_string_with_work(&source, true, true, singleton, |n| {
+            complete.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            complete[..3],
+            [source.len() * 10, source.len() * 16, source.len() * 8]
+        );
+        for fail in 1..=complete.len() {
+            let mut seen = Vec::new();
+            let result = compile_counted_empty_sequence_string_with_work(
+                &source,
+                true,
+                true,
+                singleton,
+                |n| {
+                    seen.push(n);
+                    if seen.len() == fail {
+                        Err(fail)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(
+                matches!(result, Err(crate::RegExpUnicodeSetCompileError::Work(at)) if at==fail)
+            );
+            assert_eq!(seen, complete[..fail]);
+        }
+        let mut recovered = Vec::new();
+        compile_counted_empty_sequence_string_with_work(&source, true, true, singleton, |n| {
+            recovered.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap()
+        .unwrap();
+        assert_eq!(recovered, complete);
+    }
+    for (source, captures, range, capture) in [
+        (
+            format!(
+                r"{}[\q{{a|ab}}&&a]|(?:)(?:){}{{2,3}}",
+                "(".repeat(20_000),
+                ")".repeat(20_000)
+            ),
+            20_000,
+            0..3,
+            2..3,
+        ),
+        (
+            format!(r"((?:)(?:)|[\q{{{}}}&&a]){{3,}}?", "x".repeat(20_000)),
+            1,
+            0..0,
+            0..0,
+        ),
+        (
+            format!(r"([\q{{a|ab}}&&a]|(?:)(?:)){{{}2,4}}", "0".repeat(20_000)),
+            1,
+            0..3,
+            2..3,
+        ),
+        (
+            format!(
+                r"((?:(?:)(?:))(?:)|[\q{{a|ab}}&&a]){{{},1{}}}",
+                "9".repeat(20_000),
+                "0".repeat(20_000)
+            ),
+            1,
+            0..1,
+            0..1,
+        ),
+    ] {
+        let source = JsString::from(source.as_str());
+        let mut work = 0;
+        let original =
+            compile_counted_empty_sequence_string_with_work(&source, false, false, false, |n| {
+                work += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        // The earlier nested-empty overflowing-bound bound is 50N. Sequence
+        // recovery adds 4N and endpoint classification adds at most 3N.
+        assert!(
+            work < source.len() * 58 + 1024,
+            "linear construction work: {work}"
+        );
+        let plan = original.clone();
+        drop(original);
+        assert_eq!(plan.capture_count(), captures);
+        let found = plan
+            .find_with_captures_and_work(&JsString::from("aaa"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, range);
+        assert_eq!(found.atom_capture, Some(capture));
+    }
+}
+
+#[test]
+fn counted_empty_sequence_string_braces_keep_closed_domains_and_exact_boundary_budgets() {
+    let limit = usize::MAX as u128;
+    for (singleton, class) in [(true, r"[\q{a|b}]"), (false, r"[\q{a|ab}&&a]")] {
+        for (minimum, maximum, empty_first, lazy, input, range, capture) in [
+            (0, 0, true, false, "aaa", 0..0, None),
+            (1, 1, true, false, "aaa", 0..0, Some(0..0)),
+            (1, 1, false, true, "aaa", 0..1, Some(0..1)),
+            (2, 2, false, true, "aaa", 0..2, Some(1..2)),
+            (2, 3, true, false, "aaa", 0..1, Some(0..1)),
+            (limit, limit + 1, true, false, "aaa", 0..1, Some(0..1)),
+            (limit, limit + 1, false, true, "aaa", 0..3, Some(3..3)),
+            (limit + 1, limit + 2, true, false, "aaa", 0..1, Some(0..1)),
+            (limit + 1, limit + 1, false, true, "aaa", 0..3, Some(3..3)),
+        ] {
+            let inner = if empty_first {
+                format!("(?:(?:)(?:))(?:)|{class}")
+            } else {
+                format!("{class}|(?:(?:)(?:))(?:)")
+            };
+            let source = JsString::from(
+                format!(
+                    "(({inner})){{000{minimum},00{maximum}}}{}",
+                    if lazy { "?" } else { "" }
+                )
+                .as_str(),
+            );
+            let plan = compile_counted_empty_sequence_string_with_work(
+                &source,
+                false,
+                false,
+                singleton,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            let found = plan
+                .find_with_captures_and_work(&JsString::from(input), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(plan.capture_count(), 2);
+            assert_eq!(found.range, range, "{source:?}");
+            assert_eq!(found.atom_capture, capture, "{source:?}");
+        }
+        for tail in ["*", "+", "+?", "?", "??"] {
+            let source = JsString::from(format!("({class}|(?:)(?:)){tail}").as_str());
+            assert!(
+                compile_counted_empty_sequence_string_with_work(
+                    &source,
+                    false,
+                    false,
+                    singleton,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        for inner in [
+            format!("{class}|"),
+            format!("|{class}"),
+            format!("({class})|(?:)(?:)"),
+            format!("{class}|()"),
+            format!("{class}|(?:)(?:)*"),
+            format!("{class}|(?:|)"),
+            format!(r"\b{class}|(?:)(?:)"),
+            format!("{class}||(?:)(?:)"),
+            r"(?:)(?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]".to_owned(),
+            r"[\q{ab}&&\q{cd}]|(?:)(?:)".to_owned(),
+            r"[\q{}]|(?:)(?:)".to_owned(),
+        ] {
+            let source = JsString::from(format!("({inner}){{2,3}}").as_str());
+            assert!(
+                compile_counted_empty_sequence_string_with_work(
+                    &source,
+                    true,
+                    true,
+                    singleton,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source:?}"
+            );
+        }
+    }
+    let source = JsString::from(
+        format!(
+            r"((?:)(?:)|[\q{{😀|😀x}}&&\p{{Any}}]){{{limit},{}}}$",
+            limit + 1
+        )
+        .as_str(),
+    );
+    let plan =
+        compile_counted_empty_sequence_string_with_work(&source, false, false, false, |_| {
+            Ok::<(), ()>(())
+        })
+        .unwrap()
+        .unwrap();
+    let found = plan
+        .find_with_captures_and_work(&JsString::from("😀😀"), 1, true, |_| Ok::<(), ()>(()))
+        .unwrap()
+        .unwrap();
+    assert_eq!(found.range, 0..4);
+    assert_eq!(found.atom_capture, Some(2..4));
+}

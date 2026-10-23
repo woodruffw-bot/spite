@@ -63,6 +63,7 @@ enum ClassProof {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum NullableProof {
     Raw,
+    Counted,
     TransparentEmpty,
     ZeroMinimum,
     OneMinimumOpen,
@@ -3152,6 +3153,68 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles counted nullable singleton-q classes beside noncapturing empty sequences.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of effect-free
+    /// noncapturing empty groups under a braced count, with an optional lazy
+    /// marker. Classifying zero, exact, open and finite bounds reuses the existing
+    /// count proofs, including overflowing endpoints and exact decimal optional
+    /// budgets. Mandatory priority, earliest starts, captures and outside gates
+    /// retain linear search. Every class leaf is proved behind empty-first
+    /// choices. Quantified/choice empty groups and partial captures remain
+    /// separate proofs; source counts and groups never expand matching state.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_counted_noncapturing_empty_sequence_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::Counted,
+            EmptyBranchProof::Sequences,
+            charge,
+        )
+    }
+
+    /// Compiles counted nullable character-result classes beside noncapturing empty sequences.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nonempty sequence of effect-free
+    /// noncapturing empty groups under a braced count, with an optional lazy
+    /// marker. Classifying zero, exact, open and finite bounds reuses the existing
+    /// count proofs, including overflowing endpoints and exact decimal optional
+    /// budgets. Mandatory priority, earliest starts, captures and outside gates
+    /// retain linear search. Every class leaf is proved behind empty-first
+    /// choices. Quantified/choice empty groups and partial captures remain
+    /// separate proofs; source counts and groups never expand matching state.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_counted_noncapturing_empty_sequence_nullable_character_result_v_set_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::Counted,
+            EmptyBranchProof::Sequences,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -3229,6 +3292,40 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             }
             let Some((atom_end, minimum, maximum)) = quantifier(body, end) else {
                 continue;
+            };
+            let bounds = if bounds == NullableProof::Counted {
+                if body.get(atom_end) != Some(&0x7b) {
+                    continue;
+                }
+                match (minimum, maximum) {
+                    (Some(0), _) => NullableProof::ZeroMinimum,
+                    (Some(1), Some(1)) => NullableProof::OneIteration,
+                    (Some(low), Some(high)) if low == high => NullableProof::PositiveExact,
+                    (Some(low), Some(high)) if low < high => NullableProof::PositiveFinite,
+                    (_, None) if end.checked_sub(2).and_then(|at| body.get(at)) == Some(&0x2c) => {
+                        NullableProof::PositiveOpen
+                    }
+                    (Some(_), None) => NullableProof::OverflowingMaximum,
+                    (None, None) => {
+                        // Comma/zero-prefix scans and equality classify finite
+                        // overflowing endpoints without expanding decimal counts.
+                        charge((end - atom_end).saturating_mul(3))
+                            .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
+                        let digits = &body[atom_end + 1..end - 1];
+                        if let Some(comma) = digits.iter().position(|&unit| unit == 0x2c) {
+                            if significant(&digits[..comma]) == significant(&digits[comma + 1..]) {
+                                NullableProof::UnrepresentableExact
+                            } else {
+                                NullableProof::UnrepresentableFinite
+                            }
+                        } else {
+                            NullableProof::UnrepresentableExact
+                        }
+                    }
+                    _ => continue,
+                }
+            } else {
+                bounds
             };
             if bounds == NullableProof::ZeroMinimum
                 && (minimum != Some(0) || body.get(atom_end) != Some(&0x7b))

@@ -17765,3 +17765,29 @@ Workspace documentation tests, formatting, strict workspace Clippy, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is
 516 case files and 4,168 integration cases. Corpus sources and helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+## Core braced counts beside noncapturing empty sequences
+
+Separate Core constructors classify every braced count family and reuse the
+existing zero/exact/open/finite proofs for nullable singleton-q and
+character-result v/vi classes beside noncapturing empty sequences. Significant
+decimal endpoint comparison distinguishes overflowing exact and finite counts;
+borrowed subtraction retains exact optional budgets without expanding counts.
+
+Three groups compare an independent recursive specification oracle across six
+predicates, three wrapper layouts, both branch orders, 21 padded/lazy count
+spellings, line/word gates, all starts and sticky/i/m modes. They verify mandatory
+priority, zero/required empty captures, exact optional budgets across native and
+decimal boundaries, earliest cross-phase starts and supplementary pair ranges.
+They also cover closed domains, complete unknown/string leaf proof, every
+constructor callback's cancellation/recovery, 20,000 capturing wrappers, discarded
+characters and leading zeros, and a 20,000-digit decimal borrow with linear work
+and flat clone/drop.
+
+All 22,744 prior eight-string/five-class/forty-nine-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,139 Core and 425 Runtime unit cases and 232 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
+resource policy are unchanged.
