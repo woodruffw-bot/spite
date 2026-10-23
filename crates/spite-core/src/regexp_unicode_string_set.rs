@@ -615,6 +615,12 @@ impl RegExpUnicodeStringSetMatcher {
         self.program.terminal[0]
     }
 
+    /// Whether matching a class member also requires outside assertions.
+    pub(crate) fn has_outside_assertions(&self) -> bool {
+        let p = &self.program;
+        p.start_anchor || p.end_anchor || p.start_word.is_some() || p.end_word.is_some()
+    }
+
     /// Bounds UTF-16 consumption per member; q-only empty sets return zero.
     pub fn max_match_code_units(&self) -> usize {
         self.program.max_characters.saturating_mul(2)

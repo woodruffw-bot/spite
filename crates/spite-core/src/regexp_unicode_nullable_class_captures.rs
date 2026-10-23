@@ -1160,4 +1160,5 @@ mod tests {
     include!("regexp_unicode_empty_string_root_capture_tests.rs");
     include!("regexp_unicode_grouped_string_capture_tests.rs");
     include!("regexp_unicode_single_string_class_capture_tests.rs");
+    include!("regexp_unicode_asserted_single_string_class_capture_tests.rs");
 }

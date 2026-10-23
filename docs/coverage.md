@@ -18862,3 +18862,22 @@ workspace Clippy, formatting, dependency policy, source/fixture inventories and
 diff checks pass. Runtime inventory is 536 case files and 4,278 integration
 cases. Corpus sources/helpers, snapshots, dependencies, intrinsic counts and
 default resource policy are unchanged.
+
+
+## Core outside assertions around single string-class captures
+
+Three groups compare 27 class families, six capture trees and ten canonical
+word/line gate combinations against independent finite-word continuation
+filtering and capture entry/exit evaluation. Eight inputs, all starts and
+sticky/i/m modes include CRLF, folding, supplementary boundaries and lone
+surrogates. Exact regressions retain a shorter member after a longer word fails
+a gate, searching past rejected empty members and successful empty endpoint
+captures. Every constructor/search cancellation prefix and recovery is checked.
+Plain constructors, root alternatives with branch-local gates, inner assertions,
+references, counts, extra consuming terms/classes and unknown leaves stay closed.
+
+Stable passes all 1,200 Core unit cases and 431 Runtime unit cases. All 43,144
+prior public API records retain exact constructor/search work and capture
+projection. Workspace documentation tests, strict workspace Clippy, formatting,
+dependency policy, source/fixture inventories and diff checks pass. No Runtime
+selection, corpus fixture, snapshot, dependency or default quota changes.

@@ -12,7 +12,7 @@ fn word_root_end(oracle: &Oracle<'_>, at: usize, words: &[&str]) -> Option<usize
         if oracle.i {
             point = word_root_fold(point)
         }
-        (oracle.contains)(point).then_some(end)
+        ((oracle.contains)(point) && oracle.end(end)).then_some(end)
     });
     for word in words {
         let mut end = at;
@@ -33,7 +33,7 @@ fn word_root_end(oracle: &Oracle<'_>, at: usize, words: &[&str]) -> Option<usize
             }
             end = next;
         }
-        if matched {
+        if matched && oracle.end(end) {
             best = Some(best.map_or(end, |old| old.max(end)));
         }
     }

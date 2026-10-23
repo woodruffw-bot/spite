@@ -11025,3 +11025,21 @@ normalized source. A distinct body delegates search work and projects captures
 from the selected class range. Shared result/indices construction and String
 consumers retain lexical names, empty advancement and lastIndex behavior.
 Search work is charged before matching; opt-in search aborts preserve state.
+
+
+## Whole-pattern assertions around single string-class captures
+
+A separate constructor admits canonical leading ^/word gates and trailing word
+gates/$ around one class and its empty sibling captures. It rejects original
+root disjunctions before extracting gates, preserving assertion ownership. The
+flat capture proof sees only the body; the class compiler receives the same
+whole-pattern gates around the complete original class. Inner assertions,
+references, class-bearing counts and further consuming terms stay separate.
+
+The existing string-set matcher filters each possible member by its continuation
+assertions before selecting a longest success (22.2.2.4, 22.2.2.7). A failed longer
+member therefore leaves shorter members eligible, and their selected original
+UTF-16 endpoints supply complete and point capture ranges. Empty membership no
+longer guarantees success at the first boundary when gates are present, so work
+uses the full search bound in that case. Plain single-class constructors retain
+their domain and callbacks. Runtime assertion selection remains a subsequent step.

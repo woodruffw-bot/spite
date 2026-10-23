@@ -420,6 +420,34 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single(source, ignore_case, multiline, false, charge)
+    }
+
+    /// Proves a single string class with canonical outside word/line assertions.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Leading ^ and
+    /// word gates, plus trailing word gates and $, retain whole-pattern scope.
+    /// Original root disjunctions decline before extracting any assertion. Empty
+    /// siblings and complete captures retain their ranges. A rejected longer
+    /// class member leaves shorter successful continuations eligible (22.2.2.4,
+    /// 22.2.2.7). Inner assertions, references and class counts stay separate.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_with_outer_assertions_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single(source, ignore_case, multiline, true, charge)
+    }
+
+    fn compile_single<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        assertions: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -428,14 +456,47 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         if has_root_alternative(units) {
             return Ok(None);
         }
-        let mut body = Vec::with_capacity(units.len().saturating_add(4));
+        let (begin, end) = if assertions {
+            let mut begin = usize::from(units.first() == Some(&0x5e));
+            let mut end = units.len()
+                - usize::from(
+                    units.last() == Some(&0x24) && !super::escaped(units, units.len() - 1),
+                );
+            if matches!(
+                units.get(begin..end).and_then(|body| body.get(..2)),
+                Some([0x5c, 0x62 | 0x42])
+            ) {
+                begin += 2;
+            }
+            if end >= begin + 2
+                && units[end - 2] == 0x5c
+                && matches!(units[end - 1], 0x62 | 0x42)
+                && !super::escaped(units, end - 2)
+            {
+                end -= 2;
+            }
+            if begin == 0 && end == units.len() {
+                return Ok(None);
+            }
+            (begin, end)
+        } else {
+            (0, units.len())
+        };
+        let Some(inner) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let mut body = Vec::with_capacity(inner.len().saturating_add(4));
         body.extend_from_slice(&[0x28, 0x3f, 0x3a]);
-        body.extend_from_slice(units);
+        body.extend_from_slice(inner);
         body.push(0x29);
         let Some(parsed) = parse_body(&body, true, true, true, true, true, true) else {
             return Ok(None);
         };
-        let class_source = JsString::from_code_units(body[parsed.class].to_vec());
+        let mut class_source = Vec::with_capacity(units.len());
+        class_source.extend_from_slice(&units[..begin]);
+        class_source.extend_from_slice(&body[parsed.class]);
+        class_source.extend_from_slice(&units[end..]);
+        let class_source = JsString::from_code_units(class_source);
         let Some(class) = compile_string_class(&class_source, ignore_case, multiline, charge)?
         else {
             return Ok(None);
@@ -467,7 +528,8 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
             return Ok(None);
         };
         let remaining = input.len() - start;
-        let first_only = sticky || self.class.has_empty_member();
+        let first_only =
+            sticky || (self.class.has_empty_member() && !self.class.has_outside_assertions());
         let inspected = if first_only {
             remaining.min(self.class.max_match_code_units())
         } else {
