@@ -10197,6 +10197,22 @@ aborts retain atomic effects. Earlier {1,} grouped-empty rejections complete wit
 their exact values and finalizer effects; exact/finite counts and other branch
 shapes remain separate proofs.
 
+## Exactly-one string-class counts beside grouped empty alternatives
+
+Separate Core entries admit {1} and {1,1} around a bare singleton-q or
+character-result v/vi class and a nested noncapturing empty alternative,
+including padded/lazy forms. The one mandatory iteration follows source branch
+priority independently of quantifier greediness. Existing linear consuming and
+empty candidate passes retain earliest starts, outside word/line gates and
+defined empty or original character captures (22.2.2.3).
+
+Complete wrappers, borrowed group recovery, checked class storage, work callbacks
+and flat clone/drop are reused. Every class leaf is compiled behind empty-first
+choices. Other counts, partial captures, empty sequences/choices/quantifiers and
+further atoms retain separate proofs. Counts do not expand matching state and
+earlier constructor domains/work traces, dependencies and resource defaults are
+unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

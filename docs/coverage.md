@@ -17320,12 +17320,40 @@ independent character classes, including captures, undefined markers, named-key
 presence/order, original indices, sticky starts and lastIndex. Original Node
 differs on 388 ignoreCase singleton-q folding records (228 Latin and 160
 supplementary Deseret), matching the documented defect without a new exception.
-The reviewed upstream q-fixture candidates contain no nested-empty branch source;
-whole fixture sources and helpers remain unchanged.
+The upstream q-fixture candidate scan found no literal (?:) spelling; whole
+fixture sources and helpers remain unchanged.
 
 Stable passes all 425 Runtime unit cases, 184 affected integration cases, and
 1,473 Unicode integration cases. Workspace documentation tests, formatting,
 strict workspace Clippy, dependency policy, source/fixture inventories, and diff
 checks pass. The grouped Runtime target contains 508 case files and 4,120 tests.
 Snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
+resource policy are unchanged.
+
+## Core exactly-one string classes beside grouped empty alternatives
+
+Separate Core entries prove {1} and {1,1} around a bare singleton-q or
+character-result v/vi class and a nested noncapturing empty alternative,
+including padded/lazy forms. The one mandatory iteration follows source branch
+priority independently of quantifier greediness, retaining defined empty or
+original character captures. Existing linear candidate passes retain earliest
+starts, canonical outside word/line gates and original UTF-16 boundaries. Every
+class operand is compiled behind empty-first choices; counts and groups never
+expand matching state.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, padded greedy/lazy
+exact/equal-range forms, line/word gates, all starts and sticky/i/m modes.
+Coverage checks mandatory empty captures at a supplementary leading boundary,
+complete unknown/string leaf proof, other-count/partial-shape rejection, every
+constructor callback's cancellation/recovery, 20,000 complete capturing wrappers,
+20,000-character discarded words and 20,000 leading count zeros with linear
+checked work and flat clone/drop.
+
+All 11,608 prior eight-string/five-class/thirty-three-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,115 Core and 425 Runtime unit cases and 184 affected Runtime integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories, and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts, and default
 resource policy are unchanged.

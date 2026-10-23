@@ -2662,6 +2662,64 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles exactly-one nullable singleton-q counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {1} or {1,1}, including padded/lazy forms.
+    /// The one mandatory iteration follows source branch priority independently
+    /// of greediness, retaining defined empty or original character captures.
+    /// Canonical outside word/line gates reuse existing linear search. Every
+    /// class operand is proved before matching. Other counts and partial/other
+    /// empty-branch shapes remain separate proofs; storage and clone/drop stay flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_iteration_noncapturing_empty_nullable_v_set_with_single_character_strings_and_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::OneIteration,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
+    /// Compiles exactly-one nullable character-result counts beside nested empty groups.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one bare class and a nested effect-free noncapturing
+    /// empty alternative under {1} or {1,1}, including padded/lazy forms.
+    /// The one mandatory iteration follows source branch priority independently
+    /// of greediness, retaining defined empty or original character captures.
+    /// Canonical outside word/line gates reuse existing linear search. Every
+    /// class operand is proved before matching. Other counts and partial/other
+    /// empty-branch shapes remain separate proofs; storage and clone/drop stay flat.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_iteration_noncapturing_empty_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::OneIteration,
+            EmptyBranchProof::Nested,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
