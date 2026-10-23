@@ -2024,6 +2024,59 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         )
     }
 
+    /// Compiles {1,} repetition of a singleton-q class or raw empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain either the bare class then |, or | then the class.
+    /// Padded lower counts and lazy forms retain source branch priority and
+    /// canonical outside word/line gates. Every q member must be one character.
+    /// Required empty iterations define empty captures; zero optional iterations
+    /// cannot replace those captures. All class leaves are proved before search.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_minimum_open_nullable_v_set_with_single_character_strings_and_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::SingleCharacterStrings,
+            NullableProof::OneMinimumOpen,
+            charge,
+        )
+    }
+
+    /// Compiles {1,} repetition of a character-result class or raw empty branch.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Complete
+    /// wrappers contain one raw empty alternative and one bare class with a
+    /// false static MayContainStrings result and an empty/long q member. Padded
+    /// lower counts and lazy forms preserve branch order, required empty
+    /// captures, optional-empty progress checks, final original ranges and
+    /// canonical outside word/line gates. Every class leaf is compiled even
+    /// behind an empty-first branch. Other lower bounds, finite upper bounds,
+    /// simple quantifiers, branch-local captures/assertions, grouped/extra empty
+    /// alternatives and additional atoms remain separate proofs.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_one_minimum_open_nullable_character_result_v_set_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_nullable_string_class_repetition_with_work(
+            source,
+            ignore_case,
+            multiline,
+            ClassProof::CharacterResultStrings,
+            NullableProof::OneMinimumOpen,
+            charge,
+        )
+    }
+
     fn compile_nullable_string_class_repetition_with_work<E>(
         source: &JsString,
         ignore_case: bool,
@@ -2038,7 +2091,7 @@ impl RegExpUnicodeRepeatedAtomMatcher {
         // Simple proofs decline braced tokens before the quantifier helper.
         charge(units.len().saturating_mul(10))
             .map_err(crate::RegExpUnicodeSetCompileError::Work)?;
-        if bounds == NullableProof::ZeroMinimum {
+        if bounds != NullableProof::Raw {
             // One full decimal parse and one simple-token retry take <=8N.
             // Source counts are compared and retained without expansion.
             charge(units.len().saturating_mul(8))
@@ -2091,6 +2144,14 @@ impl RegExpUnicodeRepeatedAtomMatcher {
             };
             if bounds == NullableProof::ZeroMinimum
                 && (minimum != Some(0) || body.get(atom_end) != Some(&0x7b))
+            {
+                continue;
+            }
+            if bounds == NullableProof::OneMinimumOpen
+                && (minimum != Some(1)
+                    || body.get(atom_end) != Some(&0x7b)
+                    || end.checked_sub(2).and_then(|at| body.get(at)) != Some(&0x2c)
+                    || body.get(end - 1) != Some(&0x7d))
             {
                 continue;
             }

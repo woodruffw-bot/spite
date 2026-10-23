@@ -9857,6 +9857,30 @@ in numeric/named arrays and indices. String consumers, replacement callbacks,
 lastIndex, clones, collection and host-abort propagation reuse their existing
 paths. Former Unsupported exact-zero expressions complete finalizers normally.
 
+## One-minimum open braced nullable string classes
+
+Separate Core entries prove {1,} repetition of one raw empty alternative beside
+one bare singleton-q or character-result v/vi class, including padded lower counts
+and lazy forms. Complete ordinary/noncapturing wrappers and canonical outside
+word/line gates retain their earlier scope. Finite upper bounds, including those
+exceeding native integers, other lower bounds, simple quantifiers, branch-local
+captures/assertions, grouped/extra empty alternatives and additional atoms remain
+separate proofs. Every class operand is compiled even behind an empty-first
+alternative which can satisfy the mandatory iteration without consuming input.
+
+The existing nullable matcher preserves the required branch's source priority
+and applies RepeatMatcher's progress check to later optional iterations. A
+required empty iteration leaves defined empty captures; rejected optional empty
+iterations cannot erase them. Successful consuming iterations retain the final
+original character range. Existing linear search and capture storage are reused
+without count expansion or per-capture matching state.
+
+The borrowed framing/wrapper scan selects this braced-count proof explicitly
+and precharges decimal scans. Earlier simple/zero-minimum constructors retain
+their domains, exact callback traces and results. Checked class storage,
+allocation boundaries, flat clone/drop, dependencies and resource defaults are
+unchanged. Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,

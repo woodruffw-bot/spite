@@ -16677,3 +16677,30 @@ at zero. Workspace documentation tests, formatting, strict workspace Clippy,
 dependency policy, source/fixture inventories, and diff checks pass. Snapshots,
 corpus sources and helpers, dependencies, intrinsic counts, and default resource
 policy are unchanged.
+
+## Core one-minimum open braced nullable string classes
+
+Separate Core entries prove {1,} repetition of a raw empty alternative beside a
+singleton-q or character-result v/vi class, including padded lower counts and
+lazy forms. Complete wrappers, outside word/line gates, source branch priority,
+required defined-empty captures, optional-empty progress checks and final
+original ranges reuse the existing matcher. Every leaf remains proved behind
+empty-first alternatives. Simple/zero-minimum constructors and other braced
+count domains stay separate; Runtime selection is a later step.
+
+Three Core groups compare the independent recursive specification oracle across
+six predicates, three wrapper layouts, both branch orders, four open-count forms,
+line/word gates, all starts and sticky/i/m modes. They cover paired/lone and
+supplementary-folded ranges, required empty captures, complete unknown/string
+leaf rejection, finite-overflow upper-bound rejection, closed constructor
+domains, every constructor callback's cancellation/recovery, 20,000 complete
+wrappers, 20,000-character discarded words and 20,000 leading count zeros with
+linear checked work and flat clone/drop storage.
+
+All 2,984 prior eight-string/five-class/eleven-repetition API construction, work,
+bounds, capture and match records remain unchanged. Stable passes all 1,082 Core
+and 425 Runtime unit cases and 200 affected Runtime integration cases. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories, and diff checks pass. Runtime selection, snapshots,
+corpus sources and helpers, dependencies, intrinsic counts, and default resource
+policy are unchanged.
