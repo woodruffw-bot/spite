@@ -10812,5 +10812,8 @@ an empty branch or expanding numeric bounds. Zero iterations leave all inner
 slots undefined; impossible positive counts fail through the existing consuming
 repetition matcher (22.2.2.3). Construction, clone and drop remain source-sized,
 and matching retains no input-sized capture history. Earlier nullable
-constructors retain their domains and callback traces. Runtime selection remains
-a subsequent step.
+constructors retain their domains and callback traces. Runtime selects this proof
+after the nullable capture constructors. Source-order projection retains named
+aliases, String consumer captures, callback arguments and original metadata.
+Enclosing whole-match captures remain independent; opted-in aborts preserve
+lastIndex and finalizers through the shared execution path.

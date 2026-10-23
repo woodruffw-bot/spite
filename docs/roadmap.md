@@ -719,7 +719,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile empty point captures before/after a class or its nullable alternative, preserving conditional character-side points, unconditional sibling points, optional/later undefined groups and original UTF-16 endpoints.
 - [x] Execute empty point captures around nullable alternatives, preserving last-iteration start/end indices, character-only participation, named aliases, String consumers and atomic host aborts.
 - [x] Compile empty point captures around consuming class repetitions, preserving last-character UTF-16 endpoints, optional/later undefined groups, exact outer counts and flat source-sized state.
-- [ ] Execute empty point captures around consuming class repetitions through RegExp and String consumers.
+- [x] Execute empty point captures around consuming class repetitions through RegExp and String consumers, preserving named indices, callbacks, finalizers and atomic opt-in aborts.
 - [ ] Connect consuming-branch nullable string-class captures to Runtime RegExp named indices and String consumers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

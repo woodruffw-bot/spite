@@ -18344,3 +18344,27 @@ workspace/included-source formatting, strict workspace Clippy, dependency policy
 source/fixture inventories and diff checks pass. Runtime selection, snapshots,
 corpus sources/helpers, dependencies, intrinsic counts and default resource
 policy are unchanged.
+
+
+## Runtime empty point captures around consuming class repetitions
+
+Runtime selects the consuming capture proof after the nullable constructors. A
+projection unit distinguishes the last supplementary character's points from the
+whole-run bounds and leaves every inner slot undefined after zero iterations.
+Five integration groups cover 27 outer count families, four classes and six
+named layouts, including optional/later undefined slots, required huge empty
+counts and impossible huge consuming counts. Supplementary interior starts,
+lone surrogates, folding, escaped names, outside word/line gates, source metadata
+and lastIndex retain their original values. String consumers, callbacks, clones
+and collection retain source-order positional/named aliases. Successful programs
+finish finalizers. Unsupported terms remain host failures, while early syntax
+errors remain JavaScript exceptions. Large capture layouts, discarded words and 20,000-digit inner counts
+stay flat; constructor/search aborts preserve atomic state under unchanged limits.
+
+All 37,584 differential records across 87 pairs agree with independent finite
+ordinary-class/count controls over all starts and sticky/i/m modes. Stable
+passes all 431 Runtime unit cases and 297 affected integration cases. Workspace
+documentation tests, formatting, strict workspace Clippy, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 527 case
+files and 4,233 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.
