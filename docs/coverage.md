@@ -17815,3 +17815,27 @@ documentation tests, formatting, strict workspace Clippy, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 517 case
 files and 4,174 integration cases. Corpus sources and helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+## Core quantified empty sequences beside string classes
+
+Four Core entries prove nullable singleton-q and character-result v/vi classes
+beside quantified noncapturing empty sequences under simple or any braced outer
+count. The existing iterative pure-empty proof recognizes greedy/lazy and huge
+inner counts without expanding iterations, groups or matching state.
+
+Two independent recursive specification-oracle matrices cover six predicates,
+three wrapper layouts, both branch orders, all six simple outer modes and 21
+braced count forms, outside line/word gates, all starts and sticky/i/m modes.
+A third group checks every constructor callback's cancellation/recovery in both
+count modes, closed effect/capture/choice domains, unknown/string leaves,
+20,000 complete capturing wrappers and nested groups, 20,000 flat quantified
+siblings and discarded characters, and 20,000-digit inner empty counts with
+linear checked work and flat clone/drop.
+
+All 24,424 prior eight-string/five-class/fifty-one-repetition API construction,
+work, bounds, capture and match records remain unchanged. Stable passes all
+1,142 Core and 425 Runtime unit cases and 238 affected integration cases.
+Workspace documentation tests, formatting, strict workspace Clippy, dependency
+policy, source/fixture inventories and diff checks pass. Runtime selection,
+snapshots, corpus sources and helpers, dependencies, intrinsic counts and default
+resource policy are unchanged.

@@ -10424,6 +10424,25 @@ budgets, earliest starts, named indices and lastIndex. Former braced sequence
 rejections complete with exact results and eval finalizers. Source metadata,
 clones, collection and opt-in host aborts reuse existing paths.
 
+## Quantified empty sequences beside string classes
+
+Separate Core constructors extend the complete empty-sequence proof to validated
+greedy/lazy quantifiers on effect-free noncapturing empty groups. The groups may
+nest, have siblings and contain overflowing counts. Since they contribute no
+captures, assertions or input consumption, their repetition always has the same
+empty result; the proof does not expand required or optional iterations
+(RepeatMatcher, 22.2.2.3). Simple outer quantifiers and every braced outer count
+family have separate singleton-q and character-result v/vi entries.
+
+The iterative empty proof and one-pass wrapper recovery reuse existing helpers.
+Every class leaf must still be compiled behind empty-first choices. Existing
+matching state retains mandatory priority, optional progress, exact optional
+budgets, earliest starts, original character ranges and outside word/line gates.
+Quantified-empty recognition has its own conservative linear work reservation;
+prior constructor domains and callback traces are unchanged. Empty choices,
+capturing empty groups, assertions and partial captures retain separate proofs.
+Runtime selection is separate.
+
 ## Global intrinsic metadata and enumeration
 
 The edition-17 global object materializes Promise, Proxy, SharedArrayBuffer,
