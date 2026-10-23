@@ -87,6 +87,7 @@ fn complete_nullable_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
         r"/([\q{a|ab}&&a]|)+/v.test('aaa')",
         r"/(|[\q{ab}&&a])+?/v.test('')",
         r"/(?<each>[\q{ab}&&a]|)+/v.exec('X').groups.each===''",
+        r"/([\q{a|ab}&&a]|){0}/v.test('')",
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
@@ -102,7 +103,7 @@ fn complete_nullable_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
     for source in [
         r"/(|[\q{ab}&&\q{cd}])+/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])+?/v.test('')",
-        r"/([\q{a|ab}&&a]|){0}/v.test('')",
+        r"/([\q{a|ab}&&a]|){1}/v.test('')",
         r"/([\q{a|ab}&&a]|){1,}/v.test('aaa')",
         r"/(([\q{a|ab}&&a])|)+/v.test('a')",
         r"/([\q{a|ab}&&a]|())+/v.test('a')",

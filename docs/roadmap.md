@@ -658,7 +658,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile complete wrapped raw-empty alternatives beside character-result v classes under greedy/lazy *, + and ?, preserving branch priority, empty-iteration progress checks, whole-repetition gates, and defined-empty versus undefined captures.
 - [x] Connect nullable character-result alternatives to Runtime RegExp captures and String consumers, preserving branch order, defined-empty versus undefined captures, original UTF-16 ranges, named indices, lastIndex, and host-abort atomicity.
 - [x] Compile zero-minimum braced repetition of raw-empty alternatives beside singleton-q and character-result v classes, preserving exact zero, padded/overflowing upper bounds, greedy/lazy progress checks, complete leaf proof, and original captures.
-- [ ] Connect zero-minimum braced nullable string-class alternatives to Runtime RegExp captures and String consumers.
+- [x] Connect zero-minimum braced nullable string-class alternatives to Runtime RegExp captures and String consumers, preserving undefined zero-iteration captures, enclosing captures, exact bounds, original UTF-16 ranges, named indices, lastIndex, and eval finalizers.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.

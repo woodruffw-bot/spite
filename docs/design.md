@@ -9848,7 +9848,14 @@ The shared borrowed framing/wrapper scan selects the new count proof explicitly
 and precharges its decimal scans. Counts, wrappers and captures never expand
 into matching state. Earlier constructors retain their domains, callback traces
 and results. Checked class storage, allocation boundaries, flat search/clone/drop,
-dependencies and resource defaults are unchanged. Runtime selection is separate.
+dependencies and resource defaults are unchanged.
+
+Runtime selects the two braced-count proofs after raw nullable character-result
+repetition. The existing repeated-atom body combines final-iteration captures
+with complete enclosing captures and preserves undefined zero-iteration entries
+in numeric/named arrays and indices. String consumers, replacement callbacks,
+lastIndex, clones, collection and host-abort propagation reuse their existing
+paths. Former Unsupported exact-zero expressions complete finalizers normally.
 
 ## Global intrinsic metadata and enumeration
 
