@@ -13488,3 +13488,10 @@ roll all descendant writes back (22.2.2.3.1, 22.2.2.7). Original bindings and
 symbolic counts remain intact. Source/frame/copy and full-mask work precede
 allocation; construction and storage stay source-sized without recursive
 outside-wrapper processing. Earlier constructors and their work are unchanged.
+
+
+Runtime selects optional-impossible empty sequences after the whole optional
+spine proof, using the complete normalized original capture source. Interleaved
+required and skipped slots, including erased forward references, retain their
+original roles. Shared empty execution preserves Unicode boundaries,
+source/flags, lastIndex, String callback/split captures, cloning and collection.
