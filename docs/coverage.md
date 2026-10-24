@@ -22883,9 +22883,8 @@ Larger upper bounds, continuations and enclosing groups retain separate proofs.
 All 17,280 exact native records agree with the fresh CLI across 20 tables,
 including all seven string-valued Unicode properties, four zero-bound forms,
 eight flag combinations, six inputs and every starting index. All four complete
-native JavaScript regression programs also agree on the fresh CLI. Scans of the
-existing literal-source and raw-pattern rejection controls find no new admitted
-controls for this class-only proof.
+native JavaScript regression programs also agree on the fresh CLI. Literal-source and raw-pattern rejection scans are supplemented by the lexical
+control review recorded below.
 
 All 433 Runtime unit tests pass (5.73 s), including a direct class-plan check for
 zero captures, one unit of actual matching work and pre-inspection aborts.
@@ -22952,3 +22951,20 @@ fixtures, snapshots, dependencies and default quotas are unchanged.
 
 Fresh full RegExp and Test262 runs include the bare-class and enclosing-class
 Runtime increments; their completed results are recorded separately.
+
+
+## Lexical review of zero-count class controls
+
+A lexical scan now skips complete Rust string literals when locating rejection
+arrays, so a class closing bracket immediately followed by `{0}` cannot be
+mistaken for the end of the Rust array. Review of 2,703 controls identifies eight
+additional bare-class zero patterns across five case files. Each now compares
+complete native match metadata at the normalized surrogate-pair boundary,
+including source/flags, indices, undefined groups and lastIndex.
+
+All eight native programs agree on the fresh CLI. All 29 affected integration
+tests pass across the five selections (6/1/6/10/6 tests), alongside strict
+workspace Clippy, formatting, dependency policy, inventories and diff checks.
+Larger bounds, consuming siblings, unsupported matching data outside erased
+scopes, and syntax early errors retain their separate checks. Fixtures,
+snapshots, production behavior and the 613-case inventory are unchanged.

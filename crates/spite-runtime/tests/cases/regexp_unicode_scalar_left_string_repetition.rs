@@ -97,8 +97,8 @@ fn former_controls_finish_finalizers_and_zero_counts_still_require_complete_clas
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
+    assert_eq!(Realm::default().eval(r####"var pattern="[[]&&\\q{ab}&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
     for source in [
-        r"/[[]&&\q{ab}&&\p{RGI_Emoji}]{0}/v.test('')",
         r"/[\p{Any}--\q{ab}]+[a]/v.test('aba')",
         r"/\b^[\p{Any}--\q{ab}]+/v.test('ab')",
     ] {
