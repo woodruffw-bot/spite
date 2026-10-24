@@ -20288,3 +20288,28 @@ reviewed variants. Strict workspace Clippy, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. The Runtime inventory is
 562 case files and 4,358 integration cases. Fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Core asserted nullable zero/one-minimum string-class repetition
+
+Four new focused groups compare ten finite/algebraic/scalar/empty class families,
+twelve counts, three nullable body modes, eight prefix/suffix predicate profiles,
+six independent capture trees and atom/group scopes across eight UTF-16 inputs
+and all starts/sticky/i/m. An independent recursive reference retains every
+required empty alternative in source order and rejects optional empty progress.
+Thirty-eight native tables distinguish zero iterations, required class-empty
+versus separate-empty captures, earlier-word retries after suffix failure,
+required-empty retries constrained by upper counts, known-empty classes,
+empty-only classes, scalar fallback, Unicode boundaries and folding.
+Deep 20,000-capture scopes, 20,000 consuming frames after a required empty arm,
+bounded class/separate-empty lazy success, 20,000-digit upper bounds, every
+callback cancellation/recovery and closed larger minima/conditional predicates/
+references/unknown zero-count leaves pass.
+
+Execution passes all eight combined focused groups: the four new groups and all
+four preceding nonnullable assertion groups after sharing their constructor
+proof. All 63,016 prior API records retain exact domains, construction/search
+work and capture projection. Strict workspace Clippy, documentation tests,
+formatting, dependency policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas are
+unchanged.

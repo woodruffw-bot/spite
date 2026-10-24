@@ -11751,3 +11751,41 @@ Runtime selects this proof after the larger-required-count constructor on the fu
 capture source. A dedicated body retains original source, names/indices,
 lastIndex, String consumers, cloning and collection, with matching-capacity and
 work failures retained as separate host errors.
+
+
+Core separately proves nullable string-class bodies with unconditional outside
+assertions and a zero/one minimum. The body may contain an empty class member,
+a class/empty alternative in either order, or both. The shared constructor still
+proves every class leaf and capture scope before checking this new domain. The
+earlier nonnullable constructor applies its original filter after the shared
+proof, retaining its exact public domain and callback sequence. Outside predicate
+collection and conditional-assertion exclusions remain unchanged. Larger nullable
+minima remain separate because their required empty runs need additional handling.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher accepts a required empty iteration,
+resets captures for that iteration, and rejects optional empty progress. At a
+one-minimum root, an empty-first arm is tried before class members. A class-first
+body tries its consuming endpoints before its preferred empty result. Failure of
+later assertions/count continuations may retry a required consuming member after
+the empty-first path fails: the required empty iteration already uses one count.
+Optional iterations try consuming class members only, including when an earlier
+empty arm must be rejected before reaching them.
+
+A nullable continuation frame retains whether its required empty choice was tried
+and which branch entered it. Only the one required root may add a zero-width
+child; later children consume input, so live depth is bounded by input points plus
+two. Class-empty and separate empty arms that reach the same input/count state
+share possible continuations: captures do not feed predicates or references in
+this proof. The preferred empty branch therefore retains its capture identity;
+a lower-priority equivalent empty branch cannot add a successful continuation.
+Storage grows fallibly after a charge, with separate work/capacity host failures.
+No positive input-length lower bound is applied to a nullable required iteration.
+
+Zero iterations leave repeated captures undefined. A required class-empty result
+retains defined empty class captures; a required separate empty arm retains its
+own captures and clears class captures. Later consuming iterations overwrite
+both profiles with the final accepted class member. Original lexical projection
+therefore uses the final range plus its class-versus-empty tag, including a
+zero-width final required range. Huge upper counts retain exact decimal bounds
+and bounded short lazy matching work. Unknown leaves remain unproved even under
+zero counts or a preferred empty arm. Runtime selection remains separate.

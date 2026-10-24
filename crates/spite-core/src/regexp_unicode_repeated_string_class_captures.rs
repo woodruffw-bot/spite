@@ -1393,6 +1393,21 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(plan) = Self::compile_plan_with_work(source, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if plan.plan.empty_alternative || plan.plan.class.has_empty_member() {
+            return Ok(None);
+        }
+        Ok(Some(plan))
+    }
+    fn compile_plan_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -1534,10 +1549,7 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         else {
             return Ok(None);
         };
-        if plan.empty_alternative
-            || plan.class.has_empty_member()
-            || plan.class.has_outside_assertions()
-        {
+        if plan.class.has_outside_assertions() {
             return Ok(None);
         }
         Ok(Some(Self {
@@ -1671,6 +1683,228 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
                 .checked_sub(2)
                 .map(|previous| frames[previous].at..at),
             class_selected: frames.len() > 1,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct NullableAssertedStringRepeatFrame {
+    at: usize,
+    before: Option<usize>,
+    body_done: bool,
+    stop_done: bool,
+    epsilon_done: bool,
+    class_selected: bool,
+}
+impl NullableAssertedStringRepeatFrame {
+    fn new(at: usize, class_selected: bool) -> Self {
+        Self {
+            at,
+            before: None,
+            body_done: false,
+            stop_done: false,
+            epsilon_done: false,
+            class_selected,
+        }
+    }
+}
+/// A nullable string-class body with unconditional assertions and minimum zero or one.
+///
+/// Requires validated v/vi input and normalized capture names. A required empty
+/// class/body branch participates once; optional empty iterations are rejected.
+/// Required branch priority and member/count retries follow RepeatMatcher,
+/// retaining only the final iteration's class-versus-empty identity.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
+    plan: RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+}
+impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
+    /// Proves a nullable body, unconditional predicates and a zero/one minimum.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(plan) =
+            RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_plan_with_work(
+                source,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        if plan.minimum > 1 || !(plan.plan.empty_alternative || plan.plan.class.has_empty_member())
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self { plan }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects lexical scopes on the whole match or the final required/optional body.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes assertions, member alternatives and count continuations on a flat stack.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        use RegExpUnicodeMatchError::{Capacity, Work};
+        charge(4).map_err(Work)?;
+        let Some(mut start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        let mut frames = Vec::<NullableAssertedStringRepeatFrame>::new();
+        loop {
+            charge(8).map_err(Work)?;
+            if self.plan.assertions[0].matches(
+                input,
+                start,
+                self.plan.ignore_case,
+                self.plan.multiline,
+            ) {
+                if frames.capacity() == 0 {
+                    charge(6).map_err(Work)?;
+                    frames.try_reserve(1).map_err(|_| Capacity)?;
+                }
+                frames.clear();
+                frames.push(NullableAssertedStringRepeatFrame::new(start, false));
+                while !frames.is_empty() {
+                    charge(4).map_err(Work)?;
+                    let depth = frames.len() - 1;
+                    let frame = frames.last_mut().expect("continuation frame");
+                    let at = frame.at;
+                    let can_stop = depth >= self.plan.minimum;
+                    if can_stop && !self.plan.plan.greedy && !frame.stop_done {
+                        frame.stop_done = true;
+                        charge(8).map_err(Work)?;
+                        if self.plan.assertions[1].matches(
+                            input,
+                            at,
+                            self.plan.ignore_case,
+                            self.plan.multiline,
+                        ) {
+                            return Ok(Some(self.result(&frames, start)));
+                        }
+                    }
+                    if depth < self.plan.minimum
+                        && self.plan.plan.empty_first
+                        && !frame.epsilon_done
+                    {
+                        frame.epsilon_done = true;
+                        if frames.len() == frames.capacity() {
+                            charge(frames.capacity().saturating_mul(8).saturating_add(8))
+                                .map_err(Work)?;
+                            frames.try_reserve(1).map_err(|_| Capacity)?;
+                        }
+                        frames.push(NullableAssertedStringRepeatFrame::new(at, false));
+                        continue;
+                    }
+                    if !frame.body_done {
+                        if self.plan.maximum.is_some_and(|maximum| depth >= maximum)
+                            || input.len() - at < self.plan.minimum.saturating_sub(depth)
+                        {
+                            frame.body_done = true;
+                        } else {
+                            let next = if let Some(before) = frame.before {
+                                let inspected = (input.len() - at)
+                                    .min(self.plan.plan.class.max_match_code_units())
+                                    .saturating_add(1);
+                                charge(
+                                    inspected
+                                        .saturating_mul(self.plan.plan.class.search_passes(true))
+                                        .saturating_add(4),
+                                )
+                                .map_err(Work)?;
+                                self.plan.plan.class.prefix_before(input, at, before)
+                            } else {
+                                self.plan
+                                    .plan
+                                    .class_prefix(input, at, &mut charge)
+                                    .map_err(Work)?
+                            };
+                            if let Some(next) = next.filter(|range| range.end > at) {
+                                frame.before = Some(next.end);
+                                if frames.len() == frames.capacity() {
+                                    charge(frames.capacity().saturating_mul(8).saturating_add(8))
+                                        .map_err(Work)?;
+                                    frames.try_reserve(1).map_err(|_| Capacity)?;
+                                }
+                                frames.push(NullableAssertedStringRepeatFrame::new(next.end, true));
+                                continue;
+                            }
+                            frame.body_done = true;
+                        }
+                    }
+                    if depth < self.plan.minimum && !frame.epsilon_done {
+                        frame.epsilon_done = true;
+                        let selected = self.plan.plan.class.has_empty_member();
+                        if selected || self.plan.plan.empty_alternative {
+                            if frames.len() == frames.capacity() {
+                                charge(frames.capacity().saturating_mul(8).saturating_add(8))
+                                    .map_err(Work)?;
+                                frames.try_reserve(1).map_err(|_| Capacity)?;
+                            }
+                            frames.push(NullableAssertedStringRepeatFrame::new(at, selected));
+                            continue;
+                        }
+                    }
+                    if can_stop && self.plan.plan.greedy && !frame.stop_done {
+                        frame.stop_done = true;
+                        charge(8).map_err(Work)?;
+                        if self.plan.assertions[1].matches(
+                            input,
+                            at,
+                            self.plan.ignore_case,
+                            self.plan.multiline,
+                        ) {
+                            return Ok(Some(self.result(&frames, start)));
+                        }
+                    }
+                    frames.pop();
+                }
+            }
+            if sticky || start == input.len() {
+                return Ok(None);
+            }
+            charge(2).map_err(Work)?;
+            let units = input.code_units();
+            let first = units[start];
+            start +=
+                crate::regexp_unicode_character::unicode_input_character(units, start, first).1;
+        }
+    }
+    fn result(
+        &self,
+        frames: &[NullableAssertedStringRepeatFrame],
+        start: usize,
+    ) -> RegExpUnicodeRepeatedStringClassMatch {
+        let at = frames.last().expect("successful continuation").at;
+        RegExpUnicodeRepeatedStringClassMatch {
+            range: start..at,
+            last_iteration: frames
+                .len()
+                .checked_sub(2)
+                .map(|previous| frames[previous].at..at),
+            class_selected: frames.len() > 1
+                && frames
+                    .last()
+                    .expect("successful continuation")
+                    .class_selected,
         }
     }
 }

@@ -790,6 +790,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute larger nonnullable string-class minima through Runtime RegExp and String consumers.
 - [x] Compile nonnullable string-class repetition with unconditional outside assertions, preserving member/count backtracking and zero-iteration captures.
 - [x] Execute asserted nonnullable string-class repetition through Runtime RegExp and String consumers.
+- [x] Compile asserted nullable string-class bodies with zero/one minima, required-empty identity and optional progress rejection.
+- [ ] Execute asserted nullable zero/one-minimum string-class repetition through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
