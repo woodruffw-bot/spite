@@ -24877,8 +24877,9 @@ programs. All 436 Runtime unit tests pass (6.33 s). Strict workspace Clippy with
 all targets passes (0.22 s with cached targets), alongside documentation tests,
 formatting, dependency policy, inventories and diff checks. Runtime inventory
 remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
-A fresh full RegExp integration run and conformance-profile Test262 run were
-started from this Runtime increment; their results remain pending.
+The conformance-profile Test262 run started from this Runtime increment passes
+all 35 runner tests and 16,343 corpus variants (520.52 s for the corpus). The
+full RegExp integration run from that increment remains pending.
 
 
 First optional established-impossible root alternatives (Core)
@@ -24993,3 +24994,23 @@ with all targets passes (18.50 s), alongside the passing documentation,
 formatting, dependency policy, inventories and diff checks for the active
 Runtime sequence increment. Runtime inventory remains 617; fixtures, snapshots,
 dependencies and default quotas are unchanged.
+
+
+Optional established-impossible concatenations (Runtime)
+------------------------------------------------------
+
+Runtime selects optional established-impossible concatenations with full original
+normalized source and no capture projection. All 21 focused integration groups
+pass (0.40 s), including three new groups for interleaved masks, erased original
+bindings, mixed optional guards, surrogate boundaries, later errors,
+indices/groups and lastIndex, String consumers, cloning, collection and 1,000
+repeated segments with 4,000 original capture slots.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v sequences agree on the fresh CLI, as do all 21 complete JavaScript
+programs. All 436 Runtime unit tests pass (9.55 s). Strict workspace Clippy with
+all targets passes (30.77 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged. The preceding
+optional-spine Runtime snapshot also passes all 35 Test262 runner tests and
+16,343 corpus variants in the conformance profile (520.52 s for the corpus).

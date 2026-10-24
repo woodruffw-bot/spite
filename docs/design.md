@@ -13774,3 +13774,10 @@ captures stay empty and all skipped descendants remain undefined. The finite
 closed earlier-operand chain preserves original bindings and symbolic counts.
 Flat source/frame/body-copy/full-mask work precedes allocation; retained masks
 stay source-sized and actual matching and capture queries remain constant.
+
+
+Runtime selects optional established-impossible concatenations with complete
+original normalized source. Interleaved empty/undefined term masks retain their
+original bindings and lexical slots. Shared empty execution preserves Unicode
+boundaries, indices/groups, lastIndex, String consumers, cloning and collection;
+original validation errors precede proof selection.
