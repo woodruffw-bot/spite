@@ -12170,4 +12170,7 @@ including required empty class members and shorter successful continuations.
 The result records actual endpoint truth alongside the required class range.
 Zero-minimum outside scopes remain undefined and required alternatives retain
 source priority (ECMA-262 edition 17 22.2.2.3–4). Repetition proof domains and work
-accounting are unchanged. Runtime selection remains separate.
+accounting are unchanged. Runtime selects this proof after the repetition
+choice proof on the full normalized capture source. The dedicated body retains
+endpoint truth, source/flags, named aliases, indices, lastIndex and String
+consumer behavior through cloning and collection.

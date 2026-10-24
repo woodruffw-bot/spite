@@ -21160,3 +21160,27 @@ All 75,528 frozen prior API records retain exact domains, charged work and captu
 projection. Strict workspace Clippy (68 s), documentation tests, formatting,
 policy, inventories and diff checks pass. Fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Runtime single classes beside required predicate choices
+
+Three groups compare forty native tables and eight String consumer references,
+including named indices, matchAll, replacement callbacks, split/search, cloning,
+collection and strict lastIndex writes. Bare/exact-one paths preserve required
+empty classes, endpoint truth and selected outside branches. Deep 1,000-scope
+required/skipped cases, 20,000-unit members, shorter endpoint continuations and
+constructor abort isolation pass. Unknown leaves and other class counts retain
+complete proofs. Six former rejection cases in three existing groups now compare
+full native captures, indices, source, flags, input and lastIndex. Five
+source-shape scans verify the expanded domain.
+
+All three groups pass (0.81 s), alongside 431 unit tests (13.19 s), forty native
+tables and eight consumer references on the fresh CLI. All six migrated controls
+agree on the fresh CLI; their three existing Rust groups pass (132.81 s). All
+100,352 exact differential records agree across 256 independent pairs; all
+1,024 proof/flag combinations are supported. Eight finite/scalar/known-empty
+forms, four bare/exact-one spellings, eight predicate choices and four live
+profiles cover every input start, sticky, multiline and ignore-case. Strict
+workspace Clippy, documentation tests, formatting, policy, inventories and
+diff checks pass; fixtures, snapshots, dependencies and default quotas are
+unchanged.

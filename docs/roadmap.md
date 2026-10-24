@@ -813,7 +813,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile class/empty alternatives combining zero-minimum outside scopes and live predicates, preserving ordered endpoint continuations and captures.
 - [x] Compile required always-successful outside predicate choices beside string-class repetition, preserving conditional captures and endpoint truth.
 - [x] Compile a required single class beside always-successful outside predicate choices, preserving conditional captures and exact-one counts.
-- [ ] Execute required outside predicate choices beside a single class through Runtime and String consumers.
+- [x] Execute required outside predicate choices beside a single class through Runtime and String consumers.
 - [x] Execute required outside predicate choices through Runtime and String consumers.
 - [x] Execute class/empty alternatives combining zero-minimum outside scopes and live predicates through Runtime and String consumers.
 - [x] Execute class/empty alternatives with only zero-minimum outside predicate scopes through Runtime and String consumers.
