@@ -11709,3 +11709,42 @@ earlier two-required constructor on the full capture source. Its dedicated body
 preserves original source, lexical names/indices, lastIndex, String consumers,
 cloning and collection. Runtime dispatch carries matching work and storage errors
 separately, mapping capacity failures to host heap errors.
+
+
+Core separately proves unconditional assertions around a nonnullable string-class
+repetition. The principal count may be *, +, ?, or a braced count other than
+exact-one forms handled by earlier proofs. The repeated body contains one fully
+proved class and empty capture terms, with no empty class member, empty arm or
+body assertion. Outside ^/$/word/nonword assertions are collected at the whole
+match's start or end. Line predicates retain m semantics; word predicates retain
+Unicode i folding. Contradictory predicates fail after the full class proof.
+
+A flat outside-scope scan records assertion participation and alternation. A
+scope containing both remains closed, as does a non-exact-one repetition of an
+assertion-containing group. Assertion-free empty groups may retain alternatives
+and counts, with their original lexical capture profiles. Assertions are replaced
+with empty noncapturing groups in a shadow source; the original class body and
+all remaining terms pass the existing simple capture proof. Both shadow storage
+and outside-scope storage reserve fallibly after charging the original source.
+Hidden body predicates, references, consuming siblings, additional classes and
+unknown leaves remain closed, including beneath an exact-zero principal count.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher may retry both a prior class member
+and an optional repetition count after an outside suffix fails. Each flat
+continuation frame records its input point, last tried endpoint, and whether its
+body and stopping continuation are exhausted. Greedy frames try members before
+the suffix; lazy frames try the suffix before members once the minimum is met.
+Member retries use strictly descending original UTF-16 endpoints. For example,
+`^[\q{aa|aaa}]*$` on `aaaa` retries a shorter first member after the suffix
+fails, then succeeds with two `aa` members and final range `2..4`.
+
+Live continuation depth is bounded by the input point count plus its root frame.
+Growth reserves fallibly after a charge; no Rust recursion or capture-history
+copies are needed. Frame transitions, class inspections and predicate checks are
+charged before inspection. Matching work and capacity failures use the separate
+host error variants. Zero iterations leave repeated captures undefined while
+outside scopes remain defined at their lexical points. A short lazy empty
+success retains bounded matching work on long input. Failed nonsticky starts
+advance one Unicode point, retaining the established leading-boundary policy.
+Earlier public matcher domains, callback work and projections stay unchanged.
+Runtime selection of this asserted repetition proof remains separate.

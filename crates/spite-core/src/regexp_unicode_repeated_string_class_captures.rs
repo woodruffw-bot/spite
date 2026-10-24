@@ -1308,3 +1308,369 @@ impl RegExpUnicodeRequiredStringClassCaptureMatcher {
         Ok(self.plan.class.find(input, at, false))
     }
 }
+#[derive(Clone, Copy, Debug, Default)]
+struct RepeatedStringAssertions {
+    start: bool,
+    end: bool,
+    word: bool,
+    nonword: bool,
+}
+impl RepeatedStringAssertions {
+    fn matches(self, input: &JsString, at: usize, ignore_case: bool, multiline: bool) -> bool {
+        use crate::regexp_unicode_character::{unicode_assertions_match, unicode_word_boundary};
+        let units = input.code_units();
+        unicode_assertions_match(units, at, at, self.start, self.end, multiline)
+            && (!self.word || unicode_word_boundary(units, at, ignore_case))
+            && (!self.nonword || !unicode_word_boundary(units, at, ignore_case))
+    }
+}
+#[derive(Debug)]
+struct AssertedStringRepeatFrame {
+    at: usize,
+    before: Option<usize>,
+    body_done: bool,
+    stop_done: bool,
+}
+impl AssertedStringRepeatFrame {
+    fn new(at: usize) -> Self {
+        Self {
+            at,
+            before: None,
+            body_done: false,
+            stop_done: false,
+        }
+    }
+}
+fn asserted_repeat_count(units: &[u16], at: usize) -> Option<(usize, usize, Option<usize>, bool)> {
+    if units.get(at) != Some(&0x7b) {
+        return None;
+    }
+    let mut end = at + 1;
+    let lower = significant_digits(count_digits(units, &mut end)?);
+    let minimum = saturated_decimal(lower);
+    let upper = if units.get(end) == Some(&0x2c) {
+        end += 1;
+        count_digits(units, &mut end).map(significant_digits)
+    } else {
+        Some(lower)
+    };
+    if units.get(end) != Some(&0x7d) {
+        return None;
+    }
+    let optional = if let Some(upper) = upper {
+        if upper.len() < lower.len() || upper.len() == lower.len() && upper < lower {
+            return None;
+        }
+        Some(decimal_difference(upper, lower))
+    } else {
+        None
+    };
+    end += 1;
+    let lazy = units.get(end) == Some(&0x3f);
+    Some((end + usize::from(lazy), minimum, optional, !lazy))
+}
+
+/// A nonnullable string-class repetition with unconditional outside assertions.
+///
+/// Requires validated v/vi input and normalized capture names. Outside ^/$/word
+/// predicates are unconditional; assertion-free empty groups retain their proved
+/// alternatives and counts. The body has no assertion or empty branch. A continuation
+/// stack retains greedy/lazy count and longest-member backtracking order
+/// (22.2.2.3 RepeatMatcher).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
+    plan: RegExpUnicodeRepeatedStringClassCaptureMatcher,
+    minimum: usize,
+    maximum: Option<usize>,
+    assertions: [RepeatedStringAssertions; 2],
+    ignore_case: bool,
+    multiline: bool,
+}
+impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
+    /// Proves one consuming class body and unconditional prefix/suffix predicates.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(64).saturating_add(256))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let (mut minimum, mut maximum) = (0, None);
+        let Some(hole) = counted_hole(units, |units, at| {
+            if let Some((end, one, maximum_one, greedy)) = simple_count(units, at) {
+                minimum = usize::from(one);
+                maximum = maximum_one.then_some(1);
+                return Some((end, one, maximum_one, greedy));
+            }
+            let (end, low, delta, greedy) = asserted_repeat_count(units, at)?;
+            if low == 1 && delta == Some(0) {
+                return None;
+            }
+            minimum = low;
+            maximum = delta.map(|remaining| low.saturating_add(remaining));
+            Some((end, low > 0, maximum == Some(1), greedy))
+        }) else {
+            return Ok(None);
+        };
+        let mut assertions = [RepeatedStringAssertions::default(); 2];
+        let (mut at, mut seen) = (0, false);
+        let capacity = units
+            .len()
+            .checked_mul(4)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let mut simple = Vec::new();
+        simple
+            .try_reserve_exact(capacity)
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        let mut scopes = Vec::new();
+        scopes
+            .try_reserve_exact(units.len().saturating_add(1))
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        // Each outside scope records assertion participation and alternation.
+        scopes.push((false, false));
+        while at < units.len() {
+            if at == hole.atom.start {
+                simple.extend_from_slice(&units[hole.atom.clone()]);
+                simple.push(0x2b);
+                if !hole.greedy {
+                    simple.push(0x3f);
+                }
+                at = hole.count_end;
+                continue;
+            }
+            let phase = usize::from(at >= hole.count_end);
+            let mut assertion = false;
+            match units[at] {
+                0x5e => {
+                    assertions[phase].start = true;
+                    at += 1;
+                    assertion = true;
+                }
+                0x24 => {
+                    assertions[phase].end = true;
+                    at += 1;
+                    assertion = true;
+                }
+                0x5c => match units.get(at + 1) {
+                    Some(0x62) => {
+                        assertions[phase].word = true;
+                        at += 2;
+                        assertion = true;
+                    }
+                    Some(0x42) => {
+                        assertions[phase].nonword = true;
+                        at += 2;
+                        assertion = true;
+                    }
+                    _ => return Ok(None),
+                },
+                0x28 => {
+                    let length = if units.get(at + 1) == Some(&0x3f) {
+                        if units.get(at + 2) != Some(&0x3a) {
+                            return Ok(None);
+                        }
+                        3
+                    } else {
+                        1
+                    };
+                    scopes.push((false, false));
+                    simple.extend_from_slice(&units[at..at + length]);
+                    at += length;
+                }
+                0x29 => {
+                    if scopes.len() == 1 {
+                        return Ok(None);
+                    }
+                    let (asserted, alternate) = scopes.pop().expect("outside scope");
+                    if asserted && alternate {
+                        return Ok(None);
+                    }
+                    scopes.last_mut().expect("outside scope").0 |= asserted;
+                    simple.push(0x29);
+                    at += 1;
+                    if let Some((end, _, _, _)) = simple_count(units, at) {
+                        if asserted {
+                            return Ok(None);
+                        }
+                        simple.extend_from_slice(&units[at..end]);
+                        at = end;
+                    } else if let Some((end, minimum, delta, _)) = asserted_repeat_count(units, at)
+                    {
+                        if asserted && !(minimum == 1 && delta == Some(0)) {
+                            return Ok(None);
+                        }
+                        simple.extend_from_slice(&units[at..end]);
+                        at = end;
+                    }
+                }
+                0x7c => {
+                    scopes.last_mut().expect("outside scope").1 = true;
+                    simple.push(0x7c);
+                    at += 1;
+                }
+                _ => return Ok(None),
+            }
+            if assertion {
+                seen = true;
+                scopes.last_mut().expect("outside scope").0 = true;
+                simple.extend_from_slice(&[0x28, 0x3f, 0x3a, 0x29]);
+            }
+        }
+        if scopes.len() != 1 || scopes[0].0 && scopes[0].1 {
+            return Ok(None);
+        }
+        if !seen {
+            return Ok(None);
+        }
+        let Some(plan) = RegExpUnicodeRepeatedStringClassCaptureMatcher::compile_with_work(
+            &JsString::from_code_units(simple),
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if plan.empty_alternative
+            || plan.class.has_empty_member()
+            || plan.class.has_outside_assertions()
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            plan,
+            minimum,
+            maximum,
+            assertions,
+            ignore_case,
+            multiline,
+        }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects outside scopes on the whole match and body scopes on its last member.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes assertions, member alternatives and count continuations on a flat stack.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        use RegExpUnicodeMatchError::{Capacity, Work};
+        charge(4).map_err(Work)?;
+        let Some(mut start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        if self.minimum > input.len() - start {
+            return Ok(None);
+        }
+        let mut frames = Vec::<AssertedStringRepeatFrame>::new();
+        loop {
+            charge(8).map_err(Work)?;
+            if self.assertions[0].matches(input, start, self.ignore_case, self.multiline) {
+                if frames.capacity() == 0 {
+                    charge(6).map_err(Work)?;
+                    frames.try_reserve(1).map_err(|_| Capacity)?;
+                }
+                frames.clear();
+                frames.push(AssertedStringRepeatFrame::new(start));
+                while !frames.is_empty() {
+                    charge(4).map_err(Work)?;
+                    let depth = frames.len() - 1;
+                    let frame = frames.last_mut().expect("continuation frame");
+                    let at = frame.at;
+                    let can_stop = depth >= self.minimum;
+                    if can_stop && !self.plan.greedy && !frame.stop_done {
+                        frame.stop_done = true;
+                        charge(8).map_err(Work)?;
+                        if self.assertions[1].matches(input, at, self.ignore_case, self.multiline) {
+                            return Ok(Some(self.result(&frames, start)));
+                        }
+                    }
+                    if !frame.body_done {
+                        if self.maximum.is_some_and(|maximum| depth >= maximum)
+                            || input.len() - at < self.minimum.saturating_sub(depth)
+                        {
+                            frame.body_done = true;
+                        } else {
+                            let next = if let Some(before) = frame.before {
+                                let inspected = (input.len() - at)
+                                    .min(self.plan.class.max_match_code_units())
+                                    .saturating_add(1);
+                                charge(
+                                    inspected
+                                        .saturating_mul(self.plan.class.search_passes(true))
+                                        .saturating_add(4),
+                                )
+                                .map_err(Work)?;
+                                self.plan.class.prefix_before(input, at, before)
+                            } else {
+                                self.plan
+                                    .class_prefix(input, at, &mut charge)
+                                    .map_err(Work)?
+                            };
+                            if let Some(next) = next {
+                                frame.before = Some(next.end);
+                                if frames.len() == frames.capacity() {
+                                    charge(frames.capacity().saturating_mul(6).saturating_add(6))
+                                        .map_err(Work)?;
+                                    frames.try_reserve(1).map_err(|_| Capacity)?;
+                                }
+                                frames.push(AssertedStringRepeatFrame::new(next.end));
+                                continue;
+                            }
+                            frame.body_done = true;
+                        }
+                    }
+                    if can_stop && self.plan.greedy && !frame.stop_done {
+                        frame.stop_done = true;
+                        charge(8).map_err(Work)?;
+                        if self.assertions[1].matches(input, at, self.ignore_case, self.multiline) {
+                            return Ok(Some(self.result(&frames, start)));
+                        }
+                    }
+                    frames.pop();
+                }
+            }
+            if sticky || start == input.len() {
+                return Ok(None);
+            }
+            charge(2).map_err(Work)?;
+            let units = input.code_units();
+            let first = units[start];
+            start +=
+                crate::regexp_unicode_character::unicode_input_character(units, start, first).1;
+            if self.minimum > input.len() - start {
+                return Ok(None);
+            }
+        }
+    }
+    fn result(
+        &self,
+        frames: &[AssertedStringRepeatFrame],
+        start: usize,
+    ) -> RegExpUnicodeRepeatedStringClassMatch {
+        let at = frames.last().expect("successful continuation").at;
+        RegExpUnicodeRepeatedStringClassMatch {
+            range: start..at,
+            last_iteration: frames
+                .len()
+                .checked_sub(2)
+                .map(|previous| frames[previous].at..at),
+            class_selected: frames.len() > 1,
+        }
+    }
+}
