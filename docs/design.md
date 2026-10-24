@@ -11615,3 +11615,34 @@ classes. Runtime selects larger nullable counts after the earlier simple and
 zero/one-minimum proofs on the full capture source. A dedicated body retains
 whole/final ranges and the class-selected tag, preserving original source,
 names/indices, lastIndex, String consumers, cloning and collection.
+
+
+Core larger plain string-class counts admit a separate prefix-free proof. The
+canonical finite trie must have no empty member, no live member that prefixes
+another live member, and no scalar fallback. The existing full simple body and
+pure-empty outside proofs retain every group and class leaf before this check.
+Empty alternatives, assertions and nested class-path loops remain separate.
+The property is checked after case canonicalization, so `A|ab` is prefix-free
+without i and overlapping under i. Set algebra can disable a terminal while
+retaining dead suffix edges: `ab|abc` minus `abc` therefore remains eligible.
+
+The property scan charges the trie capacity and node passes before inspection
+and fallible temporary allocation. Flat parent/live arrays propagate active
+terminals from newer children to their unique older parents. A live child of a
+terminal identifies a strict prefix. The shared trie remains immutable, and
+storage/clone/drop stay flat and bounded by the compiled class size. Earlier
+public matcher domains, callbacks and capture projections remain unchanged.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher can retry a shorter class member after
+a required continuation fails. Prefix-free members have at most one accepted
+endpoint at each input position, so those word retries cannot change a result.
+The finder executes the required run, then greedy/lazy optional members within
+the exact decimal upper-minus-lower allowance. Nonsticky failure retries the next
+Unicode boundary after the failed run's start, including positions inside its
+first word. On `abcda`, `[\q{abcd|bc|da}]{2}` fails at zero and succeeds at one
+with `bc` then `da`; its final body range is `3..5`, while outside scopes enclose
+`1..5`. Sticky execution tests its initial Unicode boundary. Each class query and suffix
+search is charged before inspection. A minimum larger than the remaining UTF-16
+length fails with constant finder work, after complete construction proof.
+Only the whole/final ranges and class-selected tag are retained. Runtime
+selection of larger prefix-free counts remains separate.

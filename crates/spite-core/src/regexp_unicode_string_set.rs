@@ -618,6 +618,51 @@ impl RegExpUnicodeStringSetMatcher {
         }))
     }
 
+    /// Charges a live canonical trie scan before proving prefix-free membership.
+    /// Scalar fallbacks retain a separate proof, even if disjoint from words.
+    pub(crate) fn has_prefix_free_string_members_with_work<E>(
+        &self,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, RegExpUnicodeSetCompileError<E>> {
+        let program = &self.program;
+        if program.scalars.is_some() || program.terminal[0] {
+            return Ok(false);
+        }
+        charge(
+            program
+                .edges
+                .capacity()
+                .saturating_add(program.terminal.len().saturating_mul(3))
+                .saturating_add(1),
+        )
+        .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut parents = Vec::<usize>::new();
+        parents
+            .try_reserve_exact(program.terminal.len())
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        parents.resize(program.terminal.len(), 0);
+        let mut live = Vec::<bool>::new();
+        live.try_reserve_exact(program.terminal.len())
+            .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+        live.extend_from_slice(&program.terminal);
+        for (&(parent, _), &child) in &program.edges {
+            // TrieBuilder appends each child after its unique parent. Algebra
+            // may clear terminals while retaining their now-dead suffix edges.
+            debug_assert!(parent < child);
+            parents[child] = parent;
+        }
+        for child in (1..live.len()).rev() {
+            if live[child] {
+                let parent = parents[child];
+                if program.terminal[parent] {
+                    return Ok(false);
+                }
+                live[parent] = true;
+            }
+        }
+        Ok(true)
+    }
+
     /// Whether the underlying class contains the empty string, before assertions.
     pub(crate) fn has_empty_member(&self) -> bool {
         self.program.terminal[0]

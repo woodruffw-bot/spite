@@ -707,3 +707,182 @@ fn nullable_count(units: &[u16], at: usize) -> Option<(usize, usize, Option<usiz
     let lazy = units.get(end) == Some(&0x3f);
     Some((end + usize::from(lazy), minimum, optional, !lazy))
 }
+
+/// A larger braced count of a nonempty prefix-free finite string class.
+///
+/// Requires validated v/vi input and normalized capture names. No class member
+/// may be a strict prefix of another after canonicalization; scalar fallbacks,
+/// empty members and empty alternatives remain separate proofs. Each input
+/// position therefore has at most one accepted member endpoint. Failed required
+/// runs may retry later starting boundaries without word/capture history
+/// (22.2.2.3 RepeatMatcher).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodePrefixFreeStringClassCaptureMatcher {
+    plan: RegExpUnicodeRepeatedStringClassCaptureMatcher,
+    minimum: usize,
+    optional: Option<usize>,
+}
+impl RegExpUnicodePrefixFreeStringClassCaptureMatcher {
+    /// Proves one larger braced count and all original body/outside terms.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(48).saturating_add(256))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let (mut minimum, mut optional) = (0, None);
+        let Some(hole) = counted_hole(units, |units, at| {
+            let (end, lower, remaining, greedy) = nullable_count(units, at)?;
+            minimum = lower;
+            optional = remaining;
+            Some((end, true, false, greedy))
+        }) else {
+            return Ok(None);
+        };
+        let mut simple = Vec::with_capacity(units.len());
+        simple.extend_from_slice(&units[..hole.atom.end]);
+        simple.push(0x2b);
+        if !hole.greedy {
+            simple.push(0x3f);
+        }
+        simple.extend_from_slice(&units[hole.count_end..]);
+        let Some(plan) = RegExpUnicodeRepeatedStringClassCaptureMatcher::compile_with_work(
+            &JsString::from_code_units(simple),
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if plan.empty_alternative
+            || plan.class.has_outside_assertions()
+            || !plan
+                .class
+                .has_prefix_free_string_members_with_work(&mut charge)?
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            plan,
+            minimum,
+            optional,
+        }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects outside scopes on the whole range and body scopes on the last member.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Tries complete required runs, then consuming optional members up to the bound.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, E> {
+        charge(4)?;
+        let Some(start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        if self.minimum > input.len() - start || self.plan.class.max_match_code_units() == 0 {
+            return Ok(None);
+        }
+        let mut first = self.first_from(input, start, sticky, &mut charge)?;
+        while let Some(range) = first {
+            let start = range.start;
+            if self.minimum > input.len() - start {
+                return Ok(None);
+            }
+            let (mut at, mut last, mut required) = (range.end, range, self.minimum - 1);
+            while required != 0 {
+                let Some(range) = self.plan.class_prefix(input, at, &mut charge)? else {
+                    break;
+                };
+                debug_assert_eq!(range.start, at);
+                debug_assert!(range.end > at);
+                if range.end == at {
+                    return Ok(None);
+                }
+                at = range.end;
+                last = range;
+                required -= 1;
+            }
+            if required == 0 {
+                if self.plan.greedy {
+                    let mut optional = self.optional;
+                    while optional != Some(0) {
+                        let Some(range) = self.plan.class_prefix(input, at, &mut charge)? else {
+                            break;
+                        };
+                        debug_assert_eq!(range.start, at);
+                        debug_assert!(range.end > at);
+                        if range.end == at {
+                            break;
+                        }
+                        at = range.end;
+                        last = range;
+                        optional = optional.map(|left| left - 1);
+                    }
+                }
+                return Ok(Some(RegExpUnicodeRepeatedStringClassMatch {
+                    range: start..at,
+                    last_iteration: Some(last),
+                    class_selected: true,
+                }));
+            }
+            if sticky {
+                return Ok(None);
+            }
+            charge(2)?;
+            let units = input.code_units();
+            let next = start
+                + if (0xd800..=0xdbff).contains(&units[start])
+                    && units
+                        .get(start + 1)
+                        .is_some_and(|unit| (0xdc00..=0xdfff).contains(unit))
+                {
+                    2
+                } else {
+                    1
+                };
+            if self.minimum > input.len() - next {
+                return Ok(None);
+            }
+            // Retrying inside a previously matched member is observable: with
+            // {abcd,bc,da}{2}, abcda fails at zero and succeeds at one.
+            first = self.first_from(input, next, false, &mut charge)?;
+        }
+        Ok(None)
+    }
+    fn first_from<E>(
+        &self,
+        input: &JsString,
+        at: usize,
+        sticky: bool,
+        charge: &mut impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        let found = self.plan.class_prefix(input, at, charge)?;
+        if found.is_some() || sticky {
+            return Ok(found);
+        }
+        charge(
+            (input.len() - at)
+                .saturating_add(1)
+                .saturating_mul(self.plan.class.search_passes(false).saturating_add(4)),
+        )?;
+        Ok(self.plan.class.find(input, at, false))
+    }
+}

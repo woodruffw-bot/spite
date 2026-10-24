@@ -20071,3 +20071,25 @@ reviewed variants. Strict workspace Clippy, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. The Runtime inventory is
 558 case files and 4,346 integration cases. Fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Core larger prefix-free string-class counts
+
+Four focused groups compare seventeen finite/algebraic word families, twelve
+counts, six independent capture trees and atom/group scopes across eight UTF-16
+inputs and all starts/sticky/i/m. The model detects empty and canonicalized
+strict prefixes independently and executes unique required runs plus optional
+members at successive starting boundaries. Fifteen native tables cover equal
+and mixed widths, shared prefixes without terminal overlap, failed required
+runs retried inside an earlier word, sticky failures, Unicode boundaries/folding,
+whole-versus-last scopes and impossible huge minima. Live-member proof after set
+subtraction retains valid classes whose dead suffix edges remain in the trie.
+Deep 20,000-capture scopes, long shared-prefix members, huge minima with constant
+finder work, cloning/drop, every constructor/find callback cancellation and
+recovery, extra exact-one wrappers and closed predicates/references/leaves pass.
+
+Execution passes all four focused groups and 431 Runtime units. All 60,072 prior
+API records retain exact domains, construction/search work and capture projection.
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas are unchanged.
