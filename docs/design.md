@@ -11458,4 +11458,7 @@ and one. Other minima/maxima, optional/open counts, references and class-bearing
 repetition retain separate proofs. Existing constructors retain their exact
 callbacks and accepted domains. Construction, normalization and dropping remain
 flat with source-sized storage; matching reuses the bounded root finder.
-Runtime selection remains separate from this constructor.
+Runtime selects the exact-one constructor after the original surrounding
+constructor on the full normalized capture source. The same body retains
+original count spelling, names, flags, point/whole/branch aliases, String
+consumers, cloning, collection and opt-in host abort behavior.

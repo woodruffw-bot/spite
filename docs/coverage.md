@@ -19702,3 +19702,38 @@ normalization and ordinary vi singleton controls. Workspace documentation tests,
 strict workspace Clippy, formatting, dependency policy, source/fixture inventories
 and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
 or default quota changes.
+
+
+## Runtime exact-one counts on surrounding asserted string-class alternatives
+
+Three groups retain 64 class/input witnesses, seven paired branch/spine
+profiles, six inner layouts, seven counted outside layouts and both orders.
+Independent finite native controls determine eligibility while lexical role
+tables retain all point/whole/branch values, never slots, named aliases, original
+count spellings and sticky state. Exact consumers wrap prior surrounding
+patterns in a noncapturing exact-one group; no capture slot changes. They cover
+shorter eligible members, distinct empty selections, empty counts/choices,
+required predicates, root-local assertions, supplementary starts/folding,
+escaped names, matchAll, replacement, search, split, read-only lastIndex, clones
+and collection. A specified Unicode failed-search result excludes surrogate
+interiors. Four older exact-one rejections in three files become native-verified
+normal result/finalizer checks, with unknown-leaf replacements retained. Deep roles
+and long words stay flat. Opt-in constructor/exec aborts preserve bindings and
+lastIndex, and winning initial sticky empty alternatives retain bounded work.
+Other class-path counts, optional/assertion-bearing choices, extra classes or
+branches, consuming outside terms, references and unknown leaves remain host
+unsupported cases.
+
+
+Execution passes 431 Runtime units, 17 native fixed consumers and four migrated
+eight-record native controls. The full Unicode run passes 1,620 groups; its two
+obsolete rejection groups pass after the control updates in a 38-group targeted
+rerun, covering all 1,622 Unicode groups. All 230,400 exact differential records
+match across 384 independent pattern/control pairs, 32 class families, thirteen
+branch profiles, seven shared profiles, seven counted outside layouts and twelve
+inputs with all starts/sticky/i/m combinations. Controls retain native exact-one
+counts, explicit Unicode candidate loops/leading normalization and finite vi
+alternatives; only effect-free huge empty counts reduce. Strict workspace
+Clippy, documentation tests, formatting, dependency policy, inventories and diff
+checks pass. Runtime inventory is 552 files and 4,328 integration cases. No
+corpus fixture, snapshot, dependency, intrinsic inventory or default quota changes.

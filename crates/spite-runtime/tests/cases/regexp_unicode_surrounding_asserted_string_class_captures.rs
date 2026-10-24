@@ -644,12 +644,18 @@ fn surrounding_asserted_string_class_consumers_keep_point_whole_and_branch_alias
     check(
         r"var r=/(?<start>\B)(?<whole>(?<part>[\q{|a|ab}])|(?<empty>))(?<end>\B)/dvg;r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.start===''&&m.groups.whole===''&&m.groups.part===''&&m.groups.empty===undefined&&m.groups.end===''&&m.indices.groups.start[0]===5&&m.indices.groups.end[0]===5&&r.lastIndex===5",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(?:([\\q{a|ab}])|()){1}(\\b)",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\",\"\"],\"indices\":[[0,2],[0,2],\"<undefined>\",[2,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\",\"\"],\"indices\":[[0,2],[0,2],\"<undefined>\",[2,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"((\b)|())(([\q{a|ab}])|())",
         r"(\b)?(([\q{a|ab}])|())",
         r"(([\q{a|ab}])|())(\b)?",
         r"(?:([\q{a|ab}])|())+(\b)",
-        r"(?:([\q{a|ab}])|()){1}(\b)",
+        r"(?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()){1}(\b)",
         r"(\b)(([\q{a|ab}])|()|())",
         r"(\b)(([\q{a|ab}])|([\q{}]))",
         r"(\b)(([\q{a|ab}])|\1)",
