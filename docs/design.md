@@ -12037,3 +12037,20 @@ proof after the skipped class/empty alternative proofs on the full normalized
 capture source. Its dedicated body retains original source/flags, lexical named
 aliases, lastIndex, String consumers, cloning and collection. Optional predicate
 scope captures remain undefined beside defined ordinary outside point captures.
+
+
+Core separately proves class repetition when every outside predicate belongs to
+a zero-minimum scope. It shares the optional-scope masking scan without changing
+earlier API domains or charged work, rejects any remaining live predicate, and
+validates the complete class/body through the five assertion-free repetition
+proofs. Nonprogressing predicate scopes retain undefined captures; ordinary
+outside points and required class/empty iterations preserve their own identity.
+
+ECMA-262 edition 17 22.2.2.3–4 still controls greedy/lazy count, longest-member and
+ordered class/empty continuation. With no live endpoint predicate, a bounded
+nullable repetition may stop after its optional consuming allowance, and a lazy
+required-empty path may succeed without consuming. Search, Unicode folding and
+leading surrogate boundaries keep their existing behavior. Unknown leaves,
+references, additional classes and live/conditional predicates remain separate
+proofs. Constructor/capacity failures and callbacks retain their distinction.
+Runtime selection remains separate.

@@ -20848,3 +20848,22 @@ and eight live predicate profiles cover every start, sticky, ignore-case and
 multiline setting. Strict workspace Clippy, documentation tests, formatting,
 policy and inventories pass; fixtures, snapshots, dependencies and default
 quotas are unchanged.
+
+
+## Core repetition with only zero-minimum outside predicate scopes
+
+Four new focused groups pass using the existing independent oracle helpers.
+Six finite/scalar/known-empty families, seven body counts, three class/empty
+modes, four capture layouts, atom/group counts, four zero-minimum scope layouts
+and four skipped-predicate profiles cover six UTF-16 inputs, all starts, sticky,
+ignore-case and multiline behavior. Forty native equivalent tables cover
+optional outside predicates beside required class/empty capture identity.
+Deep 20,000 optional scopes, 40,000-unit input, 20,000-digit lazy counts,
+clone/drop, every constructor/search callback cancellation and recovery, and
+complete unknown/literal/reference/additional-class rejection pass.
+
+The preceding forty-eight focused groups passed before this separate proof was
+added. All 71,112 prior API records retain exact domains, charged work and capture
+projection. Strict workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas are unchanged.
