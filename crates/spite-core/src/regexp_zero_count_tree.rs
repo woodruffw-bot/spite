@@ -29,6 +29,25 @@ pub(crate) fn compile_with_work<E>(
     source: &JsString,
     unicode: bool,
     sets: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Box<[bool]>>, E> {
+    compile_mode_with_work(source, unicode, sets, false, charge)
+}
+
+pub(crate) fn compile_positive_with_work<E>(
+    source: &JsString,
+    unicode: bool,
+    sets: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Box<[bool]>>, E> {
+    compile_mode_with_work(source, unicode, sets, true, charge)
+}
+
+fn compile_mode_with_work<E>(
+    source: &JsString,
+    unicode: bool,
+    sets: bool,
+    positive_assertions: bool,
     mut charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
     charge(source.len().saturating_mul(64).saturating_add(16))?;
@@ -47,13 +66,13 @@ pub(crate) fn compile_with_work<E>(
                 let (width, capturing, supported) =
                     if let Some((width, capturing)) = opener(units, cursor) {
                         (width, capturing, true)
-                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3d])
-                        || units[cursor..].starts_with(&[0x28, 0x3f, 0x21])
-                    {
+                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3d]) {
+                        (3, false, positive_assertions)
+                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x21]) {
                         (3, false, false)
-                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, 0x3d])
-                        || units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, 0x21])
-                    {
+                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, 0x3d]) {
+                        (4, false, positive_assertions)
+                    } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, 0x21]) {
                         (4, false, false)
                     } else {
                         return Ok(None);
@@ -331,5 +350,84 @@ mod tests {
             .is_some()
         );
         assert_eq!(seen, [source.len() * 64 + 16]);
+    }
+
+    fn positive(source: &str) -> Option<Box<[bool]>> {
+        compile_positive_with_work(&JsString::from(source), true, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+    }
+
+    #[test]
+    fn native_positive_assertion_masks_export_empty_captures_in_both_directions() {
+        for (source, expected) in [
+            (r"(?=(a{0}))", &[true][..]),
+            (r"(?<=(a{0}))", &[true][..]),
+            (r"(?=(a{0}|(b){0}))(?<=(c{0}))", &[true, false, true][..]),
+            (r"(?:(?=(a{0}))|(?<=(b{0})))+", &[true, false][..]),
+            (r"((?=(a{0}))(?<=(b{0})))?", &[false, false, false][..]),
+            (r"(?=(?:(a){0}|(b{0})+))", &[false, false][..]),
+            (r"(?<=(?i:((\p{RGI_Emoji}{0})?)))", &[true, false][..]),
+            (r"(?<=(a{0})(?=(b{0})))", &[true, true][..]),
+            (r"(?=(?<=((a){0})))", &[true, false][..]),
+            (r"((?!(a))){0}(?=(b{0}))", &[false, false, true][..]),
+        ] {
+            assert_eq!(positive(source).as_deref(), Some(expected), "{source}");
+            assert!(
+                compile(source, true, true).is_none(),
+                "earlier API: {source}"
+            );
+        }
+    }
+
+    #[test]
+    fn positive_assertion_proof_excludes_conditions_negative_bodies_and_active_references() {
+        for source in [
+            "(?=a)",
+            "(?<=a)",
+            "(?=a{0}|b)",
+            "(?<=a{0}|b)",
+            "(?!a{0})",
+            "(?<!a{0})",
+            "(?!a)",
+            "(?<!a)",
+            "(?=^)",
+            "(?<=$)",
+            r"(?=\b)",
+            r"(?<=(a{0})\1)",
+        ] {
+            assert!(positive(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn deep_positive_assertions_keep_flat_capture_masks_without_native_recursion() {
+        let depth = 100_000;
+        let prefix: String = ["(?=", "(?<="].into_iter().cycle().take(depth).collect();
+        let source = format!("{prefix}((a){{0}}){}", ")".repeat(depth));
+        assert_eq!(positive(&source).as_deref(), Some(&[true, false][..]));
+    }
+
+    #[test]
+    fn positive_assertion_work_precedes_source_access_and_preserves_earlier_costs() {
+        let source = JsString::from(r"(?=(a{0}))(?<=(b{0}))");
+        let mut seen = Vec::new();
+        assert!(matches!(
+            compile_positive_with_work(&source, true, true, |n| {
+                seen.push(n);
+                Err(41)
+            }),
+            Err(41)
+        ));
+        assert_eq!(seen, [source.len() * 64 + 16]);
+        let mut earlier = Vec::new();
+        assert!(
+            compile_with_work(&source, true, true, |n| {
+                earlier.push(n);
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(earlier, seen);
     }
 }

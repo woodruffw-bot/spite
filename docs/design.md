@@ -13118,3 +13118,19 @@ subtrees, selected branch values and undefined unselected slots without
 rebinding original references. Named/index aliases, String consumers, cloning
 and collection use the existing sequence result path. Original syntax errors
 still precede erasure; actual matching work is charged before input access.
+
+
+The tree reducer has a separate constructor for positive lookahead/lookbehind
+whose complete bodies always succeed empty (22.2.2.4). Such assertions export
+their capture masks without input access. Every active alternative still needs
+an independent empty proof. Reversing zero-width term evaluation in lookbehind
+preserves the mask: admitted terms have no consuming work or active reference
+dependencies, and empty repetition rollback keeps the same capture roles in
+either direction. Negative assertions and unproved consuming or conditional
+bodies remain unsupported by this proof.
+
+The earlier tree constructor retains its original assertion exclusions and
+source work. Both constructors use the same flat stack, capture-clear markers
+and constant-work retained plan; the new constructor explicitly enables only
+proved positive assertions. Source/frame work precedes allocation, and deeply
+nested assertions do not add native recursion.

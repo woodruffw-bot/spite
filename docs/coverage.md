@@ -23435,3 +23435,28 @@ cases; fixtures, snapshots, dependencies and default quotas are unchanged.
 The preceding restricted quantified-enclosing Runtime snapshot passes all 35
 Test262 runner tests and all 16,343 reviewed variants (397.55 s for the corpus
 group). This broad snapshot precedes tree Runtime integration.
+
+
+## Core positive assertions over empty-expression trees
+
+A separate tree constructor admits positive lookahead/lookbehind only when the
+complete body independently succeeds empty (22.2.2.4). Capture masks export in
+either direction without input reads; active consuming/conditional bodies,
+negative assertions and reference dependencies require other proofs. The
+earlier tree constructor retains its assertion exclusions and exact work.
+
+All 46 actual-source focused Core tests pass (0.45 s), including four new groups
+for ten independently checked native masks, forward/reverse nesting, optional
+rollback, unselected arms, modifier scopes, exclusions, pre-source work aborts
+and 100,000 alternating positive assertions without native recursion. All
+12,800 exact input/start/capture comparisons across 512 independently generated
+positive trees agree with actual Node records, including nonempty text, emoji,
+CR/LF and lone surrogates. All 12,800 earlier-tree baseline records also agree
+after the shared reducer refactor.
+
+Strict workspace Clippy with all targets passes (25.79 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A lexical review of all 2,685 retained unsupported controls finds none newly
+admitted by the positive proof. Source/frame work precedes allocation; retained
+storage and construction remain source-sized, with constant matching work and
+capture queries. Runtime integration follows separately.

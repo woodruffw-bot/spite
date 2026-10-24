@@ -46,6 +46,28 @@ impl RegExpZeroCountSequenceMatcher {
         )
     }
 
+    /// Proves empty trees including positive lookahead/lookbehind bodies.
+    ///
+    /// Requires complete original validation and normalized capture heads.
+    /// Positive assertions whose complete bodies always succeed empty export
+    /// their capture masks without reading input (22.2.2.4). All active arms
+    /// must independently stay empty; negative assertions and unproved consuming
+    /// bodies require other proofs. Earlier constructors remain unchanged.
+    pub fn compile_positive_tree_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(crate::regexp_zero_count_tree::compile_positive_with_work(
+            source,
+            unicode,
+            unicode_sets,
+            charge,
+        )?
+        .map(|defined| Self { unicode, defined }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
