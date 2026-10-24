@@ -23600,3 +23600,27 @@ cases; fixtures, snapshots, dependencies and default quotas are unchanged.
 The preceding positive-tree Runtime snapshot passes all 2,805 RegExp integration
 tests (826.80 s), including the corrected ordinary-string expectations. This
 broad snapshot precedes escaped/surrogate Runtime integration.
+
+
+## Core impossible root sequences from negative empty assertions
+
+A separate constant-size plan proves a complete root sequence blocked by a
+direct negative lookahead/lookbehind whose body independently always succeeds
+empty (22.2.2.4). Other validated terms cannot rescue that sequence. A flat
+mode-aware scan retains every original capture inventory and excludes root
+choices; projected bodies keep original bindings and use the empty-tree proof.
+No surrounding matching data is needed.
+
+All 59 actual-source focused Core tests pass (0.14 s), including five new groups
+for eight native no-match shapes and capture inventories, root-scope exclusions,
+100,000 surrounding captures, 20,000 direct assertions, every constructor-work
+abort and constant one-unit matching work with pre-input aborts. All 12,800
+actual native input/start no-match records and full original capture inventories
+agree across 512 independently generated ordinary/u/v patterns.
+
+Strict workspace Clippy with all targets passes (11.44 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
+Rust strings finds none newly admitted. Construction and temporary storage are
+source-sized; retained storage, clone/drop and matching remain constant.
+Earlier APIs and Runtime behavior are unchanged; integration follows separately.

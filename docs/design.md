@@ -13188,3 +13188,20 @@ erasure, while complete source spellings and capture numbering remain intact.
 Fixed-pair/lone/braced atoms, optional rollback and assertion imports use the
 shared named/index result path through String consumers, cloning and collection.
 Original syntax and binding errors still precede proof selection.
+
+
+A separate impossible-match plan proves a complete root sequence containing a
+direct negative lookahead/lookbehind whose body independently always succeeds
+empty (22.2.2.4). That assertion must fail at every position; other validated
+root terms cannot rescue the sequence. Root alternatives and negative
+assertions inside enclosing groups require other proofs. Original grammar,
+flags and named bindings must be validated before this proof.
+
+A flat mode-aware scan counts every original capture and locates direct root
+assertion bodies. Projected bodies keep their original bindings and use the
+existing empty-tree proof. Once one assertion proves failure, remaining source
+is still scanned for capture inventory and root choices, without proving
+irrelevant bodies. Source/copy work precedes allocation. Construction is
+source-sized; retained storage, clone/drop and actual no-match work are constant.
+Matching charges before any possible input access and needs no matching data
+from otherwise consuming or unsupported surrounding terms.

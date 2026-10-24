@@ -13,6 +13,7 @@ mod regexp_character;
 mod regexp_disjunction;
 mod regexp_escape;
 mod regexp_general_category_data;
+mod regexp_impossible;
 mod regexp_literal;
 mod regexp_outer_noncapturing;
 mod regexp_pattern_source;
@@ -64,6 +65,7 @@ pub use regexp_canonicalize::regexp_canonicalize_character;
 pub use regexp_character::RegExpCharacterMatcher;
 pub use regexp_disjunction::RegExpDisjunctionMatcher;
 pub use regexp_escape::regexp_escape_units;
+pub use regexp_impossible::RegExpImpossibleMatcher;
 pub use regexp_literal::RegExpLiteralMatcher;
 pub use regexp_outer_noncapturing::{
     RegExpOuterGroupBody, regexp_outer_group_body, regexp_outer_noncapturing_body,
