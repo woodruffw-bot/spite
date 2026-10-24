@@ -146,3 +146,54 @@ fn deep_enclosing_impossible_groups_keep_full_inventories_without_default_quotas
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn impossible_root_choices_preserve_every_arm_and_validate_original_early_errors() {
+    check(
+        r#"
+        var patterns=[
+            '(?!(?<left>[\\p{RGI_Emoji}]{0}))|[\\p{RGI_Emoji}]+(?<!(?<right>a{0}))',
+            '((?<outer>[\\p{RGI_Emoji}]+(?!(?<x>a{0}))))|(?<!\\uD800{0})',
+            '(?<before>\\p{RGI_Emoji})+(?!(?<zero>(?<erased>\\k<later>){0}))(?<later>c)|(?<before>[\\p{RGI_Emoji}]+)(?<!a{0})'
+        ],ok=true;
+        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pattern,flags);r.lastIndex=start;
+            ok=ok&&r.exec(input)===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start);
+        }
+        for(var source of ['(?!)|[\\p{Not_A_Property}]','(?!)|(?<x>a)(?<x>b)','(?!)|\\k<missing>']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn impossible_root_choice_consumers_clones_and_collection_keep_no_match_state() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?!(?<left>[\p{RGI_Emoji}]{0}))|[\p{RGI_Emoji}]+(?<!(?<right>a{0}))/dgv,called=0,ok='a😀'.match(r)===null&&Array.from('a😀'.matchAll(r)).length===0;
+        ok=ok&&'a😀'.replace(r,function(){called++;return '!/'})==='a😀'&&called===0&&'a😀'.search(r)===-1&&'a😀'.split(r).length===1&&'a😀'.split(r)[0]==='a😀';
+        var copy=new RegExp(r);copy.lastIndex=1;ok&&copy.exec('a😀')===null&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn many_impossible_alternatives_keep_duplicate_name_inventories_without_default_quotas() {
+    check(
+        r#"
+        var pattern=Array(5).fill('(?!(?<same>[\\p{RGI_Emoji}]{0}))').join('|'),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let pattern = JsString::from(
+        std::iter::repeat_n(r"(?!(?<same>[\p{RGI_Emoji}]{0}))", 1000)
+            .collect::<Vec<_>>()
+            .join("|")
+            .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+}

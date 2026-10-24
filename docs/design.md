@@ -13242,3 +13242,11 @@ capture inventories are summed without renumbering references. Source/copy
 work precedes allocation, each projected arm is scanned independently and total
 construction stays source-sized. Retained storage and actual no-match work
 remain constant; earlier constructors and their work are unchanged.
+
+
+Runtime selects the impossible-choice proof after the direct/enclosing proofs.
+Every root arm must independently fail before the constant no-match body is
+selected. Full capture inventories preserve cross-arm and duplicate-name
+bindings for original validation; no arm's result is fabricated or exposed.
+Shared execution keeps lastIndex, source/flags, String consumers, cloning and
+collection behavior. Original errors in later arms still precede proof selection.

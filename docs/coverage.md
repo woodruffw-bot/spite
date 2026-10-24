@@ -23721,3 +23721,26 @@ A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
 Rust strings finds none newly admitted. Construction remains source-sized;
 retained storage and matching remain constant. Earlier APIs and Runtime behavior
 are unchanged; integration follows separately.
+
+
+## Runtime independently impossible root choices
+
+Runtime selects the root-choice proof after the direct/enclosing proofs,
+requiring every alternative to independently fail. Full original capture
+inventories retain cross-arm and duplicate-name bindings for constructor
+validation. Source/flags, lastIndex, consumers, cloning and collection reuse
+the constant no-match body and shared execution path.
+
+All ten focused integration groups pass (0.66 s), including three new groups for
+direct/enclosed root alternatives, duplicate names across arms, original erased
+forward bindings, errors in later arms, source/flags and lastIndex, String
+consumers, cloning, collection and 1,000 alternatives sharing one name. All
+55,296 exact native metadata records across 512 independently composed
+ordinary/u/v choices agree on the fresh CLI, as do all ten complete JavaScript
+programs.
+
+All 436 Runtime unit tests pass (10.98 s). Strict workspace Clippy with all
+targets passes (12.21 s), alongside workspace documentation tests, formatting,
+dependency policy, inventories and diff checks. The grouped inventory remains
+615 Runtime cases; fixtures, snapshots, dependencies and default quotas are
+unchanged.
