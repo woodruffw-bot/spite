@@ -12726,3 +12726,21 @@ Runtime selects this erased-count proof after bounded zero-count class paths.
 Its dedicated body preserves every undefined inner slot, original source/flags,
 named aliases, indices, lastIndex and String consumers through cloning and
 collection.
+
+
+Core separately proves captured outside predicate/empty scopes around a
+zero-count truth root with larger or unbounded inner class-path counts. The flat
+nearest-zero-ancestor scan retains the original capture insertion point while
+class data stays opaque. The complete quantified body and both branches validate
+before the root becomes one outside-proof atom. Every erased capture remains
+undefined; outside conditional points and mandatory enclosing ranges can still
+participate (ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+The existing outside continuation kernel searches only zero-width paths, with
+class profiles disabled after full construction. Normalized Unicode starts,
+sticky behavior and later starts required by outside gates remain intact. Deep
+groups, decimal scanning, storage and clone/drop stay flat and source-sized.
+Unknown terms even under erased/skipped/never scopes, consuming outside siblings
+and patterns requiring a different zero-ancestor selection retain separate
+proofs. Earlier API domains, work and captures remain unchanged. Runtime
+selection remains separate.

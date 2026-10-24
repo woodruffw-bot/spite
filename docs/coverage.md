@@ -22483,3 +22483,29 @@ snapshots, dependencies and default quotas remain unchanged.
 All 100,352 exact differential records agree across all start, sticky, multiline
 and ignore-case combinations, including larger/unbounded class-path scopes,
 finite/scalar/known-empty bodies and independent branch profiles.
+
+
+## Core captured outside scopes around erased larger/unbounded class paths
+
+All four focused groups pass (7.62 s), including 160 native ordered capture tables
+and an independent 26-slot zero-iteration/outside-profile oracle. Original branch
+orders, finite/scalar/known-empty classes, larger/unbounded/lazy inner counts,
+padded root zero counts and mixed outside predicates retain conditional outside
+points, mandatory enclosing ranges and every undefined inner slot. Unicode
+starts and sticky bounds remain intact. Twenty thousand outside capture scopes,
+long shared-prefix words and clone/drop stay flat. Constructor and match
+cancellation recover at every charged boundary. Contradictory outside profiles
+use bounded work after construction; unknown terms still decline under
+erased/skipped/never scopes. A new 736-record baseline includes 376 supported
+cases. Runtime selection remains separate.
+
+All 96,872 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy passes (49.79 s).
+
+The preceding bounded optional/zero-count class-path Runtime snapshot passes all
+16,343 reviewed Test262 variants and 35 runner tests (499.49 s for the corpus
+integration target). This run compiled before larger/unbounded Runtime paths.
+
+Documentation tests, formatting, policy, inventories and diff checks pass for the
+captured outside erased-count proof. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.
