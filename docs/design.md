@@ -12581,3 +12581,22 @@ selects this zero-count proof after captured outside optional-root scopes. The
 dedicated body preserves undefined body slots, conditional outside points,
 mandatory enclosing ranges, actual endpoint truth, source/flags, named aliases,
 indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves an optional outer root containing complete nested
+ordinary/exact-one wrappers around a branch-local class/empty truth choice. A
+flat balanced scan identifies the complete outer group and its padded/lazy
+zero-to-one count. Exact-one normalization and complete-wrapper projection then
+retain every original lexical capture while both original branches validate.
+All captures inside the optional root, including mandatory inner wrappers, stay
+undefined on zero iterations. A nonempty iteration gives each complete inner
+wrapper the accepted iteration range (ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+Matching delegates the existing optional progress and endpoint retry kernel with
+a checked enclosing-capture count. Empty-first branches and empty class members
+cannot establish participating minimum-zero iterations; no later start precedes
+a valid zero-iteration result. Storage, traversal and clone/drop remain flat and
+source-sized. Unknown terms even in lazy/never bodies, additional optional/zero
+inner counts, outside terms and other outer counts retain separate proofs.
+Earlier API domains and charged work remain unchanged. Runtime selection remains
+separate.

@@ -35,6 +35,7 @@ pub use string_class_captures::{
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
@@ -1272,4 +1273,5 @@ mod tests {
     include!("regexp_unicode_truth_table_surrounding_optional_string_class_alternative_tests.rs");
     include!("regexp_unicode_truth_table_scoped_optional_string_class_alternative_tests.rs");
     include!("regexp_unicode_truth_table_zero_count_root_string_class_alternative_tests.rs");
+    include!("regexp_unicode_truth_table_nested_optional_string_class_alternative_tests.rs");
 }
