@@ -12260,4 +12260,8 @@ profile probes charge sixteen work units each; preceding matchers use no extra
 profile and retain exact domains and callback sequences. Unknown terms,
 references and conditional class spines remain separate proofs even behind
 never profiles. Source traversal, captures and continuation storage remain flat
-and host limits remain opt-in. Runtime selection remains separate.
+and host limits remain opt-in. Runtime selects this truth-profile proof after
+the three conjunctive choice proofs on the complete normalized capture source.
+The dedicated body retains actual endpoint truth, final iteration identity,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.
