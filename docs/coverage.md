@@ -20678,7 +20678,7 @@ All 1,673 Unicode Runtime groups pass (901.14 s), as do 431 Runtime unit tests
 programs and three migrated unsupported controls. The three existing controls
 now check source, flags, complete captures/indices and native results; their
 unknown-leaf rejection controls remain. Four literal/program/formatted/generated
-control scans found only those three newly supported cases. The first 129,600
+control scans found only those three newly supported cases. All 230,400
 exact differential records match independent native controls across mixed
 finite/scalar classes, branch/capture layouts and Unicode starts.
 Strict workspace Clippy, documentation tests, formatting, policy and inventories
@@ -20702,3 +20702,28 @@ All 68,904 prior API records retain exact domains, charged construction/search
 work and capture projection. Strict workspace Clippy, documentation tests,
 formatting, policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime single class with skipped scopes and live predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Bare/exact-one class paths preserve live line/word endpoint retries and required
+empty class identity beside undefined skipped captures. Named/escaped-name
+aliases, matchAll, callback replacement, split/search, cloning, collection and
+read-only lastIndex retain original source, flags and capture aliases. Deep
+1,000 skipped scopes, defined outside empty points, a shorter successful member
+after a longer one fails a live boundary, 20,000-unit shared-prefix members,
+scalar fallback, constructor abort isolation and closed unproved paths pass.
+The independent consumer controls enter the class once and retain unused empty
+capture slots under zero counts.
+
+All three new groups pass (1.31 s), alongside 431 Runtime unit tests (9.00 s)
+and forty native tables plus eight consumer references on the fresh CLI.
+All 230,400 exact differential records agree across 384 independent pairs:
+32 mixed nullable/nonnullable finite/scalar forms, twelve bare/exact-one spellings,
+six capture layouts, four skipped-scope layouts and eight live predicate profiles
+cover all starts, sticky, ignore-case and multiline behavior. All 1,536 proof/flag
+combinations compile. Four unsupported-control scans found no newly supported
+cases to migrate. Strict workspace Clippy, documentation tests, formatting,
+policy and inventories pass; fixtures, snapshots, dependencies and default
+quotas are unchanged.

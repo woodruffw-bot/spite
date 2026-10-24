@@ -34,6 +34,7 @@ use spite_core::{
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
+    RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
@@ -2567,13 +2568,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeUnassertedZeroCountStringClassCaptures(body)));
                 }
-                RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeUnassertedZeroCountSingleStringClassCaptures(body)));
+                }
+                RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeUnassertedZeroCountSingleStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeZeroCountAssertedSingleStringClassCaptures))
 
             })?;
             if body.is_some() {

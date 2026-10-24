@@ -11964,7 +11964,11 @@ the selected start/end points. Empty members enter the required class body and
 retain a defined final class range. Reversed line gates, Unicode search/folding,
 callbacks and constructor/capacity failures retain their existing semantics.
 Conditional predicate paths, references, additional classes and unknown terms
-remain unproved. Runtime selection remains separate.
+remain unproved. Runtime selects the live-predicate single-class proof after the
+single-class skipped-only proof on the full normalized capture source. Its
+separate body retains named/escaped-name aliases, indices, source/flags, Unicode
+search, lastIndex, String consumers, cloning and collection. A failed longer
+member's live suffix still permits a shorter member at the same start.
 
 
 Core separately proves a root or grouped class/empty alternative whose outside
