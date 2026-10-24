@@ -289,7 +289,7 @@ impl RegExpZeroCountSequenceMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_impossible_empty_sequence_with_work::<false, E>(source, unicode, sets, charge)
+        Self::compile_impossible_empty_sequence_with_work::<0, E>(source, unicode, sets, charge)
     }
 
     /// Proves optional impossible spines concatenated with independently empty terms.
@@ -306,10 +306,29 @@ impl RegExpZeroCountSequenceMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_impossible_empty_sequence_with_work::<true, E>(source, unicode, sets, charge)
+        Self::compile_impossible_empty_sequence_with_work::<1, E>(source, unicode, sets, charge)
     }
 
-    fn compile_impossible_empty_sequence_with_work<const OPTIONAL: bool, E>(
+    /// Proves optional established-impossible terms concatenated with independently empty terms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// At least one complete root term must use the optional-known-impossible
+    /// proof. Other terms use earlier negative-impossible or empty-tree proofs.
+    /// Every selected term always stays empty, so independently composed masks
+    /// and original bindings survive concatenation (22.2.2.2, 22.2.2.4).
+    /// Root choices, consuming and unproved terms reject the constructor.
+    /// Disjoint source/copy/mask work precedes allocation; earlier modes retain
+    /// their domains and work.
+    pub fn compile_optional_known_impossible_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impossible_empty_sequence_with_work::<2, E>(source, unicode, sets, charge)
+    }
+
+    fn compile_impossible_empty_sequence_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
         sets: bool,
@@ -335,7 +354,14 @@ impl RegExpZeroCountSequenceMatcher {
                 return Ok(None);
             };
             let segment = JsString::from_code_units(units[cursor..end].to_vec());
-            let mut plan = if OPTIONAL {
+            let mut plan = if MODE == 2 {
+                Self::compile_optional_known_impossible_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?
+            } else if MODE == 1 {
                 Self::compile_optional_impossible_validated_with_work(
                     &segment,
                     unicode,
@@ -345,7 +371,7 @@ impl RegExpZeroCountSequenceMatcher {
             } else {
                 None
             };
-            if OPTIONAL {
+            if MODE != 0 {
                 selected |= plan.is_some();
             }
             if plan.is_none() {
@@ -364,7 +390,7 @@ impl RegExpZeroCountSequenceMatcher {
                     &mut charge,
                 )?;
             }
-            if !OPTIONAL {
+            if MODE == 0 {
                 selected |= plan.is_some();
             }
             if plan.is_none() {
@@ -553,6 +579,52 @@ impl RegExpZeroCountSequenceMatcher {
         };
         let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
         let Some(inner) = Self::compile_optional_impossible_sequence_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let captures = scope.captures + inner.capture_count();
+        charge(captures)?;
+        let mut defined = Vec::with_capacity(captures);
+        defined.resize(scope.defined, true);
+        defined.resize(scope.captures, false);
+        if scope.optional {
+            defined.resize(captures, false)
+        } else {
+            defined.extend(inner.defined)
+        }
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
+    /// Proves ordinary/modifier spines around independently empty optional established-impossible sequences.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every body term independently stays empty; required wrappers retain the
+    /// body's mask and optional repeats roll descendant writes back (22.2.2.3.1,
+    /// 22.2.2.7). Original bindings and symbolic bounds remain intact. All flat
+    /// scope, body-copy and full-mask work precedes allocation.
+    pub fn compile_enclosing_optional_known_impossible_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let Some(inner) = Self::compile_optional_known_impossible_sequence_validated_with_work(
             &body,
             unicode,
             sets,
@@ -2890,6 +2962,205 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(37)),
             Err(37)
+        );
+    }
+    fn optional_known_sequence(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_sequence_validated_with_work(
+            &JsString::from(source), true, true, |_| Ok::<(), ()>(()),
+        ).unwrap()
+    }
+
+    #[test]
+    fn optional_known_sequences_preserve_interleaved_required_skipped_and_erased_global_slots() {
+        for (source, mask) in [
+            (
+                r"((?![\p{RGI_Emoji}]*))?((a)\3){0}",
+                &[false, false, false][..],
+            ),
+            (
+                r"((a)\4){0}(((?![\p{RGI_Emoji}]*))?)+([b]{0})+",
+                &[false, false, true, false, true][..],
+            ),
+            (
+                r"((?!a*)|(?!(b{0})))?((?![\p{RGI_Emoji}]*))*",
+                &[false, false, false][..],
+            ),
+            (r"((?!(?=(a)*)))?(?!(?!(b{0})))", &[false, false, false][..]),
+            (r"((?![\p{RGI_Emoji}]*))?\uD83D\uDE00{0}", &[false][..]),
+        ] {
+            let plan = optional_known_sequence(source).unwrap_or_else(|| panic!("{source}"));
+            assert_eq!(plan.defined.as_ref(), mask, "{source}");
+        }
+    }
+
+    #[test]
+    fn optional_known_sequences_reject_root_choices_possible_terms_and_continuation_sensitive_arms()
+    {
+        for source in [
+            r"((?!a*))?",
+            r"((?!a*))?a",
+            r"a((?!a*))?",
+            r"((?!a*))?|([a]{0})+",
+            r"((?!a*))?([a]*)+",
+            r"((?!a*))?(|a)+",
+            r"((?!a))?([a]{0})+",
+            r"(?=a)((?!a*))?",
+            r"[a]{0}[b]{0}",
+        ] {
+            assert!(optional_known_sequence(source).is_none(), "{source}");
+        }
+        assert!(RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_sequence_validated_with_work(
+            &JsString::from(r"((?!a*))?[b]{0}"), false, true, |_| Ok::<(), ()>(()),
+        ).unwrap().is_none());
+    }
+
+    #[test]
+    fn optional_known_sequences_keep_many_disjoint_masks_flat_and_bounds_symbolic() {
+        let source = r"(((?![\p{RGI_Emoji}]*))?)+((a)\1){0}".repeat(20_000);
+        let plan = optional_known_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 80_000);
+        assert!(
+            plan.defined
+                .chunks_exact(4)
+                .all(|mask| mask == [true, false, false, false])
+        );
+        let source = format!(
+            r"((?![\p{{RGI_Emoji}}]*)){{0,{}}}([a]{{0}})+",
+            "9".repeat(20_000)
+        );
+        assert_eq!(
+            optional_known_sequence(&source).unwrap().defined.as_ref(),
+            &[false, true]
+        );
+    }
+
+    #[test]
+    fn optional_known_sequence_work_interrupts_before_each_segment_proof_and_mask() {
+        let source = JsString::from(r"((?![\p{RGI_Emoji}]*))?((a)\1){0}([b]{0})+");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_sequence_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())},
+        ).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(matches!(
+            RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_sequence_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}},
+            ),Err(n)if n==stop));
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(41)),
+            Err(41)
+        );
+    }
+    fn enclosing_optional_known_sequence(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_enclosing_optional_known_impossible_sequence_validated_with_work(
+            &JsString::from(source),true,true,|_|Ok::<(),()>(()),
+        ).unwrap()
+    }
+
+    #[test]
+    fn enclosing_optional_known_sequences_preserve_required_and_optional_prefix_masks() {
+        for (source, mask) in [
+            (
+                r"(((?![\p{RGI_Emoji}]*))?([a]{0})+)+",
+                &[true, false, true][..],
+            ),
+            (
+                r"(((?![\p{RGI_Emoji}]*))?([a]{0})+)?",
+                &[false, false, false][..],
+            ),
+            (
+                r"((((?![\p{RGI_Emoji}]*))?([a]{0})+)*)+",
+                &[true, false, false, false][..],
+            ),
+            (
+                r"(?im-s:(((?![\p{RGI_Emoji}]*))?((a)\4){0})){2,3}?",
+                &[true, false, false, false][..],
+            ),
+            (
+                r"(((?!a*)|(?!(b{0})))?((?![\p{RGI_Emoji}]*))*){0001,0002}",
+                &[true, false, false, false][..],
+            ),
+        ] {
+            assert_eq!(
+                enclosing_optional_known_sequence(source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_optional_known_sequences_reject_unwrapped_single_and_possible_contexts() {
+        for source in [
+            r"((?!a*))?[a]{0}",
+            r"(((?!a*))?)+",
+            r"(((?!a*))?a)+",
+            r"(((?!a*))?[a]{0})+a",
+            r"a(((?!a*))?[a]{0})+",
+            r"(((?!a*))?[a]{0})+|a",
+            r"(((?!a*))?(|a)+)+",
+        ] {
+            assert!(
+                enclosing_optional_known_sequence(source).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_optional_known_sequences_keep_deep_masks_and_huge_minima_flat() {
+        let body = r"((?![\p{RGI_Emoji}]*))?([a]{0})+";
+        let source = format!("{}{body}{}", "(".repeat(100_000), ")+".repeat(100_000));
+        let plan = enclosing_optional_known_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert_eq!(&plan.defined[100_000..], &[false, true]);
+        let source = format!("({body}){{{}}}", "9".repeat(20_000));
+        assert_eq!(
+            enclosing_optional_known_sequence(&source)
+                .unwrap()
+                .defined
+                .as_ref(),
+            &[true, false, true]
+        );
+    }
+
+    #[test]
+    fn enclosing_optional_known_sequence_work_interrupts_before_scope_body_and_full_mask() {
+        let source = JsString::from(r"(?im-s:(((?![\p{RGI_Emoji}]*))?([a]{0})+)*)+");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_enclosing_optional_known_impossible_sequence_validated_with_work(&source,true,true,|n|{work.push(n);Ok::<(),()>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_optional_known_impossible_sequence_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
         );
     }
 }

@@ -13701,3 +13701,21 @@ impossible operands, including mixed known root choices. Full normalized source
 keeps incoming bindings and every lexical slot. Shared constant no-match
 execution preserves source/flags, lastIndex, String consumers, cloning and
 collection; original validation errors precede proof selection.
+
+
+A separate sequence proof concatenates optional established-impossible spines
+with independently empty negative-impossible or empty-tree terms. Every root
+term must independently stay empty, and at least one uses the broader optional
+proof (22.2.2.2, 22.2.2.4). Original term bindings and interleaved masks survive.
+Root choices and consuming/unproved terms reject the constructor. Earlier
+sequence modes retain their domains and work. Disjoint source/copy/mask work
+precedes allocation, construction and retained masks stay source-sized, and
+matching and capture queries remain constant.
+
+
+A separate enclosing-sequence constructor wraps optional established-impossible
+concatenations in complete ordinary/modifier spines. Every body term stays empty,
+so required wrappers preserve the body mask and optional repetitions roll back
+descendants (22.2.2.3.1, 22.2.2.7). Original bindings and symbolic counts remain
+intact. Flat scope/body-copy/full-mask work precedes allocation; retained masks
+stay source-sized and actual matching and capture queries remain constant.

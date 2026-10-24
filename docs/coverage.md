@@ -24813,3 +24813,49 @@ programs. All 436 Runtime unit tests pass (3.96 s). Strict workspace Clippy with
 all targets passes (7.56 s), alongside documentation tests, formatting, dependency
 policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+Optional established-impossible concatenations (Core)
+---------------------------------------------------
+
+The new sequence constructor composes optional established-impossible spines
+with independently empty negative-impossible or empty-tree terms. Every term
+must stay empty; at least one must use the broader optional proof. Root choices
+and consuming/unproved terms reject the proof. Earlier sequence modes retain
+their domains and work.
+
+All 171 actual-source focused Core tests pass (0.59 s), including four new groups
+for original interleaved masks and erased global bindings, exclusions including
+continuation-sensitive choices, 20,000 disjoint repeated segments with 80,000
+slots, 20,000-digit bounds, every charged segment/proof/mask interruption and
+Unicode actual-work/boundary behavior. All 12,800 exact native input/start/capture
+records across 512 independently composed ordinary/u/v sequences agree. Both
+earlier negative-impossible and optional-impossible sequence constructors and
+their enclosing constructors retain all 12,800 native records each after the
+scanner-mode refactor. A lexed review of 2,732 direct unsupported control-array
+entries admits none.
+
+Strict workspace Clippy with all targets passes (8.50 s). Documentation tests,
+formatting, dependency policy, inventories and diff checks retain the passing
+results recorded with the immediately preceding Runtime increment. Runtime
+inventory remains 617; fixtures, snapshots, dependencies and quotas are unchanged.
+
+
+Enclosing optional established-impossible sequences (Core)
+--------------------------------------------------------
+
+The enclosing constructor wraps complete independently empty optional established-
+impossible sequences with ordinary/modifier groups. Required wrappers preserve
+the body's mask; optional repeats roll descendant writes back. Original
+bindings, complete lexical slots and symbolic bounds remain intact.
+
+All 175 actual-source focused Core tests pass (1.39 s), including four new groups
+for required/optional prefix masks, original references, modifiers and lazy/padded
+counts, exclusions, 100,000 outside groups, 20,000-digit minima and interruption
+before every charged scope/body/mask step. All 12,800 exact native input/start/
+capture records across 512 independently composed ordinary/u/v patterns agree.
+A lexed review of 2,732 direct unsupported control-array entries admits none.
+Strict workspace Clippy with all targets passes; documentation tests, formatting,
+dependency policy, inventories and diff checks retain the passing results
+recorded with the preceding Runtime increment. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and quotas are unchanged.
