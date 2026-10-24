@@ -1,33 +1,35 @@
-//! Complete Unicode positive lookahead over one character atom (22.2.2.3–4).
+//! Complete positive Unicode assertions over one character atom (22.2.2.3–4).
 
 use crate::{
-    JsString, RegExpUnicodeRepeatedAtomMatcher, regexp_zero_count_group::enclosing_group_body,
-    regexp_zero_count_sequence::group_end, regexp_zero_count_tree::surrogate_atom_end,
+    JsString, RegExpUnicodeRepeatedAtomMatcher, regexp_literal::unicode_start,
+    regexp_zero_count_group::enclosing_group_body, regexp_zero_count_sequence::group_end,
+    regexp_zero_count_tree::surrogate_atom_end,
 };
 use std::ops::Range;
 
-/// A zero-width lookahead match and its independently retained operand extent.
+/// A zero-width assertion match and its independently retained operand extent.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RegExpUnicodePositiveAtomMatch {
     /// Whole assertion match at the original UTF-16 candidate boundary.
     pub range: Range<usize>,
-    /// Selected operand range, which may extend beyond the empty whole match.
+    /// Selected operand range, which may precede or follow the empty whole match.
     pub operand: Range<usize>,
 }
 
-/// A complete positive lookahead over one Unicode character atom.
+/// A complete positive Unicode assertion over one character atom.
 ///
 /// The original u/v Pattern and flags must be validated and capture heads
 /// normalized first. Complete unquantified ordinary/noncapturing wrappers may
 /// surround the assertion and its operand. Outside captures stay empty; operand
 /// wrappers capture the selected run, including a defined empty zero-iteration
 /// run (22.2.2.3.1, 22.2.2.4). Internal captures, modifiers, alternatives,
-/// continuations and lookbehind require other compilers.
+/// continuations and repeated lookbehind operands require other compilers.
 #[derive(Clone, Debug)]
 pub struct RegExpUnicodePositiveAtomMatcher {
     operand: RegExpUnicodeRepeatedAtomMatcher,
     outside_captures: usize,
     captures: usize,
+    backward: bool,
 }
 
 impl RegExpUnicodePositiveAtomMatcher {
@@ -133,6 +135,32 @@ impl RegExpUnicodePositiveAtomMatcher {
         )
     }
 
+    /// Compiles complete positive lookbehind over one unquantified Unicode atom.
+    ///
+    /// Full original u/v validation and normalized capture heads are required.
+    /// A non-reference character atom has one complete predecessor character;
+    /// optional operand line assertions retain their original input context.
+    /// Outside wrappers capture the empty assertion position, while complete
+    /// operand wrappers capture that predecessor (22.2.2.4). Other counts and
+    /// word predicates remain separate proofs.
+    pub fn compile_single_lookbehind_validated_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_mode_with_work::<4, E>(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )
+    }
+
     // Share the wrapper parser and delegated compiler across callback types.
     #[inline(never)]
     fn compile_mode_with_work<const MODE: u8, E>(
@@ -151,12 +179,17 @@ impl RegExpUnicodePositiveAtomMatcher {
             } else {
                 (units, 0)
             };
-        if !assertion.starts_with(&[0x28, 0x3f, 0x3d])
+        let (prefix, width): (&[u16], usize) = if MODE >= 4 {
+            (&[0x28, 0x3f, 0x3c, 0x3d], 4)
+        } else {
+            (&[0x28, 0x3f, 0x3d], 3)
+        };
+        if !assertion.starts_with(prefix)
             || group_end(assertion, 0, unicode_sets) != Some(assertion.len())
         {
             return Ok(None);
         }
-        let body = &assertion[3..assertion.len() - 1];
+        let body = &assertion[width..assertion.len() - 1];
         let (body, captures) = if let Some(scope) = enclosing_group_body(body, unicode_sets) {
             (&body[scope.body], scope.captures)
         } else {
@@ -216,6 +249,7 @@ impl RegExpUnicodePositiveAtomMatcher {
             operand,
             outside_captures,
             captures: outside_captures + captures,
+            backward: MODE >= 4,
         }))
     }
 
@@ -230,13 +264,62 @@ impl RegExpUnicodePositiveAtomMatcher {
     /// sticky candidates and the approved leading-surrogate boundary policy.
     /// Its callback charges actual work before input access; no capture-sized
     /// allocation or rescanning is needed (22.2.2.4, 22.2.7.2).
+    /// Single-atom lookbehind tries one complete predecessor per candidate;
+    /// the fixed count bounds each sticky operand probe without suffix rescans.
     pub fn find_with_work<E>(
         &self,
         input: &JsString,
         start: usize,
         sticky: bool,
-        charge: impl FnMut(usize) -> Result<(), E>,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodePositiveAtomMatch>, E> {
+        if self.backward {
+            charge(1)?;
+            let Some(mut candidate) = unicode_start(input, start) else {
+                return Ok(None);
+            };
+            let units = input.code_units();
+            loop {
+                // A candidate inspects at most two preceding units. The proved
+                // fixed count bounds each sticky operand attempt to two atoms.
+                charge(4)?;
+                if candidate > 0 {
+                    let previous = candidate
+                        - if candidate >= 2
+                            && (0xdc00..=0xdfff).contains(&units[candidate - 1])
+                            && (0xd800..=0xdbff).contains(&units[candidate - 2])
+                        {
+                            2
+                        } else {
+                            1
+                        };
+                    if let Some(operand) =
+                        self.operand
+                            .find_with_work(input, previous, true, &mut charge)?
+                    {
+                        if operand.end == candidate {
+                            return Ok(Some(RegExpUnicodePositiveAtomMatch {
+                                range: candidate..candidate,
+                                operand,
+                            }));
+                        }
+                    }
+                }
+                if sticky || candidate == units.len() {
+                    return Ok(None);
+                }
+                charge(3)?;
+                candidate += if (0xd800..=0xdbff).contains(&units[candidate])
+                    && units
+                        .get(candidate + 1)
+                        .is_some_and(|tail| (0xdc00..=0xdfff).contains(tail))
+                {
+                    2
+                } else {
+                    1
+                };
+            }
+        }
         Ok(self
             .operand
             .find_with_work(input, start, sticky, charge)?
@@ -927,6 +1010,259 @@ mod tests {
         }
         assert_eq!(
             p.find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
+        );
+    }
+
+    fn behind_plan(
+        source: &str,
+        sets: bool,
+        i: bool,
+        m: bool,
+        s: bool,
+    ) -> RegExpUnicodePositiveAtomMatcher {
+        RegExpUnicodePositiveAtomMatcher::compile_single_lookbehind_validated_with_work(
+            &JsString::from(source),
+            sets,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn single_lookbehind_captures_predecessor_ranges_before_empty_outside_captures() {
+        for (atom, input, range) in [
+            ("a", "ba!", 1..2),
+            ("[a-z]", "!a!", 1..2),
+            (r"\d", "a2!", 1..2),
+            (".", "😀a", 0..2),
+            (r"\u{1F600}", "x😀!", 1..3),
+            (r"\uD83D\uDE00", "x😀!", 1..3),
+            (r"\$", "!$!", 1..2),
+        ] {
+            let p = behind_plan(&format!("((?<=(({atom}))))"), false, false, false, false);
+            let m = p
+                .find_with_work(&JsString::from(input), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(m.range, range.end..range.end);
+            assert_eq!(m.operand, range);
+            assert_eq!(p.capture_count(), 3);
+            assert_eq!(p.capture_range(0, &m), Some(m.range.clone()));
+            assert_eq!(p.capture_range(1, &m), Some(range.clone()));
+            assert_eq!(p.capture_range(2, &m), Some(range));
+        }
+    }
+
+    #[test]
+    fn single_lookbehind_line_dot_and_property_folds_use_original_input_context() {
+        for sets in [false, true] {
+            let p = behind_plan(r"(?<=(^a$))", sets, true, true, false);
+            assert_eq!(
+                p.find_with_work(&JsString::from("\nA\n"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap()
+                    .operand,
+                1..2
+            );
+            let p = behind_plan(r"(?<=(^\$$))", sets, false, false, false);
+            assert_eq!(
+                p.find_with_work(&JsString::from("$"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap()
+                    .operand,
+                0..1
+            );
+            for i in [false, true] {
+                let p = behind_plan(r"(?<=(\p{ASCII}))", sets, i, false, false);
+                let m = p
+                    .find_with_work(&JsString::from("ſa"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(m.operand, if i { 0..1 } else { 1..2 });
+            }
+            for s in [false, true] {
+                let p = behind_plan("(?<=(.))", sets, false, false, s);
+                let m = p
+                    .find_with_work(&JsString::from("\na"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(m.operand, if s { 0..1 } else { 1..2 });
+            }
+        }
+    }
+
+    #[test]
+    fn single_lookbehind_sticky_surrogate_and_end_candidates_remain_complete() {
+        let p = behind_plan("(?<=(.))", false, false, false, false);
+        let input = JsString::from("😀a");
+        assert!(
+            p.find_with_work(&input, 1, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+        let m = p
+            .find_with_work(&input, 1, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 2..2);
+        assert_eq!(m.operand, 0..2);
+        assert_eq!(
+            p.find_with_work(&input, 3, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            2..3
+        );
+        assert!(
+            p.find_with_work(&input, 4, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+        let p = behind_plan(r"(?<=(\uD800))", false, false, false, false);
+        assert!(
+            p.find_with_work(
+                &JsString::from_code_units(vec![0xd800, 0xdc00]),
+                0,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(
+            p.find_with_work(
+                &JsString::from_code_units(vec![0xd800]),
+                0,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .unwrap()
+            .operand,
+            0..1
+        );
+        assert_eq!(
+            p.find_with_work(&input, usize::MAX, false, |_| Err(59)),
+            Err(59)
+        );
+    }
+
+    #[test]
+    fn single_lookbehind_excludes_counts_other_directions_and_unproved_bindings() {
+        for source in [
+            r"(?<=(a*))",
+            r"(?<=(a{1}))",
+            r"(?<=(ab))",
+            r"(?<=(a|b))",
+            r"(?<=(\ba\b))",
+            r"(?<=(\1))",
+            r"(?<!(a))",
+            r"(?=(a))",
+            r"(?<=(a))a",
+            r"(?i:(?<=(a)))",
+            r"((?<=(a)))*",
+        ] {
+            assert!(
+                RegExpUnicodePositiveAtomMatcher::compile_single_lookbehind_validated_with_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodePositiveAtomMatcher::compile_single_atom_validated_with_work(
+                &JsString::from("(?<=(a))"),
+                false,
+                false,
+                false,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn single_lookbehind_storage_work_cancellations_and_anchored_search_are_flat() {
+        let source = format!(
+            "{}(?<={}a{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        assert_eq!(
+            behind_plan(&source, false, false, false, false).capture_count(),
+            200_000
+        );
+        let p = behind_plan("(?<=(a$))", false, false, false, false);
+        let input = JsString::from("a".repeat(20_000).as_str());
+        let mut work = 0;
+        let m = p
+            .find_with_work(&input, 0, false, |n| {
+                work += n;
+                assert!(work <= 120 * input.len() + 64);
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 20_000..20_000);
+        assert_eq!(m.operand, 19_999..20_000);
+        let source = JsString::from("((?<=(a)))");
+        let mut work = Vec::new();
+        RegExpUnicodePositiveAtomMatcher::compile_single_lookbehind_validated_with_work(
+            &source,
+            false,
+            false,
+            false,
+            false,
+            |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodePositiveAtomMatcher::compile_single_lookbehind_validated_with_work(&source,false,false,false,false, |n| {seen.push(n);if seen.len()==stop+1 {Err(stop)}else{Ok(())}}),Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let p = behind_plan("(?<=(a))", false, false, false, false);
+        let input = JsString::from("!aaa!");
+        let mut work = Vec::new();
+        let expected = p
+            .find_with_work(&input, 0, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap();
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(p.find_with_work(&input,0,false, |n| {seen.push(n);if seen.len()==stop+1 {Err(stop)}else{Ok(())}}),Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            p.clone()
+                .find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
                 .unwrap(),
             expected
         );

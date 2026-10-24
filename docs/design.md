@@ -14077,3 +14077,25 @@ caching preserves names, indices, source/flags, state, String consumers, copies
 and collection. Word and line predicates retain original input context, and
 ordinary search excludes interior surrogate candidates. Compilation remains
 outside reentrant user conversions.
+
+
+A separate Core constructor compiles complete positive Unicode lookbehind over
+one unquantified non-reference character atom (22.2.2.4). It shares the flat
+wrapper inventory and lexical single-iteration projection with forward
+assertions, while keeping the original assertion direction in the plan.
+Optional operand ^/$ assertions retain full original input context. Other
+counts, alternatives, references, modifiers and word predicates retain separate
+proof domains.
+
+Search visits complete-character candidate boundaries. Each candidate derives
+at most one complete predecessor and probes the proved fixed-count operand
+stickily at that predecessor's beginning. Only an operand ending at the
+candidate can succeed. Outside wrappers capture the empty candidate position;
+operand wrappers capture the original predecessor range before it. The fixed
+count bounds each probe to at most two character attempts, including failing
+end assertions, so repeated candidate retries remain linear rather than
+rescanning input suffixes. Actual work precedes all input access. Initial
+trailing-pair offsets retain the approved leading-boundary policy. Construction,
+cloning and dropping stay flat, with no input-sized capture storage. Earlier
+forward constructors retain their domains and work; Runtime integration remains
+separate.

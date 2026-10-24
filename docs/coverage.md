@@ -25654,3 +25654,21 @@ The `04ce1dcc` bare-atom snapshot also passes all 2,954 RegExp integration
 tests (736.36 s), completing both recorded broad checks for that snapshot.
 The later unquantified word-predicate extension retains its separate focused
 and differential evidence.
+
+## Core positive Unicode lookbehind over one character
+
+The actual-source focused harness passes 243 tests, including five lookbehind
+groups. They check captures preceding an empty whole/outside match, classes,
+escapes and astral widths, original line/dot/property context, sticky/end and
+initial-pair candidates, lone surrogates, proof exclusions, 200,000 wrappers,
+clone/drop and every construction/search cancellation followed by recovery.
+A 20,000-character failing-suffix search enforces a linear charged-work bound.
+
+The native sticky-candidate oracle agrees on all 53,248 input/start/sticky/
+range/capture records across 512 patterns, with independent complete-character
+advancement. Nine ASCII iv patterns contribute 936 equivalent-range controls
+for the documented property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. Strict workspace Clippy with all targets,
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.
