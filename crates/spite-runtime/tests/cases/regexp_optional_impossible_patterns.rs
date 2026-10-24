@@ -207,3 +207,67 @@ fn enclosing_optional_impossible_sequence_depth_and_huge_bounds_have_no_default_
         ));
     }
 }
+
+#[test]
+fn first_optional_impossible_choices_keep_first_masks_and_all_later_undefined_names() {
+    check(
+        r#"
+        var rows=[
+            ['(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<later>[\\p{RGI_Emoji}]+)',[false,false,false]],
+            ['(?<before>a{0})(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<later>[\\p{RGI_Emoji}]+)',[true,false,false,false]],
+            ['(?<outside>(?<before>a{0})(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?(?<after>b{0}))+|(?<later>[\\p{RGI_Emoji}]+)',[true,true,false,false,true,false]],
+            ['(?<same>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<same>[\\p{RGI_Emoji}]+)',[false,false,false]],
+            ['(?<before>a{0})(?<skipped>(?!(?<zero>\\k<later>){0}))?|(?<later>[\\p{RGI_Emoji}]+)',[true,false,false,false]]
+        ],ok=true;
+        for(var row of rows)for(var flags of ['dv','dgv','dgyv','dgimsv']){
+            var r=new RegExp(row[0],flags);r.lastIndex=1;var m=r.exec('😀a');
+            ok=ok&&m.index===0&&m[0]===''&&m.length===row[1].length+1&&r.lastIndex===(r.global||r.sticky?0:1)&&r.source===row[0];
+            for(var i=0;i<row[1].length;i++)ok=ok&&(row[1][i]?m[i+1]===''&&m.indices[i+1][0]===0&&m.indices[i+1][1]===0:m[i+1]===undefined&&m.indices[i+1]===undefined);
+        }
+        var named=/(?<same>a{0})(?<skipped>[\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<same>[\p{RGI_Emoji}]+)/dgv,hit=named.exec('😀');
+        ok=ok&&hit.groups.same===''&&hit.indices.groups.same[0]===0&&hit.indices.groups.same[1]===0&&hit.groups.skipped===undefined;
+        for(var source of ['((?!))?|[\\p{Not_A_Property}]','((?!))?|(?<x>a)(?<x>b)','((?!))?|\\k<missing>']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn first_optional_impossible_choice_consumers_clones_and_collection_keep_skipped_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<before>a{0})(?<skipped>[\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<later>[\p{RGI_Emoji}]+)/dgv,ok=true,offsets=[];
+        ok=ok&&JSON.stringify('😀a'.match(r))==='["","",""]';
+        ok=ok&&'😀a'.replace(r,function(match,before,skipped,zero,later,offset,input,groups){ok=ok&&before===''&&skipped===undefined&&zero===undefined&&later===undefined&&groups.before===''&&groups.later===undefined;offsets.push(offset);return '!';})==='!😀!a!'&&JSON.stringify(offsets)==='[0,2,3]';
+        ok=ok&&JSON.stringify('a😀b'.split(r))==='["a","",null,null,null,"😀","",null,null,null,"b"]';
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('😀');ok&&m.index===0&&m[1]===''&&m[4]===undefined&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.before===''&&after.groups.later===undefined&&after.indices.groups.later===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn first_optional_impossible_choices_keep_large_later_inventories_without_default_quotas() {
+    check(
+        r#"
+        var depth=10,pattern='([\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|'+'('.repeat(depth)+'[\\p{RGI_Emoji}]'+')'.repeat(depth),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+3&&m[depth+2]===undefined&&m.indices[depth+2]===undefined&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let depth = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"([\p{{RGI_Emoji}}]+(?!(?<zero>a{{0}})))?|{}[\p{{RGI_Emoji}}]{}",
+            "(".repeat(depth),
+            ")".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
+        depth + 3,
+        depth + 2,
+        depth + 2
+    ));
+}

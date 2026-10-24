@@ -927,6 +927,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove ordinary/modifier spines around optional-impossible empty sequences with exact required/optional enclosing and interleaved descendant masks.
 - [x] Execute enclosing optional-impossible empty sequences through Runtime and String consumers with exact enclosing and interleaved descendant capture masks.
 - [x] Prove root choices beginning with independently empty optional-impossible arms, retaining first-arm masks and undefined later capture inventories.
+- [x] Execute first optional-impossible root choices through Runtime and String consumers with exact first/skipped masks, original bindings and duplicate-name selection.
 - [x] Prove complete positive assertions over optional-impossible empty forms, exporting original capture masks in both directions with final operand continuations.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

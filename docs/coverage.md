@@ -24398,3 +24398,21 @@ Strict workspace Clippy with all targets passes (9.64 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Root choices beginning with optional-impossible arms (Runtime)
+-------------------------------------------------------------
+
+Runtime selects root choices whose first arm independently stays empty through
+the optional, optional-sequence or enclosing-sequence proofs. All 12 focused
+integration groups pass (0.09 s), including three new groups for first/skipped
+masks, consuming later arms, duplicate names with a participating empty first
+capture, original erased forward bindings and later errors, Unicode starts,
+lastIndex, callback/split captures, cloning, collection and 1,000 later captures.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v choices agree on the fresh CLI, as do all 12 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.50 s). Strict workspace Clippy with
+all targets passes (9.64 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.

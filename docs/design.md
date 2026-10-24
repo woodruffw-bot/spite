@@ -13524,3 +13524,11 @@ export the operand's empty/undefined mask without consuming input. Siblings and
 outside wrappers require other proofs. Source/copy work precedes allocation;
 the finite operand chain never calls this new constructor. Retained masks,
 Unicode boundaries and actual matching reuse the existing empty plan.
+
+
+Runtime selects root choices starting with independently empty optional-impossible
+arms after the whole/sequence/enclosing empty optional proofs. The first arm's
+mask is retained and all skipped later slots remain undefined, using the complete
+original normalized source. Duplicate names select the participating first-arm
+capture even when it is empty. Shared execution preserves Unicode boundaries,
+source/flags, lastIndex, String callback/split captures, cloning and collection.
