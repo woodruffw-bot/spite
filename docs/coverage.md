@@ -22360,3 +22360,29 @@ eight bounded batches. A new 736-record baseline includes 376 supported cases.
 Strict workspace Clippy (55.72 s), documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime integration remains separate; fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Runtime bounded class-path counts inside optional truth roots
+
+All three focused groups pass (2.66 s), retaining forced inner lazy consumption,
+outer lazy absence, bounded zero paths, shorter-member retries and every original
+lexical slot. Named and escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and strict lastIndex writes agree
+with native behavior. Deep 1,000-level nested lazy scopes, 20,000-unit shared-prefix
+scalar/string bodies and constructor host aborts remain flat. Full construction
+still rejects unknown terms under zero, lazy and never paths.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding rejection control now compares full native captures, indices, source,
+flags, input and lastIndex and agrees on the fresh CLI. Five source-shape scans
+retain the remaining rejection domains. All 1,024 proof/flag combinations for
+256 independent differential pairs are supported.
+All 100,352 exact differential records agree across every start, sticky,
+multiline and ignore-case combination, including nested lazy/zero class paths
+and finite/scalar/known-empty members.
+
+All 431 Runtime unit tests pass (9.31 s), and the affected preceding proof group
+passes all three tests (1.21 s). Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. The grouped Runtime
+inventory contains 604 case files. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.

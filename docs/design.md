@@ -12682,4 +12682,8 @@ Pure predicate scopes keep their original counts and conditional captures.
 Traversal, storage and clone/drop remain flat and source-sized. Unknown terms
 even under skipped/never scopes, additional consuming paths, unbounded or larger
 class-path counts and outside terms retain separate proofs. Earlier API domains,
-charged work and captures remain unchanged. Runtime selection remains separate.
+charged work and captures remain unchanged. Runtime selects this bounded-path
+optional proof after captured outside nested zero-count scopes. Its dedicated
+body retains original lexical slots, zero-iteration absence, live endpoint truth,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.

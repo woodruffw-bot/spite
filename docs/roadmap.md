@@ -848,7 +848,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove captured outside scopes around nested zero-count truth roots, validating skipped bodies while retaining outside participation.
 - [x] Execute captured outside scopes around nested zero-count truth roots through Runtime and String consumers.
 - [x] Prove bounded zero/one class-path counts inside optional truth roots, retaining progress and original lexical captures.
-- [ ] Execute bounded zero/one class-path counts inside optional truth roots through Runtime and String consumers.
+- [x] Execute bounded zero/one class-path counts inside optional truth roots through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
