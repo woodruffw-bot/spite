@@ -163,6 +163,16 @@ impl RegExpUnicodeRepeatedStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, E> {
+        self.find_with_maximum(input, requested, sticky, None, charge)
+    }
+    fn find_with_maximum<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        maximum: Option<usize>,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, E> {
         charge(4)?;
@@ -198,7 +208,11 @@ impl RegExpUnicodeRepeatedStringClassCaptureMatcher {
             }
         }
         if self.greedy {
+            let mut remaining = maximum.map(|limit| limit - usize::from(self.minimum_one));
             loop {
+                if remaining == Some(0) {
+                    break;
+                }
                 let Some(range) = self.class_prefix(input, at, &mut charge)? else {
                     break;
                 };
@@ -211,6 +225,7 @@ impl RegExpUnicodeRepeatedStringClassCaptureMatcher {
                 at = range.end;
                 last_iteration = Some(range);
                 class_selected = true;
+                remaining = remaining.map(|left| left - 1);
                 if self.maximum_one {
                     break;
                 }
@@ -287,6 +302,12 @@ fn class_end(units: &[u16], start: usize) -> Option<usize> {
     None
 }
 fn repeated_hole(units: &[u16]) -> Option<Hole> {
+    counted_hole(units, simple_count)
+}
+fn counted_hole(
+    units: &[u16],
+    mut count: impl FnMut(&[u16], usize) -> Option<(usize, bool, bool, bool)>,
+) -> Option<Hole> {
     let (mut at, mut captures, mut class_seen) = (0usize, 0usize, false);
     let mut frames = Vec::<Frame>::new();
     let mut hole = None;
@@ -324,7 +345,7 @@ fn repeated_hole(units: &[u16]) -> Option<Hole> {
                 }
                 let begin = at;
                 at = class_end(units, at)?;
-                if let Some((end, minimum_one, maximum_one, greedy)) = simple_count(units, at) {
+                if let Some((end, minimum_one, maximum_one, greedy)) = count(units, at) {
                     if hole.is_some() {
                         return None;
                     }
@@ -343,7 +364,7 @@ fn repeated_hole(units: &[u16]) -> Option<Hole> {
                 let frame = frames.pop()?;
                 at += 1;
                 if frame.class {
-                    if let Some((end, minimum_one, maximum_one, greedy)) = simple_count(units, at) {
+                    if let Some((end, minimum_one, maximum_one, greedy)) = count(units, at) {
                         if hole.is_some() {
                             return None;
                         }
@@ -366,4 +387,118 @@ fn repeated_hole(units: &[u16]) -> Option<Hole> {
         return None;
     }
     hole
+}
+
+/// A braced string-class repetition whose minimum is zero or one.
+///
+/// Requires validated v/vi input with normalized capture names.
+/// The complete body and pure-empty outside continuation use the same proof as
+/// simple repetition. A larger minimum needs backtracking between class members
+/// and remains a separate proof. Exact-one counts use the existing single-class
+/// and nullable-alternative constructors (22.2.2.3, RepeatMatcher).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeBoundedStringClassCaptureMatcher {
+    plan: RegExpUnicodeRepeatedStringClassCaptureMatcher,
+    maximum: Option<usize>,
+}
+impl RegExpUnicodeBoundedStringClassCaptureMatcher {
+    /// Proves one braced count with a zero/one minimum, except exact-one counts.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut maximum = None;
+        let Some(hole) = counted_hole(units, |units, at| {
+            let (end, minimum_one, limit, greedy) = bounded_count(units, at)?;
+            maximum = limit;
+            Some((end, minimum_one, limit == Some(1), greedy))
+        }) else {
+            return Ok(None);
+        };
+        let mut simple = Vec::with_capacity(units.len());
+        simple.extend_from_slice(&units[..hole.atom.end]);
+        simple.push(if hole.minimum_one { 0x2b } else { 0x2a });
+        if !hole.greedy {
+            simple.push(0x3f);
+        }
+        simple.extend_from_slice(&units[hole.count_end..]);
+        let Some(plan) = RegExpUnicodeRepeatedStringClassCaptureMatcher::compile_with_work(
+            &JsString::from_code_units(simple),
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self { plan, maximum }))
+    }
+    /// Counts every original lexical capture, including skipped body slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects body slots on the last accepted iteration and outside slots on the whole.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes at most the original upper bound, rejecting optional empty iterations.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, E> {
+        self.plan
+            .find_with_maximum(input, requested, sticky, self.maximum, charge)
+    }
+}
+fn bounded_count(units: &[u16], at: usize) -> Option<(usize, bool, Option<usize>, bool)> {
+    if units.get(at) != Some(&0x7b) {
+        return None;
+    }
+    let mut end = at + 1;
+    let digits = |end: &mut usize| {
+        let begin = *end;
+        let mut value = 0usize;
+        while let Some(&digit) = units.get(*end) {
+            if !(0x30..=0x39).contains(&digit) {
+                break;
+            }
+            value = value
+                .saturating_mul(10)
+                .saturating_add(usize::from(digit - 0x30));
+            *end += 1;
+        }
+        (*end != begin).then_some(value)
+    };
+    let minimum = digits(&mut end)?;
+    if minimum > 1 {
+        return None;
+    }
+    let maximum = if units.get(end) == Some(&0x2c) {
+        end += 1;
+        digits(&mut end)
+    } else {
+        Some(minimum)
+    };
+    if units.get(end) != Some(&0x7d)
+        || maximum.is_some_and(|limit| limit < minimum)
+        || minimum == 1 && maximum == Some(1)
+    {
+        return None;
+    }
+    end += 1;
+    let lazy = units.get(end) == Some(&0x3f);
+    Some((end + usize::from(lazy), minimum == 1, maximum, !lazy))
 }

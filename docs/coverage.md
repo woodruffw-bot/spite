@@ -19952,3 +19952,29 @@ variants. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. The Runtime inventory is 556 case files and
 4,340 integration cases; fixtures, snapshots, dependencies and default quotas
 are unchanged.
+
+
+## Core braced string-class repetition with zero/one minima
+
+Four groups compare twelve braced counts across 32 finite/algebraic class
+families, six independent capture-tree layouts, plain/class-first/empty-first
+bodies and atom/group scopes. The independent model checks whole and final
+iteration ranges and every original slot across eight UTF-16 inputs, all starts,
+sticky, i and m. Twenty-three native fixed tables cover finite and huge bounds,
+zero iterations, empty members, empty-first required participation, longest
+member priority, search/sticky failures, Unicode folding and interior pair starts.
+Deep counted ancestors, all constructor/find callback cancellations and recovery,
+cloning/drop, exact-one wrappers and bounded zero-iteration work remain flat.
+Larger minima, nested loops, additional consuming terms, predicates, references
+and unknown leaves under zero or empty-first counts retain closed controls.
+
+
+Execution passes all 1,266 Core tests and 431 Runtime units. All 58,600 prior
+public API records retain exact domains, construction/search work and capture
+projection, including the published simple-repetition matcher. The four focused
+new groups and 23 native fixed tables also pass independently. Strict workspace
+Clippy, documentation tests, formatting, dependency policy, inventories and diff
+checks pass. The fresh 35-test Test262 gate, including all 16,343 reviewed
+variants, passes with the shared finder. Runtime selection of the new braced
+proof remains separate; fixtures, snapshots, dependencies and default quotas
+are unchanged.

@@ -778,6 +778,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute exact-one unasserted string-class alternatives through Runtime RegExp and String consumers.
 - [x] Compile greedy/lazy simple repetition of variable-width string classes and nullable alternatives with pure-empty outside spines, preserving source priority, progress and final-iteration captures.
 - [x] Execute simple variable-width string-class repetition through Runtime RegExp and String consumers.
+- [x] Compile braced string-class repetition with minimum zero or one, preserving finite/huge upper bounds, progress and final-iteration captures.
+- [ ] Execute braced string-class repetition with minimum zero or one through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

@@ -98,11 +98,12 @@ pub use regexp_unicode_property_dot::{
 };
 pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableClassCaptureMatcher,
-    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedAtomMatch,
-    RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
-    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
-    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeBoundedStringClassCaptureMatcher, RegExpUnicodeEmptyStringClassCaptureMatcher,
+    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,
+    RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeRepeatedStringClassCaptureMatcher,
+    RegExpUnicodeRepeatedStringClassMatch, RegExpUnicodeSingleStringClassCaptureMatcher,
+    RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;

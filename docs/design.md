@@ -11550,3 +11550,31 @@ and search work is charged before inspection; no default quota or per-iteration
 capture history is added. Runtime stores the same whole range, final iteration
 and selected-class tag through a dedicated body, preserving original source,
 names/indices, lastIndex, String consumers, cloning and collection.
+
+
+Core braced string-class repetition admits one count with minimum zero or one,
+with any upper bound, around the same class atom or ordinary class/empty group.
+Additional class-path exact-one wrappers retain their lexical scopes. Exact-one
+principal counts use the existing single-class and nullable-alternative proofs.
+The new constructor fully proves the body and pure-empty outside continuation
+before applying its bound, including an upper bound of zero. Construction charges
+the original source before scanning; normalization replaces the principal count
+with star or plus before the existing exact-one normalization, retaining every
+original group and leaf.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher limits accepted iterations, including a
+required empty-first body. Optional empty bodies fail the progress check before
+capture state commits. Thus `(()|([\q{a|ab}])){1,2}` on `ababa` accepts a required
+empty iteration followed by one `ab` iteration. The final body range is `0..2`,
+while an outside capture encloses the whole repetition. A zero upper bound leaves
+all body slots undefined. Greedy matching stops at the upper bound without an
+extra class query; lazy matching accepts the minimum with the same source
+priority and empty-branch identity as simple repetition.
+
+Upper-bound decimal parsing saturates at usize::MAX: every optional accepted
+iteration advances in the allocated UTF-16 input, so a larger upper bound cannot
+limit any observable execution. No iteration history or count-sized storage is
+allocated. A larger minimum remains a separate proof: `[\q{aa|aaa}]{2}` on `aaaa`
+needs to retry the shorter first member. The existing simple constructor retains
+its domain and exact work callbacks through the shared private finder. Runtime
+selection of braced repetition remains separate.
