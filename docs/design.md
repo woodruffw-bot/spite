@@ -12477,4 +12477,8 @@ every skipped optional-root capture remains undefined (ECMA-262 edition 17
 Matching delegates progress and member retry rules unchanged. Storage, traversal
 and clone/drop remain flat and source-sized. Outside terms and quantified
 wrappers retain separate proofs; earlier API domains and charged work remain
-unchanged. Runtime selection remains separate.
+unchanged. Runtime selects this grouped optional-root proof after direct optional
+alternatives. Its dedicated body retains mandatory enclosing ranges separately
+from final-iteration absence, actual endpoint truth, original lexical slots,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.

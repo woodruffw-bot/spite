@@ -21895,3 +21895,30 @@ projection in seven bounded batches. Strict workspace Clippy (17.16 s),
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime selection remains separate; fixtures, snapshots, dependencies and default
 quotas remain unchanged.
+
+
+## Runtime grouped optional root truth alternatives
+
+Three focused groups pass (0.77 s), retaining defined mandatory enclosing ranges
+when the optional inner root chooses zero iterations. Skipped inner root and
+branch slots remain undefined. Both branch orders, greedy/lazy question and
+padded zero-to-one counts, required empty class identity, shorter-member retries,
+named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes retain native
+behavior. Deep 1,000-level enclosing captures, 20,000-unit shared-prefix
+scalar/string members and constructor cancellation remain flat. Unknown terms
+even inside lazy/never bodies and unsupported outside/quantified wrappers retain
+distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding rejection control now compares full native captures, indices, source,
+flags, input and lastIndex and agrees on the fresh CLI; its affected Rust proof
+group passes (0.10 s). Five source-shape scans retain all other rejection domains.
+All 100,352 exact differential records agree across 256 independent pairs, with
+all 1,024 proof/flag combinations supported. Complete ordinary wrappers, internal
+exact-one paths, finite/scalar/known-empty classes and independent branch profiles
+cover every start, sticky, multiline and ignore-case. All 431 Runtime unit tests
+pass (9.96 s), alongside strict workspace Clippy (20.47 s), documentation tests,
+formatting, policy, inventories and diff checks. The grouped Runtime inventory
+contains 595 case files. Fixtures, snapshots, dependencies and default quotas
+remain unchanged.
