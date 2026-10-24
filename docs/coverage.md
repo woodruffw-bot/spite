@@ -20481,3 +20481,25 @@ exact optional allowance. A periodic pinned Test262 run of the shared counted
 Core with the preceding Runtime also passes all 35 runner tests and 16,343
 reviewed variants (210.90 s corpus execution). Fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Core skipped outside assertion scopes around string-class repetition
+
+Four groups compare five finite/scalar/known-empty class families, ten count
+forms covering every delegated count domain, three body modes, six capture trees,
+atom/group scopes, four skipped-scope layouts and eight live assertion profiles
+across eight UTF-16 inputs and all starts/sticky/i/m. Independent live-body
+continuations retain their ordering; skipped lexical slots are independently
+undefined at their original positions. Forty native equivalent tables cover
+before/after scopes, nested zero groups and skipped assertion alternatives/counts,
+with Unicode starts/folding, huge exact optional allowances and branch profiles.
+Deep 20,000 skipped scopes, long 40,000-unit consuming paths, 20,000-digit live
+counts with bounded lazy empty work, every callback cancellation/recovery and
+closed live/conditional/unknown terms pass.
+
+All twenty-four combined focused groups pass, including the twenty preceding
+asserted-repetition groups. All 65,960 prior API records retain exact domains,
+construction/search work and capture projection. Strict workspace Clippy,
+documentation tests, formatting, dependency policy, inventories and diff checks
+pass. Runtime selection remains separate; fixtures, snapshots, dependencies
+and default quotas are unchanged.

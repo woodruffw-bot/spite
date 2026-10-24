@@ -797,6 +797,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile finite asserted nullable string-class counts with larger minima and exact optional allowances, reducing required-empty padding.
 - [x] Execute larger asserted nullable finite string-class counts through Runtime RegExp and String consumers.
 - [x] Compile larger asserted nullable string-class counts with scalar fallback and exact required-empty reduction.
+- [x] Compile exact-zero outside assertion scopes around proved string-class repetition, retaining undefined skipped captures.
+- [ ] Execute string-class repetition with skipped outside assertion scopes through Runtime and String consumers.
 - [ ] Execute larger asserted nullable scalar/string-class counts through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.

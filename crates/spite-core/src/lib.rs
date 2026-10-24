@@ -114,6 +114,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
+    RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};

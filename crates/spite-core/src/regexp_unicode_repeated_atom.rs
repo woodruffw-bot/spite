@@ -28,6 +28,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
+    RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
 };
 
 /// A selected Unicode repetition and the last captured atom iteration.

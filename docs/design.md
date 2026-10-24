@@ -11873,3 +11873,23 @@ so an unproved empty scalar language cannot trigger the empty-only shortcut.
 No storage depends on a huge count's decimal value. Required-empty capture
 identity, Unicode boundaries/folding and host work/capacity failures retain
 the shared semantics. Runtime selection remains separate.
+
+
+Core separately proves exact-zero outside assertion scopes around an already
+proved string-class repetition. A flat scope pass identifies skipped groups and
+rejects a skipped scope containing the repeated class. Two fallible source-sized
+masks mark zero-scope starts and ends. A second linear pass replaces only known
+^/$/word predicates inside those scopes with noncapturing empty terms; original
+captures, counts and the entire class body remain present. Escaped literals,
+unknown terms, references, lookaround and additional classes acquire no proof.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher invokes the continuation directly for
+maximum zero; the body and its captures never participate. Thus assertions inside
+a skipped scope, including nested alternatives and counts, impose no predicate,
+and their lexical captures remain undefined. The transformed source preserves
+those capture slots under their original zero counts. Other outside assertions
+must still satisfy the unconditional proof, including at least one live outside
+predicate. The existing nonnullable, zero/one-minimum nullable, two-required,
+larger finite and larger scalar plans retain live count/word/branch behavior.
+Both preprocessing and delegated compilation/search remain charged and fallible;
+no storage depends on huge decimal counts. Runtime selection remains separate.
