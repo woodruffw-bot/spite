@@ -344,6 +344,53 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves ordinary/modifier spines enclosing independently empty negative-impossible sequences.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every body term stays empty, so repeat continuations cannot expose a
+    /// consuming alternative. Required wrappers export empty captures; optional
+    /// repetitions roll descendant masks back (22.2.2.3.1, 22.2.2.7). Bounds
+    /// remain symbolic and original references keep their bindings. All scope,
+    /// copy and full-mask work precedes allocation.
+    pub fn compile_enclosing_negative_impossible_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let Some(inner) = Self::compile_negative_impossible_sequence_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let captures = scope.captures + inner.capture_count();
+        charge(captures)?;
+        let mut defined = Vec::with_capacity(captures);
+        defined.resize(scope.defined, true);
+        defined.resize(scope.captures, false);
+        if scope.optional {
+            defined.resize(captures, false)
+        } else {
+            defined.extend(inner.defined)
+        }
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -1794,6 +1841,100 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn enclosing_negative_impossible_sequence(
+        source: &str,
+    ) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_sequence_validated_with_work(
+            &JsString::from(source),true,true,|_|Ok::<(),()>(()),
+        ).unwrap()
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_sequences_preserve_required_optional_and_inner_masks() {
+        for (source, mask) in [
+            (r"((a{0})(?!(?!(b{0}))))+", &[true, true, false][..]),
+            (r"((a{0})(?!(?!(b{0}))))?", &[false, false, false][..]),
+            (
+                r"(((a{0})(?!(?!(b{0}))))?)+",
+                &[true, false, false, false][..],
+            ),
+            (
+                r"(?i:((a{0})(?!(?!(\4){0}))(b{0}))){2,3}",
+                &[true, true, false, true][..],
+            ),
+        ] {
+            assert_eq!(
+                enclosing_negative_impossible_sequence(source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_sequences_exclude_siblings_choices_and_unproved_bodies() {
+        for source in [
+            r"a{0}(?!(?!))",
+            r"((a{0})(?!(?!)))a",
+            r"a((a{0})(?!(?!)))",
+            r"((a{0})(?!(?!)))|",
+            r"((a)(?!(?!)))",
+            r"((a{0})(?!(?!))|a)",
+            r"((?!(?!)))",
+        ] {
+            assert!(
+                enclosing_negative_impossible_sequence(source).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_sequence_depth_and_bounds_keep_flat_storage() {
+        let source = format!(
+            "{}(a{{0}})(?!(?!(b{{0}}))){}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = enclosing_negative_impossible_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert!(plan.defined[..100_001].iter().all(|&v| v));
+        assert!(!plan.defined[100_001]);
+        for (minimum, expected) in [("0".to_owned(), false), ("9".repeat(20_000), true)] {
+            let body = r"((a{0})(?!(?!(b{0}))))";
+            let source = format!("{body}{{{minimum}}}");
+            assert_eq!(
+                enclosing_negative_impossible_sequence(&source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                &[expected, expected, false]
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_sequences_interrupt_before_scope_body_and_mask_steps() {
+        let source = JsString::from(r"(?i:((a{0})(?!(?!(b{0}))))?)+");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_sequence_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())}
+        ).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_sequence_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );

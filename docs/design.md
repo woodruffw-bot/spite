@@ -13351,3 +13351,13 @@ and every skipped later lexical slot, using the complete original normalized
 source. Duplicate names across original alternatives and erased forward bindings
 keep their original validation context. Shared empty execution preserves Unicode
 boundaries, lastIndex, String callback/split captures, cloning and collection.
+
+
+A separate enclosing-sequence constructor applies the flat ordinary/modifier
+scope proof to independently empty negative-impossible sequences. Every body
+term stays empty, so required repeat continuations cannot expose a consuming
+alternative. Required enclosing captures are defined empty; optional repeats
+roll the complete descendant mask back (22.2.2.3.1, 22.2.2.7). Original bindings,
+interleaved body masks and symbolic bounds are preserved. Scope, projection and
+full-mask work precede allocation; construction and retained storage remain
+source-sized without recursive wrapper processing.

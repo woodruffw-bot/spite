@@ -23981,3 +23981,25 @@ programs. All 436 Runtime unit tests pass (4.73 s). Strict workspace Clippy with
 all targets passes (22.54 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Enclosing negative-impossible empty sequences (Core)
+---------------------------------------------------
+
+A separate constructor admits complete ordinary/modifier spines around the
+independently empty concatenation proof. Required wrappers export empty
+captures; optional repeats roll the full descendant mask back. Interleaved
+body masks, original bindings and symbolic bounds remain intact.
+
+All 95 actual-source focused Core tests pass (0.45 s), including four new groups
+for required/optional/interleaved masks, erased outside/forward bindings,
+modifier scopes, sibling/choice/consuming exclusions, 100,000 enclosing groups,
+20,000-digit positive minima, zero maxima and interruption before every scope,
+body and mask step. All 12,800 exact native input/start/capture comparisons
+across 512 independently composed ordinary/u/v spines agree. A lexed review of
+2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (10.94 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
+unchanged.
