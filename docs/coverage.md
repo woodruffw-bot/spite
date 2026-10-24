@@ -19737,3 +19737,27 @@ alternatives; only effect-free huge empty counts reduce. Strict workspace
 Clippy, documentation tests, formatting, dependency policy, inventories and diff
 checks pass. Runtime inventory is 552 files and 4,328 integration cases. No
 corpus fixture, snapshot, dependency, intrinsic inventory or default quota changes.
+
+
+## Core exact-one counted class branches in asserted root alternatives
+
+Three groups exercise 32 finite/set-operation and character-result class
+families, twelve branch-predicate profiles, six lexical layouts, both orders,
+twelve inputs and all starts/sticky/i/m combinations against the independent
+ordered branch/capture oracle. Exact-one counts on atoms and branch wrappers
+retain padded range and lazy spellings. Six fixed native capture tables cover
+shorter eligible members, selected empty identities, multiline reversal,
+supplementary leading boundaries and folding. A 20,000-level counted ancestor
+spine and 20,000-digit zero prefixes stay flat through clone/drop. Every
+construction/search callback supports cancellation and recovery; original
+constructor counts, other minima/maxima, references, extra classes/branches,
+optional predicates, consuming siblings and unknown leaves behind impossible
+gates retain their separate proof boundaries.
+
+
+Execution passes all 1,249 Core tests and 431 Runtime units. All 54,920 prior API
+records retain their exact domains, construction/search work and capture
+projection. The six fixed capture tables match native references. Strict
+workspace Clippy, documentation tests, formatting, dependency policy, inventories
+and diff checks pass. No Runtime selection, fixture, snapshot, dependency or
+default quota changes.

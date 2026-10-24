@@ -81,6 +81,40 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
             enclosing_captures: 0,
         }))
     }
+    /// Proves exact-one counts in the class branch of a root alternative.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The sole
+    /// class atom and its ordinary ancestors may use {1} or {1,1}, with leading
+    /// zeros and lazy forms. RepeatMatcher executes their body once even when
+    /// empty; removing only those count tokens preserves lexical slots and
+    /// branch-local predicates in this reference-free proof. The entire original
+    /// class and both branches still require proof, including impossible gates.
+    /// Original root scope is required; enclosing choices use separate proofs
+    /// (22.2.2.3, RepeatMatcher).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_exact_single_counts_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if root_bar(units).is_none() {
+            return Ok(None);
+        }
+        let Some(normalized) = surrounding::exact_single_count_source(units) else {
+            return Ok(None);
+        };
+        Self::compile_with_work(
+            &JsString::from_code_units(normalized),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
     /// Proves complete ordinary wrappers around an asserted root alternative.
     ///
     /// Requires validated v/vi input and normalized capture names. Complete

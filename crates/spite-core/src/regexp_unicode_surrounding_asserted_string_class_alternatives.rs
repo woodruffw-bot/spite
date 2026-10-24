@@ -367,7 +367,7 @@ fn one_count_end(units: &[u16], at: usize) -> Option<usize> {
     end += usize::from(units.get(end) == Some(&0x3f));
     Some(end)
 }
-fn exact_single_count_source(units: &[u16]) -> Option<Vec<u16>> {
+pub(super) fn exact_single_count_source(units: &[u16]) -> Option<Vec<u16>> {
     let (mut at, mut class_seen) = (0usize, false);
     let mut frames = Vec::<bool>::new();
     let mut removed = Vec::<Range<usize>>::new();

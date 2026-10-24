@@ -11462,3 +11462,18 @@ Runtime selects the exact-one constructor after the original surrounding
 constructor on the full normalized capture source. The same body retains
 original count spelling, names, flags, point/whole/branch aliases, String
 consumers, cloning, collection and opt-in host abort behavior.
+
+
+### Exact-one counts in asserted root string-class alternatives
+
+A separate root constructor accepts {1}/{1,1}, padded and lazy, on the sole
+class atom and ordinary ancestors within its branch. The same flat normalizer
+removes only class-path count tokens. It retains every capture and assertion in
+its original branch, then runs the full existing root proof. RepeatMatcher's
+mandatory single execution includes empty bodies; initial capture clearing has
+no additional effect in this reference-free, unquantified choice. Empty-branch
+counts retain their original participation rules. Other class-path counts,
+unknown leaves even behind impossible assertions, and references still decline.
+Existing constructors retain their domains and callbacks; Runtime selection is
+separate. Construction, clone/drop and matching reuse the flat existing plans
+(22.2.2.3, RepeatMatcher).
