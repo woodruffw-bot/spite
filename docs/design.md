@@ -13675,3 +13675,11 @@ siblings reject this proof. The finite earlier-operand chain preserves original
 bindings and the full lexical inventory; symbolic bounds and flat wrapper scans
 avoid recursion or count expansion. Source/frame/copy work precedes allocation;
 the retained no-match plan and actual work remain constant.
+
+
+Runtime selects mixed established impossible root alternatives after the earlier
+nullable-guard proofs. Every arm must independently fail; complete normalized
+source keeps original bindings, duplicate-name alternatives and all lexical
+capture slots. Shared constant no-match execution preserves source/flags,
+lastIndex, String consumers, cloning and collection; original validation errors
+precede proof selection.
