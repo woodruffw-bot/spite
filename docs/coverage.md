@@ -24373,3 +24373,28 @@ programs. All 436 Runtime unit tests pass (3.32 s). Strict workspace Clippy with
 all targets passes (6.72 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Positive assertions over optional-impossible empty forms (Core)
+--------------------------------------------------------------
+
+The new whole-assertion constructor accepts positive lookahead/lookbehind over
+independently empty optional-impossible spines, sequences or first root choices.
+Both directions export the operand's original empty/undefined capture mask.
+The complete operand uses its final successful continuation; siblings, outside
+wrappers and unproved conditions require other proofs.
+
+All 131 actual-source focused Core tests pass (0.45 s), including four new groups
+for both assertion directions, all operand families, original erased forward
+bindings, exported/interleaved masks, conditional/sibling/nonroot exclusions,
+100,000 required operand groups, 100,002 capture slots, actual Unicode ranges,
+undefined descendants and interruption before every constructor/input step.
+All 12,800 exact native input/start/capture comparisons across 512 independently
+composed ordinary/u/v assertions agree, with exact source identity checked by
+the scratch oracle generator. A lexed review of 2,732 direct unsupported control
+array entries admits none.
+
+Strict workspace Clippy with all targets passes (9.64 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

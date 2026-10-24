@@ -631,6 +631,66 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves a complete positive assertion over independently empty optional-impossible forms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Both positive assertion directions export the operand's empty/undefined
+    /// mask (22.2.2.4). The complete operand uses its final successful
+    /// continuation, so the first-empty-root-choice proof is valid there.
+    /// Siblings and outside groups require other proofs. Source/copy work
+    /// precedes allocation; the finite operand chain never calls this method.
+    pub fn compile_positive_optional_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let start = if units.starts_with(&[0x28, 0x3f, 0x3d]) {
+            3
+        } else if units.starts_with(&[0x28, 0x3f, 0x3c, 0x3d]) {
+            4
+        } else {
+            return Ok(None);
+        };
+        if group_end(units, 0, sets) != Some(units.len()) {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(units[start..units.len() - 1].to_vec());
+        let mut plan = Self::compile_optional_impossible_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = Self::compile_optional_impossible_sequence_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_enclosing_optional_impossible_sequence_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_first_optional_impossible_validated_with_work(
+                &body, unicode, sets, charge,
+            )?;
+        }
+        Ok(plan)
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -2569,5 +2629,106 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
         }
+    }
+    fn positive_optional_impossible(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_positive_optional_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn positive_optional_impossible_assertions_export_masks_in_both_directions() {
+        for (source, mask) in [
+            (r"(?=((?!(a{0})))?)", &[false, false][..]),
+            (r"(?<=(((?!(a{0})))?)+)", &[true, false, false][..]),
+            (
+                r"(?=(a{0})((?!(b{0})))?(c{0}))",
+                &[true, false, false, true][..],
+            ),
+            (
+                r"(?<=((a{0})((?!(b{0})))?(c{0}))+)",
+                &[true, true, false, false, true][..],
+            ),
+            (
+                r"(?=(a{0})((?!(\4){0}))?|(b))",
+                &[true, false, false, false][..],
+            ),
+        ] {
+            assert_eq!(
+                positive_optional_impossible(source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn positive_optional_impossible_assertions_exclude_conditions_siblings_and_outside_contexts() {
+        for source in [
+            r"(?=a)",
+            r"(?<=a)",
+            r"(?=a{0})",
+            r"(?=((?!a))?)",
+            r"a(?=((?!))?)",
+            r"(?=((?!))?)a",
+            r"((?=((?!))?))",
+            r"(?=((?!))?)|a",
+            r"(?!(a{0})((?!))?)",
+        ] {
+            assert!(positive_optional_impossible(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn positive_optional_impossible_depth_and_actual_unicode_work_remain_flat() {
+        let source = format!(
+            "(?<={}((?!(a{{0}})))?{})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = positive_optional_impossible(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert_eq!(&plan.defined[100_000..], &[false, false]);
+        let matched = plan
+            .find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(matched, 0..0);
+        assert_eq!(plan.capture_range(0, &matched), Some(0..0));
+        assert_eq!(plan.capture_range(100_001, &matched), None);
+    }
+
+    #[test]
+    fn positive_optional_impossible_assertions_interrupt_before_source_body_and_input_access() {
+        let source = JsString::from(r"(?<=(a{0})((?!(\4){0}))?|(b))");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_positive_optional_impossible_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())}
+        ).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_positive_optional_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(29)),
+            Err(29)
+        );
     }
 }

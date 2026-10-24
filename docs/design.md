@@ -13513,3 +13513,14 @@ source preserves enclosing and interleaved descendant roles: required repeats
 retain the body mask and optional repeats clear it. Shared empty execution keeps
 Unicode boundaries, source/flags, lastIndex, String callback/split captures,
 cloning and collection behavior.
+
+
+A separate positive-assertion empty proof admits a whole lookahead/lookbehind
+over independently empty optional-impossible forms (22.2.2.4). The operand uses
+the optional, sequence, enclosing-sequence or first-root-choice proof with its
+original bindings. Complete assertion operands have a final successful
+continuation, so the first-empty-choice proof is valid there. Both directions
+export the operand's empty/undefined mask without consuming input. Siblings and
+outside wrappers require other proofs. Source/copy work precedes allocation;
+the finite operand chain never calls this new constructor. Retained masks,
+Unicode boundaries and actual matching reuse the existing empty plan.
