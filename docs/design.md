@@ -12722,4 +12722,7 @@ without executing inner counts or querying the class body. Unknown terms even
 under erased/never paths, additional consuming paths and outside terms retain
 separate proofs. Traversal, decimal scanning, storage and clone/drop remain flat
 and source-sized. Earlier API domains, work and captures remain unchanged.
-Runtime selection remains separate.
+Runtime selects this erased-count proof after bounded zero-count class paths.
+Its dedicated body preserves every undefined inner slot, original source/flags,
+named aliases, indices, lastIndex and String consumers through cloning and
+collection.

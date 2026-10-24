@@ -22457,3 +22457,29 @@ All 96,136 frozen prior API records retain exact domains, charged work and captu
 projection in eight bounded batches. Strict workspace Clippy, documentation
 tests, formatting, policy, inventories and diff checks pass. Fixtures, snapshots,
 dependencies and default quotas remain unchanged.
+
+
+## Runtime larger and unbounded class-path counts inside zero-count truth roots
+
+All three focused groups pass (1.19 s), preserving every undefined lexical slot
+inside larger finite, unbounded and lazy class paths. Padded/lazy root counts,
+both branch orders, named and escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and strict lastIndex writes retain
+native behavior. Unicode starts inside surrogate pairs normalize to the leading
+boundary. Deep 1,000-level unbounded scopes, 20,000-unit shared-prefix scalar/string
+bodies and constructor host aborts remain flat. Full construction still rejects
+unknown terms in erased bodies. All 1,024 proof/flag combinations for 256
+independent differential pairs are supported. Two preceding rejection controls
+now compare complete native metadata, and five source-shape scans retain the
+remaining rejection domains.
+
+Forty native tables, eight consumer programs and both migrated full metadata
+controls agree on the fresh CLI. All 431 Runtime unit tests pass (9.86 s), and
+the affected preceding proof group passes all three tests (0.85 s). Strict
+workspace Clippy, documentation tests, formatting, policy, inventories and diff
+checks pass. The grouped Runtime inventory contains 606 case files. Fixtures,
+snapshots, dependencies and default quotas remain unchanged.
+
+All 100,352 exact differential records agree across all start, sticky, multiline
+and ignore-case combinations, including larger/unbounded class-path scopes,
+finite/scalar/known-empty bodies and independent branch profiles.
