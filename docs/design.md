@@ -11588,7 +11588,7 @@ After the same full simple-repetition body/outside proof, the class must contain
 an empty member or the body must contain a pure-empty alternative. Required
 bodies therefore cannot fail at an input boundary, so preferred class members
 need no retry history. Plain nonnullable classes with a minimum above one retain
-the separate backtracking requirement. Earlier constructors and match/work
+separate proofs for required failures and possible word backtracking. Earlier constructors and match/work
 contracts remain unchanged.
 
 ECMA-262 edition 17 22.2.2.3 RepeatMatcher accepts empty iterations while the
@@ -11611,4 +11611,7 @@ The optional allowance is computed by decimal subtraction before saturation:
 huge adjacent lower/upper bounds can still leave exactly one optional iteration.
 Leading zeros and unbounded uppers preserve that arithmetic. Original capture
 scopes and every class leaf remain proved, including unselected empty-first
-classes. Runtime selection of larger nullable counts remains separate.
+classes. Runtime selects larger nullable counts after the earlier simple and
+zero/one-minimum proofs on the full capture source. A dedicated body retains
+whole/final ranges and the class-selected tag, preserving original source,
+names/indices, lastIndex, String consumers, cloning and collection.

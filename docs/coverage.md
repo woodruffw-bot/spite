@@ -20033,3 +20033,41 @@ API records retain exact domains, construction/search work and every capture
 projection. Strict workspace Clippy, documentation tests, formatting, dependency
 policy, inventories and diff checks pass. Runtime selection of this proof remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime larger counts on nullable string-class bodies
+
+Three groups execute 25 native capture tables and eight additional String and
+metadata consumer programs, plus collection. They preserve required-empty capture
+resets, class/empty identity, finite counts, huge exact and adjacent bounds,
+source priority, whole-versus-last scopes, Unicode indices/folding, names and
+aliases, source/flags, matchAll, callback replacement, split/search, cloning and
+read-only lastIndex. Finite native control counts for huge originals preserve
+mandatory empty participation and the exact remaining optional allowance.
+Deep counted scopes and long members retain flat storage. Opt-in constructor
+and required-prefix execution aborts preserve bindings, lastIndex and host-failure
+isolation. Empty-first exact counts retain bounded matching work on long inputs.
+Fourteen former unsupported controls become native eight-record capture/finalizer
+checks with unproved leaves retained. Six dynamically formatted huge-count
+controls use finite positive native counts because their known-empty class and
+pure empty first arm have the same capture profile at every required iteration. Nonnullable larger minima, nested loops,
+predicates, references, consuming siblings and additional classes remain closed.
+
+
+Execution passes all three new groups and 431 Runtime units. The full Unicode
+run passes 1,634 cases and identifies six obsolete huge-count rejection checks;
+after migrating them, all 44 finalizer groups pass, covering all 1,640 Unicode
+cases. All 33 fixed consumer references and 14 migrated eight-record tables
+agree with the fresh CLI and native references. All 230,400 differential records
+agree across 384 independent pairs, twelve counts, 32 class families, six layouts,
+nullable plain/class-first/empty-first bodies, atom/group scopes, twelve inputs
+and all starts/sticky/i/m combinations. Huge exact and adjacent lower/upper bounds
+use finite mathematical control counts preserving mandatory empty participation
+and the exact optional allowance; Unicode leading-boundary and finite vi folding
+controls retain the earlier reference policy.
+
+A fresh conformance-profile Test262 run passes all 35 tests, including all 16,343
+reviewed variants. Strict workspace Clippy, documentation tests, formatting,
+dependency policy, inventories and diff checks pass. The Runtime inventory is
+558 case files and 4,346 integration cases. Fixtures, snapshots, dependencies
+and default quotas are unchanged.

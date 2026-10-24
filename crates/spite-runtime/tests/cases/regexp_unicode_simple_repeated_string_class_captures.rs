@@ -164,8 +164,14 @@ fn simple_repeated_string_class_deep_scopes_long_words_and_host_aborts_remain_fl
 #[test]
 fn simple_repeated_string_class_proofs_keep_counts_predicates_references_and_unknown_leaves_closed()
 {
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="()(([\\q{a|ab}])|()){2}()",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,2],[0,0],[2,2],\"<undefined>\",[2,2],[2,2]],\"index\":0},2],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,2],[0,0],[2,2],\"<undefined>\",[2,2],[2,2]],\"index\":0},2],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
-        r"()(([\q{a|ab}])|()){2}()",
+        r"()(([[\q{a|ab}]&&\p{RGI_Emoji}])|()){2}()",
         r"^()(([\q{a|ab}])|())+()",
         r"()(([\q{a|ab}])|())+()$",
         r"()(([\q{a|ab}])|())+()\1",

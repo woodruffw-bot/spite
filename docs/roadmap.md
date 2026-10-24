@@ -781,7 +781,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile braced string-class repetition with minimum zero or one, preserving finite/huge upper bounds, progress and final-iteration captures.
 - [x] Execute braced string-class repetition with minimum zero or one through Runtime RegExp and String consumers.
 - [x] Compile larger braced minima for nullable string-class bodies, preserving required-empty capture resets and exact huge-count differences.
-- [ ] Execute larger nullable string-class counts through Runtime RegExp and String consumers.
+- [x] Execute larger nullable string-class counts through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
