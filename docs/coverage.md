@@ -25488,8 +25488,8 @@ control for the property-fold case.
 
 All 436 Runtime unit tests pass (5.80 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
-diff checks pass. Runtime inventory is 619 case files. The full RegExp run started from this snapshot remains in progress. The
-completed Test262 result from the same snapshot is recorded below. Fixtures, snapshots, dependencies, profiles, native stacks and default
+diff checks pass. Runtime inventory is 619 case files. The full RegExp run from this snapshot passes all 2,946 tests (742.87 s).
+The completed Test262 result from the same snapshot is recorded below. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
 
 ## Core Unicode lookahead with operand word boundaries
@@ -25546,5 +25546,10 @@ All 436 Runtime unit tests pass (8.30 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
 diff checks pass. Runtime inventory remains 619. The finished broad Test262
 result records the preceding complete-positive-lookahead snapshot; its full
-RegExp run is still in progress. Fixtures, snapshots, dependencies, profiles,
+RegExp run passes all 2,946 tests (742.87 s). Fixtures, snapshots, dependencies, profiles,
 native stacks and default quotas are unchanged.
+
+The `4c595b80` complete-positive-lookahead snapshot also passes all 2,946
+RegExp integration tests (742.87 s). Both broad run receipts have been collected.
+The later word-boundary extension retains its separately recorded focused and
+differential evidence.
