@@ -13727,3 +13727,12 @@ normalized source keeps bindings and every lexical slot. Required-prefix groups
 export empty captures while skipped descendants remain undefined. Shared empty
 execution preserves Unicode boundaries, indices/groups, lastIndex, String
 consumers, cloning and collection; original errors precede proof selection.
+
+
+A separate root-choice constructor accepts an independently empty first arm
+proved by the optional-established-impossible, sequence or enclosing-sequence
+constructors. Its final successful continuation selects that arm and leaves
+every later lexical slot undefined (22.2.2.2). This proof remains root-only;
+repeat operands may retry a later consuming arm after continuation failure.
+Original bindings survive projection; source/copy/full-mask work precedes
+allocation and actual matching and capture queries stay constant.

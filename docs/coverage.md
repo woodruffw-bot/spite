@@ -24879,3 +24879,25 @@ formatting, dependency policy, inventories and diff checks. Runtime inventory
 remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
 A fresh full RegExp integration run and conformance-profile Test262 run were
 started from this Runtime increment; their results remain pending.
+
+
+First optional established-impossible root alternatives (Core)
+------------------------------------------------------------
+
+The new root-choice constructor selects an independently empty first arm proved
+by the optional-established-impossible, sequence or enclosing-sequence families.
+Later arms remain unselected with undefined lexical slots. The final successful
+continuation is required; the proof is excluded from repeat operands. Original
+bindings and full inventories remain intact.
+
+All 179 actual-source focused Core tests pass (1.78 s), including four new groups
+for first-arm masks and later capture slots, original incoming references,
+nonroot/possible/sibling exclusions, 20,000 later arms, 20,000-digit bounds,
+interruption before every charged projection/proof/mask step and Unicode actual
+work/boundaries. All 12,800 exact native input/start/capture records across 512
+independently composed ordinary/u/v choices agree. A lexed review of 2,732 direct
+unsupported control-array entries admits none. Strict workspace Clippy with all
+targets passes (26.93 s). Documentation tests, formatting, dependency policy,
+inventories and diff checks retain the passing results recorded with the
+preceding Runtime increment. Runtime inventory remains 617; fixtures, snapshots,
+dependencies and quotas are unchanged.

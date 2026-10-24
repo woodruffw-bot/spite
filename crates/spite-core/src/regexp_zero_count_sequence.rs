@@ -703,6 +703,60 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves a root choice starting with an independently empty optional established-impossible arm.
+    ///
+    /// Full original validation and normalized capture heads are required. The
+    /// first arm uses the optional, sequence or enclosing-sequence proof. With
+    /// the final successful continuation it always succeeds empty; all later
+    /// arms are skipped with undefined slots (22.2.2.2). This root-only proof
+    /// must not be used as a repeat operand: a failing continuation could retry
+    /// a consuming later arm. Source/copy and full-mask work precede allocation.
+    pub fn compile_first_optional_known_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some((first_end, captures)) = choice_layout(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let first = JsString::from_code_units(source.code_units()[..first_end].to_vec());
+        let mut plan = Self::compile_optional_known_impossible_validated_with_work(
+            &first,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = Self::compile_optional_known_impossible_sequence_validated_with_work(
+                &first,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_enclosing_optional_known_impossible_sequence_validated_with_work(
+                &first,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        let Some(plan) = plan else { return Ok(None) };
+        charge(captures)?;
+        let mut defined = plan.defined.into_vec();
+        defined.resize(captures, false);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves a complete positive assertion over independently empty optional-impossible forms.
     ///
     /// Full original validation and normalized capture heads are required.
@@ -3151,6 +3205,93 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_optional_known_impossible_sequence_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+    }
+    fn first_optional_known(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_first_optional_known_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn first_optional_known_choices_keep_first_mask_and_all_later_global_slots() {
+        for (source, mask) in [
+            (
+                r"((?![\p{RGI_Emoji}]*))?|((a)\1)+",
+                &[false, false, false][..],
+            ),
+            (
+                r"(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*",
+                &[true, false, true, false, false][..],
+            ),
+            (
+                r"((((?![\p{RGI_Emoji}]*))?([a]{0})+)*)+|(?=(b))c",
+                &[true, false, false, false, false][..],
+            ),
+            (r"((?!(\3)*))?|((a)\1)+", &[false, false, false, false][..]),
+        ] {
+            assert_eq!(
+                first_optional_known(source).unwrap().defined.as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn first_optional_known_choices_reject_nonroot_choices_possible_first_arms_and_siblings() {
+        for source in [
+            r"((?!a*))?",
+            r"a|((?!a*))?",
+            r"(((?!a*))?|a)+",
+            r"(((?!a*))?|a)?",
+            r"((?!a))?|b",
+            r"((?!a*))?a|b",
+            r"[a]{0}|((?!a*))?",
+            r"(?=((?!a*))?|a)",
+        ] {
+            assert!(first_optional_known(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn first_optional_known_choices_keep_many_unselected_capture_slots_and_large_bounds_flat() {
+        let source = format!(r"((?![\p{{RGI_Emoji}}]*))?|{}", "(a)|".repeat(20_000));
+        let plan = first_optional_known(&source).unwrap();
+        assert_eq!(plan.capture_count(), 20_001);
+        assert!(plan.defined.iter().all(|&v| !v));
+        let source = format!(r"((?![\p{{RGI_Emoji}}]*)){{0,{}}}|(a)", "9".repeat(20_000));
+        assert_eq!(
+            first_optional_known(&source).unwrap().defined.as_ref(),
+            &[false, false]
+        );
+    }
+
+    #[test]
+    fn first_optional_known_choice_work_interrupts_before_root_projection_proof_and_full_mask() {
+        let source = JsString::from(r"(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_first_optional_known_impossible_validated_with_work(&source,true,true,|n|{work.push(n);Ok::<(),()>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_first_optional_known_impossible_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
             );
             assert_eq!(seen, work[..=stop]);
         }
