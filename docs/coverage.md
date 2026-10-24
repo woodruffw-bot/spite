@@ -21617,3 +21617,23 @@ The preceding required-single and outside class/empty truth-profile sources
 pass a fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants
 pass, including the pinned corpus gate (408.15 s). This run compiled before the
 branch-local root proof.
+
+
+## Core complete wrappers around branch-local class/empty choices
+
+Four focused groups pass (0.35 s), comparing 160 native tables across mixed
+capturing/noncapturing wrappers and an independent earliest-start/branch-priority
+oracle with enclosing capture slots. Both root orders, finite/scalar/known-empty
+classes, required empty class members, padded exact-one paths, required/skipped
+predicate scopes and huge scope counts retain original inner participation.
+Every UTF-16 start, sticky, multiline and ignore-case preserves complete outer
+ranges for consuming and empty matches. Deep 20,000-level enclosing groups,
+20,000-unit shared-prefix members, cloning/drop, every charged cancellation and
+recovery, and unknown terms behind never profiles retain flat storage and proof
+boundaries. Optional/counted wrappers and outside predicates remain separate.
+
+All 83,624 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (54.04 s),
+documentation tests, formatting, policy, inventories and diff checks pass. Runtime
+selection remains separate; fixtures, snapshots, dependencies and default quotas
+remain unchanged.

@@ -12348,3 +12348,19 @@ selects this root branch-local proof after the mandatory outside-choice
 alternatives proof on the complete normalized capture source. Its dedicated body
 preserves branch ownership, endpoint truth, source/flags, named aliases, indices,
 lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves complete ordinary wrappers around two root alternatives
+with branch-local predicate choices. A flat enclosing-group scan removes only
+complete unquantified capturing/noncapturing wrappers before the full root
+branch proof. Mandatory enclosing captures project the accepted whole range,
+including empty matches, while shifted inner slots retain original branch
+ownership (ECMA-262 edition 17 22.2.2.7).
+
+The grouped proof reuses immutable branch continuations and source-priority
+selection without additional matching work. Construction charges before wrapper
+inspection and retains flat source-sized storage, clone/drop and capture
+projection. Unknown terms behind never gates still undergo complete branch
+validation. Counted/optional wrappers, outside predicates, lookarounds and other
+class spines retain separate proofs. Earlier APIs retain exact domains and
+charged work. Runtime selection remains separate.
