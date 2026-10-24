@@ -42,6 +42,7 @@ use spite_core::{
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
@@ -2837,13 +2838,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeTruthTableScopedOptionalStringClassAlternativeCaptures(body)));
                 }
-                RegExpUnicodeTruthTableZeroCountRootStringClassAlternativeMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeTruthTableZeroCountRootStringClassAlternativeMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeTruthTableZeroCountRootStringClassAlternativeCaptures(body)));
+                }
+                RegExpUnicodeTruthTableNestedOptionalStringClassAlternativeMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeTruthTableZeroCountRootStringClassAlternativeCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeTruthTableNestedOptionalStringClassAlternativeCaptures))
 
             })?;
             if body.is_some() {

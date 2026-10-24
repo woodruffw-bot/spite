@@ -22155,3 +22155,28 @@ projection in eight bounded batches. Strict workspace Clippy (69 s), documentati
 tests, formatting, policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime optional outer roots around nested truth-choice wrappers
+
+Three focused groups pass (2.43 s), preserving all enclosed capture ranges on a
+nonempty iteration and clearing every enclosed slot on zero iterations.
+Ordinary/exact-one inner wrappers, both branch orders, greedy/lazy padded optional
+counts, empty-first progress retries, shorter-member retries, named and
+escaped-name aliases, indices, matchAll, callback replacement, split/search,
+cloning, collection and strict lastIndex writes retain native behavior. Deep
+1,000-level counted inner wrappers, 20,000-unit shared-prefix scalar/string
+members and constructor cancellation remain flat. Unknown terms even in
+lazy/never bodies, additional optional/zero inner counts, outside terms and other
+outer counts retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+source-shape scans, including normalized capture names, find no preceding
+rejection controls newly admitted by this proof. All 100,352 exact differential
+records agree across 256 independent pairs, with all 1,024 proof/flag combinations
+supported. Nested complete wrappers, finite/scalar/known-empty classes and
+independent branch profiles cover every start, sticky, multiline and ignore-case.
+All 431 Runtime unit tests pass (11.71 s), alongside strict workspace Clippy
+(28.52 s), documentation tests, formatting, policy, inventories and diff checks.
+The grouped Runtime inventory contains 600 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

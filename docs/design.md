@@ -12598,5 +12598,8 @@ cannot establish participating minimum-zero iterations; no later start precedes
 a valid zero-iteration result. Storage, traversal and clone/drop remain flat and
 source-sized. Unknown terms even in lazy/never bodies, additional optional/zero
 inner counts, outside terms and other outer counts retain separate proofs.
-Earlier API domains and charged work remain unchanged. Runtime selection remains
-separate.
+Earlier API domains and charged work remain unchanged. Runtime selects this
+nested optional proof after zero-count root alternatives. The dedicated body
+retains complete enclosed ranges, zero-iteration absence, original lexical slots,
+actual endpoint truth, source/flags, named aliases, indices, lastIndex and String
+consumers through cloning and collection.
