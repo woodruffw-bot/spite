@@ -24795,3 +24795,21 @@ passes (8.45 s). Documentation tests, formatting, dependency policy, inventories
 and diff checks retain the passing results recorded with the immediately
 preceding Runtime increment. Runtime inventory remains 617; fixtures, snapshots,
 dependencies and quotas are unchanged.
+
+
+Required spines around established impossible operands (Runtime)
+--------------------------------------------------------------
+
+Runtime selects complete required ordinary/modifier wrappers around established
+impossible operands and mixed known choices. All 52 focused integration groups
+pass (1.54 s), including three new groups for mixed choices, required/lazy/padded
+counts, modifiers, original incoming bindings and later errors, duplicate-name
+choices, String consumers, cloning, collection, 1,000 groups and 20,000-digit
+positive minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 52 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.96 s). Strict workspace Clippy with
+all targets passes (7.56 s), alongside documentation tests, formatting, dependency
+policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
+snapshots, dependencies and default quotas are unchanged.

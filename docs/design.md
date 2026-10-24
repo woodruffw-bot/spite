@@ -13694,3 +13694,10 @@ full lexical slots. Flat scopes and symbolic bounds keep construction source-
 sized; source/frame/copy and mask work precede allocation, while matching and
 individual capture queries stay constant. Nullable operands themselves never
 produce fabricated empty captures.
+
+
+Runtime selects complete required ordinary/modifier wrappers around established
+impossible operands, including mixed known root choices. Full normalized source
+keeps incoming bindings and every lexical slot. Shared constant no-match
+execution preserves source/flags, lastIndex, String consumers, cloning and
+collection; original validation errors precede proof selection.
