@@ -25550,6 +25550,26 @@ RegExp run passes all 2,946 tests (742.87 s). Fixtures, snapshots, dependencies,
 native stacks and default quotas are unchanged.
 
 The `4c595b80` complete-positive-lookahead snapshot also passes all 2,946
-RegExp integration tests (742.87 s). Both broad run receipts have been collected.
-The later word-boundary extension retains its separately recorded focused and
+RegExp integration tests (742.87 s). The later word-boundary extension retains its separately recorded focused and
 differential evidence.
+
+## Core unquantified Unicode positive lookahead
+
+The actual-source focused harness passes 234 tests, including four single-atom
+groups. Checks cover empty outside versus one-character operand captures,
+classes and escapes, escaped dollars with line assertions, multiline/case/dot
+flags, the specification ASCII fold rule, raw/fixed/braced Unicode spellings,
+lone surrogate membership, initial-pair handling, lexical proof exclusions,
+200,000 wrappers, a 20,000-unit class and every construction work cancellation.
+
+A 512-pattern native differential passes all 53,248 input/start/sticky/range/
+capture records. Seven ASCII iv patterns contribute 728 equivalent-range control
+records for the documented Node property-fold discrepancy. Review of the 2,732
+lexed direct Unsupported controls identifies four newly proved bare-lookahead
+cases: captured classes, folded literals, astral literals and lone surrogates.
+Their Runtime migration is a separate integration step.
+
+Strict workspace Clippy with all targets, documentation tests, formatting,
+dependency policy, inventories and diff checks pass. Earlier line and word
+constructors retain their domains and work. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.

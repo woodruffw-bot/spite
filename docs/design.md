@@ -14025,3 +14025,21 @@ retries use the shared actual-work execution path and independently cached
 operand extent. Named groups, indices, stateful execution, String consumers,
 cloning and collection retain those ranges. The compilation frame remains
 separate from user getters and conversions.
+
+
+A separate Core entry compiles positive Unicode lookahead over one unquantified
+character atom (22.2.2.3–4). After full original validation and normalized capture
+heads, the flat lexical scanner proves exactly one non-reference atom between
+optional line assertions. The projected operand inserts the constant `{1}`
+bound immediately after that atom and before its optional end assertion, then
+reuses the existing consuming atom compiler. No projected source is independently
+validated or rebound. Unknown escapes, additional terms, word predicates and
+other counts retain separate proof domains.
+
+Required outside wrappers remain empty; complete operand wrappers retain the
+selected original character range. Raw astral characters and adjacent fixed
+surrogate escapes preserve complete-character boundaries; lone surrogates match
+only lone input characters. Source work precedes lexical scans and the constant
+three-unit projection growth. Earlier repeated and word-boundary entries keep
+their domains and charges through the shared flat parser. Runtime integration
+remains separate.

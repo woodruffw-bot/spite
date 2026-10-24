@@ -2,7 +2,7 @@
 
 use crate::{
     JsString, RegExpUnicodeRepeatedAtomMatcher, regexp_zero_count_group::enclosing_group_body,
-    regexp_zero_count_sequence::group_end,
+    regexp_zero_count_sequence::group_end, regexp_zero_count_tree::surrogate_atom_end,
 };
 use std::ops::Range;
 
@@ -15,7 +15,7 @@ pub struct RegExpUnicodePositiveAtomMatch {
     pub operand: Range<usize>,
 }
 
-/// A complete positive lookahead over one quantified Unicode character atom.
+/// A complete positive lookahead over one Unicode character atom.
 ///
 /// The original u/v Pattern and flags must be validated and capture heads
 /// normalized first. Complete unquantified ordinary/noncapturing wrappers may
@@ -46,7 +46,7 @@ impl RegExpUnicodePositiveAtomMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_mode_with_work::<false, E>(
+        Self::compile_mode_with_work::<0, E>(
             source,
             unicode_sets,
             ignore_case,
@@ -72,7 +72,33 @@ impl RegExpUnicodePositiveAtomMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_mode_with_work::<true, E>(
+        Self::compile_mode_with_work::<1, E>(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )
+    }
+
+    /// Compiles complete lookahead over one unquantified Unicode character atom.
+    ///
+    /// Requires original full u/v validation and normalized capture heads.
+    /// A flat lexical proof isolates exactly one non-reference atom between
+    /// optional line assertions. Its fixed single iteration reuses the existing
+    /// consuming atom compiler, preserving original input context and capture
+    /// extents (22.2.2.3–4). Unknown escapes and additional terms remain unproved;
+    /// projected source is never independently validated or rebound.
+    pub fn compile_single_atom_validated_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_mode_with_work::<2, E>(
             source,
             unicode_sets,
             ignore_case,
@@ -84,7 +110,7 @@ impl RegExpUnicodePositiveAtomMatcher {
 
     // Share the wrapper parser and delegated compiler across callback types.
     #[inline(never)]
-    fn compile_mode_with_work<const WORD: bool, E>(
+    fn compile_mode_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode_sets: bool,
         ignore_case: bool,
@@ -111,8 +137,25 @@ impl RegExpUnicodePositiveAtomMatcher {
         } else {
             (body, 0)
         };
-        let body = JsString::from_code_units(body.to_vec());
-        let operand = if WORD {
+        let body = if MODE == 2 {
+            let start = usize::from(body.first() == Some(&0x5e));
+            let Some(end) = surrogate_atom_end(body, start, true, unicode_sets) else {
+                return Ok(None);
+            };
+            if end != body.len() && !(body.get(end) == Some(&0x24) && end + 1 == body.len()) {
+                return Ok(None);
+            }
+            // A proved non-reference Atom has exactly one selected iteration.
+            // Insert the fixed bound before its optional outside end assertion.
+            let mut units = Vec::with_capacity(body.len().saturating_add(3));
+            units.extend_from_slice(&body[..end]);
+            units.extend_from_slice(&[0x7b, 0x31, 0x7d]);
+            units.extend_from_slice(&body[end..]);
+            JsString::from_code_units(units)
+        } else {
+            JsString::from_code_units(body.to_vec())
+        };
+        let operand = if MODE == 1 {
             RegExpUnicodeRepeatedAtomMatcher::compile_with_word_boundaries_and_work(
                 &body,
                 unicode_sets,
@@ -524,5 +567,192 @@ mod tests {
                 .unwrap(),
             expected
         );
+    }
+
+    fn single_plan(
+        source: &str,
+        sets: bool,
+        i: bool,
+        m: bool,
+        s: bool,
+    ) -> RegExpUnicodePositiveAtomMatcher {
+        RegExpUnicodePositiveAtomMatcher::compile_single_atom_validated_with_work(
+            &JsString::from(source),
+            sets,
+            i,
+            m,
+            s,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn single_atom_lookahead_captures_one_complete_original_unicode_character() {
+        for (atom, input, expected) in [
+            ("a", "ba!", 1..2),
+            ("[a-z]", "!a!", 1..2),
+            (r"\d", "a2!", 1..2),
+            (".", "😀", 0..2),
+            (r"\u{1F600}", "!😀!", 1..3),
+            (r"\uD83D\uDE00", "!😀!", 1..3),
+            (r"\x24", "!$!", 1..2),
+            (r"\$", "!$!", 1..2),
+            ("[$]", "!$!", 1..2),
+        ] {
+            let source = format!("((?=(({atom}))))");
+            let p = single_plan(&source, false, false, false, false);
+            let m = p
+                .find_with_work(&JsString::from(input), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(m.range, expected.start..expected.start, "{source}");
+            assert_eq!(m.operand, expected, "{source}");
+            assert_eq!(p.capture_count(), 3);
+            assert_eq!(p.capture_range(0, &m), Some(m.range.clone()));
+            assert_eq!(p.capture_range(1, &m), Some(expected.clone()));
+            assert_eq!(p.capture_range(2, &m), Some(expected));
+        }
+    }
+
+    #[test]
+    fn single_atom_lookahead_preserves_line_dot_and_specification_property_folds() {
+        for sets in [false, true] {
+            let p = single_plan(r"(?=(\uD800))", sets, false, false, false);
+            let input = JsString::from_code_units(vec![0xd800, 0x78, 0xdc00]);
+            assert_eq!(
+                p.find_with_work(&input, 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap()
+                    .operand,
+                0..1
+            );
+            let pair = JsString::from_code_units(vec![0xd800, 0xdc00]);
+            assert!(
+                p.find_with_work(&pair, 1, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .is_none()
+            );
+            let p = single_plan(r"(?=(^a$))", sets, true, true, false);
+            let m = p
+                .find_with_work(&JsString::from("x\nA\n"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(m.operand, 2..3);
+            let p = single_plan(r"(?=(^\$$))", sets, false, false, false);
+            assert_eq!(
+                p.find_with_work(&JsString::from("$"), 0, true, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap()
+                    .operand,
+                0..1
+            );
+            for i in [false, true] {
+                let p = single_plan(r"(?=(\p{ASCII}))", sets, i, false, false);
+                let m = p
+                    .find_with_work(&JsString::from("ſa"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(m.operand, if i { 0..1 } else { 1..2 });
+            }
+            for s in [false, true] {
+                let p = single_plan("(?=(.))", sets, false, false, s);
+                let m = p
+                    .find_with_work(&JsString::from("\na"), 0, false, |_| Ok::<(), ()>(()))
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(m.operand, if s { 0..1 } else { 1..2 });
+            }
+        }
+    }
+
+    #[test]
+    fn single_atom_lookahead_proof_excludes_other_terms_counts_and_reference_rebinding() {
+        for source in [
+            r"(?=(ab))",
+            r"(?=(a*))",
+            r"(?=(a{1}))",
+            r"(?=(\ba\b))",
+            r"(?=(\1))",
+            r"((?=(\1)))",
+            r"(?=(a|b))",
+            r"(?=(a(b)))",
+            r"(?<=(a))",
+            r"((?=(a)))*",
+            r"(?=(^^a$))",
+        ] {
+            assert!(
+                RegExpUnicodePositiveAtomMatcher::compile_single_atom_validated_with_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpUnicodePositiveAtomMatcher::compile_validated_with_work(
+                &JsString::from("(?=(a))"),
+                false,
+                false,
+                false,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn single_atom_lookahead_large_sources_capture_counts_and_work_cancellation_are_flat() {
+        let source = format!(
+            "{}(?={}a{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let p = single_plan(&source, false, false, false, false);
+        assert_eq!(p.capture_count(), 200_000);
+        let source = format!("(?=([{}]))", "a".repeat(20_000));
+        let p = single_plan(&source, false, false, false, false);
+        let input = JsString::from("😀a");
+        assert_eq!(
+            p.find_with_work(&input, 1, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            2..3
+        );
+        let source = JsString::from(r"((?=(\u{1F600})))");
+        let mut work = Vec::new();
+        RegExpUnicodePositiveAtomMatcher::compile_single_atom_validated_with_work(
+            &source,
+            false,
+            false,
+            false,
+            false,
+            |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodePositiveAtomMatcher::compile_single_atom_validated_with_work(&source,false,false,false,false, |n| {seen.push(n);if seen.len()==stop+1 {Err(stop)}else{Ok(())}}), Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
     }
 }
