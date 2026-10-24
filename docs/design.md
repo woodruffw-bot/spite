@@ -12786,4 +12786,7 @@ source-sized storage/clone/drop remain intact. Unknown terms even under
 zero/lazy/skipped/never paths, larger or unbounded inner counts, consuming outside
 siblings and patterns requiring a different optional-ancestor selection retain
 separate proofs. Earlier API domains, work and captures remain unchanged.
-Runtime selection remains separate.
+Runtime selects this bounded optional-path outside-scope proof after bounded
+erased paths. Its dedicated body retains forced lazy consumption, zero-body
+absence, outside participation, original lexical slots, source/flags, named
+aliases, indices, lastIndex and String consumers through cloning and collection.

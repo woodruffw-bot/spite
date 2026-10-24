@@ -22612,3 +22612,36 @@ Unicode Sets/Unicode patterns, and all 1,024 proof/flag combinations are support
 Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime selection remains separate. Fixtures, snapshots,
 dependencies and default quotas remain unchanged.
+
+
+## Runtime captured outside scopes around optional bounded class paths
+
+All three focused groups pass (0.43 s), preserving forced lazy consumption,
+shorter-member retries, conditional outside points, mandatory enclosing ranges
+and every skipped inner slot. Optional and padded zero/one class paths retain
+both branch orders, named and escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and strict lastIndex writes.
+Zero-bound bodies retain outside points at later starts and fail incompatible
+sticky starts with every inner capture undefined. Deep 1,000-level outside
+capture scopes, 20,000-unit shared-prefix scalar/string bodies and constructor
+host aborts remain flat. Full construction rejects unknown terms under
+zero/lazy/skipped/never paths.
+
+Forty native tables and eight consumer programs agree on the fresh CLI and as
+actual Unicode Sets programs on native Node. One preceding rejection control
+now compares complete native metadata; it and the zero-body edge agree on the
+fresh CLI. All 100,352 exact differential records agree across every start and
+sticky/multiline/ignore-case combination, with all 256 source/control patterns
+validated and all 1,024 proof/flag combinations supported. Five source-shape
+scans retain the remaining rejection domains.
+
+All 431 Runtime unit tests pass (4.23 s), alongside all three tests in the affected
+preceding proof group (0.38 s), strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks. The grouped Runtime inventory
+contains 609 case files. Fixtures, snapshots, dependencies and default quotas
+remain unchanged.
+
+The preceding larger/unbounded bare and captured-outside erased-count Runtime
+snapshot passes all 1,788 Unicode RegExp integration tests (946.87 s), all 16,343
+reviewed Test262 variants and 35 runner tests (548.90 s for the corpus target).
+These runs compiled before captured outside bounded erased/optional paths.

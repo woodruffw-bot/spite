@@ -50,6 +50,7 @@ use spite_core::{
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedZeroCountStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedQuantifiedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher,
@@ -2918,13 +2919,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeTruthTableScopedQuantifiedZeroCountStringClassAlternativeCaptures(body)));
                 }
-                RegExpUnicodeTruthTableScopedZeroCountSpineStringClassAlternativeMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeTruthTableScopedZeroCountSpineStringClassAlternativeMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeTruthTableScopedZeroCountSpineStringClassAlternativeCaptures(body)));
+                }
+                RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeTruthTableScopedZeroCountSpineStringClassAlternativeCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeTruthTableScopedOptionalSpineStringClassAlternativeCaptures))
 
             })?;
             if body.is_some() {
