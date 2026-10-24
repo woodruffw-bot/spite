@@ -12071,5 +12071,8 @@ Longest-member priority and Unicode search remain unconstrained by masked
 predicates. A zero-minimum class-containing ancestor, root alternatives, other
 class-path counts, live predicates, references and unknown leaves retain their
 separate proofs. Cloning, charged work, callback cancellation and constructor/
-capacity failures keep their existing semantics. Runtime selection remains
-separate.
+capacity failures keep their existing semantics. Runtime selects this required
+single-class proof after the assertion-free repetition proof on the full
+normalized capture source. Its dedicated body retains source/flags, named
+aliases, lastIndex, String consumers, cloning and collection, including defined
+empty class captures beside undefined optional predicate scope slots.

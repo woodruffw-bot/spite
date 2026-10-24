@@ -35,6 +35,7 @@ use spite_core::{
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
+    RegExpUnicodeUnassertedZeroMinimumSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroMinimumStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
@@ -2612,13 +2613,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(body)));
                 }
-                RegExpUnicodeUnassertedZeroMinimumStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeUnassertedZeroMinimumStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeUnassertedZeroMinimumStringClassCaptures(body)));
+                }
+                RegExpUnicodeUnassertedZeroMinimumSingleStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeUnassertedZeroMinimumStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeUnassertedZeroMinimumSingleStringClassCaptures))
 
             })?;
             if body.is_some() {

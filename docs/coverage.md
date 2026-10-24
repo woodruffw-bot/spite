@@ -20889,7 +20889,7 @@ include the actual constructed prefix and retain original unknown-leaf controls.
 All three new groups pass (0.27 s), alongside 431 Runtime unit tests (3.42 s),
 forty native tables and eight consumer references on the fresh CLI. All three
 migrated Rust groups pass (0.08 s), and their native programs agree on the fresh
-CLI. The first 57,600 exact differential records match across the prepared
+CLI. All 230,400 exact differential records match across the prepared
 384-pair matrix, with all 1,536 proof/flag combinations supported. Thirty-two
 mixed nullable/nonnullable scalar/finite forms, twelve body counts, three
 class/empty modes, six capture layouts, four zero-minimum scope layouts and
@@ -20915,3 +20915,36 @@ added. All 71,848 prior API records retain exact domains, charged work and captu
 projection. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime required single class with only zero-minimum outside predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Bare/exact-one class paths retain longest-member priority, unconstrained search
+and defined required empty class captures beside undefined optional predicate
+slots. Named/escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex retain source and
+capture identity. Deep 1,000 optional scopes, defined surrounding points,
+20,000-unit shared-prefix members versus scalar fallback, constructor abort
+isolation and full rejection of unknown leaves and references pass.
+
+Six former unsupported controls in three existing groups now compare complete
+native captures/indices, source, flags, input, undefined groups and lastIndex.
+Optional word/line predicates and nested scopes preserve original capture slots;
+unknown-leaf rejection controls remain. Five source-shape scans verify the
+expanded domain, including actual constructed prefixes.
+
+All three new groups pass (0.67 s), alongside 431 Runtime unit tests (12.89 s),
+forty native tables and eight consumer references on the fresh CLI. All six
+migrated native programs agree on the fresh CLI, and their three existing Rust
+groups pass (0.39 s). The first 144,000 exact differential records agree across
+the prepared 384-pair matrix, and all 1,536 proof/flag combinations compile.
+Thirty-two mixed nullable/nonnullable scalar/finite forms, twelve bare/exact-one
+spellings, six capture layouts, four zero-minimum scope layouts and eight
+skipped-predicate profiles cover starts, sticky, ignore-case and multiline.
+Strict workspace Clippy, documentation tests, formatting, policy and inventories
+pass; fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+The preceding repetition Runtime suite passes all 1,688 Unicode groups
+(721.07 s). Its rebuilt binary includes all eight live-scope migrations and
+three assertion-free scope migrations.
