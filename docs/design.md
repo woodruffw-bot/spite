@@ -13757,3 +13757,11 @@ constructor. The finite closed earlier-operand chain never re-enters the new
 mode, and erased callback types bound compiler expansion. Full original
 bindings/inventories survive, source/copy work precedes allocation, and retained
 no-match storage and actual matching work remain constant.
+
+
+A separate required-spine constructor wraps negative assertions over optional
+established-impossible empty forms. Every outside minimum must be positive,
+keeping the failing body mandatory (22.2.2.3.1). Original bindings, complete
+lexical slots and symbolic counts remain intact. Optional wrappers, outside
+siblings and unproved bodies reject this constructor. Flat scope/body-copy work
+precedes allocation; no-match storage and actual matching remain constant.

@@ -960,6 +960,43 @@ impl RegExpImpossibleMatcher {
         }))
     }
 
+    /// Proves required ordinary/modifier spines around optional-known negative failures.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every outside minimum must be positive, keeping the failing body
+    /// mandatory (22.2.2.3.1). The complete projected body uses the earlier
+    /// negative assertion over established optional-empty forms. Original
+    /// bindings, full lexical slots and symbolic bounds remain intact.
+    /// Flat source/frame/copy work precedes allocation; retained no-match
+    /// storage and actual matching work remain constant.
+    pub fn compile_wrapped_optional_known_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let Some(plan) = Self::compile_optional_known_negative_validated_with_work(
+            &body, unicode, sets, charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            captures: scope.captures + plan.captures,
+        }))
+    }
+
     // Closed earlier proof families only; this helper never calls the new
     // known-alternatives constructor. Erasing the callback type bounds compiler
     // expansion through the earlier alternative proofs.
@@ -2823,6 +2860,113 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpImpossibleMatcher::compile_optional_known_negative_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            None
+        );
+    }
+    fn wrapped_optional_known_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_wrapped_optional_known_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn wrapped_optional_known_negative_keeps_required_counts_original_bindings_and_all_slots() {
+        for (source, captures) in [
+            (r"((?!((?![\p{RGI_Emoji}]*))?))+", 2),
+            (
+                r"(?im-s:((a|ab)*(?!(((?![\p{RGI_Emoji}]*))?)+([a]{0})+)(z)*)){0001,0002}?",
+                6,
+            ),
+            (
+                r"((?<!(?=(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*))){2,3}",
+                6,
+            ),
+            (r"((?!(\3){0}((?![\p{RGI_Emoji}]*))?|((a)\1)+))+", 5),
+        ] {
+            assert_eq!(
+                wrapped_optional_known_negative(source)
+                    .unwrap_or_else(|| panic!("rejected {source}"))
+                    .capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn wrapped_optional_known_negative_excludes_optional_wrappers_root_bars_and_possible_bodies() {
+        for source in [
+            r"(?!((?!a*))?)",
+            r"((?!((?!a*))?))?",
+            r"((?!((?!a*))?))*",
+            r"((?!((?!a*))?)){0,2}",
+            r"(?i:((?!((?!a*))?))?)+",
+            r"((?!((?!a*))?))+a",
+            r"a((?!((?!a*))?))+",
+            r"((?!((?!a*))?))+|a",
+            r"((?!a))+",
+            r"((?!((?!a*))?)|a)+",
+        ] {
+            assert!(
+                wrapped_optional_known_negative(source).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn wrapped_optional_known_negative_depth_and_symbolic_minima_keep_constant_retained_plans() {
+        let body = r"(?!((?![\p{RGI_Emoji}]*))?)";
+        let source = format!("{}{body}{}", "(".repeat(100_000), ")+".repeat(100_000));
+        assert_eq!(
+            wrapped_optional_known_negative(&source)
+                .unwrap()
+                .capture_count(),
+            100_001
+        );
+        let source = format!("({body}){{{}}}", "9".repeat(20_000));
+        assert_eq!(
+            wrapped_optional_known_negative(&source)
+                .unwrap()
+                .capture_count(),
+            2
+        );
+    }
+
+    #[test]
+    fn wrapped_optional_known_negative_work_interrupts_before_scope_projection_operand_and_input() {
+        let source = JsString::from(r"(?im-s:((?!((?![\p{RGI_Emoji}]*))?))){2,3}");
+        let mut work = Vec::new();
+        let plan =
+            RegExpImpossibleMatcher::compile_wrapped_optional_known_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_wrapped_optional_known_negative_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
             );
             assert_eq!(seen, work[..=stop]);
         }

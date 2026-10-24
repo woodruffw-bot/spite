@@ -24949,3 +24949,25 @@ Strict workspace Clippy with all targets passes (27.92 s), alongside the passing
 documentation, formatting, dependency policy, inventories and diff checks for
 the active Runtime sequence increment. Runtime inventory remains 617; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+Required spines around negative optional established-impossible forms (Core)
+-------------------------------------------------------------------------
+
+The required-spine constructor wraps complete negative failures proved by the
+immediately earlier optional-established-impossible operand mode. Every outside
+minimum must be positive; optional wrappers, outside siblings and unproved bodies
+reject this proof. Original bindings, lexical inventories and symbolic bounds
+remain intact.
+
+All 191 actual-source focused Core tests pass (1.69 s), including four new groups
+for required/lazy/padded counts, modifiers, incoming references and inventories,
+optional/sibling/choice exclusions, 100,000 outside groups, 20,000-digit minima
+and interruption before every charged scope/projection/operand step. All 12,800
+exact native input/start records and full capture inventories across 512
+independently composed ordinary/u/v patterns agree. A lexed review of 2,732 direct
+unsupported control-array entries admits none. Strict workspace Clippy with all
+targets passes (29.17 s), alongside the passing documentation, formatting,
+dependency policy, inventories and diff checks for the active Runtime sequence
+increment. Runtime inventory remains 617; fixtures, snapshots, dependencies and
+default quotas are unchanged.
