@@ -697,6 +697,8 @@ mod regexp_unicode_grapheme_base_properties;
 mod regexp_unicode_grapheme_extend_properties;
 #[path = "cases/regexp_unicode_greek_script.rs"]
 mod regexp_unicode_greek_script;
+#[path = "cases/regexp_unicode_grouped_asserted_string_class_captures.rs"]
+mod regexp_unicode_grouped_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_grouped_string_captures.rs"]
 mod regexp_unicode_grouped_string_captures;
 #[path = "cases/regexp_unicode_gujarati_script.rs"]

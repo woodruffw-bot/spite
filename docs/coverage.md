@@ -19289,3 +19289,39 @@ validate in native v/vi modes. Workspace documentation tests, strict workspace
 Clippy, formatting, dependency policy, source/fixture inventories and diff checks
 pass. No Runtime selection, corpus fixture, snapshot, dependency or default quota
 changes.
+
+
+## Runtime complete wrappers around asserted string-class alternatives
+
+Three groups retain 64 class/input witnesses, five paired predicate profiles,
+six layouts, both alternative orders and three complete wrapper shapes. Explicit
+finite-alternative native controls determine branch eligibility. Every prefix
+value stays defined for either successful alternative, while inner slots retain
+conditional participation; all lexical names, index aliases, source and sticky
+failure state remain original. Exact consumers include noncapturing-only wrappers,
+distinct equal-range index arrays, class-selected empty strings, shorter eligible
+members, supplementary starts, pinned vi singleton folding, escaped names,
+matchAll, callback replacement, search, split, read-only lastIndex, clones and
+collection. A specified Unicode failed-search case excludes surrogate interiors.
+Two older rejection controls become success/normal-finalizer witnesses with
+unknown-leaf replacements. Deep enclosing slots and long members stay flat;
+constructor/exec host aborts preserve bindings/lastIndex, and a winning first
+alternative retains bounded work on long inputs. Common outside gates, partial
+wrappers, outside siblings, choice counts, extra alternatives/classes, optional
+assertions, references and unknown leaves remain separate host unsupported cases.
+
+All 230,400 exact complete-wrapper differential records over 384 class/capture/
+order/predicate/frame pairs match independent finite-alternative native sticky
+controls with explicit Unicode candidate advancement and initial normalization.
+They cover 32 class families, twelve inner predicate profiles, twelve inputs, all
+starts and sticky/i/m flags. Every prefix and inner value, index, name order,
+undefined mask and lastIndex is retained. Fourteen fixed consumer programs and
+both migrated controls match native references, with pinned ordinary finite
+alternatives for vi singleton folding. Stable passes all 431 Runtime unit cases
+and all 1,601 Unicode RegExp integration cases, including the three new groups.
+The conformance profile passes all 35 harness/corpus checks, including every one
+of the 16,343 reviewed corpus variants. Workspace documentation tests, strict
+workspace Clippy, formatting, dependency policy, source/fixture inventories and
+diff checks pass. Runtime inventory is 545 case files and 4,307 integration cases.
+Corpus sources/helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.

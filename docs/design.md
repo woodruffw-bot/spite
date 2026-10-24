@@ -11253,5 +11253,8 @@ inner alternative slots depend on the selected class/empty tag. For
 class capture is undefined. Prefix construction, cloning and dropping remain
 flat, with no per-match storage added. Root construction initializes the prefix
 to zero and retains its accepted domain and exact callbacks; searching and
-branch-order decisions are unchanged. Runtime grouped selection remains a
-subsequent step.
+branch-order decisions are unchanged. Runtime selects grouped alternatives after
+the earlier root proof on the full normalized source. The same body owns prefix
+and branch slots, with generic enclosing slots reset to zero. Original source,
+named index aliases, String consumers, collection and host aborts share existing
+paths.
