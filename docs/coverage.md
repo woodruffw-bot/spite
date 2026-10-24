@@ -21667,3 +21667,23 @@ default quotas remain unchanged.
 The preceding required-single and outside class/empty truth-profile Runtime
 sources pass all 1,731 Unicode RegExp integration tests (773.57 s). This run
 compiled before the branch-local root and enclosing-group extensions.
+
+
+## Core exact-one counts around grouped branch-local alternatives
+
+Four focused groups pass (4.75 s), comparing 160 native capture tables and an
+independent branch-priority/endpoint oracle with complete enclosing slots.
+Nested capturing/noncapturing wrappers retain bare, bounded, padded and lazy
+exact-one counts across both root orders, finite/scalar/known-empty classes,
+required empty class members and required/skipped predicate scopes. All UTF-16
+starts, sticky, multiline and ignore-case preserve inner participation and
+complete outer ranges. Deep 20,000-level counted wrappers, thousand-digit padded
+values of one, 20,000-unit shared-prefix words, cloning/drop and every charged
+cancellation/recovery retain flat storage. Other class-path counts and complete
+unknown leaves behind never profiles retain their proof boundaries.
+
+All 85,096 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (67 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.

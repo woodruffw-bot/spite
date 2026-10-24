@@ -1946,3 +1946,68 @@ impl RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+/// Exact-one class-path counts around grouped branch-local truth alternatives.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Removing
+/// only proved {1}/{1,1} counts, including padded/lazy forms, retains one required
+/// execution and its captures even for empty matches. Both complete branches and
+/// ordinary enclosing wrappers still pass the grouped truth-profile proof.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher {
+    /// Proves exact-one class-path counts before complete grouped alternatives.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some(normalized) =
+            super::super::super::asserted_alternatives::exact_single_count_source(
+                source.code_units(),
+            )
+        else {
+            return Ok(None);
+        };
+        let normalized = JsString::from_code_units(normalized);
+        Ok(
+            RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher::compile_with_work(
+                &normalized,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+            .map(|plan| Self { plan }),
+        )
+    }
+    /// Counts every original enclosing and branch-local lexical capture slot.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects required enclosing ranges and the selected branch's captures.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes exact-one wrappers with original branch and endpoint priority.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}

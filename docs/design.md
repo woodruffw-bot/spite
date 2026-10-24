@@ -12368,3 +12368,20 @@ branch-local proof on the full normalized capture source. Its dedicated body
 retains complete outer captures, inner branch ownership, endpoint truth, original
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves exact-one counts on class-bearing paths through grouped
+branch-local alternatives. The existing complete class-path scan removes only
+`{1}`/`{1,1}` counts and their padded/lazy spellings. Every retained class, group
+and branch still passes the complete grouped truth-profile proof. One required
+execution retains complete and branch-local captures even when the selected
+branch is empty (ECMA-262 edition 17 22.2.2.3 RepeatMatcher).
+
+Count recognition examines decimal digits without converting them to a machine
+integer, so arbitrarily padded values of one retain the same meaning. Pure
+predicate counts off the class path retain their original participation.
+Construction charges before normalization; matching and capture projection reuse
+the immutable grouped proof without extra matching work. Other class-path
+counts, references and unknown leaves behind never profiles retain separate
+proofs. Earlier APIs retain exact domains and charged work. Runtime selection
+remains separate.
