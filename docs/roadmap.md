@@ -931,6 +931,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove complete positive assertions over optional-impossible empty forms, exporting original capture masks in both directions with final operand continuations.
 - [x] Execute positive assertions over optional-impossible empty forms through Runtime and String consumers with original exported capture masks in both directions.
 - [x] Prove root negative assertions over complete nullable ordinary/modifier group spines always fail, including operands that could consume greedily.
+- [x] Prove negative assertions over complete zero-minimum literal/class/property atoms and enclosing spines always fail with mode-aware surrogate boundaries.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

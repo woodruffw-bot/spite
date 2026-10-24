@@ -13551,3 +13551,15 @@ preserves exported body masks, erased forward bindings and duplicate-name
 selection, including participating empty captures. Shared empty execution keeps
 Unicode boundaries, source/flags, lastIndex, String callbacks/split captures,
 cloning and collection behavior. Original errors still precede proof selection.
+
+
+A separate negative-nullable-atom proof accepts a complete safe literal,
+class/property atom with a zero minimum, optionally inside ordinary/modifier
+spines. Its operand always has a successful path (22.2.2.3.1), so its negative
+assertion fails (22.2.2.4), even if greedy matching could consume. The established
+surrogate-aware tree scanner supplies complete atom boundaries, including
+Unicode fixed-surrogate pairs and escaped delimiters. Multiple terms, required
+atoms and unproved boundaries reject the proof. This proves impossibility only;
+operand matching data and capture values are unnecessary. Source/copy/frame
+work precedes allocation; construction is source-sized and the retained plan
+and actual no-match work remain constant. Earlier scanner modes are unchanged.

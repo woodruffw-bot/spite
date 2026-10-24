@@ -82,6 +82,23 @@ impl RegExpImpossibleMatcher {
         Self::compile_assertion_validated_with_work::<3, E>(source, unicode, sets, charge)
     }
 
+    /// Proves root negative assertions over a complete zero-minimum atom or enclosing spine.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A complete safe literal/class/property atom with a zero minimum always
+    /// has a successful path, regardless of matching data (22.2.2.3.1).
+    /// Ordinary/modifier wrappers preserve that existence proof. The negative
+    /// assertion fails (22.2.2.4); greedy consumption is not an empty-match proof.
+    /// Mode-aware surrogate boundaries reuse the established tree scanner.
+    pub fn compile_nullable_atom_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<4, E>(source, unicode, sets, charge)
+    }
+
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -151,6 +168,13 @@ impl RegExpImpossibleMatcher {
                                     )?
                                 } else if MODE == 3 {
                                     Self::nullable_group_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 4 {
+                                    Self::nullable_atom_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -245,6 +269,33 @@ impl RegExpImpossibleMatcher {
             return Ok(false);
         }
         Ok(quantified_enclosing_scope(body.code_units(), sets).is_some_and(|scope| scope.optional))
+    }
+
+    fn nullable_atom_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        charge(body.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(false);
+        }
+        let units = body.code_units();
+        let atom = if let Some(scope) = quantified_enclosing_scope(units, sets) {
+            &units[scope.body]
+        } else {
+            units
+        };
+        let Some(end) = crate::regexp_zero_count_tree::surrogate_atom_end(atom, 0, unicode, sets)
+        else {
+            return Ok(false);
+        };
+        let Some((end, minimum_zero, _)) = crate::regexp_zero_count_spine::quantifier(atom, end)
+        else {
+            return Ok(false);
+        };
+        Ok(minimum_zero && end == atom.len())
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -1488,6 +1539,123 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(31)),
             Err(31)
+        );
+    }
+    fn nullable_atom_negative(
+        source: &str,
+        unicode: bool,
+        sets: bool,
+    ) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_nullable_atom_negative_validated_with_work(
+            &JsString::from(source),
+            unicode,
+            sets,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn nullable_atom_negative_proofs_accept_complete_literal_class_property_and_wrapper_operands() {
+        for (source, captures) in [
+            (r"(a)(?![\p{RGI_Emoji}]*)(b)", 2),
+            (r"(?<!\p{RGI_Emoji}{0,3})(a)", 1),
+            (r"(?!(?im-s:(([\q{ab}]*))){2,3})", 2),
+            (r"(?!\x28??)\u007C", 0),
+            (r"(?!(a*))", 1),
+        ] {
+            assert_eq!(
+                nullable_atom_negative(source, true, true)
+                    .unwrap()
+                    .capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nullable_atom_negative_proofs_preserve_unicode_surrogate_atom_boundaries() {
+        for source in [r"(?!\uD83D\uDE00*)", r"(?!😀*)"] {
+            for (unicode, sets) in [(false, false), (true, false), (true, true)] {
+                assert_eq!(
+                    nullable_atom_negative(source, unicode, sets).is_some(),
+                    unicode,
+                    "{source}"
+                );
+            }
+        }
+        for source in [r"(?!\u{D800}?)", r"(?<!\uD800*)", r"(?!\u007C{0,2})"] {
+            assert!(
+                nullable_atom_negative(source, true, true).is_some(),
+                "{source}"
+            );
+        }
+        assert!(nullable_atom_negative(r"(?!\u{D800}\uDC00*)", true, true).is_none());
+    }
+
+    #[test]
+    fn nullable_atom_negative_proofs_exclude_multiple_terms_conditions_and_required_atoms() {
+        for source in [
+            r"(?!a+)",
+            r"(?!ab*)",
+            r"(?!(a*)b)",
+            r"(?!(?=a*))",
+            r"(?!(a|b)?)",
+            r"((?!a*))",
+            r"(?!a*)|b",
+            r"(?=a*)",
+        ] {
+            assert!(
+                nullable_atom_negative(source, true, true).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nullable_atom_negative_depth_bounds_and_work_are_flat_and_interruptible() {
+        let source = format!(
+            "(?<!{}[\\p{{RGI_Emoji}}]*{})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            nullable_atom_negative(&source, true, true)
+                .unwrap()
+                .capture_count(),
+            100_000
+        );
+        let source =
+            JsString::from(format!(r"(?!(?i:([\q{{ab}}]{{0,{}}})))", "9".repeat(20_000)).as_str());
+        let mut work = Vec::new();
+        let plan = RegExpImpossibleMatcher::compile_nullable_atom_negative_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_nullable_atom_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀ab"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
         );
     }
 }
