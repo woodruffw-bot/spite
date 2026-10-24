@@ -13572,3 +13572,14 @@ The body may consume greedily, but the guaranteed successful operand path makes
 the outside negative assertion fail, so matching data is unnecessary. The
 constant no-match body keeps source/flags, lastIndex, String consumers, cloning
 and collection. Original errors still precede proof selection.
+
+
+A separate negative-nullable-sequence proof accepts complete sequences whose
+every term independently has a successful zero-length path, optionally inside
+ordinary/modifier spines (22.2.2.2, 22.2.2.3.1). Group and safe atom proofs compose
+without reading matching data; greedy execution may still consume. The negative
+assertion must fail (22.2.2.4), so no operand result or capture mask is fabricated.
+The shared flat group/atom boundary scanners split disjoint terms, preserving
+original bindings and full inventories. Required/conditional terms and root
+choices reject this constructor. Source/frame/copy work precedes allocation;
+construction stays source-sized and the retained no-match plan constant.

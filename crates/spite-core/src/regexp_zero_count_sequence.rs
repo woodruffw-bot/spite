@@ -1151,7 +1151,7 @@ fn choice_layout(units: &[u16], sets: bool) -> Option<(usize, usize)> {
     (depth == 0 && class_depth == 0).then_some((first_end?, captures))
 }
 
-fn group_end(units: &[u16], start: usize, sets: bool) -> Option<usize> {
+pub(crate) fn group_end(units: &[u16], start: usize, sets: bool) -> Option<usize> {
     let mut cursor = start;
     let mut depth = 0usize;
     let mut class_depth = 0usize;

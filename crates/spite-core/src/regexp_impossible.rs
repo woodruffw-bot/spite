@@ -99,6 +99,23 @@ impl RegExpImpossibleMatcher {
         Self::compile_assertion_validated_with_work::<4, E>(source, unicode, sets, charge)
     }
 
+    /// Proves root negative assertions over complete sequences of independently nullable terms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Each complete group/atom term has an unconditional successful path;
+    /// concatenation and complete enclosing spines preserve that existence
+    /// proof (22.2.2.2, 22.2.2.3.1). Greedy terms may consume, but their negative
+    /// assertion must fail (22.2.2.4). No operand capture mask is fabricated.
+    /// Source/frame/copy work precedes allocation and scans stay source-sized.
+    pub fn compile_nullable_sequence_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<5, E>(source, unicode, sets, charge)
+    }
+
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -175,6 +192,13 @@ impl RegExpImpossibleMatcher {
                                     )?
                                 } else if MODE == 4 {
                                     Self::nullable_atom_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 5 {
+                                    Self::nullable_sequence_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -296,6 +320,46 @@ impl RegExpImpossibleMatcher {
             return Ok(false);
         };
         Ok(minimum_zero && end == atom.len())
+    }
+
+    fn nullable_sequence_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        charge(body.len().saturating_mul(48).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(false);
+        }
+        let units = body.code_units();
+        let units = if let Some(scope) = quantified_enclosing_scope(units, sets) {
+            &units[scope.body]
+        } else {
+            units
+        };
+        let mut cursor = 0;
+        let mut terms = 0;
+        while cursor < units.len() {
+            let end = if units[cursor] == 0x28 {
+                crate::regexp_zero_count_sequence::group_end(units, cursor, sets)
+            } else {
+                crate::regexp_zero_count_tree::surrogate_atom_end(units, cursor, unicode, sets)
+            };
+            let Some(end) = end else { return Ok(false) };
+            let Some((end, _, _)) = crate::regexp_zero_count_spine::quantifier(units, end) else {
+                return Ok(false);
+            };
+            let term = JsString::from_code_units(units[cursor..end].to_vec());
+            if !Self::nullable_group_with_work(&term, unicode, sets, &mut charge)?
+                && !Self::nullable_atom_with_work(&term, unicode, sets, &mut charge)?
+            {
+                return Ok(false);
+            }
+            cursor = end;
+            terms += 1;
+        }
+        Ok(terms >= 2)
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -1652,6 +1716,101 @@ mod tests {
         }
         assert_eq!(
             plan.find_with_work(&JsString::from("😀ab"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
+        );
+    }
+    fn nullable_sequence_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_nullable_sequence_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn nullable_sequences_make_negative_assertions_fail_with_consuming_greedy_terms() {
+        for (source, captures) in [
+            (r"[\p{RGI_Emoji}]+(?!(a)?[\p{RGI_Emoji}]*[\q{ab}]?)", 1),
+            (r"(?<!((a)?[\p{RGI_Emoji}]*)+)(b)", 3),
+            (r"(?!(?im-s:((a)?)(b)*[\q{ab}]?){2,3})", 3),
+            (r"(a)(?!(\1)?((b)?){2,3})(c)", 5),
+            (r"(?!(?:\x28*\u007C?))", 0),
+        ] {
+            assert_eq!(
+                nullable_sequence_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nullable_sequence_negative_proofs_reject_required_conditional_choice_and_nonroot_terms() {
+        for source in [
+            r"(?!a*)",
+            r"(?!a*b)",
+            r"(?!(a)*b)",
+            r"(?!^a*)",
+            r"(?!a*(?=b))",
+            r"(?!(a)?b+)",
+            r"(?!a*|b)",
+            r"((?!a*b*))",
+            r"(?=a*b*)",
+        ] {
+            assert!(nullable_sequence_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn nullable_sequence_negative_many_terms_deep_wrappers_and_work_stay_flat() {
+        let source = format!("(?!{}(a)?)", r"[\p{RGI_Emoji}]*".repeat(20_000));
+        assert_eq!(
+            nullable_sequence_negative(&source).unwrap().capture_count(),
+            1
+        );
+        let source = format!(
+            "(?<!{}a*[\\p{{RGI_Emoji}}]?(b)?{})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            nullable_sequence_negative(&source).unwrap().capture_count(),
+            100_001
+        );
+    }
+
+    #[test]
+    fn nullable_sequence_negative_work_interrupts_before_each_segment_proof_or_input_access() {
+        let source = JsString::from(r"(a)(?!(?i:(\1)?[\p{RGI_Emoji}]*){2,3})(b)");
+        let mut work = Vec::new();
+        let plan = RegExpImpossibleMatcher::compile_nullable_sequence_negative_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_nullable_sequence_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("a😀ab"), 1, |n| {
                 assert_eq!(n, 1);
                 Ok::<(), ()>(())
             }),
