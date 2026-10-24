@@ -22258,3 +22258,35 @@ projection in eight bounded batches. Strict workspace Clippy (76 s), documentati
 tests, formatting, policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime captured outside scopes around nested optional truth roots
+
+Three focused groups pass (1.21 s), preserving conditional outside points,
+mandatory enclosing ranges and every nested optional slot. Required/skipped
+outside scopes, ordinary/exact-one inner wrappers, both branch orders,
+greedy/lazy padded counts, named and escaped-name aliases, indices, matchAll,
+callback replacement, split/search, cloning, collection and strict lastIndex
+writes retain native behavior. Outside continuations force lazy consumption,
+retry shorter members and preserve earliest complete starts. Deep 1,000-level
+outside point captures, 20,000-unit shared-prefix scalar/string members and
+constructor cancellation remain flat. Unknown terms in either region even under
+skipped/never scopes retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Two
+preceding rejection controls now compare full native captures, indices, source,
+flags, input and lastIndex and agree on the fresh CLI; their Rust proof group
+passes (0.03 s). Five source-shape scans retain all other rejection domains.
+All 100,352 exact differential records agree across 256 independent pairs, with
+all 1,024 proof/flag combinations supported. Mixed captured outside scopes,
+complete inner wrappers, finite/scalar/known-empty classes and independent branch
+profiles cover every start, sticky, multiline and ignore-case. All 431 Runtime
+unit tests pass (10.20 s), alongside strict workspace Clippy (71 s), documentation
+tests, formatting, policy, inventories and diff checks. The grouped Runtime
+inventory contains 602 case files. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding nested optional and nested zero-count Runtime sources pass a fresh
+Test262 run: all 35 runner tests and all 16,343 reviewed variants, including the
+pinned corpus gate (432.59 s). This run compiled before captured outside scopes
+around nested optional Runtime roots.

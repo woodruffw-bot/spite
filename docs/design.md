@@ -12639,4 +12639,8 @@ outside captures can participate (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7).
 Storage, traversal and clone/drop remain flat and source-sized. Unknown terms in
 either region even under skipped/never scopes, additional optional class-path
 counts and consuming outside siblings retain separate proofs. Earlier API
-domains and charged work remain unchanged. Runtime selection remains separate.
+domains and charged work remain unchanged. Runtime selects this captured-scope
+nested optional proof after nested zero-count alternatives. Its dedicated body
+retains outside point/whole roles, every nested optional slot, actual endpoint
+truth, source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.
