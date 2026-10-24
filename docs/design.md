@@ -14015,4 +14015,13 @@ RegExpBuiltinExec's complete-character advancement. This differs from the
 approved initial-offset rule: an explicitly supplied trailing-pair start still
 uses the leading boundary. A native sticky-candidate oracle enumerates legal
 search positions independently and checks operand ranges and captures at each
-position. Runtime selection of this additional constructor remains separate.
+position.
+
+
+Runtime selects the word-boundary lookahead constructor after the line-only
+constructor, with the same complete validated source and successful-selection
+capture-offset reset. Its original-context word predicates and lazy endpoint
+retries use the shared actual-work execution path and independently cached
+operand extent. Named groups, indices, stateful execution, String consumers,
+cloning and collection retain those ranges. The compilation frame remains
+separate from user getters and conversions.

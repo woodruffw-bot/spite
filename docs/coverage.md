@@ -25523,3 +25523,28 @@ The corpus test completes in 390.54 s with the existing conformance profile.
 Fixture, harness and review inventories retain their preceding values. This
 snapshot covers consuming operand captures; the word-boundary extension has
 separate focused evidence.
+
+## Runtime Unicode lookahead with operand word boundaries
+
+All twelve current lookahead regression groups pass (1.64 s), including four
+additional groups for word endpoints, lazy retries, outside/operand masks, word
+folds, line context, empty captures, String consumers, copies and collection.
+An independent Runtime expectation checks complete-character search candidates
+in `a😀ab!` and the approved initial-pair rewind. All thirteen constructor
+regressions pass (0.21 s), including native reentry.
+
+A fresh CLI agrees on 106,496 metadata records across 512 word-lookahead
+patterns against the native sticky-candidate oracle with independent Unicode
+search advancement and state bookkeeping. Source/flags, input, all starts,
+ordinary/global/sticky/global-sticky execution, whole/capture values and ranges,
+and lastIndex are checked. Fourteen ASCII iv patterns contribute 2,912
+equivalent-range controls for the documented property-fold discrepancy. Ten
+complete JavaScript programs agree separately; the independent surrogate
+expectation remains outside direct V8 search comparison.
+
+All 436 Runtime unit tests pass (8.30 s). Strict workspace Clippy with all
+targets, documentation tests, formatting, dependency policy, inventories and
+diff checks pass. Runtime inventory remains 619. The finished broad Test262
+result records the preceding complete-positive-lookahead snapshot; its full
+RegExp run is still in progress. Fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.

@@ -969,6 +969,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile complete Unicode positive lookahead over one quantified atom with independent empty assertion and consuming operand capture ranges, including complete outside and operand wrappers.
 - [x] Execute complete Unicode positive lookahead with consuming operand captures through Runtime and String consumers, preserving named indices, zero-width state and original bindings.
 - [x] Compile complete Unicode positive lookahead with operand word boundaries and optional line gates, retaining independent consuming capture extents and legal Unicode search candidates.
+- [x] Execute Unicode lookahead with operand word boundaries through Runtime and String consumers, retaining lazy endpoint retries, original context and independent capture ranges.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.

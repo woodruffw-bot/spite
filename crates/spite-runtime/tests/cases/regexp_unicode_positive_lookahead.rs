@@ -132,3 +132,54 @@ fn opted_in_construction_abort_cannot_publish_partial_capture_state() {
     ));
     assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
+
+#[test]
+fn word_endpoints_select_lazy_captures_and_keep_original_outside_slots() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy']){
+            var source='(?<outside>(?=(?<run>\\ba+?\\b)))',r=new RegExp(source,'d'+state+mode);r.lastIndex=1;var m=r.exec('!aaa!');
+            ok=ok&&m.index===1&&m[0]===''&&m.groups.outside===''&&m.groups.run==='aaa'&&m.indices.groups.outside[1]===1&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1&&r.source===source;
+        }
+        for(var mode of ['u','v'])for(var row of [['a+','aa'],['a+?','a']]){
+            var m=new RegExp('(?=(?<run>\\B'+row[0]+'\\B))','d'+mode).exec('aaaa');ok=ok&&m.index===1&&m.groups.run===row[1]&&m.indices.groups.run[1]===1+row[1].length;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_lookahead_flags_empty_operands_and_string_consumers_keep_original_context() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var m=new RegExp('(?=(?<run>^\\b.+?\\b$))','dim'+mode).exec('\nAA\n');ok=ok&&m.index===1&&m.groups.run==='AA'&&m.indices.groups.run[1]===3;
+            var m=new RegExp('(?=(?<run>\\bs+?\\b))','di'+mode).exec('!ſſ!');ok=ok&&m.index===1&&m.groups.run==='ſſ'&&m.indices.groups.run[1]===3;
+            var m=new RegExp('(?=(?<run>\\B.*?\\B))','d'+mode).exec('!a');ok=ok&&m.index===0&&m.groups.run===''&&m.indices.groups.run[1]===0;
+            var r=new RegExp('(?=(?<run>\\ba+?\\b))','dg'+mode),all=Array.from('!aaa!'.matchAll(r));ok=ok&&all.length===1&&all[0].index===1&&all[0].groups.run==='aaa'&&r.lastIndex===0;
+            ok=ok&&'!aaa!'.replace(r,'<$<run>>')==='!<aaa>aaa!'&&JSON.stringify('!aaa!'.split(new RegExp('(?=(\\ba+?\\b))',mode)))==='["!","aaa","aaa!"]';
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_lookahead_copies_and_collection_retain_operand_extents() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?=(?<run>\ba+?\b)))/dgv;r.lastIndex=3;var copy=new RegExp(r),m=copy.exec('!aaa!');
+        m.index===1&&m.groups.outside===''&&m.groups.run==='aaa'&&m.indices.groups.run[1]===4&&copy.lastIndex===1&&r.lastIndex===3
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var m=copy.exec('!a!');m.index===1&&m.groups.run==='a'&&m.groups.outside===''&&m.indices.groups.run[1]===2&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn word_lookahead_search_uses_complete_unicode_candidates_and_initial_pair_rewind() {
+    // Independent specification expectation: V8 can search inside this pair.
+    check(
+        "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\Bſ*?\\\\B))','dg'+mode);var m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run===''&&m.indices.groups.run[0]===4&&r.lastIndex===4;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===4;r=new RegExp('(?=(?<run>\\\\ba+\\\\b))','dgy'+mode);r.lastIndex=1;ok=ok&&r.exec('😀a!')===null&&r.lastIndex===0}ok",
+    );
+}
