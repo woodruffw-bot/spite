@@ -885,6 +885,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove quantified ordinary/modifier enclosing spines around empty sequences and choices where every alternative is proved empty, retaining interleaved masks and optional-iteration rollback.
 - [x] Execute quantified enclosing empty sequences and choices with independently empty alternatives through Runtime, preserving optional rollback, named/index aliases and String consumers.
 - [x] Prove arbitrary nested empty-expression trees with every active alternative independently empty, flat capture-clear intervals and exact-zero atom/group erasure.
+- [x] Execute composable empty-expression trees through Runtime and String consumers, preserving live captures around erased subtrees and selected/unselected branch slots.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

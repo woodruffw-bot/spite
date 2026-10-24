@@ -13110,3 +13110,11 @@ walking descendants. Decimal bounds stay symbolic. Source/frame work is charged
 before allocation; construction, retained storage and clone/drop are
 source-sized. The existing lexical-mask plan supplies constant matching work
 and capture queries. Earlier constructors and their work remain unchanged.
+
+
+Runtime selects the composable tree proof after the earlier enclosing proofs.
+The complete lexical mask preserves live captures before and after erased
+subtrees, selected branch values and undefined unselected slots without
+rebinding original references. Named/index aliases, String consumers, cloning
+and collection use the existing sequence result path. Original syntax errors
+still precede erasure; actual matching work is charged before input access.

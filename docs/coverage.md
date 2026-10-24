@@ -23404,3 +23404,34 @@ documentation tests, formatting, dependency policy, inventories and diff checks.
 A lexical review of 2,702 retained unsupported controls identifies 17 entries
 across seven modules for native metadata conversion during Runtime integration.
 Earlier APIs and Runtime behavior remain unchanged.
+
+
+## Runtime composable empty-expression trees
+
+Runtime selects the tree proof after the earlier enclosing proofs and reuses
+the complete lexical-mask body. Live captures before/after erased subtrees,
+selected branch values and undefined unselected slots retain original named
+and numbered bindings, including references inside erased bodies.
+
+All 25 focused integration groups pass (5.67 s), including four new groups for
+named branch masks, duplicate-name aliases, erased forward references, actual
+Unicode literal atoms, String consumers, cloning, collection, 1,000 nested
+choice groups with 2,001 lexical slots, a 20,000-digit required count, original
+syntax errors and opt-in host aborts. All 55,296 exact native metadata records
+across 512 independently generated ordinary/u/v trees agree on the fresh CLI,
+as do all 25 complete JavaScript programs. These records execute Node for every
+tested input, start and flag set.
+
+All 17 lexically identified controls across seven modules now assert exact
+native metadata. Their 17 complete programs agree on Node and the fresh CLI;
+all 23 tests in the seven affected modules pass. Remaining consuming or
+conditional alternatives keep unsupported expectations.
+
+All 435 Runtime unit tests pass (9.04 s). Strict workspace Clippy with all targets
+passes (21.42 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped Runtime inventory remains 614
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding restricted quantified-enclosing Runtime snapshot passes all 35
+Test262 runner tests and all 16,343 reviewed variants (397.55 s for the corpus
+group). This broad snapshot precedes tree Runtime integration.

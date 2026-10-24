@@ -463,3 +463,100 @@ fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts(
     ));
     assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
+
+#[test]
+fn arbitrary_empty_trees_keep_named_branch_masks_and_original_erased_bindings() {
+    check(
+        r#"
+        var cases=[
+            ['(?<outer>(?<left>a{0})?|(?<right>b{0})+)+(?<tail>[\\p{RGI_Emoji}]{0})',[1,0,0,1],['outer','left','right','tail']],
+            ['(?i:(?<outer>(?<left>a{0})|(?<right>b{0})))*(?<tail>\\p{RGI_Emoji}{0})',[0,0,0,1],['outer','left','right','tail']],
+            ['(?<first>(?<erased>(?=(?<hidden>a))\\k<later>){0})(?<later>c{0}|d{0})',[1,0,0,1],['first','erased','hidden','later']],
+            ['(?<outer>😀{0}|(?<never>[\\p{RGI_Emoji}]+){0})(?<tail>.\\d){0}',[1,0,0],['outer','never','tail']]
+        ],ok=true;
+        for(var pair of cases)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pair[0],flags);r.lastIndex=start;var m=r.exec(input),global=r.global||r.sticky;
+            if(global&&start>input.length){ok=ok&&m===null&&r.lastIndex===0;continue}
+            var point=global?start:0;if(point>0&&input.charCodeAt(point)>=0xdc00&&input.charCodeAt(point)<=0xdfff&&input.charCodeAt(point-1)>=0xd800&&input.charCodeAt(point-1)<=0xdbff)point--;
+            ok=ok&&m.index===point&&m[0]===''&&m.length===pair[1].length+1&&r.source===pair[0]&&r.lastIndex===(global?point:start)&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            for(var i=1;i<m.length;i++){
+                var name=pair[2][i-1];ok=ok&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i)&&Object.hasOwn(m.groups,name)&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===m[i]&&m.indices.groups[name]===m.indices[i];
+                ok=ok&&(pair[1][i-1]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+            }
+        }
+        var m=/(?<outer>(?<same>a{0})|(?<same>b{0}))+/dgv.exec('ab');
+        ok&&m.length===4&&m[1]===''&&m[2]===''&&m[3]===undefined&&m.groups.same===''&&m.indices.groups.outer===m.indices[1]&&m.indices.groups.same===m.indices[2]&&Object.hasOwn(m.indices,'3')&&m.indices[3]===undefined
+    "#,
+    );
+}
+
+#[test]
+fn empty_tree_string_consumers_copies_and_gc_keep_branch_and_erasure_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outer>(?<left>a{0})?|(?<right>b{0})+)+(?<tail>[\p{RGI_Emoji}]{0})/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===5&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m[4]===''&&m.indices.groups.outer===m.indices[1]&&m.indices.groups.tail===m.indices[4]&&m.indices[1]!==m.indices[4];
+        var calls=[];var value='ab'.replace(r,function(m,outer,left,right,tail,at,input,groups){calls.push(at);return arguments.length===8&&m===''&&outer===''&&left===undefined&&right===undefined&&tail===''&&input==='ab'&&groups.outer===''&&groups.tail===''?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,,,,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m[4]===''
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outer===''&&m.groups.left===undefined&&m.groups.right===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[4]"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deep_empty_trees_and_required_counts_have_no_default_quotas() {
+    check(
+        r#"
+        var depth=5,pattern='('.repeat(depth)+'(?<leaf>[\\p{RGI_Emoji}]{0})'+'|(a){0})+'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===2*depth+2&&m.groups.leaf==='';
+        for(var i=1;i<=depth+1;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
+        for(var i=depth+2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
+        ok
+    "#,
+    );
+    let depth = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"{}(?<leaf>[\p{{RGI_Emoji}}]{{0}}){}",
+            "(".repeat(depth),
+            "|(a){0})+".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2002&&m.groups.leaf==='';for(var i=1;i<=1001;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;for(var i=1002;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;ok"
+    ));
+    let count = "9".repeat(20_000);
+    let pattern = JsString::from(
+        format!(r"(?<outer>(?<a>a{{0}})(?<b>b{{0}})|(?<later>[\p{{RGI_Emoji}}]{{0}})){{{count}}}")
+            .as_str(),
+    );
+    check(&format!(
+        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===5&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===undefined&&m.groups.outer===''&&m.groups.a===''&&m.groups.b===''&&m.groups.later===undefined&&m.indices.groups.b===m.indices[3]"
+    ));
+}
+
+#[test]
+fn tree_erasure_keeps_original_early_errors_and_opt_in_host_aborts() {
+    check(
+        r#"
+        var invalid=['(?<x>[\\P{RGI_Emoji}]{0})a{0}','(?<same>a{0})(?<same>b{0})','(?:(\\k<missing>)){0}a{0}','(?:(a){3,2}){0}b{0}'],ok=true;
+        for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
+    "#,
+    );
+    let count = "9".repeat(20_000);
+    let pattern =
+        JsString::from(format!(r"((a{{0}})(b{{0}})|([\p{{RGI_Emoji}}]{{0}})){{{count}}}").as_str());
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30_000),
+        ..Limits::default()
+    });
+    realm.eval("var r=7,marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!(
+            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
+        )),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
+}
