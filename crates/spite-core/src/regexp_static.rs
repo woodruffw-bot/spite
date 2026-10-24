@@ -42,7 +42,7 @@ impl RegExpStaticMatcher {
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         Ok(
-            compile_facts_with_work::<false, _>(source, unicode, sets, charge)?.map(
+            compile_facts_with_work::<0, _>(source, unicode, sets, charge)?.map(
                 |(fact, defined)| match fact {
                     Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
                         unicode, defined,
@@ -72,7 +72,40 @@ impl RegExpStaticMatcher {
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         Ok(
-            compile_facts_with_work::<true, _>(source, unicode, sets, charge)?.map(
+            compile_facts_with_work::<1, _>(source, unicode, sets, charge)?.map(
+                |(fact, defined)| match fact {
+                    Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
+                        unicode, defined,
+                    )),
+                    Fact::Impossible => Self::Impossible(
+                        RegExpImpossibleMatcher::from_static_capture_count(defined.len()),
+                    ),
+                    Fact::Unknown(_) => unreachable!("unproved roots return None"),
+                },
+            ),
+        )
+    }
+
+    /// Proves successful positive assertions whose operand captures stay undefined.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A flat conservative count tracks captures that may participate in any
+    /// successful operand path. Negative assertions, impossible arms and skipped
+    /// empty/impossible or exact-zero groups cannot export captures. If a
+    /// guaranteed-successful positive operand has no possible exported captures,
+    /// both directions compose as empty and every body slot stays undefined
+    /// (22.2.2.2–4). Defined empty captures remain unproved when their indices
+    /// could move with consumption. Earlier modes retain their domains/work;
+    /// all capture counts and clear operations stay source-sized without scans
+    /// across nested masks.
+    pub fn compile_undefined_capture_positive_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(
+            compile_facts_with_work::<2, _>(source, unicode, sets, charge)?.map(
                 |(fact, defined)| match fact {
                     Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
                         unicode, defined,
@@ -172,6 +205,9 @@ struct Frame {
     sequence: Fact,
     choices: Fact,
     has_possible_arm: bool,
+    capture: bool,
+    sequence_exports: usize,
+    choice_exports: usize,
 }
 impl Frame {
     fn new(kind: Kind, start: usize, branch_start: usize) -> Self {
@@ -182,6 +218,9 @@ impl Frame {
             sequence: Fact::Empty,
             choices: Fact::Impossible,
             has_possible_arm: false,
+            capture: branch_start != start,
+            sequence_exports: 0,
+            choice_exports: 0,
         }
     }
     fn finish_arm(&mut self, clears: &mut [usize]) {
@@ -190,9 +229,15 @@ impl Frame {
         if self.sequence == Fact::Impossible || self.has_possible_arm {
             clear(clears, self.branch_start);
         }
+        // Later-arm mask clears are conditional on a proved-empty choice.
+        // They cannot establish undefined captures on an unknown operand.
+        if self.sequence != Fact::Impossible {
+            self.choice_exports += self.sequence_exports;
+        }
         self.has_possible_arm |= self.sequence != Fact::Impossible;
         self.choices = self.choices.alternative(self.sequence);
         self.sequence = Fact::Empty;
+        self.sequence_exports = 0;
         self.branch_start = clears.len();
     }
 }
@@ -204,7 +249,7 @@ fn clear(ends: &mut [usize], start: usize) {
     }
 }
 
-fn compile_facts_with_work<const CAPTURE_FREE_POSITIVE: bool, E>(
+fn compile_facts_with_work<const POSITIVE_MODE: u8, E>(
     source: &JsString,
     unicode: bool,
     sets: bool,
@@ -248,13 +293,28 @@ fn compile_facts_with_work<const CAPTURE_FREE_POSITIVE: bool, E>(
                 let mut frame = frames.pop().expect("nonroot frame");
                 frame.finish_arm(&mut clears);
                 let operand = frame.choices;
+                let operand_exports = frame.choice_exports;
+                let mut exports = match frame.kind {
+                    Kind::Ordinary if operand != Fact::Impossible => {
+                        operand_exports + usize::from(frame.capture)
+                    }
+                    Kind::Positive => operand_exports,
+                    Kind::Ordinary | Kind::Negative => 0,
+                };
                 let fact = match frame.kind {
                     Kind::Ordinary => operand,
                     Kind::Positive
-                        if CAPTURE_FREE_POSITIVE
+                        if POSITIVE_MODE != 0
                             && operand.nullable()
-                            && clears.len() == frame.start =>
+                            && if POSITIVE_MODE == 1 {
+                                clears.len() == frame.start
+                            } else {
+                                operand_exports == 0
+                            } =>
                     {
+                        if POSITIVE_MODE == 2 {
+                            clear(&mut clears, frame.start);
+                        }
                         Fact::Empty
                     }
                     Kind::Positive => operand,
@@ -271,11 +331,18 @@ fn compile_facts_with_work<const CAPTURE_FREE_POSITIVE: bool, E>(
                     return Ok(None);
                 };
                 let repeated = fact.repeat(minimum_zero, maximum_zero);
+                if repeated == Fact::Impossible
+                    || maximum_zero
+                    || minimum_zero && matches!(fact, Fact::Empty | Fact::Impossible)
+                {
+                    exports = 0;
+                }
                 if repeated == Fact::Empty && (minimum_zero || maximum_zero) {
                     clear(&mut clears, frame.start)
                 }
                 let parent = frames.last_mut().expect("root frame");
                 parent.sequence = parent.sequence.sequence(repeated);
+                parent.sequence_exports += exports;
                 cursor = end;
             }
             0x7c => {
@@ -327,10 +394,8 @@ fn compile_facts_with_work<const CAPTURE_FREE_POSITIVE: bool, E>(
 mod tests {
     use super::*;
     fn plan(source: &str) -> Option<(Fact, Box<[bool]>)> {
-        compile_facts_with_work::<false, _>(&JsString::from(source), true, true, |_| {
-            Ok::<(), ()>(())
-        })
-        .unwrap()
+        compile_facts_with_work::<0, _>(&JsString::from(source), true, true, |_| Ok::<(), ()>(()))
+            .unwrap()
     }
     #[test]
     fn compositional_negative_and_optional_facts_cross_multiple_layers() {
@@ -393,7 +458,7 @@ mod tests {
         let source = JsString::from(r"((?!a*))?");
         let mut seen = Vec::new();
         assert_eq!(
-            compile_facts_with_work::<false, _>(&source, true, true, |n| {
+            compile_facts_with_work::<0, _>(&source, true, true, |n| {
                 seen.push(n);
                 Err(19)
             }),
@@ -656,6 +721,114 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(43)),
             Err(43)
+        );
+    }
+    fn undefined_capture_plan(source: &str) -> Option<RegExpStaticMatcher> {
+        RegExpStaticMatcher::compile_undefined_capture_positive_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+    #[test]
+    fn undefined_capture_positive_operands_keep_negative_erased_and_optional_empty_slots_undefined()
+    {
+        for (source, mask) in [
+            (r"(?=(?!(a))|b*)", &[false][..]),
+            (r"(?<=(?!(a))|b*)", &[false][..]),
+            (r"(?=(a){0}[\p{RGI_Emoji}]*)", &[false][..]),
+            (r"(?=(a{0})?[\p{RGI_Emoji}]*)", &[false][..]),
+            (r"((?=(?!(a))|b*))+", &[true, false][..]),
+            (r"((?=(?!(a))|b*))?", &[false, false][..]),
+            (r"(?im-s:((?<=(a){0}b*))+)", &[true, false][..]),
+        ] {
+            assert!(
+                RegExpStaticMatcher::compile_capture_free_positive_validated_with_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "earlier mode changed: {source}"
+            );
+            let p = undefined_capture_plan(source).unwrap_or_else(|| panic!("rejected {source}"));
+            assert_eq!(p.capture_count(), mask.len(), "{source}");
+            for (i, &v) in mask.iter().enumerate() {
+                assert_eq!(p.capture_range(i, &(3..3)), v.then_some(3..3), "{source}");
+            }
+        }
+    }
+    #[test]
+    fn undefined_capture_positive_counts_reject_later_data_arms_and_shifted_empty_capture_indices()
+    {
+        for source in [
+            r"(?=a+|(b*))",
+            r"(?<=a+|(b*))",
+            r"(?=(a{0})+b*)",
+            r"(?=a*(b{0})+)",
+            r"(?=(a)?)",
+            r"(?=(a)*)",
+            r"((?=(?!(a))|b*)|c)+",
+            r"a(?=(?!(b))|c*)",
+        ] {
+            assert!(undefined_capture_plan(source).is_none(), "{source}");
+        }
+    }
+    #[test]
+    fn undefined_capture_positive_deep_frames_and_large_bounds_keep_counts_and_masks_flat() {
+        let source = format!(
+            "{}{}(?!(a))|b*{}{}",
+            "(".repeat(100_000),
+            "(?=".repeat(100_000),
+            ")".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let p = undefined_capture_plan(&source).unwrap();
+        assert_eq!(p.capture_count(), 100_001);
+        for i in 0..100_000 {
+            assert_eq!(p.capture_range(i, &(0..0)), Some(0..0));
+        }
+        assert_eq!(p.capture_range(100_000, &(0..0)), None);
+        let source = format!("((?=(?!(a))|b*)){{{}}}", "9".repeat(20_000));
+        let p = undefined_capture_plan(&source).unwrap();
+        assert_eq!(p.capture_range(0, &(0..0)), Some(0..0));
+        assert_eq!(p.capture_range(1, &(0..0)), None);
+    }
+    #[test]
+    fn undefined_capture_positive_work_interrupts_before_frames_and_actual_input_access() {
+        let s = JsString::from(r"((?=(?!(a))|[\p{RGI_Emoji}]*))+");
+        let mut seen = Vec::new();
+        assert!(matches!(
+            RegExpStaticMatcher::compile_undefined_capture_positive_validated_with_work(
+                &s,
+                true,
+                true,
+                |n| {
+                    seen.push(n);
+                    Err(47)
+                }
+            ),
+            Err(47)
+        ));
+        assert_eq!(seen, [s.len() * 96 + 16]);
+        let p = undefined_capture_plan(r"((?=(?!(a))|[\p{RGI_Emoji}]*))+").unwrap();
+        let mut work = 0;
+        assert_eq!(
+            p.find_with_work(&JsString::from("😀"), 1, |n| {
+                work += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(work, 1);
+        assert_eq!(
+            p.find_with_work(&JsString::from(""), usize::MAX, |_| Err(53)),
+            Err(53)
         );
     }
 }

@@ -25352,3 +25352,31 @@ The immediately preceding compositional-static Runtime snapshot passes the full
 variants in the conformance profile (363.99 s for the corpus). Those broad
 results precede capture-free Runtime selection; the new increment has the
 focused/native/quality checks above.
+
+
+Successful positive static proofs with undefined operand captures (Core)
+-----------------------------------------------------------------------
+
+The third static mode tracks conservative possible capture exports in flat
+frames. Successful negative assertions, impossible arms and erased/skipped
+groups export no captures. Every possible choice arm contributes; conditional
+later-arm clears do not prove absence. A guaranteed-successful positive operand
+with zero possible exports composes as empty, clearing every body slot. Defined
+empty captures with potentially shifted indices remain unproved.
+
+All 221 actual-source focused Core tests pass (0.51 s), including four new groups
+for both directions, negative/erased/skipped body slots and outside masks,
+explicit earlier-mode exclusions, later capturing-arm counterexamples, shifted
+defined-empty spans, 100,000 outside groups plus 100,000 positive layers,
+20,000-digit minima, source-work interruption and constant Unicode actual
+work/boundaries. All 12,800 exact native input/start/capture records across 512
+independently generated ordinary/u/v patterns agree. Both earlier mixed-static
+and capture-free static corpora retain all 12,800 native records each after the
+frame-counter/mode extension. A lexed review of 2,732 direct unsupported
+control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (7.69 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 618; fixtures, snapshots, dependencies and default
+quotas are unchanged. This commit adds the Core API; Runtime selection follows
+separately.

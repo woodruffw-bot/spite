@@ -13934,3 +13934,21 @@ behavior. Full normalized source preserves original bindings and slots; shared
 execution retains Unicode boundaries, indices/groups, source/flags, lastIndex,
 String consumers, cloning and collection, with original errors before proof
 selection and compilation outside reentrant conversion frames.
+
+
+A third static mode composes guaranteed-successful positive operands whose
+captures always remain undefined (22.2.2.2–4). Flat frames conservatively count
+lexical captures that may participate in any successful operand path. Impossible
+arms, successful negative assertions, exact-zero groups and skipped independently
+empty/impossible groups contribute no exports. Other capturing groups contribute
+their own slot and possible child exports. Choice counts include every possible
+arm, so conditional later-arm mask clears cannot incorrectly prove capture
+absence. Defined empty captures remain unproved when consumption could move
+their indices.
+
+A positive assertion with a guaranteed-successful operand and zero possible
+exports consumes zero and clears its entire body capture interval. This retains
+all lexical slots as undefined without exposing consumed data or spans. Counter
+merges and prefix clear markers avoid scanning nested masks; construction stays
+source-sized at arbitrary depth. Earlier static modes retain their domains and
+source-work charges, with original full validation and bindings intact.
