@@ -1,7 +1,8 @@
 //! A root choice between an asserted single string class and pure empty terms.
 use super::{
     JsString, RegExpUnicodeSetCompileError, RegExpUnicodeSingleStringClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch, enclosed_v_group_body, unicode_start,
+    RegExpUnicodeStringClassBranchMatch, enclosed_v_group_body, has_root_alternative,
+    single_word_gate_frame, unicode_start,
 };
 use std::ops::Range;
 
@@ -98,6 +99,77 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
         };
         let Some(mut plan) = Self::compile_with_work(
             &JsString::from_code_units(units[body].to_vec()),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(enclosing_captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = enclosing_captures;
+        Ok(Some(plan))
+    }
+
+    /// Proves common canonical ^/$ gates outside complete alternative wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// common line predicate and one complete ordinary wrapper are required.
+    /// The common predicates are conjoined with each original alternative at
+    /// its own start/end; every class member remains eligible for continuation
+    /// checks before longest-member selection (22.2.2.3–4, 22.2.2.7).
+    /// Original root choices decline before extracting any common gate. Outside
+    /// word predicates, partial wrappers and choice counts remain separate.
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_surrounding_line_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(16).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(frame) = single_word_gate_frame(units) else {
+            return Ok(None);
+        };
+        if (!frame.start_line && !frame.end_line)
+            || frame.start_word.is_some()
+            || frame.end_word.is_some()
+        {
+            return Ok(None);
+        }
+        let inner = &units[frame.body];
+        let Some((body, enclosing_captures)) = enclosed_v_group_body(inner) else {
+            return Ok(None);
+        };
+        let body = &inner[body];
+        let Some(bar) = root_bar(body) else {
+            return Ok(None);
+        };
+        // Only predicates are duplicated; every original term and capture keeps
+        // its branch and lexical order. Empty-branch predicates share one point.
+        let mut decorated = Vec::with_capacity(units.len().saturating_add(4));
+        for (index, branch) in [&body[..bar], &body[bar + 1..]].into_iter().enumerate() {
+            if index != 0 {
+                decorated.push(0x7c);
+            }
+            if frame.start_line {
+                decorated.push(0x5e);
+            }
+            decorated.extend_from_slice(branch);
+            if frame.end_line {
+                decorated.push(0x24);
+            }
+        }
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(decorated),
             ignore_case,
             multiline,
             charge,

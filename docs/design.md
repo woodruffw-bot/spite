@@ -11258,3 +11258,34 @@ the earlier root proof on the full normalized source. The same body owns prefix
 and branch slots, with generic enclosing slots reset to zero. Original source,
 named index aliases, String consumers, collection and host aborts share existing
 paths.
+
+
+Core `compile_surrounding_line_assertions_with_work` on the asserted alternative
+matcher admits canonical common ^/$ predicates outside a complete ordinary
+wrapper chain. Original root disjunctions decline before any gate is extracted;
+`^C|E$` keeps its existing branch-specific meaning. Flat frame and wrapper scans
+retain all original lexical capture slots. Only common pure predicates are
+conjoined with both original alternatives, which then pass the full existing
+root proof. This also covers a plain class/empty body whose only original
+predicate is outside the wrapper. Outside word gates, noncanonical layers,
+partial wrappers, outside empty siblings and choice counts remain separate.
+
+ECMA-262 edition 17 22.2.2.3 CompileSubpattern, 22.2.2.4 CompileAssertion and
+22.2.2.7 CompileAtom require the common continuation to succeed for the selected
+alternative and member. On `ab`, `^(()|([\q{a|ab}]))$` rejects the first empty
+alternative at zero and captures `ab` through the class alternative instead.
+Each class endpoint must satisfy the common suffix before longest-member
+selection; failing longer members can expose shorter eligible strings or the
+original empty alternative. The synthetic empty class keeps all empty-branch
+predicates at one point. Both line predicates can hold on an empty line with
+multiline matching, so no word-style contradiction lowering is applied.
+
+Common predicates add no capture slots. Prefix counts and checked total counts
+retain whole ranges for every complete enclosing capture, including a selected
+empty alternative. Both original branches and class leaves must still prove,
+even when common predicates reject all input candidates. Construction, clone,
+drop and matching stay flat with source-sized storage and existing bounded
+searches. Older root/grouped constructors retain their domains and callbacks.
+Nonsticky asserted branches keep their conservative suffix work precharge;
+sticky queries retain the established member-width bound. Default quotas remain
+unset. Runtime common-line selection is a subsequent step.

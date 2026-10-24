@@ -1170,4 +1170,5 @@ mod tests {
     include!("regexp_unicode_reversed_line_string_class_capture_tests.rs");
     include!("regexp_unicode_asserted_string_class_root_tests.rs");
     include!("regexp_unicode_grouped_asserted_string_class_tests.rs");
+    include!("regexp_unicode_common_line_asserted_string_class_tests.rs");
 }
