@@ -24416,3 +24416,29 @@ programs. All 436 Runtime unit tests pass (3.50 s). Strict workspace Clippy with
 all targets passes (9.64 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Negative assertions over nullable group spines (Core)
+----------------------------------------------------
+
+The new constructor proves root sequences blocked by a negative assertion over
+a complete ordinary/modifier spine with a zero-minimum wrapper. Its operand
+always has a successful path, even when greedy matching could consume. Only
+impossibility is proved; no empty operand result or capture mask is fabricated.
+
+All 135 actual-source focused Core tests pass (0.92 s), including four new groups
+for both assertion directions, greedy consuming alternatives, arbitrary class/
+string-property data, original incoming references and full inventories,
+required/sibling/condition/nonroot exclusions, 100,000 enclosing groups,
+100,003 capture slots, 20,000-digit upper bounds and interruption before every
+source/scope/input step. All 12,800 exact native input/start records and capture
+inventories across 512 independently composed ordinary/u/v patterns agree,
+with exact source identity checked by the scratch oracle generator. All nine
+earlier impossible-proof families retain their 12,800 native records and
+inventories each after the scanner extension. A lexed review of 2,732 direct
+unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (28.32 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

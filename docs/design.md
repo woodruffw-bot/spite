@@ -13532,3 +13532,14 @@ mask is retained and all skipped later slots remain undefined, using the complet
 original normalized source. Duplicate names select the participating first-arm
 capture even when it is empty. Shared execution preserves Unicode boundaries,
 source/flags, lastIndex, String callback/split captures, cloning and collection.
+
+
+A separate negative-nullable-group proof admits root sequences containing a
+negative assertion over a complete ordinary/modifier spine with a zero-minimum
+wrapper. Such an operand always has a successful path (22.2.2.3.1), so its
+negative assertion must fail at every legal position (22.2.2.4). A greedy operand
+may consume input; this is an impossibility proof and must never fabricate an
+empty operand result or capture mask. Arbitrary validated matching data inside
+the skippable group is unnecessary. The shared flat scanner has a separate mode
+preserving earlier domains and work. Source/copy/frame work precedes allocation;
+construction is source-sized and retained storage/actual no-match work constant.

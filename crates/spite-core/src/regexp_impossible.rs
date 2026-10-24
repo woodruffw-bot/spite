@@ -9,9 +9,9 @@ use std::ops::Range;
 /// A validated root sequence containing an independently always-failing assertion.
 ///
 /// The complete original Pattern/flags must be validated and named capture
-/// heads normalized first. A negative assertion over an independently empty
-/// body, or a positive assertion over an independently impossible body, must
-/// fail at every position (22.2.2.4). Other validated sequence terms cannot
+/// heads normalized first. A negative assertion whose complete body always
+/// has a match, or a positive assertion over an independently impossible body,
+/// must fail at every position (22.2.2.4). Other validated sequence terms cannot
 /// rescue the failure; no matching data is needed.
 #[derive(Clone, Debug)]
 pub struct RegExpImpossibleMatcher {
@@ -63,6 +63,23 @@ impl RegExpImpossibleMatcher {
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         Self::compile_assertion_validated_with_work::<2, E>(source, unicode, sets, charge)
+    }
+
+    /// Proves root sequences blocked by a negative assertion over an always-successful group spine.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A complete ordinary/modifier spine with a zero-minimum wrapper always
+    /// has a successful path, even when a greedy operand could consume input
+    /// (22.2.2.3.1). Its negative assertion must fail (22.2.2.4). This proves
+    /// impossibility only; the operand must not be treated as unconditionally
+    /// empty or used to fabricate capture masks. Original slots are retained.
+    pub fn compile_nullable_group_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<3, E>(source, unicode, sets, charge)
     }
 
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
@@ -127,6 +144,13 @@ impl RegExpImpossibleMatcher {
                                     )?
                                 } else if MODE == 2 {
                                     Self::composite_empty_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 3 {
+                                    Self::nullable_group_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -206,6 +230,21 @@ impl RegExpImpossibleMatcher {
             )?.is_some()
         {return Ok(true)}
         Ok(false)
+    }
+
+    // Existence of a successful path is sufficient for a negative assertion;
+    // greedy consumption and operand capture values are never observed.
+    fn nullable_group_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        charge(body.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(false);
+        }
+        Ok(quantified_enclosing_scope(body.code_units(), sets).is_some_and(|scope| scope.optional))
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -1354,5 +1393,101 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
         }
+    }
+    fn nullable_group_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_nullable_group_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_nullable_group_spines_fail_even_when_greedy_operands_could_consume() {
+        for (source, captures) in [
+            (r"[\p{RGI_Emoji}]+(?!((a|ab)(b))?)", 3),
+            (r"(?<!((?=a)(b)){0,3})(c)", 3),
+            (r"(?!(?i:((a)\1)?){2,3})(b)", 3),
+            (r"(?!(?:[\q{ab}](a)){0000,0002}?)", 1),
+            (r"(a)(?!((\1)(b))*?)(c)", 5),
+        ] {
+            assert_eq!(
+                nullable_group_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn nullable_group_negative_proof_excludes_required_spines_siblings_and_other_contexts() {
+        for source in [
+            r"(?!a*)",
+            r"(?!(a)+)",
+            r"(?!(?=(a)?))",
+            r"(?!(?:(a)?)*b)",
+            r"(?!(a)?b)",
+            r"((?!(a)?))",
+            r"(?!(a)?)|x",
+            r"(?=(a)?)",
+            r"(?!^)",
+        ] {
+            assert!(nullable_group_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn nullable_group_negative_depth_and_huge_bounds_need_no_matching_data() {
+        let source = format!(
+            "(?<!{}((a|ab)(b))?{})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            nullable_group_negative(&source).unwrap().capture_count(),
+            100_003
+        );
+        let source = format!(r"(?!([\p{{RGI_Emoji}}]+(a)){{0,{}}})", "9".repeat(20_000));
+        assert_eq!(nullable_group_negative(&source).unwrap().capture_count(), 2);
+    }
+
+    #[test]
+    fn nullable_group_negative_work_interrupts_before_source_scope_and_input_access() {
+        let source = JsString::from(r"(a)(?!(?im-s:((\1)(b))?){2,3})(c)");
+        let mut work = Vec::new();
+        let plan = RegExpImpossibleMatcher::compile_nullable_group_negative_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_nullable_group_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("a😀ab"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(31)),
+            Err(31)
+        );
     }
 }
