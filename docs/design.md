@@ -11405,3 +11405,32 @@ and unknown leaves remain separate proofs. Runtime selects the mixed-layer
 proof after the reversed common-line constructor on the full normalized source.
 The shared capture body retains original source, flags, lexical name/index
 aliases, String consumers, cloning, collection and opt-in host abort behavior.
+
+
+Core `RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher` proves a
+two-way asserted class/empty choice with required empty siblings around it. A
+flat v-aware scan finds the closest class ancestor owning one disjunction and
+records the lexical capture insertion point. The original payload passes the
+complete root proof with all outside predicates conjoined at its endpoints.
+The full surrounding source separately passes the existing Single spine proof,
+with one synthetic empty class replacing only that payload. Neither proof can
+skip unknown original terms or class leaves under false predicates.
+
+The synthetic class proves outside structure and capture participation only;
+its empty width never decides match eligibility. Opposite start/end words may
+reject the placeholder while a consuming original class still succeeds. Required
+assertion groups and positive empty counts contribute pure predicates at one
+point. Assertion-bearing choices, zero-minimum assertion groups, quantified
+class ancestors, extra classes, consuming outside terms and references remain
+separate proofs. A required predicate may originate in the root or its spine.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 require lexical capture slots to
+retain their participation and actual ranges. On `ab!`,
+`(\b)(([\q{a|ab}])|())(\B)` selects `a`: the first capture is 0..0, the whole
+wrapper and class captures are 0..1, the empty branch is undefined, and the final
+capture is 1..1. Outside whole/start/end/never roles are stored flat; original
+branch slots are inserted between the outside lexical slots. Projection uses
+the selected root range and explicit branch tag, including class-selected empty
+members. Searching delegates to the bounded ordered root finder. Construction,
+cloning and dropping use source-sized flat storage. Older constructors and exact
+callbacks remain unchanged. Runtime selection remains separate from this proof.

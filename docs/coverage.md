@@ -19611,3 +19611,31 @@ Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is 550
 case files and 4,322 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core required assertion siblings around string-class alternatives
+
+Four groups compare 32 class families, seven paired branch profiles, six shared
+predicate profiles, six inner layouts, seven outside spine layouts, both orders,
+twelve inputs, all starts and sticky/i/m flags with independent predicates,
+ordered choice and capture-tree evaluation. Outside lexical tables independently
+retain start/end points, whole ranges and never-participating slots around the
+original conditional branch slots. Fourteen exact tables cover empty counts,
+pure empty choices, noncapturing main wrappers, required assertion counts,
+class-selected and alternative-selected empty strings, root-local assertions,
+shorter newline members, escaped class data, supplementary leading normalization
+and pinned folding. A structural witness retains 20,000 enclosing captures with
+flat cloning/dropping. Every constructor/search cancellation prefix and recovery
+is checked. Full original root and outside spine proofs remain required under
+false conjunctions; optional assertions, assertion-bearing choices, quantified
+class ancestors, extra alternatives/classes, outside consuming terms, references
+and unknown leaves remain closed.
+
+Stable passes all 1,243 Core unit cases and 431 Runtime unit cases. All 53,448
+prior public API records retain exact constructor/search work and capture
+projection, including the mixed-layer API. All fourteen outside/whole/branch
+capture tables match independent native sticky controls, with explicit Unicode
+advancement, initial leading normalization and ordinary vi singleton controls.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. No Runtime selection,
+corpus fixture, snapshot, dependency or default quota changes.

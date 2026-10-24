@@ -6,6 +6,10 @@ use super::{
 };
 use std::ops::Range;
 
+#[path = "regexp_unicode_surrounding_asserted_string_class_alternatives.rs"]
+mod surrounding;
+pub use surrounding::RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher;
+
 /// A proved two-way root choice with branch-specific mandatory assertions.
 ///
 /// Requires validated v/vi input and normalized capture names. One alternative

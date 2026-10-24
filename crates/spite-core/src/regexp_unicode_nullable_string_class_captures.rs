@@ -11,7 +11,10 @@ use std::ops::Range;
 
 #[path = "regexp_unicode_asserted_string_class_alternatives.rs"]
 mod asserted_alternatives;
-pub use asserted_alternatives::RegExpUnicodeAssertedStringClassAlternativeMatcher;
+pub use asserted_alternatives::{
+    RegExpUnicodeAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
+};
 
 /// An unquantified string-class/empty alternative with flat capture projection.
 ///
