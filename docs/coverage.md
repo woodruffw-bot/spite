@@ -20867,3 +20867,33 @@ added. All 71,112 prior API records retain exact domains, charged work and captu
 projection. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime repetition with only zero-minimum outside predicate scopes
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Optional/star/bounded/open outside predicates leave their scope slots undefined,
+while unconstrained count/member ordering and required class/empty capture
+identity remain intact. Named/escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and read-only lastIndex retain
+original source and capture identity. Deep 1,000 optional scopes, huge required
+empty counts, defined surrounding points, 20,000-unit shared-prefix words,
+scalar fallback, constructor abort isolation and closed unproved paths pass.
+The bounded nullable word control selects one optional 20,001-unit prefix on a
+40,000-unit input; no live end predicate requires consuming the rest.
+
+Three former unsupported controls now compare complete native captures/indices,
+source, flags, input, undefined groups and lastIndex. Five source-shape scans
+include the actual constructed prefix and retain original unknown-leaf controls.
+
+All three new groups pass (0.27 s), alongside 431 Runtime unit tests (3.42 s),
+forty native tables and eight consumer references on the fresh CLI. All three
+migrated Rust groups pass (0.08 s), and their native programs agree on the fresh
+CLI. The first 57,600 exact differential records match across the prepared
+384-pair matrix, with all 1,536 proof/flag combinations supported. Thirty-two
+mixed nullable/nonnullable scalar/finite forms, twelve body counts, three
+class/empty modes, six capture layouts, four zero-minimum scope layouts and
+eight skipped-predicate profiles cover starts, sticky, ignore-case and multiline
+behavior. Strict workspace Clippy, documentation tests, formatting, policy and
+inventories pass; fixtures, snapshots, dependencies and default quotas remain
+unchanged.

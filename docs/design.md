@@ -12052,5 +12052,8 @@ nullable repetition may stop after its optional consuming allowance, and a lazy
 required-empty path may succeed without consuming. Search, Unicode folding and
 leading surrogate boundaries keep their existing behavior. Unknown leaves,
 references, additional classes and live/conditional predicates remain separate
-proofs. Constructor/capacity failures and callbacks retain their distinction.
-Runtime selection remains separate.
+proofs. Constructor/capacity failures and callbacks retain their distinction. Runtime
+selects this assertion-free zero-minimum-scope proof after its live-predicate
+counterpart on the full normalized source. Its dedicated capture body retains
+source/flags, lexical named aliases, lastIndex, String consumers, cloning and
+collection, including defined ordinary points beside undefined skipped slots.

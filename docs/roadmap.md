@@ -807,7 +807,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile class/empty alternatives combining skipped scopes and live predicates, preserving ordered branch and endpoint continuations.
 - [x] Compile live-asserted class repetition with optional, star and zero-minimum outside predicate scopes, preserving nonprogress and undefined captures.
 - [x] Compile class repetition whose outside predicates all belong to zero-minimum scopes, preserving unconstrained search and capture identity.
-- [ ] Execute class repetition with only zero-minimum outside predicate scopes through Runtime and String consumers.
+- [x] Execute class repetition with only zero-minimum outside predicate scopes through Runtime and String consumers.
 - [x] Execute live-asserted class repetition with zero-minimum outside predicate scopes through Runtime and String consumers.
 - [x] Execute class/empty alternatives combining skipped scopes and live predicates through Runtime and String consumers.
 - [x] Execute class/empty alternatives with only skipped predicates through Runtime and String consumers.
