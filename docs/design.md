@@ -12965,3 +12965,17 @@ queries Core for each defined or undefined capture. The common result path
 preserves own undefined slots, named aliases, index-array identity, source/flags,
 lastIndex and String consumers through cloning and collection. Actual matching
 work is charged by the plan before input access.
+
+
+The zero-spine plan has a separate arbitrary-group constructor. A zero-count
+group may contain any fully validated body, including lookarounds, references,
+alternatives and matching data not yet implemented. A flat delimiter scan
+reserves every original lexical slot and records each leading group's first
+closure. A linear suffix pass admits the candidate only when its outside
+ancestors form a complete quantified ordinary/modifier spine, without other
+terms or alternatives. It avoids rescanning suffixes for every nested zero
+group. The erased group's own and inner slots remain undefined; outside
+required captures are empty, with optional ancestors clearing their suffix
+(22.2.2.3.1, 22.2.2.7). Source/frame work is charged before allocation, and the
+retained capture boundary and matching work remain constant. Existing APIs and
+matching behavior are unchanged.

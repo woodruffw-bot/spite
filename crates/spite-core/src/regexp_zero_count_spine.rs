@@ -3,12 +3,13 @@
 use crate::{JsString, regexp_literal::unicode_start};
 use std::ops::Range;
 
-/// A validated class/property atom erased by a zero bound on its group spine.
+/// A validated atom erased by a zero bound on its complete group spine.
 ///
 /// Requires full original Pattern/flag validation and normalized capture heads.
-/// The Pattern contains one class or Unicode property escape, surrounded only
-/// by ordinary or ims modifier groups and their validated quantifiers. At least
-/// one bound must have max zero, proving that the entire Pattern matches empty.
+/// The class/property constructor requires one such atom; the group constructor
+/// admits an arbitrary body inside an erased group. Outside groups must form
+/// one spine of ordinary or ims modifier groups and validated quantifiers. A
+/// bound with max zero proves that the entire Pattern matches empty.
 /// No membership data is needed. Captures before the first optional group are
 /// defined empty; captures in that group and its descendants remain undefined.
 #[derive(Clone, Debug)]
@@ -75,6 +76,115 @@ impl RegExpZeroCountSpineMatcher {
         }))
     }
 
+    /// Proves an arbitrary zero-count group inside a quantified outside spine.
+    ///
+    /// Requires full original grammar/flag validation and normalized capture
+    /// heads. The erased group's body needs no matching implementation, but all
+    /// its lexical slots are reserved as undefined. Outside required captures
+    /// are defined empty; outside optional groups clear their entire suffix.
+    /// One flat scan records each leading group's first closure and counts
+    /// every capture. A linear suffix pass excludes outside terms and choices.
+    pub fn compile_group_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let mut opening_end = 0;
+        let mut outside_captures = 0;
+        let mut frames = Vec::new();
+        while let Some((width, capturing)) = opener(units, opening_end) {
+            frames.push(GroupFrame {
+                before: outside_captures,
+                close: 0,
+                end: 0,
+                minimum_zero: false,
+                maximum_zero: false,
+            });
+            outside_captures += usize::from(capturing);
+            opening_end += width;
+        }
+        if frames.is_empty() {
+            return Ok(None);
+        }
+        let mut remaining = frames.len();
+        let mut depth = 0usize;
+        let mut class_depth = 0usize;
+        let mut captures = 0;
+        let mut index = 0;
+        while let Some(&unit) = units.get(index) {
+            if unit == 0x5c {
+                index += 2;
+                continue;
+            }
+            if class_depth != 0 {
+                if unit == 0x5d {
+                    class_depth -= 1;
+                } else if unicode_sets && unit == 0x5b {
+                    class_depth += 1;
+                }
+            } else {
+                match unit {
+                    0x5b => class_depth = 1,
+                    0x28 => {
+                        depth += 1;
+                        captures += usize::from(units.get(index + 1) != Some(&0x3f));
+                    }
+                    0x29 => {
+                        let Some(next) = depth.checked_sub(1) else {
+                            return Ok(None);
+                        };
+                        depth = next;
+                        if depth < remaining {
+                            remaining = depth;
+                            let Some((end, minimum_zero, maximum_zero)) =
+                                quantifier(units, index + 1)
+                            else {
+                                return Ok(None);
+                            };
+                            frames[depth].close = index;
+                            frames[depth].end = end;
+                            frames[depth].minimum_zero = minimum_zero;
+                            frames[depth].maximum_zero = maximum_zero;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            index += 1;
+        }
+        if depth != 0 || class_depth != 0 || remaining != 0 {
+            return Ok(None);
+        }
+        let mut outside_defined = captures;
+        for (index, frame) in frames.iter().enumerate() {
+            let expected_end = if index == 0 {
+                units.len()
+            } else {
+                frames[index - 1].close
+            };
+            if frame.end != expected_end {
+                break;
+            }
+            if frame.maximum_zero {
+                return Ok(Some(Self {
+                    unicode,
+                    captures,
+                    defined: outside_defined.min(frame.before),
+                }));
+            }
+            if frame.minimum_zero {
+                outside_defined = outside_defined.min(frame.before);
+            }
+        }
+        Ok(None)
+    }
+
     /// Number of lexical capture slots, including skipped groups (22.2.7.2).
     pub fn capture_count(&self) -> usize {
         self.captures
@@ -104,6 +214,14 @@ impl RegExpZeroCountSpineMatcher {
         };
         Ok(start.map(|start| start..start))
     }
+}
+
+struct GroupFrame {
+    before: usize,
+    close: usize,
+    end: usize,
+    minimum_zero: bool,
+    maximum_zero: bool,
 }
 
 fn opener(units: &[u16], index: usize) -> Option<(usize, bool)> {
@@ -350,5 +468,149 @@ mod tests {
             let clone = matcher.clone();
             assert_eq!(clone.capture_count(), 2);
         }
+    }
+
+    #[test]
+    fn arbitrary_erased_bodies_preserve_native_outside_and_inside_capture_roles() {
+        for (source, unicode, sets, expected) in [
+            (r"((a|(?=(b))c){0})+", true, true, &[true, false, false][..]),
+            (
+                r"(?i:(([\p{RGI_Emoji}])(z)?){0})+",
+                true,
+                true,
+                &[false, false, false][..],
+            ),
+            (
+                r"((?:(a)(?<=b(c))|\p{RGI_Emoji}+){0}){2,3}",
+                true,
+                true,
+                &[true, false, false][..],
+            ),
+            (r"(((a)\2){0})?", true, true, &[false, false, false][..]),
+            (
+                r"(?-i:((?=a)(b)){0}){2,3}?",
+                true,
+                true,
+                &[false, false][..],
+            ),
+            (r"((a){0}x){0}", false, false, &[false, false][..]),
+            (r"(?i:((?:x)(a))){0}", true, true, &[false, false][..]),
+            (
+                r"(?:(?:((a){0}){2,3}){0,2}){1}",
+                true,
+                true,
+                &[false, false][..],
+            ),
+            (
+                r"((((a){0})?)+)",
+                true,
+                true,
+                &[true, true, false, false][..],
+            ),
+            (r"(([\q{\(|\)}]z?){0})+", true, true, &[true, false][..]),
+            (r"(([()\]])(a)){0}", true, false, &[false, false, false][..]),
+            (r"((?=(a))\1){0}", true, true, &[false, false][..]),
+        ] {
+            let matcher = RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                &JsString::from(source),
+                unicode,
+                sets,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(matcher.capture_count(), expected.len(), "{source}");
+            for (index, &defined) in expected.iter().enumerate() {
+                assert_eq!(
+                    matcher.capture_range(index, &(1..1)),
+                    defined.then_some(1..1),
+                    "{source} slot {index}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn erased_group_suffixes_exclude_other_outside_terms_and_later_sibling_closures() {
+        for source in [
+            r"((a){0}x)+",
+            r"((a){0}|x)+",
+            r"((a){0})+x",
+            r"(a)((b){0})+",
+            r"(?=(a){0})",
+            r"((a){0})+|",
+            r"[a]{0}",
+            r"((a){0,1})+",
+        ] {
+            assert!(
+                RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_arbitrary_group_erasure_and_rejected_suffixes_have_source_sized_work() {
+        let depth = 100_000;
+        let source = JsString::from(
+            format!(
+                r"{}((a)(?=b(c))|\p{{RGI_Emoji}}+){{0}}{}",
+                "(".repeat(depth),
+                ")+".repeat(depth)
+            )
+            .as_str(),
+        );
+        let mut work = 0;
+        let matcher = RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work += n;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work, source.len() * 32 + 16);
+        assert_eq!(matcher.capture_count(), depth + 3);
+        assert_eq!(matcher.capture_range(depth - 1, &(0..0)), Some(0..0));
+        for index in depth..depth + 3 {
+            assert_eq!(matcher.capture_range(index, &(0..0)), None);
+        }
+        assert!(
+            RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                &source,
+                true,
+                true,
+                |_| Err(47)
+            )
+            .is_err()
+        );
+        let rejected = JsString::from(
+            format!("({}a{}x)+", "(".repeat(20_000), "){0}".repeat(20_000)).as_str(),
+        );
+        let mut work = 0;
+        assert!(
+            RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                &rejected,
+                true,
+                true,
+                |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(work, rejected.len() * 32 + 16);
     }
 }

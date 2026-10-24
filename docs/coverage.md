@@ -23108,3 +23108,27 @@ RegExp integration tests (787.12 s), including the corrected literal-control
 expectations. It also passes all 35 Test262 runner tests and all 16,343 reviewed
 variants (385.81 s for the corpus group). These broad results precede the new
 quantified-spine Runtime body.
+
+
+## Core arbitrary zero-count groups inside quantified spines
+
+A separate constructor extends the zero-spine plan to arbitrary validated
+bodies inside an exact-zero group. Its full flat delimiter scan counts every
+lexical capture, respects escaped and class delimiters, and records each
+leading group's first closure. A linear suffix pass requires a complete
+ordinary/modifier quantified outside spine. This reserves the erased group's
+own and inner slots as undefined while retaining the defined outside prefix
+and any optional-ancestor clearing (22.2.2.3.1, 22.2.2.7).
+
+All 20 actual-source focused Core tests pass (0.12 s), including three new groups
+for lookarounds, references, alternatives and unsupported membership inside an
+erased body, outside-scope exclusions and first-closure identity. A 100,000-group
+outside spine keeps its defined prefix and all three erased slots; a 20,000-group
+rejected suffix remains source-sized. Construction charges source/frame work
+before allocation, and retained storage, clone/drop and matching stay constant.
+
+All 3,072 exact capture-layout comparisons agree with 384 independently
+validated native arbitrary-body tables. Strict workspace Clippy with all targets
+passes (23.61 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. Existing APIs and Runtime behavior remain
+unchanged; Runtime integration follows separately.
