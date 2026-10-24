@@ -13858,3 +13858,13 @@ retains every original binding and lexical slot. Shared execution preserves
 Unicode boundaries, indices/groups where matches exist, source/flags,
 lastIndex, String consumers, cloning and collection, with original validation
 errors before proof selection.
+
+
+Runtime selects concatenations of optional established-negative spines and
+independently empty earlier terms. Every term stays empty; at least one term
+uses the optional-established-negative proof (22.2.2.2, 22.2.2.4). Interleaved
+masks and original bindings survive. Full normalized source retains every
+original binding and lexical slot. Shared execution preserves Unicode
+boundaries, indices/groups where matches exist, source/flags, lastIndex,
+String consumers, cloning and collection, with original validation errors
+before proof selection.

@@ -25191,3 +25191,24 @@ programs. All 436 Runtime unit tests pass (3.47 s). Strict workspace Clippy
 with all targets passes (6.42s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Optional established-negative concatenations (Runtime)
+------------------------------------------------------
+
+Runtime selects concatenations of optional established-negative spines and
+independently empty earlier terms. Every term stays empty; at least one term
+uses the optional-established-negative proof (22.2.2.2, 22.2.2.4). Interleaved
+masks and original bindings survive.
+
+All 36 focused integration groups pass (0.23 s), including three new groups
+for mixed interleaved masks and erased original references, surrogate
+boundaries and later errors, indices/groups and lastIndex, String consumers,
+cloning, collection and 1,000 repeated segments with 4,000 lexical slots.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 36 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.71 s). Strict workspace Clippy
+with all targets passes (6.69s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.
