@@ -19382,3 +19382,25 @@ documentation tests, strict workspace Clippy, formatting, dependency policy,
 source/fixture inventories and diff checks pass. Runtime inventory is 546 case
 files and 4,310 integration cases. Corpus sources/helpers, snapshots, dependencies,
 intrinsic counts and default resource policy are unchanged.
+
+## Core common word predicates around complete string-class alternatives
+
+Three groups compare 32 class families, seven paired branch profiles, ten common
+word/line profiles, six layouts, both orders and three wrapper shapes with
+independent predicate, ordered-choice and capture-tree evaluation. Twelve inputs,
+all starts and sticky/i/m flags retain actual consuming endpoints and one-point
+empty conjunctions. Exact witnesses cover shorter eligible members, distinct
+class-selected and alternative-selected empty results, pinned vi folds,
+supplementary initial offsets and Unicode advancement after failed candidates.
+Structural tests keep 20,000 prefix slots flat. Every constructor/search callback
+cancellation prefix and recovery is checked. Earlier APIs, root scope,
+noncanonical layers, partial wrappers/siblings, counts, extra alternatives/classes,
+optional assertions, references and unknown leaves remain closed.
+
+Stable passes all 1,230 Core unit cases and 431 Runtime unit cases. All 50,504
+prior public API records retain exact constructor/search work and capture
+projection, including the common-line API. New source witnesses validate in
+native v/vi modes. Workspace documentation tests, strict workspace Clippy,
+formatting, dependency policy, source/fixture inventories and diff checks pass.
+No Runtime selection, corpus fixture, snapshot, dependency or default quota
+changes.

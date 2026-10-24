@@ -11292,3 +11292,25 @@ unset. Runtime selects the common-line proof after root and complete-wrapper
 proofs on the full normalized source. The shared capture body keeps original
 source metadata, prefix/branch aliases, String consumers, cloning, collection and
 opt-in abort behavior.
+
+Core `compile_surrounding_word_assertions_with_work` on the asserted alternative
+matcher admits canonical common word predicates outside complete ordinary
+wrappers, with optional canonical ^/$ predicates. It declines original root
+disjunctions before extracting any frame. Each original alternative receives
+the common start/end predicates and passes the full root proof; lexical prefix
+counts are restored without adding slots. Earlier constructors retain their
+domains and exact work callbacks.
+
+ECMA-262 edition 17 22.2.2.3–4 requires each alternative's continuation to hold at
+its actual endpoints. On `ab!`, `\b(()|([\q{a|ab}]))\B` rejects the first empty
+alternative and the longer `ab` member, then selects `a`. Opposite common word
+predicates can hold at different boundaries of a consuming member even though
+they contradict at the empty alternative's single point. Same-boundary local
+contradictions still require proof of every original class leaf and term. A
+class-selected empty member retains its branch identity and capture slots.
+
+All enclosing captures retain the whole selected range, while original branch
+slots remain conditional. Construction, matching, cloning and dropping use the
+existing flat plans. Noncanonical outside layers, partial wrappers, siblings,
+choice counts, optional assertions, references and unknown leaves remain
+separate proofs. Runtime selection remains separate from this Core constructor.

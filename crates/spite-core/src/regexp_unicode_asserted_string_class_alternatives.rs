@@ -185,6 +185,77 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves common word predicates outside complete alternative wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// common word predicate is required; canonical outside ^/$ may accompany it.
+    /// Every original term/capture keeps its branch. Common start/end words may
+    /// differ for a consuming class while sharing one point for the empty arm.
+    /// Contradictory local conjunctions still require full class/body proof.
+    /// Root choices decline before extracting predicates (22.2.2.3–4).
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_surrounding_word_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(24).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(frame) = single_word_gate_frame(units) else {
+            return Ok(None);
+        };
+        if frame.start_word.is_none() && frame.end_word.is_none() {
+            return Ok(None);
+        }
+        let inner = &units[frame.body];
+        let Some((body, enclosing_captures)) = enclosed_v_group_body(inner) else {
+            return Ok(None);
+        };
+        let body = &inner[body];
+        let Some(bar) = root_bar(body) else {
+            return Ok(None);
+        };
+        let mut decorated = Vec::with_capacity(units.len().saturating_add(8));
+        for (index, branch) in [&body[..bar], &body[bar + 1..]].into_iter().enumerate() {
+            if index != 0 {
+                decorated.push(0x7c);
+            }
+            if frame.start_line {
+                decorated.push(0x5e);
+            }
+            if let Some(word) = frame.start_word {
+                decorated.extend_from_slice(&[0x5c, if word { 0x62 } else { 0x42 }]);
+            }
+            decorated.extend_from_slice(branch);
+            if let Some(word) = frame.end_word {
+                decorated.extend_from_slice(&[0x5c, if word { 0x62 } else { 0x42 }]);
+            }
+            if frame.end_line {
+                decorated.push(0x24);
+            }
+        }
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(decorated),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(enclosing_captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = enclosing_captures;
+        Ok(Some(plan))
+    }
+
     /// Counts original lexical captures in wrappers and both alternatives.
     pub fn capture_count(&self) -> usize {
         self.captures
