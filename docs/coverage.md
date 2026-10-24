@@ -24488,3 +24488,22 @@ Strict workspace Clippy with all targets passes (19.23 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Negative assertions over nullable group spines (Runtime)
+-------------------------------------------------------
+
+Runtime selects root negative assertions over complete ordinary/modifier spines
+with a zero-minimum wrapper. Greedy operands may consume, but always have a
+successful path, so the outside assertion must fail. All 31 focused integration
+groups pass (1.91 s), including three new groups for greedy class/string-property
+operands, modifier/required wrappers, original incoming references and later
+errors, both directions, source/flags and lastIndex, String consumers, cloning,
+collection, 1,000 required operand groups and 20,000-digit upper bounds.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 31 complete JavaScript
+programs. All 436 Runtime unit tests pass (9.20 s). Strict workspace Clippy with
+all targets passes (28.97 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.

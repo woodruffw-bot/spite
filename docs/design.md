@@ -13563,3 +13563,12 @@ atoms and unproved boundaries reject the proof. This proves impossibility only;
 operand matching data and capture values are unnecessary. Source/copy/frame
 work precedes allocation; construction is source-sized and the retained plan
 and actual no-match work remain constant. Earlier scanner modes are unchanged.
+
+
+Runtime selects negative assertions over nullable ordinary/modifier group
+spines after the existing composite impossibility proofs. Complete original
+normalized source retains every capture and incoming reference for validation.
+The body may consume greedily, but the guaranteed successful operand path makes
+the outside negative assertion fail, so matching data is unnecessary. The
+constant no-match body keeps source/flags, lastIndex, String consumers, cloning
+and collection. Original errors still precede proof selection.
