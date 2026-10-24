@@ -229,6 +229,52 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves a root choice starting with an empty negative-impossible assertion or spine.
+    ///
+    /// Full original validation and normalized capture heads are required. The
+    /// first arm always succeeds empty with the final successful continuation
+    /// (22.2.2.2). Later arms are skipped, retaining their original slots as
+    /// undefined. This root-only proof must not be used as a repeat operand:
+    /// a failing continuation could backtrack into a consuming later arm.
+    /// Source/copy and full-mask work precede allocation.
+    pub fn compile_first_negative_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some((first_end, captures)) = choice_layout(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let first = JsString::from_code_units(source.code_units()[..first_end].to_vec());
+        let mut plan = Self::compile_negative_impossible_validated_with_work(
+            &first,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = Self::compile_enclosing_negative_impossible_validated_with_work(
+                &first,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        let Some(plan) = plan else { return Ok(None) };
+        charge(captures)?;
+        let mut defined = plan.defined.into_vec();
+        defined.resize(captures, false);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -1486,6 +1532,94 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn first_negative_impossible(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_first_negative_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn first_negative_impossible_choices_keep_first_masks_and_skip_all_later_slots() {
+        for (source, mask) in [
+            (r"(?!(?!(a{0})))|(b)", &[false, false][..]),
+            (
+                r"((?!(?!(a{0}))))+|([\p{RGI_Emoji}]+)",
+                &[true, false, false][..],
+            ),
+            (
+                r"((?!(?!(a{0}))))?|((b)(c))",
+                &[false, false, false, false, false][..],
+            ),
+            (r"((?!(?!(\3){0})))|(a)", &[true, false, false][..]),
+            (r"(?<!(?<!a{0})[\q{\||\)}])|(b)|(c)", &[false, false][..]),
+        ] {
+            assert_eq!(
+                first_negative_impossible(source).unwrap().defined.as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn first_negative_impossible_choices_reject_nonroot_and_unproved_first_arms() {
+        for source in [
+            r"(?!(?!))",
+            r"a|(?!(?!))",
+            r"|(?!(?!))",
+            r"(?!a)|(b)",
+            r"(((?!(?!)))|a)+",
+            r"(?!(?!)|)|(b)",
+            r"((?!(?!)))a|(b)",
+        ] {
+            assert!(first_negative_impossible(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn first_negative_impossible_choices_keep_large_lexical_inventories_flat() {
+        let source = format!(
+            "(?!(?!(a{{0}})))|{}b{}",
+            "(".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let plan = first_negative_impossible(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_001);
+        assert!(plan.defined.iter().all(|&v| !v));
+    }
+
+    #[test]
+    fn first_negative_impossible_choices_interrupt_before_source_projection_and_mask_growth() {
+        let source = JsString::from(r"((?!(?!(a{0}))))+|((b)(c))");
+        let mut work = Vec::new();
+        let plan =
+            RegExpZeroCountSequenceMatcher::compile_first_negative_impossible_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_first_negative_impossible_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );

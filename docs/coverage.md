@@ -23896,3 +23896,24 @@ All 436 Runtime unit tests pass (9.57 s). Strict workspace Clippy with all targe
 passes (6.44 s), alongside documentation tests, formatting, dependency policy,
 inventories and diff checks. The grouped inventory increases to 616 Runtime
 case files; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Root choices beginning with negative-impossible assertions (Core)
+----------------------------------------------------------------
+
+A separate root-only proof accepts a first arm that always succeeds empty via
+the whole or enclosing negative-impossible proof. Later arms retain undefined
+lexical capture slots. This proof assumes the final successful continuation;
+repetition and other outside contexts require additional proofs.
+
+All 87 actual-source focused Core tests pass (0.95 s), including four new groups
+for required/optional first-arm masks, original forward bindings, escaped/class
+separator scopes, consuming/skipped later arms, nonroot exclusions, 100,000
+later capture slots and interruption before every source, copy and mask step.
+All 12,800 exact native input/start/capture comparisons across 512 independently
+composed ordinary/u/v root choices agree. A lexed review of 2,732 direct
+unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (55.38 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Fixtures, snapshots, dependencies and default quotas are unchanged.

@@ -13314,3 +13314,13 @@ retains every operand slot as undefined and reuses normal empty execution.
 Unicode boundaries, global empty advancement by String consumers, callback
 arguments, split captures, source/flags, lastIndex, cloning and collection stay
 on the shared paths. Original errors still precede proof selection.
+
+
+A separate root-choice empty proof accepts a first arm proved by the whole or
+enclosing negative-impossible constructor. With the final successful
+continuation that arm succeeds empty, so later validated arms are skipped
+(22.2.2.2). The first arm's mask is preserved and later lexical slots are
+undefined, with original bindings and no renumbering. This proof is restricted
+to the root and must not be used as a repetition operand: an empty iteration's
+failing continuation could backtrack into a consuming later arm. Source/copy
+and full-mask work precede allocation; construction and storage are source-sized.

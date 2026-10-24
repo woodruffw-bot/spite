@@ -905,6 +905,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove complete negative assertions over impossible operands succeed empty with every original operand capture undefined, in both directions.
 - [x] Execute negative assertions over impossible operands through Runtime, preserving undefined captures, Unicode boundaries and empty String consumer behavior.
 - [x] Prove quantified ordinary/modifier spines around negative assertions over impossible operands, preserving required/optional enclosing capture masks.
+- [x] Prove root choices beginning with an empty negative-impossible assertion or spine, retaining its capture mask and every skipped later capture slot.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
