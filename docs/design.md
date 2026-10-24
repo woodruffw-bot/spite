@@ -12057,3 +12057,19 @@ selects this assertion-free zero-minimum-scope proof after its live-predicate
 counterpart on the full normalized source. Its dedicated capture body retains
 source/flags, lexical named aliases, lastIndex, String consumers, cloning and
 collection, including defined ordinary points beside undefined skipped slots.
+
+
+Core separately proves one required class whose outside predicates all belong
+to zero-minimum scopes. The single-occurrence masking scan validates the full
+bare/exact-one class path before the existing single-class proof preserves its
+lexical slots. Optional predicates impose no constraint and their captures stay
+undefined. Ordinary outside point scopes retain defined empty ranges.
+
+ECMA-262 edition 17 22.2.2.3 and 22.2.2.7 still require entering the sole class
+body, including a selected empty member, so its class captures remain defined.
+Longest-member priority and Unicode search remain unconstrained by masked
+predicates. A zero-minimum class-containing ancestor, root alternatives, other
+class-path counts, live predicates, references and unknown leaves retain their
+separate proofs. Cloning, charged work, callback cancellation and constructor/
+capacity failures keep their existing semantics. Runtime selection remains
+separate.
