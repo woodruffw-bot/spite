@@ -777,6 +777,71 @@ impl RegExpImpossibleMatcher {
         )
     }
 
+    /// Proves required ordinary/modifier spines around a nullable-operand negative failure.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every outside minimum must be positive; optional wrappers could skip the
+    /// failing body (22.2.2.3.1). The body uses only the finite nullable group,
+    /// atom, sequence, choice or positive-assertion negative proofs. Original
+    /// bindings, symbolic bounds and full inventories remain intact. Source,
+    /// frame and copy work precedes allocation; retained storage stays constant.
+    pub fn compile_wrapped_nullable_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut plan = Self::compile_nullable_group_negative_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = Self::compile_nullable_atom_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_sequence_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_alternatives_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_positive_negative_validated_with_work(
+                &body, unicode, sets, charge,
+            )?;
+        }
+        Ok(plan.map(|body| Self {
+            captures: scope.captures + body.captures,
+        }))
+    }
+
     /// Returns no match, charging actual work before any possible input access.
     pub fn find_with_work<E>(
         &self,
@@ -2166,5 +2231,100 @@ mod tests {
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(33)),
             Err(33)
         );
+    }
+    fn wrapped_nullable_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_wrapped_nullable_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn wrapped_nullable_negative_failures_keep_required_counts_modifiers_and_original_inventories()
+    {
+        for (source, captures) in [
+            (r"((?!(a|ab)?))+", 2),
+            (r"((?!a*))+", 1),
+            (r"((?!a*(b)?)){2,3}?", 2),
+            (r"(?im-s:((?!a|(b)?))){0001,0002}", 2),
+            (r"((?!(?=a*)))+", 1),
+            (r"(?im-s:((a)(?!(\1)?[\p{RGI_Emoji}]*)(b))){2,3}", 4),
+        ] {
+            assert_eq!(
+                wrapped_nullable_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn wrapped_nullable_negative_proofs_reject_optional_outer_spines_siblings_and_unproved_bodies()
+    {
+        for source in [
+            r"(?!a*)",
+            r"((?!a*))?",
+            r"((?!a*))*",
+            r"((?!a*)){0,2}",
+            r"(?i:((?!a*))?)+",
+            r"((?!a*))+b",
+            r"a((?!a*))+",
+            r"((?!a*))+|b",
+            r"((?!a))+",
+            r"((?!a*)|b)+",
+        ] {
+            assert!(wrapped_nullable_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn wrapped_nullable_negative_depth_and_huge_positive_minima_need_no_matching_data() {
+        let source = format!(
+            "{}(?![\\p{{RGI_Emoji}}]*){}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            wrapped_nullable_negative(&source).unwrap().capture_count(),
+            100_000
+        );
+        let body = r"((?!(?=[\p{RGI_Emoji}]*)))";
+        let source = format!("{body}{{{}}}", "9".repeat(20_000));
+        assert_eq!(
+            wrapped_nullable_negative(&source).unwrap().capture_count(),
+            1
+        );
+    }
+
+    #[test]
+    fn wrapped_nullable_negative_work_interrupts_before_every_scope_projection_and_body_step() {
+        let source = JsString::from(r"(?im-s:((a)(?!(\1)?[\p{RGI_Emoji}]*)(b))){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_wrapped_nullable_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_wrapped_nullable_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
     }
 }

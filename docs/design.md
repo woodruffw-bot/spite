@@ -13629,3 +13629,13 @@ sufficient; earlier arms may consume and no capture values are fabricated.
 Full original normalized source retains every arm's inventory, incoming
 references and duplicate-name bindings for validation. Shared constant no-match
 execution keeps source/flags, lastIndex, String consumers, cloning and collection.
+
+
+A separate wrapped-nullable-negative constructor applies the shared flat scope
+proof to required ordinary/modifier spines around nullable-operand negative
+failures. Every outside minimum must be positive; optional wrappers could skip
+the failing body (22.2.2.3.1). The body uses only the established nullable group,
+atom, sequence, choice or successful-positive assertion proofs. Original
+bindings, symbolic counts and all outside/inside capture slots remain intact.
+Source/frame/copy work precedes allocation; no recursive wrapper processing or
+matching data is needed. Retained no-match storage and actual work stay constant.
