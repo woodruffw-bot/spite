@@ -1693,9 +1693,15 @@ fn common_line_asserted_string_class_consumers_keep_global_line_scope_and_prefix
     realm.eval(r"var r=/^(?<enclosing>(?<empty>)|(?<part>[\q{a|ab}]))$/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('');m.groups.enclosing==='ab'&&m.groups.part==='ab'&&m.groups.empty===undefined&&m.indices.groups.part===m.indices[3]&&n.groups.enclosing===''&&n.groups.empty===''&&n.groups.part===undefined&&n.indices.groups.empty===n.indices[2]&&clone.source===r.source&&r.lastIndex===2"),Ok(Value::Boolean(true)));
+    check(
+        r"var marker=0,m;try{m=/^\b((([\q{a|ab}])|()))$/dv.exec('ab')}finally{marker=3}marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]==='ab'&&m[4]===undefined&&m.indices[1][1]===2&&/^\b((([\q{a|ab}])|()))$/v.exec('')===null",
+    );
+    check(
+        r"var marker=0,m;try{m=/^((([\q{a|ab}])|()))\b$/dv.exec('ab')}finally{marker=3}marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]==='ab'&&m[4]===undefined&&m.indices[1][1]===2&&/^((([\q{a|ab}])|()))\b$/v.exec('')===null",
+    );
     for pattern in [
-        r"^\b((([\q{a|ab}])|()))$",
-        r"^((([\q{a|ab}])|()))\b$",
+        r"^\b((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))$",
+        r"^((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))\b$",
         r"^^((([\q{a|ab}])|()))$$",
         r"^((([\q{a|ab}])|()))()$",
         r"^((([\q{a|ab}])|()))?$",

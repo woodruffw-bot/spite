@@ -187,9 +187,12 @@ fn surrounding_word_string_class_values_conflicts_and_consumers_preserve_origina
     check(
         r"var marker=0,m;try{m=/\b()[\q{a|ab}]|()/dv.exec('ab!')}finally{marker=3}var e=/\b()[\q{a|ab}]|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
     );
+    check(
+        r"var marker=0,m;try{m=/\b((()[\q{a|ab}]|()))/dv.exec('ab!')}finally{marker=3}var e=/\b((()[\q{a|ab}]|()))/dv.exec('z');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e[3]===undefined&&e[4]===''&&e.indices[4][0]===0",
+    );
     for pattern in [
         r"\b()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()",
-        r"\b((()[\q{a|ab}]|()))",
+        r"\b((()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()))",
         r"\b((()([\q{a|ab}])()))+",
         r"\b((\B()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))",
         r"((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()\b))\B",

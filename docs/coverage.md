@@ -19404,3 +19404,36 @@ native v/vi modes. Workspace documentation tests, strict workspace Clippy,
 formatting, dependency policy, source/fixture inventories and diff checks pass.
 No Runtime selection, corpus fixture, snapshot, dependency or default quota
 changes.
+
+
+## Runtime common word predicates around complete string-class alternatives
+
+Three groups retain 64 class/input witnesses, ten paired branch/common-word
+profiles, six layouts, both orders and three wrapper shapes. Independent finite
+native controls keep shared word and optional line predicates outside wrappers.
+All lexical prefix/branch values, indices, names, aliases and sticky state remain
+original. Exact consumers cover opposite endpoint boundaries, shorter eligible
+members, distinct class/alternative empty selections, pinned vi folds, escaped
+names, supplementary starts, matchAll, replacement, search, split, read-only
+lastIndex, clones and collection. Unicode failed-search witnesses exclude
+surrogate interiors. Three earlier rejection controls in two files become exact
+success/normal-finalizer witnesses with unknown-leaf replacements retained.
+Deep prefixes and long members stay flat; opt-in host aborts
+preserve bindings/lastIndex and initial sticky success retains bounded work.
+Noncanonical layers, partial wrappers/siblings, choice counts, extra branches or
+classes, optional assertions, references and unknown leaves remain host errors.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/frame
+pairs match independent finite-alternative native sticky controls with shared
+word/line predicates outside wrappers, explicit Unicode advancement and initial
+boundary normalization. They cover 32 class families, thirteen inner predicate
+profiles, twelve inputs, all starts and sticky/i/m flags. All twelve fixed
+consumer programs and three migrated controls match native references, with
+pinned ordinary finite alternatives for vi singleton folding. Stable passes all
+431 Runtime unit cases and all 1,607 Unicode RegExp integration cases. The
+conformance profile passes all 35 harness/corpus checks, including every one of
+the 16,343 reviewed corpus variants. Workspace documentation tests, strict
+workspace Clippy, formatting, dependency policy, source/fixture inventories and
+diff checks pass. Runtime inventory is 547 case files and 4,313 integration cases.
+Corpus sources/helpers, snapshots, dependencies, intrinsic counts and default
+resource policy are unchanged.

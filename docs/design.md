@@ -11313,4 +11313,7 @@ All enclosing captures retain the whole selected range, while original branch
 slots remain conditional. Construction, matching, cloning and dropping use the
 existing flat plans. Noncanonical outside layers, partial wrappers, siblings,
 choice counts, optional assertions, references and unknown leaves remain
-separate proofs. Runtime selection remains separate from this Core constructor.
+separate proofs. Runtime selects this proof after the common-line constructor on
+the full normalized source. The shared capture body retains original source,
+flags, lexical names and aliases, String consumers, cloning, collection and
+opt-in constructor/exec abort behavior.

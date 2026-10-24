@@ -637,6 +637,8 @@ mod regexp_unicode_class_word_boundaries;
 mod regexp_unicode_common_line_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_common_script.rs"]
 mod regexp_unicode_common_script;
+#[path = "cases/regexp_unicode_common_word_asserted_string_class_captures.rs"]
+mod regexp_unicode_common_word_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_counted_empty_sequence_nullable_string_classes.rs"]
 mod regexp_unicode_counted_empty_sequence_nullable_string_classes;
 #[path = "cases/regexp_unicode_cyrillic_script.rs"]
