@@ -20093,3 +20093,35 @@ API records retain exact domains, construction/search work and capture projectio
 Strict workspace Clippy, documentation tests, formatting, dependency policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime larger prefix-free string-class counts
+
+Three groups execute fifteen native capture tables and eight additional native
+consumer programs, plus collection. They retain equal/mixed member widths,
+failed-run retries inside a previous word, sticky and nonsticky starting points,
+whole-versus-last capture scopes, huge impossible minima, original UTF-16
+boundaries and folding, names/indices aliases, source/flags, matchAll, callback
+replacement, split/search, cloning and read-only lastIndex. Deep counted scopes
+and long shared-prefix members remain flat. Opt-in constructor and required-run
+aborts preserve bindings, lastIndex and host-failure isolation; lazy short
+success retains bounded matching work on long inputs. Two older rejection
+controls become native eight-record capture/finalizer checks with unknown leaves
+retained, including a known-empty class and an impossible huge minimum.
+Overlapping word languages, scalar fallback, predicates, references, nested loops,
+consuming siblings and additional classes retain separate proofs.
+
+
+Execution passes all 1,643 Unicode RegExp integration cases, including the three
+new groups, and 431 Runtime units. All 23 fixed consumer references and two
+migrated eight-record tables agree with the fresh CLI and native references.
+All 230,400 differential records agree across 384 independent pairs, twelve
+counts, 32 finite/algebraic class families, six capture layouts, twelve inputs
+and all starts/sticky/i/m combinations. Huge impossible minima use equivalent
+native failure controls; Unicode leading-boundary and finite vi folding controls
+retain the earlier reference policy.
+
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. The Runtime inventory is 559 case files and
+4,349 integration cases. Fixtures, snapshots, dependencies and default quotas
+are unchanged.

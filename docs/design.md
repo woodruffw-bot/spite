@@ -11644,5 +11644,7 @@ with `bc` then `da`; its final body range is `3..5`, while outside scopes enclos
 `1..5`. Sticky execution tests its initial Unicode boundary. Each class query and suffix
 search is charged before inspection. A minimum larger than the remaining UTF-16
 length fails with constant finder work, after complete construction proof.
-Only the whole/final ranges and class-selected tag are retained. Runtime
-selection of larger prefix-free counts remains separate.
+Only the whole/final ranges and class-selected tag are retained. Runtime selects
+this proof after the earlier nullable-count constructors on the full capture
+source. Its dedicated body preserves original source, lexical names/indices,
+lastIndex, String consumers, cloning and collection.
