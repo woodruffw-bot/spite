@@ -24971,3 +24971,25 @@ targets passes (29.17 s), alongside the passing documentation, formatting,
 dependency policy, inventories and diff checks for the active Runtime sequence
 increment. Runtime inventory remains 617; fixtures, snapshots, dependencies and
 default quotas are unchanged.
+
+
+Optional spines over established negative failures (Core)
+-------------------------------------------------------
+
+The optional-spine constructor skips established negative failures over optional-
+empty forms and their complete required wrappers. At least one outside zero
+minimum must skip the failing operand. Required-prefix captures stay empty and
+all skipped descendants remain undefined. The closed earlier-operand chain
+retains original bindings, complete slots and symbolic counts.
+
+All 195 actual-source focused Core tests pass (1.22 s), including four new groups
+for required-prefix/skipped-descendant masks, original references and lexical
+slots, required-only/possible/sibling exclusions, 100,000 outside groups,
+20,000-digit upper bounds, every charged construction interruption and Unicode
+actual work/boundaries. All 12,800 exact native input/start/capture records across
+512 independently composed ordinary/u/v patterns agree. A lexed review of 2,732
+direct unsupported control-array entries admits none. Strict workspace Clippy
+with all targets passes (18.50 s), alongside the passing documentation,
+formatting, dependency policy, inventories and diff checks for the active
+Runtime sequence increment. Runtime inventory remains 617; fixtures, snapshots,
+dependencies and default quotas are unchanged.

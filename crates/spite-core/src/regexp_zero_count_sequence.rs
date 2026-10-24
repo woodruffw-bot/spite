@@ -932,6 +932,55 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves optional spines over established negative assertions that always fail.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// At least one outside zero minimum skips the earlier optional-known
+    /// negative failure or its complete required wrapper (22.2.2.3.1).
+    /// Required captures before that optional wrapper stay empty; all skipped
+    /// descendants remain undefined. Original bindings and symbolic counts
+    /// survive. The closed operand chain never re-enters this constructor;
+    /// flat source/frame/copy and full-mask work precedes allocation.
+    pub fn compile_optional_established_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if !scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut plan =
+            RegExpImpossibleMatcher::compile_optional_known_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        if plan.is_none() {
+            plan=RegExpImpossibleMatcher::compile_wrapped_optional_known_negative_validated_with_work(&body,unicode,sets,&mut charge)?;
+        }
+        let Some(plan) = plan else {
+            return Ok(None);
+        };
+        let captures = scope.captures + plan.capture_count();
+        charge(captures)?;
+        let mut defined = vec![false; captures];
+        defined[..scope.defined].fill(true);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -3459,6 +3508,109 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(43)),
             Err(43)
+        );
+    }
+    fn optional_established_negative(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_optional_established_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn optional_established_negative_keeps_required_prefix_and_all_skipped_original_slots() {
+        for (source, mask) in [
+            (r"((?!((?![\p{RGI_Emoji}]*))?))?", &[false, false][..]),
+            (
+                r"(((?!((?![\p{RGI_Emoji}]*))?))?)+",
+                &[true, false, false][..],
+            ),
+            (
+                r"(?im-s:(((?<!(?=(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*)))*)){2,3}",
+                &[true, false, false, false, false, false, false][..],
+            ),
+            (
+                r"((?!(\4){0}((?![\p{RGI_Emoji}]*))?|((a)\1)+))?",
+                &[false, false, false, false, false][..],
+            ),
+        ] {
+            assert_eq!(
+                optional_established_negative(source)
+                    .unwrap_or_else(|| panic!("rejected {source}"))
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_established_negative_rejects_required_only_possible_and_outside_contexts() {
+        for source in [
+            r"(?!((?!a*))?)",
+            r"((?!((?!a*))?))+",
+            r"((?!((?!a*))?)){2,3}",
+            r"((?!a))?",
+            r"((a))?",
+            r"((?!((?!a*))?))?a",
+            r"a((?!((?!a*))?))?",
+            r"((?!((?!a*))?))?|a",
+            r"((?!((?!a*))?)|a)?",
+        ] {
+            assert!(optional_established_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn optional_established_negative_depth_and_huge_bounds_keep_masks_flat() {
+        let body = r"((?!((?![\p{RGI_Emoji}]*))?))?";
+        let source = format!("{}{body}{}", "(".repeat(100_000), ")+".repeat(100_000));
+        let plan = optional_established_negative(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert!(plan.defined[100_000..].iter().all(|&v| !v));
+        let source = format!(
+            r"((?!((?![\p{{RGI_Emoji}}]*))?)){{0,{}}}",
+            "9".repeat(20_000)
+        );
+        assert_eq!(
+            optional_established_negative(&source)
+                .unwrap()
+                .defined
+                .as_ref(),
+            &[false, false]
+        );
+    }
+
+    #[test]
+    fn optional_established_negative_work_interrupts_before_scope_operand_mask_and_input() {
+        let source = JsString::from(r"(?im-s:(((?!((?![\p{RGI_Emoji}]*))?))?)+)");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_optional_established_negative_validated_with_work(&source,true,true,|n|{work.push(n);Ok::<(),()>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_optional_established_negative_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(47)),
+            Err(47)
         );
     }
 }

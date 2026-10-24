@@ -13765,3 +13765,12 @@ keeping the failing body mandatory (22.2.2.3.1). Original bindings, complete
 lexical slots and symbolic counts remain intact. Optional wrappers, outside
 siblings and unproved bodies reject this constructor. Flat scope/body-copy work
 precedes allocation; no-match storage and actual matching remain constant.
+
+
+A separate optional-spine constructor skips established negative failures over
+optional-empty forms, including their complete required wrappers. At least one
+outside zero minimum must skip the failing operand (22.2.2.3.1). Required-prefix
+captures stay empty and all skipped descendants remain undefined. The finite
+closed earlier-operand chain preserves original bindings and symbolic counts.
+Flat source/frame/body-copy/full-mask work precedes allocation; retained masks
+stay source-sized and actual matching and capture queries remain constant.
