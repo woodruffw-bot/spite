@@ -683,6 +683,52 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves ordinary/modifier spines around independently empty optional established-negative sequences.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every body term independently stays empty; required wrappers retain the
+    /// body's mask and optional repeats roll descendant writes back (22.2.2.3.1,
+    /// 22.2.2.7). Original bindings and symbolic bounds remain intact. All flat
+    /// scope, body-copy and full-mask work precedes allocation.
+    pub fn compile_enclosing_optional_established_negative_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let Some(inner) = Self::compile_optional_established_negative_sequence_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let captures = scope.captures + inner.capture_count();
+        charge(captures)?;
+        let mut defined = Vec::with_capacity(captures);
+        defined.resize(scope.defined, true);
+        defined.resize(scope.captures, false);
+        if scope.optional {
+            defined.resize(captures, false)
+        } else {
+            defined.extend(inner.defined)
+        }
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves a root choice starting with an independently empty optional-impossible arm.
     ///
     /// Full original validation and normalized capture heads are required. The
@@ -3753,6 +3799,102 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(53)),
             Err(53)
+        );
+    }
+    fn enclosing_optional_established_negative_sequence(
+        source: &str,
+    ) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_enclosing_optional_established_negative_sequence_validated_with_work(
+            &JsString::from(source),true,true,|_|Ok::<(),()>(()),
+        ).unwrap()
+    }
+
+    #[test]
+    fn enclosing_optional_established_negative_sequences_keep_required_and_optional_prefix_masks() {
+        let body = r"((?!((?![\p{RGI_Emoji}]*))?))?([a]{0})+";
+        for (source, mask) in [
+            (format!("({body})+"), &[true, false, false, true][..]),
+            (format!("({body})?"), &[false, false, false, false][..]),
+            (
+                format!("(({body})*)+"),
+                &[true, false, false, false, false][..],
+            ),
+            (
+                format!("(?im-s:({body})){{0001,0002}}?"),
+                &[true, false, false, true][..],
+            ),
+        ] {
+            assert_eq!(
+                enclosing_optional_established_negative_sequence(&source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_optional_established_negative_sequences_reject_unwrapped_single_and_possible_contexts()
+     {
+        for source in [
+            r"((?!((?!a*))?))?[a]{0}",
+            r"(((?!((?!a*))?))?)+",
+            r"(((?!((?!a*))?))?a)+",
+            r"(((?!((?!a*))?))?[a]{0})+a",
+            r"a(((?!((?!a*))?))?[a]{0})+",
+            r"(((?!((?!a*))?))?[a]{0})+|a",
+            r"(((?!((?!a*))?))?(|a)+)+",
+        ] {
+            assert!(
+                enclosing_optional_established_negative_sequence(source).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_optional_established_negative_sequences_keep_deep_masks_and_symbolic_minima_flat()
+    {
+        let body = r"((?!((?![\p{RGI_Emoji}]*))?))?([a]{0})+";
+        let source = format!("{}{body}{}", "(".repeat(100_000), ")+".repeat(100_000));
+        let plan = enclosing_optional_established_negative_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_003);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert_eq!(&plan.defined[100_000..], &[false, false, true]);
+        let source = format!("({body}){{{}}}", "9".repeat(20_000));
+        assert_eq!(
+            enclosing_optional_established_negative_sequence(&source)
+                .unwrap()
+                .defined
+                .as_ref(),
+            &[true, false, false, true]
+        );
+    }
+
+    #[test]
+    fn enclosing_optional_established_negative_sequence_work_interrupts_before_scope_body_and_full_mask()
+     {
+        let source = JsString::from(r"(?im-s:(((?!((?![\p{RGI_Emoji}]*))?))?([a]{0})+)*)+");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_enclosing_optional_established_negative_sequence_validated_with_work(&source,true,true,|n|{work.push(n);Ok::<(),()>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_optional_established_negative_sequence_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
         );
     }
 }

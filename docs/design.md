@@ -13791,3 +13791,12 @@ bindings survive. Root choices and consuming/unproved terms reject the proof;
 earlier scanner modes retain their domains and work. Disjoint source/copy/mask
 work precedes allocation, with source-sized retained masks and constant actual
 matching and capture queries.
+
+
+A separate enclosing-sequence proof wraps optional established-negative
+concatenations in complete ordinary/modifier spines. Independently empty body
+terms let required wrappers preserve the body mask while optional repeats clear
+descendant captures (22.2.2.3.1, 22.2.2.7). Original bindings, full lexical slots
+and symbolic counts remain intact. Flat scope/body-copy/full-mask work precedes
+allocation; retained masks stay source-sized and actual matching and capture
+queries remain constant.
