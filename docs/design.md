@@ -12186,4 +12186,8 @@ Line/word choices project captures at actual whole-match endpoints, including
 empty-first retries after failed live gates (ECMA-262 edition 17 22.2.2.3–4).
 Branch-local required predicate choices, other class counts and unknown leaves
 retain separate proofs. Repetition and single-class domains and charged work
-remain unchanged. Runtime selection remains separate.
+remain unchanged. Runtime selects the alternatives proof after required
+repetition and single-class choice proofs on the complete normalized capture
+source. Its dedicated body preserves both endpoint truth profiles, class/empty
+selection, source/flags, named aliases, indices, lastIndex and String consumers
+through cloning and collection.

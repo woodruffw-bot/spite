@@ -21207,3 +21207,34 @@ sources byte-for-byte with their frozen references. Strict workspace Clippy
 (60 s), documentation tests, formatting, policy, inventories and diff checks
 pass. Runtime selection remains separate; fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+The preceding repetition Runtime Unicode suite passes all 1,703 tests
+(1,026.45 s), including the thirty-four migrated required-choice controls. The
+fresh single-class Test262 run passes all 35 runner tests and all 16,343 reviewed
+variants in the pinned corpus gate (530.99 s).
+
+## Runtime required predicate choices around class/empty alternatives
+
+Three groups compare forty native tables and eight String consumer references.
+Named aliases/indices, required empty class identity, selected line/word points,
+matchAll, replacement callbacks, split/search, cloning, collection and strict
+lastIndex writes retain source and capture identity. Deep 1,000-level
+required/skipped scopes, 20,000-unit members, shorter endpoint continuations,
+empty-first retries and constructor abort isolation pass. Unknown leaves and
+conditional branch-local overlays remain unproved. One positive repetition
+control verifies selection of the preceding required-repeat proof.
+
+Two former rejection controls in two existing groups now compare complete
+native captures, indices, source, flags, input and lastIndex. Five source-shape
+scans verify the expanded domain. All three new groups pass (0.28 s), alongside
+431 unit tests (4.04 s), forty native tables and eight consumer references on the
+fresh CLI. Both migrated controls agree on the fresh CLI. All 100,352 exact
+differential records agree across 256 independent pairs; all 1,024 proof/flag
+combinations are supported. Eight finite/scalar/known-empty capture layouts,
+four bare/exact-one counts, eight predicate choices and four live profiles cover
+every input start, sticky, multiline and ignore-case. Strict workspace Clippy
+(4.32 s after the final test adjustment), documentation tests, formatting, policy,
+inventories and diff checks pass. The full 1,709-test Unicode suite and the two
+existing migrated groups are running; fixtures, snapshots, dependencies and
+default quotas remain unchanged.
