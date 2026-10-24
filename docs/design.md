@@ -12300,4 +12300,7 @@ when profiles can reject it. Accepted endpoint truth projects ordered predicate
 captures; all class/body terms are validated even behind never profiles. Other
 counts, class-bearing choices, references and consuming siblings retain their
 separate proofs. Source, storage, clone/drop and capture projection remain flat.
-Runtime selection remains separate.
+Runtime selects this required-class truth-profile proof after the larger
+nullable-count proof on the complete normalized capture source. Its dedicated
+body preserves endpoint truth, required class identity, source/flags, named
+aliases, indices, lastIndex and String consumers through cloning and collection.

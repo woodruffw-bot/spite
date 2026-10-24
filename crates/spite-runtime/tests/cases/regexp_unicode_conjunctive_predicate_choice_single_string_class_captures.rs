@@ -206,11 +206,11 @@ fn conjunctive_predicate_choice_single_string_classes_preserve_deep_points_and_l
 #[test]
 fn conjunctive_predicate_choice_single_string_classes_prove_unknown_leaves_even_behind_never_gates()
 {
+    assert_eq!(Realm::default().eval(r####"var pattern="(^|\\b)([\\q{a|ab}])",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"ab\"],[[0,2],[0,0],[0,2]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="($|\\b)([\\q{a|ab}])",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"ab\"],[[0,2],[0,0],[0,2]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(^|$)([\\q{a|ab}])",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"ab\"],[[0,2],[0,0],[0,2]],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((\b\B)|(\b\B))([\q{ab}&&\p{RGI_Emoji}])",
-        r"(^|\b)([\q{a|ab}])",
-        r"($|\b)([\q{a|ab}])",
-        r"(^|$)([\q{a|ab}])",
         r"((\b)|z|())([\q{a|ab}])",
         r"((\b)|\1|())([\q{a|ab}])",
         r"((\b\B)|(\b\B))(()|([\q{ab}&&\p{RGI_Emoji}]))+",

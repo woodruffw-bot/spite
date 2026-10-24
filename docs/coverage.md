@@ -21481,3 +21481,31 @@ projection in six bounded batches. Strict workspace Clippy (62 s), documentation
 tests, formatting, policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime arbitrary predicate choices beside a required class
+
+Three focused groups pass (1.13 s), covering ordered conditional captures, bare
+and padded exact-one counts, required empty class members, named and escaped-name
+aliases, indices, matchAll, callback replacement, split/search, cloning,
+collection and strict lastIndex writes. Explicit failed suffixes retry shorter
+members and later starts after rejected empty members. Deep 1,000-level scopes
+and 20,000-unit shared-prefix members with scalar fallback remain flat; complete
+unknown leaves behind never profiles and constructor abort isolation retain
+their distinct host outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Four
+preceding rejection controls in two existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+Five source-shape scans retain all other rejection domains. All 100,352 exact
+differential records agree across 256 independent pairs, with all 1,024 proof/flag
+combinations supported. Eight finite/scalar/known-empty layouts, four bare/exact-one
+counts, eight truth profiles and four remaining live profiles cover all input
+starts, sticky, multiline and ignore-case. All 34 existing string-set and set
+operation unit tests pass against the new core library (0.38 s).
+
+The two migrated existing groups pass all six tests (0.58 s and 0.81 s). All
+431 Runtime unit tests pass (8.85 s), alongside strict workspace Clippy (121 s),
+documentation tests, formatting, policy, inventories and diff checks. The grouped
+Runtime inventory contains 587 case files. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.
