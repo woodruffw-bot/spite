@@ -23132,3 +23132,30 @@ validated native arbitrary-body tables. Strict workspace Clippy with all targets
 passes (23.61 s), alongside workspace documentation tests, formatting, dependency
 policy, inventories and diff checks. Existing APIs and Runtime behavior remain
 unchanged; Runtime integration follows separately.
+
+
+## Runtime arbitrary zero-count groups inside quantified spines
+
+Runtime now selects the arbitrary-body zero-group spine proof and reuses the
+complete-layout capture body. Required outside captures remain empty; the
+erased group's own and inner slots remain undefined, including duplicate names
+in alternatives and captures in lookarounds. No erased membership data is read.
+
+All seven focused integration groups pass (0.63 s), including the three new
+groups for native named capture masks, references inside erased bodies, String
+consumers, cloning, collection, 1,000 outside wrappers and 1,000 erased inner
+captures, and a 20,000-digit required outside count. All 41,472 exact native
+metadata comparisons across 384 independently generated arbitrary-body patterns
+agree on the fresh CLI, as do all seven complete JavaScript regression programs.
+A lexical review of 2,700 retained unsupported controls finds none newly admitted
+by this proof.
+
+All 434 Runtime unit tests pass (5.08 s). Strict workspace Clippy with all targets
+passes (8.21 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The Runtime inventory remains 614 cases;
+fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding class/property quantified-spine snapshot passes all 2,780 RegExp
+integration tests (787.25 s), all 35 Test262 runner tests and all 16,343 reviewed
+variants (395.93 s for the corpus group). These broad results precede the
+arbitrary-body Runtime integration above.

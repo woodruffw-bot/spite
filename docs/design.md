@@ -12979,3 +12979,10 @@ required captures are empty, with optional ancestors clearing their suffix
 (22.2.2.3.1, 22.2.2.7). Source/frame work is charged before allocation, and the
 retained capture boundary and matching work remain constant. Existing APIs and
 matching behavior are unchanged.
+
+Runtime selects the arbitrary-group spine proof after the class/property spine
+proof. It reuses the complete-layout spine body, retaining the original lexical
+count, defined outside prefix and erased inside suffix. Named aliases (including
+duplicate names in erased alternatives), references inside erased bodies,
+indices, lastIndex and String consumers keep the standard result path through
+cloning and collection. No matching body data is queried by the retained plan.
