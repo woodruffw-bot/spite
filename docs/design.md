@@ -12790,3 +12790,21 @@ Runtime selects this bounded optional-path outside-scope proof after bounded
 erased paths. Its dedicated body retains forced lazy consumption, zero-body
 absence, outside participation, original lexical slots, source/flags, named
 aliases, indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves captured outside scopes around an optional bounded-path
+root when nearer optional class scopes contain no structural choice. A flat
+balanced scan propagates a choice flag through ordinary groups while keeping
+class data opaque. It skips those nearer scopes, retains the original lexical
+capture prefix and selects the nearest optional class ancestor containing a
+choice. Full bounded-path body compilation and outside projection remain
+mandatory; a structural flag alone never establishes a matching proof.
+
+The constructor requires a different atom from the preceding nearest-ancestor
+proof, preserving that API's domains and charged work. Both scans, capture
+projection, storage and clone/drop remain flat and source-sized. Nonempty outer
+iterations force bounded inner groups to participate once; skipped/zero-bound
+bodies retain undefined slots while outside points and enclosing ranges can
+participate (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7). Unknown terms even under
+zero/lazy/skipped/never scopes, consuming outside siblings and other ancestor
+selection cases retain separate proofs. Runtime selection remains separate.

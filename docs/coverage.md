@@ -22645,3 +22645,25 @@ The preceding larger/unbounded bare and captured-outside erased-count Runtime
 snapshot passes all 1,788 Unicode RegExp integration tests (946.87 s), all 16,343
 reviewed Test262 variants and 35 runner tests (548.90 s for the corpus target).
 These runs compiled before captured outside bounded erased/optional paths.
+
+
+## Core outside optional roots above choice-free bounded class groups
+
+All six focused groups pass (7.60 s), including 160 native ordered capture tables
+and an independent 26-slot progress/outside-profile oracle. Nearer optional
+class groups retain forced nonempty participation, lazy retries, original branch
+orders, shorter-member fallback and every skipped inner slot. Zero-bound class
+bodies still satisfy later outside gates without body iterations. Twenty
+thousand nested optional inner groups and twenty thousand outside capture scopes
+remain flat through construction, matching, capture projection and clone/drop.
+Long shared-prefix scalar/string bodies, Unicode starts, sticky bounds and all
+charged cancellation boundaries retain their proved behavior. Unknown terms
+still decline under zero/lazy/skipped/never scopes.
+
+All 99,080 frozen prior API records retain exact domains, charged work and capture
+projection in nine bounded batches. A new 736-record baseline includes 376
+supported cases. All 256 planned differential sources and controls validate as
+Unicode Sets/Unicode patterns, with all 1,024 proof/flag combinations supported.
+Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime selection remains separate. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

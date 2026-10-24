@@ -4763,3 +4763,193 @@ impl RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+// Class data stays opaque; a flat choice flag skips nearer class-only scopes.
+fn grouped_optional_spine_hole(units: &[u16]) -> Option<(Range<usize>, usize)> {
+    let (mut at, mut captures, mut class_seen) = (0usize, 0usize, false);
+    let mut frames = Vec::<(usize, usize, bool, bool)>::new();
+    let mut candidate = None;
+    while let Some(&unit) = units.get(at) {
+        match unit {
+            0x5c => {
+                units.get(at + 1)?;
+                at += 2;
+            }
+            0x5b => {
+                if class_seen {
+                    return None;
+                }
+                at = super::super::class_end(units, at)?;
+                class_seen = true;
+                for frame in &mut frames {
+                    frame.2 = true;
+                }
+            }
+            0x28 => {
+                let before = captures;
+                let width = if units.get(at + 1) == Some(&0x3f) {
+                    if units.get(at + 2) != Some(&0x3a) {
+                        return None;
+                    }
+                    3
+                } else {
+                    captures = captures.checked_add(1)?;
+                    1
+                };
+                frames.push((at, before, false, false));
+                at += width;
+            }
+            0x29 => {
+                let (open, before, owns_class, has_choice) = frames.pop()?;
+                if let Some(parent) = frames.last_mut() {
+                    parent.3 |= has_choice;
+                }
+                at += 1;
+                if owns_class && has_choice && candidate.is_none() {
+                    let count = if let Some((end, min, max, _)) = simple_count(units, at) {
+                        (!min && max).then_some(end)
+                    } else {
+                        asserted_repeat_count(units, at).and_then(|(end, min, delta, _)| {
+                            (min == 0 && delta == Some(1)).then_some(end)
+                        })
+                    };
+                    if let Some(end) = count {
+                        candidate = Some((open..end, before));
+                    }
+                }
+            }
+            0x7c => {
+                frames.last_mut()?.3 = true;
+                at += 1;
+            }
+            _ => at += 1,
+        }
+    }
+    (class_seen && frames.is_empty())
+        .then_some(candidate)
+        .flatten()
+}
+
+/// Captured outside scopes around an optional root with bounded inner groups.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Complete
+/// bounded class-path groups and both original branches validate before
+/// the entire optional root becomes one opaque outside-proof atom. Outside
+/// captures retain participation when every skipped inner slot is undefined.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher {
+    /// Proves the complete bounded optional atom and every original outside term.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let normalized = super::super::super::asserted_alternatives::optional_single_count_source(
+            source.code_units(),
+        )
+        .unwrap_or_else(|| source.code_units().to_vec());
+        let source = JsString::from_code_units(normalized);
+        let Some((atom, before_inner)) = grouped_optional_spine_hole(source.code_units()) else {
+            return Ok(None);
+        };
+        // Keep the preceding proof's domain and work unchanged. This proof skips
+        // nearer optional class scopes that contain no structural choice.
+        if scoped_nested_optional_hole(source.code_units()).map(|(range, _)| range)
+            == Some(atom.clone())
+        {
+            return Ok(None);
+        }
+        let inner_source = JsString::from_code_units(source.code_units()[atom.clone()].to_vec());
+        let Some(nested) =
+            RegExpUnicodeTruthTableOptionalSpineStringClassAlternativeMatcher::compile_with_work(
+                &inner_source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let mut inner = nested.plan;
+        let Some(Projection {
+            shadow,
+            overlays,
+            profiles,
+        }) = project_choices_with_opaque(
+            &source,
+            true,
+            false,
+            false,
+            true,
+            Some(OpaqueChoice {
+                atom,
+                before: before_inner,
+                inner: inner.capture_count(),
+            }),
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(outside) = scoped_alternative_outer_plan(&shadow, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if outside.capture_count().checked_add(inner.capture_count()) != Some(overlays.len())
+            || before_inner > outside.capture_count()
+        {
+            return Ok(None);
+        }
+        for (mask, common) in inner.inner.class.profiles.iter_mut().zip(profiles) {
+            *mask &= common;
+        }
+        let captures = inner.capture_count();
+        let inner = RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
+            plan: RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher {
+                plan: inner,
+                enclosing: 0,
+                captures,
+            },
+            profiles,
+        };
+        Ok(Some(Self {
+            plan: RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher {
+                inner,
+                outside,
+                overlays: overlays.into_boxed_slice(),
+                before_inner,
+            },
+        }))
+    }
+    /// Counts original outside, enclosing and bounded optional lexical slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Retains outside points/ranges and clears every skipped inner capture.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes complete outside continuations inside zero and consuming retries.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
