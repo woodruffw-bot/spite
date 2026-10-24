@@ -47,6 +47,7 @@ use spite_core::{
     RegExpUnicodeTruthTableQuantifiedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher,
@@ -264,6 +265,9 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(
         RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher,
     ),
+    UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(
+        RegExpUnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeMatcher,
+    ),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
@@ -462,6 +466,9 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(
                 m,
             ) => m.capture_count(),
+            RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(
+                m,
+            ) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
@@ -492,6 +499,27 @@ impl RegExpMatcher {
         sticky: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(
+            matcher,
+        ) = &self.body
+        {
+            return matcher
+                .find_with_captures_and_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.repeated.range,
+                        matcher: self,
+                        // This dedicated body packs the two endpoint profiles beside
+                        // the final class-selection bit; no other body reads them.
+                        branch: usize::from(found.repeated.class_selected)
+                            | usize::from(found.before) << 1
+                            | usize::from(found.after) << 4,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: found.repeated.last_iteration,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(
             matcher,
         ) = &self.body
@@ -1900,6 +1928,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableScopedZeroCountSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedOptionalSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
@@ -2041,6 +2070,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableScopedZeroCountSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedOptionalSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_) => 0,
             RegExpMatcherBody::Literal(_)
@@ -2214,6 +2244,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableScopedZeroCountSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedOptionalSpineStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
@@ -2314,6 +2345,22 @@ impl RegExpMatch<'_> {
             }
             RegExpMatcherBody::UnicodeSingleStringClassCaptures(matcher) => {
                 return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(
+                matcher,
+            ) => {
+                return matcher.capture_range(
+                    index,
+                    &spite_core::RegExpUnicodePredicateChoiceStringClassMatch {
+                        repeated: spite_core::RegExpUnicodeRepeatedStringClassMatch {
+                            range: self.range.clone(),
+                            last_iteration: self.atom_capture.clone(),
+                            class_selected: self.branch & 1 != 0,
+                        },
+                        before: ((self.branch >> 1) & 7) as u8,
+                        after: ((self.branch >> 4) & 7) as u8,
+                    },
+                );
             }
             RegExpMatcherBody::UnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeCaptures(
                 matcher,

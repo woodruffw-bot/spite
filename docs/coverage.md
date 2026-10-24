@@ -22722,3 +22722,28 @@ The preceding captured outside bounded erased/optional Runtime snapshot passes
 all 1,794 Unicode RegExp integration tests (781.02 s), all 16,343 reviewed Test262
 variants and 35 runner tests (424.85 s for the corpus target). These runs compiled
 before the grouped optional ancestor selector reached Runtime.
+
+
+## Runtime outside zero-count roots above choice-free zero-count class groups
+
+All three focused groups pass (1.52 s), preserving every undefined body slot while
+outside conditional points and mandatory enclosing ranges can participate.
+Bounded and larger/unbounded inner paths, padded/lazy zero counts, both branch
+orders, named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes retain native
+behavior. A native 1,000-inner-zero-group check preserves all 1,003 undefined body
+slots and both outside point ranges. Deep outside capture scopes, long shared-prefix
+scalar/string bodies and constructor host aborts remain flat. Full construction
+rejects unknown terms under erased/skipped/never scopes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI and as
+actual Unicode Sets programs on native Node. The deep erased-group metadata
+program also agrees on the fresh CLI. All 100,352 exact differential records
+agree across every start and sticky/multiline/ignore-case combination, with all
+256 source/control patterns validated and all 1,024 proof/flag combinations
+supported. Five source-shape scans retain the existing rejection domains.
+
+All 431 Runtime unit tests pass (10.30 s), alongside strict workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks. The grouped
+Runtime inventory contains 611 case files. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.

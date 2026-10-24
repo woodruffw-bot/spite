@@ -12828,4 +12828,8 @@ complete starts (ECMA-262 edition 17 22.2.2.3, 22.2.2.7). Traversal, decimal cou
 scanning, storage and clone/drop remain flat and source-sized. Unknown terms even
 under erased/skipped/never scopes, consuming outside siblings and other ancestor
 selection cases retain separate proofs. Earlier API domains, charged work and
-captures remain unchanged. Runtime selection remains separate.
+captures remain unchanged. Runtime selects this choice-guided zero-root proof
+after the corresponding optional-root proof. Its dedicated body preserves every
+undefined inner slot, conditional outside points, mandatory enclosing ranges,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.
