@@ -25441,7 +25441,9 @@ Hosted run [40141708114](https://github.com/woodruffw-bot/spite/actions/runs/401
 passes the previously failing Linux Rust 1.85 Core job: workspace-library
 collection compiles in 5m 06s and all 1,708 Core tests pass in 340.30 s. Hosted
 quality checks and the Linux stable remaining-workspace job also pass on the
-compiler-sharing revision. Other matrix jobs were still running when recorded.
+compiler-sharing revision. The complete hosted run subsequently passes all
+17 jobs across Linux/Windows and stable/Rust 1.85, including every Core,
+remaining-workspace, Runtime-shard and reviewed-corpus job.
 
 ## Core complete Unicode positive lookahead with operand captures
 
