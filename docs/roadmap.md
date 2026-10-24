@@ -825,6 +825,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove branch-local predicate choices in two root class/empty alternatives, preserving earliest starts, source priority and lexical slots.
 - [x] Prove complete ordinary wrappers around branch-local class/empty alternatives, preserving complete captures and inner lexical offsets.
 - [x] Prove exact-one class-path counts around grouped branch-local alternatives, preserving required empty capture identity and padded bounds.
+- [x] Prove bare outside line/word assertions around grouped branch-local alternatives, retaining member/branch retries and complete captures.
+- [ ] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute grouped branch-local predicate choices through Runtime and String consumers.
 - [x] Execute branch-local predicate choices in root class/empty alternatives through Runtime and String consumers.

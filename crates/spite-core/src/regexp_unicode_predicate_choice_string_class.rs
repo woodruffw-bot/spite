@@ -2011,3 +2011,129 @@ impl RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+/// Bare outside line/word gates around grouped branch-local class/empty choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. All
+/// outside terms are bare assertions, and the retained body passes the complete
+/// grouped proof, optionally after exact-one class-path count normalization.
+/// Both original root branches test outside gates inside their member/empty
+/// continuations before source-priority selection (22.2.2.3–4).
+/// https://262.ecma-international.org/17.0/#sec-compileassertion
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableSurroundingStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
+    never: bool,
+}
+impl RegExpUnicodeTruthTableSurroundingStringClassAlternativeMatcher {
+    /// Proves every body term before conjoining outside endpoint profiles.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let units = source.code_units();
+        let Some((body, masks)) = outside_truth_frame(units) else {
+            return Ok(None);
+        };
+        let normalized = super::super::super::asserted_alternatives::exact_single_count_source(
+            &units[body.clone()],
+        )
+        .unwrap_or_else(|| units[body].to_vec());
+        let body = JsString::from_code_units(normalized);
+        let Some(mut plan) =
+            RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher::compile_with_work(
+                &body,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        for branch in [&mut plan.plan.class, &mut plan.plan.empty] {
+            branch.profiles[0] &= masks[0];
+            branch.profiles[1] &= masks[1];
+        }
+        Ok(Some(Self {
+            plan,
+            never: masks.contains(&0),
+        }))
+    }
+    /// Counts original complete and branch-local capture slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects complete ranges and original source-priority inner captures.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Enforces common gates during every branch/member endpoint continuation.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        if self.never {
+            charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+            let _ = crate::regexp_literal::unicode_start(input, requested);
+            return Ok(None);
+        }
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+fn outside_truth_frame(units: &[u16]) -> Option<(Range<usize>, [u8; 2])> {
+    fn predicate(units: &[u16], at: usize) -> Option<(usize, u8)> {
+        match units.get(at)? {
+            0x5e => Some((1, 0xaa)),
+            0x24 => Some((1, 0xcc)),
+            0x5c => match units.get(at + 1)? {
+                0x62 => Some((2, 0xf0)),
+                0x42 => Some((2, 0x0f)),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+    let (mut begin, mut end, mut seen, mut masks) = (0, units.len(), false, [0xff; 2]);
+    while let Some((width, mask)) = predicate(units, begin) {
+        begin += width;
+        masks[0] &= mask;
+        seen = true;
+    }
+    while end > begin {
+        let at = if matches!(units[end - 1], 0x5e | 0x24) {
+            end - 1
+        } else if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+        {
+            end - 2
+        } else {
+            break;
+        };
+        if super::super::super::super::escaped(units, at) {
+            break;
+        }
+        let (width, mask) = predicate(units, at)?;
+        if at + width != end {
+            break;
+        }
+        end = at;
+        masks[1] &= mask;
+        seen = true;
+    }
+    seen.then_some((begin..end, masks))
+}

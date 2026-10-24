@@ -21715,3 +21715,27 @@ The preceding branch-local root and ordinary enclosing-group sources pass a
 fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants pass,
 including the pinned corpus gate (430.74 s). This run compiled before exact-one
 enclosing counts.
+
+
+## Core outside assertions around grouped branch-local alternatives
+
+Four focused groups pass (0.75 s), comparing 160 native capture tables and an
+independent branch/endpoint oracle with common line/word gates. Canonical and
+reversed line gates, word/nonword gates, contradictions, exact-one wrappers, both
+root orders and finite/scalar/known-empty classes preserve complete and inner
+captures across all UTF-16 starts, sticky, multiline and ignore-case. Explicit
+controls retry failed empty-first branches, shorter members and later starts.
+Deep 20,000-level counted wrappers, 20,000-unit shared-prefix words, clone/drop,
+every charged cancellation/recovery and escaped literal boundaries retain their
+proof limits. Contradictory common gates use bounded matching work after complete
+construction; unknown leaves behind them remain unproved.
+
+All 85,832 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (21.68 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding branch-local root and ordinary enclosing-group Runtime sources
+pass all 1,737 Unicode RegExp integration tests (815.53 s). This run compiled
+before exact-one enclosing counts and outside common gates.

@@ -12388,3 +12388,23 @@ exact-one wrapper proof after the unquantified complete-wrapper proof on the
 full normalized capture source. Its dedicated body retains required complete
 captures, branch ownership, endpoint truth, source/flags, named aliases, indices,
 lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves bare outside line/word assertions surrounding complete
+grouped branch-local alternatives. Flat prefix/suffix scans collect conjunctions
+into the two endpoint truth masks; escaped literals remain body terms. The
+complete body still passes the grouped proof, optionally after exact-one
+class-path normalization. Each original root branch conjoins the common masks
+with its own profile before any member or empty continuation succeeds. Failed
+common gates therefore retain shorter members, empty-first retries and later
+starts (ECMA-262 edition 17 22.2.2.3–4).
+
+Outside assertions add no capture slots. Complete enclosing ranges and original
+conditional branch captures retain accepted endpoint truth. A contradictory
+common mask becomes a bounded-work no-match only after complete body/class
+construction; unknown terms behind that gate remain unsupported. Construction
+charges before source inspection and normalization. Normal matching reuses the
+profiled branch searches; storage and clone/drop remain flat. Outside captured
+scopes, consuming siblings and other class-path counts retain separate proofs.
+Earlier APIs retain exact domains and charged work. Runtime selection remains
+separate.
