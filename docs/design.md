@@ -13719,3 +13719,11 @@ so required wrappers preserve the body mask and optional repetitions roll back
 descendants (22.2.2.3.1, 22.2.2.7). Original bindings and symbolic counts remain
 intact. Flat scope/body-copy/full-mask work precedes allocation; retained masks
 stay source-sized and actual matching and capture queries remain constant.
+
+
+Runtime selects optional ordinary/modifier spines over complete established
+impossible operands, including nullable guards and mixed choices. Full original
+normalized source keeps bindings and every lexical slot. Required-prefix groups
+export empty captures while skipped descendants remain undefined. Shared empty
+execution preserves Unicode boundaries, indices/groups, lastIndex, String
+consumers, cloning and collection; original errors precede proof selection.

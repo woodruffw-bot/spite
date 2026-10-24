@@ -948,6 +948,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute complete required spines around established impossible operands and mixed root choices through Runtime and String consumers.
 - [x] Prove concatenations of optional established-impossible spines and independently empty terms with original bindings and interleaved masks.
 - [x] Prove complete ordinary/modifier spines around optional established-impossible sequences with required-prefix and rolled-back descendant masks.
+- [x] Execute optional spines over established impossible operands and mixed choices through Runtime and String consumers with complete rolled-back masks.
 - [x] Prove root alternatives mixing established and nullable-guard impossibility families, requiring every arm to fail with original projected bindings and inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

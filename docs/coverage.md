@@ -24859,3 +24859,23 @@ Strict workspace Clippy with all targets passes; documentation tests, formatting
 dependency policy, inventories and diff checks retain the passing results
 recorded with the preceding Runtime increment. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and quotas are unchanged.
+
+
+Optional spines over established impossible operands (Runtime)
+------------------------------------------------------------
+
+Runtime selects optional ordinary/modifier spines over established impossible
+operands with complete original normalized source and no capture projection. All
+18 focused integration groups pass (0.17 s), including three new groups for
+required-prefix/skipped-descendant masks, nullable guards and mixed choices,
+modifiers, incoming references and original errors, indices/groups, lastIndex,
+String consumers, cloning, collection, 1,000 groups and 20,000-digit upper bounds.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 18 complete JavaScript
+programs. All 436 Runtime unit tests pass (6.33 s). Strict workspace Clippy with
+all targets passes (0.22 s with cached targets), alongside documentation tests,
+formatting, dependency policy, inventories and diff checks. Runtime inventory
+remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
+A fresh full RegExp integration run and conformance-profile Test262 run were
+started from this Runtime increment; their results remain pending.
