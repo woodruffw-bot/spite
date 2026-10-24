@@ -868,6 +868,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute mandatory enclosing zero-count groups through Runtime, preserving defined outer captures, erased inner slots, original reference bindings and String consumers.
 - [x] Execute fully validated whole character classes with exact zero bounds, including unexecuted Unicode string properties and nested Sets classes.
 - [x] Prove mandatory ordinary enclosing captures around validated whole-class zero-count patterns with shared flat scope scanning.
+- [x] Execute mandatory enclosing zero-count class captures through Runtime, preserving named/index aliases and defined empty captures in String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

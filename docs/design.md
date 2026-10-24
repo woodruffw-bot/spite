@@ -12905,3 +12905,10 @@ capture selects the empty match span because the retained class has no captures
 Construction charges source scanning and temporary body storage before copying;
 matching and retained storage remain constant. Earlier group and class APIs
 retain their exact acceptance domains, results and work callbacks.
+
+Runtime selects the separate enclosing-class zero proof after the bare-class
+fallback. Its existing class-match body uses the common enclosing capture
+prefix, so every capture selects the empty whole-match range. Original named
+and escaped-name aliases, index-array identity, source/flags, lastIndex and
+String consumers remain on the standard result path through cloning and
+collection. Class membership is never evaluated by the retained matching plan.

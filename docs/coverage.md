@@ -22923,3 +22923,32 @@ RegExp integration sweep: all 2,763 tests pass (821.74 s), including ordinary an
 Unicode patterns, the nine zero-group tests and all 13 corrected expectation
 groups. Together with its previously recorded 35 Test262 runner tests and
 16,343 reviewed variants, this broad result precedes the whole-class fallback.
+
+
+## Runtime mandatory enclosing zero-count class captures
+
+Runtime now selects the additional class-enclosing proof after the bare-class
+fallback. Every capture is a mandatory enclosing group and selects the empty
+whole-match span. The class contributes no capture slots and its membership
+is never evaluated by the retained matching plan. Original named aliases and
+index-array identity use the common capture-prefix layout.
+
+All seven focused Runtime tests pass (2.85 s), including three new groups for
+ordinary/u/v starts, named/noncapturing wrappers, escaped astral names,
+`__proto__` on null-prototype group objects, index aliases, String consumers,
+cloning and collection. A 1,000-capture/1,000-class nesting check retains every
+defined empty range without recursion in the proof. The previous unsupported
+control for an enclosing group around a zero-count RGI class now has complete
+native positive checks; larger bounds and consuming siblings remain separate.
+
+All 51,840 exact native records agree on the fresh CLI across 60 tables, including
+all seven string properties, three enclosing layouts, four zero bounds, eight
+flag combinations, six inputs and every starting index. All seven complete
+native JavaScript regression programs also agree on the fresh CLI. All 433
+Runtime unit tests pass (3.75 s). Strict workspace Clippy with all targets passes
+(6.31 s), alongside workspace documentation tests, formatting, dependency policy,
+inventories and diff checks. The grouped Runtime inventory remains 613 cases;
+fixtures, snapshots, dependencies and default quotas are unchanged.
+
+Fresh full RegExp and Test262 runs include the bare-class and enclosing-class
+Runtime increments; their completed results are recorded separately.
