@@ -13214,3 +13214,12 @@ work and returns no match without input access. The normal execution path
 keeps input/index coercion order, global/sticky lastIndex resets, source/flags
 and String consumer behavior. Clones and collection retain the constant-size
 plan; original syntax errors still precede proof selection.
+
+
+The impossible plan has a separate mandatory-enclosing constructor. The shared
+flat ordinary-group scope proof projects a complete impossible root sequence
+without rebinding its original references. Every enclosing capture is added to
+the original lexical inventory even though no successful result can expose it.
+Quantified/modifier wrappers, outside terms and outer choices require other
+proofs. Source/copy work precedes allocation; the retained plan and no-match work
+remain constant, with no recursive wrapper processing.

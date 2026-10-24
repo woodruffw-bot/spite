@@ -1,6 +1,8 @@
 //! Root alternatives blocked by an always-failing assertion (22.2.2.4).
 
-use crate::{JsString, RegExpZeroCountSequenceMatcher};
+use crate::{
+    JsString, RegExpZeroCountSequenceMatcher, regexp_zero_count_group::enclosing_group_body,
+};
 use std::ops::Range;
 
 /// A validated root sequence containing an always-failing negative assertion.
@@ -91,6 +93,35 @@ impl RegExpImpossibleMatcher {
     /// Full original lexical capture count, including unobservable slots.
     pub fn capture_count(&self) -> usize {
         self.captures
+    }
+
+    /// Proves mandatory ordinary groups enclosing an impossible root sequence.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// The flat scope proof excludes quantified/modifier wrappers and outside
+    /// terms. Every enclosing capture remains in the original inventory even
+    /// though no match can expose it. References keep their original bindings.
+    pub fn compile_enclosing_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = enclosing_group_body(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        Ok(
+            Self::compile_negative_validated_with_work(&body, unicode, sets, charge)?.map(|body| {
+                Self {
+                    captures: scope.captures + body.captures,
+                }
+            }),
+        )
     }
 
     /// Returns no match, charging actual work before any possible input access.
@@ -232,6 +263,86 @@ mod tests {
                 assert_eq!(work, 1);
                 assert_eq!(plan.find_with_work(&input, start, |_| Err(53)), Err(53));
             }
+        }
+    }
+
+    fn enclosing(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn mandatory_enclosing_impossible_groups_keep_all_original_capture_slots() {
+        for (source, count) in [
+            (r"([\p{RGI_Emoji}]+(?!(a{0})))", 2),
+            (r"(?:((?<!\uD800{0})(a)))", 2),
+            (r"((a|b)(?!(c{0}))(d))", 4),
+            (r"(((?!(\2){0})[\p{RGI_Emoji}]+))", 3),
+        ] {
+            assert_eq!(
+                enclosing(source).unwrap().capture_count(),
+                count,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_no_match_scope_excludes_optional_groups_siblings_and_outer_choices() {
+        for source in [
+            "(?!a{0})",
+            "((?!a{0}))?",
+            "((?!a{0})){0}",
+            "(?i:(?!a{0}))",
+            "((?!a{0}))|b{0}",
+            "((?!a{0}))(x)",
+            "x((?!a{0}))",
+        ] {
+            assert!(enclosing(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn hundred_thousand_enclosing_impossible_groups_need_no_native_recursion() {
+        let source = format!(
+            "{}a(?!(b{{0}})){}",
+            "(".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        assert_eq!(enclosing(&source).unwrap().capture_count(), 100_001);
+    }
+
+    #[test]
+    fn enclosing_impossible_work_aborts_before_each_projection_or_operand_step() {
+        let source = JsString::from(r"(([\p{RGI_Emoji}]+(?!(a{0}))))");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work.len(), 3);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
+                &source, true, true, |n| {seen.push(n); if seen.len()==stop+1 {Err(stop)}else{Ok(())}}
+            ), Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
         }
     }
 }

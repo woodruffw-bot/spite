@@ -23655,3 +23655,25 @@ The preceding escaped-tree Runtime snapshot passes all 2,809 RegExp integration
 tests (785.80 s), all 35 Test262 runner tests and all 16,343 reviewed variants
 (411.25 s for the corpus group). These broad results precede surrogate and
 impossible Runtime integration.
+
+
+## Core mandatory enclosing impossible sequences
+
+A separate constructor applies the shared flat ordinary-group scope proof to
+an impossible negative-empty sequence. Projected bodies retain original
+bindings, including outside targets inside erased assertion operands. All
+enclosing slots remain in the full lexical capture inventory. Optional or
+modifier wrappers, siblings and outer choices require other proofs.
+
+All 63 actual-source focused Core tests pass (0.15 s), including four new groups
+for outside/inside inventories, original reference bindings, scope exclusions,
+100,000 wrappers and every construction-work abort. All 12,800 actual native
+input/start no-match records and original capture inventories agree across 512
+independently wrapped ordinary/u/v patterns.
+
+Strict workspace Clippy with all targets passes (10.36 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
+Rust strings finds none newly admitted. Construction stays source-sized without
+recursive wrapper processing; retained storage and matching remain constant.
+Earlier APIs and Runtime behavior are unchanged; integration follows separately.
