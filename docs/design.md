@@ -12706,3 +12706,20 @@ zero-count proof after the corresponding optional proof. Its dedicated body
 preserves every undefined inner slot, normalized starts, original source/flags,
 named aliases, indices, lastIndex and String consumers through cloning and
 collection.
+
+
+Core separately proves larger and unbounded class-path counts inside a complete
+zero-count truth root. A flat scan removes only quantifiers on its sole class
+path, preserving every original group. Decimal lower/upper ordering validates
+before any count is erased, including values beyond native counters. At least
+one path count must exceed the earlier zero/one grammar; both original branches
+then validate completely before every root iteration is disabled (ECMA-262
+edition 17 22.2.2.3, 22.2.2.7).
+
+All original captures remain undefined. Matching uses only the existing
+zero-iteration path, retaining normalized Unicode starts and sticky bounds
+without executing inner counts or querying the class body. Unknown terms even
+under erased/never paths, additional consuming paths and outside terms retain
+separate proofs. Traversal, decimal scanning, storage and clone/drop remain flat
+and source-sized. Earlier API domains, work and captures remain unchanged.
+Runtime selection remains separate.

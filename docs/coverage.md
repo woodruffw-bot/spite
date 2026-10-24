@@ -22439,3 +22439,21 @@ snapshots, dependencies and default quotas remain unchanged.
 The preceding captured outside nested optional/zero-count Runtime snapshot also
 passes all 1,776 Unicode RegExp integration tests (1,037.17 s). This run compiled
 before bounded class-path Runtime counts.
+
+
+## Core larger and unbounded class-path counts inside zero-count truth roots
+
+All three focused groups pass (0.20 s), including 160 native ordered capture
+tables. Larger finite, unbounded, lazy and arbitrarily large decimal counts
+preserve every undefined original slot in both branch orders and all flags.
+Twenty thousand nested unbounded groups, 20,000-unit shared-prefix scalar/string
+bodies, 1,000-digit padded root counts and clone/drop stay flat. Zero-iteration
+matching retains Unicode starts and sticky bounds with bounded work and no body
+queries. Constructor and match cancellation recover at every charged boundary;
+unknown terms still decline under erased/never paths. A new 736-record baseline
+includes 376 supported cases. Runtime integration remains separate.
+
+All 96,136 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy, documentation
+tests, formatting, policy, inventories and diff checks pass. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

@@ -4212,3 +4212,201 @@ impl RegExpUnicodeTruthTableZeroCountSpineStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+// Erased outer iterations need no inner count execution or counter arithmetic.
+fn erased_quantified_class_path_source(units: &[u16]) -> Option<Vec<u16>> {
+    fn count(units: &[u16], at: usize) -> Option<(usize, bool)> {
+        if let Some((end, _, maximum_one, _)) = simple_count(units, at) {
+            return Some((end, !maximum_one));
+        }
+        let (end, minimum, delta, _) = asserted_repeat_count(units, at)?;
+        let bounded = matches!((minimum, delta), (0, Some(0 | 1)) | (1, Some(0)));
+        Some((end, !bounded))
+    }
+    let (mut at, mut class_seen, mut novel) = (0usize, false, false);
+    let mut frames = Vec::<bool>::new();
+    let mut removed = Vec::<Range<usize>>::new();
+    while let Some(&unit) = units.get(at) {
+        match unit {
+            0x5c => {
+                units.get(at + 1)?;
+                at += 2;
+            }
+            0x28 => {
+                frames.push(false);
+                at += 1;
+            }
+            0x5b => {
+                if class_seen {
+                    return None;
+                }
+                class_seen = true;
+                at = super::super::class_end(units, at)?;
+                frames.fill(true);
+                if matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+                    let (end, changed) = count(units, at)?;
+                    removed.push(at..end);
+                    novel |= changed;
+                    at = end;
+                }
+            }
+            0x29 => {
+                let owns_class = frames.pop()?;
+                at += 1;
+                if owns_class && matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+                    let (end, changed) = count(units, at)?;
+                    removed.push(at..end);
+                    novel |= changed;
+                    at = end;
+                }
+            }
+            _ => at += 1,
+        }
+    }
+    if !class_seen || !frames.is_empty() || !novel {
+        return None;
+    }
+    let mut normalized = Vec::with_capacity(units.len());
+    let mut previous = 0;
+    for range in removed {
+        normalized.extend_from_slice(&units[previous..range.start]);
+        previous = range.end;
+    }
+    normalized.extend_from_slice(&units[previous..]);
+    Some(normalized)
+}
+
+/// A zero-count root containing larger or unbounded class-path counts.
+///
+/// Requires validated Unicode Sets source and normalized capture names. With one
+/// string class and a pure zero-width alternative, every original term validates
+/// before matching erases all root iterations. Every capture stays undefined,
+/// including captures in nested larger, unbounded and skipped inner scopes.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableQuantifiedZeroCountStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeTruthTableQuantifiedZeroCountStringClassAlternativeMatcher {
+    /// Validates every original term before erasing quantified class-path counts.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let u = source.code_units();
+        if !(u.starts_with(&[0x28, 0x3f, 0x3a])
+            || (u.first() == Some(&0x28) && u.get(1) != Some(&0x3f)))
+        {
+            return Ok(None);
+        }
+        let (mut at, mut depth, mut class, mut close) = (0, 0usize, 0usize, None);
+        while let Some(&unit) = u.get(at) {
+            if unit == 0x5c {
+                if u.get(at + 1).is_none() {
+                    return Ok(None);
+                }
+                at += 2;
+                continue;
+            }
+            if unit == 0x5b {
+                class += 1;
+                at += 1;
+                continue;
+            }
+            if class != 0 {
+                if unit == 0x5d {
+                    class -= 1
+                }
+                at += 1;
+                continue;
+            }
+            if unit == 0x28 {
+                depth += 1
+            } else if unit == 0x29 {
+                let Some(n) = depth.checked_sub(1) else {
+                    return Ok(None);
+                };
+                depth = n;
+                if depth == 0 {
+                    close = Some(at);
+                    break;
+                }
+            }
+            at += 1;
+        }
+        let Some(close) = close else { return Ok(None) };
+        let count = close
+            .checked_add(1)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let Some((end, minimum, delta, _)) = asserted_repeat_count(u, count) else {
+            return Ok(None);
+        };
+        if minimum != 0 || delta != Some(0) {
+            return Ok(None);
+        }
+        if end != u.len() {
+            return Ok(None);
+        }
+        let Some(normalized) = erased_quantified_class_path_source(&u[..count]) else {
+            return Ok(None);
+        };
+        let Some((body, enclosing)) = super::super::super::enclosed_v_group_body(&normalized)
+        else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(normalized[body].to_vec());
+        let Some(mut inner) =
+            RegExpUnicodeTruthTableRootStringClassAlternativeMatcher::compile_with_work(
+                &body,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        inner.class.profiles = [0; 2];
+        let captures = inner
+            .capture_count()
+            .checked_add(enclosing)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(Some(Self {
+            plan: RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher {
+                inner,
+                enclosing,
+                captures,
+                greedy: false,
+                ignore_case,
+                multiline,
+            },
+        }))
+    }
+    /// Counts every original root, quantified-path and branch-local lexical slot.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Every original capture is undefined for a zero-count root.
+    pub fn capture_range(
+        &self,
+        _index: usize,
+        _found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        None
+    }
+    /// Returns an empty match at the normalized Unicode start without body queries.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
