@@ -199,10 +199,10 @@ fn asserted_counted_nullable_scalar_string_class_deep_empty_scopes_long_members_
 fn asserted_counted_nullable_scalar_string_class_proofs_keep_conditional_predicates_and_unknown_leaves_closed()
  {
     assert_eq!(Realm::default().eval(r####"var pattern="(^)*([\\p{Any}\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(^|)([\\p{Any}\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[0,0],[3,3]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="^([\\p{Any}\\q{|a|ab}]){3}(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"(^([\p{Any}\q{|a|ab}])){3}$",
-        r"(^|)([\p{Any}\q{|a|ab}]){3}$",
-        r"^([\p{Any}\q{|a|ab}]){3}(\b|)",
         r"^([\p{Any}\q{|a|ab}]){3}\1",
         r"^([\p{Any}\q{|a|ab}]){3}a$",
         r"^(([\p{Any}\q{|a|ab}]){3}){3}$",

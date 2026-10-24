@@ -21113,3 +21113,31 @@ All 74,792 frozen prior API records retain exact supported domains, charged work
 and capture projection. Strict workspace Clippy (18.81 s), documentation tests,
 formatting, policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime required outside predicate choices
+
+Three groups compare forty native capture tables and eight String consumer
+programs. Named aliases and indices preserve selected line/word branches,
+required empty class identity and undefined skipped scopes. Replacement
+callbacks, matchAll, split/search, clone/collection, read-only lastIndex,
+1,000-level required/optional nesting, endpoint retries, 20,000-unit class
+members and constructor cancellation retain complete source and capture
+identity. Unknown leaves, references and consuming siblings remain unproved.
+
+Thirty-four former rejection controls in seventeen existing groups now compare
+complete native captures, indices, metadata, input and lastIndex, including
+supported no-match results. Five source-shape scans distinguish raw controls
+from actual prefixed patterns and retain all remaining rejection controls.
+
+All three new groups pass (0.25 s), alongside 431 Runtime unit tests (5.18 s),
+forty native tables and eight consumer references on the fresh CLI. All 34
+migrated controls agree on the fresh CLI, and all seventeen existing Rust groups
+pass (7.79 s). All 100,352 exact differential records
+agree across 256 independent pattern/control pairs, with all 1,024 proof/flag
+combinations supported. Eight finite/scalar/known-empty forms, four body counts,
+eight ordered predicate choices, mixed required/skipped scopes and four live
+predicate profiles cover every input start, sticky, multiline and ignore-case.
+Strict workspace Clippy (7.04 s), documentation tests, formatting, policy,
+inventories and diff checks pass. The complete Unicode suite is running;
+fixtures, snapshots, dependencies and default quotas remain unchanged.

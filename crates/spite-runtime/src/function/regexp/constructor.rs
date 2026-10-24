@@ -26,6 +26,7 @@ use spite_core::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
     RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher, RegExpUnicodePropertyDotMatcher,
     RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRequiredStringClassCaptureMatcher,
@@ -2648,13 +2649,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeUnassertedZeroMinimumStringClassAlternativeCaptures(body)));
                 }
-                RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassAlternativeCaptures(body)));
+                }
+                RegExpUnicodePredicateChoiceStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassAlternativeCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodePredicateChoiceStringClassCaptures))
 
             })?;
             if body.is_some() {

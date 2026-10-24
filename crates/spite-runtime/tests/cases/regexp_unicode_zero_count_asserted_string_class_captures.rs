@@ -201,10 +201,10 @@ fn zero_count_asserted_string_class_deep_skipped_slots_long_words_and_constructo
 fn zero_count_asserted_string_class_live_conditional_predicates_references_and_unknown_terms_remain_closed()
  {
     assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}^((\\b)|(\\B))?([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}^((\\b)|(\\B)){1}([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}^([\\q{|a|ab}]){3}(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
-        r"^((\b)|(\B)){1}([\q{|a|ab}]){3}$",
         r"^(^([\q{|a|ab}])){3}$",
-        r"^([\q{|a|ab}]){3}(\b|)",
         r"^([\q{|a|ab}]){3}\1",
         r"^(([\q{|a|ab}]){3}){2}$",
         r"^([\q{|a|ab}]){3}[\q{ab}]$",

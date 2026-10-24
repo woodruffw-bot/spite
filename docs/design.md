@@ -12156,4 +12156,8 @@ Unicode ignore-case word aliases. Other predicates remain live, so endpoint
 retry and class-member priority remain with the proved matcher. Every unknown
 leaf is rejected before matching, including leaves in skipped branches. Charged
 work, cancellation and capacity failure remain distinct from JavaScript errors.
-Runtime selection remains separate.
+Runtime selects this proof after the existing optional-scope constructors on the
+full normalized capture source. Its dedicated result preserves both endpoint
+truth profiles alongside class selection and the final iteration; named aliases,
+indices, lastIndex, String consumers, cloning and collection retain original
+source and capture identity.
