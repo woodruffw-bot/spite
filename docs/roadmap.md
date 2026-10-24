@@ -815,7 +815,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile a required single class beside always-successful outside predicate choices, preserving conditional captures and exact-one counts.
 - [x] Compile mandatory outside predicate choices around class/empty alternatives, preserving branch ownership and conditional captures.
 - [x] Compile outside predicate choices equivalent to conjunctions of live line/word gates beside class repetition, preserving conditional captures and endpoint retries.
-- [ ] Execute conjunctive predicate choices beside class repetition through Runtime and String consumers.
+- [x] Execute conjunctive predicate choices beside class repetition through Runtime and String consumers.
 - [x] Execute mandatory outside predicate choices around class/empty alternatives through Runtime and String consumers.
 - [x] Execute required outside predicate choices beside a single class through Runtime and String consumers.
 - [x] Execute required outside predicate choices through Runtime and String consumers.

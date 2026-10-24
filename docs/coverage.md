@@ -21235,9 +21235,8 @@ combinations are supported. Eight finite/scalar/known-empty capture layouts,
 four bare/exact-one counts, eight predicate choices and four live profiles cover
 every input start, sticky, multiline and ignore-case. Strict workspace Clippy
 (4.32 s after the final test adjustment), documentation tests, formatting, policy,
-inventories and diff checks pass. The full 1,709-test Unicode suite and the two
-existing migrated groups are running; fixtures, snapshots, dependencies and
-default quotas remain unchanged.
+inventories and diff checks pass. The full 1,709-test Unicode suite is running;
+fixtures, snapshots, dependencies and default quotas remain unchanged.
 
 
 ## Core predicate choices equivalent to live conjunction gates
@@ -21257,3 +21256,31 @@ capture projection in six bounded transcript batches. Strict workspace Clippy
 (38.05 s), documentation tests, formatting, policy, inventories and diff checks
 pass. Runtime selection remains separate; fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+Both migrated alternatives Runtime groups pass all six existing tests
+(441.91 s), including their complete capture-layout matrices.
+
+
+## Runtime predicate choices equivalent to live conjunction gates
+
+Three groups compare forty native tables and eight String consumer programs,
+including changing conditional branches between matches, named/escaped-name
+aliases and indices, matchAll, replacement callbacks, split/search, clone and
+collection, and strict lastIndex writes. Deep 1,000-level scopes, 20,000-unit
+shared-prefix members, scalar fallback, shorter endpoint continuations and
+required empty captures retain full source and capture identity. Constructor
+abort isolation and unknown class leaves behind never gates remain distinct
+from JavaScript exceptions. Nonconjunctive choices and other class spines remain
+separate proofs; all five rejection-control source scans retain their domains.
+
+All three groups pass (0.34 s), and all forty native tables and eight consumer
+references agree on the fresh CLI. All 100,352 exact differential records agree
+across 256 independent pairs, with all 1,024 proof/flag combinations supported.
+Eight finite/scalar/known-empty forms, four body counts, eight conjunction/never/
+skipped profiles and four remaining live profiles cover all input starts,
+sticky, multiline and ignore-case. Strict workspace Clippy (37.01 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+All 431 Runtime unit tests also pass (5.86 s).

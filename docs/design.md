@@ -12208,5 +12208,8 @@ leaves or other terms. Disjunctions that cannot be represented by conjunctions,
 references, consuming siblings and conditional class scopes remain separate
 proofs. The preceding three choice APIs retain their exact domains and charged
 work. Allocation, traversal and clone/drop remain flat and source-sized; host
-limits and cancellation remain distinct from JavaScript errors. Runtime
-selection remains separate.
+limits and cancellation remain distinct from JavaScript errors. Runtime selects
+this proof after the three always-successful choice proofs on the full normalized
+capture source. Its dedicated body retains endpoint truth, last-iteration state,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.
