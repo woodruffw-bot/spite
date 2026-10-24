@@ -12577,4 +12577,7 @@ profiles use bounded matching work after construction. Unknown terms in either
 region, including the unexecuted body and skipped/never scopes, references,
 additional classes, consuming outside siblings and other root counts retain
 separate proofs. Earlier API domains and charged work remain unchanged. Runtime
-selection remains separate.
+selects this zero-count proof after captured outside optional-root scopes. The
+dedicated body preserves undefined body slots, conditional outside points,
+mandatory enclosing ranges, actual endpoint truth, source/flags, named aliases,
+indices, lastIndex and String consumers through cloning and collection.

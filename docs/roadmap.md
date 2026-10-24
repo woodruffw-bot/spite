@@ -838,7 +838,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove captured outside scopes around optional root truth alternatives, retaining outside participation and skipped inner lexical slots.
 - [x] Execute captured outside scopes around optional root truth alternatives through Runtime and String consumers.
 - [x] Prove zero-count root truth alternatives beside captured outside scopes, validating skipped bodies and clearing every inner slot.
-- [ ] Execute zero-count root truth alternatives through Runtime and String consumers.
+- [x] Execute zero-count root truth alternatives through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

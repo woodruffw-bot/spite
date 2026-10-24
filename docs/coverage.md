@@ -22106,3 +22106,31 @@ quotas remain unchanged.
 The preceding outside-asserted optional-root Runtime sources pass all 1,758 Unicode
 RegExp integration tests (877.67 s). This run compiled before captured outside
 optional-root Runtime scopes.
+
+
+## Runtime zero-count root truth alternatives with outside scopes
+
+Three focused groups pass (0.33 s), preserving conditional outside points and
+mandatory enclosing empty ranges while all root/body captures remain undefined.
+Padded/lazy zero counts, both branch orders, capturing/noncapturing roots,
+ordinary/exact-one outside paths, named and escaped-name aliases, indices,
+matchAll, callback replacement, split/search, cloning, collection and strict
+lastIndex writes retain native behavior. Outside continuations preserve earliest
+Unicode positions and sticky failure/success without consulting body members.
+Deep 1,000-level outside points, 20,000-unit shared-prefix bodies and constructor
+aborts remain flat. Full validation still rejects unknown terms in the
+unexecuted body and skipped/never outside scopes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+preceding rejection controls across five existing Rust groups now compare full
+native captures, indices, source, flags, input and lastIndex and agree on the
+fresh CLI. All five affected Rust proof groups pass; other generated count
+combinations retain their rejection checks. Five source-shape scans retain all
+other rejection domains. All 100,352 exact differential records agree across
+256 independent pairs, with all 1,024 proof/flag combinations supported. Mixed
+outside scopes, complete wrappers, finite/scalar/known-empty bodies and
+independent branch profiles cover every start, sticky, multiline and ignore-case.
+All 431 Runtime unit tests pass (3.18 s), alongside strict workspace Clippy
+(6.73 s), documentation tests, formatting, policy, inventories and diff checks.
+The grouped Runtime inventory contains 599 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

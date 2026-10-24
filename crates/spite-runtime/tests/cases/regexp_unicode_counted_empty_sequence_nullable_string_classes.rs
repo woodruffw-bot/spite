@@ -238,6 +238,12 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"<un
             "{999999999999999999999999999999,1000000000000000000000000000000}",
         ] {
             let source = format!("({inner}){count}");
+            if inner == r"\b[\q{a|ab}&&a]|(?:)(?:)" && count == "{0}" {
+                check(
+                    r####"var pattern="(\\b[\\q{a|ab}&&a]|(?:)(?:)){0}",input="a",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\"],[[0,0],\"<undefined>\"],0,0]""####,
+                );
+                continue;
+            }
             assert!(
                 matches!(
                     Realm::default().eval(&format!("/{source}/v.test('a')")),
