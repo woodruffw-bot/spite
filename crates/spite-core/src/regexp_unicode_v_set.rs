@@ -305,7 +305,19 @@ impl RegExpUnicodeClassMatcher {
         units: &[u16],
         ignore_case: bool,
         nested: bool,
-        charge: impl FnMut(usize) -> Result<(), E>,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_string_union_scalar_portion_impl(units, ignore_case, nested, &mut charge)
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_string_union_scalar_portion_impl<E>(
+        units: &[u16],
+        ignore_case: bool,
+        nested: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
         if units.len() < 2 || units[0] != 0x5b || units[1] == 0x5e || units.last() != Some(&0x5d) {
             return Ok(None);
@@ -546,7 +558,28 @@ impl RegExpUnicodeClassMatcher {
         multiline: bool,
         strings: StringOperands,
         require_shape: bool,
-        charge: impl FnMut(usize) -> Result<(), E>,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Checked<Option<Self>, E> {
+        Self::compile_v_set_units_with_string_operands_and_work_impl(
+            units,
+            ignore_case,
+            multiline,
+            strings,
+            require_shape,
+            &mut charge,
+        )
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_v_set_units_with_string_operands_and_work_impl<E>(
+        units: &[u16],
+        ignore_case: bool,
+        multiline: bool,
+        strings: StringOperands,
+        require_shape: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
     ) -> Checked<Option<Self>, E> {
         let start_anchor = units.first() == Some(&0x5e);
         let end_anchor = units.last() == Some(&0x24);

@@ -424,6 +424,29 @@ impl RegExpUnicodeClassMatcher {
         ignore_case: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
+        Self::compile_units_with_work_impl(
+            units,
+            unicode_sets,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            &mut charge,
+        )
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_units_with_work_impl<E>(
+        units: &[u16],
+        unicode_sets: bool,
+        start_anchor: bool,
+        end_anchor: bool,
+        multiline: bool,
+        ignore_case: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
         let inverted = units.get(1) == Some(&0x5e);
         let mut index = 1 + usize::from(inverted);
         let mut ranges = Vec::new();
@@ -572,13 +595,36 @@ impl RegExpUnicodeClassMatcher {
     }
 
     fn compile_ranges_with_work<E>(
-        mut ranges: Vec<(u32, u32)>,
+        ranges: Vec<(u32, u32)>,
         inverted: bool,
         start_anchor: bool,
         end_anchor: bool,
         multiline: bool,
         ignore_case: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_ranges_with_work_impl(
+            ranges,
+            inverted,
+            start_anchor,
+            end_anchor,
+            multiline,
+            ignore_case,
+            &mut charge,
+        )
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_ranges_with_work_impl<E>(
+        mut ranges: Vec<(u32, u32)>,
+        inverted: bool,
+        start_anchor: bool,
+        end_anchor: bool,
+        multiline: bool,
+        ignore_case: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         ranges = normalize_ranges_with_work(ranges, &mut charge)?;
         if ignore_case {

@@ -148,6 +148,18 @@ impl RegExpUnicodeStringSetMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_string_operations_with_work_impl(source, ignore_case, multiline, &mut charge)
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_string_operations_with_work_impl<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Framing {
             body,
             start_anchor,
@@ -326,6 +338,25 @@ impl RegExpUnicodeStringSetMatcher {
         scalar_rhs: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_finite_operations_domain_impl(
+            source,
+            ignore_case,
+            multiline,
+            scalar_rhs,
+            &mut charge,
+        )
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_finite_operations_domain_impl<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        scalar_rhs: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Framing {
             body,
             start_anchor,
@@ -457,6 +488,19 @@ impl RegExpUnicodeStringSetMatcher {
         multiline: bool,
         domain: Domain,
         mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_domain_impl(source, ignore_case, multiline, domain, &mut charge)
+    }
+
+    // Share compilation across callback types; callers keep their original
+    // work events and errors without duplicating the delegated compiler.
+    #[inline(never)]
+    fn compile_domain_impl<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        domain: Domain,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Framing {
             body,

@@ -25400,3 +25400,39 @@ groups pass (0.07 s), including native reentry. All 436 Runtime unit tests pass
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 618; fixtures, snapshots, dependencies and default
 quotas are unchanged.
+
+## Share UnicodeSets compiler bodies across work callbacks
+
+Seven shared compiler implementations accept borrowed work callbacks behind
+thin generic entry points. This bounds repeated compilation of flat scalar
+classes, checked UnicodeSets expressions, and finite string-set unions and
+operations. Public signatures, work-event order, callback errors, proof domains,
+matching code, and capture behavior retain their existing contracts.
+
+An isolated Rust 1.85 compiler diagnostic with optimization disabled measured
+592,752 monomorphized instances before this change and 237,046 afterward.
+Estimated MIR size fell from 27,239,866 to 9,784,607 units. The large checked-set
+compiler body fell from 2,782 copies to four, the flat-class body from 1,016 to
+four, and the three string-set compiler bodies from more than 2,100 each to
+three each. These diagnostic builds stopped after complete statistics were
+written and are not test passes or normal-profile timing measurements.
+
+An unchanged normal-profile Rust 1.85 Core rebuild was deliberately stopped
+when compiler resident memory exceeded 13 GiB. The updated normal-profile
+compiler completed at approximately 6.5 GiB peak resident memory. Hosted failures
+on the preceding main revision report runner shutdown during compilation;
+these local measurements identify and reduce a substantial compiler cost.
+
+A separate before/after comparison agrees on all 3,648 constructor/flag
+configurations across 19 public class/string-set constructors and 24 sources.
+The comparison preserves exact construction-work events and selected ranges at
+every UTF-16 start, with sticky and searching execution, across six inputs
+including astral and unpaired surrogates. All thirteen static-pattern and all
+thirteen constructor Runtime groups pass, including native-stack reentry.
+Strict workspace Clippy with all targets, documentation tests, formatting,
+dependency policy, inventories, and diff checks pass. Fixtures, snapshots,
+dependencies, build profiles, worker settings, and default quotas are unchanged.
+
+The complete Rust 1.85 Core suite passes all 1,708 tests (205.37 s), including
+all existing exhaustive class/property, ordered-capture, opt-in cancellation,
+deep-source, clone/drop, and snapshot checks.
