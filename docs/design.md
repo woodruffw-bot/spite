@@ -13279,3 +13279,10 @@ re-enters the positive constructor. Callback type erasure at the private proof
 boundary prevents recursive generic expansion; earlier negative construction
 work and domains stay unchanged. Source/copy work precedes allocation, total
 construction is source-sized and the retained no-match plan stays constant.
+
+
+Runtime selects the positive-impossible-assertion proof after the earlier
+negative-empty impossibility proofs. Both positive assertion directions use
+the full normalized original capture source and the existing constant no-match
+body. Original errors, lastIndex, String consumers, cloning and collection keep
+the shared execution behavior.

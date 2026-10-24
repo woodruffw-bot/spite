@@ -901,6 +901,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove required quantified ordinary/modifier spines enclosing impossible sequences or choices, preserving symbolic bounds and original capture inventories.
 - [x] Execute required quantified/modifier impossible spines through Runtime and String consumers with complete original capture inventories and validation.
 - [x] Prove root sequences blocked by a positive assertion over an independently impossible operand, retaining original capture inventories and both assertion directions.
+- [x] Execute positive assertions over impossible operands through Runtime and String consumers, preserving original validation, inventories and no-match state.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
