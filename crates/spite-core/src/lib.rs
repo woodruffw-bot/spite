@@ -133,6 +133,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableSurroundingStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableZeroCountRootStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,

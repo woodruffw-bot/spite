@@ -12558,3 +12558,23 @@ Its dedicated body preserves conditional outside points, mandatory enclosing
 ranges, final-iteration absence, original inner slots, actual endpoint truth,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves a direct class/empty truth root with an exact zero count,
+including padded `{0}`/`{0,0}` and lazy forms, beside captured outside predicate
+scopes. Full construction validates both original root branches before erasing
+all possible iterations. The outside projection reserves the original complete
+root capture interval and retains conditional point masks and mandatory enclosing
+roles. Every root/body capture stays undefined; mandatory enclosing captures can
+still hold an accepted empty range (ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+The existing outside continuation kernel executes only zero-width paths: class
+profiles are disabled after complete body validation. Outside gates can require
+later Unicode scalar positions; sticky matching retains its requested normalized
+start. Deep groups, long finite words, storage and clone/drop stay flat and
+source-sized. Truth probes charge before inspection, and contradictory outside
+profiles use bounded matching work after construction. Unknown terms in either
+region, including the unexecuted body and skipped/never scopes, references,
+additional classes, consuming outside siblings and other root counts retain
+separate proofs. Earlier API domains and charged work remain unchanged. Runtime
+selection remains separate.

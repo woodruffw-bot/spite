@@ -22080,3 +22080,29 @@ dependencies and default quotas remain unchanged.
 The preceding outside-asserted optional-root sources pass a fresh Test262 run:
 all 35 runner tests and all 16,343 reviewed variants, including the pinned corpus
 gate (483.49 s). This run compiled before captured outside optional-root scopes.
+
+
+## Core zero-count root truth alternatives with outside scopes
+
+Four focused groups pass (2.04 s), comparing 160 native capture tables and an
+independent 24-slot zero-iteration/outside-profile oracle across every UTF-16
+start, sticky, multiline and ignore-case. Exact padded/lazy zero counts retain
+conditional outside points and defined mandatory enclosing ranges while every
+root/body slot remains undefined. Both original branch orders,
+capturing/noncapturing roots, finite/scalar/known-empty classes and mixed
+ordinary/exact-one outside paths validate completely before matching. Deep
+20,000-level outside captures, 20,000-unit shared-prefix words, thousand-digit
+padded zero bounds, cloning/drop and every charged cancellation/recovery remain
+flat. Contradictory outside profiles match with bounded work only after full
+construction. Unknown terms in either region, even in the unexecuted body and
+skipped/never scopes, retain their proof boundaries.
+
+All 90,984 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy (16.46 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding outside-asserted optional-root Runtime sources pass all 1,758 Unicode
+RegExp integration tests (877.67 s). This run compiled before captured outside
+optional-root Runtime scopes.
