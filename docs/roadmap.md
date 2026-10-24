@@ -933,6 +933,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove root negative assertions over complete nullable ordinary/modifier group spines always fail, including operands that could consume greedily.
 - [x] Execute negative assertions over nullable group spines through Runtime and String consumers without reading otherwise necessary operand matching data.
 - [x] Prove negative assertions over complete zero-minimum literal/class/property atoms and enclosing spines always fail with mode-aware surrogate boundaries.
+- [x] Execute negative assertions over nullable atoms and enclosing spines through Runtime and String consumers with original inventories and Unicode atom boundaries.
 - [x] Prove negative assertions over complete independently nullable sequences and enclosing spines always fail without matching otherwise consuming operands.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

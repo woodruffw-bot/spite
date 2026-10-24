@@ -24533,3 +24533,26 @@ Strict workspace Clippy with all targets passes (28.97 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Negative assertions over nullable atoms (Runtime)
+------------------------------------------------
+
+Runtime selects root negative assertions over zero-minimum literal/class/property
+atoms or enclosing ordinary/modifier spines. All 34 focused integration groups
+pass (1.49 s), including three new groups for class/string-property atoms,
+required/modifier wrappers, Unicode escaped surrogate pairs, full original
+inventories and later errors, source/flags and lastIndex, String consumers,
+cloning, collection, 1,000 enclosing groups and 20,000-digit upper bounds.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 34 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.48 s). Strict workspace Clippy with
+all targets passes (13.84 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The earlier positive-optional-impossible Runtime snapshot passes all 35 Test262
+runner tests and the unchanged 16,343-case corpus (435.44 s), and all 2,871 RegExp
+integration tests (886.04 s). These broad runs predate Runtime selection of the
+nullable-group and nullable-atom negative proofs.

@@ -13583,3 +13583,11 @@ The shared flat group/atom boundary scanners split disjoint terms, preserving
 original bindings and full inventories. Required/conditional terms and root
 choices reject this constructor. Source/frame/copy work precedes allocation;
 construction stays source-sized and the retained no-match plan constant.
+
+
+Runtime selects negative assertions over complete nullable literal/class/property
+atoms and enclosing spines after the nullable-group proof. Full original
+normalized source preserves every lexical capture and mode-aware atom boundary.
+A successful operand path is guaranteed even if greedy matching could consume,
+so the constant no-match body avoids otherwise necessary matching data. Shared
+execution retains source/flags, lastIndex, String consumers, cloning and collection.
