@@ -24051,3 +24051,21 @@ unchanged.
 The earlier positive-impossible-assertion Runtime snapshot completes all 2,829
 RegExp integration tests successfully (943.44 s). This broad run predates
 Runtime selection of the negative-impossible empty proofs.
+
+
+Enclosing negative-impossible empty sequences (Runtime)
+------------------------------------------------------
+
+Runtime selects complete ordinary/modifier spines around independently empty
+negative-impossible sequences. All 15 focused integration groups pass (0.08 s),
+including three new groups for required/optional enclosing and interleaved body
+masks, original erased enclosing references, modifiers, Unicode boundaries,
+lastIndex, callback/split captures, cloning, collection, 1,000 enclosing groups,
+20,000-digit positive minima and zero maxima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v spines agree on the fresh CLI, as do all 15 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.67 s). Strict workspace Clippy with
+all targets passes (10.71 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 616;
+fixtures, snapshots, dependencies and default quotas are unchanged.

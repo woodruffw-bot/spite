@@ -13380,3 +13380,11 @@ scanner has separate modes preserving earlier domains and work. Its finite
 operand chain never re-enters the new proof; callback type erasure keeps the
 compiler boundary finite as well. Source/copy work precedes allocation,
 construction stays source-sized and retained no-match storage stays constant.
+
+
+Runtime selects the enclosing negative-impossible empty-sequence proof after
+the direct sequence proof. Full original normalized source preserves enclosing
+and interleaved body capture roles: required wrappers export empty captures,
+while optional repetitions clear descendant writes. Shared empty execution
+retains Unicode boundaries, source/flags, lastIndex, String callback/split
+captures, cloning and collection behavior.
