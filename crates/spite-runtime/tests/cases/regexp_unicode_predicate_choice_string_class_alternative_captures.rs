@@ -210,13 +210,13 @@ fn predicate_choice_string_class_alternatives_retain_full_unknown_leaf_and_scope
     check(
         r####"var pattern="((\\b)|(\\B))(([\\q{a|ab}])|()){2}",r=new RegExp(pattern,"dv"),m=r.exec("aba");r.source===pattern&&r.flags==="dv"&&m.input==="aba"&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"<undefined>\"],[[0,3],[0,0],[0,0],\"<undefined>\",[2,3],[2,3],\"<undefined>\"],0,0]""####,
     );
+    assert_eq!(Realm::default().eval(r####"var pattern="(((\\b)|(\\B))([\\q{a|ab}]))|()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((\b)|(\B))(([\q{a|ab}])|())[a]",
         r"((\b)|z|())(([\q{a|ab}])|())",
         r"((\b)|\1|())(([\q{a|ab}])|())",
         r"((\b)|(\B))(()|([\q{ab}&&\p{RGI_Emoji}]))",
         r"((\b)|(\B))((([\q{a|ab}])|()){2}){2}",
-        r"(((\b)|(\B))([\q{a|ab}]))|()",
         r"((\b)|(\B))(((\b)|(\B))([\q{a|ab}])|())",
     ] {
         let pattern = JsString::from(pattern);

@@ -563,12 +563,12 @@ fn asserted_string_class_root_consumers_keep_branch_identity_metadata_and_unicod
         r"var marker=0,m;try{m=/^([\q{a|ab}]|())/dv.exec('ab!')}finally{marker=3}var e=/^([\q{a|ab}]|())/dv.exec('!ab');marker===3&&m.length===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e.index===0",
     );
     assert_eq!(Realm::default().eval(r####"var pattern="^([\\q{a|ab}])|(\\b)?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="^([\\q{a|ab}])|(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"^([\q{a|ab}])+|()",
         r"^([\q{a|ab}])|()|()",
         r"^([\q{a|ab}])|([\q{}])",
-        r"^([\q{a|ab}])|(\b|)",
         r"^([\q{a|ab}])|\1",
         r"\b\B([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|(^)",
         r"^([\q{a|ab}])x|(^)",

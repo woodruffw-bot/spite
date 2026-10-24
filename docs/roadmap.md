@@ -823,7 +823,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove arbitrary outside predicate choices beside one required class, retaining exact-one empty identity and member/search continuations.
 - [x] Prove arbitrary outside predicate choices around class/empty alternatives, preserving branch priority and endpoint continuations.
 - [x] Prove branch-local predicate choices in two root class/empty alternatives, preserving earliest starts, source priority and lexical slots.
-- [ ] Execute branch-local predicate choices in root class/empty alternatives through Runtime and String consumers.
+- [x] Execute branch-local predicate choices in root class/empty alternatives through Runtime and String consumers.
 - [x] Execute arbitrary outside predicate choices around class/empty alternatives through Runtime and String consumers.
 - [x] Execute arbitrary outside predicate choices beside one required class through Runtime and String consumers.
 - [x] Execute larger nullable repetitions with arbitrary predicate-choice profiles through Runtime and String consumers.

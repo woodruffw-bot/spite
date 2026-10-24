@@ -21585,3 +21585,35 @@ quotas remain unchanged.
 The preceding arbitrary repetition and larger nullable-count Runtime sources
 pass all 1,724 Unicode RegExp integration tests (885.57 s). This run compiled
 before the required-single and class/empty truth-profile extensions.
+
+
+## Runtime branch-local predicate choices in root class/empty alternatives
+
+Three focused groups pass (0.90 s), covering complete conditional captures in
+both root branches, bare/padded exact-one class paths, required empty class
+identity, named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes. Explicit
+branch-local suffixes retry shorter members and later starts; reversed native
+line predicates retain original context. Deep 1,000-level branch scopes and
+20,000-unit shared-prefix scalar/string members remain flat. Complete unknown
+terms in either branch and constructor abort isolation retain distinct host
+outcomes even behind never profiles.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Seven
+preceding rejection controls in seven existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+All seven affected Rust consumer/proof groups pass (0.81 s combined). Five
+source-shape scans retain all other rejection domains. All 100,352 exact
+differential records agree across 256 independent pairs, with all 1,024 proof/flag
+combinations supported. Eight finite/scalar/known-empty class layouts, four
+bare/exact-one counts, independent branch profiles and both root orders cover
+every input start, sticky, multiline and ignore-case. All 431 Runtime unit tests
+pass (5.66 s), alongside strict workspace Clippy (51.25 s), documentation tests,
+formatting, policy, inventories and diff checks. The grouped Runtime inventory
+contains 589 case files. Fixtures, snapshots, dependencies and default quotas
+remain unchanged.
+
+The preceding required-single and outside class/empty truth-profile sources
+pass a fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants
+pass, including the pinned corpus gate (408.15 s). This run compiled before the
+branch-local root proof.

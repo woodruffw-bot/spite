@@ -12344,4 +12344,7 @@ slots; neither synthetic proof term appears in captures or Runtime source.
 Source, branch storage and clone/drop remain flat. Enclosing root-choice wrappers,
 additional branches, other class counts and consuming empty-branch terms retain
 separate proofs. Earlier APIs retain exact domains and charged work. Runtime
-selection remains separate.
+selects this root branch-local proof after the mandatory outside-choice
+alternatives proof on the complete normalized capture source. Its dedicated body
+preserves branch ownership, endpoint truth, source/flags, named aliases, indices,
+lastIndex and String consumers through cloning and collection.
