@@ -25437,6 +25437,12 @@ The complete Rust 1.85 Core suite passes all 1,708 tests (205.37 s), including
 all existing exhaustive class/property, ordered-capture, opt-in cancellation,
 deep-source, clone/drop, and snapshot checks.
 
+Hosted run [40141708114](https://github.com/woodruffw-bot/spite/actions/runs/40141708114)
+passes the previously failing Linux Rust 1.85 Core job: workspace-library
+collection compiles in 5m 06s and all 1,708 Core tests pass in 340.30 s. Hosted
+quality checks and the Linux stable remaining-workspace job also pass on the
+compiler-sharing revision. Other matrix jobs were still running when recorded.
+
 ## Core complete Unicode positive lookahead with operand captures
 
 The actual-source focused harness passes 226 tests, including five groups for
