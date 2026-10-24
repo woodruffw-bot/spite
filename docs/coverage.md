@@ -20638,3 +20638,23 @@ groups after sharing predicate scanning and occurrence-shape validation. All
 capture projection. Strict workspace Clippy, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core single class with skipped scopes and live predicates
+
+Four groups compare six finite/scalar/known-empty families, five bare/exact-one
+forms, six capture trees, atom/group scopes, four skipped-scope layouts and eight
+live predicate profiles across eight UTF-16 inputs and all starts/sticky/i/m.
+The independent continuation oracle retains required class entry and every
+skipped slot. Forty native equivalent tables cover live line/word gates beside
+nested skipped scopes, Unicode boundaries/folding and original capture identity.
+Deep 20,000 skipped scopes, defined enclosing empty points, a shorter successful
+member after a longer member fails a live boundary, long shared-prefix members,
+every callback cancellation/recovery and closed unproved paths pass.
+
+All thirty-six combined focused groups pass, including the preceding thirty-two
+groups. All 68,168 prior API records retain exact domains, construction/search
+work and capture projection. Strict workspace Clippy, documentation tests,
+formatting, dependency policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas are
+unchanged.

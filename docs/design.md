@@ -11944,3 +11944,21 @@ semantics. Other class counts, class-bearing choices, references, live/body
 predicates and unknown terms retain separate proofs. Allocation and callback
 failures keep their constructor/work distinction. Runtime selection remains
 separate.
+
+
+Core separately proves a single class with skipped outside scopes and remaining
+live unconditional predicates. It shares the single-occurrence skipped-scope
+scan without changing earlier API domains or charged work. At least one live
+predicate remains after masking; exact-one class-path counts normalize before
+the existing unconditional/reversed single-class capture proof validates the
+complete retained source. All original lexical slots remain present.
+
+ECMA-262 edition 17 22.2.2.4 and 22.2.2.7 preserve outside predicate continuations
+when selecting a class member. A longer member failing a live end/word condition
+leaves shorter members eligible. Skipped predicates impose no constraint, and
+their captures remain undefined; ordinary surrounding empty captures retain
+the selected start/end points. Empty members enter the required class body and
+retain a defined final class range. Reversed line gates, Unicode search/folding,
+callbacks and constructor/capacity failures retain their existing semantics.
+Conditional predicate paths, references, additional classes and unknown terms
+remain unproved. Runtime selection remains separate.
