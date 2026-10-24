@@ -122,6 +122,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;

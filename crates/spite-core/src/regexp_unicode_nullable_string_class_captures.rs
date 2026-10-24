@@ -31,6 +31,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 

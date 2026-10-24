@@ -1079,3 +1079,71 @@ impl RegExpUnicodeUnassertedZeroMinimumSingleStringClassCaptureMatcher {
             .map_err(RegExpUnicodeMatchError::Work)
     }
 }
+
+/// One class with skipped scopes and unconditional live outside predicates.
+///
+/// Requires validated v/vi input and normalized capture names. The class occurs
+/// once, either directly or through exact-one counts. Skipped captures remain
+/// undefined; ordinary enclosing and point captures preserve participation.
+/// Every class leaf and remaining term retains the single-class proof.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher {
+    plan: crate::RegExpUnicodeSingleStringClassCaptureMatcher,
+}
+impl RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher {
+    /// Proves skipped scopes, live predicates and a bare or exact-one class path.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(source) = skipped_predicates_with_shape(source, true, true, &mut charge)? else {
+            return Ok(None);
+        };
+        if !has_live_assertions(&source, &mut charge)? {
+            return Ok(None);
+        }
+        charge(source.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let source = super::normalize_ones(source.code_units());
+        let plan=if let Some(plan)=crate::RegExpUnicodeSingleStringClassCaptureMatcher::compile_unconditional_assertions_with_work(&source,ignore_case,multiline,&mut charge)? {
+            Some(plan)
+        } else {
+            crate::RegExpUnicodeSingleStringClassCaptureMatcher::compile_reversed_line_assertions_with_work(&source,ignore_case,multiline,&mut charge)?
+        };
+        Ok(plan.map(|plan| Self { plan }))
+    }
+    /// Counts every original lexical capture, including skipped scopes.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects lexical scopes on the class range or their original empty points.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, &found.range)
+    }
+    /// Executes the single class with original Unicode search and member priority.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+            .map(|found| {
+                found.map(|range| RegExpUnicodeRepeatedStringClassMatch {
+                    range: range.clone(),
+                    last_iteration: Some(range),
+                    class_selected: true,
+                })
+            })
+            .map_err(RegExpUnicodeMatchError::Work)
+    }
+}

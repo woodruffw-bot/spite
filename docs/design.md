@@ -12076,3 +12076,19 @@ single-class proof after the assertion-free repetition proof on the full
 normalized capture source. Its dedicated body retains source/flags, named
 aliases, lastIndex, String consumers, cloning and collection, including defined
 empty class captures beside undefined optional predicate scope slots.
+
+
+Core separately proves one required class combining zero-minimum outside scopes
+with remaining live predicates. Optional predicates keep undefined captures;
+mandatory canonical/reversed line and word predicates retain their actual
+endpoint conjunctions. Bare/exact-one class paths normalize before the existing
+unconditional/reversed single-class proofs validate all original terms.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 preserve required empty class entry,
+lexical capture identity and continuation priority. A rejected longer class
+member leaves shorter members eligible for a live suffix. Skipped scopes impose
+no constraint and ordinary enclosing points stay defined. Search, folding,
+leading surrogate boundaries, cloning, charged work, cancellation and constructor/
+capacity failures retain their existing semantics. Other class-path counts,
+alternatives, references and unknown leaves remain separate proofs. Runtime
+selection remains separate.

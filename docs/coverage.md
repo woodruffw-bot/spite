@@ -20948,3 +20948,22 @@ pass; fixtures, snapshots, dependencies and default quotas remain unchanged.
 The preceding repetition Runtime suite passes all 1,688 Unicode groups
 (721.07 s). Its rebuilt binary includes all eight live-scope migrations and
 three assertion-free scope migrations.
+
+
+## Core single class with zero-minimum scopes and live predicates
+
+Four new focused groups pass using the existing independent continuation oracle.
+Six finite/scalar/known-empty families, five bare/exact-one forms, four capture
+layouts, atom/group counts, four zero-minimum scope layouts and four live
+predicate profiles cover six UTF-16 inputs, all starts, sticky, ignore-case and
+multiline. Forty native equivalent tables retain required empty class identity,
+undefined skipped scopes, actual line/word endpoints and lexical captures.
+Deep 20,000 optional scopes, defined outside points, shorter successful members
+after a failed live suffix, long shared-prefix words, every callback cancellation
+and recovery, and complete unknown/reference/other-count rejection pass.
+
+The preceding fifty-six focused groups passed before this separate proof was
+added. All 72,584 prior API records retain exact domains, charged work and capture
+projection. Strict workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas are unchanged.

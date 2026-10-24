@@ -2282,5 +2282,6 @@ pub use zero_count_asserted::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
