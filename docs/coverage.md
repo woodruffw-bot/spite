@@ -22342,3 +22342,21 @@ Runtime unit tests pass (3.11 s), alongside strict workspace Clippy (38.45 s),
 documentation tests, formatting, policy, inventories and diff checks. The grouped
 Runtime inventory contains 603 case files. Fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Core bounded class-path counts inside optional truth roots
+
+All four focused groups pass (14.39 s), including 160 native ordered capture
+tables and an independent 16-slot progress/participation oracle. Nested optional,
+lazy, padded exact-one and zero counts preserve both branch orders, conditional
+predicate captures, finite/scalar/known-empty classes, Unicode starts and all
+sticky/multiline/ignore-case combinations. Forced lazy consumption, zero-path
+absence, shorter-member retries, 20,000 nested groups and long finite words remain
+flat. Constructor and match cancellation recover at every charged boundary;
+unknown terms still decline in skipped, lazy and zero-bound bodies.
+
+All 94,664 frozen prior API records retain exact domains, work and captures in
+eight bounded batches. A new 736-record baseline includes 376 supported cases.
+Strict workspace Clippy (55.72 s), documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime integration remains separate; fixtures, snapshots, dependencies and
+default quotas remain unchanged.

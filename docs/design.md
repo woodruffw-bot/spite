@@ -12665,3 +12665,21 @@ unchanged. Runtime selects this zero-count nested outside-scope proof after the
 corresponding optional proof. Its dedicated body preserves outside participation,
 every undefined inner slot, actual endpoint truth, source/flags, named aliases,
 indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves a complete optional truth root with bounded zero/one
+counts along its sole class path. A flat scan preserves all original groups and
+removes only class-path counts whose upper bound is at most one. A nonempty
+outer iteration forces every such scope to run once: inner lazy zero paths fail
+the outer RepeatMatcher progress check before consuming retries. A zero upper
+bound disables consumption only after both original branches validate fully
+(ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+The existing optional continuation kernel retains outer greediness, live endpoint
+checks and shorter-member retries. Every inner capture remains undefined on zero
+iterations; a consuming iteration retains the original lexical participation.
+Pure predicate scopes keep their original counts and conditional captures.
+Traversal, storage and clone/drop remain flat and source-sized. Unknown terms
+even under skipped/never scopes, additional consuming paths, unbounded or larger
+class-path counts and outside terms retain separate proofs. Earlier API domains,
+charged work and captures remain unchanged. Runtime selection remains separate.
