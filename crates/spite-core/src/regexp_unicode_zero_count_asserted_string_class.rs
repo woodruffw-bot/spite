@@ -232,3 +232,140 @@ fn skipped_assertions<E>(
     }
     Ok(erased.then(|| JsString::from_code_units(shadow)))
 }
+
+#[derive(Clone, Debug)]
+enum PlainBody {
+    Simple(crate::RegExpUnicodeRepeatedStringClassCaptureMatcher),
+    Bounded(crate::RegExpUnicodeBoundedStringClassCaptureMatcher),
+    Nullable(crate::RegExpUnicodeCountedNullableStringClassCaptureMatcher),
+    Two(crate::RegExpUnicodeTwoRequiredStringClassCaptureMatcher),
+    Required(crate::RegExpUnicodeRequiredStringClassCaptureMatcher),
+}
+/// A repetition whose only outside assertions occur in exact-zero scopes.
+///
+/// Requires validated v/vi input and normalized capture names. All assertion
+/// terms must be skipped; otherwise the separate asserted proof applies. The
+/// remaining class and pure-empty continuation keep their complete proofs and
+/// original capture slots. Zero-count scopes never participate (22.2.2.3).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher {
+    body: PlainBody,
+}
+impl RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher {
+    /// Proves skipped assertions and an assertion-free live repetition.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(source) = skipped_assertions(source, &mut charge)? else {
+            return Ok(None);
+        };
+        let units = source.code_units();
+        charge(units.len().saturating_mul(8).saturating_add(16))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut at = 0;
+        while at < units.len() {
+            match units[at] {
+                0x5b => {
+                    let Some(end) = super::class_end(units, at) else {
+                        return Ok(None);
+                    };
+                    at = end;
+                }
+                0x5e | 0x24 => return Ok(None),
+                0x5c => {
+                    if units.get(at + 1).is_some_and(|u| matches!(*u, 0x62 | 0x42)) {
+                        return Ok(None);
+                    }
+                    at = (at + 2).min(units.len());
+                }
+                _ => at += 1,
+            }
+        }
+        macro_rules! attempt {
+            ($matcher:ty, $variant:ident) => {
+                if let Some(plan) =
+                    <$matcher>::compile_with_work(&source, ignore_case, multiline, &mut charge)?
+                {
+                    return Ok(Some(Self {
+                        body: PlainBody::$variant(plan),
+                    }));
+                }
+            };
+        }
+        attempt!(
+            crate::RegExpUnicodeRepeatedStringClassCaptureMatcher,
+            Simple
+        );
+        attempt!(
+            crate::RegExpUnicodeBoundedStringClassCaptureMatcher,
+            Bounded
+        );
+        attempt!(
+            crate::RegExpUnicodeCountedNullableStringClassCaptureMatcher,
+            Nullable
+        );
+        attempt!(
+            crate::RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
+            Two
+        );
+        attempt!(
+            crate::RegExpUnicodeRequiredStringClassCaptureMatcher,
+            Required
+        );
+        Ok(None)
+    }
+    /// Counts all lexical capture slots, including skipped scopes.
+    pub fn capture_count(&self) -> usize {
+        match &self.body {
+            PlainBody::Simple(p) => p.capture_count(),
+            PlainBody::Bounded(p) => p.capture_count(),
+            PlainBody::Nullable(p) => p.capture_count(),
+            PlainBody::Two(p) => p.capture_count(),
+            PlainBody::Required(p) => p.capture_count(),
+        }
+    }
+    /// Projects original slots; skipped scopes remain undefined.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        match &self.body {
+            PlainBody::Simple(p) => p.capture_range(index, found),
+            PlainBody::Bounded(p) => p.capture_range(index, found),
+            PlainBody::Nullable(p) => p.capture_range(index, found),
+            PlainBody::Two(p) => p.capture_range(index, found),
+            PlainBody::Required(p) => p.capture_range(index, found),
+        }
+    }
+    /// Executes the class/count plan with its original search and empty-body ordering.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        match &self.body {
+            PlainBody::Simple(p) => p
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map_err(RegExpUnicodeMatchError::Work),
+            PlainBody::Bounded(p) => p
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map_err(RegExpUnicodeMatchError::Work),
+            PlainBody::Nullable(p) => p
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map_err(RegExpUnicodeMatchError::Work),
+            PlainBody::Two(p) => p
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map_err(RegExpUnicodeMatchError::Work),
+            PlainBody::Required(p) => {
+                p.find_with_captures_and_work(input, requested, sticky, charge)
+            }
+        }
+    }
+}

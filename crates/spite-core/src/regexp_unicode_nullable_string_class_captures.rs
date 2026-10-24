@@ -23,6 +23,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
     RegExpUnicodeRequiredStringClassCaptureMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
+    RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
 };
 

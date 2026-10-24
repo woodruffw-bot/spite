@@ -20563,3 +20563,28 @@ optional allowances and specification ASCII folding. Strict workspace Clippy,
 documentation tests, formatting, dependency policy, 567 Runtime case-file
 registrations and Parser/Test262 inventories pass. Fixtures, snapshots,
 dependencies and default quotas are unchanged.
+
+
+## Core string-class repetition with only skipped outside predicates
+
+Four groups compare six finite/scalar/known-empty class families, ten live count
+forms, three body modes, six capture trees, atom/group scopes, four skipped-scope
+layouts and eight skipped predicate profiles across eight UTF-16 inputs and all
+starts/sticky/i/m. The independent continuation oracle imposes no live predicate
+and checks every skipped slot at its original lexical position. Forty native
+equivalent tables cover unconstrained search, required/optional empty priority,
+nested zero groups and adjacent huge upper bounds. Deep 20,000 skipped scopes,
+40,000-unit consuming continuations, 20,000-digit bounds with bounded empty work,
+every constructor/search callback cancellation/recovery and closed live/body
+predicates, unknown terms, references and extra class paths pass.
+
+All twenty-eight combined focused groups pass, including the twenty-four
+preceding asserted/skip-scope groups. All 66,696 prior API records retain exact
+domains, construction/search work and capture projection. Strict workspace
+Clippy, documentation tests, formatting, dependency policy, inventories and diff
+checks pass. Runtime selection remains separate; fixtures, snapshots,
+dependencies and default quotas are unchanged.
+
+A fresh pinned Test262 run with the skipped-scope Runtime and shared Core passes
+all 35 runner tests and all 16,343 reviewed variants; no unsupported syntax is
+accepted as a negative pass.

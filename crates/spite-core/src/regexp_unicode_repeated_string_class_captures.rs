@@ -2273,4 +2273,7 @@ impl RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher {
 mod zero_count_asserted {
     include!("regexp_unicode_zero_count_asserted_string_class.rs");
 }
-pub use zero_count_asserted::RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher;
+pub use zero_count_asserted::{
+    RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
+    RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+};

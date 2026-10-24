@@ -11900,3 +11900,23 @@ proof after larger nullable scalar counts on the full normalized capture source.
 Its dedicated body preserves original source/flags, names and index aliases,
 lastIndex, String consumers, cloning and collection, including undefined captures
 in every skipped scope. All-inert outside predicates remain a separate proof.
+
+
+Core separately proves string-class repetition when every outside predicate is
+inside an exact-zero scope. It reuses skipped-scope validation and masking without
+changing the asserted skipped-scope API. A charged linear scan of the transformed
+source skips complete classes and rejects any remaining ^/$/word predicate,
+including body predicates. The remaining repetition and pure-empty continuation
+select existing simple, bounded, counted-nullable, two-required or larger-required
+plans. Every original lexical capture remains present; skipped scopes are
+undefined, while enclosing scopes retain their normal participation.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher skips a maximum-zero body before testing
+its predicate. Consequently an original ^/$/word term inside that scope cannot
+constrain start/end search. Matching retains leftmost Unicode search, original
+member/count/branch ordering, required-empty resets and optional-empty rejection.
+Huge nullable minima use the existing count reductions; impossible nonnullable
+minima fail against the input bound. Callback errors from fixed-state finders
+map to Work; the larger required plan retains Work and Capacity distinctions.
+Live predicates, body predicates, references, unknown terms and additional class
+paths remain outside this proof. Runtime selection remains separate.
