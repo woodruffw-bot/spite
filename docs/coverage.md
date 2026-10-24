@@ -21942,3 +21942,32 @@ projection in seven bounded batches, including the earlier exact-one normalizer
 mode. Strict workspace Clippy (94 s), documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas remain unchanged.
+
+
+## Runtime exact-one grouped optional root truth alternatives
+
+Three focused groups pass (1.10 s), preserving mandatory exact-one enclosing
+captures when an optional inner root skips, with every skipped inner slot
+undefined. Both branch orders, greedy/lazy optional and exact-one padded counts,
+conditional predicate slots, required empty class identity, shorter-member
+retries, named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes retain native
+behavior. Deep 1,000-level counted enclosing groups, 20,000-unit shared-prefix
+scalar/string members and constructor cancellation remain flat. Unknown leaves
+even in lazy/never bodies, outside terms and other class-path counts retain
+distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+source-shape scans find no preceding rejection controls newly admitted by this
+proof. All 100,352 exact differential records agree across 256 independent pairs,
+with all 1,024 proof/flag combinations supported. Complete mixed wrappers,
+internal exact-one paths, finite/scalar/known-empty classes and independent branch
+profiles cover every start, sticky, multiline and ignore-case. All 431 Runtime
+unit tests pass (8.53 s), alongside strict workspace Clippy (36.13 s), documentation
+tests, formatting, policy, inventories and diff checks. The grouped Runtime
+inventory contains 596 case files. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding grouped optional-root sources pass a fresh Test262 run: all 35
+runner tests and all 16,343 reviewed variants, including the pinned corpus gate
+(478.70 s). This run compiled before exact-one grouped optional-root sources.

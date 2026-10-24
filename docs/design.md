@@ -12498,5 +12498,8 @@ zeros. Source-sized normalization and checked capture projection remain flat;
 matching delegates the existing optional progress/member retries unchanged.
 Earlier exact-one normalization uses its original mode and retains exact API
 domains, charged work and captures. Other counts, outside terms and unknown
-leaves even in lazy/never bodies retain separate proofs. Runtime selection
-remains separate.
+leaves even in lazy/never bodies retain separate proofs. Runtime selects this
+exact-one grouped optional proof after ordinary grouped optional alternatives.
+The dedicated body retains mandatory outer ranges, final-iteration absence,
+actual endpoint truth, source/flags, named aliases, indices, lastIndex and String
+consumers through cloning and collection.
