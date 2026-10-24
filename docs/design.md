@@ -13898,3 +13898,19 @@ proof calls or count expansion. Source-sized work precedes frame/mask
 allocation. The public result reuses existing empty/no-match plans: an empty
 plan retains a source-sized mask, an impossible plan retains only its full
 lexical capture count, and actual matching and capture queries remain constant.
+
+
+Runtime selects the flat compositional static proof after earlier matchers. It
+passes complete original normalized source and maps the result to the existing
+empty or impossible execution plan, with no capture-offset projection. Failed
+alternative arms retain undefined slots while the first successful empty arm
+exports exact masks, including duplicate-name groups. Shared execution preserves
+source/flags, Unicode boundaries, indices/groups, lastIndex, String consumers,
+cloning and collection; full original validation precedes proof selection.
+
+RegExp allocation/prototype lookup and ToString conversions finish in a small
+non-inlined frame before the large matcher-selection helper is entered
+(22.2.4.1). Reentrant getters/conversions therefore use the existing native
+stack guard without retaining the compiler's large stack frame. Pattern
+validation, budget charges, original slots and lastIndex initialization retain
+the same observable order. No default quota or native reentry allowance changes.

@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/regexp_static_patterns.rs"]
+mod regexp_static_patterns;
+
 #[path = "cases/regexp_impossible_patterns.rs"]
 mod regexp_impossible_patterns;
 #[path = "cases/regexp_negative_impossible_patterns.rs"]

@@ -10,7 +10,8 @@ use spite_core::{
     RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
     RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher, RegExpRepeatedContinuationMatcher,
     RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher, RegExpRepeatedSequenceMatcher,
-    RegExpSequenceMatcher, RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
+    RegExpSequenceMatcher, RegExpStaticMatcher,
+    RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
     RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
@@ -206,6 +207,20 @@ impl Realm {
         } else {
             self.string(flags, span)?
         };
+        self.regexp_initialize_from_strings(object, source, flags, span)
+    }
+
+    // Keep the large matcher-selection frame out of prototype getters and
+    // ToString reentry. Those observable operations finish in the small
+    // allocation/conversion frame before Pattern compilation (22.2.4.1).
+    #[inline(never)]
+    fn regexp_initialize_from_strings(
+        &mut self,
+        object: ObjectHandle,
+        source: JsString,
+        flags: JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
         self.object_work(span, |_, budget| {
             budget.charge(source.len())?;
             budget.charge(flags.len())
@@ -3868,6 +3883,25 @@ impl Realm {
                 enclosing_captures = 0;
             }
             impossible.map(RegExpMatcherBody::Impossible)
+        } else {
+            matcher
+        };
+        let matcher = if matcher.is_none() {
+            let proof = self.object_work(span, |_, budget| {
+                RegExpStaticMatcher::compile_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if proof.is_some() {
+                enclosing_captures = 0;
+            }
+            proof.map(|proof| match proof {
+                RegExpStaticMatcher::Empty(plan) => RegExpMatcherBody::ZeroCountSequence(plan),
+                RegExpStaticMatcher::Impossible(plan) => RegExpMatcherBody::Impossible(plan),
+            })
         } else {
             matcher
         };

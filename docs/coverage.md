@@ -25266,3 +25266,32 @@ comment cleanup), alongside documentation tests, formatting, dependency policy,
 inventories and diff checks. Runtime inventory remains 617; fixtures, snapshots,
 dependencies and default quotas are unchanged. This commit adds the Core API;
 Runtime selection is a separate increment.
+
+
+Flat compositional empty/impossible Pattern proofs (Runtime)
+----------------------------------------------------------
+
+Runtime selects the complete normalized-source static proof after earlier
+matchers and reuses the existing empty/impossible execution variants. Five new
+focused integration groups pass (0.41 s), covering first-successful-arm masks,
+duplicate names across failed/empty alternatives, both assertion directions,
+source/flags and lastIndex, indices/groups, String consumers, cloning,
+collection, 1,000 outside groups, 20,000-digit positive minima, original errors,
+coercion order and opt-in host-abort state. Runtime inventory is now 618.
+
+All 55,296 exact native metadata records across 512 independently generated
+ordinary/u/v mixed proof patterns agree on the fresh CLI, as do all five complete
+JavaScript programs. All 436 Runtime unit tests pass (9.71 s). Strict workspace
+Clippy with all targets passes (26.18 s), alongside documentation tests,
+formatting, dependency policy, inventories and diff checks. Fixtures, snapshots,
+dependencies and default quotas are unchanged.
+
+The first broad attempt exposed a native-stack overflow in the existing
+reentrant-constructor regression. The large matcher-selection frame now lives
+in a separate non-inlined helper entered after prototype getters and ToString
+conversions finish. All thirteen constructor regression groups pass (0.15 s),
+including the failing reentry case and subsequent Realm reuse. The existing
+native reentry guard and stack requirement are unchanged. Native comparisons
+and quality checks above were rerun after this fix. A fresh full 2,930-test
+RegExp run and conformance-profile Test262 run are in progress; the superseded
+pre-fix corpus run was stopped and is not counted as passing.
