@@ -1387,7 +1387,8 @@ impl RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher {
 mod predicate_choices {
     include!("regexp_unicode_predicate_choice_string_class.rs");
 }
-pub use predicate_choices::{RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher,
+pub use predicate_choices::{RegExpUnicodeTruthTableStringClassCaptureMatcher,
+    RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,

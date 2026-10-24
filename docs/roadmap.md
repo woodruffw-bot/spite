@@ -817,6 +817,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile outside predicate choices equivalent to conjunctions of live line/word gates beside class repetition, preserving conditional captures and endpoint retries.
 - [x] Compile a required single class beside conjunctive predicate choices, retaining exact-one capture identity and shorter-member retries.
 - [x] Compile mandatory conjunctive predicate choices around class/empty alternatives, preserving branch ownership and live endpoint retries.
+- [x] Compile arbitrary predicate-choice truth profiles beside nonnullable repetition and nullable repetitions with minimum at most two, preserving endpoint retries and ordered captures.
+- [ ] Execute arbitrary predicate-choice truth profiles through Runtime and String consumers.
+- [ ] Prove larger nullable minima with arbitrary outside truth profiles and required-empty count reduction.
 - [x] Execute conjunctive predicate choices around class/empty alternatives through Runtime and String consumers.
 - [x] Execute conjunctive predicate choices beside a required single class through Runtime and String consumers.
 - [x] Execute conjunctive predicate choices beside class repetition through Runtime and String consumers.

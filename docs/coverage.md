@@ -21366,3 +21366,29 @@ unit tests pass (4.22 s), alongside strict workspace Clippy (8.60 s), documentat
 tests, formatting, policy, inventories and diff checks. The complete 1,718-test
 Unicode suite and fresh Test262 run are running against all three conjunctive
 proofs. Fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+The complete conjunctive-choice Runtime suite passes all 1,718 Unicode RegExp
+tests (515.96 s). Its fresh Test262 run passes all 35 runner tests and all 16,343
+reviewed variants in the pinned corpus gate (265.07 s).
+
+## Core arbitrary predicate-choice truth profiles
+
+Five new focused groups pass (0.15 s). They compare 160 independent native tables
+and a finite-string/RepeatMatcher endpoint oracle using disjunctions of line
+and word predicates, nested choices, required/skipped scopes, huge scope counts,
+nullable class members and greedy/lazy bounded repetitions. All UTF-16 starts,
+sticky, multiline and ignore-case retain whole/last-iteration ranges and original
+conditional captures. Explicit failed-disjunction cases retry a shorter member
+and an earlier repetition endpoint; filtering a completed first result would fail
+these controls. Deep 20,000-level scopes, 20,000-unit shared-prefix members,
+clone/drop, every charged constructor/matcher cancellation and recovery, and
+complete never-profile unknown proofs pass.
+
+Nullable minima above two, bare/exact-one class paths, consuming siblings,
+references and class-bearing alternatives remain separate proofs. All 79,208
+frozen prior API records retain exact domains, charged work and capture
+projection in six bounded transcript batches. Strict workspace Clippy (15.02 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and
+default quotas are unchanged.

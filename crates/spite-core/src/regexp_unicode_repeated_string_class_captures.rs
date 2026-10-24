@@ -1324,6 +1324,34 @@ impl RepeatedStringAssertions {
             && (!self.nonword || !unicode_word_boundary(units, at, ignore_case))
     }
 }
+// Extra truth-table gates are charged at every actual start/end probe. None
+// retains the existing assertion evaluation and exact callback sequence.
+fn profile_assertions_match_with_work<E>(
+    assertions: RepeatedStringAssertions,
+    profile: Option<u8>,
+    input: &JsString,
+    at: usize,
+    ignore_case: bool,
+    multiline: bool,
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<bool, E> {
+    let Some(profile) = profile else {
+        return Ok(assertions.matches(input, at, ignore_case, multiline));
+    };
+    charge(16)?;
+    if !assertions.matches(input, at, ignore_case, multiline) {
+        return Ok(false);
+    }
+    use crate::regexp_unicode_character::{unicode_assertions_match, unicode_word_boundary};
+    let units = input.code_units();
+    let truth = u8::from(unicode_assertions_match(
+        units, at, at, true, false, multiline,
+    )) | u8::from(unicode_assertions_match(
+        units, at, at, false, true, multiline,
+    )) << 1
+        | u8::from(unicode_word_boundary(units, at, ignore_case)) << 2;
+    Ok(profile & (1 << truth) != 0)
+}
 #[derive(Debug)]
 struct AssertedStringRepeatFrame {
     at: usize,
@@ -1408,6 +1436,15 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_plan_allow_unasserted_with_work(source, ignore_case, multiline, false, charge)
+    }
+    fn compile_plan_allow_unasserted_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        allow_unasserted: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let units = source.code_units();
@@ -1537,7 +1574,7 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         if scopes.len() != 1 || scopes[0].0 && scopes[0].1 {
             return Ok(None);
         }
-        if !seen {
+        if !seen && !allow_unasserted {
             return Ok(None);
         }
         let Some(plan) = RegExpUnicodeRepeatedStringClassCaptureMatcher::compile_with_work(
@@ -1579,6 +1616,16 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        self.find_with_profiles_and_work(input, requested, sticky, None, charge)
+    }
+    fn find_with_profiles_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        profiles: Option<[u8; 2]>,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
         use RegExpUnicodeMatchError::{Capacity, Work};
@@ -1592,7 +1639,17 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
         let mut frames = Vec::<AssertedStringRepeatFrame>::new();
         loop {
             charge(8).map_err(Work)?;
-            if self.assertions[0].matches(input, start, self.ignore_case, self.multiline) {
+            if profile_assertions_match_with_work(
+                self.assertions[0],
+                profiles.map(|p| p[0]),
+                input,
+                start,
+                self.ignore_case,
+                self.multiline,
+                &mut charge,
+            )
+            .map_err(Work)?
+            {
                 if frames.capacity() == 0 {
                     charge(6).map_err(Work)?;
                     frames.try_reserve(1).map_err(|_| Capacity)?;
@@ -1608,7 +1665,17 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
                     if can_stop && !self.plan.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if self.assertions[1].matches(input, at, self.ignore_case, self.multiline) {
+                        if profile_assertions_match_with_work(
+                            self.assertions[1],
+                            profiles.map(|p| p[1]),
+                            input,
+                            at,
+                            self.ignore_case,
+                            self.multiline,
+                            &mut charge,
+                        )
+                        .map_err(Work)?
+                        {
                             return Ok(Some(self.result(&frames, start)));
                         }
                     }
@@ -1650,7 +1717,17 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
                     if can_stop && self.plan.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if self.assertions[1].matches(input, at, self.ignore_case, self.multiline) {
+                        if profile_assertions_match_with_work(
+                            self.assertions[1],
+                            profiles.map(|p| p[1]),
+                            input,
+                            at,
+                            self.ignore_case,
+                            self.multiline,
+                            &mut charge,
+                        )
+                        .map_err(Work)?
+                        {
                             return Ok(Some(self.result(&frames, start)));
                         }
                     }
@@ -1799,6 +1876,19 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        Self::find_plan_with_config_and_profiles(
+            plan, config, input, requested, sticky, None, charge,
+        )
+    }
+    fn find_plan_with_config_and_profiles<E>(
+        plan: &RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+        config: NullableStringRepeatConfig,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        profiles: Option<[u8; 2]>,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
         use RegExpUnicodeMatchError::{Capacity, Work};
@@ -1809,7 +1899,17 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         let mut frames = Vec::<NullableAssertedStringRepeatFrame>::new();
         loop {
             charge(8).map_err(Work)?;
-            if plan.assertions[0].matches(input, start, plan.ignore_case, plan.multiline) {
+            if profile_assertions_match_with_work(
+                plan.assertions[0],
+                profiles.map(|p| p[0]),
+                input,
+                start,
+                plan.ignore_case,
+                plan.multiline,
+                &mut charge,
+            )
+            .map_err(Work)?
+            {
                 if frames.capacity() == 0 {
                     charge(6).map_err(Work)?;
                     frames.try_reserve(1).map_err(|_| Capacity)?;
@@ -1825,7 +1925,17 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                     if can_stop && !config.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
+                        if profile_assertions_match_with_work(
+                            plan.assertions[1],
+                            profiles.map(|p| p[1]),
+                            input,
+                            at,
+                            plan.ignore_case,
+                            plan.multiline,
+                            &mut charge,
+                        )
+                        .map_err(Work)?
+                        {
                             return Ok(Some(Self::result(&frames, start)));
                         }
                     }
@@ -1899,7 +2009,17 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                     if can_stop && config.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
+                        if profile_assertions_match_with_work(
+                            plan.assertions[1],
+                            profiles.map(|p| p[1]),
+                            input,
+                            at,
+                            plan.ignore_case,
+                            plan.multiline,
+                            &mut charge,
+                        )
+                        .map_err(Work)?
+                        {
                             return Ok(Some(Self::result(&frames, start)));
                         }
                     }
@@ -2280,7 +2400,7 @@ pub use zero_count_asserted::{
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceStringClassMatch,
+    RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,

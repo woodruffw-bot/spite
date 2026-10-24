@@ -12240,3 +12240,24 @@ alternatives proof after conjunctive repetition and single-class proofs on the
 full normalized capture source. Its dedicated body retains endpoint truth,
 class/empty identity, source/flags, named aliases, indices, lastIndex and String
 consumers through cloning and collection.
+
+Core separately proves arbitrary predicate-only outside choices beside one
+string-class repetition. Complete scopes compile to eight start-line/end-line/
+word-boundary truth profiles, including disjunctions such as `(^|\b)` and
+`($|\B)`. The flat source proof preserves every original group, count and lexical
+slot while removing only the selected scope predicates. Remaining bare
+assertions retain their original compiled conditions. Profile gates run inside
+every actual candidate-start and repetition-endpoint probe, so a failed gate
+permits shorter members, earlier count endpoints or later search starts
+(ECMA-262 edition 17 22.2.2.3–4). Conditional capture masks preserve original
+first-successful branch participation at the accepted endpoints.
+
+Private assertion-free compilation is restricted to this complete outside-scope
+proof and still validates every class/body term. Nonnullable bodies retain
+existing counts; nullable bodies currently require minimum zero, one or two.
+Larger nullable minima need a separate required-empty reduction proof. Extra
+profile probes charge sixteen work units each; preceding matchers use no extra
+profile and retain exact domains and callback sequences. Unknown terms,
+references and conditional class spines remain separate proofs even behind
+never profiles. Source traversal, captures and continuation storage remain flat
+and host limits remain opt-in. Runtime selection remains separate.
