@@ -20768,3 +20768,32 @@ All 69,640 prior API records retain exact domains, charged construction/search
 work and capture projection. Strict workspace Clippy, documentation tests,
 formatting, policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime class/empty alternatives with skipped scopes and live predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Root/grouped choices and bare/exact-one class paths retain original branch order,
+actual endpoint predicates, required empty class identity and undefined skipped
+slots. Named/escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex retain source and
+capture identity. Deep 1,000 skipped scopes, defined outside empty points,
+empty-first priority and retries after a failed live suffix, shorter successful
+class members, 20,000-unit shared-prefix words, scalar fallback, constructor
+abort isolation and closed unproved paths pass. Native controls retain both
+original alternatives and their live endpoint constraints.
+
+All three groups pass (1.19 s), as do 431 Runtime unit tests (12.67 s), forty
+native tables and eight consumer references on the fresh CLI. The first
+172,800 exact differential records agree across 384 prepared independent pairs:
+32 mixed nullable/nonnullable scalar/finite forms, twelve bare/exact-one count
+spellings, six capture layouts, both branch orders, four skipped-scope layouts
+and eight live predicate profiles. All 1,536 proof/flag combinations compile.
+Four unsupported-control scans found no cases to migrate. Strict workspace
+Clippy, documentation tests, formatting, policy and inventories pass.
+
+The preceding single-class Runtime suite passes all 1,676 Unicode groups
+(1,389.07 s). A fresh conformance-profile Test262 run passes all 35 runner tests
+and 16,343 reviewed variants (575.88 s for the corpus group), covering the
+preceding Runtime selection and shared Core plans. Fixture inventories,
+snapshots, dependencies and default quotas are unchanged.

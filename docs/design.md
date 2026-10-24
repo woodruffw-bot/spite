@@ -12007,4 +12007,8 @@ Skipped and unselected captures remain undefined; enclosing and point captures
 retain their own participation. Reversed line gates, clone/drop, charged work,
 callback cancellation and constructor/capacity failures keep their existing
 semantics. Other class-path counts, references and unknown leaves remain
-unproved. Runtime selection remains separate.
+unproved. Runtime selects this alternative proof after the skipped-only
+alternative proof on the full normalized capture source. Its dedicated body
+retains original source/flags, named capture aliases, lastIndex, String consumers,
+cloning and collection. An empty-first branch failing a live suffix permits the
+class branch; a class-first empty member retains defined class captures.
