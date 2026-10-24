@@ -126,6 +126,14 @@ fn skipped_assertions_with_shape<E>(
     single: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<JsString>, RegExpUnicodeSetCompileError<E>> {
+    skipped_predicates_with_shape(source, single, false, charge)
+}
+fn skipped_predicates_with_shape<E>(
+    source: &JsString,
+    single: bool,
+    zero_minimum: bool,
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<JsString>, RegExpUnicodeSetCompileError<E>> {
     use RegExpUnicodeSetCompileError::{Capacity, Work};
     let units = source.code_units();
     charge(units.len().saturating_mul(64).saturating_add(128)).map_err(Work)?;
@@ -194,14 +202,20 @@ fn skipped_assertions_with_shape<E>(
                 let Some((open, contains_body)) = scopes.pop() else {
                     return Ok(None);
                 };
-                if let Some((_, minimum, delta, _)) = asserted_repeat_count(units, at + 1) {
-                    if minimum == 0 && delta == Some(0) {
-                        if contains_body {
-                            return Ok(None);
-                        }
-                        starts[open] = true;
-                        ends[at + 1] = true;
+                let skipped =
+                    if let Some((_, minimum, delta, _)) = asserted_repeat_count(units, at + 1) {
+                        minimum == 0 && (delta == Some(0) || zero_minimum)
+                    } else {
+                        zero_minimum
+                            && simple_count(units, at + 1)
+                                .is_some_and(|(_, minimum_one, _, _)| !minimum_one)
+                    };
+                if skipped {
+                    if contains_body {
+                        return Ok(None);
                     }
+                    starts[open] = true;
+                    ends[at + 1] = true;
                 }
                 if let Some(parent) = scopes.last_mut() {
                     parent.1 |= contains_body;
@@ -782,5 +796,104 @@ impl RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher {
                 })
             })
             .map_err(RegExpUnicodeMatchError::Work)
+    }
+}
+
+/// String-class repetition with zero-minimum outside assertion scopes.
+///
+/// Requires validated v/vi input and normalized capture names. At least one
+/// outside assertion is enclosed in a zero-minimum group, and other outside
+/// assertions satisfy the unconditional repetition proof. Skipped scopes never
+/// participate: a zero-width body cannot make optional repetition progress.
+/// Their captures remain undefined even if their assertions
+/// would succeed. The class and every live term retain their complete proofs.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher {
+    body: Body,
+}
+impl RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher {
+    /// Proves zero-minimum outside scopes before compiling the live repetition.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(source) = skipped_predicates_with_shape(source, false, true, &mut charge)? else {
+            return Ok(None);
+        };
+        macro_rules! attempt {
+            ($matcher:ty, $variant:ident) => {
+                if let Some(plan) =
+                    <$matcher>::compile_with_work(&source, ignore_case, multiline, &mut charge)?
+                {
+                    return Ok(Some(Self {
+                        body: Body::$variant(plan),
+                    }));
+                }
+            };
+        }
+        attempt!(
+            RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+            Nonnullable
+        );
+        attempt!(
+            RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
+            Nullable
+        );
+        attempt!(
+            RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
+            Two
+        );
+        attempt!(
+            RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
+            Counted
+        );
+        attempt!(
+            RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
+            Scalar
+        );
+        Ok(None)
+    }
+    /// Counts every original lexical capture, including skipped groups.
+    pub fn capture_count(&self) -> usize {
+        match &self.body {
+            Body::Nonnullable(p) => p.capture_count(),
+            Body::Nullable(p) => p.capture_count(),
+            Body::Two(p) => p.capture_count(),
+            Body::Counted(p) => p.capture_count(),
+            Body::Scalar(p) => p.capture_count(),
+        }
+    }
+    /// Projects original slots; exact-zero groups retain undefined captures.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        match &self.body {
+            Body::Nonnullable(p) => p.capture_range(index, found),
+            Body::Nullable(p) => p.capture_range(index, found),
+            Body::Two(p) => p.capture_range(index, found),
+            Body::Counted(p) => p.capture_range(index, found),
+            Body::Scalar(p) => p.capture_range(index, found),
+        }
+    }
+    /// Executes only live predicates and the proved repetition continuation.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        match &self.body {
+            Body::Nonnullable(p) => p.find_with_captures_and_work(input, requested, sticky, charge),
+            Body::Nullable(p) => p.find_with_captures_and_work(input, requested, sticky, charge),
+            Body::Two(p) => p.find_with_captures_and_work(input, requested, sticky, charge),
+            Body::Counted(p) => p.find_with_captures_and_work(input, requested, sticky, charge),
+            Body::Scalar(p) => p.find_with_captures_and_work(input, requested, sticky, charge),
+        }
     }
 }

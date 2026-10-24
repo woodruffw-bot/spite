@@ -29,6 +29,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 
 #[path = "regexp_unicode_asserted_string_class_alternatives.rs"]

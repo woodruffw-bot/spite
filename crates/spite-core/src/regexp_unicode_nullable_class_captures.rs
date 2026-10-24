@@ -31,6 +31,7 @@ pub use string_class_captures::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1216,4 +1217,5 @@ mod tests {
     include!("regexp_unicode_zero_count_asserted_single_string_class_tests.rs");
     include!("regexp_unicode_unasserted_zero_count_string_class_alternative_tests.rs");
     include!("regexp_unicode_zero_count_asserted_string_class_alternative_tests.rs");
+    include!("regexp_unicode_zero_minimum_asserted_string_class_tests.rs");
 }

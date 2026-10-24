@@ -34,6 +34,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 
 /// A selected Unicode repetition and the last captured atom iteration.

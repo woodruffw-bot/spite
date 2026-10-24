@@ -12012,3 +12012,24 @@ alternative proof on the full normalized capture source. Its dedicated body
 retains original source/flags, named capture aliases, lastIndex, String consumers,
 cloning and collection. An empty-first branch failing a live suffix permits the
 class branch; a class-first empty member retains defined class captures.
+
+
+Core separately proves live-asserted string-class repetition with outside
+predicate scopes whose minimum count is zero. The skipped-scope scanner admits
+optional, star and zero-minimum braced counts in this separate constructor.
+Earlier exact-zero APIs keep their original scan mode, domains and charged
+work. The class-bearing repetition and all remaining terms still pass complete
+asserted finite/scalar/nullable-body proofs.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher rejects an optional iteration whose
+body ends at its starting index. A scope containing only predicates and empty
+terms therefore takes zero iterations, for greedy and lazy forms alike. Its
+predicates impose no constraint and its captures remain undefined, including
+positive-count descendants inside that skipped scope. Ordinary surrounding
+empty captures retain their own points. Masking erases only known predicates;
+remaining literals, references, additional classes and unknown terms still
+must be proved and decline. A zero-minimum class-containing ancestor also
+declines. Required predicates outside skipped scopes remain live and retain
+actual endpoint continuations. Construction and storage remain flat and
+source-sized; constructor/capacity errors and callback cancellation retain their
+existing distinction. Runtime selection remains separate.

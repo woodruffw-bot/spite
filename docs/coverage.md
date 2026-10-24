@@ -20784,8 +20784,8 @@ abort isolation and closed unproved paths pass. Native controls retain both
 original alternatives and their live endpoint constraints.
 
 All three groups pass (1.19 s), as do 431 Runtime unit tests (12.67 s), forty
-native tables and eight consumer references on the fresh CLI. The first
-172,800 exact differential records agree across 384 prepared independent pairs:
+native tables and eight consumer references on the fresh CLI. All
+230,400 exact differential records agree across 384 prepared independent pairs:
 32 mixed nullable/nonnullable scalar/finite forms, twelve bare/exact-one count
 spellings, six capture layouts, both branch orders, four skipped-scope layouts
 and eight live predicate profiles. All 1,536 proof/flag combinations compile.
@@ -20797,3 +20797,23 @@ The preceding single-class Runtime suite passes all 1,676 Unicode groups
 and 16,343 reviewed variants (575.88 s for the corpus group), covering the
 preceding Runtime selection and shared Core plans. Fixture inventories,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Core asserted repetition with zero-minimum outside predicate scopes
+
+Four groups compare five finite/scalar/known-empty families, ten body counts,
+three class/empty modes, six capture trees, atom/group counts, four optional/star/
+bounded/open scope layouts and eight live predicate profiles across eight UTF-16
+inputs and every start, sticky, ignore-case and multiline setting. The independent
+continuation oracle leaves every skipped scope slot undefined. Forty native
+equivalent tables cover greedy/lazy zero-minimum scopes beside live endpoint
+constraints and required class versus empty capture identity. Ten explicit
+outside count spellings, 20,000 nested optional scopes, defined surrounding empty
+points, clone/drop, every callback cancellation/recovery and complete proof of
+literal/reference/additional-class/unknown leaves pass.
+
+All forty-eight combined focused groups pass, including the preceding forty-four.
+All 70,376 prior API records retain exact domains, charged construction/search
+work and capture projection. Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.
