@@ -13825,3 +13825,15 @@ final successful continuation (22.2.2.4). Full normalized source keeps original
 bindings and lexical slots. Both directions export exact operand masks. Shared
 empty execution preserves Unicode boundaries, indices/groups, lastIndex, String
 consumers, cloning and collection, with original errors before proof selection.
+
+
+Runtime selects root negative assertions over independently empty
+optional-established-impossible operands, sequences, enclosing sequences,
+root-first choices and complete positive assertions. The complete operand
+always succeeds, so either negative assertion direction fails (22.2.2.4).
+Root-first proofs use the operand’s final successful continuation. Operand
+matching data is unnecessary. Full normalized source retains every original
+binding and lexical slot. Shared execution preserves Unicode boundaries,
+indices/groups where matches exist, source/flags, lastIndex, String consumers,
+cloning and collection, with original validation errors before proof
+selection.
