@@ -1383,3 +1383,8 @@ impl RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher {
             .map_err(RegExpUnicodeMatchError::Work)
     }
 }
+
+mod predicate_choices {
+    include!("regexp_unicode_predicate_choice_string_class.rs");
+}
+pub use predicate_choices::{RegExpUnicodePredicateChoiceStringClassCaptureMatcher, RegExpUnicodePredicateChoiceStringClassMatch};

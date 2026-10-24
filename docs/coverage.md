@@ -21092,3 +21092,24 @@ predicate profiles cover starts, sticky, ignore-case and multiline. The full
 Unicode Runtime suite passes all 1,700 tests (661.05 s). Strict workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass;
 fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+
+The optional-predicate alternatives Test262 run passes all 35 runner tests and
+the pinned corpus gate (225.48 s), covering all 16,343 reviewed variants.
+
+## Core required outside predicate choices
+
+Four focused groups compare 160 independent native capture tables and an
+independent finite-string repetition oracle. Ordered line/word alternatives,
+empty fallbacks, reversed priorities, nested choices, nullable class bodies,
+greedy/lazy counts, required and skipped outside scopes, huge positive counts,
+all input starts, sticky, multiline and Unicode ignore-case retain complete
+capture participation. Deep 20,000-scope required/skipped sources, 20,000-unit
+shared-prefix members, clone/drop, forged out-of-range public truth profiles,
+every charged constructor/matcher cancellation and recovery, and full proof of
+unknown/reference/literal/additional-class leaves pass (0.08 s).
+
+All 74,792 frozen prior API records retain exact supported domains, charged work
+and capture projection. Strict workspace Clippy (18.81 s), documentation tests,
+formatting, policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.

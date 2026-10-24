@@ -12135,3 +12135,25 @@ Runtime selects this live-predicate alternative proof after its assertion-free
 counterpart on the full normalized capture source. Its dedicated body retains
 source/flags, named aliases, lastIndex, String consumers, cloning and collection,
 including endpoint retries and distinct empty-first/class-first captures.
+
+
+Core separately proves string-class repetition beside required predicate choices
+such as `((\b)|(\B)){1}`, `(\b|())` and `(^|())`. A flat parser proves every
+outside leaf and records success for all eight start-line/end-line/word-boundary
+truth profiles. Only complete ordinary scopes that always succeed are projected;
+alternatives or additional counts enclosing the consuming class retain separate
+proofs. Source-sized fallible storage and flat traversal, cloning and destruction
+retain deep nesting without recursive owned trees.
+
+ECMA-262 edition 17 22.2.2.3–4 preserves the first successful alternative and
+resets captures in unselected branches. Positive zero-width counts preserve the
+last required iteration; zero-minimum counts perform no iteration. Per-capture
+truth masks therefore retain required empty points and undefined skipped slots.
+Replacing only the proved scope predicates leaves original group/count syntax
+and capture indexes for the complete existing class-body proof. Matching uses
+that continuation and records actual endpoint truth, including multiline and
+Unicode ignore-case word aliases. Other predicates remain live, so endpoint
+retry and class-member priority remain with the proved matcher. Every unknown
+leaf is rejected before matching, including leaves in skipped branches. Charged
+work, cancellation and capacity failure remain distinct from JavaScript errors.
+Runtime selection remains separate.
