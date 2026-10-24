@@ -13,6 +13,7 @@ use std::ops::Range;
 enum Plan {
     Asserted(RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher),
     Plain(RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher),
+    Single(crate::RegExpUnicodeSingleStringClassCaptureMatcher),
 }
 /// String-class repetition beside always-successful predicate choices.
 ///
@@ -52,7 +53,8 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        let Some(Projection { shadow, overlays }) = project_choices(source, &mut charge)? else {
+        let Some(Projection { shadow, overlays }) = project_choices(source, false, &mut charge)?
+        else {
             return Ok(None);
         };
         macro_rules! attempt {
@@ -168,6 +170,7 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
         match &self.plan {
             Plan::Asserted(p) => p.capture_range(index, &found.repeated),
             Plan::Plain(p) => p.capture_range(index, &found.repeated),
+            Plan::Single(p) => p.capture_range(index, &found.repeated.range),
         }
     }
     /// Executes the proved repetition and records endpoint assertion truth.
@@ -186,6 +189,14 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
             Plan::Plain(p) => {
                 p.find_with_captures_and_work(input, requested, sticky, &mut charge)?
             }
+            Plan::Single(p) => p
+                .find_with_captures_and_work(input, requested, sticky, &mut charge)
+                .map_err(RegExpUnicodeMatchError::Work)?
+                .map(|range| RegExpUnicodeRepeatedStringClassMatch {
+                    range: range.clone(),
+                    last_iteration: Some(range),
+                    class_selected: true,
+                }),
         };
         let Some(repeated) = found else {
             return Ok(None);
@@ -316,12 +327,24 @@ struct Projection {
 }
 fn project_choices<E>(
     source: &JsString,
+    single: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Projection>, RegExpUnicodeSetCompileError<E>> {
     use RegExpUnicodeSetCompileError::{Capacity, Work};
     let units = source.code_units();
     charge(units.len().saturating_mul(128).saturating_add(256)).map_err(Work)?;
     let Some(hole) = counted_hole(units, |u, at| {
+        if single {
+            if at == 0 || u.get(at - 1) != Some(&0x5d) {
+                return None;
+            }
+            if let Some((end, min, delta, greedy)) = asserted_repeat_count(u, at) {
+                return (min == 1 && delta == Some(0)).then_some((end, true, true, greedy));
+            }
+            return simple_count(u, at)
+                .is_none()
+                .then_some((at, true, true, true));
+        }
         if let Some(c) = simple_count(u, at) {
             return Some(c);
         }
@@ -448,13 +471,14 @@ fn project_choices<E>(
                         payload,
                         frame.open..at,
                     );
-                    let count = if let Some((end, min, _, _)) = asserted_repeat_count(units, at) {
-                        Some((end, min == 0))
+                    let count = if let Some((end, min, delta, _)) = asserted_repeat_count(units, at)
+                    {
+                        Some((end, min == 0, min == 1 && delta == Some(0)))
                     } else {
-                        simple_count(units, at).map(|(end, one, _, _)| (end, !one))
+                        simple_count(units, at).map(|(end, one, max, _)| (end, !one, one && max))
                     };
-                    node = if let Some((end, zero)) = count {
-                        if payload {
+                    node = if let Some((end, zero, exact_one)) = count {
+                        if payload && !(single && exact_one) {
                             return Ok(None);
                         }
                         at = end;
@@ -463,7 +487,7 @@ fn project_choices<E>(
                             Kind::Repeat(group, zero),
                             if zero { 0xff } else { success },
                             predicate,
-                            false,
+                            payload,
                             frame.open..at,
                         )
                     } else {
@@ -596,4 +620,76 @@ fn project_choices<E>(
         shadow: JsString::from_code_units(shadow),
         overlays,
     }))
+}
+
+/// One required class beside always-successful outside predicate choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Bare or
+/// exact-one class counts preserve required empty class identity; ordered outside
+/// choices preserve conditional capture participation at actual endpoints.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
+    plan: RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
+}
+impl RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
+    /// Proves complete outside choices and a bare or exact-one class spine.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(Projection { shadow, overlays }) = project_choices(source, true, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        use crate::RegExpUnicodeSingleStringClassCaptureMatcher as P;
+        macro_rules! attempt {
+            ($method:ident) => {
+                if let Some(p) = P::$method(&shadow, ignore_case, multiline, &mut charge)? {
+                    if p.capture_count() != overlays.len() {
+                        return Ok(None);
+                    }
+                    return Ok(Some(Self {
+                        plan: RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
+                            plan: Plan::Single(p),
+                            overlays: overlays.into_boxed_slice(),
+                            ignore_case,
+                            multiline,
+                        },
+                    }));
+                }
+            };
+        }
+        attempt!(compile_with_work);
+        attempt!(compile_exact_single_counts_with_work);
+        attempt!(compile_unconditional_assertions_with_work);
+        attempt!(compile_reversed_line_assertions_with_work);
+        Ok(None)
+    }
+    /// Counts all original lexical captures, including unselected branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects original slots using this result's endpoint truth profiles.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes one class and records assertion truth at its actual endpoints.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
 }

@@ -21141,3 +21141,22 @@ predicate profiles cover every input start, sticky, multiline and ignore-case.
 Strict workspace Clippy (7.04 s), documentation tests, formatting, policy,
 inventories and diff checks pass. The complete Unicode suite is running;
 fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+
+## Core single classes beside required predicate choices
+
+Eight focused groups pass (0.20 s), including the four preceding repetition
+groups and four new single-class groups. The new groups compare 160 independent
+native capture tables and a finite-string/endpoint oracle. Bare and exact-one
+class paths, required empty class members, nested class captures, scalar/finite
+sets, ordered line/word alternatives, empty fallbacks and huge required counts
+retain lexical capture slots for all starts, sticky, multiline and ignore-case.
+Deep 20,000-level required/skipped scopes, 20,000-unit shared-prefix members,
+clone/drop, forged public truth profiles, every constructor/matcher cancellation
+and recovery, and complete proof of unknown/reference/additional-class terms
+remain flat. Runtime selection remains separate.
+
+All 75,528 frozen prior API records retain exact domains, charged work and capture
+projection. Strict workspace Clippy (68 s), documentation tests, formatting,
+policy, inventories and diff checks pass. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.

@@ -12161,3 +12161,13 @@ full normalized capture source. Its dedicated result preserves both endpoint
 truth profiles alongside class selection and the final iteration; named aliases,
 indices, lastIndex, String consumers, cloning and collection retain original
 source and capture identity.
+
+Core also proves a required single string class beside always-successful outside
+predicate choices. The same flat truth-mask proof preserves original captures;
+only a bare class or exact-one counts on its required spine qualify. Complete
+single-class proofs validate remaining live predicates and every class leaf,
+including required empty class members and shorter successful continuations.
+The result records actual endpoint truth alongside the required class range.
+Zero-minimum outside scopes remain undefined and required alternatives retain
+source priority (ECMA-262 edition 17 22.2.2.3–4). Repetition proof domains and work
+accounting are unchanged. Runtime selection remains separate.
