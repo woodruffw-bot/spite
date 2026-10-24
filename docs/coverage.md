@@ -22591,3 +22591,24 @@ quotas remain unchanged.
 All 100,352 exact differential records agree across every start, sticky,
 multiline and ignore-case combination, retaining outside participation around
 bounded erased finite, scalar and known-empty class paths.
+
+
+## Core captured outside scopes around optional bounded class paths
+
+All five focused groups pass (3.86 s), including 160 native ordered capture tables
+and an independent 26-slot progress/outside-profile oracle. Lazy bounded class
+counts retain forced nonempty iterations, shorter-member retries, both branch
+orders, conditional outside points and mandatory enclosing ranges. Every skipped
+inner slot remains undefined. Zero-bound class bodies still search later outside
+continuations and fail sticky starts without executing a body. Unicode starts,
+20,000-level outside capture scopes, long shared-prefix scalar/string bodies,
+clone/drop and all charged cancellation boundaries retain their proved behavior.
+Unknown terms still decline under zero/lazy/skipped/never paths.
+
+All 98,344 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. A new 736-record baseline includes 376
+supported cases. All 256 planned differential sources and controls validate as
+Unicode Sets/Unicode patterns, and all 1,024 proof/flag combinations are supported.
+Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime selection remains separate. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

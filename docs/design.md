@@ -12768,3 +12768,22 @@ outside-scope proof after larger/unbounded erased paths. Its dedicated body
 retains conditional outside points, mandatory enclosing ranges, every undefined
 inner slot, source/flags, named aliases, indices, lastIndex and String consumers
 through cloning and collection.
+
+
+Core separately proves captured outside predicate/empty scopes around an optional
+truth root with bounded zero/one class-path counts. The flat nearest-optional
+ancestor scan retains the original capture prefix; the complete bounded-path
+body and both branches validate before outside projection reserves all original
+inner slots. Nonempty outer iterations force every bounded inner path to run
+once, including lazy class counts. Zero upper bounds disable consumption only
+after full validation (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7).
+
+The existing live outside continuation kernel preserves forced lazy consumption,
+shorter-member retries and earliest complete starts. Outside conditional points
+and mandatory enclosing ranges can participate while every skipped inner slot
+stays undefined. Normalized Unicode starts, sticky behavior, flat traversal and
+source-sized storage/clone/drop remain intact. Unknown terms even under
+zero/lazy/skipped/never paths, larger or unbounded inner counts, consuming outside
+siblings and patterns requiring a different optional-ancestor selection retain
+separate proofs. Earlier API domains, work and captures remain unchanged.
+Runtime selection remains separate.

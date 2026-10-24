@@ -4646,3 +4646,120 @@ impl RegExpUnicodeTruthTableScopedZeroCountSpineStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+/// Captured outside predicate scopes beside an optional truth root with bounded inner counts.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Complete
+/// bounded class-path counts and both original branches validate before
+/// the entire optional root becomes one opaque outside-proof atom. Outside
+/// captures retain participation when every skipped inner slot is undefined.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher {
+    /// Proves the complete bounded optional atom and every original outside term.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let normalized = super::super::super::asserted_alternatives::optional_single_count_source(
+            source.code_units(),
+        )
+        .unwrap_or_else(|| source.code_units().to_vec());
+        let source = JsString::from_code_units(normalized);
+        let Some((atom, before_inner)) = scoped_nested_optional_hole(source.code_units()) else {
+            return Ok(None);
+        };
+        let inner_source = JsString::from_code_units(source.code_units()[atom.clone()].to_vec());
+        let Some(nested) =
+            RegExpUnicodeTruthTableOptionalSpineStringClassAlternativeMatcher::compile_with_work(
+                &inner_source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let mut inner = nested.plan;
+        let Some(Projection {
+            shadow,
+            overlays,
+            profiles,
+        }) = project_choices_with_opaque(
+            &source,
+            true,
+            false,
+            false,
+            true,
+            Some(OpaqueChoice {
+                atom,
+                before: before_inner,
+                inner: inner.capture_count(),
+            }),
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(outside) = scoped_alternative_outer_plan(&shadow, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if outside.capture_count().checked_add(inner.capture_count()) != Some(overlays.len())
+            || before_inner > outside.capture_count()
+        {
+            return Ok(None);
+        }
+        for (mask, common) in inner.inner.class.profiles.iter_mut().zip(profiles) {
+            *mask &= common;
+        }
+        let captures = inner.capture_count();
+        let inner = RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
+            plan: RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher {
+                plan: inner,
+                enclosing: 0,
+                captures,
+            },
+            profiles,
+        };
+        Ok(Some(Self {
+            plan: RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher {
+                inner,
+                outside,
+                overlays: overlays.into_boxed_slice(),
+                before_inner,
+            },
+        }))
+    }
+    /// Counts original outside, enclosing and bounded optional lexical slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Retains outside points/ranges and clears every skipped inner capture.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes complete outside continuations inside zero and consuming retries.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
