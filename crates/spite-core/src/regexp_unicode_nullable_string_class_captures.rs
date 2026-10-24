@@ -18,6 +18,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
+    RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,

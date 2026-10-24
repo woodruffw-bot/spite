@@ -12191,3 +12191,22 @@ repetition and single-class choice proofs on the complete normalized capture
 source. Its dedicated body preserves both endpoint truth profiles, class/empty
 selection, source/flags, named aliases, indices, lastIndex and String consumers
 through cloning and collection.
+
+Core separately proves predicate-only outside choices whose success equals a
+conjunction of line/word assertions, including choices that can fail. The flat
+truth-mask proof selects a complete scope only when its success mask equals
+start-line, end-line, word/nonword predicates or a conjunction of them. A live
+canonical gate precedes that entire zero-width scope; the original internal
+predicates become empty groups while all group/count syntax and lexical slots
+remain. Conditional capture masks retain the original first successful branch.
+The complete existing repetition continuation therefore tests real endpoint
+gates and can retry shorter class members or earlier repetition endpoints
+(ECMA-262 edition 17 22.2.2.3–4). Zero-minimum scopes still perform no iteration.
+
+Contradictory choices retain a proved never gate, without hiding unknown class
+leaves or other terms. Disjunctions that cannot be represented by conjunctions,
+references, consuming siblings and conditional class scopes remain separate
+proofs. The preceding three choice APIs retain their exact domains and charged
+work. Allocation, traversal and clone/drop remain flat and source-sized; host
+limits and cancellation remain distinct from JavaScript errors. Runtime
+selection remains separate.

@@ -56,10 +56,23 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Projection { shadow, overlays }) =
-            project_choices(source, false, false, &mut charge)?
+            project_choices(source, false, false, false, &mut charge)?
         else {
             return Ok(None);
         };
+        Self::compile_projection(
+            Projection { shadow, overlays },
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+    fn compile_projection<E>(
+        Projection { shadow, overlays }: Projection,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         macro_rules! attempt {
             ($matcher:ty,$family:ident,$variant:ident,$wrapper:ident,$plan:ident) => {
                 if let Some(p) =
@@ -346,6 +359,7 @@ fn project_choices<E>(
     source: &JsString,
     single: bool,
     alternative: bool,
+    conjunctive: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Projection>, RegExpUnicodeSetCompileError<E>> {
     use RegExpUnicodeSetCompileError::{Capacity, Work};
@@ -561,6 +575,11 @@ fn project_choices<E>(
         .try_reserve_exact(units.len())
         .map_err(|_| Capacity)?;
     erased.resize(units.len(), false);
+    let mut gates = Vec::new();
+    if conjunctive {
+        gates.try_reserve_exact(units.len()).map_err(|_| Capacity)?;
+        gates.resize(units.len(), 0xff);
+    }
     let mut pending = Vec::new();
     pending
         .try_reserve_exact(nodes.len())
@@ -573,10 +592,13 @@ fn project_choices<E>(
             && active.is_none()
             && !n.payload
             && n.predicate
-            && n.success == 0xff
+            && (n.success == 0xff || (conjunctive && canonical_assertions(n.success).is_some()))
             && matches!(n.kind, Kind::Group(..) | Kind::Repeat(..))
         {
             selected = true;
+            if conjunctive {
+                gates[n.span.start] = n.success;
+            }
             Some(0xff)
         } else {
             active
@@ -628,10 +650,29 @@ fn project_choices<E>(
     }
     let mut shadow = Vec::new();
     shadow
-        .try_reserve_exact(units.len().checked_mul(4).ok_or(Capacity)?)
+        .try_reserve_exact(
+            units
+                .len()
+                .checked_mul(if conjunctive { 8 } else { 4 })
+                .ok_or(Capacity)?,
+        )
         .map_err(|_| Capacity)?;
     let mut at = 0;
     while at < units.len() {
+        if let Some(&mask) = gates.get(at) {
+            if let Some(flags) = canonical_assertions(mask) {
+                for (required, tokens) in [
+                    (flags[0], &[0x5e][..]),
+                    (flags[1], &[0x24][..]),
+                    (flags[2], &[0x5c, 0x62][..]),
+                    (flags[3], &[0x5c, 0x42][..]),
+                ] {
+                    if required {
+                        shadow.extend_from_slice(tokens);
+                    }
+                }
+            }
+        }
         if erased[at] {
             shadow.extend_from_slice(&[0x28, 0x3f, 0x3a, 0x29]);
             at += if units[at] == 0x5c { 2 } else { 1 };
@@ -665,7 +706,7 @@ impl RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Projection { shadow, overlays }) =
-            project_choices(source, true, false, &mut charge)?
+            project_choices(source, true, false, false, &mut charge)?
         else {
             return Ok(None);
         };
@@ -738,7 +779,7 @@ impl RegExpUnicodePredicateChoiceStringClassAlternativeMatcher {
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(Projection { shadow, overlays }) =
-            project_choices(source, true, true, &mut charge)?
+            project_choices(source, true, true, false, &mut charge)?
         else {
             return Ok(None);
         };
@@ -839,6 +880,80 @@ impl RegExpUnicodePredicateChoiceStringClassAlternativeMatcher {
         self.plan.capture_range(index, found)
     }
     /// Executes original branch order and records assertion truth at both endpoints.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+// Eight endpoint profiles share the same assertion masks used by the parser.
+// A conjunction is inserted outside its complete zero-width scope so the
+// existing matcher, including endpoint retries, still evaluates a live gate.
+fn canonical_assertions(mask: u8) -> Option<[bool; 4]> {
+    for bits in 0..16u8 {
+        let flags = [bits & 1 != 0, bits & 2 != 0, bits & 4 != 0, bits & 8 != 0];
+        let mut success = 0xff;
+        for (required, predicate) in flags.into_iter().zip([0xaa, 0xcc, 0xf0, 0x0f]) {
+            if required {
+                success &= predicate;
+            }
+        }
+        if success == mask {
+            return Some(flags);
+        }
+    }
+    None
+}
+/// String-class repetition beside predicate choices equivalent to live gates.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Every
+/// selected scope succeeds exactly when a conjunction of line/word assertions
+/// holds. Complete scope projection retains ordered conditional captures while
+/// live gates preserve class-member and repetition endpoint retries.
+/// https://262.ecma-international.org/17.0/#sec-compileassertion
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher {
+    plan: RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
+}
+impl RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher {
+    /// Proves outside predicate choices and their complete class continuation.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(projection) = project_choices(source, false, false, true, &mut charge)? else {
+            return Ok(None);
+        };
+        RegExpUnicodePredicateChoiceStringClassCaptureMatcher::compile_projection(
+            projection,
+            ignore_case,
+            multiline,
+            charge,
+        )
+        .map(|plan| plan.map(|plan| Self { plan }))
+    }
+    /// Counts original lexical captures, including unselected predicate branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects branch participation at the proved match's actual endpoints.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes live conjunction gates with original class and count priority.
     pub fn find_with_captures_and_work<E>(
         &self,
         input: &JsString,

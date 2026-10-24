@@ -104,6 +104,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
+    RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,

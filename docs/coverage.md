@@ -21238,3 +21238,22 @@ every input start, sticky, multiline and ignore-case. Strict workspace Clippy
 inventories and diff checks pass. The full 1,709-test Unicode suite and the two
 existing migrated groups are running; fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Core predicate choices equivalent to live conjunction gates
+
+Four new focused groups pass (0.41 s). They compare 160 independent native
+capture tables and an independent finite-string/RepeatMatcher continuation
+oracle. Ordered line/word branches, required and skipped scopes, huge required
+counts, nullable class members, greedy/lazy bounds, all UTF-16 starts, sticky,
+multiline and ignore-case preserve whole ranges, final iteration and conditional
+capture participation. Deep 20,000-scope sources and 20,000-unit shared-prefix
+members remain flat; failed suffix gates retry earlier endpoints and members.
+Every charged cancellation/recovery and complete proof of unknown class leaves,
+references, other class counts and nonconjunctive choices retain their boundary.
+
+All 77,000 frozen prior API records preserve exact domains, charged work and
+capture projection in six bounded transcript batches. Strict workspace Clippy
+(38.05 s), documentation tests, formatting, policy, inventories and diff checks
+pass. Runtime selection remains separate; fixtures, snapshots, dependencies and
+default quotas remain unchanged.
