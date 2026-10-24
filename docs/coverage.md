@@ -19462,3 +19462,37 @@ validate in native v/vi modes. Workspace documentation tests, strict workspace
 Clippy, formatting, dependency policy, source/fixture inventories and diff checks
 pass. No Runtime selection, corpus fixture, snapshot, dependency or default quota
 changes.
+
+
+## Runtime assertion layers around complete string-class alternatives
+
+Three groups retain 64 class/input witnesses, ten paired branch/layer profiles,
+six layouts, both orders and three inner wrapper shapes. Independent finite
+native controls retain shared predicates outside wrappers. The new outer capture
+and every original prefix/branch value, index, name, alias and sticky state stay
+lexical. Exact consumers wrap earlier word/line choices in a complete
+noncapturing group, retaining original slots while requiring layered recovery.
+They cover distinct consuming endpoints, shorter eligible members, class-selected
+and alternative-selected empty results, pinned vi folds, escaped names,
+supplementary starts, matchAll, replacement, search, split, read-only lastIndex,
+clones and collection. Unicode failed-search witnesses exclude surrogate
+interiors. One earlier rejection becomes a native-verified null/normal-finalizer
+check, with an unknown-leaf replacement retained. Deep prefixes and long members
+stay flat; opt-in host aborts preserve bindings/lastIndex, and a winning initial
+sticky empty alternative retains bounded work. Noncanonical single layers,
+partial wrappers/siblings, choice counts, extra branches/classes, optional
+assertions, references and unknown leaves remain separate host unsupported cases.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/frame
+pairs match independent finite-alternative native sticky controls with layered
+shared predicates outside wrappers, explicit Unicode advancement and initial
+boundary normalization. They cover 32 class families, thirteen local predicate
+profiles, ten shared layer profiles, twelve inputs, all starts and sticky/i/m
+flags. All twelve fixed consumer programs and the migrated null-result control
+match native references, with pinned ordinary finite alternatives for vi
+singleton folding. Stable passes all 431 Runtime unit cases and all 1,610 Unicode
+RegExp integration cases. Workspace documentation tests, strict workspace Clippy,
+formatting, dependency policy, source/fixture inventories and diff checks pass.
+Runtime inventory is 548 case files and 4,316 integration cases. Corpus
+sources/helpers, snapshots, dependencies, intrinsic counts and default resource
+policy are unchanged.

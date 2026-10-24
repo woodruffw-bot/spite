@@ -2371,7 +2371,15 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeAssertedStringClassAlternatives(body)));
                 }
-                RegExpUnicodeAssertedStringClassAlternativeMatcher::compile_surrounding_word_assertions_with_work(
+                if let Some(body) = RegExpUnicodeAssertedStringClassAlternativeMatcher::compile_surrounding_word_assertions_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeAssertedStringClassAlternatives(body)));
+                }
+                RegExpUnicodeAssertedStringClassAlternativeMatcher::compile_nested_assertion_wrappers_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),

@@ -194,11 +194,14 @@ fn nested_assertion_string_class_values_aliases_consumers_and_scope_preserve_ori
     check(
         r"var marker=0,m;try{m=/^\b\B((()([\q{a|ab}])()))$/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
     );
+    check(
+        r"var marker=0,m,r=/\b(^(\B()[\q{a|ab}]|())$)\b/dvgm;r.lastIndex=1;try{m=r.exec('ab\n\n')}finally{marker=3}marker===3&&m===null&&r.lastIndex===0",
+    );
     for pattern in [
         r"\b(^(\B()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])())$)\b",
         r"\b(^(\B()([\q{a|ab}])\1)$)\b",
         r"\b(^(\B()([\q{a|ab}])+())$)\b",
-        r"\b(^(\B()[\q{a|ab}]|())$)\b",
+        r"\b(^(\B()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())$)\b",
         r"(^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)()",
         r"^\b\B((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))$",
     ] {

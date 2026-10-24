@@ -731,6 +731,8 @@ mod regexp_unicode_inherited_script;
 mod regexp_unicode_join_control_properties;
 #[path = "cases/regexp_unicode_latin_script.rs"]
 mod regexp_unicode_latin_script;
+#[path = "cases/regexp_unicode_layered_asserted_string_class_captures.rs"]
+mod regexp_unicode_layered_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_line_assertions.rs"]
 mod regexp_unicode_line_assertions;
 #[path = "cases/regexp_unicode_literal_boundaries.rs"]

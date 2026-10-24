@@ -11342,4 +11342,7 @@ members keep their explicit identity. Source-sized construction and delimiter
 storage remain flat, with no per-match capture history. Earlier constructors
 retain their domains and exact callbacks. Noncanonical single layers, outside
 siblings, choice counts, optional assertions, references and unknown leaves
-remain separate proofs. Runtime selection remains separate from this constructor.
+remain separate proofs. Runtime selects the layered proof after the common-word
+constructor on the full normalized source. The existing capture body retains
+original source, flags, lexical name/index aliases, String consumers, cloning,
+collection and opt-in constructor/exec abort behavior.
