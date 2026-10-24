@@ -24290,3 +24290,27 @@ Strict workspace Clippy with all targets passes (9.28 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Enclosing optional-impossible empty sequences (Core)
+---------------------------------------------------
+
+The new constructor admits complete ordinary/modifier spines around an
+independently empty optional-impossible sequence. Required wrappers retain
+interleaved body masks; optional repeats clear all descendant writes. Original
+bindings and symbolic bounds remain intact. Siblings, root choices and
+unproved/non-sequence bodies require other proofs.
+
+All 123 actual-source focused Core tests pass (0.41 s), including four new groups
+for required/optional/interleaved masks, modifier scopes, original erased
+outside/forward bindings, sibling/choice/consumption exclusions, 100,000 outside
+groups, 100,004 capture slots, 20,000-digit positive bounds, zero maxima and
+interruption before every scope/body/mask step. All 12,800 exact native
+input/start/capture comparisons across 512 independently composed ordinary/u/v
+spines agree, with exact source identity checked by the scratch oracle generator.
+A lexed review of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (9.63 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

@@ -13479,3 +13479,12 @@ scanner has separate earlier-negative and new-optional modes, preserving earlier
 domains and charges. Source, copy and mask work precedes allocation; disjoint
 terms keep construction and storage source-sized. Actual empty matching keeps
 the existing constant work and Unicode boundary behavior.
+
+
+A separate enclosing optional-impossible sequence proof applies the flat
+ordinary/modifier scope scan to a body whose every term independently stays
+empty. Required wrappers retain the body's interleaved mask; optional repeats
+roll all descendant writes back (22.2.2.3.1, 22.2.2.7). Original bindings and
+symbolic counts remain intact. Source/frame/copy and full-mask work precede
+allocation; construction and storage stay source-sized without recursive
+outside-wrapper processing. Earlier constructors and their work are unchanged.
