@@ -13621,3 +13621,11 @@ fabricated. The finite proof handles one positive assertion layer without
 recursing through arbitrary assertion nesting. Source/frame/copy work precedes
 allocation, construction stays source-sized and retained no-match storage and
 actual work remain constant. Earlier scanner modes and work are unchanged.
+
+
+Runtime selects negative assertions over nullable operand choices after the
+group, atom and sequence proofs. One empty or independently nullable arm is
+sufficient; earlier arms may consume and no capture values are fabricated.
+Full original normalized source retains every arm's inventory, incoming
+references and duplicate-name bindings for validation. Shared constant no-match
+execution keeps source/flags, lastIndex, String consumers, cloning and collection.

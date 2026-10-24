@@ -937,6 +937,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove negative assertions over complete independently nullable sequences and enclosing spines always fail without matching otherwise consuming operands.
 - [x] Execute negative assertions over independently nullable sequences through Runtime and String consumers with original inventories and mode-aware term boundaries.
 - [x] Prove negative assertions over operand choices with an empty or independently nullable arm always fail, regardless of earlier consuming alternatives.
+- [x] Execute negative assertions over choices with a nullable or empty arm through Runtime and String consumers with original full inventories and bindings.
 - [x] Prove negative assertions over guaranteed-successful positive assertions fail in both directions, retaining original inventories without fabricating variable operand captures.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

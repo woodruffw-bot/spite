@@ -713,3 +713,70 @@ fn negative_nullable_sequence_many_terms_and_deep_spines_need_no_matching_data_o
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn negative_nullable_choices_keep_all_original_slots_while_only_one_arm_must_succeed() {
+    check(
+        r#"
+        var patterns=[
+            '(?!(?<word>[\\p{RGI_Emoji}]+)|(?<maybe>a)?)',
+            '(?<outside>a{0})(?!(?<inside>\\k<outside>)+|[\\p{RGI_Emoji}]*)',
+            '(?<!(?im-s:((?<first>[\\p{RGI_Emoji}]+)|(?<maybe>a)?)){2,3})',
+            '(?!(?<same>[\\p{RGI_Emoji}]+)|(?<same>[\\q{ab}])*)',
+            '(?![\\p{RGI_Emoji}]+|)'
+        ],ok=true;
+        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pattern,flags);r.lastIndex=start;
+            ok=ok&&r.exec(input)===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start);
+        }
+        for(var source of ['(?!\\p{Not_A_Property}|)','(?!(?<x>a)(?<x>b)|)','(?!(\\k<missing>)|)']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_nullable_choice_consumers_clones_and_collection_keep_no_match_state() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?!(?<word>[\p{RGI_Emoji}]+)|(?<maybe>a)?)/dgv,called=0,ok='a😀'.match(r)===null&&Array.from('a😀'.matchAll(r)).length===0;
+        ok=ok&&'a😀'.replace(r,function(){called++;return '!/'})==='a😀'&&called===0&&'a😀'.search(r)===-1&&'a😀'.split(r).length===1&&'a😀'.split(r)[0]==='a😀'&&''.split(r).length===1;
+        var copy=new RegExp(r);copy.lastIndex=1;ok&&copy.exec('a😀')===null&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn negative_nullable_choice_many_arms_and_deep_spines_need_no_matching_data_or_default_quotas() {
+    check(
+        r#"
+        var pattern='(?!'+Array(5).fill('(?<same>[\\p{RGI_Emoji}]+)').join('|')+'|)',r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let pattern = JsString::from(
+        (r"(?!".to_owned()
+            + &std::iter::repeat_n(r"(?<same>[\p{RGI_Emoji}]+)", 1000)
+                .collect::<Vec<_>>()
+                .join("|")
+            + "|)")
+            .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+    let depth = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"(?<!{}a|[\p{{RGI_Emoji}}]*{})",
+            "(".repeat(depth),
+            ")+".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+}
