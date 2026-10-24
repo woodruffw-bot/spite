@@ -2157,6 +2157,14 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         else {
             return Ok(None);
         };
+        Self::compile_body_plan_with_work(source, plan, require_scalar, charge)
+    }
+    fn compile_body_plan_with_work<E>(
+        source: &JsString,
+        plan: RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+        require_scalar: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         if plan.minimum < 3
             || !(plan.plan.empty_alternative || plan.plan.class.has_empty_member())
             || plan.plan.class.has_scalar_fallback() != require_scalar
@@ -2207,6 +2215,16 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        self.find_with_profiles_and_work(input, requested, sticky, None, charge)
+    }
+    fn find_with_profiles_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        profiles: Option<[u8; 2]>,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
         use RegExpUnicodeAssertedNullableStringClassCaptureMatcher as Nullable;
@@ -2223,25 +2241,38 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         {
             return Ok(None);
         }
+        if profiles.is_some_and(|masks| masks.contains(&0)) {
+            return Ok(None);
+        }
         let preferred_empty_class =
             !self.plan.plan.empty_first && self.plan.plan.class.has_empty_member();
         loop {
             charge(8).map_err(Work)?;
-            if self.plan.assertions[0].matches(
+            if profile_assertions_match_with_work(
+                self.plan.assertions[0],
+                profiles.map(|p| p[0]),
                 input,
                 start,
                 self.plan.ignore_case,
                 self.plan.multiline,
-            ) {
+                &mut charge,
+            )
+            .map_err(Work)?
+            {
                 let remaining = input.len() - start;
                 if self.empty_only {
                     charge(8).map_err(Work)?;
-                    if self.plan.assertions[1].matches(
+                    if profile_assertions_match_with_work(
+                        self.plan.assertions[1],
+                        profiles.map(|p| p[1]),
                         input,
                         start,
                         self.plan.ignore_case,
                         self.plan.multiline,
-                    ) {
+                        &mut charge,
+                    )
+                    .map_err(Work)?
+                    {
                         return Ok(Some(RegExpUnicodeRepeatedStringClassMatch {
                             range: start..start,
                             last_iteration: Some(start..start),
@@ -2257,12 +2288,13 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                         greedy: self.plan.plan.greedy,
                         allow_required_empty: true,
                     };
-                    if let Some(found) = Nullable::find_plan_with_config(
+                    if let Some(found) = Nullable::find_plan_with_config_and_profiles(
                         &self.plan,
                         config,
                         input,
                         start,
                         true,
+                        profiles,
                         &mut charge,
                     )? {
                         return Ok(Some(found));
@@ -2275,12 +2307,13 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                         greedy: true,
                         allow_required_empty: false,
                     };
-                    if let Some(mut found) = Nullable::find_plan_with_config(
+                    if let Some(mut found) = Nullable::find_plan_with_config_and_profiles(
                         &self.plan,
                         config,
                         input,
                         start,
                         true,
+                        profiles,
                         &mut charge,
                     )? {
                         found.last_iteration = Some(found.range.end..found.range.end);
@@ -2300,12 +2333,13 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                             greedy: self.plan.plan.greedy,
                             allow_required_empty: false,
                         };
-                        if let Some(mut found) = Nullable::find_plan_with_config(
+                        if let Some(mut found) = Nullable::find_plan_with_config_and_profiles(
                             &self.plan,
                             config,
                             input,
                             start,
                             true,
+                            profiles,
                             &mut charge,
                         )? {
                             if found.last_iteration.is_none() {
@@ -2400,7 +2434,9 @@ pub use zero_count_asserted::{
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodeTruthTableStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassMatch,
+    RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
+    RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,

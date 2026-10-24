@@ -12265,3 +12265,19 @@ the three conjunctive choice proofs on the complete normalized capture source.
 The dedicated body retains actual endpoint truth, final iteration identity,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+Core separately proves nullable repetitions with a minimum at least three and
+arbitrary outside predicate-choice profiles. Complete class/body compilation
+precedes exact optional-count extraction and finite/scalar prefix bounds. The
+existing required-empty reduction retains class-first versus empty-first tier
+order, final iteration identity and exact optional allowances even when decimal
+minima exceed machine integers (ECMA-262 edition 17 22.2.2.3 RepeatMatcher).
+Profile gates run inside the empty-only and reduced continuation probes, so failed
+endpoint disjunctions can retry shorter members or different consuming tiers.
+A zero profile is a proved never gate after complete construction.
+
+No matcher storage or iteration scales with the numeric required-empty count.
+Conditional captures use accepted whole-match endpoint truth; unknown class
+leaves, references and other class spines retain separate proofs even behind
+never gates. Earlier constructors and matching callbacks retain exact domains
+and charged work. Runtime selection remains separate.

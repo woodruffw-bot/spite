@@ -21417,3 +21417,24 @@ ignore-case. All 431 unit tests pass (3.10 s), alongside strict workspace Clippy
 Fixtures, snapshots, dependencies and default quotas remain unchanged.
 
 The three tests in the migrated existing Runtime group pass (0.19 s).
+
+
+## Core larger nullable counts with arbitrary predicate-choice profiles
+
+Four new focused groups pass (0.13 s), comparing 160 independent native tables
+and a finite-string required-empty/endpoint oracle. Exact, bounded, open and lazy
+larger counts, required/skipped predicate scopes, huge scope counts, all UTF-16
+starts, sticky, multiline and ignore-case retain whole/last-iteration ranges and
+conditional capture slots. Explicit finite and scalar cases retain class-first
+versus empty-first final identity after huge required-empty reduction and failed
+endpoint disjunctions. Deep 20,000-level scopes, a 1,000-digit class minimum and
+20,000-unit shared-prefix words remain flat. Proved zero profiles use bounded
+matching work after complete class construction. Every charged cancellation and
+recovery, unknown leaves behind never profiles and unsupported class spines
+retain their proof boundaries.
+
+All 79,944 frozen prior API records retain exact domains, charged work and capture
+projection in six bounded batches. Strict workspace Clippy (15.84 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and
+default quotas are unchanged.

@@ -1260,3 +1260,119 @@ impl RegExpUnicodeTruthTableStringClassCaptureMatcher {
         }))
     }
 }
+
+/// Larger nullable repetitions with arbitrary outside predicate-choice profiles.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Minimum
+/// counts at least three retain required-empty reduction and exact optional
+/// allowances, including huge decimal counts. Every endpoint probe enforces the
+/// complete outside truth masks before ordered captures are projected.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher {
+    plan: crate::RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
+    overlays: Box<[Option<Overlay>]>,
+    profiles: [u8; 2],
+    ignore_case: bool,
+    multiline: bool,
+}
+impl RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher {
+    /// Proves every outside scope and nullable finite/scalar body with a larger minimum.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(Projection {
+            shadow,
+            overlays,
+            profiles,
+        }) = project_choices(source, false, false, false, true, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        let Some(plan)=crate::RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_plan_allow_unasserted_with_work(&shadow,ignore_case,multiline,true,&mut charge)?else{return Ok(None)};
+        let require_scalar = plan.plan.class.has_scalar_fallback();
+        let Some(plan)=crate::RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher::compile_body_plan_with_work(&shadow,plan,require_scalar,&mut charge)?else{return Ok(None)};
+        if plan.capture_count() != overlays.len() {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            plan,
+            overlays: overlays.into_boxed_slice(),
+            profiles,
+            ignore_case,
+            multiline,
+        }))
+    }
+    /// Counts original lexical slots, including unselected branches and skipped scopes.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects source-priority predicate captures at accepted whole-match endpoints.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        if let Some(overlay) = self.overlays.get(index).copied().flatten() {
+            let (truth, point) = if overlay.at_end {
+                (found.after, found.repeated.range.end)
+            } else {
+                (found.before, found.repeated.range.start)
+            };
+            return (overlay.mask & 1u8.checked_shl(u32::from(truth)).unwrap_or(0) != 0)
+                .then_some(point..point);
+        }
+        self.plan.capture_range(index, &found.repeated)
+    }
+    /// Executes required-empty reduction with profile gates inside all endpoint retries.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        let Some(repeated) = self.plan.find_with_profiles_and_work(
+            input,
+            requested,
+            sticky,
+            Some(self.profiles),
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        charge(16).map_err(RegExpUnicodeMatchError::Work)?;
+        let truth = |at| {
+            use crate::regexp_unicode_character::{
+                unicode_assertions_match, unicode_word_boundary,
+            };
+            let units = input.code_units();
+            u8::from(unicode_assertions_match(
+                units,
+                at,
+                at,
+                true,
+                false,
+                self.multiline,
+            )) | u8::from(unicode_assertions_match(
+                units,
+                at,
+                at,
+                false,
+                true,
+                self.multiline,
+            )) << 1
+                | u8::from(unicode_word_boundary(units, at, self.ignore_case)) << 2
+        };
+        Ok(Some(RegExpUnicodePredicateChoiceStringClassMatch {
+            before: truth(repeated.range.start),
+            after: truth(repeated.range.end),
+            repeated,
+        }))
+    }
+}

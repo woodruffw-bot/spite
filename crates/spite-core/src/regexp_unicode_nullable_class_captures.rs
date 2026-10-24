@@ -30,6 +30,7 @@ pub use string_class_captures::{
     RegExpUnicodeRequiredStringClassCaptureMatcher, RegExpUnicodeSingleStringClassCaptureMatcher,
     RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
@@ -1242,4 +1243,5 @@ mod tests {
     include!("regexp_unicode_conjunctive_predicate_choice_single_string_class_tests.rs");
     include!("regexp_unicode_conjunctive_predicate_choice_string_class_alternative_tests.rs");
     include!("regexp_unicode_truth_table_string_class_tests.rs");
+    include!("regexp_unicode_truth_table_counted_nullable_string_class_tests.rs");
 }
