@@ -664,3 +664,68 @@ fn positive_optional_known_assertions_keep_many_slots_and_huge_bounds_without_de
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===3&&m[1]===''&&m[2]===undefined&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn optional_established_negative_failures_keep_required_prefix_and_all_skipped_slots() {
+    check(
+        r#"
+        var rows=[
+            ['(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?',[false,false]],
+            ['(?<outside>(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?)+',[true,false,false]],
+            ['(?im-s:(?<outside>(?<skip>(?<!(?<=(?<body>(?<inner>(?![\\p{RGI_Emoji}]*))?)+(?<last>[a]{0})+|(?<later>b))))*)){2,3}',[true,false,false,false,false,false]],
+            ['(?<skip>(?!(\\4){0}(?<inner>(?![\\p{RGI_Emoji}]*))?|((a)\\1)+))?',[false,false,false,false,false]]
+        ],ok=true;
+        for(var row of rows)for(var flags of ['dv','dgv','dgyv','dgimsv']){
+            var r=new RegExp(row[0],flags);r.lastIndex=1;var m=r.exec('😀a');ok=ok&&m.index===0&&m[0]===''&&m.length===row[1].length+1&&r.lastIndex===(r.global||r.sticky?0:1)&&r.source===row[0];
+            for(var i=0;i<row[1].length;i++)ok=ok&&(row[1][i]?m[i+1]===''&&m.indices[i+1][0]===0&&m.indices[i+1][1]===0:m[i+1]===undefined&&m.indices[i+1]===undefined);
+        }
+        for(var source of ['((?!((?![\\p{RGI_Emoji}]*))?|[\\p{Not_A_Property}]))?','((?<!((?![\\p{RGI_Emoji}]*))?|(?<x>a)(?<x>b)))?','((?!((?![\\p{RGI_Emoji}]*))?|\\k<missing>))?']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn optional_established_negative_consumers_clones_and_collection_keep_rolled_back_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?<skip>(?!(?<inner>(?![\p{RGI_Emoji}]*))?))?)+/dgv,ok=true,offsets=[];
+        var matches=Array.from('😀a'.matchAll(r));ok=ok&&matches.length===3&&matches[1].index===2&&matches[2].index===3&&matches[1].groups.outside===''&&matches[1].groups.skip===undefined&&matches[1].groups.inner===undefined;
+        ok=ok&&'😀a'.replace(r,function(match,outside,skip,inner,offset,input,groups){ok=ok&&outside===''&&skip===undefined&&inner===undefined&&groups.outside==='';offsets.push(offset);return '!';})==='!😀!a!'&&JSON.stringify(offsets)==='[0,2,3]';
+        ok=ok&&JSON.stringify('a😀b'.split(r))==='["a","",null,null,"😀","",null,null,"b"]'&&''.split(r).length===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('😀');ok&&m.index===0&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.skip===undefined&&after.groups.inner===undefined&&after.indices.groups.inner===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn optional_established_negative_depth_and_huge_upper_bounds_keep_masks_without_default_quotas() {
+    check(
+        r#"
+        var depth=10,body='(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?',pattern='('.repeat(depth)+body+')+'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+3&&m[depth]===''&&m[depth+1]===undefined&&m[depth+2]===undefined&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let depth = 1000;
+    let body = r"(?<skip>(?!(?<inner>(?![\p{RGI_Emoji}]*))?))?";
+    let pattern =
+        JsString::from(format!("{}{body}{}", "(".repeat(depth), ")+".repeat(depth)).as_str());
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===''&&m[{}]===undefined&&m[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
+        depth + 3,
+        depth,
+        depth + 1,
+        depth + 2
+    ));
+    let pattern = JsString::from(
+        format!(
+            r"(?<skip>(?!(?<inner>(?![\p{{RGI_Emoji}}]*))?)){{0,{}}}",
+            "9".repeat(20_000)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===3&&m[1]===undefined&&m[2]===undefined&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+}

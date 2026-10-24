@@ -13848,3 +13848,13 @@ and lexical slot. Shared execution preserves Unicode boundaries,
 indices/groups where matches exist, source/flags, lastIndex, String consumers,
 cloning and collection, with original validation errors before proof
 selection.
+
+
+Runtime selects optional ordinary/modifier spines over established negative
+failures and their complete required wrappers. At least one outside zero
+minimum skips the failing operand (22.2.2.3.1). Required-prefix captures stay
+empty; every skipped descendant remains undefined. Full normalized source
+retains every original binding and lexical slot. Shared execution preserves
+Unicode boundaries, indices/groups where matches exist, source/flags,
+lastIndex, String consumers, cloning and collection, with original validation
+errors before proof selection.
