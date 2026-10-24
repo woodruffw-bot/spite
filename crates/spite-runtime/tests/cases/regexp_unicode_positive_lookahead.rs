@@ -1,0 +1,134 @@
+//! Positive Unicode lookahead keeps operand captures beyond its empty match.
+
+use spite_core::JsString;
+use spite_runtime::{Error, Limits, Realm, Value};
+
+fn check(source: &str) {
+    assert_eq!(
+        Realm::default().eval(source),
+        Ok(Value::Boolean(true)),
+        "{source}"
+    );
+}
+
+#[test]
+fn named_operand_and_outside_captures_keep_independent_indices_and_greediness() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a+','aaa'],['a+?','a'],['a{2,3}','aaa'],['a{2,3}?','aa']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode);r.lastIndex=1;var m=r.exec('baaa!');
+            ok=ok&&m.index===1&&m[0]===''&&m[1]===''&&m[2]===row[1]&&m.groups.outside===''&&m.groups.run===row[1]&&r.lastIndex===1&&r.source===source;
+            ok=ok&&JSON.stringify(m.indices[0])==='[1,1]'&&JSON.stringify(m.indices[1])==='[1,1]'&&m.indices[2][0]===1&&m.indices[2][1]===1+row[1].length&&m.indices.groups.run===m.indices[2];
+        }
+        for(var mode of ['u','v'])for(var row of [['a*','aaa'],['a*?',''],['a{0}','']]){
+            var m=new RegExp('(?=(?<run>'+row[0]+'))','d'+mode).exec('aaa');ok=ok&&m[0]===''&&m.groups.run===row[1]&&m.indices[0][1]===0&&m.indices.groups.run[1]===row[1].length;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn astral_operand_captures_use_leading_pair_candidates_and_empty_last_index() {
+    check(
+        r#"
+        var ok=true,input='😀😀!';
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp('(?<outside>(?=(?<run>😀+)))','d'+state+mode);r.lastIndex=start;var m=r.exec(input),active=r.global||r.sticky,point=active?start:0;
+            if(point===1||point===3)point--;
+            if(point>=4){ok=ok&&m===null&&r.lastIndex===0;continue}
+            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===input.slice(point,4)&&m.indices.groups.run[0]===point&&m.indices.groups.run[1]===4&&r.lastIndex===(active?point:start);
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn flags_and_positive_ascii_property_follow_original_context_and_fold_rules() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var m=new RegExp('(?=(?<run>^a+$))','dim'+mode).exec('x\nAA\nz');ok=ok&&m.index===2&&m.groups.run==='AA'&&m.indices.groups.run[1]===4;
+            var m=new RegExp('(?=(?<run>.+?))','ds'+mode).exec('\n😀');ok=ok&&m.index===0&&m.groups.run==='\n'&&m.indices.groups.run[1]===1;
+            var m=new RegExp('(?=(?<run>.+?))','d'+mode).exec('\n😀');ok=ok&&m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[1]===3;
+            var m=new RegExp('(?=(?<run>\\p{ASCII}+))','di'+mode).exec('ſKa');ok=ok&&m.index===0&&m.groups.run==='ſKa'&&m.indices.groups.run[1]===3;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn string_consumers_observe_zero_width_progress_and_consuming_operand_values() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var r=new RegExp('(?=(?<run>a+))','dg'+mode),all=Array.from('aaa'.matchAll(r));
+            ok=ok&&all.length===3&&all[0].groups.run==='aaa'&&all[1].groups.run==='aa'&&all[2].groups.run==='a'&&all[2].index===2&&r.lastIndex===0;
+            ok=ok&&'aaa'.replace(r,'<$<run>>')==='<aaa>a<aa>a<a>a'&&'aaa'.replaceAll(r,'<$<run>>')==='<aaa>a<aa>a<a>a';
+            var offsets=[];ok=ok&&'aaa'.replace(r,function(match,run,offset,input,groups){offsets.push(offset);ok=ok&&match===''&&run===input.slice(offset)&&groups.run===run;return '!';})==='!a!a!a'&&JSON.stringify(offsets)==='[0,1,2]';
+            r.lastIndex=3;ok=ok&&'baaa'.search(r)===1&&r.lastIndex===3;
+            var split='baaac'.split(new RegExp('(?=(a+))',mode));ok=ok&&JSON.stringify(split)==='["b","aaa","a","aa","a","a","ac"]';
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn cloning_and_collection_preserve_named_operand_capture_storage() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?=(?<run>a+)))/dgu;r.lastIndex=3;var copy=new RegExp(r),ok=copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags;
+        var m=copy.exec('baaa');ok&&m.index===1&&m.groups.outside===''&&m.groups.run==='aaa'&&m.indices.groups.outside[1]===1&&m.indices.groups.run[1]===4&&r.lastIndex===3
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=2;var m=copy.exec('baaa');m.index===2&&m.groups.outside===''&&m.groups.run==='aa'&&m.indices.groups.run[1]===4&&copy.lastIndex===2"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deep_wrappers_and_unrepresentable_counts_keep_original_capture_inventory() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'a+'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('baaa');
+            ok=ok&&m.length===2001&&m.index===1&&m[0]==='';
+            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'aaa')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:4);
+            var huge=new RegExp('(?=(?<run>a{'+'9'.repeat(20000)+'}))','dg'+mode);huge.lastIndex=1;ok=ok&&huge.exec('aaaa')===null&&huge.lastIndex===0;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn coercions_last_index_errors_and_original_validation_precede_execution() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var events=[],r=new RegExp('(?=(?<run>a+))','dgy'+mode);r.lastIndex={valueOf(){events.push('index');return 1}};
+            var m=r.exec({toString(){events.push('input');return 'baaa'}});ok=ok&&events.join(',')==='input,index'&&m.groups.run==='aaa'&&r.lastIndex===1;
+            Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('baaa')}catch(e){caught=e instanceof TypeError}ok=ok&&caught;
+            for(var source of ['(?=(a{2,1}))','(?=(?<x>a+))\\k<missing>','(?=(\\p{Not_A_Property}+))']){var caught=false;try{new RegExp(source,mode)}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn opted_in_construction_abort_cannot_publish_partial_capture_state() {
+    let pattern = JsString::from(format!("(?=(?<run>a{{{}}}))", "9".repeat(20_000)).as_str());
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30_000),
+        ..Limits::default()
+    });
+    realm.eval("var r=7,marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!(
+            "try{{r=new RegExp({pattern:?},'dgu')}}catch(e){{marker=1}}"
+        )),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
+}

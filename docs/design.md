@@ -13983,4 +13983,16 @@ cloning and dropping retain flat source-sized storage; symbolic counts and
 wrapper depth add no native recursion. Underlying construction and actual-search
 work callbacks preserve their existing events and errors. Positive ASCII
 property folding follows the existing edition-17 rule, including the documented
-Node iv discrepancy. Runtime selection is a separate integration step.
+Node iv discrepancy.
+
+
+Runtime selects the complete Unicode positive-lookahead plan after its earlier
+proofs, using the complete validated normalized source. It resets the projected
+outer-capture offset only after successful selection, so every original lexical
+slot retains its role. Actual search work delegates to the operand plan. Each
+result caches the empty assertion range and one separate operand range; outside
+slots and operand slots resolve independently in constant work, without a
+capture vector or input copy. Named groups and indices, ordinary/global/sticky
+lastIndex, String consumers, cloning and collection share the existing result
+path. Source/flags validation and conversions still precede compilation, whose
+large frame stays outside reentrant getters and conversions.

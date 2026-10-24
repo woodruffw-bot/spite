@@ -25459,3 +25459,31 @@ Unicode-gated constructor. Strict workspace Clippy with all targets,
 documentation tests, formatting, dependency policy, inventories and diff checks
 pass. Runtime selection remains separate; fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime complete Unicode lookahead with consuming operand captures
+
+Runtime selects the validated full-source Unicode lookahead plan after its
+existing proofs. Eight regression groups pass (0.74 s), covering independent
+whole/outside/operand spans, names and indices, greedy/lazy choices, leading-pair
+starts, global/sticky state, original-context flags and positive ASCII folding.
+String consumers, named replacement callbacks, copies and collection retain the
+selected operand even when it extends beyond the empty match. Tests also cover
+2,000 wrappers, 20,000-digit minima, original validation, ordered coercions,
+non-writable lastIndex and opt-in abort isolation. All thirteen constructor
+regressions pass (0.08 s), including native reentry.
+
+All 106,496 metadata records across 512 independently generated patterns agree
+on the fresh CLI, including source/flags, input, every UTF-16 start, ordinary,
+global, sticky and global-sticky state, whole/capture values and ranges, and
+lastIndex. Of these, 104,416 use the original Node patterns; 2,080 use the ten
+explicit ASCII-range controls for the documented Node iv discrepancy. Seven
+complete JavaScript programs also agree, using the same equivalent-range
+control for the property-fold case.
+
+All 436 Runtime unit tests pass (5.80 s). Strict workspace Clippy with all
+targets, documentation tests, formatting, dependency policy, inventories and
+diff checks pass. Runtime inventory is 619 case files. Full RegExp and Test262
+runs started from this source snapshot are still in progress; the previously
+recorded complete compositional-static snapshot remains the last finished broad
+run. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.

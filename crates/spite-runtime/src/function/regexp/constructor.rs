@@ -30,7 +30,7 @@ use spite_core::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
     RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePositiveAtomMatcher, RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher, RegExpUnicodePropertyDotMatcher,
@@ -3940,6 +3940,24 @@ impl Realm {
                 RegExpStaticMatcher::Empty(plan) => RegExpMatcherBody::ZeroCountSequence(plan),
                 RegExpStaticMatcher::Impossible(plan) => RegExpMatcherBody::Impossible(plan),
             })
+        } else {
+            matcher
+        };
+        let matcher = if unicode && matcher.is_none() {
+            let proof = self.object_work(span, |_, budget| {
+                RegExpUnicodePositiveAtomMatcher::compile_validated_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    flags.code_units().contains(&u16::from(b's')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if proof.is_some() {
+                enclosing_captures = 0;
+            }
+            proof.map(RegExpMatcherBody::UnicodePositiveAtom)
         } else {
             matcher
         };
