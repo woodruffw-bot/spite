@@ -12701,4 +12701,8 @@ starts and sticky bounds with bounded matching work. Deep groups, long finite
 words, decimal count scanning, storage and clone/drop remain flat and
 source-sized. Unknown terms even under zero/lazy/never paths, larger or unbounded
 inner counts and outside terms retain separate proofs. Earlier API domains,
-charged work and captures remain unchanged. Runtime selection remains separate.
+charged work and captures remain unchanged. Runtime selects this bounded-path
+zero-count proof after the corresponding optional proof. Its dedicated body
+preserves every undefined inner slot, normalized starts, original source/flags,
+named aliases, indices, lastIndex and String consumers through cloning and
+collection.

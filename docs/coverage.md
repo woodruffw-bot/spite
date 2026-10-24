@@ -22410,3 +22410,32 @@ eight bounded batches. Strict workspace Clippy, documentation tests, formatting,
 policy, inventories and
 diff checks pass. Fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime bounded class-path counts inside zero-count truth roots
+
+All three focused groups pass (0.91 s), retaining every undefined lexical slot
+inside bounded optional, lazy and zero-count scopes. Padded/lazy root counts,
+both branch orders, named and escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and strict lastIndex writes agree
+with native behavior. Sticky starts inside surrogate pairs normalize to the
+leading boundary; starts past the input fail and reset lastIndex. Deep 1,000-level
+lazy scopes, 20,000-unit shared-prefix scalar/string bodies and constructor host
+aborts remain flat. Full construction rejects unknown terms in erased bodies.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding rejection control now compares complete native captures, indices,
+source, flags, input and lastIndex and agrees on the fresh CLI. Five source-shape
+scans retain the remaining rejection domains. All 1,024 proof/flag combinations
+for the 256 independent differential pairs are supported.
+
+All 100,352 exact differential records agree across every start and all sticky,
+multiline and ignore-case combinations. All 431 Runtime unit tests pass (4.90 s),
+and the affected preceding proof group passes all three tests (0.52 s). Strict
+workspace Clippy, documentation tests, formatting, policy, inventories and diff
+checks pass. The grouped Runtime inventory contains 605 case files. Fixtures,
+snapshots, dependencies and default quotas remain unchanged.
+
+The preceding captured outside nested optional/zero-count Runtime snapshot also
+passes all 1,776 Unicode RegExp integration tests (1,037.17 s). This run compiled
+before bounded class-path Runtime counts.
