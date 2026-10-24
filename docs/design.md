@@ -13639,3 +13639,11 @@ atom, sequence, choice or successful-positive assertion proofs. Original
 bindings, symbolic counts and all outside/inside capture slots remain intact.
 Source/frame/copy work precedes allocation; no recursive wrapper processing or
 matching data is needed. Retained no-match storage and actual work stay constant.
+
+
+Runtime selects negative assertions over guaranteed-successful positive
+assertions after the nullable choice proof. Complete original normalized source
+retains incoming references, duplicate-name bindings and every capture slot.
+Variable operand capture values are never exposed because the outside assertion
+fails. Shared constant no-match execution keeps source/flags, lastIndex, String
+consumers, cloning and collection, with original errors before proof selection.
