@@ -11497,3 +11497,20 @@ separate proofs. Existing constructors retain exact domains/callbacks and flat
 storage. Runtime selects the exact-one Single constructor after preceding
 proofs on the full normalized capture source, preserving original metadata,
 names/indices, String consumers, cloning, collection and host-abort behavior.
+
+
+### Exact-one counts in unasserted string-class alternatives
+
+The existing nonempty-result and empty-member string-class alternative types
+have separate exact-one constructors. A shared helper removes only {1}/{1,1},
+padded/lazy, from the sole class atom and its ancestors, then selects the original
+root or grouped proof without moving any capture or alternative. The complete
+original class and both branches require proof even when an empty-first branch
+wins. Result-emptiness guards retain their distinct domains. The empty-member
+type keeps explicit selected-branch identity for defined class empties versus
+unselected captures. Mandatory one-iteration execution only clears initially
+undefined captures in this reference-free choice; outside empty counts retain
+all required/optional/later capture roles (22.2.2.3, RepeatMatcher). Existing
+constructors retain domains and exact callbacks, and storage/clone/drop remain
+flat. Other counts, assertions, references and unknown leaves stay separate
+proofs. Runtime selection remains separate.

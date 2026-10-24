@@ -19839,3 +19839,27 @@ only huge effect-free empty counts reduce. Strict workspace Clippy, documentatio
 tests, formatting, dependency policy, inventories and diff checks pass. Runtime
 inventory is 554 files and 4,334 integration cases. No fixture, snapshot,
 dependency, intrinsic inventory or default quota changes.
+
+
+## Core exact-one counts in unasserted string-class alternatives
+
+Six groups retain four independent root/grouped and nonempty/empty-member
+capture-tree matrices over 27 finite/set-operation and character-result class
+families, six layouts, both source orders and eight inputs. Grouped cases add
+four surrounding frames; all matrices cover every start/sticky/i/m combination.
+Explicit atom/ancestor counts retain padded/lazy syntax. Eight fixed native
+tables cover whole/point/never roles, required empty captures, unselected empty
+branches, selected empty class members, folding and supplementary leading starts.
+Both result domains keep 20,000-level counted ancestors and 20,000-digit zero
+prefixes flat through clone/drop. Constructor/search callback cancellation and
+recovery retain exact prefixes. Other counts, assertions, references, extra
+classes/branches/consumption and unknown leaves in unselected branches retain
+explicit closed controls; the two class-result emptiness guards stay distinct.
+
+
+Execution passes the six targeted Core groups and all 431 Runtime units. The
+unchanged Core paths retain their preceding 1,253-test baseline, and all 56,392
+prior API records preserve exact domains, construction/search work and capture
+projection. Eight fixed tables match native references. Strict workspace Clippy,
+documentation tests, formatting, dependency policy, inventories and diff checks
+pass. No Runtime selection, fixture, snapshot, dependency or default quota changes.

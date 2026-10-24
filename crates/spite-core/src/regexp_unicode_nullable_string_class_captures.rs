@@ -96,6 +96,35 @@ impl RegExpUnicodeNullableStringClassCaptureMatcher {
         })
     }
 
+    /// Proves exact-one counts in root or grouped class/empty alternatives.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The sole
+    /// class atom and its ordinary ancestors may use {1}/{1,1}, padded or lazy.
+    /// RepeatMatcher executes the required body once, including empty selected
+    /// alternatives. Removing only count tokens preserves lexical captures and
+    /// empty sibling participation in this reference-free choice. The full
+    /// existing root/grouped proof still validates every original branch and
+    /// leaf before selection. Assertions, references and other class-path counts
+    /// remain separate proofs (22.2.2.3, RepeatMatcher).
+    /// The resulting class must exclude the empty string.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_exact_single_counts_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        compile_exact_single_string_alternative(source, ignore_case, multiline, false, charge).map(
+            |plan| {
+                plan.map(|plan| Self {
+                    class: plan.class,
+                    captures: plan.captures,
+                    empty_first: plan.empty_first,
+                })
+            },
+        )
+    }
+
     /// Number of original captures in source order.
     pub fn capture_count(&self) -> usize {
         self.captures.len()
@@ -280,6 +309,35 @@ impl RegExpUnicodeEmptyStringClassCaptureMatcher {
         })
     }
 
+    /// Proves exact-one counts in root or grouped class/empty alternatives.
+    ///
+    /// Requires validated v/vi input and normalized capture names. The sole
+    /// class atom and its ordinary ancestors may use {1}/{1,1}, padded or lazy.
+    /// RepeatMatcher executes the required body once, including empty selected
+    /// alternatives. Removing only count tokens preserves lexical captures and
+    /// empty sibling participation in this reference-free choice. The full
+    /// existing root/grouped proof still validates every original branch and
+    /// leaf before selection. Assertions, references and other class-path counts
+    /// remain separate proofs (22.2.2.3, RepeatMatcher).
+    /// The resulting class must include the empty string; explicit branch identity retains its capture participation.
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_exact_single_counts_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        compile_exact_single_string_alternative(source, ignore_case, multiline, true, charge).map(
+            |plan| {
+                plan.map(|plan| Self {
+                    class: plan.class,
+                    captures: plan.captures,
+                    empty_first: plan.empty_first,
+                })
+            },
+        )
+    }
+
     /// Number of original captures in source order.
     pub fn capture_count(&self) -> usize {
         self.captures.len()
@@ -330,6 +388,28 @@ impl RegExpUnicodeEmptyStringClassCaptureMatcher {
     ) -> Option<Range<usize>> {
         projected_selected_capture_range(&self.captures, index, range, class_selected)
     }
+}
+
+fn compile_exact_single_string_alternative<E>(
+    source: &JsString,
+    ignore_case: bool,
+    multiline: bool,
+    want_empty: bool,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<StringAlternativePlan>, RegExpUnicodeSetCompileError<E>> {
+    charge(source.len().saturating_mul(24).saturating_add(128))
+        .map_err(RegExpUnicodeSetCompileError::Work)?;
+    let Some(normalized) = asserted_alternatives::exact_single_count_source(source.code_units())
+    else {
+        return Ok(None);
+    };
+    let source = JsString::from_code_units(normalized);
+    let scope = if has_root_alternative(source.code_units()) {
+        AlternativeScope::Root
+    } else {
+        AlternativeScope::Grouped
+    };
+    compile_string_alternative(&source, ignore_case, multiline, scope, want_empty, charge)
 }
 
 fn compile_string_class<E>(
