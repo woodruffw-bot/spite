@@ -22540,3 +22540,24 @@ larger/unbounded Runtime paths and their captured outside scopes.
 All 100,352 exact differential records agree across every start, sticky,
 multiline and ignore-case combination, retaining outside participation around
 erased finite, scalar and known-empty class paths.
+
+
+## Core captured outside scopes around erased bounded zero/one class paths
+
+All four focused groups pass (4.03 s), including 160 native ordered capture tables
+and an independent 26-slot zero-iteration/outside-profile oracle. Optional, lazy
+and padded zero/one class paths retain both branch orders, conditional outside
+points, mandatory enclosing ranges and every undefined inner slot. Unicode
+starts and sticky bounds remain intact. Twenty thousand outside capture scopes,
+long shared-prefix scalar/string bodies and clone/drop stay flat. Constructor
+and match cancellation recover at every charged boundary; contradictory outside
+profiles use bounded work after full construction. Unknown terms still decline
+under erased/skipped/never scopes. A new 736-record baseline includes 376
+supported cases. Runtime selection remains separate.
+
+All 97,608 frozen prior API records retain exact domains, charged work and
+capture projection in eight bounded batches.
+
+Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
+and diff checks pass. Fixtures, snapshots, dependencies and default quotas remain
+unchanged.

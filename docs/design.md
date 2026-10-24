@@ -12747,3 +12747,20 @@ this captured-scope erased-count proof after the bare quantified root proof. Its
 dedicated body retains conditional outside points, mandatory enclosing ranges,
 every undefined inner slot, source/flags, named aliases, indices, lastIndex and
 String consumers through cloning and collection.
+
+
+Core separately proves captured outside predicate/empty scopes around a
+zero-count truth root with bounded zero/one class-path counts. The existing flat
+nearest-zero-ancestor scan retains the original capture prefix. The complete
+bounded-path body and both branches validate before outside projection reserves
+every original inner slot. All erased captures remain undefined while outside
+conditional points and mandatory enclosing ranges can participate (ECMA-262
+edition 17 22.2.2.3, 22.2.2.7).
+
+Disabled class profiles keep matching on zero-width outside continuations.
+Normalized Unicode starts, sticky bounds and later starts required by outside
+gates remain intact. Traversal, storage and clone/drop stay flat and
+source-sized. Unknown terms even under erased/skipped/never scopes, larger or
+unbounded inner counts, consuming outside siblings and patterns requiring a
+different zero-ancestor selection retain separate proofs. Earlier API domains,
+work and captures remain unchanged. Runtime selection remains separate.
