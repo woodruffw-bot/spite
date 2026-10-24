@@ -20011,3 +20011,25 @@ Strict workspace Clippy, documentation tests, formatting, dependency policy,
 inventories and diff checks pass. The Runtime inventory is 557 case files and
 4,343 integration cases. Fixtures, snapshots, dependencies and default quotas
 are unchanged.
+
+
+## Core larger counts on nullable string-class bodies
+
+Four focused groups check twelve counts across 32 independent class families,
+six capture trees, nullable plain/class-first/empty-first bodies and atom/group
+scopes, eight UTF-16 inputs and all starts/sticky/i/m. Plain nonnullable bodies
+remain closed. Twenty-five native tables cover required empty capture resets,
+finite and huge close bounds, retained class/empty identity, greedy/lazy counts,
+source priority, whole-versus-last scopes, original Unicode boundaries and case
+folding. Finite reference counts for huge cases preserve their exact optional
+allowance and mandatory empty participation, avoiding native count precision.
+Deep 20,000-capture scopes, 20,000-digit adjacent bounds, all constructor/find
+callback cancellation and recovery, cloning/drop, exact-one wrappers and constant
+work for empty-first exact counts remain flat. Other counts, nested loops,
+consuming siblings, predicates, references and unknown leaves remain closed.
+
+Execution passes all four focused groups and 431 Runtime units. All 59,336 prior
+API records retain exact domains, construction/search work and every capture
+projection. Strict workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime selection of this proof remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.

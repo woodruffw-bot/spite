@@ -502,3 +502,208 @@ fn bounded_count(units: &[u16], at: usize) -> Option<(usize, bool, Option<usize>
     let lazy = units.get(end) == Some(&0x3f);
     Some((end + usize::from(lazy), minimum == 1, maximum, !lazy))
 }
+
+/// A braced repetition with a larger minimum and an always-nullable body.
+///
+/// Requires validated v/vi input and normalized capture names. The body is one
+/// string class with an empty member, or a class/empty alternative. Required
+/// empty bodies overwrite the final iteration; optional empty bodies fail the
+/// progress check. Empty required tails therefore collapse without capture
+/// history or storage proportional to a decimal count (22.2.2.3 RepeatMatcher).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeCountedNullableStringClassCaptureMatcher {
+    plan: RegExpUnicodeRepeatedStringClassCaptureMatcher,
+    minimum: usize,
+    optional: Option<usize>,
+}
+impl RegExpUnicodeCountedNullableStringClassCaptureMatcher {
+    /// Proves a nullable body under one braced count whose minimum exceeds one.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(48).saturating_add(256))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let (mut minimum, mut optional) = (0, None);
+        let Some(hole) = counted_hole(units, |units, at| {
+            let (end, lower, remaining, greedy) = nullable_count(units, at)?;
+            minimum = lower;
+            optional = remaining;
+            Some((end, true, false, greedy))
+        }) else {
+            return Ok(None);
+        };
+        let mut simple = Vec::with_capacity(units.len());
+        simple.extend_from_slice(&units[..hole.atom.end]);
+        simple.push(0x2b);
+        if !hole.greedy {
+            simple.push(0x3f);
+        }
+        simple.extend_from_slice(&units[hole.count_end..]);
+        let Some(plan) = RegExpUnicodeRepeatedStringClassCaptureMatcher::compile_with_work(
+            &JsString::from_code_units(simple),
+            ignore_case,
+            multiline,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        if !plan.empty_alternative && !plan.class.has_empty_member() {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            plan,
+            minimum,
+            optional,
+        }))
+    }
+    /// Counts every original lexical capture, including conditional branch slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects the whole range and the final required or optional iteration.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes required bodies and consuming optional bodies at the initial boundary.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        _sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, E> {
+        charge(4)?;
+        let Some(start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        let mut at = start;
+        let mut last_iteration = Some(at..at);
+        let mut class_selected = false;
+        if !self.plan.empty_first {
+            let mut required = self.minimum;
+            while required != 0 {
+                let Some(range) = self.plan.class_prefix(input, at, &mut charge)? else {
+                    debug_assert!(self.plan.empty_alternative);
+                    last_iteration = Some(at..at);
+                    class_selected = false;
+                    break;
+                };
+                debug_assert_eq!(range.start, at);
+                let empty = range.end == at;
+                at = range.end;
+                last_iteration = Some(range);
+                class_selected = true;
+                if empty {
+                    break;
+                }
+                required -= 1;
+            }
+        }
+        if self.plan.greedy {
+            let mut optional = self.optional;
+            while optional != Some(0) {
+                let Some(range) = self.plan.class_prefix(input, at, &mut charge)? else {
+                    break;
+                };
+                debug_assert_eq!(range.start, at);
+                if range.end == at {
+                    break;
+                }
+                at = range.end;
+                last_iteration = Some(range);
+                class_selected = true;
+                optional = optional.map(|left| left - 1);
+            }
+        }
+        Ok(Some(RegExpUnicodeRepeatedStringClassMatch {
+            range: start..at,
+            last_iteration,
+            class_selected,
+        }))
+    }
+}
+fn count_digits<'a>(units: &'a [u16], end: &mut usize) -> Option<&'a [u16]> {
+    let begin = *end;
+    while units
+        .get(*end)
+        .is_some_and(|unit| (0x30..=0x39).contains(unit))
+    {
+        *end += 1;
+    }
+    (*end != begin).then_some(&units[begin..*end])
+}
+fn significant_digits(digits: &[u16]) -> &[u16] {
+    &digits[digits
+        .iter()
+        .position(|&digit| digit != 0x30)
+        .unwrap_or(digits.len())..]
+}
+fn saturated_decimal(digits: &[u16]) -> usize {
+    digits.iter().fold(0usize, |value, &digit| {
+        value
+            .saturating_mul(10)
+            .saturating_add(usize::from(digit - 0x30))
+    })
+}
+// Subtract before saturation: huge adjacent bounds can leave one optional body.
+fn decimal_difference(upper: &[u16], lower: &[u16]) -> usize {
+    let (mut result, mut place, mut borrow) = (0usize, 1usize, 0i32);
+    let mut lower = lower.iter().rev().copied();
+    for &upper in upper.iter().rev() {
+        let lower = lower.next().unwrap_or(0x30);
+        let mut digit = i32::from(upper) - i32::from(lower) - borrow;
+        borrow = i32::from(digit < 0);
+        if digit < 0 {
+            digit += 10;
+        }
+        result =
+            result
+                .saturating_add(place.saturating_mul(
+                    usize::try_from(digit).expect("borrow leaves a decimal digit"),
+                ));
+        place = place.saturating_mul(10);
+    }
+    debug_assert_eq!(borrow, 0);
+    result
+}
+fn nullable_count(units: &[u16], at: usize) -> Option<(usize, usize, Option<usize>, bool)> {
+    if units.get(at) != Some(&0x7b) {
+        return None;
+    }
+    let mut end = at + 1;
+    let lower = significant_digits(count_digits(units, &mut end)?);
+    let minimum = saturated_decimal(lower);
+    if minimum < 2 {
+        return None;
+    }
+    let upper = if units.get(end) == Some(&0x2c) {
+        end += 1;
+        count_digits(units, &mut end).map(significant_digits)
+    } else {
+        Some(lower)
+    };
+    if units.get(end) != Some(&0x7d) {
+        return None;
+    }
+    let optional = if let Some(upper) = upper {
+        if upper.len() < lower.len() || upper.len() == lower.len() && upper < lower {
+            return None;
+        }
+        Some(decimal_difference(upper, lower))
+    } else {
+        None
+    };
+    end += 1;
+    let lazy = units.get(end) == Some(&0x3f);
+    Some((end + usize::from(lazy), minimum, optional, !lazy))
+}

@@ -11581,3 +11581,34 @@ selects the braced proof after the earlier simple and exact-one constructors on
 the full capture source. Its dedicated body retains the whole/final ranges and
 class-selected tag, preserving original source, names/indices, lastIndex, String
 consumers, cloning and collection.
+
+
+Core larger braced minima use a separate counted-nullable string-class proof.
+After the same full simple-repetition body/outside proof, the class must contain
+an empty member or the body must contain a pure-empty alternative. Required
+bodies therefore cannot fail at an input boundary, so preferred class members
+need no retry history. Plain nonnullable classes with a minimum above one retain
+the separate backtracking requirement. Earlier constructors and match/work
+contracts remain unchanged.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher accepts empty iterations while the
+minimum remains positive. These required empty bodies replace earlier capture
+state. On `ab`, `([\q{|a|ab}]){2}` retains a final empty class capture at `2..2`,
+whereas the optional empty attempt in `([\q{|a|ab}])+` leaves the last `ab`
+capture intact. An empty-first required body repeats its deterministic empty
+capture profile; a class-first body tries preferred class members before falling
+back to its class empty member or explicit empty branch. After the first required
+empty body, all remaining required copies at that point share the same profile.
+
+The finder collapses this required empty tail, then admits only consuming optional
+bodies within the upper bound. It stores the whole range, final body range and
+class-selected tag, with no capture history or storage proportional to a count.
+Every class query is charged before inspection; an empty-first exact huge count
+needs only the initial finder charge. Construction charges the original source
+before scans, copying and decimal arithmetic. Minimum parsing may saturate at
+usize::MAX because positive required iterations are bounded by the input length.
+The optional allowance is computed by decimal subtraction before saturation:
+huge adjacent lower/upper bounds can still leave exactly one optional iteration.
+Leading zeros and unbounded uppers preserve that arithmetic. Original capture
+scopes and every class leaf remain proved, including unselected empty-first
+classes. Runtime selection of larger nullable counts remains separate.

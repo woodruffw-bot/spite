@@ -13,11 +13,12 @@ use std::ops::Range;
 mod nullable_class_captures;
 pub use nullable_class_captures::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeBoundedStringClassCaptureMatcher, RegExpUnicodeEmptyStringClassCaptureMatcher,
-    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
-    RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeRepeatedStringClassCaptureMatcher,
-    RegExpUnicodeRepeatedStringClassMatch, RegExpUnicodeSingleStringClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeBoundedStringClassCaptureMatcher,
+    RegExpUnicodeCountedNullableStringClassCaptureMatcher,
+    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableClassCaptureMatcher,
+    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
+    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
+    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
 };
 

@@ -10,10 +10,11 @@ use std::ops::Range;
 mod string_class_captures;
 pub use string_class_captures::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeBoundedStringClassCaptureMatcher, RegExpUnicodeEmptyStringClassCaptureMatcher,
-    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassCaptureMatcher,
-    RegExpUnicodeRepeatedStringClassMatch, RegExpUnicodeSingleStringClassCaptureMatcher,
-    RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeBoundedStringClassCaptureMatcher,
+    RegExpUnicodeCountedNullableStringClassCaptureMatcher,
+    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
+    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
 };
 
@@ -1185,4 +1186,5 @@ mod tests {
     include!("regexp_unicode_exact_single_unasserted_string_class_tests.rs");
     include!("regexp_unicode_simple_repeated_string_class_tests.rs");
     include!("regexp_unicode_bounded_string_class_tests.rs");
+    include!("regexp_unicode_counted_nullable_string_class_tests.rs");
 }
