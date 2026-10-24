@@ -13223,3 +13223,11 @@ the original lexical inventory even though no successful result can expose it.
 Quantified/modifier wrappers, outside terms and outer choices require other
 proofs. Source/copy work precedes allocation; the retained plan and no-match work
 remain constant, with no recursive wrapper processing.
+
+
+Runtime selects the mandatory-enclosing impossible proof after the direct root
+proof. The returned inventory includes every original outside and inside slot,
+so constructor capture checks use the full source without an extra offset.
+Erased references to outside/later names keep their original bindings. Shared
+execution preserves source/flags, lastIndex, String consumers, cloning and
+collection while the retained matcher still performs constant no-match work.

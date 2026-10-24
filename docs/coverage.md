@@ -23677,3 +23677,24 @@ A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
 Rust strings finds none newly admitted. Construction stays source-sized without
 recursive wrapper processing; retained storage and matching remain constant.
 Earlier APIs and Runtime behavior are unchanged; integration follows separately.
+
+
+## Runtime mandatory enclosing impossible sequences
+
+Runtime selects the enclosing proof after the direct root proof. Its complete
+original capture inventory includes mandatory outside groups, with no duplicate
+Runtime offset. Original references inside erased operands retain their outside
+and later bindings. The existing no-match body and standard consumer path
+preserve metadata, lastIndex, cloning and collection.
+
+All seven focused integration groups pass (0.68 s), including three new groups
+for named outside/inside layouts, original erased bindings, source/flags and
+lastIndex rules, String consumers without callbacks, cloning, collection and
+1,000 enclosing captures. All 55,296 exact native metadata records across 512
+independently wrapped ordinary/u/v patterns agree on the fresh CLI, as do all
+seven complete JavaScript programs.
+
+All 436 Runtime unit tests pass (8.82 s). Strict workspace Clippy with all targets
+passes (17.51 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped inventory remains 615 Runtime
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
