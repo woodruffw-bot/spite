@@ -12807,4 +12807,8 @@ iterations force bounded inner groups to participate once; skipped/zero-bound
 bodies retain undefined slots while outside points and enclosing ranges can
 participate (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7). Unknown terms even under
 zero/lazy/skipped/never scopes, consuming outside siblings and other ancestor
-selection cases retain separate proofs. Runtime selection remains separate.
+selection cases retain separate proofs. Runtime selects this choice-guided
+bounded-group proof after the preceding optional-path proof. Its dedicated body
+retains inner group participation, outside roles, original lexical slots,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.

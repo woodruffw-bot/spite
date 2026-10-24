@@ -22667,3 +22667,31 @@ Unicode Sets/Unicode patterns, with all 1,024 proof/flag combinations supported.
 Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime selection remains separate. Fixtures, snapshots,
 dependencies and default quotas remain unchanged.
+
+
+## Runtime outside optional roots above choice-free bounded class groups
+
+All three focused groups pass (1.17 s), preserving forced inner lazy consumption,
+shorter-member retries, conditional outside points, mandatory enclosing ranges
+and every skipped inner slot. Both branch orders, named and escaped-name aliases,
+indices, matchAll, callback replacement, split/search, cloning, collection and
+strict lastIndex writes retain native behavior. A zero-bound class inside an
+optional group still searches later outside gates with every body slot undefined
+and fails incompatible sticky starts. One thousand nested optional inner groups
+retain all 1,002 participating body ranges on consuming iterations and clear
+every body slot on zero iterations. Deep outside capture scopes, long shared-prefix
+scalar/string bodies and constructor host aborts remain flat.
+
+All 431 Runtime unit tests pass (6.39 s), and the affected preceding proof group
+passes all three tests (0.88 s). Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. The grouped Runtime
+inventory contains 610 case files. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+Forty native tables and eight consumer programs agree on the fresh CLI and as
+actual Unicode Sets programs on native Node. Two preceding rejection controls
+now compare complete native metadata; they and the grouped zero-body edge agree
+on the fresh CLI. All 100,352 exact differential records agree across every start
+and sticky/multiline/ignore-case combination, with all 256 source/control patterns
+validated and all 1,024 proof/flag combinations supported. Five source-shape
+scans retain remaining rejection domains.

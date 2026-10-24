@@ -210,6 +210,8 @@ fn truth_table_optional_spine_alternative_string_classes_force_inner_lazy_consum
 }
 #[test]
 fn truth_table_optional_spine_alternative_string_classes_validate_all_zero_bound_bodies() {
+    assert_eq!(Realm::default().eval(r####"var pattern="^((([\\q{a|ab}])?)?|())?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],0,0,\"<undefined>\",\"<undefined>\"]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="((([\\q{a|ab}])?)?|())?$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"a\",\"a\",\"a\",\"a\",\"<undefined>\"],[[2,3],[2,3],[2,3],[2,3],\"<undefined>\"],2,0,\"<undefined>\",\"<undefined>\"]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((([\q{ab}&&\p{RGI_Emoji}]){0})?|())??",
         r"((([\q{a|ab}]){0})?|z)??",
@@ -217,8 +219,6 @@ fn truth_table_optional_spine_alternative_string_classes_validate_all_zero_bound
         r"((([\q{a|ab}]){0})?|([a]))??",
         r"((([\q{a|ab}])*)?|())?",
         r"((([\q{a|ab}]){0,2})?|())?",
-        r"^((([\q{a|ab}])?)?|())?",
-        r"((([\q{a|ab}])?)?|())?$",
         r"((([\q{a|ab}])?)?|()){0,2}",
     ] {
         let pattern = JsString::from(pattern);
