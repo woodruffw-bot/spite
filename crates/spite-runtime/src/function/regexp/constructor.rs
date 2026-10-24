@@ -3905,6 +3905,25 @@ impl Realm {
         } else {
             matcher
         };
+        let matcher = if matcher.is_none() {
+            let proof = self.object_work(span, |_, budget| {
+                RegExpStaticMatcher::compile_capture_free_positive_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if proof.is_some() {
+                enclosing_captures = 0;
+            }
+            proof.map(|proof| match proof {
+                RegExpStaticMatcher::Empty(plan) => RegExpMatcherBody::ZeroCountSequence(plan),
+                RegExpStaticMatcher::Impossible(plan) => RegExpMatcherBody::Impossible(plan),
+            })
+        } else {
+            matcher
+        };
         let matcher = matcher.map(|body| RegExpMatcher::new(body, enclosing_captures));
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the

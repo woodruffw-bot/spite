@@ -13924,3 +13924,13 @@ undefined masks. Capturing operands keep the earlier conservative facts. The
 original public constructor retains its domains and work through a separate
 scanner mode; flat frames, symbolic counts, capture-clear invariants and source
 charges remain the same.
+
+
+Runtime selects the separate capture-free positive static mode after the earlier
+static proof. Complete guaranteed-successful positive operands with no lexical
+captures compose as empty in both directions, while outside groups keep exact
+empty/undefined masks. Consuming capturing operands keep their earlier matching
+behavior. Full normalized source preserves original bindings and slots; shared
+execution retains Unicode boundaries, indices/groups, source/flags, lastIndex,
+String consumers, cloning and collection, with original errors before proof
+selection and compilation outside reentrant conversion frames.

@@ -25292,9 +25292,10 @@ in a separate non-inlined helper entered after prototype getters and ToString
 conversions finish. All thirteen constructor regression groups pass (0.15 s),
 including the failing reentry case and subsequent Realm reuse. The existing
 native reentry guard and stack requirement are unchanged. Native comparisons
-and quality checks above were rerun after this fix. A fresh full 2,930-test
-RegExp run and conformance-profile Test262 run are in progress; the superseded
-pre-fix corpus run was stopped and is not counted as passing.
+and quality checks above were rerun after this fix. The fresh full RegExp run
+passes all 2,930 tests (764.37 s). The conformance-profile Test262 run passes all
+35 runner tests and 16,343 corpus variants (363.99 s for the corpus). The stopped
+pre-fix corpus run is not counted as passing.
 
 
 Capture-free successful positive static proofs (Core)
@@ -25322,3 +25323,32 @@ documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 618; fixtures, snapshots, dependencies and default
 quotas are unchanged. This commit adds the Core API; Runtime selection follows
 separately.
+
+
+Capture-free successful positive static proofs (Runtime)
+------------------------------------------------------
+
+Runtime selects the capture-free positive mode after the original static proof.
+Both directions compose guaranteed-successful operands with no lexical captures
+as empty terms, preserving required/optional outside masks. All nine focused
+integration groups pass (0.38 s), including four new groups for both directions,
+nested assertions, indices/groups and lastIndex, String consumers, cloning,
+collection, 1,000 outside groups plus 1,000 positive layers and 20,000-digit
+minima. An existing ordinary capturing lookahead retains its consuming `aaa`
+capture, and proved-empty capturing assertions retain their earlier masks. Full
+original errors remain checked.
+
+All 55,296 exact native metadata records across 512 independently generated
+ordinary/u/v capture-free patterns agree on the fresh CLI, as do all nine
+complete JavaScript programs. All thirteen constructor regression groups pass
+(0.08 s), including native reentry. All 436 Runtime unit tests pass (3.25 s).
+Strict workspace Clippy with all targets passes (6.43 s), alongside documentation
+tests, formatting, dependency policy, inventories and diff checks. Runtime
+inventory remains 618; fixtures, snapshots, dependencies and default quotas are
+unchanged.
+
+The immediately preceding compositional-static Runtime snapshot passes the full
+2,930-test RegExp run (764.37 s), plus all 35 Test262 runner tests and 16,343 corpus
+variants in the conformance profile (363.99 s for the corpus). Those broad
+results precede capture-free Runtime selection; the new increment has the
+focused/native/quality checks above.
