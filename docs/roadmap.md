@@ -842,7 +842,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove optional outer roots around nested ordinary/exact-one truth-choice wrappers, clearing all enclosed captures on zero iterations.
 - [x] Execute nested optional root truth alternatives through Runtime and String consumers.
 - [x] Prove zero-count outer roots around nested truth-choice wrappers, validating all skipped terms and clearing every enclosed capture.
-- [ ] Execute nested zero-count root truth alternatives through Runtime and String consumers.
+- [x] Execute nested zero-count root truth alternatives through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

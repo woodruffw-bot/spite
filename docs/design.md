@@ -12618,4 +12618,7 @@ zero-count capture projection always returns undefined. Deep wrappers, long
 finite bodies, source-sized storage and clone/drop remain flat. Unknown terms
 in the unexecuted body, additional optional/zero inner counts, outside terms and
 other outer counts retain separate proofs. Earlier API domains, charged work
-and captures remain unchanged. Runtime selection remains separate.
+and captures remain unchanged. Runtime selects this nested zero-count proof after
+nested optional alternatives. The dedicated body preserves every undefined inner
+slot, normalized starts, source/flags, named aliases, indices, lastIndex and String
+consumers through cloning and collection.

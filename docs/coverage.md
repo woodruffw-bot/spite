@@ -22206,3 +22206,33 @@ The preceding captured-scope optional and zero-count root Runtime sources pass a
 fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants, including
 the pinned corpus gate (489.69 s). This run compiled before nested optional-root
 Runtime sources.
+
+
+## Runtime zero-count outer roots around nested truth-choice wrappers
+
+Three focused groups pass (0.48 s), clearing every enclosed capture while keeping
+all original numeric and named slots visible. Padded/lazy exact zero counts,
+ordinary/exact-one inner wrappers, both original branch orders,
+finite/scalar/known-empty bodies, normalized surrogate starts, named and
+escaped-name aliases, indices, matchAll, callback replacement, split/search,
+cloning, collection and strict lastIndex writes retain native behavior. Deep
+1,000-level counted inner wrappers, 20,000-unit shared-prefix bodies and
+constructor aborts remain flat. Full construction still rejects unknown terms
+in unexecuted bodies; additional optional/zero inner counts, outside terms and
+other outer counts retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding rejection control now compares full native captures, indices, source,
+flags, input and lastIndex and agrees on the fresh CLI; its Rust proof group
+passes (0.05 s). Five source-shape scans retain all other rejection domains.
+All 100,352 exact differential records agree across 256 independent pairs, with
+all 1,024 proof/flag combinations supported. Complete mixed wrappers and
+independent body profiles cover every start, sticky, multiline and ignore-case.
+All 431 Runtime unit tests pass (3.05 s), alongside strict workspace Clippy
+(36.51 s), documentation tests, formatting, policy, inventories and diff checks.
+The grouped Runtime inventory contains 601 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.
+
+The preceding captured-scope optional and zero-count root Runtime sources pass
+all 1,764 Unicode RegExp integration tests (857.91 s). This run compiled before
+nested optional and nested zero-count root Runtime sources.
