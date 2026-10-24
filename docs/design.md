@@ -12661,4 +12661,7 @@ storage and clone/drop remain flat and source-sized; all truth probes charge
 before inspection. Unknown terms in either region even under zero/skipped/never
 scopes, additional optional/zero class-path counts and consuming outside siblings
 retain separate proofs. Earlier API domains, charged work and captures remain
-unchanged. Runtime selection remains separate.
+unchanged. Runtime selects this zero-count nested outside-scope proof after the
+corresponding optional proof. Its dedicated body preserves outside participation,
+every undefined inner slot, actual endpoint truth, source/flags, named aliases,
+indices, lastIndex and String consumers through cloning and collection.

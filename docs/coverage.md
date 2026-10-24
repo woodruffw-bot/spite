@@ -22315,3 +22315,30 @@ quotas remain unchanged.
 The preceding nested optional and nested zero-count Runtime sources pass all
 1,770 Unicode RegExp integration tests (835.45 s). This run compiled before
 captured outside scopes around nested optional Runtime roots.
+
+
+## Runtime captured outside scopes around nested zero-count truth roots
+
+Three focused groups pass (0.72 s), preserving conditional outside points and
+mandatory enclosing ranges while every nested zero-count slot remains undefined.
+Padded/lazy zero counts, ordinary/exact-one inner wrappers, both original branch
+orders, named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes retain native
+behavior. Outside gates preserve earliest normalized Unicode positions and
+sticky failure/success without body queries. Deep 1,000-level outside points,
+20,000-unit shared-prefix scalar/string bodies and constructor aborts remain
+flat. Full construction still rejects unknown terms in unexecuted bodies and
+skipped/never outside scopes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Three
+preceding rejection controls across two existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+Both affected Rust proof groups pass. Five source-shape scans retain all other
+rejection domains. All 100,352 exact differential records agree across 256
+independent pairs, with all 1,024 proof/flag combinations supported. Mixed outside
+scopes, complete inner wrappers, finite/scalar/known-empty bodies and independent
+branch profiles cover every start, sticky, multiline and ignore-case. All 431
+Runtime unit tests pass (3.11 s), alongside strict workspace Clippy (38.45 s),
+documentation tests, formatting, policy, inventories and diff checks. The grouped
+Runtime inventory contains 603 case files. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.
