@@ -20588,3 +20588,32 @@ dependencies and default quotas are unchanged.
 A fresh pinned Test262 run with the skipped-scope Runtime and shared Core passes
 all 35 runner tests and all 16,343 reviewed variants; no unsupported syntax is
 accepted as a negative pass.
+
+
+## Runtime string-class repetition with only skipped outside predicates
+
+Three groups execute forty native equivalent capture tables and eight consumer
+programs. Before/after predicates under zero counts impose no start/end or word
+gate. Skipped captures remain undefined, and enclosing scopes retain defined
+empty points. All live count domains preserve class/empty priority and final-body
+identity. Named/escaped-name aliases, UTF-16 starts, matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex retain their results.
+Deep 1,000-scope skips and long shared-prefix members remain flat. With no live
+end predicate, a bounded empty-first repetition succeeds on its first allowed
+longest prefix; a short input retains scalar fallback. A 30,000-step constructor
+abort preserves bindings and host-failure isolation. Live conditional/body
+predicates, references, unknown terms and additional classes retain rejection
+coverage. Four control inventories require no migrations.
+
+Execution passes all 1,670 Unicode cases (599.77 s), all 431 Runtime unit tests,
+48 native references, strict workspace Clippy, documentation tests, formatting,
+dependency policy, 568 Runtime case-file registrations and Parser/Test262
+inventories. The preceding skipped-scope Runtime plus shared Core also passes
+the fresh 35-test runner suite and all 16,343 reviewed Test262 variants.
+
+All 230,400 exact differential records agree across 32 mixed nullable/nonnullable
+scalar, finite and nested-union forms, twelve count forms, three body modes,
+four skipped-scope layouts, eight skipped predicate profiles, six capture layouts
+and twelve inputs with every requested start/sticky/i/m. Controls preserve empty
+priority, exact huge optional allowances and specification ASCII folding.
+Fixtures, snapshots, dependencies and default quotas are unchanged.

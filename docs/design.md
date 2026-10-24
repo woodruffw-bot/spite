@@ -11919,4 +11919,8 @@ Huge nullable minima use the existing count reductions; impossible nonnullable
 minima fail against the input bound. Callback errors from fixed-state finders
 map to Work; the larger required plan retains Work and Capacity distinctions.
 Live predicates, body predicates, references, unknown terms and additional class
-paths remain outside this proof. Runtime selection remains separate.
+paths remain outside this proof. Runtime selects this proof after the live-
+predicate skipped-scope constructor on the full normalized capture source. Its
+dedicated body preserves original source/flags, names/index aliases, lastIndex,
+String consumers, cloning and collection, including defined enclosing empty
+captures around skipped children and undefined captures in the children.
