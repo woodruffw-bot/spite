@@ -13180,3 +13180,11 @@ including inside positive assertions. Earlier constructors retain their
 surrogate exclusions and work. Only construction reads the escape spellings;
 the lexical capture mask and constant-work matcher need no surrogate matching
 data. Flat capture clearing and source-sized storage are unchanged.
+
+
+Runtime selects the surrogate-aware tree proof after the earlier escaped-tree
+proof. Atom boundaries follow the original Unicode mode before zero-count
+erasure, while complete source spellings and capture numbering remain intact.
+Fixed-pair/lone/braced atoms, optional rollback and assertion imports use the
+shared named/index result path through String consumers, cloning and collection.
+Original syntax and binding errors still precede proof selection.

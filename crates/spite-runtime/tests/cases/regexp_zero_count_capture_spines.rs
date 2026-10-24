@@ -750,3 +750,101 @@ fn escaped_tree_original_early_errors_and_host_aborts_precede_erasure() {
     ));
     assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
+
+#[test]
+fn surrogate_empty_tree_masks_follow_mode_specific_atom_boundaries() {
+    check(
+        r#"
+        var cases=[
+            ['(?<pair>\\uD83D\\uDE00{0})(?<lead>\\uD800{0})(?<tail>\\u{DC00}{0})',[1,1,1],['pair','lead','tail'],'v'],
+            ['(?<lead>\\uD83D{0})(?<trail>\\uDE00{0})',[1,1],['lead','trail'],''],
+            ['(?<lead>\\uD83D{0})(?<trail>\\uDE00{0})',[1,1],['lead','trail'],'u'],
+            ['(?=(?<pair>\\uD83D\\uDE00{0}))(?<=(?<lead>\\u{D800}{0}))(?<tail>[\\p{RGI_Emoji}]{0})',[1,1,1],['pair','lead','tail'],'v'],
+            ['(?<outer>(?<lead>\\uD800{0})?|(?<trail>\\u{DC00}{0})+)+(?<tail>\\x61{0})',[1,0,0,1],['outer','lead','trail','tail'],'u'],
+            ['(?<first>(?<erased>\\k<later>|\\uD800+){0})(?<later>\\uD83D\\uDE00{0})',[1,0,1],['first','erased','later'],'v']
+        ],ok=true;
+        for(var pair of cases)for(var extras of ['d','dg','dgy','dgims'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var flags=extras+pair[3],r=new RegExp(pair[0],flags);r.lastIndex=start;var m=r.exec(input),global=r.global||r.sticky;
+            if(global&&start>input.length){ok=ok&&m===null&&r.lastIndex===0;continue}
+            var point=global?start:0;if(pair[3]&&point>0&&input.charCodeAt(point)>=0xdc00&&input.charCodeAt(point)<=0xdfff&&input.charCodeAt(point-1)>=0xd800&&input.charCodeAt(point-1)<=0xdbff)point--;
+            ok=ok&&m.index===point&&m[0]===''&&m.length===pair[1].length+1&&r.source===pair[0]&&r.lastIndex===(global?point:start)&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            for(var i=1;i<m.length;i++){
+                var name=pair[2][i-1];ok=ok&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i)&&Object.hasOwn(m.groups,name)&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===m[i]&&m.indices.groups[name]===m.indices[i];
+                ok=ok&&(pair[1][i-1]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+            }
+        }
+        var m=/(?=(?<same>\uD83D\uDE00{0})|(?<same>\uD800{0}))(?<tail>[\p{RGI_Emoji}]{0})/dgv.exec('ab');
+        ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.groups.same===''&&m.indices.groups.same===m.indices[1]&&m.indices.groups.tail===m.indices[3]&&Object.hasOwn(m.indices,'2')&&m.indices[2]===undefined
+    "#,
+    );
+}
+
+#[test]
+fn surrogate_empty_tree_consumers_clones_and_collection_keep_capture_aliases() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outer>(?<lead>\uD800{0})?|(?<trail>\u{DC00}{0})+)+(?<tail>\x61{0})/dgu,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===5&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m[4]===''&&m.indices.groups.outer===m.indices[1]&&m.indices.groups.tail===m.indices[4];
+        var calls=[];var value='ab'.replace(r,function(m,outer,lead,trail,tail,at,input,groups){calls.push(at);return arguments.length===8&&m===''&&outer===''&&lead===undefined&&trail===undefined&&tail===''&&input==='ab'&&groups.outer===''&&groups.tail===''?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,,,,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m[4]===''
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outer===''&&m.groups.lead===undefined&&m.groups.trail===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[4]"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deep_surrogate_trees_and_long_braced_spellings_have_no_default_quotas() {
+    check(
+        r#"
+        var depth=5,pattern='('.repeat(depth)+'(?<leaf>\\uD83D\\uDE00{0})'+'|(\\uD800){0})+'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===2*depth+2&&m.groups.leaf==='';
+        for(var i=1;i<=depth+1;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
+        for(var i=depth+2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
+        ok
+    "#,
+    );
+    let depth = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"{}(?<leaf>\uD83D\uDE00{{0}}){}",
+            "(".repeat(depth),
+            r"|(\uD800){0})+".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2002&&m.groups.leaf==='';for(var i=1;i<=1001;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;for(var i=1002;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;ok"
+    ));
+    let zeros = "0".repeat(20_000);
+    let pattern = JsString::from(
+        format!(r"(?<lead>\u{{{zeros}D800}}{{0}})(?<trail>\u{{DC00}}{{0}})").as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv'),m=r.exec('x');r.source==={pattern:?}&&m.length===3&&m[1]===''&&m[2]===''&&m.groups.lead===''&&m.groups.trail===''&&m.indices.groups.trail===m.indices[2]"
+    ));
+}
+
+#[test]
+fn surrogate_tree_original_early_errors_and_host_aborts_precede_erasure() {
+    check(
+        r#"
+        var invalid=['(?=(\\uD800{0}))\\u{110000}{0}','(?<same>\\uD800{0})(?<same>\\uDC00{0})','(?<x>\\uD80G{0})','(?<=\\u{D800})(\\k<missing>){0}'],ok=true;
+        for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
+    "#,
+    );
+    let zeros = "0".repeat(20_000);
+    let pattern =
+        JsString::from(format!(r"(?=(\u{{{zeros}D800}}{{0}}))(?<=(\uDC00{{0}}))").as_str());
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30_000),
+        ..Limits::default()
+    });
+    realm.eval("var r=7,marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!(
+            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
+        )),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
+}

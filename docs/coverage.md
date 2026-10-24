@@ -23574,3 +23574,29 @@ A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
 Rust strings finds none newly admitted. Construction and retained storage stay
 source-sized; matching and capture queries remain constant. Runtime integration
 follows separately.
+
+
+## Runtime mode-aware zero-erased surrogate escape trees
+
+Runtime selects the surrogate-aware proof after the earlier escaped-tree proof.
+Fixed-pair, lone and braced atoms retain the original mode's boundaries before
+erasure. Named/index aliases, optional rollback, assertion imports and erased
+reference bindings share the standard String consumer, clone and collection
+paths, with complete original syntax validation.
+
+All 37 focused integration groups pass (4.52 s), including four new groups for
+ordinary/u/v atom boundaries, named capture masks, duplicate-name aliases, erased
+forward references, positive imports, String consumers, cloning, collection,
+1,000 nested choice groups, a 20,000-zero braced surrogate spelling, original
+syntax errors and opt-in constructor aborts. All 55,296 exact native metadata
+records across 512 generated surrogate trees agree on the fresh CLI, as do all
+37 complete JavaScript programs.
+
+All 435 Runtime unit tests pass (8.53 s). Strict workspace Clippy with all targets
+passes (12.52 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped inventory remains 614 Runtime
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding positive-tree Runtime snapshot passes all 2,805 RegExp integration
+tests (826.80 s), including the corrected ordinary-string expectations. This
+broad snapshot precedes escaped/surrogate Runtime integration.
