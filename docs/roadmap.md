@@ -966,6 +966,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute compositional capture-free successful positive assertions through Runtime and String consumers with exact outside masks and original bindings.
 - [x] Prove successful positive operands with only undefined captures through flat conservative export counts, excluding later data arms and shifted defined-empty spans while preserving earlier static modes.
 - [x] Execute positive assertions with guaranteed-successful undefined-only capture operands through Runtime and String consumers, retaining original slots and outside masks.
+- [x] Compile complete Unicode positive lookahead over one quantified atom with independent empty assertion and consuming operand capture ranges, including complete outside and operand wrappers.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.

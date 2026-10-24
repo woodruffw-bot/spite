@@ -25436,3 +25436,26 @@ dependencies, build profiles, worker settings, and default quotas are unchanged.
 The complete Rust 1.85 Core suite passes all 1,708 tests (205.37 s), including
 all existing exhaustive class/property, ordered-capture, opt-in cancellation,
 deep-source, clone/drop, and snapshot checks.
+
+## Core complete Unicode positive lookahead with operand captures
+
+The actual-source focused harness passes 226 tests, including five groups for
+complete Unicode positive lookahead. Checks distinguish empty whole/outside
+ranges from consuming operand captures, greedy/lazy counts, initial trailing
+surrogates, sticky failure, proof exclusions, 200,000 wrappers, 20,000-digit
+bounds and every charged construction cancellation. Independent positive ASCII
+property expectations cover long s and Kelvin sign in u/v with and without i.
+
+A 512-pattern differential checks 53,248 UTF-16 input/start/sticky/range/capture
+records. Of these, 52,208 use the original patterns in Node. Ten ASCII iv
+patterns contribute 1,040 records using the equivalent explicit ASCII range
+to respect the previously documented Node property-fold discrepancy. The equivalent-range expectations preserve the specification property-fold rule.
+The patterns cover wrapper capture inventories, Unicode widths, symbolic
+counts, greediness and line/dot/case flags over nine input strings. The fixture
+table resides in static storage in the standalone differential driver.
+
+Review of 2,732 lexed direct Unsupported controls admits none through the new
+Unicode-gated constructor. Strict workspace Clippy with all targets,
+documentation tests, formatting, dependency policy, inventories and diff checks
+pass. Runtime selection remains separate; fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.

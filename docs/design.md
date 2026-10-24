@@ -13963,3 +13963,24 @@ bindings; shared execution keeps Unicode boundaries, indices/groups, source/
 flags, lastIndex, String consumers, cloning and collection, with original errors
 and coercions before proof execution. The large compiler remains outside
 reentrant conversion frames.
+
+
+A dedicated Core matcher compiles a complete positive Unicode lookahead over one
+quantified character atom (22.2.2.3.1, 22.2.2.4). Complete unquantified ordinary
+and noncapturing groups may surround the assertion and its operand. The
+existing repeated-atom plan selects the operand with its original greedy/lazy
+counts, line anchors, flags, input context and initial surrogate boundary. The
+assertion's whole-match span remains empty at that selected candidate. Outside
+captures use that empty span; operand wrappers use the full selected operand
+span, including a defined empty run. Both ranges remain available independently
+without allocating or rescanning a capture vector.
+
+Original u/v Pattern validation and normalized capture heads are required before
+projection. Internal atom captures, quantified outside wrappers, modifiers,
+continuations, alternatives and lookbehind retain separate compiler domains.
+Source work precedes all wrapper scans and operand copying. Construction,
+cloning and dropping retain flat source-sized storage; symbolic counts and
+wrapper depth add no native recursion. Underlying construction and actual-search
+work callbacks preserve their existing events and errors. Positive ASCII
+property folding follows the existing edition-17 rule, including the documented
+Node iv discrepancy. Runtime selection is a separate integration step.
