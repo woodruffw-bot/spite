@@ -11788,4 +11788,8 @@ both profiles with the final accepted class member. Original lexical projection
 therefore uses the final range plus its class-versus-empty tag, including a
 zero-width final required range. Huge upper counts retain exact decimal bounds
 and bounded short lazy matching work. Unknown leaves remain unproved even under
-zero counts or a preferred empty arm. Runtime selection remains separate.
+zero counts or a preferred empty arm. Runtime selects this proof after the
+nonnullable asserted constructor on the full capture source. Its dedicated body
+retains original source, lexical names/indices, lastIndex, String consumers,
+cloning and collection, including defined required-empty captures and undefined
+zero-iteration captures.

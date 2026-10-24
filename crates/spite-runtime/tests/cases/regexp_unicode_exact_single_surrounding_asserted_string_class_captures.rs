@@ -653,11 +653,17 @@ fn exact_single_surrounding_asserted_string_class_consumers_keep_point_whole_and
     check(
         r"var r=/(?:(?<start>\B)(?<whole>(?<part>[\q{|a|ab}])|(?<empty>))(?<end>\B)){1}/dvg;r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.start===''&&m.groups.whole===''&&m.groups.part===''&&m.groups.empty===undefined&&m.groups.end===''&&m.indices.groups.start[0]===5&&m.indices.groups.end[0]===5&&r.lastIndex===5",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(?:([\\q{a|ab}])|())+(\\b)",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"<undefined>\",\"\"],\"indices\":[[1,3],[1,3],\"<undefined>\",[3,3]],\"index\":1},3],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"<undefined>\",\"\"],\"indices\":[[1,3],[1,3],\"<undefined>\",[3,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"((\b)|())(([\q{a|ab}])|())",
         r"(\b)?(([\q{a|ab}])|())",
         r"(([\q{a|ab}])|())(\b)?",
-        r"(?:([\q{a|ab}])|())+(\b)",
+        r"(?:([[\q{a|ab}]&&\p{RGI_Emoji}])|())+(\b)",
         r"(?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()){1}(\b)",
         r"(\b)(([\q{a|ab}])|()|())",
         r"(\b)(([\q{a|ab}])|([\q{}]))",

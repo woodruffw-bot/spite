@@ -10,6 +10,7 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
+    RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher, RegExpUnicodeCharacterMatcher,
@@ -2504,13 +2505,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeRequiredStringClassCaptures(body)));
                 }
-                RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeAssertedRepeatedStringClassCaptures(body)));
+                }
+                RegExpUnicodeAssertedNullableStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedRepeatedStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedNullableStringClassCaptures))
 
             })?;
             if body.is_some() {

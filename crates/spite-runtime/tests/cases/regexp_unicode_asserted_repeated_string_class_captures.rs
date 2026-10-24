@@ -197,9 +197,21 @@ fn asserted_repeated_string_class_deep_scopes_continuations_and_host_aborts_rema
 }
 #[test]
 fn asserted_repeated_string_class_proofs_keep_conditional_predicates_and_unproved_leaves_closed() {
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^([\\q{|aa|aaa}])*$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\"],\"indices\":[[0,6],[3,6]],\"index\":0},6],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\"],\"indices\":[[0,6],[3,6]],\"index\":0},6],[true,\"ababa\",null,0],[true,\"\\nab\\n\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^(([\\q{aa|aaa}])|())*$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\",\"aaa\",\"<undefined>\"],\"indices\":[[0,6],[3,6],[3,6],\"<undefined>\"],\"index\":0},6],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\",\"aaa\",\"<undefined>\"],\"indices\":[[0,6],[3,6],[3,6],\"<undefined>\"],\"index\":0},6],[true,\"ababa\",null,0],[true,\"\\nab\\n\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
-        r"^([\q{|aa|aaa}])*$",
-        r"^(([\q{aa|aaa}])|())*$",
+        r"^([[\q{|aa|aaa}]&&\p{RGI_Emoji}])*$",
+        r"^(([[\q{aa|aaa}]&&\p{RGI_Emoji}])|())*$",
         r"(^([\q{aa|aaa}]))*$",
         r"(^|)([\q{aa|aaa}])*$",
         r"(^)*([\q{aa|aaa}])*$",

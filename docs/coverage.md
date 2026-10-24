@@ -20313,3 +20313,43 @@ work and capture projection. Strict workspace Clippy, documentation tests,
 formatting, dependency policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas are
 unchanged.
+
+
+## Runtime asserted nullable zero/one-minimum string-class repetition
+
+Three groups execute thirty-eight native capture tables and nine additional
+native reference programs, plus collection. A scalar/empty priority witness
+retains a consuming line terminator before the class empty member. They distinguish skipped iterations,
+required class-empty and separate-empty captures, either branch order, and
+required-empty retries constrained by upper counts. Scalar fallback, empty-only
+and known-empty classes, Unicode leading boundaries and folding, named/escaped
+names and indices aliases retain their native results. matchAll, callback
+replacement, split/search, cloning, collection and read-only lastIndex preserve
+required-empty identity. Deep empty capture scopes and long shared-prefix members
+remain flat. Opt-in constructor and greedy continuation aborts preserve bindings,
+lastIndex and host-failure isolation; required class-empty success retains
+bounded work on long input. Seventeen earlier rejection controls become native
+eight-record capture/finalizer checks with unproved leaves retained. Larger
+nullable minima, conditional/body predicates, references, nested class-path
+loops, consuming siblings and additional classes retain separate proofs.
+
+
+Execution passes all 1,655 Unicode RegExp integration cases and 431 Runtime
+units. The added scalar-before-empty native regression passes in the targeted
+consumer group after that full run. All 47 fixed references and 17 migrated
+eight-record tables agree with the fresh CLI and native references. All 230,400
+differential records agree across 384 independent pairs, twelve counts, 32
+nullable finite/algebraic/scalar class forms, three rotated body modes, eight
+rotated predicate profiles, six capture layouts, twelve inputs and all
+starts/sticky/i/m combinations.
+
+Finite native controls place consuming words and scalar fallback before their
+empty alternative, preserving the string class's longest-member priority. The
+line-terminator witness separately checks native execution of the original class
+at a word boundary. The earlier vi folding and Unicode leading-boundary reference
+policy is retained.
+
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. The Runtime inventory is 563 case files and
+4,361 integration cases. Fixtures, snapshots, dependencies and default quotas
+are unchanged.
