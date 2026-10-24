@@ -383,10 +383,42 @@ fn one_count_end(units: &[u16], at: usize) -> Option<usize> {
     end += usize::from(units.get(end) == Some(&0x3f));
     Some(end)
 }
+// Optional count recognition is exact even with arbitrarily many leading zeros.
+fn optional_count_end(units: &[u16], at: usize) -> Option<usize> {
+    let mut end = if units.get(at) == Some(&0x3f) {
+        at + 1
+    } else {
+        if units.get(at) != Some(&0x7b) {
+            return None;
+        }
+        let mut p = at + 1;
+        let begin = p;
+        while units.get(p) == Some(&0x30) {
+            p += 1;
+        }
+        if p == begin || units.get(p) != Some(&0x2c) {
+            return None;
+        }
+        p = one_digits_end(units, p + 1)?;
+        if units.get(p) != Some(&0x7d) {
+            return None;
+        }
+        p + 1
+    };
+    end += usize::from(units.get(end) == Some(&0x3f));
+    Some(end)
+}
 pub(in super::super) fn exact_single_count_source(units: &[u16]) -> Option<Vec<u16>> {
+    single_count_source(units, false)
+}
+pub(in super::super) fn optional_single_count_source(units: &[u16]) -> Option<Vec<u16>> {
+    single_count_source(units, true)
+}
+fn single_count_source(units: &[u16], optional: bool) -> Option<Vec<u16>> {
     let (mut at, mut class_seen) = (0usize, false);
     let mut frames = Vec::<bool>::new();
     let mut removed = Vec::<Range<usize>>::new();
+    let mut kept_optional = false;
     while let Some(&unit) = units.get(at) {
         match unit {
             0x5c => {
@@ -414,15 +446,21 @@ pub(in super::super) fn exact_single_count_source(units: &[u16]) -> Option<Vec<u
                 let owns_class = frames.pop()?;
                 at += 1;
                 if owns_class && matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
-                    let end = one_count_end(units, at)?;
-                    removed.push(at..end);
-                    at = end;
+                    if let Some(end) = one_count_end(units, at) {
+                        removed.push(at..end);
+                        at = end;
+                    } else if optional && !kept_optional {
+                        at = optional_count_end(units, at)?;
+                        kept_optional = true;
+                    } else {
+                        return None;
+                    }
                 }
             }
             _ => at += 1,
         }
     }
-    if !class_seen || !frames.is_empty() || removed.is_empty() {
+    if !class_seen || !frames.is_empty() || removed.is_empty() || (optional && !kept_optional) {
         return None;
     }
     let mut normalized = Vec::with_capacity(units.len());

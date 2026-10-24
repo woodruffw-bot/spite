@@ -29,6 +29,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
     RegExpUnicodeRequiredStringClassCaptureMatcher,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
+    RegExpUnicodeTruthTableExactOneGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,

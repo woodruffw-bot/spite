@@ -12482,3 +12482,21 @@ alternatives. Its dedicated body retains mandatory enclosing ranges separately
 from final-iteration absence, actual endpoint truth, original lexical slots,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves exact-one class-path counts around grouped optional root
+alternatives. A flat normalization retains exactly one optional group count and
+removes only proved `{1}`/`{1,1}` counts, including padded/lazy forms. The complete
+grouped optional-root proof subsequently validates every retained original term
+and both branches. Optional class leaves and additional optional class-path
+groups remain outside this proof. Mandatory enclosing captures participate even
+when the optional root takes zero iterations; skipped inner captures remain
+undefined (ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+Exact decimal recognition avoids integer conversion for arbitrarily long leading
+zeros. Source-sized normalization and checked capture projection remain flat;
+matching delegates the existing optional progress/member retries unchanged.
+Earlier exact-one normalization uses its original mode and retains exact API
+domains, charged work and captures. Other counts, outside terms and unknown
+leaves even in lazy/never bodies retain separate proofs. Runtime selection
+remains separate.

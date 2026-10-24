@@ -21922,3 +21922,23 @@ pass (9.96 s), alongside strict workspace Clippy (20.47 s), documentation tests,
 formatting, policy, inventories and diff checks. The grouped Runtime inventory
 contains 595 case files. Fixtures, snapshots, dependencies and default quotas
 remain unchanged.
+
+
+## Core exact-one grouped optional root truth alternatives
+
+Four focused groups pass (9.51 s), comparing 160 native capture tables and an
+independent progress/capture oracle across every UTF-16 start, sticky, multiline
+and ignore-case. Exact-one enclosing/class paths preserve both branch orders,
+greedy/lazy optional counts, conditional predicate slots, defined mandatory outer
+ranges and undefined skipped inner captures. Finite/scalar/known-empty classes
+retain shorter-member and empty-first retries. Deep 20,000-level counted outer
+groups, 20,000-unit shared-prefix members, thousand-digit padded exact-one and
+optional bounds, cloning/drop and every charged cancellation/recovery remain
+flat. Unknown branches even behind lazy/never paths, references, extra classes,
+outside terms and other class-path counts retain their proof boundaries.
+
+All 88,776 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches, including the earlier exact-one normalizer
+mode. Strict workspace Clippy (94 s), documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas remain unchanged.

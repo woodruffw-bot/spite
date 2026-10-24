@@ -1397,6 +1397,7 @@ pub use predicate_choices::{RegExpUnicodeTruthTableCountedNullableStringClassCap
     RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableExactOneGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher,

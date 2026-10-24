@@ -831,6 +831,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute optional direct root truth alternatives through Runtime and String consumers.
 - [x] Prove mandatory enclosing groups around optional root truth alternatives, preserving defined outer captures on zero iterations.
 - [x] Execute grouped optional root truth alternatives through Runtime and String consumers.
+- [x] Prove exact-one class-path counts around grouped optional root truth alternatives, retaining optional progress and mandatory enclosing captures.
+- [ ] Execute exact-one grouped optional root truth alternatives through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
