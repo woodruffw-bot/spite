@@ -13343,3 +13343,11 @@ Interleaved masks remain in lexical order, including undefined assertion slots.
 Source/copy and mask work precede allocation; disjoint segments keep construction
 and storage source-sized. Actual empty matching and individual capture queries
 reuse the existing constant-work implementation.
+
+
+Runtime selects the first-negative-impossible root-choice proof after the whole
+and enclosing empty assertion proofs. It retains the first arm's capture mask
+and every skipped later lexical slot, using the complete original normalized
+source. Duplicate names across original alternatives and erased forward bindings
+keep their original validation context. Shared empty execution preserves Unicode
+boundaries, lastIndex, String callback/split captures, cloning and collection.

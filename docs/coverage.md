@@ -23963,3 +23963,21 @@ are unchanged.
 The earlier positive-impossible-assertion Runtime snapshot also passes all 35
 Test262 runner tests and the unchanged 16,343-case corpus (484.52 s). This broad
 result predates Runtime selection of the negative-impossible empty proofs.
+
+
+Root choices beginning with negative-impossible assertions (Runtime)
+-------------------------------------------------------------------
+
+Runtime selects root choices whose first arm always succeeds empty through the
+whole or enclosing negative-impossible proof. All nine focused integration
+groups pass (0.21 s), including three new groups for required/optional first-arm
+masks, skipped consuming later arms, duplicate names across alternatives,
+original erased forward bindings and later errors, Unicode boundaries,
+lastIndex, callback/split captures, cloning, collection and 1,000 later captures.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v choices agree on the fresh CLI, as do all nine complete JavaScript
+programs. All 436 Runtime unit tests pass (4.73 s). Strict workspace Clippy with
+all targets passes (22.54 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 616;
+fixtures, snapshots, dependencies and default quotas are unchanged.
