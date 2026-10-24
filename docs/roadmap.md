@@ -960,6 +960,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute enclosing optional established-impossible sequences through Runtime and String consumers with exact required-prefix and rolled-back masks.
 - [x] Execute root choices beginning with optional established-impossible empty forms through Runtime and String consumers, retaining first-arm masks and all unselected slots.
 - [x] Execute complete positive lookahead/lookbehind over optional established-impossible forms through Runtime and String consumers with exact exported masks.
+- [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute complete required ordinary/modifier spines around negative assertions over independently empty optional-established-impossible forms through Runtime and String consumers with original bindings and complete lexical inventories.

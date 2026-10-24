@@ -13868,3 +13868,13 @@ original binding and lexical slot. Shared execution preserves Unicode
 boundaries, indices/groups where matches exist, source/flags, lastIndex,
 String consumers, cloning and collection, with original validation errors
 before proof selection.
+
+
+Runtime selects complete ordinary/modifier spines around independently empty
+optional established-negative concatenations. Required wrappers retain body
+masks while optional repetitions clear descendant captures (22.2.2.3.1,
+22.2.2.7). Original bindings, full lexical slots and symbolic bounds remain
+intact. Full normalized source retains every original binding and lexical
+slot. Shared execution preserves Unicode boundaries, indices/groups where
+matches exist, source/flags, lastIndex, String consumers, cloning and
+collection, with original validation errors before proof selection.

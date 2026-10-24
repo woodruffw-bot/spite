@@ -25212,3 +25212,25 @@ programs. All 436 Runtime unit tests pass (3.71 s). Strict workspace Clippy
 with all targets passes (6.69s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Enclosing optional established-negative sequences (Runtime)
+-----------------------------------------------------------
+
+Runtime selects complete ordinary/modifier spines around independently empty
+optional established-negative concatenations. Required wrappers retain body
+masks while optional repetitions clear descendant captures (22.2.2.3.1,
+22.2.2.7). Original bindings, full lexical slots and symbolic bounds remain
+intact.
+
+All 39 focused integration groups pass (0.22 s), including three new groups
+for required/optional prefix masks, rolled-back descendants, modifiers and
+lazy/padded bounds, later errors, indices/groups and lastIndex, String
+consumers, cloning, collection, 1,000 outside groups and 20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 39 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.63 s). Strict workspace Clippy
+with all targets passes (6.57s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.

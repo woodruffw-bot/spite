@@ -784,3 +784,66 @@ fn optional_established_negative_sequences_keep_many_masks_without_default_quota
         4 * count
     ));
 }
+
+#[test]
+fn enclosing_optional_established_negative_sequences_keep_required_and_optional_prefix_masks() {
+    check(
+        r#"
+        var body='(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?(?<last>[a]{0})+',rows=[
+            ['(?<outside>'+body+')+',[true,false,false,true]],
+            ['(?<outside>'+body+')?',[false,false,false,false]],
+            ['(?<outside>(?<rolled>'+body+')*)+',[true,false,false,false,false]],
+            ['(?im-s:(?<outside>'+body+')){0001,0002}?',[true,false,false,true]]
+        ],ok=true;
+        for(var row of rows)for(var flags of ['dv','dgv','dgyv','dgimsv']){
+            var r=new RegExp(row[0],flags);r.lastIndex=1;var m=r.exec('😀a');ok=ok&&m.index===0&&m[0]===''&&m.length===row[1].length+1&&r.lastIndex===(r.global||r.sticky?0:1)&&r.source===row[0];
+            for(var i=0;i<row[1].length;i++)ok=ok&&(row[1][i]?m[i+1]===''&&m.indices[i+1][0]===0&&m.indices[i+1][1]===0:m[i+1]===undefined&&m.indices[i+1]===undefined);
+        }
+        for(var source of ['(((?!((?![\\p{RGI_Emoji}]*))?))?[\\p{Not_A_Property}]{0})+','(((?!((?![\\p{RGI_Emoji}]*))?))?(?<x>a)(?<x>b){0})+','(((?!((?![\\p{RGI_Emoji}]*))?))?\\k<missing>{0})+']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn enclosing_optional_established_negative_sequence_consumers_clones_and_collection_keep_rolled_back_slots()
+ {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?<rolled>(?<skip>(?!(?<inner>(?![\p{RGI_Emoji}]*))?))?(?<last>[a]{0})+)*)+/dgv,ok=true,offsets=[];
+        var matches=Array.from('😀a'.matchAll(r));ok=ok&&matches.length===3&&matches[1].index===2&&matches[2].index===3&&matches[1].groups.outside===''&&matches[1].groups.rolled===undefined&&matches[1].groups.last===undefined;
+        ok=ok&&'😀a'.replace(r,function(match,outside,rolled,skip,inner,last,offset,input,groups){ok=ok&&outside===''&&rolled===undefined&&skip===undefined&&inner===undefined&&last===undefined&&groups.outside==='';offsets.push(offset);return '!';})==='!😀!a!'&&JSON.stringify(offsets)==='[0,2,3]';
+        ok=ok&&JSON.stringify('a😀b'.split(r))==='["a","",null,null,null,null,"😀","",null,null,null,null,"b"]'&&''.split(r).length===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('😀');ok&&m.index===0&&m[1]===''&&m[2]===undefined&&m[5]===undefined&&m.indices[5]===undefined&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.last===undefined&&after.indices.groups.last===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn enclosing_optional_established_negative_sequences_keep_deep_masks_and_huge_counts_without_default_quotas()
+ {
+    check(
+        r#"
+        var depth=10,body='(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?(?<last>[a]{0})+',pattern='('.repeat(depth)+body+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+4&&m[depth]===''&&m[depth+1]===undefined&&m[depth+2]===undefined&&m[depth+3]===''&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let depth = 1000;
+    let body = r"(?<skip>(?!(?<inner>(?![\p{RGI_Emoji}]*))?))?(?<last>[a]{0})+";
+    let pattern =
+        JsString::from(format!("{}{body}{}", "(".repeat(depth), ")+".repeat(depth)).as_str());
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===''&&m[{}]===undefined&&m[{}]===undefined&&m[{}]===''&&r.lastIndex===0&&r.source==={pattern:?}",
+        depth + 4,
+        depth,
+        depth + 1,
+        depth + 2,
+        depth + 3
+    ));
+    let pattern = JsString::from(format!("({body}){{{}}}", "9".repeat(20_000)).as_str());
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===5&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m[4]===''&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+}
