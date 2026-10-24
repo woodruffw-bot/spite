@@ -11942,8 +11942,11 @@ ordinary enclosing captures around skipped children retain defined empty points.
 Longest-member and Unicode start/search semantics remain the single-class
 semantics. Other class counts, class-bearing choices, references, live/body
 predicates and unknown terms retain separate proofs. Allocation and callback
-failures keep their constructor/work distinction. Runtime selection remains
-separate.
+failures keep their constructor/work distinction. Runtime selects the single-
+class skipped-predicate proof after the assertion-free repetition proof on the
+full normalized capture source. Its dedicated body preserves source/flags,
+lexical name/index aliases, lastIndex, String consumers, cloning and collection.
+A required empty class member stays defined beside undefined skipped children.
 
 
 Core separately proves a single class with skipped outside scopes and remaining

@@ -20658,3 +20658,28 @@ work and capture projection. Strict workspace Clippy, documentation tests,
 formatting, dependency policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas are
 unchanged.
+
+
+## Runtime single string class with only skipped outside predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Bare and exact-one class paths retain longest-member priority, unconstrained
+Unicode search and defined empty class captures. Skipped slots stay undefined;
+ordinary enclosing point scopes remain defined. Named/escaped-name aliases,
+matchAll, callback replacement, split/search, cloning, collection and read-only
+lastIndex preserve source, flags and capture identity. Deep 1,000 skipped scopes,
+long shared-prefix members versus scalar fallback, constructor abort isolation
+and closed conditional/body predicates, references and unknown paths pass.
+The consumer controls enter the class once and retain unused empty-arm capture
+slots under zero counts.
+
+All 1,673 Unicode Runtime groups pass (901.14 s), as do 431 Runtime unit tests
+(4.32 s), the three new groups, forty native tables, eight native consumer
+programs and three migrated unsupported controls. The three existing controls
+now check source, flags, complete captures/indices and native results; their
+unknown-leaf rejection controls remain. Four literal/program/formatted/generated
+control scans found only those three newly supported cases. The first 129,600
+exact differential records match independent native controls across mixed
+finite/scalar/known-empty classes, branch/capture layouts and Unicode starts.
+Strict workspace Clippy, documentation tests, formatting, policy and inventories
+pass; fixtures, snapshots, dependencies and default quotas are unchanged.

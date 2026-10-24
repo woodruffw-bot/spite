@@ -804,7 +804,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile bare and exact-one string classes with only skipped outside predicates, retaining required empty class captures.
 - [x] Compile a single class with skipped scopes and remaining unconditional predicates, preserving endpoint retries and captures.
 - [ ] Execute a single class with skipped scopes and live predicates through Runtime and String consumers.
-- [ ] Execute a single string class with skipped outside predicates through Runtime and String consumers.
+- [x] Execute a single string class with skipped outside predicates through Runtime and String consumers.
 - [x] Execute larger asserted nullable scalar/string-class counts through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.

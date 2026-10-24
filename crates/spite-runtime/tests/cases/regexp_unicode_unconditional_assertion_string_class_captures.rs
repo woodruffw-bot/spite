@@ -210,9 +210,15 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(^){0}([\\q{a|ab}])",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,1],\"<undefined>\",[0,1]],\"index\":0},1],[false,\"ababa\",{\"values\":[\"ab\",\"<undefined>\",\"ab\"],\"indices\":[[0,2],\"<undefined>\",[0,2]],\"index\":0},2],[false,\"\\nab\\n\",{\"values\":[\"ab\",\"<undefined>\",\"ab\"],\"indices\":[[1,3],\"<undefined>\",[1,3]],\"index\":1},3],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,1],\"<undefined>\",[0,1]],\"index\":0},1],[true,\"ababa\",{\"values\":[\"ab\",\"<undefined>\",\"ab\"],\"indices\":[[0,2],\"<undefined>\",[0,2]],\"index\":0},2],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"<undefined>\",\"ab\"],\"indices\":[[1,3],\"<undefined>\",[1,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"(\b)?([\q{a|ab}])",
-        r"(^){0}([\q{a|ab}])",
+        r"(^){0}([[\q{a|ab}]&&\p{RGI_Emoji}])",
         r"(\b|)([\q{a|ab}])",
         r"(|\b)([\q{a|ab}])",
         r"((^))?([\q{a|ab}])",
