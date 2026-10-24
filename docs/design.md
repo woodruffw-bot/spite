@@ -13081,3 +13081,12 @@ erased spine/sequence or an empty arm before retaining the first arm's mask.
 All backtracking paths then stay at the same input position, and optional
 attempts roll every capture write back. Root and mandatory-enclosing first
 choices still use their final-success proof and may skip arbitrary later bodies.
+
+
+Runtime selects the quantified enclosing proof after the mandatory enclosing
+proof and reuses the complete-layout lexical-mask body. Required outside
+captures, optional rollback, modifier scopes and safe empty alternatives retain
+original named/index aliases through String consumers, cloning and collection.
+Choices with unproved later arms retain unsupported matching, including cases
+where a failed empty iteration could backtrack into consuming membership.
+Original early errors and opt-in host aborts still precede matching effects.

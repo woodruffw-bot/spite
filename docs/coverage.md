@@ -23340,3 +23340,39 @@ A lexical review of all 2,701 retained unsupported controls finds none newly
 admitted after the restriction; their original expectations remain intact.
 Construction, retained storage and clone/drop are source-sized, with constant
 matching and capture queries. Earlier APIs and their work remain unchanged.
+
+
+## Runtime quantified enclosing empty sequences and safe choices
+
+Runtime selects the restricted quantified enclosing proof and reuses the full
+lexical-mask body. Every choice arm must be independently empty before
+repetition can backtrack through it. Required outside captures, optional
+rollback, modifier scopes and named/index aliases share the normal String
+consumer, clone and collection paths. Consuming later alternatives retain
+unsupported matching. All 20 original controls in the 11 reviewed modules
+remain unchanged.
+
+All 21 focused integration groups pass (2.71 s), including four new groups for
+named required/optional masks, safe duplicate-name alternatives, String
+consumers, cloning, collection, 1,000 quantified enclosing captures, a
+20,000-digit required count, original syntax errors and opt-in host aborts.
+Explicit nonempty-input controls reject the unsafe consuming alternatives that
+an empty-input-only check would miss.
+
+All 55,296 exact native metadata records across 512 independently generated
+ordinary/u/v patterns agree on the fresh corrected CLI, exercising actual Node
+execution for every input, start and flag set. All 21 complete JavaScript
+programs also agree. A mode-mixing generator error in one final-batch pattern
+was corrected; the corrected eight-pattern batch passes, and the other 504
+patterns are unchanged from their passing runs. All 169 tests in the eleven
+restored unsupported-control modules pass on the corrected Runtime.
+
+All 435 Runtime unit tests pass (5.08 s). Strict workspace Clippy with all targets
+passes (28.02 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped inventory remains 614 Runtime
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding mandatory-enclosing Runtime snapshot passes all 2,793 RegExp
+integration tests (573.63 s). The earlier first-alternative Runtime snapshot
+passes all 35 Test262 runner tests and all 16,343 reviewed variants (241.85 s for
+the corpus group). Both broad snapshots precede quantified Runtime integration.
