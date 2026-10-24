@@ -866,6 +866,41 @@ impl RegExpImpossibleMatcher {
         }))
     }
 
+    /// Proves required ordinary/modifier spines around an established impossible body.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every outside minimum must be positive; optional wrappers can skip the
+    /// failing body (22.2.2.3.1). Earlier proof families or a complete mixed
+    /// impossible root choice prove the projected body. The finite chain never
+    /// re-enters this constructor. Original bindings, symbolic counts and full
+    /// capture inventories remain intact; source/frame/copy work precedes allocation.
+    pub fn compile_wrapped_known_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut plan = Self::known_arm_with_work(&body, unicode, sets, &mut charge)?;
+        if plan.is_none() {
+            plan =
+                Self::compile_known_alternatives_validated_with_work(&body, unicode, sets, charge)?;
+        }
+        Ok(plan.map(|body| Self {
+            captures: scope.captures + body.captures,
+        }))
+    }
+
     // Closed earlier proof families only; this helper never calls the new
     // known-alternatives constructor. Erasing the callback type bounds compiler
     // expansion through the earlier alternative proofs.
@@ -2561,6 +2596,91 @@ mod tests {
             let mut seen = Vec::new();
             assert!(matches!(
             RegExpImpossibleMatcher::compile_known_alternatives_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop));
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn wrapped_known(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_wrapped_known_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn wrapped_known_impossible_bodies_keep_mixed_families_required_counts_and_global_bindings() {
+        for (source, captures) in [
+            (r"((?![\p{RGI_Emoji}]*)|(?!(a{0})))+", 2),
+            (r"(?im-s:((?!(\4){0})|((?!a*))(?!(b{0})))){2,3}", 4),
+            (
+                r"((?=([\p{RGI_Emoji}]+)(?!(a{0})))|(?!a*b*)){0001,0002}?",
+                3,
+            ),
+            (r"((?!(a{0})))+", 2),
+        ] {
+            assert_eq!(
+                wrapped_known(source)
+                    .unwrap_or_else(|| panic!("rejected {source}"))
+                    .capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn wrapped_known_impossible_proofs_reject_optional_outside_wrappers_siblings_and_possible_arms()
+    {
+        for source in [
+            r"(?!a*)|(?!)",
+            r"((?!a*)|(?!))?",
+            r"((?!a*)|(?!))*",
+            r"((?!a*)|(?!)){0,2}",
+            r"(?i:((?!a*)|(?!))?)+",
+            r"((?!a*)|a)+",
+            r"((?!a*)|(?!))+a",
+            r"a((?!a*)|(?!))+",
+            r"((?!a*)|(?!))+|a",
+        ] {
+            assert!(wrapped_known(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn wrapped_known_impossible_depth_and_huge_minima_keep_constant_retained_plans() {
+        let body = r"(?![\p{RGI_Emoji}]*)|(?!(a{0}))";
+        let source = format!("{}{body}{}", "(".repeat(100_000), ")+".repeat(100_000));
+        assert_eq!(wrapped_known(&source).unwrap().capture_count(), 100_001);
+        let source = format!("({body}){{{}}}", "9".repeat(20_000));
+        assert_eq!(wrapped_known(&source).unwrap().capture_count(), 2);
+    }
+
+    #[test]
+    fn wrapped_known_impossible_work_interrupts_before_scope_body_and_each_selected_arm() {
+        let source = JsString::from(r"(?im-s:((?![\p{RGI_Emoji}]*)|(?!(a{0})))){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_wrapped_known_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(matches!(
+            RegExpImpossibleMatcher::compile_wrapped_known_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop));
             assert_eq!(seen, work[..=stop]);

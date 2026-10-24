@@ -13666,3 +13666,12 @@ must be positive. Complete original normalized source retains all outside/inside
 slots and incoming bindings; operand matching data is unnecessary. Shared
 constant no-match execution keeps source/flags, lastIndex, String consumers,
 cloning and collection, with original errors before proof selection.
+
+
+A separate required-spine proof wraps complete established impossible operands,
+including mixed impossible root choices, in ordinary/modifier groups. Every
+outside minimum must be positive (22.2.2.3.1). Optional wrappers and outside
+siblings reject this proof. The finite earlier-operand chain preserves original
+bindings and the full lexical inventory; symbolic bounds and flat wrapper scans
+avoid recursion or count expansion. Source/frame/copy work precedes allocation;
+the retained no-match plan and actual work remain constant.
