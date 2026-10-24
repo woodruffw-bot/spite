@@ -12435,5 +12435,9 @@ Existing projection callers use the unchanged parser mode and retain exact
 domains and callback sequences. All traversal, storage and clone/drop remain
 flat and source-sized; class-path counts still require exact one. Further
 class-bearing choices, references, consuming outside siblings and unknown terms
-even behind skipped/never scopes retain separate proofs. Runtime selection
-remains separate.
+even behind skipped/never scopes retain separate proofs. Runtime selects the
+captured outside-scope proof after bare common-gate alternatives on the full
+normalized capture source. The dedicated body retains outside point roles,
+complete ranges, inner branch ownership, actual endpoint truth, source/flags,
+named aliases, indices, lastIndex and String consumers through cloning and
+collection.
