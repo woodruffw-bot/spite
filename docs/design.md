@@ -14052,3 +14052,19 @@ flags and cloning retain the original Pattern. Cached empty and consuming ranges
 feed named captures, indices and String consumers independently. Four former
 Unsupported controls now assert exact positive execution for captured classes,
 folded literals, astral literals and lone surrogates.
+
+
+A separate Core entry admits an unquantified lookahead atom between outside
+word predicates, with optional leading ^ and trailing $. A fixed lexical
+envelope proves at most one leading and trailing word predicate and exactly
+one non-reference atom; at least one word predicate is required. The constant
+single-iteration bound is inserted after the atom, preserving both predicate
+scopes, then the existing actual-work word endpoint matcher selects its
+original input range. A class-contained backspace escape remains part of the
+atom rather than becoming a predicate.
+
+Outside and operand captures retain independent empty and one-character ranges,
+including astral widths and Unicode-i word folds. Unicode search advances over
+complete characters; explicitly supplied trailing-pair starts retain the
+approved initial rewind. Earlier line-only, repeated-word and unquantified
+constructors keep their domains and work. Runtime integration remains separate.

@@ -25596,3 +25596,21 @@ diff checks pass. Fresh complete RegExp and Test262 runs from this snapshot are
 in progress; the finished `4c595b80` results remain separately recorded. Runtime
 inventory remains 619. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+## Core unquantified Unicode lookahead with operand word predicates
+
+The actual-source focused harness passes 238 tests, including four additional
+single-word-atom groups. Checks cover outside/operand masks, leading/trailing
+word polarity, class-contained backspace, line context, Unicode-i word folds,
+surrogate candidates, separate proof domains, 200,000 wrappers and every
+construction/search work interruption followed by recovery. An independent
+expectation selects b at 4..5 in `a😀ab!`, avoiding V8's interior-pair dot search.
+
+A native sticky-candidate oracle with independent complete-character advancement
+agrees on all 53,248 input/start/sticky/range/capture records across 512 patterns.
+Eight ASCII iv patterns contribute 832 equivalent-range control records for the
+documented Node property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. Strict workspace Clippy with all targets,
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.
