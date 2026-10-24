@@ -13260,3 +13260,10 @@ The shared flat scope scan projects a direct impossible sequence or a choice
 whose every arm independently fails, preserving original reference bindings
 and adding all outside captures. Source/frame/copy work precedes allocation;
 construction stays source-sized and the retained no-match plan is constant.
+
+
+Runtime selects the required-enclosing impossible proof after the root-choice
+proof, using the complete normalized original source. Positive-minimum counts
+and ordinary/modifier wrappers keep their original lexical inventories and
+bindings. The constant no-match body continues to use normal lastIndex,
+source/flags, String consumer, clone and collection behavior.

@@ -23769,3 +23769,25 @@ inventory remains 615; fixtures, snapshots, dependencies and quotas are unchange
 The earlier direct-impossible Runtime snapshot also passes all 35 Test262 runner
 tests and the unchanged 16,343-case corpus (421.51 s). This broad result predates
 the enclosing and alternatives increments.
+
+
+Required enclosing impossible groups (Runtime)
+----------------------------------------------
+
+Runtime selects complete required ordinary/modifier spines around independently
+impossible sequences or choices, retaining original inventories and bindings.
+All 13 focused integration groups pass (0.30 s), including three new groups for
+modifier scopes, padded/lazy/positive bounds, erased outside references,
+original early errors, source/flags and lastIndex, String consumers, cloning,
+collection, 1,000 required wrappers and 20,000-digit positive minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v required spines agree on the fresh CLI, as do all 13 complete
+JavaScript programs. All 436 Runtime unit tests pass (3.24 s). Strict workspace
+Clippy with all targets passes (12.35 s), alongside workspace documentation
+tests, formatting, dependency policy, inventories and diff checks. Runtime case
+inventory remains 615; fixtures, snapshots, dependencies and quotas are unchanged.
+
+The earlier direct-impossible Runtime snapshot also completes all 2,817 RegExp
+integration tests successfully (845.03 s). This broad run predates the enclosing,
+root-choice and required-spine increments.

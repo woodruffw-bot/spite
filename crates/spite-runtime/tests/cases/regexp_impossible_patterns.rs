@@ -197,3 +197,59 @@ fn many_impossible_alternatives_keep_duplicate_name_inventories_without_default_
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn required_impossible_groups_keep_modifiers_counts_bindings_and_original_errors() {
+    check(
+        r#"
+        var patterns=[
+            '(?<outer>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))+',
+            '(?im-s:(?<outer>[\\p{RGI_Emoji}]+(?<!(?<zero>\\uD800{0})))){0002,0003}?',
+            '(?i:(?<outer>[\\p{RGI_Emoji}]+(?!(?<zero>(?<erased>\\k<outer>){0})))){1,}',
+            '((?!(?<left>[\\p{RGI_Emoji}]{0}))|(?<right>[\\p{RGI_Emoji}]+)(?<!a{0})){2}'
+        ],ok=true;
+        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pattern,flags);r.lastIndex=start;
+            ok=ok&&r.exec(input)===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start);
+        }
+        for(var source of ['((?!)|[\\p{Not_A_Property}])+','((?!)|(?<x>a)(?<x>b))+','((?!)|\\k<missing>)+']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn required_impossible_consumers_clones_and_collection_preserve_no_match_state() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?i:(?<outside>[\p{RGI_Emoji}]+(?!(?<x>a{0})))){2,3}/dgv,called=0,ok='a😀'.match(r)===null&&Array.from('a😀'.matchAll(r)).length===0;
+        ok=ok&&'a😀'.replace(r,function(){called++;return '!/'})==='a😀'&&called===0&&'a😀'.search(r)===-1&&'a😀'.split(r).length===1&&'a😀'.split(r)[0]==='a😀';
+        var copy=new RegExp(r);copy.lastIndex=1;ok&&copy.exec('a😀')===null&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn required_impossible_depth_and_huge_minima_have_no_default_quotas() {
+    check(
+        r#"
+        var depth=10,pattern='('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0}))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
+        let pattern = JsString::from(
+            format!(
+                r"{}[\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}})){}{{{minimum}}}",
+                "(".repeat(depth),
+                ")+".repeat(depth - 1) + ")"
+            )
+            .as_str(),
+        );
+        check(&format!(
+            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+        ));
+    }
+}

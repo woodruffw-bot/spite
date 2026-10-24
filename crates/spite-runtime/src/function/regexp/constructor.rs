@@ -3327,6 +3327,22 @@ impl Realm {
         } else {
             matcher
         };
+        let matcher = if matcher.is_none() {
+            let impossible = self.object_work(span, |_, budget| {
+                RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if impossible.is_some() {
+                enclosing_captures = 0;
+            }
+            impossible.map(RegExpMatcherBody::Impossible)
+        } else {
+            matcher
+        };
         let matcher = matcher.map(|body| RegExpMatcher::new(body, enclosing_captures));
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the
