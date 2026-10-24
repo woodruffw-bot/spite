@@ -22386,3 +22386,27 @@ passes all three tests (1.21 s). Strict workspace Clippy, documentation tests,
 formatting, policy, inventories and diff checks pass. The grouped Runtime
 inventory contains 604 case files. Fixtures, snapshots, dependencies and default
 quotas remain unchanged.
+
+
+The preceding captured outside nested optional/zero-count Runtime snapshot passes
+all 16,343 reviewed Test262 variants and 35 runner tests (562.01 s for the corpus
+integration target). This run compiled before bounded class-path Runtime counts.
+
+
+## Core bounded class-path counts inside zero-count truth roots
+
+All three focused groups pass (0.18 s), including 160 native ordered capture
+tables. Every nested slot stays undefined under optional, lazy, exact-one and
+zero inner counts, in both original branch orders and all flags. Unicode starts
+and sticky bounds retain zero-iteration behavior. Twenty thousand nested lazy
+groups, long shared-prefix scalar/string bodies, 1,000-digit padded zero counts
+and clone/drop stay flat. Matching uses bounded work without body queries, and
+constructor/match cancellation recovers at every charged boundary. Unknown terms
+still decline under zero/lazy/never paths. A new 736-record baseline includes
+376 supported cases. Runtime selection remains separate.
+
+All 95,400 frozen prior API records retain exact domains, work and captures in
+eight bounded batches. Strict workspace Clippy, documentation tests, formatting,
+policy, inventories and
+diff checks pass. Fixtures, snapshots, dependencies and default quotas remain
+unchanged.

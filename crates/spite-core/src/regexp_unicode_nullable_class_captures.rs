@@ -50,6 +50,7 @@ pub use string_class_captures::{
     RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableSurroundingStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableZeroCountRootStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableZeroCountSpineStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
@@ -1284,4 +1285,5 @@ mod tests {
         "regexp_unicode_truth_table_scoped_nested_zero_count_string_class_alternative_tests.rs"
     );
     include!("regexp_unicode_truth_table_optional_spine_string_class_alternative_tests.rs");
+    include!("regexp_unicode_truth_table_zero_count_spine_string_class_alternative_tests.rs");
 }

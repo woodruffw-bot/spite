@@ -12687,3 +12687,18 @@ optional proof after captured outside nested zero-count scopes. Its dedicated
 body retains original lexical slots, zero-iteration absence, live endpoint truth,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves a complete zero-count truth root with bounded zero/one
+class-path counts. The flat bounded-path normalization preserves every original
+group while both original branches compile fully before the root loses every
+iteration. Every capture remains undefined, including mandatory wrappers and
+nested optional/zero scopes (ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+The existing optional kernel runs only its zero-iteration path, with disabled
+class profiles and no body queries. Empty matches retain normalized Unicode
+starts and sticky bounds with bounded matching work. Deep groups, long finite
+words, decimal count scanning, storage and clone/drop remain flat and
+source-sized. Unknown terms even under zero/lazy/never paths, larger or unbounded
+inner counts and outside terms retain separate proofs. Earlier API domains,
+charged work and captures remain unchanged. Runtime selection remains separate.
