@@ -15,6 +15,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableClassCaptureMatcher,
     RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
+    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
     RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
 };

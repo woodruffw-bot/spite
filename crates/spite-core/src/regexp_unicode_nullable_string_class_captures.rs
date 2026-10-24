@@ -9,6 +9,12 @@ use crate::{
 };
 use std::ops::Range;
 
+#[path = "regexp_unicode_repeated_string_class_captures.rs"]
+mod repeated_string_classes;
+pub use repeated_string_classes::{
+    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
+};
+
 #[path = "regexp_unicode_asserted_string_class_alternatives.rs"]
 mod asserted_alternatives;
 pub use asserted_alternatives::{

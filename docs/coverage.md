@@ -19892,3 +19892,28 @@ including all 16,343 reviewed variants. Strict workspace Clippy, documentation
 tests, formatting, dependency policy, inventories and diff checks pass. Runtime
 inventory is 555 files and 4,337 integration cases. No fixture, snapshot,
 dependency, intrinsic inventory or default quota changes.
+
+
+## Core simple variable-width string-class repetition
+
+Three groups exercise an independent word/body/capture oracle across 32 finite,
+set-operation and character-result class families, six lexical layouts, all six
+greedy/lazy simple counts, plain and both nullable orders, group/atom frames,
+eight inputs and every start/sticky/i/m combination. The oracle independently
+simulates mandatory source priority, optional empty-progress rejection and final
+capture clearing. Twenty native tables cover the shorter preferred greedy path,
+empty-first retries, lazy required empties, skipped bodies, plain-class search,
+sticky failure, supplementary leading starts, folding, empty result sets and
+group-versus-atom capture scopes. A counted 20,000-level outside spine retains
+whole ranges while inside captures retain the last iteration. Every constructor
+and finder callback supports prefix cancellation and recovery. Other counts,
+nested loops, predicates, references, additional terms/classes/root choices and
+unknown leaves under zero/empty-first repetition remain explicit closed controls.
+
+
+Execution passes all three targeted Core groups and 431 Runtime units. All
+57,864 prior API records retain exact domains, construction/search work and
+capture projection. Twenty native fixed tables agree with the new matcher.
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. No Runtime selection, fixture, snapshot,
+dependency or default quota changes.

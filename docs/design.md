@@ -11517,3 +11517,34 @@ proofs. Runtime selects the new constructors after the earlier Single proof on
 the complete normalized capture source. Existing result types retain original
 metadata, names/indices, branch identity, String consumers, cloning, collection
 and opt-in host-abort behavior.
+
+
+### Simple repetition of variable-width string classes
+
+A separate matcher proves one class atom or ordinary class/empty group under
+*, + or ?, greedy or lazy, with only pure-empty outside terms. Full Single or
+grouped alternative proofs retain every original class/branch and capture role.
+A flat delimiter scan separates inside captures from enclosing/point slots;
+a synthetic empty class proves the outside spine and is never matched. Other
+class-path exact-one counts may normalize through the existing helper. Other
+counts, nested repetitions, assertions, references and extra consumption stay
+separate proofs.
+
+The outside continuation always succeeds. Once a body succeeds, matching never
+needs to retry an earlier class member: each consuming iteration uses the first
+preferred longest member. This preserves source priority rather than maximizing
+whole-match length; `[\q{aa|aaa}]*` on `aaaa` chooses `aaa`. A plain class + may search
+for its first mandatory member; nullable bodies always succeed at the initial
+Unicode boundary. Mandatory + permits an empty body and retains its captures.
+Optional iterations reject empty progress and retry the consuming class even
+when the empty alternative comes first. Rejected empty attempts preserve the
+previous accepted iteration. Lazy zero-minimum forms execute no body. These are
+RepeatMatcher's minimum/progress rules (22.2.2.3).
+
+Match state contains only the whole range, optional final iteration and its
+explicit class/empty identity. Inside slots project the final iteration, or stay
+undefined when none executes; outside slots project the whole range. A capturing
+group enclosing a repeated class atom therefore differs from a repeated
+capturing group. Storage/clone/drop remain flat and source-sized. Class-prefix
+and search work is charged before inspection; no default quota or per-iteration
+capture history is added. Runtime selection remains separate.
