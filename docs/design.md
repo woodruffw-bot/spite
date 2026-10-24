@@ -11990,3 +11990,21 @@ proofs on the full normalized source. Dedicated capture projection retains
 source/flags, named aliases, lastIndex, String consumers, cloning and collection;
 empty-first choices keep class slots undefined and class-first empty members
 keep their selected captures defined.
+
+
+Core separately proves class/empty alternatives combining skipped outside scopes
+with remaining live predicates. After masking skipped predicates and validating
+bare/exact-one class paths, complete asserted-root or required outside-spine
+proofs retain original choice ownership. The selected class/empty branch remains
+explicit even when both could match the empty string. Every original class leaf
+and conditional branch is validated before selecting a result.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 apply common predicates at each branch's
+actual endpoints. A longer class member rejected by a live continuation permits
+a shorter member, and a failed empty-first branch permits the class branch.
+Earliest Unicode candidates and source order resolve successful branch ties.
+Skipped and unselected captures remain undefined; enclosing and point captures
+retain their own participation. Reversed line gates, clone/drop, charged work,
+callback cancellation and constructor/capacity failures keep their existing
+semantics. Other class-path counts, references and unknown leaves remain
+unproved. Runtime selection remains separate.

@@ -665,3 +665,122 @@ impl RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher {
         found.map_err(RegExpUnicodeMatchError::Work)
     }
 }
+
+#[derive(Clone, Debug)]
+enum AssertedAlternativeBody {
+    Root(crate::RegExpUnicodeAssertedStringClassAlternativeMatcher),
+    Surrounding(crate::RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher),
+}
+/// One class/empty choice with skipped scopes and remaining live predicates.
+///
+/// Requires validated v/vi input and normalized capture names. Every original
+/// branch and class leaf retains its full proof. Bare/exact-one class paths
+/// preserve lexical slots, outside predicates and ordered empty/class selection.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher {
+    body: AssertedAlternativeBody,
+}
+impl RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher {
+    /// Proves skipped scopes before complete branch and outside-spine proofs.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(source) = skipped_assertions_with_shape(source, true, &mut charge)? else {
+            return Ok(None);
+        };
+        if !has_live_assertions(&source, &mut charge)? {
+            return Ok(None);
+        }
+        charge(source.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let source = super::normalize_ones(source.code_units());
+        macro_rules! attempt {
+            ($method:ident) => {
+                if let Some(plan) =
+                    crate::RegExpUnicodeAssertedStringClassAlternativeMatcher::$method(
+                        &source,
+                        ignore_case,
+                        multiline,
+                        &mut charge,
+                    )?
+                {
+                    return Ok(Some(Self {
+                        body: AssertedAlternativeBody::Root(plan),
+                    }));
+                }
+            };
+        }
+        attempt!(compile_with_work);
+        attempt!(compile_grouped_with_work);
+        if let Some(plan) =
+            crate::RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        {
+            return Ok(Some(Self {
+                body: AssertedAlternativeBody::Surrounding(plan),
+            }));
+        }
+        attempt!(compile_surrounding_line_assertions_with_work);
+        attempt!(compile_surrounding_word_assertions_with_work);
+        attempt!(compile_nested_assertion_wrappers_with_work);
+        attempt!(compile_reversed_surrounding_line_assertions_with_work);
+        attempt!(compile_nested_endpoint_assertion_wrappers_with_work);
+        Ok(None)
+    }
+    /// Counts every original lexical slot, including skipped and unselected scopes.
+    pub fn capture_count(&self) -> usize {
+        match &self.body {
+            AssertedAlternativeBody::Root(plan) => plan.capture_count(),
+            AssertedAlternativeBody::Surrounding(plan) => plan.capture_count(),
+        }
+    }
+    /// Projects original slots with actual endpoints and explicit branch identity.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        let branch = crate::RegExpUnicodeStringClassBranchMatch {
+            range: found.range.clone(),
+            class_selected: found.class_selected,
+        };
+        match &self.body {
+            AssertedAlternativeBody::Root(plan) => plan.capture_range(index, &branch),
+            AssertedAlternativeBody::Surrounding(plan) => plan.capture_range(index, &branch),
+        }
+    }
+    /// Searches both proved branches and applies original source order at ties.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        let found = match &self.body {
+            AssertedAlternativeBody::Root(plan) => {
+                plan.find_with_captures_and_work(input, requested, sticky, charge)
+            }
+            AssertedAlternativeBody::Surrounding(plan) => {
+                plan.find_with_captures_and_work(input, requested, sticky, charge)
+            }
+        };
+        found
+            .map(|found| {
+                found.map(|found| RegExpUnicodeRepeatedStringClassMatch {
+                    class_selected: found.class_selected,
+                    last_iteration: Some(found.range.clone()),
+                    range: found.range,
+                })
+            })
+            .map_err(RegExpUnicodeMatchError::Work)
+    }
+}

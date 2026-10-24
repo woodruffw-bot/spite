@@ -20749,3 +20749,22 @@ four skipped-scope layouts and eight skipped-predicate profiles. Four
 unsupported-control scans found no cases to migrate. Strict workspace Clippy,
 documentation tests, formatting, policy and inventories pass; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Core class/empty alternatives with skipped scopes and live predicates
+
+Four groups compare six finite/scalar/known-empty families, five bare/exact-one
+forms, six capture trees, both branch orders, four skipped-scope layouts and
+eight live predicate profiles across eight UTF-16 inputs and all starts/sticky/i/m.
+The independent continuation oracle retains class versus empty identity and all
+original capture slots. Forty native equivalent tables cover canonical/reversed
+line and word gates beside skipped predicate choices and counts. Deep 20,000
+skipped scopes, defined empty points, empty-first priority versus a class
+continuation, shorter successful class members, long shared-prefix words, every
+callback cancellation/recovery and closed unproved paths pass.
+
+All forty-four combined focused groups pass, including the preceding forty.
+All 69,640 prior API records retain exact domains, charged construction/search
+work and capture projection. Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.
