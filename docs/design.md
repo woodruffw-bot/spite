@@ -14041,5 +14041,14 @@ selected original character range. Raw astral characters and adjacent fixed
 surrogate escapes preserve complete-character boundaries; lone surrogates match
 only lone input characters. Source work precedes lexical scans and the constant
 three-unit projection growth. Earlier repeated and word-boundary entries keep
-their domains and charges through the shared flat parser. Runtime integration
-remains separate.
+their domains and charges through the shared flat parser.
+
+
+Runtime selects the unquantified-atom lookahead constructor after its earlier
+line and word lookahead proofs. The full normalized source preserves lexical
+slots; successful selection resets only the projected outer offset. The
+constant single-iteration operand projection remains internal: exposed source,
+flags and cloning retain the original Pattern. Cached empty and consuming ranges
+feed named captures, indices and String consumers independently. Four former
+Unsupported controls now assert exact positive execution for captured classes,
+folded literals, astral literals and lone surrogates.

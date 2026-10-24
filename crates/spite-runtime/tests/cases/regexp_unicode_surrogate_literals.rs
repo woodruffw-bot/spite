@@ -114,6 +114,9 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/(?=\uD800)/v.exec('\uD800');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input.length===1&&m.input.charCodeAt(0)===0xd800&&m.groups===undefined"#,
+    );
     for source in [
         r"/(\uD83D)(\uDE00)/u.exec('😀')",
         r"/\uD83D(?:)\uDE00/v.exec('😀')",
@@ -122,7 +125,6 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         r"/([\uD800])+b/v.exec('\uD800')",
         r"/\uDE00+b/u.exec('\uDE00')",
         r"/(\uDE00)\1/u.exec('\uDE00\uDE00')",
-        r"/(?=\uD800)/v.exec('\uD800')",
     ] {
         assert!(
             matches!(

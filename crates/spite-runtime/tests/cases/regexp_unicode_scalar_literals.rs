@@ -140,6 +140,9 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/(?=😀)/v.exec('😀');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input==='😀'&&m.groups===undefined"#,
+    );
     for source in [
         r"/(\uD83D)(\uDE00)/u.exec('😀')",
         r"/\uD83D(?:)\uDE00/v.exec('😀')",
@@ -150,7 +153,6 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         r"/😀+b/u.exec('😀')",
         r"/(😀)\1/u.exec('😀😀')",
         r"/\uD800()\uDC00/u.exec('\uD800')",
-        r"/(?=😀)/v.exec('😀')",
     ] {
         assert!(
             matches!(

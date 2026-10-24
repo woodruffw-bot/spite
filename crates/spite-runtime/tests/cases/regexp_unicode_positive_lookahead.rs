@@ -183,3 +183,62 @@ fn word_lookahead_search_uses_complete_unicode_candidates_and_initial_pair_rewin
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\Bſ*?\\\\B))','dg'+mode);var m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run===''&&m.indices.groups.run[0]===4&&r.lastIndex===4;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===4;r=new RegExp('(?=(?<run>\\\\ba+\\\\b))','dgy'+mode);r.lastIndex=1;ok=ok&&r.exec('😀a!')===null&&r.lastIndex===0}ok",
     );
 }
+
+#[test]
+fn bare_atoms_capture_one_character_and_preserve_original_source_and_names() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a','a'],['[a-z]','a'],['\\d','2'],['.','😀'],['\\u{1F600}','😀'],['\\uD83D\\uDE00','😀'],['\\uD800','\ud800']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode),m=r.exec(row[1]);
+            ok=ok&&m!==null&&m.index===0&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[1]&&m.indices.groups.outside[0]===0&&m.indices.groups.outside[1]===0&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===row[1].length&&r.source===source&&r.lastIndex===0;
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[1];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn bare_atom_line_dot_property_and_lone_surrogate_contexts_are_preserved() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var m=new RegExp('(?=(?<run>^a$))','dim'+mode).exec('\nA\n');ok=ok&&m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
+            var m=new RegExp('(?=(?<run>^\\$$))','d'+mode).exec('$');ok=ok&&m.index===0&&m.groups.run==='$'&&m.indices.groups.run[1]===1;
+            var m=new RegExp('(?=(?<run>\\p{ASCII}))','di'+mode).exec('ſa');ok=ok&&m.index===0&&m.groups.run==='ſ'&&m.indices.groups.run[1]===1;
+            var m=new RegExp('(?=(?<run>.))','ds'+mode).exec('\na');ok=ok&&m.index===0&&m.groups.run==='\n';
+            var r=new RegExp('(?=(?<run>\\uD800))','dg'+mode);ok=ok&&r.exec('\ud800\udc00')===null&&r.lastIndex===0;
+            var m=r.exec('\ud800x\udc00');ok=ok&&m.index===0&&m.groups.run==='\ud800'&&m.indices.groups.run[1]===1;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn bare_atom_string_consumers_progress_over_complete_input_characters() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var r=new RegExp('(?<outside>(?=(?<run>.)))','dg'+mode),all=Array.from('😀a'.matchAll(r));
+            ok=ok&&all.length===2&&all[0].index===0&&all[0].groups.run==='😀'&&all[0].groups.outside===''&&all[1].index===2&&all[1].groups.run==='a'&&r.lastIndex===0;
+            ok=ok&&'😀a'.replace(r,'<$<run>>')==='<😀>😀<a>a'&&JSON.stringify('😀a'.split(new RegExp('(?=(.))',mode)))==='["😀","a","a"]';
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn bare_atom_deep_wrappers_keep_empty_outside_and_full_operand_capture_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[a-z]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('!!a');
+            ok=ok&&m.index===2&&m.length===2001&&m[0]==='';
+            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===2&&m.indices[i][1]===(i<=1000?2:3);
+        }ok
+    "#,
+    );
+}

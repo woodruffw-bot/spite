@@ -25573,3 +25573,26 @@ Strict workspace Clippy with all targets, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. Earlier line and word
 constructors retain their domains and work. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime unquantified Unicode positive lookahead
+
+All sixteen current lookahead groups pass (0.79 s), including four additional
+groups for single-character captures, original source/names, escaped/raw astral
+atoms, lone surrogates, line/dot/property context, copies, String progress and
+2,000 wrapper slots. The four migrated controls retain positive metadata checks
+in their original modules. All 28 tests in those four modules pass, as do all
+thirteen constructor regressions (0.08 s), including native reentry.
+
+All 106,496 metadata records across 512 unquantified-atom patterns agree on the
+fresh CLI, including source/flags, input, every UTF-16 start, ordinary/global/
+sticky/global-sticky state, whole/capture values and indices, and lastIndex.
+Seven ASCII iv patterns contribute 1,456 equivalent-range controls for the
+documented Node discrepancy. Fourteen complete JavaScript programs also agree,
+with the same property-range control.
+
+All 436 Runtime unit tests pass (3.41 s). Strict workspace Clippy with all
+targets, documentation tests, formatting, dependency policy, inventories and
+diff checks pass. Fresh complete RegExp and Test262 runs from this snapshot are
+in progress; the finished `4c595b80` results remain separately recorded. Runtime
+inventory remains 619. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.

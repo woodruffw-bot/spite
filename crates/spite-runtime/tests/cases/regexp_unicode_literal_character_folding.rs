@@ -163,13 +163,15 @@ fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
+    check(
+        r#"let m=/(?=a)/iv.exec('A');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input==='A'&&m.groups===undefined"#,
+    );
     for source in [
         r"/(?:ab)+/iu.exec('AB')",
         r"/a+b/iv.exec('A')",
         r"/(?:(a)b)+/iu.exec('AB')",
         r"/a|b/iv.exec('A')",
         r"/^(a)+b$/iu.exec('A')",
-        r"/(?=a)/iv.exec('A')",
         r"/\u{D800}\u{DC00}/iu.exec('😀')",
     ] {
         assert!(
