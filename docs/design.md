@@ -12742,5 +12742,8 @@ sticky behavior and later starts required by outside gates remain intact. Deep
 groups, decimal scanning, storage and clone/drop stay flat and source-sized.
 Unknown terms even under erased/skipped/never scopes, consuming outside siblings
 and patterns requiring a different zero-ancestor selection retain separate
-proofs. Earlier API domains, work and captures remain unchanged. Runtime
-selection remains separate.
+proofs. Earlier API domains, work and captures remain unchanged. Runtime selects
+this captured-scope erased-count proof after the bare quantified root proof. Its
+dedicated body retains conditional outside points, mandatory enclosing ranges,
+every undefined inner slot, source/flags, named aliases, indices, lastIndex and
+String consumers through cloning and collection.

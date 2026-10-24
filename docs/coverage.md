@@ -22509,3 +22509,34 @@ integration target). This run compiled before larger/unbounded Runtime paths.
 Documentation tests, formatting, policy, inventories and diff checks pass for the
 captured outside erased-count proof. Fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Runtime captured outside scopes around erased larger/unbounded class paths
+
+All three focused groups pass (0.44 s), retaining conditional outside points,
+mandatory enclosing ranges and every undefined inner slot. Larger finite,
+unbounded and lazy class paths, padded root zero counts, both branch orders,
+named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes agree with native
+behavior. Outside gates preserve later starts and sticky failure/success. Deep
+1,000-level outside capture scopes, 20,000-unit shared-prefix scalar/string bodies
+and constructor host aborts remain flat. Full construction rejects unknown terms
+in erased bodies and skipped/never outside scopes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+source-shape scans retain existing rejection domains. All 256 differential
+reference sources validate as Unicode patterns, and all 1,024 proof/flag
+combinations are supported.
+
+All 431 Runtime unit tests pass (4.60 s), alongside strict workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks. The grouped
+Runtime inventory contains 607 case files. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.
+
+The preceding bounded optional/zero-count class-path Runtime snapshot also passes
+all 1,782 Unicode RegExp integration tests (934.05 s). This run compiled before
+larger/unbounded Runtime paths and their captured outside scopes.
+
+All 100,352 exact differential records agree across every start, sticky,
+multiline and ignore-case combination, retaining outside participation around
+erased finite, scalar and known-empty class paths.
