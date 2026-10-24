@@ -22803,3 +22803,21 @@ empty-body tests (5.73 s), six counted-sequence tests (0.75 s), and six quantifi
 sequence tests (0.89 s). The 57 additional generated native records also agree
 on the fresh CLI. Strict workspace Clippy, formatting, dependency policy,
 inventories and diff checks pass. Snapshots and fixtures remain unchanged.
+
+
+## Core mandatory enclosing groups around erased bodies
+
+A separate Core constructor proves complete mandatory capturing/noncapturing
+wrappers around the validated whole-group zero plan. A flat, mode-aware scan
+tracks each leading wrapper's first closure, then compiles only the complete
+retained zero-group body. It returns the mandatory enclosing capture prefix
+separately from the undefined inner slots. The original whole-group constructor
+retains its acceptance domain and charged work.
+
+All five actual-source focused Core tests pass (0.05 s), including nested and
+noncapturing wrappers, nested Unicode Sets classes, ordinary class syntax,
+100,000 enclosing captures, sibling/choice/quantified-wrapper exclusions, every
+construction callback abort, and constant matching work at normalized Unicode
+boundaries. Strict workspace Clippy with all targets (26.27 s), workspace
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration of this additional proof follows separately.

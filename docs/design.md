@@ -12856,3 +12856,16 @@ aliases, indices, lastIndex and String operations. The fallback does not erase
 outside terms, a larger repetition bound or only part of a Pattern; those
 patterns still require their own matching proof. The preceding specialized APIs
 retain their existing acceptance domains and work accounting.
+
+
+Core also exposes a separate enclosing-group proof for the whole-pattern
+zero-group plan. It removes only complete, unquantified ordinary capturing and
+noncapturing wrappers, using a mode-aware flat delimiter scan. First-closure
+tracking prevents later siblings from replacing a leading group's boundary.
+The retained body must pass the original whole-pattern zero-group proof. The
+returned enclosing-capture count precedes every retained lexical slot: enclosing
+captures select the empty whole-match span, while all captures inside the
+zero-count group remain undefined (22.2.2.2, 22.2.2.3.1, 22.2.2.7). The API
+charges source-sized scanning and temporary body storage before allocation;
+matching, retained storage and clone/drop stay constant. Outside terms, choices
+and quantified wrappers remain outside this additional proof.

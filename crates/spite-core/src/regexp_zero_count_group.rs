@@ -74,6 +74,92 @@ impl RegExpZeroCountGroupMatcher {
         Ok(None)
     }
 
+    /// Proves complete mandatory ordinary wrappers around a zero-count group.
+    ///
+    /// Validation and flag requirements are the same as for
+    /// [`Self::compile_validated_with_work`]. The returned count is the number
+    /// of enclosing captures, preceding all captures in the retained matcher.
+    /// Those enclosing captures select its empty match span; the retained
+    /// captures remain undefined (22.2.2.2, 22.2.2.7). Quantified wrappers,
+    /// outside terms and alternatives require a different proof.
+    pub fn compile_enclosing_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<(Self, usize)>, E> {
+        charge(source.len().saturating_mul(6).saturating_add(1))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let mut opening_end = 0;
+        let mut leading = 0;
+        while let Some(width) = ordinary_opener(units, opening_end) {
+            opening_end += width;
+            leading += 1;
+        }
+        if leading == 0 {
+            return Ok(None);
+        }
+        let mut depth = 0usize;
+        let mut class_depth = 0usize;
+        let mut complete = 0;
+        let mut remaining = leading;
+        let mut index = 0;
+        while let Some(&unit) = units.get(index) {
+            index += 1;
+            if unit == 0x5c {
+                index += 1;
+                continue;
+            }
+            if class_depth != 0 {
+                if unit == 0x5d {
+                    class_depth -= 1;
+                } else if unicode_sets && unit == 0x5b {
+                    class_depth += 1;
+                }
+                continue;
+            }
+            match unit {
+                0x5b => class_depth = 1,
+                0x28 => depth += 1,
+                0x29 => {
+                    let Some(next) = depth.checked_sub(1) else {
+                        return Ok(None);
+                    };
+                    depth = next;
+                    // Only the first closure at a leading wrapper's depth
+                    // belongs to it; a later sibling must not replace it.
+                    if depth < remaining {
+                        remaining = depth;
+                        if index == units.len() - depth {
+                            complete = complete.max(depth + 1);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        if complete == 0 || depth != 0 || class_depth != 0 {
+            return Ok(None);
+        }
+        let mut body_start = 0;
+        let mut captures = 0;
+        for _ in 0..complete {
+            let Some(width) = ordinary_opener(units, body_start) else {
+                return Ok(None);
+            };
+            captures += usize::from(width == 1);
+            body_start += width;
+        }
+        let body = JsString::from_code_units(units[body_start..units.len() - complete].to_vec());
+        Ok(
+            Self::compile_validated_with_work(&body, unicode, unicode_sets, charge)?
+                .map(|matcher| (matcher, captures)),
+        )
+    }
+
     /// Number of lexical captures, all undefined (22.2.7.2).
     pub fn capture_count(&self) -> usize {
         self.captures
@@ -97,6 +183,17 @@ impl RegExpZeroCountGroupMatcher {
             (start <= input.len()).then_some(start)
         };
         Ok(start.map(|start| start..start))
+    }
+}
+
+fn ordinary_opener(units: &[u16], start: usize) -> Option<usize> {
+    let suffix = units.get(start..)?;
+    if suffix.starts_with(&[0x28, 0x3f, 0x3a]) {
+        Some(3)
+    } else if suffix.first() == Some(&0x28) && suffix.get(1) != Some(&0x3f) {
+        Some(1)
+    } else {
+        None
     }
 }
 
@@ -225,6 +322,116 @@ mod tests {
                 Ok::<(), ()>(())
             }),
             Ok(Some(0..0))
+        );
+        assert_eq!(work, 1);
+    }
+
+    #[test]
+    fn enclosing_groups_return_only_mandatory_capture_prefixes() {
+        for (source, unicode, sets, outer, erased) in [
+            (r"(((?=(a))b){0})", true, false, 1, 2),
+            (r"(?:(?:(((?=(a))b){0})))", true, false, 1, 2),
+            (r"(((?:(([[a]--[b]](c)){000,000}?))))", true, true, 3, 2),
+            (r"((([[](a)){0}))", false, false, 2, 2),
+            (r"(?:(?i:(a)(b)){0})", true, false, 0, 2),
+        ] {
+            let source = JsString::from(source);
+            let (matcher, captures) =
+                RegExpZeroCountGroupMatcher::compile_enclosing_validated_with_work(
+                    &source,
+                    unicode,
+                    sets,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                (captures, matcher.capture_count()),
+                (outer, erased),
+                "{source:?}"
+            );
+            assert!(
+                RegExpZeroCountGroupMatcher::compile_validated_with_work(
+                    &source,
+                    unicode,
+                    sets,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        for source in [
+            "((a){0})x",
+            "x((a){0})",
+            "((a){0})|((b){0})",
+            "((a){0}|b)",
+            "((a){0}){1}",
+            "((a){0})?",
+            "(a){0}",
+            "((a){0,1})",
+        ] {
+            assert!(
+                RegExpZeroCountGroupMatcher::compile_enclosing_validated_with_work(
+                    &JsString::from(source),
+                    true,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_enclosing_groups_and_every_construction_abort_stay_flat() {
+        let depth = 100_000;
+        let source = JsString::from(
+            format!("{}((?=(a))b){{0}}{}", "(".repeat(depth), ")".repeat(depth)).as_str(),
+        );
+        let mut trace = Vec::new();
+        let (matcher, captures) =
+            RegExpZeroCountGroupMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                false,
+                |n| {
+                    trace.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(captures, depth);
+        assert_eq!(matcher.capture_count(), 2);
+        assert_eq!(trace.len(), 2);
+        assert!(trace.iter().sum::<usize>() <= source.len() * 10);
+        for fail in 0..trace.len() {
+            let mut calls = 0;
+            let result = RegExpZeroCountGroupMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                false,
+                |_| {
+                    let at = calls;
+                    calls += 1;
+                    if at == fail { Err(fail) } else { Ok(()) }
+                },
+            );
+            assert!(matches!(result,Err(at) if at==fail));
+            assert_eq!(calls, fail + 1);
+        }
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("A😀!"), 2, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(1..1)
         );
         assert_eq!(work, 1);
     }
