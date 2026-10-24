@@ -23181,3 +23181,29 @@ retained unsupported controls finds none newly admitted by this proof.
 Strict workspace Clippy with all targets passes (38.38 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Existing APIs and Runtime behavior are unchanged; integration follows separately.
+
+
+## Runtime concatenated zero-erased capture spines
+
+Runtime selects the sequence proof after the single-spine proofs, using the full
+normalized capture source and a dedicated lexical-mask body. Each slot retains
+its own defined or undefined state; named aliases, index-array identity, own
+undefined properties, source/flags, lastIndex and String consumers use the
+standard result path through cloning and collection. Original early errors
+precede erasure, and un-erased membership retains its unsupported failure at
+execution. Actual matching charges one unit before input access.
+
+All 11 focused integration groups pass (1.96 s), including four new groups for
+interleaved named masks, duplicate names in erased alternatives, cross-term
+references inside erased bodies, String consumers, cloning, collection, 2,000
+interleaved slots, a 20,000-digit required count and original syntax errors. All
+55,296 exact native metadata comparisons across 512 independently generated
+ordinary/u/v sequences agree on the fresh CLI, as do all 11 complete JavaScript
+regression programs.
+
+All 435 Runtime unit tests pass (15.20 s), including direct interleaved capture
+queries, Unicode boundaries and pre-input work aborts. Strict workspace Clippy
+with all targets passes (27.89 s), alongside workspace documentation tests,
+formatting, dependency policy, inventories and diff checks. The grouped Runtime
+inventory remains 614 cases; fixtures, snapshots, dependencies and default
+quotas are unchanged.

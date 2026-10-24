@@ -13003,3 +13003,12 @@ matching and individual capture queries are constant. Source and temporary
 storage work is charged before allocation, and actual matching charges before
 input access. Shared enclosing groups, choices, assertions and unproved
 consuming terms require additional proofs. Earlier APIs are unchanged.
+
+
+Runtime selects the zero-erased sequence proof after the single-spine proofs,
+using the complete original normalized capture source. Its dedicated body
+queries the lexical mask for each slot; the shared result path preserves named
+and numbered values, own undefined slots, index aliases, source/flags and
+lastIndex. String consumers, cloning and collection retain the same mask. Actual
+matching work is charged before input access, without a precharged input scan.
+Original early errors are validated before any projection or erasure.
