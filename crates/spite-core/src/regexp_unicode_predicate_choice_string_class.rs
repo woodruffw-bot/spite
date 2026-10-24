@@ -2868,3 +2868,178 @@ impl RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
         }))
     }
 }
+
+/// Captured pure-predicate scopes around one optional class/empty truth root.
+///
+/// Requires validated Unicode Sets source and normalized capture names. The
+/// complete inner root choice remains opaque while a flat outside proof retains
+/// original captures, skipped scopes and bare gates. Both original branches and
+/// every outside term are fully validated before endpoint masks are installed.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher {
+    inner: RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher,
+    outside: crate::RegExpUnicodeSingleStringClassCaptureMatcher,
+    overlays: Box<[Option<Overlay>]>,
+    before_inner: usize,
+}
+impl RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher {
+    /// Proves the complete reference-free outside spine and both inner branches.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let normalized = super::super::super::asserted_alternatives::optional_single_count_source(
+            source.code_units(),
+        )
+        .unwrap_or_else(|| source.code_units().to_vec());
+        let source = JsString::from_code_units(normalized);
+        let Some((body, before_inner)) =
+            super::super::super::asserted_alternatives::opaque_truth_choice_hole(
+                source.code_units(),
+            )
+        else {
+            return Ok(None);
+        };
+
+        let units = source.code_units();
+        let (begin, enclosing) =
+            if body.start >= 3 && units[body.start - 3..body.start] == [0x28, 0x3f, 0x3a] {
+                (body.start - 3, 0)
+            } else if body.start > 0 && units[body.start - 1] == 0x28 {
+                (body.start - 1, 1)
+            } else {
+                return Ok(None);
+            };
+        let count = body
+            .end
+            .checked_add(1)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let end = if let Some((end, min, max, _)) = simple_count(units, count) {
+            if min || !max {
+                return Ok(None);
+            }
+            end
+        } else if let Some((end, min, delta, _)) = asserted_repeat_count(units, count) {
+            if min != 0 || delta != Some(1) {
+                return Ok(None);
+            }
+            end
+        } else {
+            return Ok(None);
+        };
+        let Some(before_inner) = before_inner.checked_sub(enclosing) else {
+            return Ok(None);
+        };
+        let atom = begin..end;
+        let inner_source = JsString::from_code_units(units[atom.clone()].to_vec());
+        let Some(mut inner) =
+            RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher::compile_with_work(
+                &inner_source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let Some(Projection {
+            shadow,
+            overlays,
+            profiles,
+        }) = project_choices_with_opaque(
+            &source,
+            true,
+            false,
+            false,
+            true,
+            Some(OpaqueChoice {
+                atom,
+                before: before_inner,
+                inner: inner.capture_count(),
+            }),
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(outside) = scoped_alternative_outer_plan(&shadow, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if outside.capture_count().checked_add(inner.capture_count()) != Some(overlays.len())
+            || before_inner > outside.capture_count()
+        {
+            return Ok(None);
+        }
+
+        for (mask, common) in inner.inner.class.profiles.iter_mut().zip(profiles) {
+            *mask &= common;
+        }
+        let captures = inner.capture_count();
+        let inner = RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
+            plan: RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher {
+                plan: inner,
+                enclosing: 0,
+                captures,
+            },
+            profiles,
+        };
+        Ok(Some(Self {
+            inner,
+            outside,
+            overlays: overlays.into_boxed_slice(),
+            before_inner,
+        }))
+    }
+    /// Counts original outside, enclosing and branch-local capture slots.
+    pub fn capture_count(&self) -> usize {
+        self.overlays.len()
+    }
+    /// Projects conditional outer points, complete ranges and inner branch slots.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        if index >= self.capture_count() {
+            return None;
+        }
+        if let Some(overlay) = self.overlays[index] {
+            let (truth, point) = if overlay.at_end {
+                (found.after, found.repeated.range.end)
+            } else {
+                (found.before, found.repeated.range.start)
+            };
+            return (overlay.mask & 1u8.checked_shl(u32::from(truth)).unwrap_or(0) != 0)
+                .then_some(point..point);
+        }
+        if index < self.before_inner {
+            return self.outside.capture_range(index, &found.repeated.range);
+        }
+        let local = index.checked_sub(self.before_inner)?;
+        if local < self.inner.capture_count() {
+            return self.inner.capture_range(local, found);
+        }
+        self.outside.capture_range(
+            index.checked_sub(self.inner.capture_count())?,
+            &found.repeated.range,
+        )
+    }
+    /// Enforces outside profiles inside zero and nonempty optional continuations.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.inner
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}

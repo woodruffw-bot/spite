@@ -22025,3 +22025,24 @@ dependencies and default quotas remain unchanged.
 The preceding grouped optional-root sources pass all 1,752 Unicode RegExp
 integration tests (896.67 s). This run compiled before exact-one grouped optional
 and outside-asserted optional sources.
+
+
+## Core captured outside scopes around optional root truth alternatives
+
+Four focused groups pass (8.37 s), comparing 160 native capture tables and an
+independent 24-slot outside-continuation/progress oracle across every UTF-16
+start, sticky, multiline and ignore-case. Conditional outside points, mandatory
+enclosing ranges and skipped optional-root slots preserve original participation.
+Both branch orders, capturing/noncapturing optional roots, greedy/lazy padded
+counts, finite/scalar/known-empty classes, bare gates and ordinary/exact-one paths
+retain forced lazy consumption, shorter-member and later-start retries. Deep
+20,000-level outside point captures, 20,000-unit shared-prefix members,
+cloning/drop and every charged cancellation/recovery remain flat. Unknown terms
+in either region even under skipped/never scopes remain unproved; contradictory
+outside profiles use bounded matching work only after complete construction.
+
+All 90,248 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy (60 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.

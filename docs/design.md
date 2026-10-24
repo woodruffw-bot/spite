@@ -12530,3 +12530,27 @@ this outside-gate optional proof after exact-one grouped optional alternatives.
 The dedicated body retains zero/consuming identity, mandatory enclosing ranges,
 actual endpoint truth, original lexical slots, source/flags, named aliases,
 indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves captured pure-predicate/empty outside scopes around one
+optional class/empty truth root. The opaque atom includes the original ordinary
+root group and its complete zero-to-one count. Full optional-root construction
+validates both branches before the outside projection skips that atom, reserving
+all original inner lexical slots. Capturing/noncapturing root openers retain the
+correct outside insertion point; exact-one class-path normalization keeps the
+optional count intact.
+
+The existing flat outside-scope proof provides conditional point masks and
+mandatory whole-range roles. Its endpoint profiles feed the optional zero and
+consuming continuations, retaining forced lazy consumption, shorter-member and
+later-start retries. Outside captures can participate when the optional body
+skips; every skipped original inner slot remains undefined, while mandatory
+enclosing captures retain the accepted empty range (ECMA-262 edition 17
+22.2.2.3–4, 22.2.2.7).
+
+Storage, traversal and clone/drop stay flat and source-sized. All original inner
+and outside terms validate even under skipped/never scopes; contradictory common
+profiles use bounded matching work after construction. References, extra classes,
+consuming outside siblings and other class-path counts retain separate proofs.
+Earlier API domains, charged work and captures remain unchanged. Runtime
+selection remains separate.
