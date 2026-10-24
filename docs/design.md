@@ -12114,3 +12114,21 @@ Runtime selects this assertion-free alternative proof after the two required
 single-class proofs on the full normalized capture source. Its dedicated body
 retains source/flags, lexical named aliases, lastIndex, String consumers, cloning
 and collection, including distinct empty-first and class-first empty captures.
+
+
+Core separately proves one class/empty alternative combining zero-minimum
+outside scopes with remaining live predicates. Masking preserves original groups
+and lexical slots, while complete asserted-root or required outside-spine proofs
+retain both branch conditions and original alternative ownership. Bare/exact-one
+class paths remain mandatory when their branch is selected.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 apply common predicates to each branch's
+actual endpoints. A failed empty-first branch permits the class branch, and a
+longer class member failing a live suffix permits shorter members. Selected
+empty class members stay distinct from empty alternatives. Skipped and
+unselected captures remain undefined; ordinary enclosing and point captures
+keep their own participation. Every class leaf is proved before selection,
+including unknown leaves in an unselected branch. Other class counts,
+references and consuming siblings retain separate proofs. Clone/drop, charged
+work, cancellation and constructor/capacity failures retain their distinction.
+Runtime selection remains separate.

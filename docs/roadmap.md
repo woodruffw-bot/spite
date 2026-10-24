@@ -810,6 +810,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile a required bare/exact-one string class with only zero-minimum outside predicate scopes, preserving defined empty class captures.
 - [x] Compile a required single class combining zero-minimum outside scopes and live predicates, preserving endpoint retries and capture identity.
 - [x] Compile class/empty alternatives whose outside predicates all belong to zero-minimum scopes, preserving source order and empty capture identity.
+- [x] Compile class/empty alternatives combining zero-minimum outside scopes and live predicates, preserving ordered endpoint continuations and captures.
+- [ ] Execute class/empty alternatives combining zero-minimum outside scopes and live predicates through Runtime and String consumers.
 - [x] Execute class/empty alternatives with only zero-minimum outside predicate scopes through Runtime and String consumers.
 - [x] Execute a required single class combining zero-minimum outside scopes and live predicates through Runtime and String consumers.
 - [x] Execute a required single class with only zero-minimum outside predicate scopes through Runtime and String consumers.

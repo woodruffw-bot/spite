@@ -21041,3 +21041,22 @@ pass; fixtures, snapshots, dependencies and default quotas remain unchanged.
 
 The preceding single-class Runtime suite passes all 1,694 Unicode groups
 (759.05 s), including all six newly supported optional word/line controls.
+
+
+## Core class/empty alternatives with zero-minimum scopes and live predicates
+
+Four new focused groups pass using the independent continuation oracle helpers.
+Six finite/scalar/known-empty families, five bare/exact-one forms, four capture
+layouts, both branch orders, four zero-minimum scope layouts and four live
+predicate profiles cover six UTF-16 inputs and all starts/sticky/i/m settings.
+Forty native equivalent tables cover ordered class/empty entry, endpoint gates,
+undefined skipped scopes and original capture identity. Deep 20,000 optional
+scopes, defined outside points, empty-first priority and retries, shorter
+successful class members, long shared-prefix words, every callback cancellation/
+recovery and complete unknown/literal/reference/additional-class rejection pass.
+
+The preceding sixty-four focused groups passed before this separate proof was
+added. All 74,056 prior API records retain exact domains, charged work and capture
+projection. Strict workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas are unchanged.
