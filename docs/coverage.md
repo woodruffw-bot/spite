@@ -22290,3 +22290,28 @@ The preceding nested optional and nested zero-count Runtime sources pass a fresh
 Test262 run: all 35 runner tests and all 16,343 reviewed variants, including the
 pinned corpus gate (432.59 s). This run compiled before captured outside scopes
 around nested optional Runtime roots.
+
+
+## Core captured outside scopes around nested zero-count truth roots
+
+Four focused groups pass (3.12 s), comparing 160 native capture tables and an
+independent 26-slot zero-iteration/outside-profile oracle across every UTF-16
+start, sticky, multiline and ignore-case. Required/skipped outside points and
+mandatory enclosing ranges retain participation while every nested zero-count
+slot stays undefined. Padded/lazy zero counts, both original branch orders,
+ordinary/exact-one inner wrappers and finite/scalar/known-empty bodies validate
+completely before matching. Deep 20,000-level outside captures, 20,000-unit
+shared-prefix bodies, cloning/drop and every charged cancellation/recovery remain
+flat. Unknown terms in either region even under zero/skipped/never scopes remain
+unproved; all eight explicit boundary controls are valid ECMAScript patterns.
+Contradictory outside profiles match with bounded work after full construction.
+
+All 93,928 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy (28.28 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding nested optional and nested zero-count Runtime sources pass all
+1,770 Unicode RegExp integration tests (835.45 s). This run compiled before
+captured outside scopes around nested optional Runtime roots.

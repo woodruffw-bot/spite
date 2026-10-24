@@ -12644,3 +12644,21 @@ nested optional proof after nested zero-count alternatives. Its dedicated body
 retains outside point/whole roles, every nested optional slot, actual endpoint
 truth, source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves captured outside predicate/empty scopes around a nested
+zero-count truth root. A flat zero-count ancestor scan preserves the original
+capture prefix; the complete nested body and both branches validate before the
+root becomes one opaque outside-proof atom. Every inner ordinary/exact-one
+wrapper stays inside the zero-count capture interval and remains undefined.
+Outside conditional points and mandatory enclosing ranges can still participate
+(ECMA-262 edition 17 22.2.2.3, 22.2.2.7).
+
+After construction, class profiles are disabled and the existing outside kernel
+searches only zero-width continuations, retaining normalized Unicode starts,
+sticky behavior and later positions required by outside gates. Traversal,
+storage and clone/drop remain flat and source-sized; all truth probes charge
+before inspection. Unknown terms in either region even under zero/skipped/never
+scopes, additional optional/zero class-path counts and consuming outside siblings
+retain separate proofs. Earlier API domains, charged work and captures remain
+unchanged. Runtime selection remains separate.
