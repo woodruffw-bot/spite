@@ -6,11 +6,11 @@ use crate::{
 };
 use spite_core::{
     DiagnosticKind, JsString, RegExpAnchoredMatcher, RegExpBackreferenceMatcher,
-    RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpLiteralMatcher, RegExpPrefixedMatcher,
-    RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
-    RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
-    RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
-    RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
+    RegExpCharacterMatcher, RegExpDisjunctionMatcher, RegExpImpossibleMatcher,
+    RegExpLiteralMatcher, RegExpPrefixedMatcher, RegExpQuantifiedContinuationMatcher,
+    RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher, RegExpRepeatedContinuationMatcher,
+    RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher, RegExpRepeatedSequenceMatcher,
+    RegExpSequenceMatcher, RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
     RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
@@ -3276,6 +3276,22 @@ impl Realm {
                 enclosing_captures = 0;
             }
             zero.map(RegExpMatcherBody::ZeroCountSequence)
+        } else {
+            matcher
+        };
+        let matcher = if matcher.is_none() {
+            let impossible = self.object_work(span, |_, budget| {
+                RegExpImpossibleMatcher::compile_negative_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if impossible.is_some() {
+                enclosing_captures = 0;
+            }
+            impossible.map(RegExpMatcherBody::Impossible)
         } else {
             matcher
         };

@@ -23624,3 +23624,34 @@ A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
 Rust strings finds none newly admitted. Construction and temporary storage are
 source-sized; retained storage, clone/drop and matching remain constant.
 Earlier APIs and Runtime behavior are unchanged; integration follows separately.
+
+
+## Runtime impossible negative-empty root sequences
+
+Runtime selects the impossible proof after the empty-tree proofs. Its dedicated
+body retains the original lexical capture inventory and charges constant actual
+no-match work before any input access. Full original syntax and binding errors
+precede proof selection; normal input/index coercions and lastIndex rules remain
+on the shared execution path.
+
+All four new integration groups pass (0.17 s), covering direct negative
+lookahead/lookbehind, arbitrary unsupported surrounding membership, named and
+erased forward bindings, ordinary result metadata, global/sticky resets, String
+consumers without replacement callbacks, cloning, collection, 1,000 surrounding
+captures, a 20,000-zero assertion spelling, original early errors, coercion order
+and opt-in constructor aborts. All 55,296 exact native metadata records across
+512 generated ordinary/u/v patterns agree on the fresh CLI, as do all four
+complete JavaScript programs.
+
+All 436 Runtime unit tests pass (3.57 s), including direct original capture
+inventories, zero precharged search passes and one unit of actual matching work
+with pre-input aborts. Strict workspace Clippy with all targets passes (7.25 s),
+alongside workspace documentation tests, formatting, dependency policy,
+inventories and diff checks. The new grouped case file raises the Runtime
+inventory to 615; fixtures, snapshots, dependencies and default quotas are
+unchanged.
+
+The preceding escaped-tree Runtime snapshot passes all 2,809 RegExp integration
+tests (785.80 s), all 35 Test262 runner tests and all 16,343 reviewed variants
+(411.25 s for the corpus group). These broad results precede surrogate and
+impossible Runtime integration.

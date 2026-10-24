@@ -893,6 +893,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove zero-erased surrogate escape trees with Unicode fixed-pair atom boundaries and separate non-Unicode, braced and mixed spellings.
 - [x] Execute zero-erased surrogate escape trees through Runtime and String consumers, preserving ordinary/Unicode atom boundaries, source spellings and capture aliases.
 - [x] Prove impossible root sequences blocked by a direct negative lookahead/lookbehind over an independently empty tree, retaining original capture inventories.
+- [x] Execute impossible negative-empty root sequences through Runtime and String consumers with original capture inventories, coercion order and lastIndex rules.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

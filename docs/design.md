@@ -13205,3 +13205,12 @@ irrelevant bodies. Source/copy work precedes allocation. Construction is
 source-sized; retained storage, clone/drop and actual no-match work are constant.
 Matching charges before any possible input access and needs no matching data
 from otherwise consuming or unsupported surrounding terms.
+
+
+Runtime selects the impossible-match proof after the empty-tree proofs, using
+the full original normalized capture source. Its dedicated body retains every
+lexical slot for constructor consistency, charges one unit of actual matching
+work and returns no match without input access. The normal execution path
+keeps input/index coercion order, global/sticky lastIndex resets, source/flags
+and String consumer behavior. Clones and collection retain the constant-size
+plan; original syntax errors still precede proof selection.
