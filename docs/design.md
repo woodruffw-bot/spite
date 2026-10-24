@@ -11849,3 +11849,23 @@ suffix predicate and project the preferred required empty. Large decimal bounds
 therefore allocate no count-sized stack. Transitions and fallible continuation
 growth remain charged, with work/capacity failures separate from JS exceptions.
 Scalar fallback and Runtime selection remain separate.
+
+
+Core separately proves larger asserted nullable string-class counts with scalar
+fallback. It shares the finite larger-count constructor through a private
+scalar-presence parameter; the finite-only API retains its domain, callback
+sequence and Debug representation. The scalar API requires fallback presence,
+keeps complete class/capture and unconditional outside-predicate validation,
+and preserves the exact decimal optional allowance before bound saturation.
+
+A scalar endpoint consumes one Unicode point and at least one UTF-16 unit.
+Thus ECMA-262 edition 17 22.2.2.3 RepeatMatcher's required-empty count reduction
+applies unchanged: small minima execute directly on bounded flat state; larger
+class-first runs finish on their preferred required empty; empty-first runs
+retain consuming-count tiers and the original optional count/greediness.
+Scalar and finite-word endpoints keep descending end order before class EPS.
+The finite candidate bound counts a scalar fallback as potentially consuming,
+so an unproved empty scalar language cannot trigger the empty-only shortcut.
+No storage depends on a huge count's decimal value. Required-empty capture
+identity, Unicode boundaries/folding and host work/capacity failures retain
+the shared semantics. Runtime selection remains separate.

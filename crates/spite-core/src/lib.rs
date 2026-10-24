@@ -97,6 +97,7 @@ pub use regexp_unicode_property_dot::{
     RegExpUnicodePropertyDotMatch, RegExpUnicodePropertyDotMatcher,
 };
 pub use regexp_unicode_repeated_atom::{
+    RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
     RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,

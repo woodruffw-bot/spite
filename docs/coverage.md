@@ -20426,3 +20426,25 @@ the twelve published asserted repetition groups retain their behavior. All
 capture projection. Strict workspace Clippy, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core larger asserted nullable scalar/string-class counts
+
+Four groups compare Any, ASCII and folded scalar ranges combined with nullable
+and nonnullable finite words, twelve larger count forms, three body modes,
+eight outside assertion profiles, six capture trees and atom/group scopes across
+eight UTF-16 inputs and all starts/sticky/i/m. The independent recursive reference
+retains required empty copies; huge controls preserve the original optional
+allowance above the input bound. Thirty native tables retain class-versus-empty
+identity, longest finite-word versus scalar priority, adjacent huge upper bounds,
+supplementary starts, folding, multiline and leftmost candidate behavior.
+Deep 20,000-capture scopes, 40,000-unit consuming continuations/required-empty
+tails, 20,000-digit bounds with bounded lazy empty work, every callback
+cancellation/recovery and closed finite-only/unsupported controls pass.
+
+All twenty combined focused groups pass, including the sixteen preceding
+asserted-repetition groups. All 65,224 frozen API records retain exact domains,
+construction/search work and capture projection. Strict workspace Clippy,
+documentation tests, formatting, dependency policy, inventories and diff checks
+pass. Runtime selection remains separate; fixtures, snapshots, dependencies
+and default quotas are unchanged.

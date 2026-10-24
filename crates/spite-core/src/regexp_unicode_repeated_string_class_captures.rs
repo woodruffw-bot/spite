@@ -2016,6 +2016,15 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_body_with_work(source, ignore_case, multiline, false, charge)
+    }
+    fn compile_body_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        require_scalar: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         let Some(plan) =
@@ -2030,7 +2039,7 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         };
         if plan.minimum < 3
             || !(plan.plan.empty_alternative || plan.plan.class.has_empty_member())
-            || plan.plan.class.has_scalar_fallback()
+            || plan.plan.class.has_scalar_fallback() != require_scalar
         {
             return Ok(None);
         }
@@ -2080,6 +2089,7 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
         sticky: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        use RegExpUnicodeAssertedNullableStringClassCaptureMatcher as Nullable;
         use RegExpUnicodeMatchError::Work;
         charge(4).map_err(Work)?;
         let Some(mut start) = unicode_start(input, requested) else {
@@ -2127,11 +2137,14 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                         greedy: self.plan.plan.greedy,
                         allow_required_empty: true,
                     };
-                    if let Some(found) =
-                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
-                            &self.plan, config, input, start, true, &mut charge,
-                        )?
-                    {
+                    if let Some(found) = Nullable::find_plan_with_config(
+                        &self.plan,
+                        config,
+                        input,
+                        start,
+                        true,
+                        &mut charge,
+                    )? {
                         return Ok(Some(found));
                     }
                 } else if !self.plan.plan.empty_first {
@@ -2142,11 +2155,14 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                         greedy: true,
                         allow_required_empty: false,
                     };
-                    if let Some(mut found) =
-                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
-                            &self.plan, config, input, start, true, &mut charge,
-                        )?
-                    {
+                    if let Some(mut found) = Nullable::find_plan_with_config(
+                        &self.plan,
+                        config,
+                        input,
+                        start,
+                        true,
+                        &mut charge,
+                    )? {
                         found.last_iteration = Some(found.range.end..found.range.end);
                         found.class_selected = preferred_empty_class;
                         return Ok(Some(found));
@@ -2164,11 +2180,14 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
                             greedy: self.plan.plan.greedy,
                             allow_required_empty: false,
                         };
-                        if let Some(mut found) =
-                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
-                            &self.plan, config, input, start, true, &mut charge,
-                        )?
-                    {
+                        if let Some(mut found) = Nullable::find_plan_with_config(
+                            &self.plan,
+                            config,
+                            input,
+                            start,
+                            true,
+                            &mut charge,
+                        )? {
                             if found.last_iteration.is_none() {
                                 found.last_iteration = Some(found.range.end..found.range.end);
                                 found.class_selected = false;
@@ -2195,5 +2214,58 @@ impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
             )
             .1;
         }
+    }
+}
+
+/// A larger asserted nullable string-class count with ordinary scalar fallback.
+///
+/// Requires validated v/vi input and normalized capture names. Scalar fallback
+/// retains the same descending endpoint order as finite words. Every consuming
+/// choice advances at least one input unit, so required-empty count reduction
+/// and the exact optional allowance apply to both kinds of member.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher {
+    plan: RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
+}
+impl RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher {
+    /// Proves a nullable scalar/string class, outside assertions and a larger count.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher::compile_body_with_work(
+            source,
+            ignore_case,
+            multiline,
+            true,
+            charge,
+        )
+        .map(|plan| plan.map(|plan| Self { plan }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects lexical slots from the whole range and final body identity.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes scalar and finite-word continuations with required-empty reduction.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
