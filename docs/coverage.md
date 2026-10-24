@@ -19812,3 +19812,30 @@ records retain exact domains, construction/search work and capture projection.
 The seven fixed capture tables match native references. Strict workspace Clippy,
 documentation tests, formatting, dependency policy, inventories and diff checks
 pass. No Runtime selection, fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime exact-one counts around a single string class
+
+Three groups retain the independent reversed-gate lexical-role matrix across
+33 class/input witnesses, three profiles, three frames and six layouts. Exact-one
+counts occur on the class atom and complete noncapturing frame. Nineteen native
+consumer references add plain/canonical scopes, required empty members,
+shorter eligible words, source spelling, escaped names, never slots, indices
+aliases, supplementary folding, matchAll, replacements, split/search and
+read-only lastIndex. Clones and collection retain metadata and ranges. Deep
+counted ancestors and long words remain flat. Opt-in constructor/exec aborts
+preserve bindings and lastIndex; an initial sticky empty success retains bounded
+work under the same budget. Other counts, predicates, choices, leaves and
+references retain explicit unsupported controls.
+
+
+Execution passes all 1,628 Unicode integration groups, 431 Runtime units and
+19 native/fresh-CLI consumer references. All 230,400 exact differential records
+match across 384 pattern/control pairs, 32 class families, eleven gate profiles,
+six layouts, two phases and twelve inputs with every start/sticky/i/m combination.
+Controls retain native exact-one counts and small required predicate counts,
+explicit Unicode candidate loops/leading normalization and finite vi alternatives;
+only huge effect-free empty counts reduce. Strict workspace Clippy, documentation
+tests, formatting, dependency policy, inventories and diff checks pass. Runtime
+inventory is 554 files and 4,334 integration cases. No fixture, snapshot,
+dependency, intrinsic inventory or default quota changes.

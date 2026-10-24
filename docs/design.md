@@ -11494,4 +11494,6 @@ reference-free spine (22.2.2.3, RepeatMatcher). Original empty sibling counts
 retain optional/later undefined slots and required point participation. Other
 class counts, references, class-bearing alternatives and unknown leaves remain
 separate proofs. Existing constructors retain exact domains/callbacks and flat
-storage. Runtime selection remains separate.
+storage. Runtime selects the exact-one Single constructor after preceding
+proofs on the full normalized capture source, preserving original metadata,
+names/indices, String consumers, cloning, collection and host-abort behavior.
