@@ -20403,3 +20403,26 @@ capture layouts and twelve inputs with every requested start/sticky/i/m.
 Strict workspace Clippy, documentation tests, formatting, dependency policy,
 564 Runtime case-file registrations, Parser/Test262 inventories and diff checks
 pass. Fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core larger asserted nullable finite string-class counts
+
+Four groups compare eight finite/algebraic/empty class families, twelve larger
+count forms, three body orders, eight outside assertion profiles, six capture
+trees and atom/group scopes across eight UTF-16 inputs and all starts/sticky/i/m.
+The recursive reference retains every required empty copy; huge minimum controls
+use input units plus one required copies with the same exact optional allowance.
+Fifty-five native tables cover class-first and empty-first retry order, exact and
+adjacent huge upper bounds, required-empty capture resets, supplementary starts,
+folding, nonsticky candidate order, empty-only and known-empty classes. An
+independent reduction prototype also agrees with 2,136,960 native records.
+
+Deep 20,000-capture scopes, 40,000-unit consuming continuations and required-empty
+tails, 20,000-digit bounds with bounded lazy empty work, every callback
+cancellation/recovery and closed scalar/unsupported proof controls pass.
+All sixteen combined focused groups pass after sharing the configurable finder;
+the twelve published asserted repetition groups retain their behavior. All
+64,488 frozen API records retain exact domains, construction/search work and
+capture projection. Strict workspace Clippy, documentation tests, formatting,
+dependency policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.

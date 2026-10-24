@@ -12,6 +12,7 @@ use std::ops::Range;
 #[path = "regexp_unicode_repeated_string_class_captures.rs"]
 mod repeated_string_classes;
 pub use repeated_string_classes::{
+    RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,

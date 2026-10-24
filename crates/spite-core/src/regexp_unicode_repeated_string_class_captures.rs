@@ -1687,6 +1687,13 @@ impl RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher {
     }
 }
 
+#[derive(Clone, Copy)]
+struct NullableStringRepeatConfig {
+    minimum: usize,
+    maximum: Option<usize>,
+    greedy: bool,
+    allow_required_empty: bool,
+}
 #[derive(Debug)]
 struct NullableAssertedStringRepeatFrame {
     at: usize,
@@ -1770,6 +1777,28 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        Self::find_plan_with_config(
+            plan,
+            NullableStringRepeatConfig {
+                minimum: plan.minimum,
+                maximum: plan.maximum,
+                greedy: plan.plan.greedy,
+                allow_required_empty: true,
+            },
+            input,
+            requested,
+            sticky,
+            charge,
+        )
+    }
+    fn find_plan_with_config<E>(
+        plan: &RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+        config: NullableStringRepeatConfig,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
         use RegExpUnicodeMatchError::{Capacity, Work};
@@ -1792,15 +1821,19 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                     let depth = frames.len() - 1;
                     let frame = frames.last_mut().expect("continuation frame");
                     let at = frame.at;
-                    let can_stop = depth >= plan.minimum;
-                    if can_stop && !plan.plan.greedy && !frame.stop_done {
+                    let can_stop = depth >= config.minimum;
+                    if can_stop && !config.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
                         if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
                             return Ok(Some(Self::result(&frames, start)));
                         }
                     }
-                    if depth < plan.minimum && plan.plan.empty_first && !frame.epsilon_done {
+                    if config.allow_required_empty
+                        && depth < config.minimum
+                        && plan.plan.empty_first
+                        && !frame.epsilon_done
+                    {
                         frame.epsilon_done = true;
                         if frames.len() == frames.capacity() {
                             charge(frames.capacity().saturating_mul(8).saturating_add(8))
@@ -1811,11 +1844,11 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                         continue;
                     }
                     if !frame.body_done {
-                        if plan.maximum.is_some_and(|maximum| depth >= maximum)
-                            || if plan.minimum > 1 {
+                        if config.maximum.is_some_and(|maximum| depth >= maximum)
+                            || if config.allow_required_empty && config.minimum > 1 {
                                 at == input.len()
                             } else {
-                                input.len() - at < plan.minimum.saturating_sub(depth)
+                                input.len() - at < config.minimum.saturating_sub(depth)
                             }
                         {
                             frame.body_done = true;
@@ -1849,7 +1882,8 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                             frame.body_done = true;
                         }
                     }
-                    if depth < plan.minimum && !frame.epsilon_done {
+                    if config.allow_required_empty && depth < config.minimum && !frame.epsilon_done
+                    {
                         frame.epsilon_done = true;
                         let selected = plan.plan.class.has_empty_member();
                         if selected || plan.plan.empty_alternative {
@@ -1862,7 +1896,7 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                             continue;
                         }
                     }
-                    if can_stop && plan.plan.greedy && !frame.stop_done {
+                    if can_stop && config.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
                         if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
@@ -1959,5 +1993,207 @@ impl RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher {
         RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_work(
             &self.plan, input, requested, sticky, charge,
         )
+    }
+}
+
+/// A larger nullable finite string-class count with unconditional assertions.
+///
+/// Requires validated v/vi input and normalized capture names. Finite words may
+/// overlap and contain an empty member; a separate empty arm may occur in either
+/// order. Scalar fallback and smaller counts remain separate proofs. Counts above
+/// the remaining input bound reduce required-empty padding without allocating
+/// storage proportional to their decimal value (22.2.2.3 RepeatMatcher).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
+    plan: RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+    optional: Option<usize>,
+    empty_only: bool,
+}
+impl RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher {
+    /// Proves a finite nullable body, unconditional assertions and minimum at least three.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(plan) =
+            RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_plan_with_work(
+                source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        if plan.minimum < 3
+            || !(plan.plan.empty_alternative || plan.plan.class.has_empty_member())
+            || plan.plan.class.has_scalar_fallback()
+        {
+            return Ok(None);
+        }
+        charge(source.len().saturating_mul(8).saturating_add(64))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let mut optional = None;
+        let hole = counted_hole(source.code_units(), |units, at| {
+            let (end, minimum, delta, greedy) = asserted_repeat_count(units, at)?;
+            if minimum < 3 {
+                return None;
+            }
+            optional = delta;
+            Some((end, true, false, greedy))
+        });
+        if hole.is_none() {
+            return Ok(None);
+        }
+        let members = plan
+            .plan
+            .class
+            .prefix_candidate_bound_with_work(&mut charge)
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let empty_only = members == usize::from(plan.plan.class.has_empty_member());
+        Ok(Some(Self {
+            plan,
+            optional,
+            empty_only,
+        }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects lexical slots from the whole range and final body identity.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes bounded required state or reduces a required-empty padding run.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        use RegExpUnicodeMatchError::Work;
+        charge(4).map_err(Work)?;
+        let Some(mut start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        if self
+            .plan
+            .assertions
+            .iter()
+            .any(|assertions| assertions.word && assertions.nonword)
+        {
+            return Ok(None);
+        }
+        let preferred_empty_class =
+            !self.plan.plan.empty_first && self.plan.plan.class.has_empty_member();
+        loop {
+            charge(8).map_err(Work)?;
+            if self.plan.assertions[0].matches(
+                input,
+                start,
+                self.plan.ignore_case,
+                self.plan.multiline,
+            ) {
+                let remaining = input.len() - start;
+                if self.empty_only {
+                    charge(8).map_err(Work)?;
+                    if self.plan.assertions[1].matches(
+                        input,
+                        start,
+                        self.plan.ignore_case,
+                        self.plan.multiline,
+                    ) {
+                        return Ok(Some(RegExpUnicodeRepeatedStringClassMatch {
+                            range: start..start,
+                            last_iteration: Some(start..start),
+                            class_selected: preferred_empty_class,
+                        }));
+                    }
+                } else if self.plan.minimum <= remaining {
+                    let config = NullableStringRepeatConfig {
+                        minimum: self.plan.minimum,
+                        maximum: self
+                            .optional
+                            .map(|optional| self.plan.minimum.saturating_add(optional)),
+                        greedy: self.plan.plan.greedy,
+                        allow_required_empty: true,
+                    };
+                    if let Some(found) =
+                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
+                            &self.plan, config, input, start, true, &mut charge,
+                        )?
+                    {
+                        return Ok(Some(found));
+                    }
+                } else if !self.plan.plan.empty_first {
+                    // More required copies than input units force a preferred empty tail.
+                    let config = NullableStringRepeatConfig {
+                        minimum: 0,
+                        maximum: None,
+                        greedy: true,
+                        allow_required_empty: false,
+                    };
+                    if let Some(mut found) =
+                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
+                            &self.plan, config, input, start, true, &mut charge,
+                        )?
+                    {
+                        found.last_iteration = Some(found.range.end..found.range.end);
+                        found.class_selected = preferred_empty_class;
+                        return Ok(Some(found));
+                    }
+                } else {
+                    // Empty-first required paths first exhaust zero consuming required
+                    // copies, then one, then two, with endpoint order within each tier.
+                    for consuming in 0..=remaining {
+                        charge(2).map_err(Work)?;
+                        let config = NullableStringRepeatConfig {
+                            minimum: consuming,
+                            maximum: self
+                                .optional
+                                .map(|optional| consuming.saturating_add(optional)),
+                            greedy: self.plan.plan.greedy,
+                            allow_required_empty: false,
+                        };
+                        if let Some(mut found) =
+                        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_config(
+                            &self.plan, config, input, start, true, &mut charge,
+                        )?
+                    {
+                            if found.last_iteration.is_none() {
+                                found.last_iteration = Some(found.range.end..found.range.end);
+                                found.class_selected = false;
+                            }
+                            return Ok(Some(found));
+                        }
+                        if consuming == 0
+                            && self.optional.is_none_or(|optional| optional >= remaining)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            if sticky || start == input.len() {
+                return Ok(None);
+            }
+            charge(2).map_err(Work)?;
+            let units = input.code_units();
+            start += crate::regexp_unicode_character::unicode_input_character(
+                units,
+                start,
+                units[start],
+            )
+            .1;
+        }
     }
 }

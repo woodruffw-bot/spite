@@ -11821,3 +11821,31 @@ unselected class leaves remain fully proved. Runtime selects this proof after
 the zero/one-minimum nullable asserted constructor on the full capture source.
 Its dedicated body retains source, lexical names/indices, lastIndex, String
 consumers, cloning and collection, including required-empty capture resets.
+
+
+Core separately proves finite asserted nullable string-class counts with minimum
+at least three. It reuses the complete class/capture and unconditional outside
+assertion proof, then excludes scalar fallback. Finite trie terminal counts prove
+an empty-only body; every original class leaf remains checked before shortcuts.
+The exact decimal upper-minus-lower allowance is retained before saturating the
+individual bounds. Smaller nullable APIs retain their domains and charged work.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher accepts required empty iterations and
+rejects optional empty progress. When the minimum fits within remaining input
+units, a shared flat continuation stack executes required empties directly; its
+live depth is bounded by twice remaining input units plus one. Larger minima
+contain more required copies than any consuming path can use. Class-first paths
+then enumerate consuming words greedily and finish with the preferred required
+empty body, independently of outer count greediness. Empty-first paths enumerate
+zero, one, then more consuming required copies; each tier retains longest-member
+order, the original optional allowance and greedy/lazy continuation order.
+Search preserves leftmost candidate order before advancing the consuming tier.
+
+These reductions omit duplicate empty padding, whose continuation cannot inspect
+prior captures: references and conditional/body assertions are outside the proof.
+The last required empty preserves its class/empty identity; a final consuming
+body preserves its own range and identity. Empty-only bodies directly check the
+suffix predicate and project the preferred required empty. Large decimal bounds
+therefore allocate no count-sized stack. Transitions and fallible continuation
+growth remain charged, with work/capacity failures separate from JS exceptions.
+Scalar fallback and Runtime selection remain separate.

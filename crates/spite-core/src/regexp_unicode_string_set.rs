@@ -663,6 +663,11 @@ impl RegExpUnicodeStringSetMatcher {
         Ok(true)
     }
 
+    /// Whether ordinary scalar matching supplements the finite word trie.
+    pub(crate) fn has_scalar_fallback(&self) -> bool {
+        self.program.scalars.is_some()
+    }
+
     /// Charges the finite word count used to bound endpoint continuation probes.
     pub(crate) fn prefix_candidate_bound_with_work<E>(
         &self,

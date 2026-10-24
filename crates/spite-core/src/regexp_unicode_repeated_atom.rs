@@ -12,6 +12,7 @@ use std::ops::Range;
 #[path = "regexp_unicode_nullable_class_captures.rs"]
 mod nullable_class_captures;
 pub use nullable_class_captures::{
+    RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
