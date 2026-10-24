@@ -535,3 +535,63 @@ fn enclosing_optional_known_sequences_keep_deep_masks_and_huge_counts_without_de
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn first_optional_known_choices_keep_first_masks_duplicate_names_and_later_original_slots() {
+    check(
+        r#"
+        var rows=[
+            ['(?<skip>(?![\\p{RGI_Emoji}]*))?|(?<later>(a)\\1)+',[false,false,false]],
+            ['(?<outside>(?<skip>(?![\\p{RGI_Emoji}]*))?)+(?<last>[a]{0})+|(?<later>b)(c)*',[true,false,true,false,false]],
+            ['(?<outside>(?<rolled>(?<skip>(?![\\p{RGI_Emoji}]*))?(?<last>[a]{0})+)*)+|(?=(b))c',[true,false,false,false,false]],
+            ['(?<same>(?![\\p{RGI_Emoji}]*))?|(?<same>a)',[false,false]]
+        ],ok=true;
+        for(var row of rows)for(var flags of ['dv','dgv','dgyv','dgimsv']){
+            var r=new RegExp(row[0],flags);r.lastIndex=1;var m=r.exec('😀a');ok=ok&&m.index===0&&m[0]===''&&m.length===row[1].length+1&&r.lastIndex===(r.global||r.sticky?0:1)&&r.source===row[0];
+            for(var i=0;i<row[1].length;i++)ok=ok&&(row[1][i]?m[i+1]===''&&m.indices[i+1][0]===0&&m.indices[i+1][1]===0:m[i+1]===undefined&&m.indices[i+1]===undefined);
+        }
+        for(var source of ['((?![\\p{RGI_Emoji}]*))?|[\\p{Not_A_Property}]','((?![\\p{RGI_Emoji}]*))?|(?<x>a)(?<x>b)','((?![\\p{RGI_Emoji}]*))?|\\k<missing>']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn first_optional_known_choice_consumers_clones_and_collection_keep_unselected_arm_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?<skip>(?![\p{RGI_Emoji}]*))?)+(?<last>[a]{0})+|(?<later>b)/dgv,ok=true,offsets=[];
+        var matches=Array.from('😀a'.matchAll(r));ok=ok&&matches.length===3&&matches[1].index===2&&matches[2].index===3&&matches[1].groups.outside===''&&matches[1].groups.skip===undefined&&matches[1].groups.last===''&&matches[1].groups.later===undefined;
+        ok=ok&&'😀a'.replace(r,function(match,outside,skip,last,later,offset,input,groups){ok=ok&&outside===''&&skip===undefined&&last===''&&later===undefined&&groups.later===undefined;offsets.push(offset);return '!';})==='!😀!a!'&&JSON.stringify(offsets)==='[0,2,3]';
+        ok=ok&&JSON.stringify('a😀b'.split(r))==='["a","",null,"",null,"😀","",null,"",null,"b"]'&&''.split(r).length===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('😀');ok&&m.index===0&&m[1]===''&&m[2]===undefined&&m[3]===''&&m[4]===undefined&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.last===''&&after.groups.later===undefined&&after.indices.groups.later===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn first_optional_known_choices_keep_many_unselected_slots_without_default_quotas() {
+    check(
+        r#"
+        var count=10,pattern='(?<skip>(?![\\p{RGI_Emoji}]*))?|'+Array(count).fill('(a)').join('|'),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===count+2&&m[1]===undefined&&m[count+1]===undefined&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let count = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"(?<skip>(?![\p{{RGI_Emoji}}]*))?|{}",
+            std::iter::repeat_n("(a)", count)
+                .collect::<Vec<_>>()
+                .join("|")
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===undefined&&m[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
+        count + 2,
+        count + 1
+    ));
+}

@@ -13808,3 +13808,12 @@ and lexical slot. Required wrappers retain body masks while optional repeats
 clear descendants; shared empty execution preserves Unicode boundaries,
 indices/groups, lastIndex, String consumers, cloning and collection, with
 original validation errors before proof selection.
+
+
+Runtime selects root choices whose first arm uses independently empty optional
+established-impossible forms. The final successful continuation selects the
+first arm, preserving its mask and leaving every later lexical slot undefined
+(22.2.2.2). Full normalized source keeps duplicate names and original bindings.
+Shared empty execution preserves Unicode boundaries, indices/groups, lastIndex,
+String consumers, cloning and collection, with original errors before proof
+selection. This root-only proof is not composed under repeat continuations.

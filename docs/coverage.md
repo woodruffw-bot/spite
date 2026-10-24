@@ -25086,3 +25086,22 @@ full 2,898-test RegExp integration run (1,094.48 s), plus all 35 Test262 runner
 tests and 16,343 corpus variants in the conformance profile (520.52 s for the
 corpus). These broad results precede Runtime sequence/enclosing-sequence
 selection; those increments have the focused/native/quality checks above.
+
+
+First optional established-impossible root alternatives (Runtime)
+---------------------------------------------------------------
+
+Runtime selects a proven independently empty optional-established-impossible
+first arm at the complete root choice. Full original normalized source keeps
+first-arm masks, later undefined slots and original bindings, including
+duplicate names across arms. The proof remains root-only. All 27 focused
+integration groups pass (0.16 s), including three new groups for every earlier
+first-arm family, later lexical slots and errors, indices/groups and lastIndex,
+String consumers, cloning, collection and 1,000 later arms.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v choices agree on the fresh CLI, as do all 27 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.57 s). Strict workspace Clippy with
+all targets passes (6.45 s), alongside documentation tests, formatting, dependency
+policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
+snapshots, dependencies and default quotas are unchanged.
