@@ -796,6 +796,19 @@ impl RegExpUnicodePredicateChoiceStringClassAlternativeMatcher {
         else {
             return Ok(None);
         };
+        Self::compile_projection(
+            Projection { shadow, overlays },
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+    fn compile_projection<E>(
+        Projection { shadow, overlays }: Projection,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         charge(shadow.len().saturating_mul(24).saturating_add(128))
             .map_err(RegExpUnicodeSetCompileError::Work)?;
         let source = super::super::normalize_ones(shadow.code_units());
@@ -1022,6 +1035,62 @@ impl RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher {
         self.plan.capture_range(index, found)
     }
     /// Executes the proved class and live gates with original member priority.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+/// Class/empty alternatives beside predicate choices equivalent to live gates.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Only
+/// mandatory scopes outside class-bearing branches receive conjunction gates
+/// and endpoint capture masks. Complete branch proofs retain source order,
+/// required empty class identity and shorter-member or empty-first retries.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher {
+    plan: RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher {
+    /// Proves mandatory outside choices and complete class/empty alternatives.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(projection) = project_choices(source, true, true, true, &mut charge)? else {
+            return Ok(None);
+        };
+        RegExpUnicodePredicateChoiceStringClassAlternativeMatcher::compile_projection(
+            projection,
+            ignore_case,
+            multiline,
+            charge,
+        )
+        .map(|plan| plan.map(|plan| Self { plan }))
+    }
+    /// Counts original lexical slots, including unselected class/empty branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects class selection and predicate participation at actual endpoints.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<std::ops::Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes complete branch continuations with live endpoint gates.
     pub fn find_with_captures_and_work<E>(
         &self,
         input: &JsString,

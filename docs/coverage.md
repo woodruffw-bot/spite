@@ -21327,3 +21327,20 @@ sticky, multiline and ignore-case. All 431 unit tests pass (3.18 s), alongside
 strict workspace Clippy (6.22 s), documentation tests, formatting, policy,
 inventories and diff checks. Fixtures, snapshots, dependencies and default
 quotas remain unchanged.
+
+
+## Core conjunctive predicate choices around class/empty alternatives
+
+Four new focused groups pass (0.16 s), comparing 160 independent native tables
+and a finite/scalar/class-empty continuation oracle. Both branch orders,
+nullable class members, known-empty sets, bare/exact-one paths, required/skipped
+scopes, huge counts, all UTF-16 starts, sticky, multiline and ignore-case retain
+complete whole ranges, class identity and conditional capture slots. Deep
+20,000-level scopes, 20,000-unit shared-prefix members, empty-first and shorter
+member retries, clone/drop, every charged cancellation/recovery and unselected
+unknown leaf proofs remain flat. Extra never-gated unknown and nonconjunctive
+controls pass independently (0.00 s). All 78,472 frozen prior API records retain
+exact domains, charged work and capture projection in six bounded batches.
+Strict workspace Clippy (15.93 s), documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas remain unchanged.

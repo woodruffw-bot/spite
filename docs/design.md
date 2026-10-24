@@ -12226,3 +12226,14 @@ exact domains and charged work. Runtime selects this single-class proof after
 the conjunctive repetition proof on the full normalized capture source. The
 dedicated body retains endpoint truth, required class identity, source/flags,
 named aliases, indices, lastIndex and String consumers through clone/collection.
+
+Core separately proves mandatory conjunctive predicate choices around a required
+class/empty alternative. Endpoint masks apply only to scopes outside every
+class-bearing branch. Canonical live gates therefore preserve empty-first
+retries and shorter successful class members, while original source order and
+required empty class identity select the correct captures (ECMA-262 edition 17
+22.2.2.3–4). Bare/exact-one class paths retain lexical slots; skipped scopes stay
+undefined. Unknown leaves are still proved even behind never gates, and
+nonconjunctive or branch-local conditional scopes retain separate proofs.
+Earlier choice APIs retain exact domains and charged work. Runtime selection
+remains separate.
