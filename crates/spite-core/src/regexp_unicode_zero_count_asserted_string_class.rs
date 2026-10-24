@@ -538,3 +538,130 @@ impl RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher {
             .map_err(RegExpUnicodeMatchError::Work)
     }
 }
+
+#[derive(Clone, Debug)]
+enum UnassertedAlternativeBody {
+    Nonempty(crate::RegExpUnicodeNullableStringClassCaptureMatcher),
+    Empty(crate::RegExpUnicodeEmptyStringClassCaptureMatcher),
+}
+/// One class/empty alternative with every outside predicate in a skipped scope.
+///
+/// Requires validated v/vi input and normalized capture names. Both original
+/// alternatives and every class leaf must be proved, including an unselected
+/// class branch. Bare or exact-one class paths retain original source order and
+/// required empty class identity. Skipped predicate captures remain undefined.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher {
+    body: UnassertedAlternativeBody,
+}
+impl RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher {
+    /// Proves skipped predicates before the complete class/empty choice.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(source) = skipped_assertions_with_shape(source, true, &mut charge)? else {
+            return Ok(None);
+        };
+        if has_live_assertions(&source, &mut charge)? {
+            return Ok(None);
+        }
+        macro_rules! attempt {
+            ($matcher:ty,$method:ident,$variant:ident) => {
+                if let Some(plan) =
+                    <$matcher>::$method(&source, ignore_case, multiline, &mut charge)?
+                {
+                    return Ok(Some(Self {
+                        body: UnassertedAlternativeBody::$variant(plan),
+                    }));
+                }
+            };
+        }
+        attempt!(
+            crate::RegExpUnicodeNullableStringClassCaptureMatcher,
+            compile_with_work,
+            Nonempty
+        );
+        attempt!(
+            crate::RegExpUnicodeNullableStringClassCaptureMatcher,
+            compile_grouped_with_work,
+            Nonempty
+        );
+        attempt!(
+            crate::RegExpUnicodeEmptyStringClassCaptureMatcher,
+            compile_with_work,
+            Empty
+        );
+        attempt!(
+            crate::RegExpUnicodeEmptyStringClassCaptureMatcher,
+            compile_grouped_with_work,
+            Empty
+        );
+        attempt!(
+            crate::RegExpUnicodeNullableStringClassCaptureMatcher,
+            compile_exact_single_counts_with_work,
+            Nonempty
+        );
+        attempt!(
+            crate::RegExpUnicodeEmptyStringClassCaptureMatcher,
+            compile_exact_single_counts_with_work,
+            Empty
+        );
+        Ok(None)
+    }
+    /// Counts original lexical slots, including both branches and skipped scopes.
+    pub fn capture_count(&self) -> usize {
+        match &self.body {
+            UnassertedAlternativeBody::Nonempty(plan) => plan.capture_count(),
+            UnassertedAlternativeBody::Empty(plan) => plan.capture_count(),
+        }
+    }
+    /// Projects original captures using the selected class/empty branch identity.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        match &self.body {
+            UnassertedAlternativeBody::Nonempty(plan) => {
+                plan.capture_range(index, Some(&found.range))
+            }
+            UnassertedAlternativeBody::Empty(plan) => {
+                plan.capture_range(index, &found.range, found.class_selected)
+            }
+        }
+    }
+    /// Selects the first original alternative at the initial Unicode boundary.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        let found = match &self.body {
+            UnassertedAlternativeBody::Nonempty(plan) => plan
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpUnicodeRepeatedStringClassMatch {
+                        class_selected: !found.range.is_empty(),
+                        last_iteration: Some(found.range.clone()),
+                        range: found.range,
+                    })
+                }),
+            UnassertedAlternativeBody::Empty(plan) => plan
+                .find_with_captures_and_work(input, requested, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpUnicodeRepeatedStringClassMatch {
+                        class_selected: found.class_selected,
+                        last_iteration: Some(found.range.clone()),
+                        range: found.range,
+                    })
+                }),
+        };
+        found.map_err(RegExpUnicodeMatchError::Work)
+    }
+}

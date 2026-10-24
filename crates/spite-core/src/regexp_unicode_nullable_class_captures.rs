@@ -26,6 +26,7 @@ pub use string_class_captures::{
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
+    RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
@@ -1212,4 +1213,5 @@ mod tests {
     include!("regexp_unicode_unasserted_zero_count_string_class_tests.rs");
     include!("regexp_unicode_unasserted_zero_count_single_string_class_tests.rs");
     include!("regexp_unicode_zero_count_asserted_single_string_class_tests.rs");
+    include!("regexp_unicode_unasserted_zero_count_string_class_alternative_tests.rs");
 }

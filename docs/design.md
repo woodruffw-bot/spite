@@ -11965,3 +11965,20 @@ retain a defined final class range. Reversed line gates, Unicode search/folding,
 callbacks and constructor/capacity failures retain their existing semantics.
 Conditional predicate paths, references, additional classes and unknown terms
 remain unproved. Runtime selection remains separate.
+
+
+Core separately proves a root or grouped class/empty alternative whose outside
+predicates all occur in skipped exact-zero scopes. The existing single-leaf
+masking scan preserves every original group and rejects a zero-count ancestor
+containing the class. Remaining live predicates decline before complete
+nonempty/empty-class alternative proofs validate both branches. Bare/exact-one
+class paths preserve original choice ownership, source order and lexical slots.
+
+ECMA-262 edition 17 22.2.2.3 and 22.2.2.7 preserve alternative order at the first
+Unicode candidate. An empty-first alternative suppresses the class query; an
+empty member selected from a class-first branch retains class identity and its
+captures. Pure-empty siblings and enclosing captures retain their own points
+and ranges, while skipped scopes and unselected branch captures stay undefined.
+A class containing only unknown leaves still declines when an empty branch
+would win. Construction and searches retain charged work and callback recovery.
+Runtime selection remains separate.

@@ -803,6 +803,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute string-class repetition with all outside predicates skipped through Runtime and String consumers.
 - [x] Compile bare and exact-one string classes with only skipped outside predicates, retaining required empty class captures.
 - [x] Compile a single class with skipped scopes and remaining unconditional predicates, preserving endpoint retries and captures.
+- [x] Compile class/empty alternatives with only skipped predicates, retaining source order and required empty class identity.
+- [ ] Execute class/empty alternatives with only skipped predicates through Runtime and String consumers.
 - [ ] Execute a single class with skipped scopes and live predicates through Runtime and String consumers.
 - [x] Execute a single string class with skipped outside predicates through Runtime and String consumers.
 - [x] Execute larger asserted nullable scalar/string-class counts through Runtime RegExp and String consumers.

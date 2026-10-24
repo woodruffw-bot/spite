@@ -29,6 +29,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
+    RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,

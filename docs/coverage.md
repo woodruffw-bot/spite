@@ -20680,6 +20680,25 @@ now check source, flags, complete captures/indices and native results; their
 unknown-leaf rejection controls remain. Four literal/program/formatted/generated
 control scans found only those three newly supported cases. The first 129,600
 exact differential records match independent native controls across mixed
-finite/scalar/known-empty classes, branch/capture layouts and Unicode starts.
+finite/scalar classes, branch/capture layouts and Unicode starts.
 Strict workspace Clippy, documentation tests, formatting, policy and inventories
 pass; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core class/empty alternatives with only skipped predicates
+
+Four groups compare six finite/scalar/known-empty families, five bare/exact-one
+forms, six capture trees, both branch orders, four skipped-scope layouts and
+eight skipped-predicate profiles across eight UTF-16 inputs and every start,
+sticky, ignore-case and multiline setting. The independent continuation oracle
+retains selected empty class identity and every original lexical slot. Forty
+native tables cover branch priority, skipped predicate choices/counts, Unicode
+boundaries and folding. Deep 20,000 skipped scopes, defined outer empty points,
+20,000-unit shared-prefix members, clone/drop, every callback cancellation and
+recovery, and complete proof of unselected unknown leaves pass.
+
+All forty combined focused groups pass, including the preceding thirty-six.
+All 68,904 prior API records retain exact domains, charged construction/search
+work and capture projection. Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.
