@@ -12304,3 +12304,22 @@ Runtime selects this required-class truth-profile proof after the larger
 nullable-count proof on the complete normalized capture source. Its dedicated
 body preserves endpoint truth, required class identity, source/flags, named
 aliases, indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves arbitrary outside predicate-choice profiles around a
+required class/empty alternative. Only mandatory scopes outside every
+class-bearing choice contribute masks. Complete original branch proofs retain
+line/word assertions, exact-one counts and lexical capture slots. A private
+member continuation enforces both truth masks inside asserted branches; plain
+alternatives test empty branches in source order at each Unicode candidate.
+Failed empty-first continuations can therefore retry the class, and failed
+longer members retain shorter members and later starts (ECMA-262 edition 17
+22.2.2.3–4).
+
+Explicit class selection preserves required empty class identity, while accepted
+whole-match endpoint truth projects ordered predicate captures. Earlier public
+find methods and their charged work remain unchanged. New continuation probes
+charge sixteen work units; flat source-sized storage and complete class/body
+validation precede matching even behind never profiles. Branch-local conditional
+scopes, other class counts, references and consuming siblings retain separate
+proofs. Runtime selection remains separate.

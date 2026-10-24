@@ -21509,3 +21509,28 @@ The two migrated existing groups pass all six tests (0.58 s and 0.81 s). All
 documentation tests, formatting, policy, inventories and diff checks. The grouped
 Runtime inventory contains 587 case files. Fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Core arbitrary predicate-choice profiles around class/empty alternatives
+
+Five focused groups pass (0.43 s), comparing 160 native tables and an
+independent branch/endpoint oracle across finite, scalar, known-empty and
+empty-member classes, both branch orders, bare/padded exact-one paths,
+required/skipped scopes and huge scope minima. Every UTF-16 start, sticky,
+multiline and ignore-case retains selected class identity and original slots.
+Explicit controls retry failed empty-first branches, shorter members and later
+starts; branch assertions retain reversed line-gate context. Deep 20,000-level
+scopes, 20,000-unit words, cloning/drop, forged truth and every charged
+cancellation/recovery remain flat. Complete unknown leaves behind never profiles
+and branch-local conditional scopes retain their proof boundaries.
+
+All 81,416 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (66 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.
+
+The preceding arbitrary repetition and larger nullable-count Runtime sources
+pass a fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants
+pass, including the pinned corpus gate (501.93 s). This run compiled before the
+required-single and class/empty truth-profile extensions.

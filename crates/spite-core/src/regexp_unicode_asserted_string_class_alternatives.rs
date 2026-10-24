@@ -719,6 +719,83 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
             },
         ))
     }
+    // Apply endpoint continuations before each branch chooses a result.
+    pub(crate) fn find_with_endpoint_filter_and_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut accept: impl FnMut(usize, usize) -> bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeStringClassBranchMatch>, E> {
+        charge(4)?;
+        let Some(start) = unicode_start(input, start) else {
+            return Ok(None);
+        };
+        let (class, empty) = if self.class_first {
+            let class = self.class.find_with_endpoint_filter_and_work(
+                input,
+                start,
+                sticky,
+                &mut accept,
+                &mut charge,
+            )?;
+            if let Some(range) = class.as_ref().filter(|range| range.start == start) {
+                return Ok(Some(RegExpUnicodeStringClassBranchMatch {
+                    range: range.clone(),
+                    class_selected: true,
+                }));
+            }
+            let empty = self.empty.find_with_endpoint_filter_and_work(
+                input,
+                start,
+                sticky,
+                &mut accept,
+                &mut charge,
+            )?;
+            (class, empty)
+        } else {
+            let empty = self.empty.find_with_endpoint_filter_and_work(
+                input,
+                start,
+                sticky,
+                &mut accept,
+                &mut charge,
+            )?;
+            if let Some(range) = empty.as_ref().filter(|range| range.start == start) {
+                return Ok(Some(RegExpUnicodeStringClassBranchMatch {
+                    range: range.clone(),
+                    class_selected: false,
+                }));
+            }
+            let class = self.class.find_with_endpoint_filter_and_work(
+                input,
+                start,
+                sticky,
+                &mut accept,
+                &mut charge,
+            )?;
+            (class, empty)
+        };
+        let chosen = match (class, empty) {
+            (Some(class), Some(empty)) => {
+                if class.start < empty.start || (class.start == empty.start && self.class_first) {
+                    Some((class, true))
+                } else {
+                    Some((empty, false))
+                }
+            }
+            (Some(class), None) => Some((class, true)),
+            (None, Some(empty)) => Some((empty, false)),
+            (None, None) => None,
+        };
+        Ok(chosen.map(
+            |(range, class_selected)| RegExpUnicodeStringClassBranchMatch {
+                range,
+                class_selected,
+            },
+        ))
+    }
 }
 fn single_branch<E>(
     source: &JsString,

@@ -1497,3 +1497,196 @@ impl RegExpUnicodeTruthTableSingleStringClassCaptureMatcher {
         }))
     }
 }
+
+/// A required class/empty alternative beside arbitrary outside predicate choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Only
+/// mandatory scopes outside every class-bearing choice contribute profiles.
+/// Complete branch proofs retain source priority and required empty class
+/// identity; endpoint gates run inside all member and branch continuations.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableStringClassAlternativeMatcher {
+    plan: RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
+    profiles: [u8; 2],
+}
+impl RegExpUnicodeTruthTableStringClassAlternativeMatcher {
+    /// Proves outside scopes and both original bare/exact-one alternatives.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(projection) = project_choices(source, true, true, false, true, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        let profiles = projection.profiles;
+        Ok(
+            RegExpUnicodePredicateChoiceStringClassAlternativeMatcher::compile_projection(
+                projection,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+            .map(|plan| Self { plan, profiles }),
+        )
+    }
+    /// Counts all original lexical slots, including unselected branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects original slots using accepted branch identity and endpoint truth.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Runs complete ordered-choice and member continuations with live profiles.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        let truth = |at| {
+            use crate::regexp_unicode_character::{
+                unicode_assertions_match, unicode_word_boundary,
+            };
+            let u = input.code_units();
+            let p = &self.plan.plan;
+            u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                true,
+                false,
+                p.multiline,
+            )) | u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                false,
+                true,
+                p.multiline,
+            )) << 1
+                | u8::from(unicode_word_boundary(u, at, p.ignore_case)) << 2
+        };
+        let mut accept = |a, b| {
+            self.profiles[0] & (1u8 << truth(a)) != 0 && self.profiles[1] & (1u8 << truth(b)) != 0
+        };
+        let found = match &self.plan.plan.plan {
+            Plan::AssertedAlternative(p) => match &p.body {
+                super::AssertedAlternativeBody::Root(p) => p.find_with_endpoint_filter_and_work(
+                    input,
+                    requested,
+                    sticky,
+                    &mut accept,
+                    &mut charge,
+                ),
+                super::AssertedAlternativeBody::Surrounding(p) => p
+                    .find_with_endpoint_filter_and_work(
+                        input,
+                        requested,
+                        sticky,
+                        &mut accept,
+                        &mut charge,
+                    ),
+            },
+            Plan::PlainAlternative(p) => {
+                let (class, empty_first) = match &p.body {
+                    super::UnassertedAlternativeBody::Nonempty(p) => (&p.class, p.empty_first),
+                    super::UnassertedAlternativeBody::Empty(p) => (&p.class, p.empty_first),
+                };
+                profiled_plain_alternative(
+                    class,
+                    empty_first,
+                    input,
+                    requested,
+                    sticky,
+                    &mut accept,
+                    &mut charge,
+                )
+            }
+            _ => return Ok(None),
+        }
+        .map_err(RegExpUnicodeMatchError::Work)?;
+        let Some(found) = found else { return Ok(None) };
+        charge(16).map_err(RegExpUnicodeMatchError::Work)?;
+        Ok(Some(RegExpUnicodePredicateChoiceStringClassMatch {
+            before: truth(found.range.start),
+            after: truth(found.range.end),
+            repeated: RegExpUnicodeRepeatedStringClassMatch {
+                last_iteration: Some(found.range.clone()),
+                range: found.range,
+                class_selected: found.class_selected,
+            },
+        }))
+    }
+}
+
+fn profiled_plain_alternative<E>(
+    class: &crate::RegExpUnicodeStringSetMatcher,
+    empty_first: bool,
+    input: &JsString,
+    requested: usize,
+    sticky: bool,
+    mut accept: impl FnMut(usize, usize) -> bool,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<crate::RegExpUnicodeStringClassBranchMatch>, E> {
+    charge(4)?;
+    let Some(mut at) = crate::regexp_literal::unicode_start(input, requested) else {
+        return Ok(None);
+    };
+    let remaining = input.len() - at;
+    let inspected = if sticky {
+        remaining.min(class.max_match_code_units())
+    } else {
+        remaining
+    }
+    .saturating_add(1);
+    charge(inspected.saturating_mul(class.search_passes(sticky)))?;
+    loop {
+        if empty_first {
+            charge(16)?;
+            if accept(at, at) {
+                return Ok(Some(crate::RegExpUnicodeStringClassBranchMatch {
+                    range: at..at,
+                    class_selected: false,
+                }));
+            }
+        }
+        if let Some(range) = class.find_with_endpoint_filter(input, at, true, |a, b| {
+            charge(16)?;
+            Ok(accept(a, b))
+        })? {
+            return Ok(Some(crate::RegExpUnicodeStringClassBranchMatch {
+                range,
+                class_selected: true,
+            }));
+        }
+        if !empty_first {
+            charge(16)?;
+            if accept(at, at) {
+                return Ok(Some(crate::RegExpUnicodeStringClassBranchMatch {
+                    range: at..at,
+                    class_selected: false,
+                }));
+            }
+        }
+        if sticky {
+            return Ok(None);
+        };
+        let Some(&first) = input.code_units().get(at) else {
+            return Ok(None);
+        };
+        at +=
+            crate::regexp_unicode_character::unicode_input_character(input.code_units(), at, first)
+                .1;
+    }
+}

@@ -188,6 +188,17 @@ impl RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher {
         self.inner
             .find_with_captures_and_work(input, start, sticky, charge)
     }
+    pub(crate) fn find_with_endpoint_filter_and_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        accept: impl FnMut(usize, usize) -> bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeStringClassBranchMatch>, E> {
+        self.inner
+            .find_with_endpoint_filter_and_work(input, start, sticky, accept, charge)
+    }
 }
 struct Hole {
     body: Range<usize>,

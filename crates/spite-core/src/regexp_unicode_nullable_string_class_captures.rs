@@ -30,6 +30,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeRequiredStringClassCaptureMatcher,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
+    RegExpUnicodeTruthTableStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
@@ -1255,6 +1256,35 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         .saturating_add(1);
         charge(inspected.saturating_mul(self.class.search_passes(first_only)))?;
         Ok(self.class.find(input, start, sticky))
+    }
+
+    // Each complete member runs the caller's endpoint continuation before
+    // longest-member selection; a failed empty member can require later starts.
+    pub(crate) fn find_with_endpoint_filter_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut accept: impl FnMut(usize, usize) -> bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        charge(4)?;
+        let Some(start) = unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        let remaining = input.len() - start;
+        let inspected = if sticky {
+            remaining.min(self.class.max_match_code_units())
+        } else {
+            remaining
+        }
+        .saturating_add(1);
+        charge(inspected.saturating_mul(self.class.search_passes(sticky)))?;
+        self.class
+            .find_with_endpoint_filter(input, start, sticky, |a, b| {
+                charge(16)?;
+                Ok(accept(a, b))
+            })
     }
 
     /// Projects an original capture from the selected class member's range.
