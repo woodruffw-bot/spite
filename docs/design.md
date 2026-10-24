@@ -14067,4 +14067,13 @@ Outside and operand captures retain independent empty and one-character ranges,
 including astral widths and Unicode-i word folds. Unicode search advances over
 complete characters; explicitly supplied trailing-pair starts retain the
 approved initial rewind. Earlier line-only, repeated-word and unquantified
-constructors keep their domains and work. Runtime integration remains separate.
+constructors keep their domains and work.
+
+
+Runtime selects the single-atom word-predicate constructor after the earlier
+lookahead proofs. It uses full normalized source and resets the projected
+capture offset only on successful selection. Existing empty/operand range
+caching preserves names, indices, source/flags, state, String consumers, copies
+and collection. Word and line predicates retain original input context, and
+ordinary search excludes interior surrogate candidates. Compilation remains
+outside reentrant user conversions.

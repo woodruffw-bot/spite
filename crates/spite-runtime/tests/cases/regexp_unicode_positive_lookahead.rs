@@ -242,3 +242,55 @@ fn bare_atom_deep_wrappers_keep_empty_outside_and_full_operand_capture_ranges() 
     "#,
     );
 }
+
+#[test]
+fn bare_word_atoms_keep_polarity_source_and_independent_named_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\B','aaa'],['\\Ba\\B','aaaa'],['\\b[a-z]\\b','!a!']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode);r.lastIndex=row[0]==='\\ba\\B'?0:1;var m=r.exec(row[1]),point=row[0]==='\\ba\\B'?0:1;
+            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run[0]===point&&m.indices.groups.run[1]===point+1&&r.source===source&&r.lastIndex===point;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn bare_word_atom_line_fold_and_class_backspace_contexts_are_preserved() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var m=new RegExp('(?=(?<run>^\\ba\\b$))','dim'+mode).exec('\nA\n');ok=ok&&m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
+            var m=new RegExp('(?=(?<run>\\bſ\\b))','di'+mode).exec('!ſ!');ok=ok&&m.index===1&&m.groups.run==='ſ'&&m.indices.groups.run[1]===2;
+            var m=new RegExp('(?=(?<run>\\b\\p{ASCII}\\b))','di'+mode).exec('!ſ!');ok=ok&&m.index===1&&m.groups.run==='ſ';
+            var m=new RegExp('(?=(?<run>\\B[\\b]\\B))','d'+mode).exec('\b');ok=ok&&m.index===0&&m.groups.run==='\b'&&m.indices.groups.run[1]===1;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn bare_word_atom_string_consumers_copies_and_collection_keep_one_character() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var source='(?=(?<run>\\ba\\b))',r=new RegExp(source,'dg'+mode),all=Array.from('!!a! a'.matchAll(r));
+            ok=ok&&all.length===2&&all[0].index===2&&all[1].index===5&&all[0].groups.run==='a'&&r.lastIndex===0;
+            ok=ok&&'!!a! a'.replace(r,'<$<run>>')==='!!<a>a! <a>a'&&JSON.stringify('!!a! a'.split(new RegExp('(?=(\\ba\\b))',mode)))==='["!!","a","a! ","a","a"]';
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!a!').groups.run==='a';
+        }ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!a!');m.index===1&&m.groups.run==='a'&&m.indices.groups.run[1]===2&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn bare_word_atom_dot_search_excludes_interior_surrogates_and_rewinds_initial_pairs() {
+    // V8's ordinary search can return the low half here; the candidate is 4.
+    check(
+        "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dg'+mode),m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run==='b'&&m.indices.groups.run[0]===4&&m.indices.groups.run[1]===5&&r.lastIndex===4;r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=2;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0}ok",
+    );
+}

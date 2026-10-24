@@ -25626,3 +25626,26 @@ The Runtime snapshot at `04ce1dcc` passes all 35 Test262 package tests and
 unquantified character atoms and the four migrated Unsupported controls.
 The later bare-word-atom extension has separate focused evidence. Fixture,
 harness and review inventories retain their preceding values.
+
+## Runtime unquantified Unicode lookahead with word predicates
+
+All twenty current lookahead groups pass (2.06 s), including four additional
+groups for single-character word polarity, independent named capture ranges,
+line/fold/class-backspace context, String consumers, copies and collection.
+An independent Runtime case requires the complete b character at 4..5 in
+`a😀ab!` and checks initial-pair rewind. All thirteen constructor regressions
+pass (0.23 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 single-atom word
+patterns against the native sticky-candidate oracle with independent Unicode
+search and state bookkeeping. Eight ASCII iv patterns contribute 1,664
+equivalent-range controls for the documented property-fold discrepancy.
+Seventeen complete JavaScript programs agree separately; the independent
+surrogate expectations stay outside direct V8 search comparison.
+
+All 436 Runtime unit tests pass (8.64 s). Strict workspace Clippy with all
+targets, documentation tests, formatting, dependency policy, inventories and
+diff checks pass. Runtime inventory remains 619. The finished broad Test262
+result records the preceding `04ce1dcc` snapshot; its full RegExp run is still
+in progress. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.
