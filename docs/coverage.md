@@ -21637,3 +21637,33 @@ projection in seven bounded batches. Strict workspace Clippy (54.04 s),
 documentation tests, formatting, policy, inventories and diff checks pass. Runtime
 selection remains separate; fixtures, snapshots, dependencies and default quotas
 remain unchanged.
+
+
+## Runtime complete wrappers around branch-local class/empty choices
+
+Three focused groups pass (0.34 s), covering complete enclosing ranges,
+conditional inner captures in both root orders, required empty class identity,
+named and escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and strict lastIndex writes. Deep 1,000-level
+wrappers retain consuming and empty whole ranges while keeping branch predicates
+at their original points. Explicit suffix failures retry shorter members and
+later starts; 20,000-unit shared-prefix scalar/string words retain complete
+outer captures. Complete unknown terms behind never profiles and constructor
+abort isolation retain distinct host outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding rejection control now compares full native captures, indices, source,
+flags, input and lastIndex and agrees on the fresh CLI; its existing three-test
+group passes (0.28 s). Five source-shape scans retain all other rejection domains.
+All 100,352 exact differential records agree across 256 independent pairs, with
+all 1,024 proof/flag combinations supported. Mixed enclosing wrapper layouts,
+finite/scalar/known-empty classes, independent branch profiles and both root
+orders cover all input starts, sticky, multiline and ignore-case. All 431 Runtime
+unit tests pass (9.37 s), alongside strict workspace Clippy (23.88 s),
+documentation tests, formatting, policy, inventories and diff checks. The grouped
+Runtime inventory contains 590 case files. Fixtures, snapshots, dependencies and
+default quotas remain unchanged.
+
+The preceding required-single and outside class/empty truth-profile Runtime
+sources pass all 1,731 Unicode RegExp integration tests (773.57 s). This run
+compiled before the branch-local root and enclosing-group extensions.

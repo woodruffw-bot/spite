@@ -12363,4 +12363,8 @@ inspection and retains flat source-sized storage, clone/drop and capture
 projection. Unknown terms behind never gates still undergo complete branch
 validation. Counted/optional wrappers, outside predicates, lookarounds and other
 class spines retain separate proofs. Earlier APIs retain exact domains and
-charged work. Runtime selection remains separate.
+charged work. Runtime selects the complete-wrapper proof after the root
+branch-local proof on the full normalized capture source. Its dedicated body
+retains complete outer captures, inner branch ownership, endpoint truth, original
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.

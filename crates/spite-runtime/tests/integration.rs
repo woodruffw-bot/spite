@@ -1203,6 +1203,8 @@ mod regexp_unicode_predicate_choice_string_class_alternative_captures;
 mod regexp_unicode_predicate_choice_string_class_captures;
 #[path = "cases/regexp_unicode_truth_table_counted_nullable_string_class_captures.rs"]
 mod regexp_unicode_truth_table_counted_nullable_string_class_captures;
+#[path = "cases/regexp_unicode_truth_table_grouped_string_class_alternative_captures.rs"]
+mod regexp_unicode_truth_table_grouped_string_class_alternative_captures;
 #[path = "cases/regexp_unicode_truth_table_root_string_class_alternative_captures.rs"]
 mod regexp_unicode_truth_table_root_string_class_alternative_captures;
 #[path = "cases/regexp_unicode_truth_table_single_string_class_captures.rs"]
