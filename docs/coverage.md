@@ -21344,3 +21344,25 @@ exact domains, charged work and capture projection in six bounded batches.
 Strict workspace Clippy (15.93 s), documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas remain unchanged.
+
+
+## Runtime conjunctive predicate choices around class/empty alternatives
+
+Three new groups pass (0.21 s), preserving named/escaped-name aliases and indices,
+class-first/empty-first priority, required empty class identity, matchAll,
+replacement callbacks, split/search, cloning, collection and strict lastIndex
+writes. Deep 1,000-level required/skipped scopes, 20,000-unit shared-prefix
+members, scalar fallback, empty-first retries and shorter successful members
+retain actual endpoint capture points. Constructor abort isolation, unknown
+leaves behind never gates and conditional branch ownership retain their proof
+boundaries. All five rejection-control scans retain existing domains.
+
+Forty native tables and eight consumer references agree on the fresh CLI. All
+100,352 exact differential records agree across 256 independent pairs; all 1,024
+proof/flag combinations are supported. Eight finite/scalar/known-empty layouts,
+four bare/exact-one spellings, eight gate profiles and four remaining live
+profiles cover every input start, sticky, multiline and ignore-case. All 431
+unit tests pass (4.22 s), alongside strict workspace Clippy (8.60 s), documentation
+tests, formatting, policy, inventories and diff checks. The complete 1,718-test
+Unicode suite and fresh Test262 run are running against all three conjunctive
+proofs. Fixtures, snapshots, dependencies and default quotas are unchanged.

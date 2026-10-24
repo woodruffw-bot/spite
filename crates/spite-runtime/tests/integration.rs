@@ -1191,6 +1191,8 @@ mod regexp_unicode_unasserted_zero_minimum_alternative_string_class_captures;
 
 #[path = "cases/regexp_unicode_conjunctive_predicate_choice_single_string_class_captures.rs"]
 mod regexp_unicode_conjunctive_predicate_choice_single_string_class_captures;
+#[path = "cases/regexp_unicode_conjunctive_predicate_choice_string_class_alternative_captures.rs"]
+mod regexp_unicode_conjunctive_predicate_choice_string_class_alternative_captures;
 #[path = "cases/regexp_unicode_conjunctive_predicate_choice_string_class_captures.rs"]
 mod regexp_unicode_conjunctive_predicate_choice_string_class_captures;
 #[path = "cases/regexp_unicode_predicate_choice_single_string_class_captures.rs"]

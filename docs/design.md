@@ -12235,5 +12235,8 @@ required empty class identity select the correct captures (ECMA-262 edition 17
 22.2.2.3–4). Bare/exact-one class paths retain lexical slots; skipped scopes stay
 undefined. Unknown leaves are still proved even behind never gates, and
 nonconjunctive or branch-local conditional scopes retain separate proofs.
-Earlier choice APIs retain exact domains and charged work. Runtime selection
-remains separate.
+Earlier choice APIs retain exact domains and charged work. Runtime selects this
+alternatives proof after conjunctive repetition and single-class proofs on the
+full normalized capture source. Its dedicated body retains endpoint truth,
+class/empty identity, source/flags, named aliases, indices, lastIndex and String
+consumers through cloning and collection.
