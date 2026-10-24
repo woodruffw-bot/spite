@@ -23549,3 +23549,28 @@ cases; fixtures, snapshots, dependencies and default quotas are unchanged.
 The preceding positive-tree Runtime snapshot passes all 35 Test262 runner tests
 and all 16,343 reviewed variants (428.04 s for the corpus group). This broad
 snapshot precedes escaped-atom Runtime integration.
+
+
+## Core mode-aware zero-erased surrogate escape atoms
+
+A separate constructor proves surrogate escape atoms using edition-17 token
+boundaries (22.2.1). Only adjacent fixed lead/trail Unicode escapes combine in
+u/v mode; non-Unicode, braced and mixed spellings retain separate atoms. A zero
+bound applies after the complete selected atom, preserving any unquantified
+leading term. Matching and positive assertion imports need no surrogate data.
+
+All 54 actual-source focused Core tests pass (0.17 s), including four new groups
+for seven independently checked native masks, ordinary/u/v fixed pairs, lone
+and braced surrogates, positive imports, optional rollback, mixed-spelling
+exclusions, 100,000 nested capture clears, a 20,000-zero braced spelling and
+pre-source work aborts. All 12,800 exact input/start/capture comparisons across
+512 generated surrogate trees agree with actual native records. All 12,800
+earlier escaped-tree baseline records also agree after the internal mode
+refactor, with earlier exclusions and work retained.
+
+Strict workspace Clippy with all targets passes (14.54 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
+Rust strings finds none newly admitted. Construction and retained storage stay
+source-sized; matching and capture queries remain constant. Runtime integration
+follows separately.

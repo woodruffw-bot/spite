@@ -90,6 +90,28 @@ impl RegExpZeroCountSequenceMatcher {
         .map(|defined| Self { unicode, defined }))
     }
 
+    /// Proves empty trees with mode-aware escaped surrogate atom boundaries.
+    ///
+    /// Requires complete original validation and normalized capture heads.
+    /// Adjacent fixed lead/trail Unicode escapes combine into one atom only in
+    /// u/v mode (22.2.1). Braced or mixed literal/escaped spellings retain their
+    /// separate boundaries. Exact-zero atoms need no matching data; earlier
+    /// constructors keep their surrogate exclusions and work.
+    pub fn compile_surrogate_tree_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(crate::regexp_zero_count_tree::compile_surrogate_with_work(
+            source,
+            unicode,
+            unicode_sets,
+            charge,
+        )?
+        .map(|defined| Self { unicode, defined }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment

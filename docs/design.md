@@ -13166,3 +13166,17 @@ capture layout. Encoded delimiters, optional rollback, assertion imports and
 erased reference bindings use the same named/index result path through String
 consumers, cloning and collection. Original escape syntax and binding errors
 precede erasure; actual matching work is charged before input access.
+
+
+A separate surrogate-aware tree constructor applies the edition-17 atom
+boundaries for escaped UTF-16 code units (22.2.1). Adjacent fixed lead/trail
+Unicode escapes combine into one atom only in u/v mode. Non-Unicode fixed
+escapes and braced or mixed literal/escaped forms keep separate boundaries.
+The proof consumes a fixed pair together before reading its following count;
+it never erases an unquantified leading atom in a separate spelling.
+
+Individual surrogate atoms can also be proved empty under an exact-zero bound,
+including inside positive assertions. Earlier constructors retain their
+surrogate exclusions and work. Only construction reads the escape spellings;
+the lexical capture mask and constant-work matcher need no surrogate matching
+data. Flat capture clearing and source-sized storage are unchanged.

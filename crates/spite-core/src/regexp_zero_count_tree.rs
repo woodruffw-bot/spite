@@ -12,6 +12,13 @@ struct Frame {
     later_arms: Option<usize>,
 }
 
+#[derive(Clone, Copy)]
+enum EscapeAtoms {
+    Disabled,
+    NonSurrogate,
+    Surrogate,
+}
+
 impl Frame {
     fn new(supported: bool, capture_start: usize) -> Self {
         Self {
@@ -31,7 +38,7 @@ pub(crate) fn compile_with_work<E>(
     sets: bool,
     charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
-    compile_mode_with_work(source, unicode, sets, false, false, charge)
+    compile_mode_with_work(source, unicode, sets, false, EscapeAtoms::Disabled, charge)
 }
 
 pub(crate) fn compile_positive_with_work<E>(
@@ -40,7 +47,7 @@ pub(crate) fn compile_positive_with_work<E>(
     sets: bool,
     charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
-    compile_mode_with_work(source, unicode, sets, true, false, charge)
+    compile_mode_with_work(source, unicode, sets, true, EscapeAtoms::Disabled, charge)
 }
 
 pub(crate) fn compile_escaped_with_work<E>(
@@ -49,7 +56,23 @@ pub(crate) fn compile_escaped_with_work<E>(
     sets: bool,
     charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
-    compile_mode_with_work(source, unicode, sets, true, true, charge)
+    compile_mode_with_work(
+        source,
+        unicode,
+        sets,
+        true,
+        EscapeAtoms::NonSurrogate,
+        charge,
+    )
+}
+
+pub(crate) fn compile_surrogate_with_work<E>(
+    source: &JsString,
+    unicode: bool,
+    sets: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Box<[bool]>>, E> {
+    compile_mode_with_work(source, unicode, sets, true, EscapeAtoms::Surrogate, charge)
 }
 
 fn compile_mode_with_work<E>(
@@ -57,7 +80,7 @@ fn compile_mode_with_work<E>(
     unicode: bool,
     sets: bool,
     positive_assertions: bool,
-    escaped_atoms: bool,
+    escaped_atoms: EscapeAtoms,
     mut charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
     charge(source.len().saturating_mul(64).saturating_add(16))?;
@@ -171,7 +194,7 @@ fn leaf(
     cursor: usize,
     unicode: bool,
     sets: bool,
-    escaped_atoms: bool,
+    escaped_atoms: EscapeAtoms,
 ) -> Option<(usize, bool)> {
     if let Some(end) = atom_end(units, cursor, unicode, sets) {
         return Some((end, true));
@@ -181,8 +204,13 @@ fn leaf(
         return None;
     }
     if unit == 0x5c {
-        if escaped_atoms {
-            if let Some(atom) = escaped_atom(units, cursor, unicode) {
+        if !matches!(escaped_atoms, EscapeAtoms::Disabled) {
+            if let Some(atom) = escaped_atom(
+                units,
+                cursor,
+                unicode,
+                matches!(escaped_atoms, EscapeAtoms::Surrogate),
+            ) {
                 return Some(atom);
             }
         }
@@ -227,37 +255,66 @@ fn leaf(
 }
 
 // Literal escape boundaries only; exact-zero matching never reads their values.
-// Surrogate escapes remain unproved because adjacent escapes can form one atom.
-fn escaped_atom(units: &[u16], cursor: usize, unicode: bool) -> Option<(usize, bool)> {
+// Earlier modes leave surrogate escapes unproved. The extended mode combines
+// only adjacent fixed lead/trail escapes in Unicode mode (22.2.1).
+fn escaped_atom(
+    units: &[u16],
+    cursor: usize,
+    unicode: bool,
+    surrogates: bool,
+) -> Option<(usize, bool)> {
     let prefix = *units.get(cursor + 1)?;
-    let (end, value) = if prefix == 0x75 && unicode && units.get(cursor + 2) == Some(&0x7b) {
-        let mut end = cursor + 3;
-        let start = end;
-        let mut value = 0u32;
-        while let Some(digit) = units.get(end).copied().and_then(hex) {
-            value = value.checked_mul(16)?.checked_add(digit)?;
-            end += 1;
-        }
-        if end == start || units.get(end) != Some(&0x7d) || value > 0x10ffff {
-            return None;
-        }
-        (end + 1, value)
-    } else {
-        let digits = match prefix {
-            0x78 => 2,
-            0x75 => 4,
-            _ => return None,
+    let (mut end, value, fixed_unicode) =
+        if prefix == 0x75 && unicode && units.get(cursor + 2) == Some(&0x7b) {
+            let mut end = cursor + 3;
+            let start = end;
+            let mut value = 0u32;
+            while let Some(digit) = units.get(end).copied().and_then(hex) {
+                value = value.checked_mul(16)?.checked_add(digit)?;
+                end += 1;
+            }
+            if end == start || units.get(end) != Some(&0x7d) || value > 0x10ffff {
+                return None;
+            }
+            (end + 1, value, false)
+        } else {
+            let digits = match prefix {
+                0x78 => 2,
+                0x75 => 4,
+                _ => return None,
+            };
+            let mut end = cursor + 2;
+            let mut value = 0u32;
+            for _ in 0..digits {
+                value = value * 16 + hex(*units.get(end)?)?;
+                end += 1;
+            }
+            (end, value, prefix == 0x75)
         };
-        let mut end = cursor + 2;
-        let mut value = 0u32;
-        for _ in 0..digits {
-            value = value * 16 + hex(*units.get(end)?)?;
-            end += 1;
-        }
-        (end, value)
-    };
     // Keep the entire spelling opaque even when it denotes a surrogate.
-    Some((end, !(0xd800..=0xdfff).contains(&value)))
+    if !surrogates && (0xd800..=0xdfff).contains(&value) {
+        return Some((end, false));
+    }
+    if surrogates
+        && unicode
+        && fixed_unicode
+        && (0xd800..=0xdbff).contains(&value)
+        && fixed_unicode_at(units, end).is_some_and(|tail| (0xdc00..=0xdfff).contains(&tail))
+    {
+        end += 6;
+    }
+    Some((end, true))
+}
+
+fn fixed_unicode_at(units: &[u16], cursor: usize) -> Option<u32> {
+    if !units.get(cursor..)?.starts_with(&[0x5c, 0x75]) {
+        return None;
+    }
+    let mut value = 0;
+    for index in cursor + 2..cursor + 6 {
+        value = value * 16 + hex(*units.get(index)?)?;
+    }
+    Some(value)
 }
 
 fn hex(unit: u16) -> Option<u32> {
@@ -610,6 +667,130 @@ mod tests {
         let mut earlier = Vec::new();
         assert!(
             compile_positive_with_work(&source, true, true, |n| {
+                earlier.push(n);
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(seen, earlier);
+    }
+
+    fn surrogate(source: &str, unicode: bool, sets: bool) -> Option<Box<[bool]>> {
+        compile_surrogate_with_work(&JsString::from(source), unicode, sets, |_| Ok::<(), ()>(()))
+            .unwrap()
+    }
+
+    #[test]
+    fn native_surrogate_atom_masks_preserve_fixed_pair_and_braced_boundaries() {
+        for (source, unicode, sets, expected) in [
+            (
+                r"(\uD83D\uDE00{0})(\uD800{0})(\u{DC00}{0})",
+                true,
+                true,
+                &[true, true, true][..],
+            ),
+            (r"(\uD83D{0})(\uDE00{0})", false, false, &[true, true][..]),
+            (r"(\uD83D{0})(\uDE00{0})", true, false, &[true, true][..]),
+            (
+                r"((\uD83D\uDE00){0})(\uD800{0})",
+                false,
+                false,
+                &[true, false, true][..],
+            ),
+            (
+                r"(?=(\uD83D\uDE00{0}))(?<=(\u{D800}{0}))",
+                true,
+                false,
+                &[true, true][..],
+            ),
+            (
+                r"((\uD800{0})?|(\u{DC00}{0})+)+",
+                true,
+                true,
+                &[true, false, false][..],
+            ),
+            (r"(\u{D83D}{0})(\u{DE00}{0})", true, true, &[true, true][..]),
+        ] {
+            assert_eq!(
+                surrogate(source, unicode, sets).as_deref(),
+                Some(expected),
+                "{source}"
+            );
+            assert!(
+                escaped(source, unicode, sets).is_none(),
+                "earlier API: {source}"
+            );
+        }
+    }
+
+    #[test]
+    fn mixed_surrogate_spellings_never_erase_an_unquantified_leading_atom() {
+        for source in [
+            r"\uD83D\uDE00{0}",
+            r"\u{D83D}\u{DE00}{0}",
+            r"\u{D83D}\uDE00{0}",
+            r"\uD83D\u{DE00}{0}",
+        ] {
+            if source == r"\uD83D\uDE00{0}" {
+                assert!(surrogate(source, false, false).is_none());
+            } else {
+                assert!(surrogate(source, true, true).is_none(), "{source}");
+            }
+        }
+        let mut fixed_literal: Vec<u16> = r"\uD83D".encode_utf16().collect();
+        fixed_literal.push(0xde00);
+        fixed_literal.extend("{0}".encode_utf16());
+        let mut literal_fixed = vec![0xd83d];
+        literal_fixed.extend(r"\uDE00{0}".encode_utf16());
+        for source in [fixed_literal, literal_fixed] {
+            assert!(
+                compile_surrogate_with_work(
+                    &JsString::from_code_units(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+    }
+
+    #[test]
+    fn deep_surrogate_capture_clears_and_long_braced_spellings_are_flat() {
+        let depth = 100_000;
+        let source = format!(
+            r"{}(\uD83D\uDE00{{0}})?|(\uD800{{0}}){}",
+            "(".repeat(depth),
+            ")+".repeat(depth)
+        );
+        let mask = surrogate(&source, true, true).unwrap();
+        assert_eq!(mask.len(), depth + 2);
+        assert!(mask[..depth].iter().all(|&defined| defined));
+        assert_eq!(&mask[depth..], &[false, false]);
+        let source = format!(r"(\u{{{}D800}}{{0}})(\u{{DC00}}{{0}})", "0".repeat(20_000));
+        assert_eq!(
+            surrogate(&source, true, true).as_deref(),
+            Some(&[true, true][..])
+        );
+    }
+
+    #[test]
+    fn surrogate_tree_work_precedes_source_access_without_changing_earlier_costs() {
+        let source = JsString::from(r"(\uD83D\uDE00{0})(\uD800{0})");
+        let mut seen = Vec::new();
+        assert!(matches!(
+            compile_surrogate_with_work(&source, true, true, |n| {
+                seen.push(n);
+                Err(47)
+            }),
+            Err(47)
+        ));
+        assert_eq!(seen, [source.len() * 64 + 16]);
+        let mut earlier = Vec::new();
+        assert!(
+            compile_escaped_with_work(&source, true, true, |n| {
                 earlier.push(n);
                 Ok::<(), ()>(())
             })

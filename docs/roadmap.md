@@ -890,6 +890,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute positive empty-tree lookahead/lookbehind through Runtime and String consumers, preserving assertion capture imports, optional rollback and named/index aliases.
 - [x] Prove zero-erased hexadecimal and non-surrogate Unicode escape atoms inside positive empty-expression trees, preserving complete token boundaries.
 - [x] Execute zero-erased hexadecimal and non-surrogate Unicode escape trees through Runtime and String consumers, preserving source spellings and capture aliases.
+- [x] Prove zero-erased surrogate escape trees with Unicode fixed-pair atom boundaries and separate non-Unicode, braced and mixed spellings.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
