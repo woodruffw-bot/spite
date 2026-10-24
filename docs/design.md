@@ -13306,3 +13306,11 @@ are defined empty and optional repetitions roll descendant writes back
 (22.2.2.3.1, 22.2.2.7). All assertion-operand slots remain undefined. Source,
 projection and full-mask work precede allocation; construction and retained
 storage are source-sized, without recursive wrapper processing.
+
+
+Runtime selects the whole negative-impossible empty proof after the existing
+empty-tree proofs. It uses the complete normalized original capture source,
+retains every operand slot as undefined and reuses normal empty execution.
+Unicode boundaries, global empty advancement by String consumers, callback
+arguments, split captures, source/flags, lastIndex, cloning and collection stay
+on the shared paths. Original errors still precede proof selection.

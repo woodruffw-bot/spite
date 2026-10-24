@@ -23878,3 +23878,21 @@ array entries admits none.
 Strict workspace Clippy with all targets passes (27.68 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Negative assertions over impossible operands (Runtime)
+-----------------------------------------------------
+
+Runtime selects the whole negative lookahead/lookbehind empty proof using the
+full original normalized source and undefined lexical capture mask. All three
+new integration groups pass (0.15 s), covering both directions, original erased
+bindings and errors, undefined named/numbered indices, Unicode starts, lastIndex,
+String match/matchAll/replace/search/split, callback offsets and arguments,
+cloning, collection, 1,000 required operand wrappers and 20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 composed ordinary/u/v
+assertions agree on the fresh CLI, as do all three complete JavaScript programs.
+All 436 Runtime unit tests pass (9.57 s). Strict workspace Clippy with all targets
+passes (6.44 s), alongside documentation tests, formatting, dependency policy,
+inventories and diff checks. The grouped inventory increases to 616 Runtime
+case files; fixtures, snapshots, dependencies and default quotas are unchanged.
