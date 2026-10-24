@@ -23000,3 +23000,20 @@ fixtures, snapshots, dependencies and default quotas are unchanged.
 The preceding enclosing-class Runtime snapshot passes all 35 Test262 runner
 tests and all 16,343 reviewed variants (414.26 s for the corpus group). This result
 precedes the property-escape fallback.
+
+
+## Core mandatory enclosing zero-count property escapes
+
+A separate Core constructor now proves complete mandatory ordinary groups
+around an exact-zero Unicode property escape. Full original Pattern/flag
+validation and normalized capture heads precede the shared flat scope scan.
+All captures belong to the enclosing prefix and select the empty whole-match
+span; the property escape contributes no capture slots. Earlier proof domains
+and charged work remain unchanged.
+
+All 13 actual-source focused Core tests pass (0.05 s), including two new groups
+for enclosing layouts, scope exclusions, 100,000 captures and every construction
+callback abort. All five new enclosing capture tables validate and agree with
+native Node. Strict workspace Clippy with all targets passes (8.81 s), alongside
+workspace documentation tests, formatting, dependency policy, inventories and
+diff checks. Runtime integration of this additional proof follows separately.

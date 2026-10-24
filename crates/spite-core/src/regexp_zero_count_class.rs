@@ -82,6 +82,28 @@ impl RegExpZeroCountClassMatcher {
         Ok(zero_count(&units[end + 4..]).then_some(Self { unicode: true }))
     }
 
+    /// Proves mandatory ordinary wrappers around a zero-count property escape.
+    ///
+    /// Requires validated original u/v syntax and normalized capture heads.
+    /// `unicode_sets` must agree with the validated flags. Every returned
+    /// capture belongs to the enclosing prefix and selects the empty match
+    /// span (22.2.2.7); the property escape contributes no capture slots.
+    pub fn compile_enclosing_unicode_property_validated_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<(Self, usize)>, E> {
+        charge(source.len().saturating_mul(6).saturating_add(1))?;
+        let Some(group) = enclosing_group_body(source.code_units(), unicode_sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[group.body].to_vec());
+        Ok(
+            Self::compile_unicode_property_validated_with_work(&body, charge)?
+                .map(|matcher| (matcher, group.captures)),
+        )
+    }
+
     /// Proves complete mandatory ordinary wrappers around a zero-count class.
     ///
     /// The complete original Pattern and flags must already be validated and
@@ -419,5 +441,98 @@ mod tests {
             )
             .is_err()
         );
+    }
+
+    #[test]
+    fn enclosing_unicode_properties_define_only_the_mandatory_prefix() {
+        for (source, sets, captures) in [
+            (r"(\p{RGI_Emoji}{0})", true, 1),
+            (r"(?:(?:(\p{RGI_Emoji_Tag_Sequence}{0})))", true, 1),
+            (r"((?:(\P{ASCII}{0000,0000}?)))", false, 2),
+            (r"(?:(\p{Script=Greek}{0}))", false, 1),
+            (r"(?:\p{RGI_Emoji}{0})", true, 0),
+        ] {
+            let source = JsString::from(source);
+            let (matcher,count)=RegExpZeroCountClassMatcher::compile_enclosing_unicode_property_validated_with_work(&source,sets,|_|Ok::<(),()>(())).unwrap().unwrap();
+            assert_eq!(count, captures, "{source:?}");
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("A😀!"), 2, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(1..1)
+            );
+            assert!(
+                RegExpZeroCountClassMatcher::compile_unicode_property_validated_with_work(
+                    &source,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        for source in [
+            r"\p{RGI_Emoji}{0}",
+            r"(\p{RGI_Emoji}{0})?",
+            r"(\p{RGI_Emoji}{0}){1}",
+            r"(\p{RGI_Emoji}{0}|a)",
+            r"(\p{RGI_Emoji}{0})a",
+            r"a(\p{RGI_Emoji}{0})",
+        ] {
+            assert!(RegExpZeroCountClassMatcher::compile_enclosing_unicode_property_validated_with_work(&JsString::from(source),true,|_|Ok::<(),()>(())).unwrap().is_none(),"{source}");
+        }
+    }
+
+    #[test]
+    fn deep_property_wrappers_and_all_construction_aborts_stay_flat() {
+        let depth = 100_000;
+        let source = JsString::from(
+            format!(
+                r"{}\p{{RGI_Emoji}}{{0}}{}",
+                "(".repeat(depth),
+                ")".repeat(depth)
+            )
+            .as_str(),
+        );
+        let mut trace = Vec::new();
+        let (matcher, captures) =
+            RegExpZeroCountClassMatcher::compile_enclosing_unicode_property_validated_with_work(
+                &source,
+                true,
+                |n| {
+                    trace.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(captures, depth);
+        assert_eq!(trace.len(), 2);
+        assert!(trace.iter().sum::<usize>() <= source.len() * 10);
+        for fail in 0..trace.len() {
+            let mut calls = 0;
+            let result =
+                RegExpZeroCountClassMatcher::compile_enclosing_unicode_property_validated_with_work(
+                    &source,
+                    true,
+                    |_| {
+                        let at = calls;
+                        calls += 1;
+                        if at == fail { Err(fail) } else { Ok(()) }
+                    },
+                );
+            assert!(matches!(result,Err(at) if at==fail));
+            assert_eq!(calls, fail + 1);
+        }
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("A😀!"), 2, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(1..1)
+        );
+        assert_eq!(work, 1);
     }
 }

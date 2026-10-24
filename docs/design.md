@@ -12922,3 +12922,13 @@ queried by its retained plan (22.2.2.3.1). Runtime tries the constructor only fo
 Unicode patterns after the existing zero-class proofs. The original bracket
 class APIs retain their domains and work. Enclosing groups, alternatives,
 continuations and nonzero upper bounds remain outside this additional proof.
+
+
+Core separately proves complete mandatory ordinary enclosing groups around a
+zero-count Unicode property escape. It reuses the flat mode-aware first-closure
+scan, then the complete property-escape proof. Full original u/v validation and
+normalized capture heads remain prerequisites. Every returned capture belongs
+to the mandatory enclosing prefix and selects the empty match span (22.2.2.7).
+Construction charges source scanning and temporary body storage before copying;
+matching and retained storage remain constant. Existing group, bracket-class
+and bare-property proof domains and work are unchanged.
