@@ -24332,3 +24332,26 @@ programs. All 436 Runtime unit tests pass (3.44 s). Strict workspace Clippy with
 all targets passes (9.63 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Root choices beginning with optional-impossible arms (Core)
+----------------------------------------------------------
+
+The new root-only proof accepts a first arm independently empty through the
+optional, optional-sequence or enclosing optional-sequence proof. The first
+mask is retained; later arms are skipped with undefined capture slots. This
+proof assumes the final successful continuation and excludes repeat contexts.
+
+All 127 actual-source focused Core tests pass (0.31 s), including four new groups
+for first-arm required/skipped masks, original erased forward bindings,
+escaped/class separators, later consuming arms, conditional/nonroot/repeat
+exclusions, 100,000 later captures and interruption before every source,
+first-arm and mask step. All 12,800 exact native input/start/capture comparisons
+across 512 independently composed ordinary/u/v choices agree, with exact source
+identity checked by the scratch oracle generator. A lexed review of 2,732 direct
+unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (8.26 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

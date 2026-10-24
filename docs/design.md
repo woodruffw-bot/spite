@@ -13495,3 +13495,13 @@ spine proof, using the complete normalized original capture source. Interleaved
 required and skipped slots, including erased forward references, retain their
 original roles. Shared empty execution preserves Unicode boundaries,
 source/flags, lastIndex, String callback/split captures, cloning and collection.
+
+
+A separate root-choice empty proof accepts a first arm proved by the optional,
+optional-sequence or enclosing optional-sequence constructor. With the final
+successful continuation that arm always succeeds empty, so later validated
+arms are skipped (22.2.2.2). The first mask is preserved and every later lexical
+slot is undefined, with original reference bindings. This root-only proof must
+not be used as a repetition operand: an empty iteration's failing continuation
+could backtrack into a consuming later arm. Source/copy and full-mask work
+precedes allocation; construction and retained storage remain source-sized.
