@@ -12110,4 +12110,7 @@ Ordinary outside point scopes retain their own ranges, while optional scopes
 and unselected branches stay undefined. Unknown leaves, references, additional
 classes and other class-path counts retain separate proofs. Clone/drop, charged
 work, cancellation and constructor/capacity failures retain their distinction.
-Runtime selection remains separate.
+Runtime selects this assertion-free alternative proof after the two required
+single-class proofs on the full normalized capture source. Its dedicated body
+retains source/flags, lexical named aliases, lastIndex, String consumers, cloning
+and collection, including distinct empty-first and class-first empty captures.

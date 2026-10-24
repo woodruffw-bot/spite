@@ -21009,3 +21009,35 @@ All 73,320 prior API records retain exact domains, charged work and capture
 projection. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime class/empty alternatives with only zero-minimum outside predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Bare/exact-one class paths and root/grouped alternative ownership retain original
+branch order, required empty class identity and undefined optional predicate
+slots. Named/escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex retain source and
+capture identity. Deep 1,000 optional scopes, defined surrounding points,
+20,000-unit shared-prefix words, scalar fallback, constructor abort isolation
+and full proof of unselected unknown leaves remain flat.
+
+Four former unsupported controls in two existing groups now compare complete
+native captures/indices, source, flags, input, undefined groups and lastIndex.
+Optional word predicates before/after the choice retain lexical capture slots;
+original unknown-leaf controls remain. Five source-shape scans verify the
+expanded domain, including actual constructed prefixes.
+
+All three new groups pass (0.70 s), alongside 431 Runtime unit tests (7.58 s),
+forty native tables and eight consumer references on the fresh CLI. All four
+migrated native controls agree on the fresh CLI, and their two existing Rust
+groups pass (0.14 s). All 230,400 exact differential records agree across 384
+independent pairs, with all 1,536 proof/flag combinations supported. Thirty-two
+mixed nullable/nonnullable scalar/finite forms, twelve bare/exact-one spellings,
+six capture layouts, both branch orders, four zero-minimum scope layouts and
+eight skipped-predicate profiles cover starts, sticky, ignore-case and multiline.
+Strict workspace Clippy, documentation tests, formatting, policy and inventories
+pass; fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+The preceding single-class Runtime suite passes all 1,694 Unicode groups
+(759.05 s), including all six newly supported optional word/line controls.
