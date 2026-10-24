@@ -733,6 +733,8 @@ mod regexp_unicode_join_control_properties;
 mod regexp_unicode_latin_script;
 #[path = "cases/regexp_unicode_layered_asserted_string_class_captures.rs"]
 mod regexp_unicode_layered_asserted_string_class_captures;
+#[path = "cases/regexp_unicode_layered_endpoint_asserted_string_class_captures.rs"]
+mod regexp_unicode_layered_endpoint_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_line_assertions.rs"]
 mod regexp_unicode_line_assertions;
 #[path = "cases/regexp_unicode_literal_boundaries.rs"]

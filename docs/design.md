@@ -11401,5 +11401,7 @@ branch-local slots and class-selected empty members retain their identity.
 Construction, cloning, dropping and matching remain flat with source-sized
 storage and existing bounded searches. Same-layer duplicates, noncanonical
 orders, partial wrappers/siblings, choice counts, optional assertions, references
-and unknown leaves remain separate proofs. Runtime selection remains separate
-from this constructor.
+and unknown leaves remain separate proofs. Runtime selects the mixed-layer
+proof after the reversed common-line constructor on the full normalized source.
+The shared capture body retains original source, flags, lexical name/index
+aliases, String consumers, cloning, collection and opt-in host abort behavior.

@@ -19580,3 +19580,34 @@ range/capture examples match native controls. Workspace documentation tests,
 strict workspace Clippy, formatting, dependency policy, source/fixture inventories
 and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
 or default quota changes.
+
+
+## Runtime mixed endpoint layers around complete string-class alternatives
+
+Three groups retain 64 class/input witnesses, ten paired branch/mixed-layer
+profiles, six layouts, both orders and three inner wrapper shapes. Independent
+finite native controls retain shared predicates outside wrappers. The new outer
+capture and original prefix/branch values, indices, names, aliases and sticky
+state remain lexical. Exact consumers wrap earlier reversed-line choices in a
+complete noncapturing group, preserving original slots while requiring mixed
+layer recovery. They cover shorter eligible members, class-selected and
+alternative-selected empty results, opposite word boundaries across a newline,
+supplementary initial offsets, pinned folding of newline-terminated BMP and
+supplementary words, escaped names, matchAll, replacement, search, split,
+read-only lastIndex, clones and collection. Deep prefixes and long words stay
+flat. Opt-in host aborts preserve bindings/lastIndex, and a winning initial
+sticky empty alternative retains bounded work. Same-layer duplicates,
+noncanonical orders, partial wrappers/siblings, choice counts, extra branches or
+classes, optional assertions, references and unknown leaves remain host errors.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/frame
+pairs match independent finite-alternative native sticky controls with shared
+mixed predicates outside wrappers, explicit Unicode advancement and initial
+boundary normalization. They cover 32 class families, thirteen local predicate
+profiles, ten shared layer profiles, twelve inputs, all starts and sticky/i/m
+flags. All thirteen fixed consumer programs match native references. Stable
+passes all 431 Runtime unit cases and all 1,616 Unicode RegExp integration cases.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is 550
+case files and 4,322 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.
