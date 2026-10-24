@@ -25,7 +25,8 @@ use spite_core::{
     RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeSetCompileError,
     RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringSetMatcher,
-    RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher, Span, regexp_outer_group_body,
+    RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeTwoRequiredStringClassCaptureMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -2478,13 +2479,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeCountedNullableStringClassCaptures(body)));
                 }
-                RegExpUnicodePrefixFreeStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodePrefixFreeStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures(body)));
+                }
+                RegExpUnicodeTwoRequiredStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures))
 
             })?;
             if body.is_some() {

@@ -11672,4 +11672,6 @@ using the lesser of the candidate count and input inspection bound. Execution
 allocates no endpoint lists or capture history. Failed nonsticky pairs retry the
 next Unicode boundary after their start, including starts within a prior word.
 All earlier public matcher domains, work callbacks and projections stay unchanged.
-Runtime selection of this two-required proof remains separate.
+Runtime selects this proof after the earlier prefix-free constructor on the full
+capture source. A dedicated matcher body retains original source, names/indices,
+lastIndex, String consumers, cloning and collection.

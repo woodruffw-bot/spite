@@ -785,7 +785,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile larger counts on prefix-free finite string classes, retaining later-start retries and final-iteration captures.
 - [x] Execute larger prefix-free string-class counts through Runtime RegExp and String consumers.
 - [x] Compile nonnullable string-class counts with minimum two, retrying overlapping words and scalar endpoints.
-- [ ] Execute two-required string-class counts through Runtime RegExp and String consumers.
+- [x] Execute two-required string-class counts through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

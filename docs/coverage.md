@@ -20144,3 +20144,34 @@ API records retain exact domains, construction/search work and capture projectio
 Strict workspace Clippy, documentation tests, formatting, dependency policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime two-required string-class counts
+
+Three groups execute twenty native capture tables and eight additional native
+consumer programs, plus collection. They cover retrying shorter first members,
+scalar and finite-word endpoints, required-pair priority before optional counts,
+whole-versus-last scopes, Unicode boundaries/folding, named and escaped-name
+aliases, source/flags, matchAll, callback replacement, split/search, cloning and
+read-only lastIndex. Deep counted scopes and long overlapping members remain
+flat. Opt-in constructor and greedy execution aborts preserve bindings,
+lastIndex and host-failure isolation; short successful pairs retain bounded
+matching work on long inputs. Five earlier rejection controls become native
+eight-record capture/finalizer checks, including an overlap introduced by case
+folding. Unknown class leaves, other unproved minima, predicates, references,
+nested loops, consuming siblings and additional classes remain separate.
+
+
+Execution passes all 1,646 Unicode RegExp integration cases, including the three
+new groups, and 431 Runtime units. All 28 fixed consumer references and five
+migrated eight-record tables agree with the fresh CLI and native references.
+All 230,400 differential records agree across 384 independent pairs, twelve
+counts, 32 overlapping/algebraic/scalar class forms, six capture layouts, twelve
+inputs and all starts/sticky/i/m combinations. Finite native alternatives retain
+longest-member priority and the earlier vi folding and Unicode leading-boundary
+reference policy.
+
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. The Runtime inventory is 560 case files and
+4,352 integration cases. Fixtures, snapshots, dependencies and default quotas
+are unchanged.
