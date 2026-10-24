@@ -23017,3 +23017,35 @@ callback abort. All five new enclosing capture tables validate and agree with
 native Node. Strict workspace Clippy with all targets passes (8.81 s), alongside
 workspace documentation tests, formatting, dependency policy, inventories and
 diff checks. Runtime integration of this additional proof follows separately.
+
+
+## Runtime mandatory enclosing zero-count property captures
+
+Runtime now selects the separate enclosing-property proof after the bare-property
+fallback. Every enclosing capture selects the empty whole-match span. Original
+named and escaped-name aliases and index-array identity use the common capture
+prefix; the retained plan never queries property membership.
+
+All 13 focused Runtime tests pass (4.01 s), including three new groups for named
+and noncapturing wrappers, scalar/negated-scalar/string properties, Unicode
+surrogate-pair starts, indices, String consumers, cloning and collection. A
+1,000-capture check with two 1,000-digit zero counts keeps every capture defined
+at the normalized empty span. The former unsupported enclosing-property control
+now has complete native positive coverage; larger bounds and continuations
+retain their separate checks.
+
+All 25,920 exact native records agree on the fresh CLI across 30 tables, including
+all seven string properties, three enclosing layouts, four zero bounds, eight
+flag combinations, six inputs and every starting index. All 13 complete native
+JavaScript regression programs also agree. All 433 Runtime unit tests pass
+(3.21 s). Strict workspace Clippy with all targets passes (6.32 s), alongside
+workspace documentation tests, formatting, dependency policy, inventories and
+diff checks. The Runtime inventory remains 613 cases; fixtures, snapshots,
+dependencies and default quotas are unchanged.
+
+The preceding class/enclosing-class snapshot completes its initial 2,770-test
+RegExp sweep with 2,765 passes and five stale unsupported-expectation failures
+(816.64 s). All five modules were subsequently corrected to native metadata
+checks in the lexical review above, and all 29 affected tests pass. A fresh
+2,776-test sweep includes those corrections and both property-escape Runtime
+increments. Its completed result is recorded separately.

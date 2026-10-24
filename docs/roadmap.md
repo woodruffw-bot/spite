@@ -871,6 +871,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute mandatory enclosing zero-count class captures through Runtime, preserving named/index aliases and defined empty captures in String consumers.
 - [x] Execute complete Unicode property escapes with exact zero bounds, preserving property early errors while skipping unexecuted matching data.
 - [x] Prove mandatory ordinary enclosing captures around zero-count Unicode property escapes with complete original validation.
+- [x] Execute mandatory enclosing zero-count property captures through Runtime, including named/index aliases, String consumers and collection.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

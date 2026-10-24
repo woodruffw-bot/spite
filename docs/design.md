@@ -12932,3 +12932,10 @@ to the mandatory enclosing prefix and selects the empty match span (22.2.2.7).
 Construction charges source scanning and temporary body storage before copying;
 matching and retained storage remain constant. Existing group, bracket-class
 and bare-property proof domains and work are unchanged.
+
+Runtime selects the enclosing-property proof after the bare-property fallback.
+The existing class-match body and common capture-prefix layout define every
+enclosing capture at the empty whole-match span. Original named and escaped-name
+aliases, index-array identity, source/flags, lastIndex and String consumers
+remain on the standard result path through cloning and collection. Property
+membership is never evaluated by the retained matching plan.
