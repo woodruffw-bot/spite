@@ -6,6 +6,8 @@ mod common;
 mod regexp_impossible_patterns;
 #[path = "cases/regexp_negative_impossible_patterns.rs"]
 mod regexp_negative_impossible_patterns;
+#[path = "cases/regexp_optional_impossible_patterns.rs"]
+mod regexp_optional_impossible_patterns;
 
 #[path = "cases/regexp_zero_count_capture_spines.rs"]
 mod regexp_zero_count_capture_spines;

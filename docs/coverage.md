@@ -24239,3 +24239,27 @@ programs. All 436 Runtime unit tests pass (9.63 s). Strict workspace Clippy with
 all targets passes (19.66 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Optional spines over impossible operands (Runtime)
+-------------------------------------------------
+
+Runtime selects complete optional ordinary/modifier spines over independently
+impossible bodies, retaining required empty outside captures and undefined
+skipped descendants. All three new integration groups pass (0.04 s), covering
+required/optional/named masks, modifier scopes, composite-choice bodies,
+original early errors, Unicode starts, lastIndex, match/matchAll advancement,
+replacement arguments, split captures, cloning, collection, 1,000 outside
+captures and 20,000-digit upper bounds.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v spines agree on the fresh CLI, as do all three complete JavaScript
+programs. All 436 Runtime unit tests pass (3.38 s). Strict workspace Clippy with
+all targets passes (9.28 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. The grouped inventory increases
+to 617 Runtime case files; fixtures, snapshots, dependencies and default quotas
+are unchanged.
+
+The earlier direct-composite-negative Runtime snapshot completes all 2,847
+RegExp integration tests successfully (953.82 s). This broad result predates
+Runtime selection of the required-wrapper, alternative and optional proofs.

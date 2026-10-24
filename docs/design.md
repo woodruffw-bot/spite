@@ -13460,3 +13460,11 @@ composite alternatives after the direct root-alternative proof. Full original
 normalized source preserves every enclosing/arm slot, duplicate-name bindings
 and erased outside/cross-arm references for validation. Shared constant no-match
 execution keeps source/flags, lastIndex, String consumers, cloning and collection.
+
+
+Runtime selects optional spines over impossible operands after the existing
+empty negative-impossible sequence/spine proofs. Complete original normalized
+source preserves required outside captures and undefined skipped descendants.
+Normal empty execution retains Unicode boundaries, source/flags, lastIndex,
+global String advancement, named indices, replacement/split captures, cloning
+and collection. Original early errors still precede proof selection.
