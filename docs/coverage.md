@@ -24879,7 +24879,8 @@ formatting, dependency policy, inventories and diff checks. Runtime inventory
 remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
 The conformance-profile Test262 run started from this Runtime increment passes
 all 35 runner tests and 16,343 corpus variants (520.52 s for the corpus). The
-full RegExp integration run from that increment remains pending.
+full RegExp integration run from that increment passes all 2,898 tests
+(1,094.48 s).
 
 
 First optional established-impossible root alternatives (Core)
@@ -25061,3 +25062,27 @@ admits none. Strict workspace Clippy with all targets passes (11.40 s), alongsid
 the passing documentation, formatting, dependency policy, inventories and diff
 checks for the active Runtime enclosing-sequence increment. Runtime inventory
 remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Enclosing optional established-impossible sequences (Runtime)
+-----------------------------------------------------------
+
+Runtime selects complete ordinary/modifier spines around optional established-
+impossible sequences with full original normalized source. All 24 focused
+integration groups pass (0.50 s), including three new groups for required and
+optional prefix masks, rolled-back descendants, modifiers and lazy/padded bounds,
+original errors, indices/groups and lastIndex, String consumers, cloning,
+collection, 1,000 outside groups and 20,000-digit positive minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 24 complete JavaScript
+programs. All 436 Runtime unit tests pass (10.22 s). Strict workspace Clippy with
+all targets passes (0.13 s with cached targets), alongside documentation tests,
+formatting, dependency policy, inventories and diff checks. Runtime inventory
+remains 617; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The earlier optional-established-impossible-spine Runtime snapshot passes the
+full 2,898-test RegExp integration run (1,094.48 s), plus all 35 Test262 runner
+tests and 16,343 corpus variants in the conformance profile (520.52 s for the
+corpus). These broad results precede Runtime sequence/enclosing-sequence
+selection; those increments have the focused/native/quality checks above.

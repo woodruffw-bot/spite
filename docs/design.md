@@ -13800,3 +13800,11 @@ descendant captures (22.2.2.3.1, 22.2.2.7). Original bindings, full lexical slot
 and symbolic counts remain intact. Flat scope/body-copy/full-mask work precedes
 allocation; retained masks stay source-sized and actual matching and capture
 queries remain constant.
+
+
+Runtime selects complete ordinary/modifier spines around optional established-
+impossible concatenations. Full normalized source keeps every original binding
+and lexical slot. Required wrappers retain body masks while optional repeats
+clear descendants; shared empty execution preserves Unicode boundaries,
+indices/groups, lastIndex, String consumers, cloning and collection, with
+original validation errors before proof selection.
