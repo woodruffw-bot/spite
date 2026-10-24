@@ -13434,3 +13434,10 @@ unproved body arms reject the proof. Original bindings and all outside/inside
 capture slots remain intact, with symbolic bounds. Source/frame/copy work
 precedes allocation; the finite body proof never recursively processes outside
 wrappers. Construction stays source-sized and retained no-match storage constant.
+
+
+Runtime selects impossible composite root alternatives after the direct and
+required-enclosing composite-negative proofs. Every arm must independently
+fail. Full original normalized source preserves cross-arm, duplicate-name and
+erased forward bindings for validation. The shared constant no-match body
+retains source/flags, lastIndex, String consumers, cloning and collection.

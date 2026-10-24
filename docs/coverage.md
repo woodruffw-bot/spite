@@ -24175,3 +24175,21 @@ Strict workspace Clippy with all targets passes (26.84 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Composite-negative root alternatives (Runtime)
+----------------------------------------------
+
+Runtime selects root choices whose every arm independently proves a direct or
+required-enclosing composite-negative failure. All 25 focused integration groups
+pass (1.20 s), including three new groups for mixed direct/required arms,
+duplicate names across arms, original erased cross-arm references, later
+original errors, source/flags and lastIndex, String consumers, cloning,
+collection and 1,000 alternatives sharing one name.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v choices agree on the fresh CLI, as do all 25 complete JavaScript
+programs. All 436 Runtime unit tests pass (9.73 s). Strict workspace Clippy with
+all targets passes (26.84 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 616;
+fixtures, snapshots, dependencies and default quotas are unchanged.
