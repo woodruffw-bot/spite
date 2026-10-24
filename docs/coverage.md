@@ -23232,3 +23232,33 @@ documentation tests, formatting, dependency policy, inventories and diff checks.
 A lexical review of 2,703 retained unsupported controls identifies two leading
 empty-alternative patterns for conversion to native metadata assertions during
 Runtime integration. No fixtures, snapshots, dependencies or quotas change.
+
+
+## Runtime unconditional empty first root alternatives
+
+Runtime selects the first-alternative proof after the erased-sequence proof and
+reuses its complete lexical-mask body. First-arm capture states and undefined
+later slots retain original named bindings, including duplicate names across
+root alternatives. Full original early errors still precede erasure.
+
+All 14 focused integration groups pass (2.19 s), including three new groups for
+selected/unselected named masks, duplicate-name index aliases, cross-alternative
+references inside erased bodies, String consumers, cloning, collection, 1,000
+nested unselected captures and syntax errors in unselected arms. All 55,296 exact
+native metadata comparisons across 512 independently generated ordinary/u/v
+choices agree on the fresh CLI, as do all 14 complete JavaScript programs.
+
+The two lexically identified leading-empty unsupported controls now assert exact
+native metadata. Both promoted programs agree on Node and the fresh CLI, and
+all six tests in their two modules pass (21.31 s and 24.15 s). Other conditional
+or consuming first-arm controls retain unsupported expectations.
+
+All 435 Runtime unit tests pass (9.48 s). Strict workspace Clippy with all targets
+passes (11.81 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The inventory remains 614 grouped Runtime
+cases, with no fixture, snapshot, dependency or default-quota changes.
+
+The preceding arbitrary-group quantified-spine Runtime snapshot passes all 35
+Test262 runner tests and all 16,343 reviewed variants (475.33 s for the corpus
+group). This broad result precedes Runtime sequence and first-alternative
+integration.

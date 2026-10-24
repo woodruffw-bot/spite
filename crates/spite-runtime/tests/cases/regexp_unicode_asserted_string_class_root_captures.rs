@@ -564,6 +564,7 @@ fn asserted_string_class_root_consumers_keep_branch_identity_metadata_and_unicod
     );
     assert_eq!(Realm::default().eval(r####"var pattern="^([\\q{a|ab}])|(\\b)?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     assert_eq!(Realm::default().eval(r####"var pattern="^([\\q{a|ab}])|(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="|(\\b\\B[\\q{ab}&&\\p{Any}&&\\p{RGI_Emoji}])",input="A😀!",r=new RegExp(pattern,"dgv");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgv"&&r.hasIndices&&r.unicodeSets&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&Object.hasOwn(m,"1")&&Object.hasOwn(m.indices,"1")&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"^([\q{a|ab}])+|()",
@@ -572,7 +573,6 @@ fn asserted_string_class_root_consumers_keep_branch_identity_metadata_and_unicod
         r"^([\q{a|ab}])|\1",
         r"\b\B([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|(^)",
         r"^([\q{a|ab}])x|(^)",
-        r"|(\b\B[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
     ] {
         let mut realm = Realm::default();
         assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");

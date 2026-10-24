@@ -13027,3 +13027,11 @@ and temporary-storage work precede allocation; retained storage and clone/drop
 are source-sized, with constant matching work and capture queries. Conditional
 or consuming first arms and choices inside shared enclosing groups require
 other proofs. Earlier constructors and Runtime behavior are unchanged.
+
+
+Runtime selects the unconditional first-alternative proof after the erased
+sequence proof. The existing lexical-mask body preserves selected first-arm
+values, undefined unselected slots and duplicate-name aliases across root
+alternatives. Full original syntax and named-reference validation precedes the
+proof, including early errors in arms that never execute. String consumers,
+cloning, collection and actual-work accounting share the sequence result path.

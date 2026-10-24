@@ -242,3 +242,56 @@ fn sequence_erasure_still_requires_complete_original_early_error_validation() {
         );
     }
 }
+
+#[test]
+fn unconditional_first_alternatives_preserve_selected_and_unselected_capture_slots() {
+    check(
+        r#"
+        var cases=[
+            ['|(?<never>[\\p{RGI_Emoji}]+)',[0],['never']],
+            ['(?<keep>\\p{RGI_Emoji}{0})+|(?<never>a(?<inner>b))',[1,0,0],['keep','never','inner']],
+            ['(?<skip>\\p{RGI_Emoji}{0})?(?<keep>\\p{RGI_Emoji}{0})+|(?<never>a)(?<inner>b)',[0,1,0,0],['skip','keep','never','inner']],
+            ['(?<keep>(?<erased>\\k<later>){0})+|(?<later>a)\\k<keep>',[1,0,0],['keep','erased','later']]
+        ],ok=true;
+        for(var pair of cases)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pair[0],flags);r.lastIndex=start;var m=r.exec(input),global=r.global||r.sticky;
+            if(global&&start>input.length){ok=ok&&m===null&&r.lastIndex===0;continue}
+            var point=global?start:0;if(point>0&&input.charCodeAt(point)>=0xdc00&&input.charCodeAt(point)<=0xdfff&&input.charCodeAt(point-1)>=0xd800&&input.charCodeAt(point-1)<=0xdbff)point--;
+            ok=ok&&m.index===point&&m[0]===''&&m.length===pair[1].length+1&&r.source===pair[0]&&r.lastIndex===(global?point:start)&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            for(var i=1;i<m.length;i++){
+                var name=pair[2][i-1];ok=ok&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i)&&Object.hasOwn(m.groups,name)&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===m[i]&&m.indices.groups[name]===m.indices[i];
+                ok=ok&&(pair[1][i-1]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+            }
+        }
+        var r=/(?<same>\p{RGI_Emoji}{0})+|(?<same>[\p{RGI_Emoji}]+)/dgv,m=r.exec('abc');
+        ok&&m.length===3&&m[1]===''&&m[2]===undefined&&Object.hasOwn(m,'2')&&Object.hasOwn(m.indices,'2')&&m.groups.same===''&&m.indices.groups.same===m.indices[1]&&m.indices[2]===undefined
+    "#,
+    );
+}
+
+#[test]
+fn first_empty_alternative_string_consumers_copies_and_gc_never_select_later_arms() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<skip>\p{RGI_Emoji}{0})?(?<keep>\p{RGI_Emoji}{0})+|(?<never>a)(?<inner>b)/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===5&&m[1]===undefined&&m[2]===''&&m[3]===undefined&&m[4]===undefined&&m.indices.groups.keep===m.indices[2];
+        var calls=[];var value='ab'.replace(r,function(m,skip,keep,never,inner,at,input,groups){calls.push(at);return arguments.length===8&&m===''&&skip===undefined&&keep===''&&never===undefined&&inner===undefined&&input==='ab'&&groups.never===undefined&&groups.keep===''?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,,,,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m[1]===undefined&&m[2]===''&&m[3]===undefined&&m[4]===undefined
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.keep===''&&m.groups.never===undefined&&m.groups.inner===undefined&&Object.hasOwn(m.indices,'4')&&m.indices.groups.keep===m.indices[2]"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deeply_unselected_alternatives_keep_all_slots_and_validate_original_early_errors() {
+    check(
+        r#"
+        var depth=1000,pattern='(?<keep>\\p{RGI_Emoji}{0})+|'+'('.repeat(depth)+'[\\p{RGI_Emoji}]+'+')'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===depth+2&&m[1]===''&&m.indices.groups.keep===m.indices[1];
+        for(var i=2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i);
+        for(var source of ['\\p{RGI_Emoji}{0}|[\\p{Not_A_Property}]','|(?<x>a)(?<x>b)','|(\\k<missing>)','[a]{0}|([b]{3,2})']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
