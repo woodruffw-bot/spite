@@ -12622,3 +12622,21 @@ and captures remain unchanged. Runtime selects this nested zero-count proof afte
 nested optional alternatives. The dedicated body preserves every undefined inner
 slot, normalized starts, source/flags, named aliases, indices, lastIndex and String
 consumers through cloning and collection.
+
+
+Core separately proves captured outside predicate/empty scopes around a nested
+optional truth root. A flat ancestor scan finds the nearest optional class-owning
+group and its original capture insertion point before the opener. Class data
+stays opaque; the complete nested optional atom and both original branches
+validate before outside projection reserves all original inner slots. Ordinary
+and exact-one inner wrappers remain inside the optional capture interval.
+
+The existing outside role/mask proof and live optional continuation kernel retain
+conditional outside points, mandatory enclosing ranges, forced lazy consumption,
+shorter-member retries and earliest complete starts. Every skipped inner slot,
+including mandatory wrappers inside the optional root, remains undefined while
+outside captures can participate (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7).
+Storage, traversal and clone/drop remain flat and source-sized. Unknown terms in
+either region even under skipped/never scopes, additional optional class-path
+counts and consuming outside siblings retain separate proofs. Earlier API
+domains and charged work remain unchanged. Runtime selection remains separate.

@@ -2444,6 +2444,7 @@ pub use zero_count_asserted::{
     RegExpUnicodeTruthTableNestedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableScopedNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,

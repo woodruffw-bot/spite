@@ -22236,3 +22236,25 @@ dependencies and default quotas remain unchanged.
 The preceding captured-scope optional and zero-count root Runtime sources pass
 all 1,764 Unicode RegExp integration tests (857.91 s). This run compiled before
 nested optional and nested zero-count root Runtime sources.
+
+
+## Core captured outside scopes around nested optional truth roots
+
+Four focused groups pass (10.34 s), comparing 160 native capture tables and an
+independent 26-slot outside-profile/progress oracle across every UTF-16 start,
+sticky, multiline and ignore-case. Required/skipped outside points, mandatory
+enclosing ranges and all nested optional slots retain original participation.
+Both branch orders, greedy/lazy padded counts, ordinary/exact-one inner wrappers
+and finite/scalar/known-empty classes preserve forced lazy consumption,
+shorter-member retries and earliest complete starts. Deep 20,000-level outside
+captures, 20,000-unit shared-prefix members, cloning/drop and every charged
+cancellation/recovery remain flat. Unknown terms in either region even under
+skipped/never scopes remain unproved; all eight explicit boundary controls are
+valid ECMAScript patterns. Contradictory outside profiles match with bounded work
+after complete construction.
+
+All 93,192 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Strict workspace Clippy (76 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.
