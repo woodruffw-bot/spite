@@ -12812,3 +12812,20 @@ bounded-group proof after the preceding optional-path proof. Its dedicated body
 retains inner group participation, outside roles, original lexical slots,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+Core separately proves captured outside scopes around a zero-count root above
+nearer choice-free zero-count class groups. A flat choice-flag scan skips those
+nearer scopes while retaining the original capture prefix and opaque class data.
+It requires a different atom from the preceding zero-ancestor proof. The complete
+body validates through the existing larger/unbounded or bounded zero-count proof
+before outside projection reserves every original inner slot.
+
+Every body capture remains undefined; outside conditional points and mandatory
+enclosing ranges can participate. Disabled class profiles prevent body queries
+while outside gates retain normalized Unicode starts, sticky bounds and later
+complete starts (ECMA-262 edition 17 22.2.2.3, 22.2.2.7). Traversal, decimal count
+scanning, storage and clone/drop remain flat and source-sized. Unknown terms even
+under erased/skipped/never scopes, consuming outside siblings and other ancestor
+selection cases retain separate proofs. Earlier API domains, charged work and
+captures remain unchanged. Runtime selection remains separate.

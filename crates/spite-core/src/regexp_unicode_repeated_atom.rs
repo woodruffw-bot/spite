@@ -45,6 +45,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeTruthTableQuantifiedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedNestedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher,

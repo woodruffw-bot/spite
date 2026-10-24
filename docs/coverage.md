@@ -22695,3 +22695,30 @@ on the fresh CLI. All 100,352 exact differential records agree across every star
 and sticky/multiline/ignore-case combination, with all 256 source/control patterns
 validated and all 1,024 proof/flag combinations supported. Five source-shape
 scans retain remaining rejection domains.
+
+
+## Core outside zero-count roots above choice-free zero-count class groups
+
+All five focused groups pass (2.04 s), including 160 native ordered capture tables
+and an independent 26-slot zero-iteration/outside-profile oracle. Bounded,
+larger/unbounded and lazy inner paths validate before every original body slot
+stays undefined. Outside conditional points, mandatory enclosing ranges, Unicode
+starts and sticky bounds retain their proved behavior. Twenty thousand nested
+zero-count inner groups, twenty thousand outside capture scopes, long shared-prefix
+scalar/string bodies and 1,000-digit inner counts remain flat through construction,
+matching, projection and clone/drop. Matching work stays independent of erased
+body depth; constructor and match cancellation recover at every charged boundary.
+Unknown terms still decline under erased/skipped/never scopes.
+
+All 99,816 frozen prior API records retain exact domains, charged work and capture
+projection in nine bounded batches. A new 736-record baseline includes 376
+supported cases. All 256 planned source/control patterns validate and all 1,024
+proof/flag combinations are supported. Strict workspace Clippy, Core documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate. Fixtures, snapshots, dependencies and default quotas remain
+unchanged.
+
+The preceding captured outside bounded erased/optional Runtime snapshot passes
+all 1,794 Unicode RegExp integration tests (781.02 s), all 16,343 reviewed Test262
+variants and 35 runner tests (424.85 s for the corpus target). These runs compiled
+before the grouped optional ancestor selector reached Runtime.

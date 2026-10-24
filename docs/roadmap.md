@@ -861,6 +861,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute captured outside scopes around optional roots with bounded zero/one class paths through Runtime and String consumers.
 - [x] Prove captured outside optional roots above nearer choice-free bounded class groups with a flat ancestor selector.
 - [x] Execute captured outside optional roots above nearer choice-free bounded class groups through Runtime and String consumers.
+- [x] Prove captured outside zero-count roots above nearer choice-free zero-count class groups, fully validating bounded/unbounded inner paths.
+- [ ] Execute captured outside zero-count roots above nearer choice-free zero-count class groups through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.
