@@ -13647,3 +13647,14 @@ retains incoming references, duplicate-name bindings and every capture slot.
 Variable operand capture values are never exposed because the outside assertion
 fails. Shared constant no-match execution keeps source/flags, lastIndex, String
 consumers, cloning and collection, with original errors before proof selection.
+
+
+A separate known-impossible root-choice proof allows established and nullable-
+guard impossibility families to mix across arms. Every arm must independently
+prove impossible; empty, possible or unproved arms reject the constructor
+(22.2.2.2). Earlier alternative constructors retain distinct scanner modes and
+their original work/domains. The closed arm-proof helper never re-enters the new
+constructor, and callback type erasure bounds compiler expansion through older
+alternative proofs. Original projected bindings and full lexical inventories
+remain intact. Source/copy work precedes allocation; disjoint arm scans stay
+source-sized and the retained no-match plan and actual work remain constant.

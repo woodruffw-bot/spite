@@ -561,7 +561,7 @@ impl RegExpImpossibleMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_alternatives_assertion_validated_with_work::<false, E>(
+        Self::compile_alternatives_assertion_validated_with_work::<0, E>(
             source, unicode, sets, charge,
         )
     }
@@ -579,12 +579,31 @@ impl RegExpImpossibleMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_alternatives_assertion_validated_with_work::<true, E>(
+        Self::compile_alternatives_assertion_validated_with_work::<1, E>(
             source, unicode, sets, charge,
         )
     }
 
-    fn compile_alternatives_assertion_validated_with_work<const COMPOSITE: bool, E>(
+    /// Proves root alternatives only when every arm has an established impossibility proof.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Earlier and nullable-guard proof families may mix across arms. Every
+    /// projected arm retains original bindings and its full inventory; empty,
+    /// possible and unproved arms reject the proof (22.2.2.2). The flat separator
+    /// scanner and earlier modes keep their work; source/copy work precedes
+    /// allocation and total arm scans stay source-sized.
+    pub fn compile_known_alternatives_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_alternatives_assertion_validated_with_work::<2, E>(
+            source, unicode, sets, charge,
+        )
+    }
+
+    fn compile_alternatives_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
         sets: bool,
@@ -640,33 +659,38 @@ impl RegExpImpossibleMatcher {
                 return Ok(None);
             }
             let arm = JsString::from_code_units(units[range].to_vec());
-            let mut plan = if COMPOSITE {
-                Self::compile_composite_negative_validated_with_work(
-                    &arm,
-                    unicode,
-                    sets,
-                    &mut charge,
-                )?
+            let plan = if MODE == 2 {
+                Self::known_arm_with_work(&arm, unicode, sets, &mut charge)?
             } else {
-                Self::compile_negative_validated_with_work(&arm, unicode, sets, &mut charge)?
-            };
-            if plan.is_none() {
-                plan = if COMPOSITE {
-                    Self::compile_wrapped_composite_negative_validated_with_work(
+                let mut plan = if MODE == 1 {
+                    Self::compile_composite_negative_validated_with_work(
                         &arm,
                         unicode,
                         sets,
                         &mut charge,
                     )?
                 } else {
-                    Self::compile_enclosing_negative_validated_with_work(
-                        &arm,
-                        unicode,
-                        sets,
-                        &mut charge,
-                    )?
+                    Self::compile_negative_validated_with_work(&arm, unicode, sets, &mut charge)?
                 };
-            }
+                if plan.is_none() {
+                    plan = if MODE == 1 {
+                        Self::compile_wrapped_composite_negative_validated_with_work(
+                            &arm,
+                            unicode,
+                            sets,
+                            &mut charge,
+                        )?
+                    } else {
+                        Self::compile_enclosing_negative_validated_with_work(
+                            &arm,
+                            unicode,
+                            sets,
+                            &mut charge,
+                        )?
+                    };
+                }
+                plan
+            };
             let Some(plan) = plan else {
                 return Ok(None);
             };
@@ -840,6 +864,131 @@ impl RegExpImpossibleMatcher {
         Ok(plan.map(|body| Self {
             captures: scope.captures + body.captures,
         }))
+    }
+
+    // Closed earlier proof families only; this helper never calls the new
+    // known-alternatives constructor. Erasing the callback type bounds compiler
+    // expansion through the earlier alternative proofs.
+    fn known_arm_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let mut plan = Self::compile_nullable_group_negative_validated_with_work(
+            source,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = Self::compile_nullable_atom_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_sequence_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_alternatives_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_nullable_positive_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_wrapped_nullable_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_negative_validated_with_work(source, unicode, sets, &mut charge)?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_enclosing_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_alternatives_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_required_enclosing_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_positive_impossible_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_composite_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_wrapped_composite_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_alternatives_composite_negative_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = Self::compile_enclosing_composite_alternatives_validated_with_work(
+                source,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        Ok(plan)
     }
 
     /// Returns no match, charging actual work before any possible input access.
@@ -2324,6 +2473,96 @@ mod tests {
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn known_alternatives(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_known_alternatives_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn known_alternatives_mix_established_and_nullable_guard_failures_without_rebinding() {
+        for (source, captures) in [
+            (r"(?![\p{RGI_Emoji}]*)|(?!)", 0),
+            (r"((?!(a{0})))|((?!(?=b*)))+", 3),
+            (r"(?=([\p{RGI_Emoji}]+)(?!(a{0})))|(?!a*b*)", 2),
+            (r"(?!(\3){0})|((?!a*))(?!(b{0}))", 3),
+            (r"(?!(a)?|b)|(?!(?!(?!(c{0}))))", 2),
+        ] {
+            assert_eq!(
+                known_alternatives(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn known_alternatives_reject_empty_possible_unproved_and_nonroot_choices() {
+        for source in [
+            r"(?!a*)",
+            r"(?!a*)|",
+            r"a|(?!a*)",
+            r"(?!a*)|(?=a)",
+            r"((?!a*)|(?!b*))",
+            r"(?!a*)|((?!b*))?",
+        ] {
+            assert!(known_alternatives(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn many_known_alternatives_keep_source_sized_work_and_constant_retained_storage() {
+        let source = std::iter::repeat_n(r"(?![\p{RGI_Emoji}]*)|(?!((a|b))?)", 10_000)
+            .collect::<Vec<_>>()
+            .join("|");
+        let source = JsString::from(source.as_str());
+        let mut work = 0usize;
+        let plan = RegExpImpossibleMatcher::compile_known_alternatives_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work = work.saturating_add(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(plan.capture_count(), 20_000);
+        assert!(work < source.len() * 4096);
+    }
+
+    #[test]
+    fn known_alternative_work_interrupts_before_every_separator_projection_and_selected_proof() {
+        let source = JsString::from(r"(?![\p{RGI_Emoji}]*)|(?=(?!(a{0})))");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_known_alternatives_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(matches!(
+            RegExpImpossibleMatcher::compile_known_alternatives_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop));
             assert_eq!(seen, work[..=stop]);
         }
     }

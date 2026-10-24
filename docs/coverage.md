@@ -24687,3 +24687,29 @@ programs. All 436 Runtime unit tests pass (3.32 s). Strict workspace Clippy with
 all targets passes (11.37 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Mixed established impossible root alternatives (Core)
+----------------------------------------------------
+
+The new constructor proves a root choice impossible only when every arm has an
+established impossibility proof. Earlier negative-empty, positive-impossible,
+composite and nullable-guard families may mix. Empty, possible, unproved and
+nonroot choices reject the proof. Earlier separator-scanner modes retain their
+domains and work; the closed new arm helper never re-enters this constructor.
+
+All 159 actual-source focused Core tests pass (0.70 s), including four new groups
+for mixed arm families, original erased cross-arm bindings, complete inventories,
+possible/optional/nonroot exclusions, 20,000 arms, source-sized work and
+interruption before every separator/projection/selected-proof step. All 12,800
+exact native input/start records and original capture inventories across 512
+independently composed ordinary/u/v choices agree, with exact source identity
+checked by the scratch oracle generator. All fifteen earlier impossible-proof
+families retain their 12,800 native records and inventories each after the
+scanner refactor. A lexed review of 2,732 direct unsupported control-array entries
+admits none.
+
+Strict workspace Clippy with all targets passes (11.37 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.
