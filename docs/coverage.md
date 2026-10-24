@@ -23049,3 +23049,29 @@ RegExp sweep with 2,765 passes and five stale unsupported-expectation failures
 checks in the lexical review above, and all 29 affected tests pass. A fresh
 2,776-test sweep includes those corrections and both property-escape Runtime
 increments. Its completed result is recorded separately.
+
+
+## Core zero-erased quantified class/property group spines
+
+A new separate Core plan proves complete single class/property spines with
+ordinary capturing/noncapturing or ims modifier groups and validated
+quantifiers. A zero upper bound on the atom or an ancestor erases all consuming
+work. Required empty iterations define their captures; optional empty
+iterations roll their writes back after zero-progress failure (22.2.2.3.1).
+The plan stores the original lexical count and the boundary between a defined
+capture prefix and an undefined suffix. Bounds stay symbolic, including
+unrepresentable positive minima. Assertions, alternatives, consuming siblings
+and spines without a zero bound require other proofs.
+
+All 17 actual-source focused Core tests pass (0.10 s), including four new groups
+for the native capture-role distinction, modifiers, ordinary/u/v boundaries,
+scope exclusions, callback aborts, 100,000 quantified wrappers and a 20,000-digit
+required count. Independent native tables for 384 fully validated generated
+spines agree in all 3,072 capture-layout comparisons across inputs and starts.
+Source scanning and temporary frames are charged before allocation; retained
+storage, clone/drop and matching remain constant.
+
+Strict workspace Clippy with all targets passes (16.52 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Earlier APIs and matching behavior are unchanged. Runtime integration of this
+additional quantified-spine proof follows separately.

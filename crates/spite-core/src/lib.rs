@@ -42,6 +42,7 @@ mod regexp_unicode_repeated_atom;
 mod regexp_unicode_string_set;
 mod regexp_zero_count_class;
 mod regexp_zero_count_group;
+mod regexp_zero_count_spine;
 mod replacement;
 mod symbol;
 mod unicode;
@@ -165,6 +166,7 @@ pub use regexp_unicode_repeated_atom::{
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
 pub use regexp_zero_count_class::RegExpZeroCountClassMatcher;
 pub use regexp_zero_count_group::RegExpZeroCountGroupMatcher;
+pub use regexp_zero_count_spine::RegExpZeroCountSpineMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 #[doc(hidden)]

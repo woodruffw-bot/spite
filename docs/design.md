@@ -12939,3 +12939,22 @@ enclosing capture at the empty whole-match span. Original named and escaped-name
 aliases, index-array identity, source/flags, lastIndex and String consumers
 remain on the standard result path through cloning and collection. Property
 membership is never evaluated by the retained matching plan.
+
+
+Core also proves a single class/property atom within a complete quantified group
+spine. The spine may contain ordinary capturing/noncapturing and ims modifier
+groups. Full original grammar/flag validation and normalized capture heads are
+required. An exact zero upper bound on the atom or any ancestor proves that the
+entire Pattern succeeds empty without querying membership. Modifier flags have
+no observable matching effect on the erased body.
+
+Required empty repetitions define their captures; optional empty repetitions
+fail their zero-progress continuation and roll their capture writes back
+(22.2.2.3.1). Since all groups lie on one spine, every capture before the first
+optional group is defined empty and every subsequent capture is undefined. The
+plan stores only this prefix boundary and the full lexical count. Bounds are
+scanned symbolically without expansion, including oversized positive minima.
+Temporary frames and source work are charged before the flat scan; retained
+storage, clone/drop and matching remain constant. Assertions, alternatives,
+consuming siblings and expressions without a proven zero bound require other
+proofs. Earlier APIs and their work are unchanged.
