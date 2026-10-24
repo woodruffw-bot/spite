@@ -21844,3 +21844,34 @@ projection in seven bounded batches. Strict workspace Clippy (58.50 s),
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime selection remains separate; fixtures, snapshots, dependencies and default
 quotas remain unchanged.
+
+
+## Runtime optional direct root truth alternatives
+
+Three focused groups pass (0.36 s), preserving RepeatMatcher progress and clearing
+all skipped inner captures, including the optional root. Empty-first branches
+retry consuming class members; shorter-member endpoint retries retain selected
+branch slots. Greedy/lazy question and padded zero-to-one counts, named and
+escaped-name aliases, indices, matchAll, callback replacement, split/search,
+cloning, collection and strict lastIndex writes retain native behavior. Deep
+1,000-level branch captures, 20,000-unit shared-prefix scalar/string members and
+constructor cancellation remain flat. Unknown terms even in lazy/never bodies,
+outside terms, enclosing wrappers and other root counts retain separate proofs.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Two
+preceding rejection controls in two existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+Both affected Rust proof groups pass (0.02 s and 0.10 s). Five source-shape scans
+retain all other rejection domains. All 100,352 exact differential records agree
+across 256 independent pairs, with all 1,024 proof/flag combinations supported.
+Both branch orders, finite/scalar/known-empty classes, internal exact-one paths
+and independent branch profiles cover all starts, sticky, multiline and
+ignore-case. All 431 Runtime unit tests pass (3.93 s), alongside strict workspace
+Clippy (7.42 s), documentation tests, formatting, policy, inventories and diff
+checks. The grouped Runtime inventory contains 594 case files. Fixtures,
+snapshots, dependencies and default quotas remain unchanged.
+
+The preceding captured outside-scope sources pass all 1,746 Unicode RegExp
+integration tests (752.45 s). Their fresh Test262 run passes all 35 runner tests
+and all 16,343 reviewed variants, including the pinned corpus gate (371.67 s).
+Both runs compiled before optional direct root alternatives.

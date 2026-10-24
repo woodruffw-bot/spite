@@ -12462,4 +12462,7 @@ participating empty bodies.
 Prefix work and endpoint probes charge before inspection; storage and clone/drop
 remain flat. Outside terms, enclosing choice wrappers and other root counts
 retain separate proofs. Earlier APIs retain exact domains and charged work.
-Runtime selection remains separate.
+Runtime selects this complete optional-root proof after captured outside-scope
+alternatives. Its dedicated body preserves final-iteration absence, actual
+endpoint truth, branch ownership, source/flags, named aliases, indices, lastIndex
+and String consumers through cloning and collection.
