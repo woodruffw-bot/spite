@@ -13914,3 +13914,13 @@ non-inlined frame before the large matcher-selection helper is entered
 stack guard without retaining the compiler's large stack frame. Pattern
 validation, budget charges, original slots and lastIndex initialization retain
 the same observable order. No default quota or native reentry allowance changes.
+
+
+A separate static-proof mode treats a guaranteed-successful capture-free positive
+assertion as independently empty in either direction (22.2.2.4). Its operand may
+consume, but the assertion consumes zero and contains no lexical capture slots
+whose values could escape. Outside required/optional groups retain exact empty/
+undefined masks. Capturing operands keep the earlier conservative facts. The
+original public constructor retains its domains and work through a separate
+scanner mode; flat frames, symbolic counts, capture-clear invariants and source
+charges remain the same.

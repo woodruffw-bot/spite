@@ -25295,3 +25295,30 @@ native reentry guard and stack requirement are unchanged. Native comparisons
 and quality checks above were rerun after this fix. A fresh full 2,930-test
 RegExp run and conformance-profile Test262 run are in progress; the superseded
 pre-fix corpus run was stopped and is not counted as passing.
+
+
+Capture-free successful positive static proofs (Core)
+---------------------------------------------------
+
+The separate constructor mode composes guaranteed-successful capture-free
+positive assertions as independently empty terms. The operand may consume; the
+assertion consumes zero and no lexical capture data can escape. Both directions
+preserve outside empty/undefined masks. Capturing operands keep the earlier
+conservative facts, and the original static constructor keeps its domain/work.
+
+All 217 actual-source focused Core tests pass (1.51 s), including four new groups
+for both directions, nested capture-free assertions and outside masks, explicit
+old-constructor exclusions, capturing/consuming/continuation-sensitive rejection,
+100,000 outside groups plus 100,000 positive layers, 20,000-digit minima, source
+work interruption and constant Unicode actual-work/boundary behavior. All 12,800
+exact native input/start/capture records across 512 independently generated
+ordinary/u/v patterns agree. The original mixed static proof retains all 12,800
+native records and inventories across its earlier 512-pattern corpus after the
+scanner-mode split. A lexed review of 2,732 direct unsupported control-array
+entries admits none.
+
+Strict workspace Clippy with all targets passes (28.07 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 618; fixtures, snapshots, dependencies and default
+quotas are unchanged. This commit adds the Core API; Runtime selection follows
+separately.

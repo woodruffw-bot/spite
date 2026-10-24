@@ -41,17 +41,49 @@ impl RegExpStaticMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Ok(compile_facts_with_work(source, unicode, sets, charge)?.map(
-            |(fact, defined)| match fact {
-                Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
-                    unicode, defined,
-                )),
-                Fact::Impossible => Self::Impossible(
-                    RegExpImpossibleMatcher::from_static_capture_count(defined.len()),
-                ),
-                Fact::Unknown(_) => unreachable!("unproved roots return None"),
-            },
-        ))
+        Ok(
+            compile_facts_with_work::<false, _>(source, unicode, sets, charge)?.map(
+                |(fact, defined)| match fact {
+                    Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
+                        unicode, defined,
+                    )),
+                    Fact::Impossible => Self::Impossible(
+                        RegExpImpossibleMatcher::from_static_capture_count(defined.len()),
+                    ),
+                    Fact::Unknown(_) => unreachable!("unproved roots return None"),
+                },
+            ),
+        )
+    }
+
+    /// Extends static proofs with capture-free guaranteed-successful positive assertions.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A positive assertion always consumes zero. If its complete operand has
+    /// a successful path at every position and contains no lexical captures,
+    /// no matching data can escape, even when the selected operand consumes
+    /// (22.2.2.4). Both directions therefore compose as independently empty.
+    /// Capturing operands retain the earlier conservative facts. Source work,
+    /// flat frames, symbolic bounds and capture-clear invariants are unchanged.
+    pub fn compile_capture_free_positive_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(
+            compile_facts_with_work::<true, _>(source, unicode, sets, charge)?.map(
+                |(fact, defined)| match fact {
+                    Fact::Empty => Self::Empty(RegExpZeroCountSequenceMatcher::from_static_mask(
+                        unicode, defined,
+                    )),
+                    Fact::Impossible => Self::Impossible(
+                        RegExpImpossibleMatcher::from_static_capture_count(defined.len()),
+                    ),
+                    Fact::Unknown(_) => unreachable!("unproved roots return None"),
+                },
+            ),
+        )
     }
 
     /// Full original lexical capture count, including skipped arms (22.2.7.2).
@@ -172,7 +204,7 @@ fn clear(ends: &mut [usize], start: usize) {
     }
 }
 
-fn compile_facts_with_work<E>(
+fn compile_facts_with_work<const CAPTURE_FREE_POSITIVE: bool, E>(
     source: &JsString,
     unicode: bool,
     sets: bool,
@@ -217,7 +249,15 @@ fn compile_facts_with_work<E>(
                 frame.finish_arm(&mut clears);
                 let operand = frame.choices;
                 let fact = match frame.kind {
-                    Kind::Ordinary | Kind::Positive => operand,
+                    Kind::Ordinary => operand,
+                    Kind::Positive
+                        if CAPTURE_FREE_POSITIVE
+                            && operand.nullable()
+                            && clears.len() == frame.start =>
+                    {
+                        Fact::Empty
+                    }
+                    Kind::Positive => operand,
                     Kind::Negative => match operand {
                         Fact::Impossible => {
                             clear(&mut clears, frame.start);
@@ -287,7 +327,10 @@ fn compile_facts_with_work<E>(
 mod tests {
     use super::*;
     fn plan(source: &str) -> Option<(Fact, Box<[bool]>)> {
-        compile_facts_with_work(&JsString::from(source), true, true, |_| Ok::<(), ()>(())).unwrap()
+        compile_facts_with_work::<false, _>(&JsString::from(source), true, true, |_| {
+            Ok::<(), ()>(())
+        })
+        .unwrap()
     }
     #[test]
     fn compositional_negative_and_optional_facts_cross_multiple_layers() {
@@ -350,7 +393,7 @@ mod tests {
         let source = JsString::from(r"((?!a*))?");
         let mut seen = Vec::new();
         assert_eq!(
-            compile_facts_with_work(&source, true, true, |n| {
+            compile_facts_with_work::<false, _>(&source, true, true, |n| {
                 seen.push(n);
                 Err(19)
             }),
@@ -503,5 +546,116 @@ mod tests {
                 "{source}"
             );
         }
+    }
+    fn capture_free_plan(source: &str) -> Option<RegExpStaticMatcher> {
+        RegExpStaticMatcher::compile_capture_free_positive_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+    #[test]
+    fn capture_free_successful_positive_assertions_export_only_proved_outside_empty_masks() {
+        for (source, mask) in [
+            (r"(?=a*)", &[][..]),
+            (r"(?<=a*b*)", &[][..]),
+            (r"((?=[\p{RGI_Emoji}]*))+", &[true][..]),
+            (r"((?<=[\q{a|ab}]*))?", &[false][..]),
+            (r"(?im-s:((?=a*b*))+(?<=[\p{RGI_Emoji}]*))", &[true][..]),
+            (r"((?=(?<=a*)))+", &[true][..]),
+        ] {
+            assert!(
+                RegExpStaticMatcher::compile_validated_with_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "earlier domain changed: {source}"
+            );
+            let plan = capture_free_plan(source).unwrap_or_else(|| panic!("rejected {source}"));
+            assert_eq!(plan.capture_count(), mask.len(), "{source}");
+            for (index, &defined) in mask.iter().enumerate() {
+                assert_eq!(
+                    plan.capture_range(index, &(2..2)),
+                    defined.then_some(2..2),
+                    "{source}"
+                );
+            }
+        }
+    }
+    #[test]
+    fn capture_free_positive_proofs_keep_capturing_consuming_and_continuation_sensitive_forms_unproved()
+     {
+        for source in [
+            r"(?=(a)*)",
+            r"(?<=(a)*)",
+            r"(?=(?i:(a)*))",
+            r"((?=(a)*))+",
+            r"(|a)+",
+            r"a(?=b*)",
+            r"(?=a*)a",
+            r"(?=a*)|a",
+            r"((?=a*)|a)+",
+            r"(a*)",
+        ] {
+            assert!(capture_free_plan(source).is_none(), "{source}");
+        }
+    }
+    #[test]
+    fn capture_free_positive_layers_and_symbolic_minima_keep_flat_outside_capture_masks() {
+        let source = format!(
+            "{}{}a*{}{}",
+            "(".repeat(100_000),
+            "(?=".repeat(100_000),
+            ")".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = capture_free_plan(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_000);
+        for index in 0..plan.capture_count() {
+            assert_eq!(plan.capture_range(index, &(0..0)), Some(0..0));
+        }
+        let source = format!("((?=a*)){{{}}}", "9".repeat(20_000));
+        let plan = capture_free_plan(&source).unwrap();
+        assert_eq!(plan.capture_count(), 1);
+        assert_eq!(plan.capture_range(0, &(0..0)), Some(0..0));
+    }
+    #[test]
+    fn capture_free_positive_work_interrupts_before_frames_and_actual_unicode_input_access() {
+        let source = JsString::from(r"((?=[\p{RGI_Emoji}]*))+");
+        let mut seen = Vec::new();
+        assert!(matches!(
+            RegExpStaticMatcher::compile_capture_free_positive_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    seen.push(n);
+                    Err(41)
+                }
+            ),
+            Err(41)
+        ));
+        assert_eq!(seen, [source.len() * 96 + 16]);
+        let plan = capture_free_plan(r"((?=[\p{RGI_Emoji}]*))+").unwrap();
+        let mut work = 0;
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                work += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(work, 1);
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(43)),
+            Err(43)
+        );
     }
 }
