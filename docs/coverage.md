@@ -20617,3 +20617,24 @@ four skipped-scope layouts, eight skipped predicate profiles, six capture layout
 and twelve inputs with every requested start/sticky/i/m. Controls preserve empty
 priority, exact huge optional allowances and specification ASCII folding.
 Fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core single string class with only skipped outside predicates
+
+Four groups compare six finite/scalar/known-empty class families, five bare and
+exact-one forms, six capture trees, atom/group scopes, four skipped-scope layouts
+and eight skipped predicate profiles across eight UTF-16 inputs and all
+starts/sticky/i/m. The independent required-class oracle retains a defined class
+range for an empty member and undefined skipped slots. Forty native equivalent
+tables cover bare/leading-zero/lazy/exact-one counts, nested skipped groups and
+Unicode search/folding. Deep 20,000 skipped scopes, defined outer empty captures
+around skipped children, long 20,000-unit members versus scalar fallback, every
+constructor/search callback cancellation/recovery and closed other counts,
+class paths, references, live predicates and unknown terms pass.
+
+All thirty-two combined focused groups pass, including the preceding twenty-eight
+groups after sharing predicate scanning and occurrence-shape validation. All
+67,432 frozen API records retain exact domains, construction/search work and
+capture projection. Strict workspace Clippy, documentation tests, formatting,
+dependency policy, inventories and diff checks pass. Runtime selection remains
+separate; fixtures, snapshots, dependencies and default quotas are unchanged.

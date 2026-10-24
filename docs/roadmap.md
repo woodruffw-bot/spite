@@ -801,6 +801,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute string-class repetition with skipped outside assertion scopes through Runtime and String consumers.
 - [x] Compile string-class repetition whose only outside predicates are skipped, preserving unconstrained search and capture participation.
 - [x] Execute string-class repetition with all outside predicates skipped through Runtime and String consumers.
+- [x] Compile bare and exact-one string classes with only skipped outside predicates, retaining required empty class captures.
+- [ ] Execute a single string class with skipped outside predicates through Runtime and String consumers.
 - [x] Execute larger asserted nullable scalar/string-class counts through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.

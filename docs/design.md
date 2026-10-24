@@ -11924,3 +11924,23 @@ predicate skipped-scope constructor on the full normalized capture source. Its
 dedicated body preserves original source/flags, names/index aliases, lastIndex,
 String consumers, cloning and collection, including defined enclosing empty
 captures around skipped children and undefined captures in the children.
+
+
+Core separately proves one string class whose outside predicates are all skipped.
+The shared skipped-scope scan now takes a private occurrence shape; existing
+repetition APIs retain their original shape, domains and charged work. The single
+shape locates the class leaf directly, accepts bare and exact-one class counts,
+and still rejects a zero ancestor containing that leaf. A shared charged scan
+rejects any remaining live predicate while leaving nested classes opaque.
+The existing plain/exact-one single-class capture proof validates the complete
+transformed source, including every class and all original lexical slots.
+
+ECMA-262 edition 17 22.2.2.3 enters an exact-one class body even when it matches an
+empty member. The class is therefore selected and its final occurrence is a
+defined range, including a zero-width range. Skipped scopes remain undefined;
+ordinary enclosing captures around skipped children retain defined empty points.
+Longest-member and Unicode start/search semantics remain the single-class
+semantics. Other class counts, class-bearing choices, references, live/body
+predicates and unknown terms retain separate proofs. Allocation and callback
+failures keep their constructor/work distinction. Runtime selection remains
+separate.
