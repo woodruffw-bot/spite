@@ -24901,3 +24901,25 @@ targets passes (26.93 s). Documentation tests, formatting, dependency policy,
 inventories and diff checks retain the passing results recorded with the
 preceding Runtime increment. Runtime inventory remains 617; fixtures, snapshots,
 dependencies and quotas are unchanged.
+
+
+Positive assertions over optional established-impossible forms (Core)
+-------------------------------------------------------------------
+
+The new constructor accepts complete positive lookahead/lookbehind over the
+optional-established-impossible, sequence, enclosing-sequence and first-choice
+families. Both directions export the original operand mask. The operand's final
+successful continuation admits the root-first proof; outside siblings/groups and
+additional positive layers reject this constructor.
+
+All 183 actual-source focused Core tests pass (1.24 s), including four new groups
+for each earlier operand family in both directions, original incoming references
+and later lexical slots, exclusions, 20,000 later arms, 20,000-digit minima,
+every charged construction interruption and Unicode actual work/boundaries. All
+12,800 exact native input/start/capture records across 512 independently composed
+ordinary/u/v assertions agree. A lexed review of 2,732 direct unsupported
+control-array entries admits none. Strict workspace Clippy with all targets
+passes (14.36 s including a build-directory wait), alongside the passing
+documentation, formatting, dependency policy, inventories and diff checks for
+the active Runtime sequence increment. Runtime inventory remains 617; fixtures,
+snapshots, dependencies and quotas are unchanged.

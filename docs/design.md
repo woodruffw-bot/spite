@@ -13736,3 +13736,13 @@ every later lexical slot undefined (22.2.2.2). This proof remains root-only;
 repeat operands may retry a later consuming arm after continuation failure.
 Original bindings survive projection; source/copy/full-mask work precedes
 allocation and actual matching and capture queries stay constant.
+
+
+A separate complete-positive-assertion constructor exports masks from optional
+established-impossible operands, sequences, enclosing sequences and root-first
+choices in either assertion direction (22.2.2.4). The complete operand's final
+successful continuation makes the first-arm proof valid. Outside siblings,
+wrappers and additional positive layers require other proofs. Original bindings
+and all lexical slots survive; the finite earlier-operand chain never re-enters
+the new constructor. Source/copy work precedes allocation, with constant actual
+matching and capture queries over a source-sized retained mask.
