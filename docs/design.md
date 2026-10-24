@@ -12912,3 +12912,13 @@ prefix, so every capture selects the empty whole-match range. Original named
 and escaped-name aliases, index-array identity, source/flags, lastIndex and
 String consumers remain on the standard result path through cloning and
 collection. Class membership is never evaluated by the retained matching plan.
+
+
+A separate Unicode property-escape constructor on the zero-class plan proves a
+complete `\p{...}` or `\P{...}` atom followed by an exact zero bound. Full
+original u/v grammar, property-name and string-property validation remains a
+prerequisite. Property names stay opaque to this proof, and no matching data is
+queried by its retained plan (22.2.2.3.1). Runtime tries the constructor only for
+Unicode patterns after the existing zero-class proofs. The original bracket
+class APIs retain their domains and work. Enclosing groups, alternatives,
+continuations and nonzero upper bounds remain outside this additional proof.

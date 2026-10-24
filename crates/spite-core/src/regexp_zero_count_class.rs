@@ -7,13 +7,13 @@ use crate::{
 };
 use std::ops::Range;
 
-/// An exactly-zero repetition of one complete, validated character class.
+/// An exactly-zero repetition of a validated class or Unicode property escape.
 ///
 /// The caller must validate the entire Pattern and flags, including class
 /// grammar and early errors, before compilation. RepeatMatcher with max zero
 /// never queries class membership (22.2.2.3.1). The class therefore needs no
 /// matching implementation, including data for string-valued properties.
-/// Character classes contain no captures.
+/// Character classes and property escapes contain no captures.
 #[derive(Clone, Debug)]
 pub struct RegExpZeroCountClassMatcher {
     unicode: bool,
@@ -55,6 +55,31 @@ impl RegExpZeroCountClassMatcher {
             index += 1;
         }
         Ok(None)
+    }
+
+    /// Proves a complete Unicode property escape with an exact zero bound.
+    ///
+    /// The caller must validate the complete Pattern with `u` or `v`, including
+    /// the property's name and any string-property restrictions. This separate
+    /// constructor accepts `\p{...}` and `\P{...}` followed only by `{0}` or
+    /// `{0,0}`, with padded zeros and an optional lazy marker. Property names
+    /// remain opaque: RepeatMatcher never queries their data (22.2.2.3.1).
+    pub fn compile_unicode_property_validated_with_work<E>(
+        source: &JsString,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(3).saturating_add(1))?;
+        let units = source.code_units();
+        if !units.starts_with(&[0x5c, 0x70, 0x7b]) && !units.starts_with(&[0x5c, 0x50, 0x7b]) {
+            return Ok(None);
+        }
+        let Some(end) = units[3..].iter().position(|&unit| unit == 0x7d) else {
+            return Ok(None);
+        };
+        if end == 0 {
+            return Ok(None);
+        }
+        Ok(zero_count(&units[end + 4..]).then_some(Self { unicode: true }))
     }
 
     /// Proves complete mandatory ordinary wrappers around a zero-count class.
@@ -328,5 +353,71 @@ mod tests {
             Some(1..1)
         );
         assert_eq!(work, 1);
+    }
+
+    #[test]
+    fn unicode_property_zero_bounds_are_separate_from_bracket_class_proofs() {
+        for source in [
+            r"\p{RGI_Emoji}{0}",
+            r"\P{ASCII}{000,000}?",
+            r"\p{General_Category=Lu}{0,0}",
+            r"\p{Script=Greek}{0000}?",
+        ] {
+            let source = JsString::from(source);
+            let mut work = 0;
+            let matcher =
+                RegExpZeroCountClassMatcher::compile_unicode_property_validated_with_work(
+                    &source,
+                    |n| {
+                        work += n;
+                        Ok::<(), ()>(())
+                    },
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, source.len() * 3 + 1);
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("A😀!"), 2, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(1..1)
+            );
+            assert!(
+                RegExpZeroCountClassMatcher::compile_validated_with_work(
+                    &source,
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        for source in [
+            r"\p{RGI_Emoji}",
+            r"\p{RGI_Emoji}{0,1}",
+            r"\p{RGI_Emoji}{0}|x",
+            r"\p{RGI_Emoji}{0}a",
+            r"a\p{RGI_Emoji}{0}",
+            r"(\p{RGI_Emoji}{0})",
+            r"[\p{RGI_Emoji}]{0}",
+        ] {
+            assert!(
+                RegExpZeroCountClassMatcher::compile_unicode_property_validated_with_work(
+                    &JsString::from(source),
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+        assert!(
+            RegExpZeroCountClassMatcher::compile_unicode_property_validated_with_work(
+                &JsString::from(r"\p{RGI_Emoji}{0}"),
+                |_| Err(41)
+            )
+            .is_err()
+        );
     }
 }

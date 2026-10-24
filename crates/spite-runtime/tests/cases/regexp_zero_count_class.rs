@@ -155,3 +155,66 @@ fn deep_enclosing_class_captures_remain_defined_without_class_membership_queries
     "#,
     );
 }
+
+#[test]
+fn zero_count_unicode_property_escapes_keep_the_same_empty_results_as_classes() {
+    check(
+        r#"
+        var properties=['Basic_Emoji','Emoji_Keycap_Sequence','RGI_Emoji_Modifier_Sequence','RGI_Emoji_Flag_Sequence','RGI_Emoji_Tag_Sequence','RGI_Emoji_ZWJ_Sequence','RGI_Emoji'],cases=properties.map(p=>['\\p{'+p+'}','v']);
+        cases.push(['\\P{ASCII}','u'],['\\p{Script=Greek}','u'],['\\p{General_Category=Lu}','v']);
+        var ok=true;
+        for(var pair of cases)for(var count of ['{0}','{0,0}','{0000}?','{000,000}?'])for(var extras of ['d','dg','dy','dgy','dgi','dgim','dgms','dgisy']){
+            var pattern=pair[0]+count,r=new RegExp(pattern,extras+pair[1]),control=new RegExp('['+pair[0]+']'+count,extras+pair[1]);
+            for(var input of ['','ab','A😀!','\ud800x\udc00','ſa','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+                r.lastIndex=start;control.lastIndex=start;var m=r.exec(input),n=control.exec(input);
+                ok=ok&&r.source===pattern&&r.flags===control.flags&&r.lastIndex===control.lastIndex;
+                if(m===null||n===null)ok=ok&&m===n;
+                else ok=ok&&m.length===1&&m[0]===''&&m.index===n.index&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify(m.indices)===JSON.stringify(n.indices);
+            }
+        }
+        ok
+    "#,
+    );
+}
+
+#[test]
+fn property_zero_string_consumers_and_clones_keep_capture_free_metadata() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/\p{RGI_Emoji}{0}/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===1&&m[0]===''&&m.groups===undefined&&m.indices.groups===undefined;
+        var calls=[];var value='ab'.replace(r,function(m,at,input){calls.push(at);return arguments.length===3&&m===''&&input==='ab'?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m.length===1&&copy.lastIndex===1
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("copy.lastIndex=0;copy.exec('x').length===1"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_pending() {
+    check(
+        r#"
+        var invalid=[['\\P{RGI_Emoji}{0}','v'],['\\p{RGI_Emoji}{0}','u'],['\\p{NotAProperty}{0}','v'],['\\p{Script=NotAScript}{0}','u']],ok=true;
+        for(var pair of invalid){var caught=false;try{new RegExp(pair[0],pair[1])}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
+        ok
+    "#,
+    );
+    for pattern in [
+        r"\p{RGI_Emoji}{0,1}",
+        r"\p{RGI_Emoji}{0}a",
+        r"(\p{RGI_Emoji}{0})",
+    ] {
+        let pattern = JsString::from(pattern);
+        assert!(
+            matches!(
+                Realm::default().eval(&format!("new RegExp({pattern:?},'v').test('')")),
+                Err(Error::Unsupported { .. })
+            ),
+            "{pattern:?}"
+        );
+    }
+}

@@ -22968,3 +22968,35 @@ workspace Clippy, formatting, dependency policy, inventories and diff checks.
 Larger bounds, consuming siblings, unsupported matching data outside erased
 scopes, and syntax early errors retain their separate checks. Fixtures,
 snapshots, production behavior and the 613-case inventory are unchanged.
+
+
+## Complete Unicode property escapes with zero bounds
+
+A separate Core constructor and Unicode-only Runtime fallback now execute a
+complete `\p{...}` or `\P{...}` atom with an exact zero bound. Full original
+Pattern/flag validation checks property names and string-property restrictions
+before compilation. The new proof scans only the complete property framing and
+zero suffix; its retained class-match plan never queries property membership
+(ECMA-262 edition 17 22.2.2.3.1). Earlier bracket-class and enclosing-class APIs
+retain their domains and work. Enclosing groups, continuations, alternatives and
+nonzero upper bounds still require separate proofs.
+
+All 11 actual-source focused Core tests pass (0.08 s), including the new
+property-constructor scope, Unicode-start, source-work and callback-abort checks.
+All ten focused Runtime tests pass (9.37 s), including three new groups for all
+seven string properties, scalar and negated scalar properties, flag/count/start
+combinations, metadata, String consumers, cloning and collection. Invalid
+property names/values, negated string properties and string properties in u mode
+still throw SyntaxError before erasure.
+
+All 8,640 exact native records agree on the fresh CLI across ten property/mode
+tables, four zero bounds, eight flag combinations, six inputs and every starting
+index. All ten complete native JavaScript regression programs also agree on the
+fresh CLI. All 433 Runtime unit tests pass (6.76 s). Strict workspace Clippy with
+all targets passes (17.51 s), alongside workspace documentation tests, formatting,
+policy, inventories and diff checks. The Runtime inventory remains 613 cases;
+fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding enclosing-class Runtime snapshot passes all 35 Test262 runner
+tests and all 16,343 reviewed variants (414.26 s for the corpus group). This result
+precedes the property-escape fallback.

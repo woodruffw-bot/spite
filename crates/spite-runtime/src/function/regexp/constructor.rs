@@ -3087,6 +3087,20 @@ impl Realm {
         } else {
             matcher
         };
+        let matcher = if matcher.is_none() && unicode {
+            let zero = self.object_work(span, |_, budget| {
+                RegExpZeroCountClassMatcher::compile_unicode_property_validated_with_work(
+                    &capture_source,
+                    |work| budget.charge(work),
+                )
+            })?;
+            if zero.is_some() {
+                enclosing_captures = 0;
+            }
+            zero.map(RegExpMatcherBody::ZeroCountClass)
+        } else {
+            matcher
+        };
         let matcher = matcher.map(|body| RegExpMatcher::new(body, enclosing_captures));
         if let Some(matcher) = &matcher {
             // RegExpBuiltinExec requires the plan's captures to agree with the
