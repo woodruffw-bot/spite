@@ -13361,3 +13361,10 @@ roll the complete descendant mask back (22.2.2.3.1, 22.2.2.7). Original bindings
 interleaved body masks and symbolic bounds are preserved. Scope, projection and
 full-mask work precede allocation; construction and retained storage remain
 source-sized without recursive wrapper processing.
+
+
+Runtime selects the negative-impossible empty-sequence proof after the whole,
+enclosing and first-root-choice empty assertion proofs. Complete original
+capture source preserves interleaved defined/undefined slots and erased forward
+bindings. The shared empty path keeps Unicode boundaries, source/flags,
+lastIndex, String callback/split captures, cloning and collection behavior.

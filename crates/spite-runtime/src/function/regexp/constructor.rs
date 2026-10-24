@@ -3328,6 +3328,22 @@ impl Realm {
             matcher
         };
         let matcher = if matcher.is_none() {
+            let zero = self.object_work(span, |_, budget| {
+                RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if zero.is_some() {
+                enclosing_captures = 0;
+            }
+            zero.map(RegExpMatcherBody::ZeroCountSequence)
+        } else {
+            matcher
+        };
+        let matcher = if matcher.is_none() {
             let impossible = self.object_work(span, |_, budget| {
                 RegExpImpossibleMatcher::compile_negative_validated_with_work(
                     &capture_source,
