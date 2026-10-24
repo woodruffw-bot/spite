@@ -24021,3 +24021,33 @@ programs. All 436 Runtime unit tests pass (3.53 s). Strict workspace Clippy with
 all targets passes (10.94 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Negative assertions over composite empty operands (Core)
+-------------------------------------------------------
+
+The new constructor proves root sequences blocked by negative assertions over
+independently empty negative-impossible assertions, spines, choices or sequences.
+Every original lexical capture remains in the inventory. Earlier scanner modes
+keep their original work and domains; the finite operand chain never calls the
+new constructor. Complete assertion operands use their final continuation.
+
+All 99 actual-source focused Core tests pass (0.33 s), including four new groups
+for both assertion directions, all composite operand families, original erased
+forward bindings, full inventories, conditional/nonroot/outer-choice exclusions,
+100,000 required operand wrappers, interruption before every constructor step
+and actual no-match charging before input or unrepresentable-start access. All
+12,800 exact native input/start records and original capture inventories across
+512 independently composed ordinary/u/v patterns agree. All five earlier
+impossible-proof families retain their 12,800 native records and inventories
+each after the scanner refactor. A lexed review of 2,732 direct unsupported
+control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (10.71 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
+unchanged.
+
+The earlier positive-impossible-assertion Runtime snapshot completes all 2,829
+RegExp integration tests successfully (943.44 s). This broad run predates
+Runtime selection of the negative-impossible empty proofs.

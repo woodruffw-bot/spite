@@ -13368,3 +13368,15 @@ enclosing and first-root-choice empty assertion proofs. Complete original
 capture source preserves interleaved defined/undefined slots and erased forward
 bindings. The shared empty path keeps Unicode boundaries, source/flags,
 lastIndex, String callback/split captures, cloning and collection behavior.
+
+
+A separate composite-negative impossibility constructor proves root sequences
+blocked by a negative lookahead/lookbehind over the newer empty assertion,
+spine, root-choice or sequence proofs (22.2.2.4). A complete assertion operand
+uses its final successful continuation, so the first-empty-root-arm proof is
+valid there; outer negative failure does not retry that successful operand.
+Original bindings and full capture inventories remain intact. The shared flat
+scanner has separate modes preserving earlier domains and work. Its finite
+operand chain never re-enters the new proof; callback type erasure keeps the
+compiler boundary finite as well. Source/copy work precedes allocation,
+construction stays source-sized and retained no-match storage stays constant.

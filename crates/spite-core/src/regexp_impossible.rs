@@ -31,7 +31,7 @@ impl RegExpImpossibleMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_assertion_validated_with_work::<false, E>(source, unicode, sets, charge)
+        Self::compile_assertion_validated_with_work::<0, E>(source, unicode, sets, charge)
     }
 
     /// Proves a root sequence blocked by a positive assertion over an impossible body.
@@ -46,10 +46,26 @@ impl RegExpImpossibleMatcher {
         sets: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
-        Self::compile_assertion_validated_with_work::<true, E>(source, unicode, sets, charge)
+        Self::compile_assertion_validated_with_work::<1, E>(source, unicode, sets, charge)
     }
 
-    fn compile_assertion_validated_with_work<const POSITIVE: bool, E>(
+    /// Proves root sequences blocked by a negative assertion over a composite empty body.
+    ///
+    /// Full original validation and normalized capture heads are required. A
+    /// complete operand proved empty by a negative-impossible assertion, spine,
+    /// sequence or root choice forces the outside negative assertion to fail
+    /// in either direction (22.2.2.4). The finite operand chain uses only earlier
+    /// constructors and never re-enters this proof. Original slots are retained.
+    pub fn compile_composite_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<2, E>(source, unicode, sets, charge)
+    }
+
+    fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
         sets: bool,
@@ -82,7 +98,7 @@ impl RegExpImpossibleMatcher {
                     0x5b => class_depth = 1,
                     0x28 => {
                         if depth == 0 {
-                            let kind = if POSITIVE { 0x3d } else { 0x21 };
+                            let kind = if MODE == 1 { 0x3d } else { 0x21 };
                             assertion_body = if units[cursor..].starts_with(&[0x28, 0x3f, kind]) {
                                 Some(cursor + 3)
                             } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, kind]) {
@@ -102,8 +118,15 @@ impl RegExpImpossibleMatcher {
                         if depth == 0 {
                             if let Some(start) = assertion_body.take().filter(|_| !impossible) {
                                 let body = JsString::from_code_units(units[start..cursor].to_vec());
-                                impossible |= if POSITIVE {
+                                impossible |= if MODE == 1 {
                                     Self::negative_impossibility_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 2 {
+                                    Self::composite_empty_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -155,6 +178,33 @@ impl RegExpImpossibleMatcher {
         {
             return Ok(true);
         }
+        Ok(false)
+    }
+
+    // Earlier empty constructors use only the direct/positive negative-empty
+    // impossibility proofs. Type erasure keeps this finite dependency boundary.
+    fn composite_empty_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        if RegExpZeroCountSequenceMatcher::compile_negative_impossible_validated_with_work(
+            body, unicode, sets, &mut charge,
+        )?.is_some()
+            || RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_validated_with_work(
+                body, unicode, sets, &mut charge,
+            )?.is_some()
+            || RegExpZeroCountSequenceMatcher::compile_first_negative_impossible_validated_with_work(
+                body, unicode, sets, &mut charge,
+            )?.is_some()
+            || RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
+                body, unicode, sets, &mut charge,
+            )?.is_some()
+            || RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_sequence_validated_with_work(
+                body, unicode, sets, charge,
+            )?.is_some()
+        {return Ok(true)}
         Ok(false)
     }
 
@@ -807,6 +857,105 @@ mod tests {
                 Err(17)
             }),
             Err(17)
+        );
+    }
+    fn composite_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_composite_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn composite_negative_assertions_prove_complete_empty_operands_without_losing_slots() {
+        for (source, captures) in [
+            (r"[\p{RGI_Emoji}]+(?!(?!(?!(a{0}))))(b)", 2),
+            (r"(?<!(a{0})(?!(?!(b{0}))))(c)", 3),
+            (r"(?!(?i:((a{0})(?!(?!(b{0}))))){2,3})(c)", 4),
+            (r"(?!(?!(?!(a{0})))|[\p{RGI_Emoji}]+(b))", 2),
+            (r"(?!(a{0})(?!(?!(\3){0}))(b{0}))", 3),
+        ] {
+            assert_eq!(
+                composite_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn composite_negative_assertions_exclude_unproved_conditions_and_outside_contexts() {
+        for source in [
+            r"(?!a)",
+            r"(?!(?!a))",
+            r"(?!(?!(?=a)))",
+            r"(?!(?!(?!))a)",
+            r"(?=(?!(?!)))",
+            r"((?!(?!(?!))))",
+            r"(?!(?!(?!)))|a{0}",
+        ] {
+            assert!(composite_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn composite_negative_assertions_keep_deep_operand_work_flat_and_interruptible() {
+        let source = format!(
+            "(?<!{}(?!(?!(a{{0}}))){})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            composite_negative(&source).unwrap().capture_count(),
+            100_001
+        );
+        let source = JsString::from(r"(?!(?!(?!(a{0})))|(b))");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_composite_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 8 + 16);
+        assert!(work.iter().sum::<usize>() < source.len() * 2048);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_composite_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    #[test]
+    fn composite_negative_no_match_charges_before_input_and_unrepresentable_start_access() {
+        let plan = composite_negative(r"(?!(?!(?!)))").unwrap();
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |n| {
+                assert_eq!(n, 1);
+                Err(19)
+            }),
+            Err(19)
         );
     }
 }
