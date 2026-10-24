@@ -13505,3 +13505,11 @@ slot is undefined, with original reference bindings. This root-only proof must
 not be used as a repetition operand: an empty iteration's failing continuation
 could backtrack into a consuming later arm. Source/copy and full-mask work
 precedes allocation; construction and retained storage remain source-sized.
+
+
+Runtime selects ordinary/modifier spines around optional-impossible empty
+sequences after the direct sequence proof. Complete original normalized capture
+source preserves enclosing and interleaved descendant roles: required repeats
+retain the body mask and optional repeats clear it. Shared empty execution keeps
+Unicode boundaries, source/flags, lastIndex, String callback/split captures,
+cloning and collection behavior.
