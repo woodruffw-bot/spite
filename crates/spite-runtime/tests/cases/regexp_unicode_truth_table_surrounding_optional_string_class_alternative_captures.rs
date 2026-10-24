@@ -218,6 +218,7 @@ fn truth_table_surrounding_optional_alternative_string_classes_retry_zero_consum
 #[test]
 fn truth_table_surrounding_optional_alternative_string_classes_validate_unknowns_before_zero_shortcuts()
  {
+    assert_eq!(Realm::default().eval(r####"var pattern="(?<outside>^)\\b(((^)|(\\b))([\\q{a|ab}])|())??$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null&&m.groups["outside"]===m[1]&&m.indices.groups["outside"]===m.indices[1]))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="null""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"\b\B(((\b\B)|(\b\B))([\q{ab}&&\p{RGI_Emoji}])|())??$",
         r"^(((^)|(\b))([\q{a|ab}])|z)??$",
@@ -225,7 +226,6 @@ fn truth_table_surrounding_optional_alternative_string_classes_validate_unknowns
         r"^(((^)|(\b))([\q{a|ab}])|([a]))?$",
         r"^((((^)|(\b))([\q{a|ab}])|())?){2}$",
         r"^((((^)|(\b))([\q{a|ab}])|())?){0,1}$",
-        r"(?<outside>^)\b(((^)|(\b))([\q{a|ab}])|())??$",
         r"^(((^)|(\b))([\q{a|ab}])|())?z$",
     ] {
         let pattern = JsString::from(pattern);

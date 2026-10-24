@@ -12552,5 +12552,9 @@ Storage, traversal and clone/drop stay flat and source-sized. All original inner
 and outside terms validate even under skipped/never scopes; contradictory common
 profiles use bounded matching work after construction. References, extra classes,
 consuming outside siblings and other class-path counts retain separate proofs.
-Earlier API domains, charged work and captures remain unchanged. Runtime
-selection remains separate.
+Earlier API domains, charged work and captures remain unchanged. Runtime selects
+this captured outside-scope proof after bare outside-gate optional alternatives.
+Its dedicated body preserves conditional outside points, mandatory enclosing
+ranges, final-iteration absence, original inner slots, actual endpoint truth,
+source/flags, named aliases, indices, lastIndex and String consumers through
+cloning and collection.

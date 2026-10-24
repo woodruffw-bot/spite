@@ -22046,3 +22046,37 @@ projection in eight bounded batches. Strict workspace Clippy (60 s), documentati
 tests, formatting, policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime captured outside scopes around optional root truth alternatives
+
+Three focused groups pass (1.07 s), preserving conditional outside points,
+mandatory enclosing ranges and undefined skipped inner slots. Required/skipped
+outside scopes, capturing/noncapturing optional roots, greedy/lazy counts,
+ordinary/exact-one paths, named and escaped-name aliases, indices, matchAll,
+callback replacement, split/search, cloning, collection and strict lastIndex
+writes retain native behavior. Explicit outside continuations force lazy roots
+to consume, retry shorter members and preserve earliest starts. Deep 1,000-level
+outside point captures, 20,000-unit shared-prefix scalar/string members and
+constructor cancellation remain flat. Unknown terms in either region even under
+skipped/never scopes retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. One
+preceding named rejection control now compares full native captures, indices,
+group values, alias identity, source, flags, input and lastIndex and agrees on
+the fresh CLI; its Rust proof group passes (0.03 s). Five source-shape scans,
+including normalized capture names, retain all other rejection domains. A
+separate existing count-two domain also compares complete native results;
+nested repetition retains its unproved boundary. All 100,352 exact differential
+records agree across 256 independent pairs, with all 1,024 proof/flag combinations
+supported. Mixed captured outside scopes, complete wrappers,
+finite/scalar/known-empty classes and independent branch profiles cover every
+start, sticky, multiline and ignore-case. All 431 Runtime unit tests pass
+(7.95 s), alongside strict workspace Clippy (63 s; final changed-test check
+7.68 s), documentation tests, formatting, policy, inventories and diff checks.
+The grouped Runtime inventory contains 598 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.
+
+The preceding outside-asserted optional-root sources pass a fresh Test262 run:
+all 35 runner tests and all 16,343 reviewed variants, including the pinned corpus
+gate (483.49 s). This run compiled before captured outside optional-root scopes.
