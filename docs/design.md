@@ -13398,3 +13398,11 @@ bindings and every enclosing capture joins the full lexical inventory.
 Source/frame/copy work precedes allocation. Construction stays source-sized,
 without recursive wrapper processing; retained storage and actual no-match
 work reuse the constant impossible plan. Earlier constructor work is unchanged.
+
+
+Runtime selects the composite-negative impossibility proof after the earlier
+negative-empty and positive-impossible proofs. Complete original normalized
+capture source preserves all nested, cross-arm and duplicate-name bindings for
+validation. The shared constant no-match body keeps source/flags, lastIndex,
+String consumers, cloning and collection behavior. Original errors still
+precede proof selection, including errors in otherwise skipped operand arms.

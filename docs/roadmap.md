@@ -913,6 +913,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove quantified ordinary/modifier spines around independently empty negative-impossible sequences, preserving full required/optional descendant masks.
 - [x] Execute enclosing negative-impossible empty sequences through Runtime and String consumers with exact enclosing and descendant capture masks.
 - [x] Prove root negative assertions over composite empty negative-impossible operands force no match, preserving full inventories and original bindings.
+- [x] Execute negative assertions over composite empty operands through Runtime and String consumers with complete original capture inventories and no-match behavior.
 - [x] Prove required quantified ordinary/modifier spines around composite-negative failing sequences, preserving symbolic bounds and complete original capture inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
