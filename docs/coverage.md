@@ -23376,3 +23376,31 @@ The preceding mandatory-enclosing Runtime snapshot passes all 2,793 RegExp
 integration tests (573.63 s). The earlier first-alternative Runtime snapshot
 passes all 35 Test262 runner tests and all 16,343 reviewed variants (241.85 s for
 the corpus group). Both broad snapshots precede quantified Runtime integration.
+
+
+## Core composable empty-expression trees
+
+A separate lexical-mask constructor proves arbitrary nesting of empty ordinary
+or modifier groups, sequences, choices and quantifiers. Every active
+alternative must be independently empty, including all alternatives reachable
+through repetition backtracking (22.2.2.2, 22.2.2.3.1). Exact-zero atoms/groups
+erase matching work; active assertions, references and unproved escapes remain
+outside the proof. Required captures, optional rollback and unselected arms
+compose in original lexical order.
+
+All 42 actual-source focused Core tests pass (0.39 s), including five new groups
+for eleven independently checked native masks, unsafe consuming/conditional
+exclusions, lexical modes and safe escapes, actual Unicode literal widths,
+100,000 nested captures, overlapping optional clears, a 20,000-digit required
+count and pre-allocation work aborts. All 12,800 exact comparisons across 512
+independently generated trees agree with actual native input/start/capture
+records, including nonempty text, emoji, CR/LF and lone surrogates.
+
+The flat frame stack and one prefix-maximum capture-clear pass keep construction
+and storage source-sized without recursion or repeated descendant clearing.
+Matching and capture queries reuse the constant-work lexical-mask plan. Strict
+workspace Clippy with all targets passes (28.11 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A lexical review of 2,702 retained unsupported controls identifies 17 entries
+across seven modules for native metadata conversion during Runtime integration.
+Earlier APIs and Runtime behavior remain unchanged.

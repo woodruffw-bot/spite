@@ -44,6 +44,7 @@ mod regexp_zero_count_class;
 mod regexp_zero_count_group;
 mod regexp_zero_count_sequence;
 mod regexp_zero_count_spine;
+mod regexp_zero_count_tree;
 mod replacement;
 mod symbol;
 mod unicode;

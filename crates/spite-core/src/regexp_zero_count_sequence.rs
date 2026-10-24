@@ -21,6 +21,31 @@ pub struct RegExpZeroCountSequenceMatcher {
 }
 
 impl RegExpZeroCountSequenceMatcher {
+    /// Proves an arbitrary tree whose every active alternative stays empty.
+    ///
+    /// Requires complete original validation and normalized capture heads.
+    /// Ordinary/modifier groups, sequences and choices compose only when every
+    /// active arm is proved empty. Exact-zero atoms/groups erase arbitrary
+    /// matching work; optional empty groups roll capture writes back. The flat
+    /// parser and capture-clear markers avoid recursive or quadratic work
+    /// (22.2.2.2, 22.2.2.3.1, 22.2.2.7).
+    pub fn compile_tree_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(
+            crate::regexp_zero_count_tree::compile_with_work(
+                source,
+                unicode,
+                unicode_sets,
+                charge,
+            )?
+            .map(|defined| Self { unicode, defined }),
+        )
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment

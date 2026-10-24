@@ -13090,3 +13090,23 @@ original named/index aliases through String consumers, cloning and collection.
 Choices with unproved later arms retain unsupported matching, including cases
 where a failed empty iteration could backtrack into consuming membership.
 Original early errors and opt-in host aborts still precede matching effects.
+
+
+A separate tree constructor composes empty groups, sequences, choices and
+quantifiers at arbitrary nesting depth. Every active alternative must be
+independently empty, so failed empty iterations cannot expose consuming
+backtracking paths (22.2.2.2, 22.2.2.3.1). Exact-zero literal, dot, class,
+property and known short-escape atoms erase their matching work. Exact-zero
+groups erase arbitrary validated bodies, including unsupported membership,
+assertions and references. Active assertions, references and unproved escapes
+remain outside this proof. Named capture heads must already be normalized,
+with complete original grammar/flag/binding validation retained by the caller.
+
+A flat frame stack reduces the source once. Required captures start defined;
+optional or erased groups and later choice arms mark lexical capture intervals
+undefined (22.2.2.7). Each interval records its exclusive end at its starting
+slot. One prefix-maximum pass applies all overlapping clears without repeatedly
+walking descendants. Decimal bounds stay symbolic. Source/frame work is charged
+before allocation; construction, retained storage and clone/drop are
+source-sized. The existing lexical-mask plan supplies constant matching work
+and capture queries. Earlier constructors and their work remain unchanged.
