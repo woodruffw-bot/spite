@@ -23207,3 +23207,28 @@ with all targets passes (27.89 s), alongside workspace documentation tests,
 formatting, dependency policy, inventories and diff checks. The grouped Runtime
 inventory remains 614 cases; fixtures, snapshots, dependencies and default
 quotas are unchanged.
+
+
+## Core unconditional empty first root alternatives
+
+A separate lexical-mask constructor proves root choices whose first alternative
+is empty or a proven zero-erased spine/sequence. Its successful final
+continuation prevents any later arm from running (22.2.2.2). A flat mode-aware
+scan reserves all original captures, preserving the first arm's mask and
+appending undefined slots for arbitrary validated later bodies. No later
+matching data or rebinding is needed. Earlier constructors and Runtime behavior
+remain unchanged.
+
+All 28 actual-source focused Core tests pass (0.77 s), including four new groups
+for eight independently checked native masks, escaped root separators,
+mode-specific classes, scope exclusions, every construction-work abort and
+100,000 captures in a deeply nested unselected arm. All 4,096 exact
+boundary/capture comparisons across 512 independently native-validated root
+choices agree. Retained storage and clone/drop are source-sized; individual
+capture queries and matching remain constant.
+
+Strict workspace Clippy with all targets passes (29.80 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A lexical review of 2,703 retained unsupported controls identifies two leading
+empty-alternative patterns for conversion to native metadata assertions during
+Runtime integration. No fixtures, snapshots, dependencies or quotas change.

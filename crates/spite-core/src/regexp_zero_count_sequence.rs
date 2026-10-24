@@ -7,12 +7,12 @@ use crate::{
 };
 use std::ops::Range;
 
-/// A complete validated sequence of at least two zero-erased group/atom spines.
+/// An unconditional empty match from validated erased terms or a root choice.
 ///
 /// Requires original Pattern/flag validation and normalized capture heads.
-/// Each term must independently match empty without reading input or erased
-/// matching data. Its defined capture prefix is appended in lexical order;
-/// the complete sequence can have arbitrarily interleaved undefined slots.
+/// Executed terms must independently match empty without reading input or
+/// erased matching data. Capture roles are stored in lexical order, including
+/// undefined slots in erased bodies or unselected root alternatives.
 #[derive(Clone, Debug)]
 pub struct RegExpZeroCountSequenceMatcher {
     unicode: bool,
@@ -85,6 +85,62 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves a root choice whose first alternative always succeeds empty.
+    ///
+    /// The first alternative must be empty or a proven zero-erased spine or
+    /// sequence. Later alternatives may contain any fully validated body: the
+    /// first alternative's successful continuation prevents their execution
+    /// (22.2.2.2). Their original lexical slots are reserved as undefined.
+    /// Validation and capture-head normalization requirements are unchanged.
+    pub fn compile_first_alternative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let Some((first_end, captures)) = choice_layout(source.code_units(), unicode_sets) else {
+            return Ok(None);
+        };
+        let mut defined = Vec::new();
+        if first_end != 0 {
+            let first = JsString::from_code_units(source.code_units()[..first_end].to_vec());
+            let mut spine = RegExpZeroCountSpineMatcher::compile_validated_with_work(
+                &first,
+                unicode,
+                unicode_sets,
+                &mut charge,
+            )?;
+            if spine.is_none() {
+                spine = RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                    &first,
+                    unicode,
+                    unicode_sets,
+                    &mut charge,
+                )?;
+            }
+            if let Some(spine) = spine {
+                defined.extend(std::iter::repeat_n(true, spine.defined_capture_count()));
+                defined.resize(spine.capture_count(), false);
+            } else {
+                let Some(sequence) =
+                    Self::compile_validated_with_work(&first, unicode, unicode_sets, &mut charge)?
+                else {
+                    return Ok(None);
+                };
+                defined = sequence.defined.into_vec();
+            }
+        }
+        defined.resize(captures, false);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Original lexical capture count, excluding the whole match (22.2.7.2).
     pub fn capture_count(&self) -> usize {
         self.defined.len()
@@ -116,6 +172,43 @@ impl RegExpZeroCountSequenceMatcher {
         };
         Ok(start.map(|start| start..start))
     }
+}
+
+// First root alternative and all lexical capture slots, including skipped arms.
+fn choice_layout(units: &[u16], sets: bool) -> Option<(usize, usize)> {
+    let mut cursor = 0;
+    let mut depth = 0usize;
+    let mut class_depth = 0usize;
+    let mut captures = 0;
+    let mut first_end = None;
+    while let Some(&unit) = units.get(cursor) {
+        if unit == 0x5c {
+            cursor += 2;
+            continue;
+        }
+        if class_depth != 0 {
+            if unit == 0x5d {
+                class_depth -= 1;
+            } else if sets && unit == 0x5b {
+                class_depth += 1;
+            }
+        } else {
+            match unit {
+                0x5b => class_depth = 1,
+                0x28 => {
+                    depth += 1;
+                    captures += usize::from(units.get(cursor + 1) != Some(&0x3f));
+                }
+                0x29 => depth = depth.checked_sub(1)?,
+                0x7c if depth == 0 => {
+                    first_end.get_or_insert(cursor);
+                }
+                _ => {}
+            }
+        }
+        cursor += 1;
+    }
+    (depth == 0 && class_depth == 0).then_some((first_end?, captures))
 }
 
 fn group_end(units: &[u16], start: usize, sets: bool) -> Option<usize> {
@@ -289,6 +382,137 @@ mod tests {
             let copy = plan.clone();
             drop(plan);
             assert_eq!(copy.capture_range(0, &(0..0)), Some(0..0));
+        }
+    }
+
+    fn choice(source: &str, unicode: bool, sets: bool) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_first_alternative_validated_with_work(
+            &JsString::from(source),
+            unicode,
+            sets,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn first_empty_alternative_reserves_all_unselected_lexical_captures() {
+        for (source, unicode, sets, expected) in [
+            (r"|(?=(a))[\q{|}]", true, true, &[false][..]),
+            (r"|[[]((a))", false, false, &[false, false][..]),
+            (
+                r"([a]{0})+|((?<=b)(c))",
+                true,
+                true,
+                &[true, false, false][..],
+            ),
+            (
+                r"([a]{0})?([b]{0})+|((a)|(?=(b)))",
+                true,
+                true,
+                &[false, true, false, false, false][..],
+            ),
+            (
+                r"((a|b)\3){0}|([\p{RGI_Emoji}])|(?<=(x))",
+                true,
+                true,
+                &[false, false, false, false][..],
+            ),
+            (
+                r"([\q{\(|\)|\|}]{0})+|(?=(a))",
+                true,
+                true,
+                &[true, false][..],
+            ),
+            (r"\p{RGI_Emoji}{0}|", true, true, &[][..]),
+            (r"|", true, true, &[][..]),
+        ] {
+            let plan = choice(source, unicode, sets).unwrap_or_else(|| panic!("{source}"));
+            assert_eq!(plan.capture_count(), expected.len(), "{source}");
+            for (index, &defined) in expected.iter().enumerate() {
+                assert_eq!(
+                    plan.capture_range(index, &(2..2)),
+                    defined.then_some(2..2),
+                    "{source}: {index}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn first_alternative_proof_excludes_conditions_consumption_and_nested_choices() {
+        for source in [
+            "",
+            "([a]{0})+",
+            "a|[b]{0}",
+            "^|[a]{0}",
+            "[a]*|",
+            "(?=[a]{0})|",
+            "(?:[a]{0}|x)",
+            "[a]{0}x|",
+            r"\1|(a)",
+            r"[\q{a|b}]+|",
+        ] {
+            assert!(choice(source, true, true).is_none(), "{source}");
+        }
+        assert!(choice("|a", false, true).is_none());
+    }
+
+    #[test]
+    fn deep_unselected_alternatives_remain_flat_and_keep_all_undefined_slots() {
+        let source = format!(
+            "([a]{{0}})+|{}x{}",
+            "(".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let plan = choice(&source, true, true).unwrap();
+        assert_eq!(plan.capture_count(), 100_001);
+        assert_eq!(plan.capture_range(0, &(0..0)), Some(0..0));
+        for index in 1..plan.capture_count() {
+            assert_eq!(plan.capture_range(index, &(0..0)), None);
+        }
+        let copy = plan.clone();
+        drop(plan);
+        assert_eq!(copy.capture_count(), 100_001);
+    }
+
+    #[test]
+    fn first_alternative_construction_propagates_every_source_work_abort() {
+        let source = JsString::from(r"([a]{0})?((b|c)){0}|(?=(d))[\p{RGI_Emoji}]+");
+        let mut work = Vec::new();
+        assert!(
+            RegExpZeroCountSequenceMatcher::compile_first_alternative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert!(work.len() >= 4);
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            let result =
+                RegExpZeroCountSequenceMatcher::compile_first_alternative_validated_with_work(
+                    &source,
+                    true,
+                    true,
+                    |n| {
+                        seen.push(n);
+                        if seen.len() == stop + 1 {
+                            Err(stop)
+                        } else {
+                            Ok(())
+                        }
+                    },
+                );
+            assert!(matches!(result, Err(n) if n==stop));
+            assert_eq!(seen, work[..=stop]);
         }
     }
 }

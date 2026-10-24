@@ -13012,3 +13012,18 @@ and numbered values, own undefined slots, index aliases, source/flags and
 lastIndex. String consumers, cloning and collection retain the same mask. Actual
 matching work is charged before input access, without a precharged input scan.
 Original early errors are validated before any projection or erasure.
+
+
+The lexical-mask plan has a separate first-alternative constructor. At the root
+of a complete Pattern, an unconditional empty first alternative invokes the
+final successful continuation, so no later alternative can run (22.2.2.2). The
+first alternative may be empty or a proven zero-erased spine/sequence; later
+arms may contain any fully validated body. A full flat scan finds the first
+root separator and counts every original capture while respecting escapes,
+groups and mode-specific classes. The first arm retains its capture mask and
+all later arms append undefined slots. Original bindings remain unchanged,
+including references across alternative scopes inside erased bodies. Source
+and temporary-storage work precede allocation; retained storage and clone/drop
+are source-sized, with constant matching work and capture queries. Conditional
+or consuming first arms and choices inside shared enclosing groups require
+other proofs. Earlier constructors and Runtime behavior are unchanged.
