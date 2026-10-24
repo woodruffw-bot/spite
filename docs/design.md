@@ -13453,3 +13453,10 @@ calls this new empty proof. Original bindings and symbolic bounds stay intact.
 Source/frame/copy and full-mask work precedes allocation; construction and
 retained storage are source-sized. Shared empty matching keeps Unicode
 boundaries, constant actual work and lexical capture indexing.
+
+
+Runtime selects complete required ordinary/modifier spines around impossible
+composite alternatives after the direct root-alternative proof. Full original
+normalized source preserves every enclosing/arm slot, duplicate-name bindings
+and erased outside/cross-arm references for validation. Shared constant no-match
+execution keeps source/flags, lastIndex, String consumers, cloning and collection.

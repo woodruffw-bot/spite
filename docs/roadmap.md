@@ -919,6 +919,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove root alternatives whose every arm independently has a direct or required-enclosing composite-negative failure, retaining original cross-arm capture inventories.
 - [x] Execute independently impossible composite root alternatives through Runtime and String consumers with original cross-arm and duplicate-name inventories.
 - [x] Prove required quantified ordinary/modifier spines around impossible composite root alternatives, preserving full original inventories and symbolic bounds.
+- [x] Execute required spines around impossible composite alternatives through Runtime and String consumers with original enclosing and cross-arm inventories.
 - [x] Prove optional ordinary/modifier spines over independently impossible operands stay empty, retaining required outside captures and undefined skipped descendants.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

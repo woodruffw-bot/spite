@@ -24221,3 +24221,21 @@ unchanged.
 The earlier direct-composite-negative Runtime snapshot also passes all 35
 Test262 runner tests and the unchanged 16,343-case corpus (473.40 s). This broad
 result predates Runtime selection of its required-wrapper and alternative proofs.
+
+
+Required spines around impossible composite alternatives (Runtime)
+-----------------------------------------------------------------
+
+Runtime selects complete required ordinary/modifier spines around independently
+impossible composite root choices. All 28 focused integration groups pass
+(1.19 s), including three new groups for required/lazy/padded counts, modifier
+scopes, original erased outside/cross-arm references, duplicate names across
+arms, original later errors, source/flags and lastIndex, String consumers,
+cloning, collection, 1,000 enclosing captures and 20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v spines agree on the fresh CLI, as do all 28 complete JavaScript
+programs. All 436 Runtime unit tests pass (9.63 s). Strict workspace Clippy with
+all targets passes (19.66 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 616;
+fixtures, snapshots, dependencies and default quotas are unchanged.
