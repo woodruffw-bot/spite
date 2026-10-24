@@ -13286,3 +13286,14 @@ negative-empty impossibility proofs. Both positive assertion directions use
 the full normalized original capture source and the existing constant no-match
 body. Original errors, lastIndex, String consumers, cloning and collection keep
 the shared execution behavior.
+
+
+A separate empty-match constructor admits a whole negative lookahead/lookbehind
+whose complete operand independently proves impossible (22.2.2.4). Both
+negative directions succeed empty without exporting any operand capture. The
+finite operand chain uses the established negative-empty and positive-impossible
+constructors and never calls this new empty proof. Original validation and
+normalized heads are required; siblings, outside groups and quantifiers require
+other proofs. Source/copy work precedes allocation, and a separate capture-mask
+charge precedes allocating undefined slots. The existing empty matcher preserves
+Unicode leading boundaries, constant actual work and lexical capture indexing.

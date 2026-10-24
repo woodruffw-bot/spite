@@ -23833,3 +23833,26 @@ patterns agree on the fresh CLI, as do all 16 complete JavaScript programs. All
 passes (8.89 s), alongside documentation tests, formatting, dependency policy,
 inventories and diff checks. Runtime inventory remains 615; fixtures, snapshots,
 dependencies and default quotas are unchanged.
+
+
+Negative assertions over impossible operands (Core)
+--------------------------------------------------
+
+The new whole-assertion constructor proves negative lookahead/lookbehind over
+independently impossible bodies always succeeds empty. It retains every lexical
+capture as undefined; siblings, outside groups, quantifiers and unproved bodies
+require other proofs. Earlier constructor domains and work are unchanged.
+
+All 79 actual-source focused Core tests pass (0.63 s), including four new groups
+for both directions, earlier impossible operand families, original bindings,
+undefined capture ranges, optional/possible/outside exclusions, Unicode
+surrogate boundaries, out-of-input starts, actual-work interruption, 100,000
+required operand wrappers and interruption before every constructor step and
+capture-mask allocation. All 12,800 exact native input/start/capture comparisons
+across 512 independently composed ordinary/u/v assertions agree. A lexed review
+of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (22.98 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 615; fixtures, snapshots, dependencies and quotas are
+unchanged.

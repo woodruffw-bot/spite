@@ -1,7 +1,7 @@
 //! Concatenated erased terms (ECMA-262 22.2.2.2, 22.2.2.3.1).
 
 use crate::{
-    JsString,
+    JsString, RegExpImpossibleMatcher,
     regexp_literal::unicode_start,
     regexp_zero_count_group::enclosing_group_body,
     regexp_zero_count_spine::{RegExpZeroCountSpineMatcher, atom_end, opener, quantifier},
@@ -110,6 +110,83 @@ impl RegExpZeroCountSequenceMatcher {
             charge,
         )?
         .map(|defined| Self { unicode, defined }))
+    }
+
+    /// Proves a complete negative assertion over an independently impossible body.
+    ///
+    /// Requires full original validation and normalized capture heads. Both
+    /// negative assertion directions succeed empty when their complete operand
+    /// cannot match; none of the operand's captures are exported (22.2.2.4).
+    /// Siblings, outside groups and quantifiers require other proofs. The finite
+    /// operand proof chain never calls this constructor. Work precedes copies
+    /// and capture-mask allocation; construction and storage are source-sized.
+    pub fn compile_negative_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let start = if units.starts_with(&[0x28, 0x3f, 0x21]) {
+            3
+        } else if units.starts_with(&[0x28, 0x3f, 0x3c, 0x21]) {
+            4
+        } else {
+            return Ok(None);
+        };
+        if group_end(units, 0, sets) != Some(units.len()) {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(units[start..units.len() - 1].to_vec());
+        let mut plan = RegExpImpossibleMatcher::compile_negative_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan =
+                RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
+                    &body,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_positive_impossible_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        let Some(plan) = plan else { return Ok(None) };
+        charge(plan.capture_count())?;
+        Ok(Some(Self {
+            unicode,
+            defined: vec![false; plan.capture_count()].into_boxed_slice(),
+        }))
     }
 
     /// Proves concatenated class/property or arbitrary zero-group spines.
@@ -1164,5 +1241,129 @@ mod tests {
             assert!(matches!(result, Err(n) if n==stop));
             assert_eq!(seen, work[..=stop]);
         }
+    }
+    fn negative_impossible(
+        source: &str,
+        unicode: bool,
+        sets: bool,
+    ) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_negative_impossible_validated_with_work(
+            &JsString::from(source),
+            unicode,
+            sets,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_impossible_assertions_succeed_empty_without_exporting_operand_captures() {
+        for (source, captures) in [
+            (r"(?!(?!(a{0})))", 1),
+            (r"(?<!(?<!\uD800{0})(a))", 1),
+            (r"(?!(?i:((?!(\3){0})(a))){2,3})", 3),
+            (r"(?<!((?!)|((?<!a{0})(b))))", 3),
+            (r"(?!(?=([\p{RGI_Emoji}]+)(?!(a{0}))))", 2),
+        ] {
+            for (unicode, sets) in [(false, false), (true, false), (true, true)] {
+                if source.contains("RGI_Emoji") && !sets {
+                    continue;
+                }
+                let plan = negative_impossible(source, unicode, sets).unwrap();
+                assert_eq!(plan.capture_count(), captures, "{source}");
+                for slot in 0..captures + 1 {
+                    assert_eq!(plan.capture_range(slot, &(1..1)), None);
+                }
+                assert_eq!(
+                    plan.find_with_work(&JsString::from("a😀!"), 1, |_| Ok::<(), ()>(()))
+                        .unwrap(),
+                    Some(1..1)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn negative_impossible_assertions_reject_possible_bodies_and_outside_contexts() {
+        for source in [
+            r"(?!)",
+            r"(?!a)",
+            r"(?<!a)",
+            r"(?!(?!)|)",
+            r"(?= (?!) )",
+            r"((?!(?!)))",
+            r"(?!(?!))a",
+            r"a(?!(?!))",
+            r"(?!(?!))|",
+            r"(?!(?!))?",
+            r"(?!(?!)){0}",
+        ] {
+            assert!(
+                negative_impossible(source, true, true).is_none(),
+                "{source}"
+            );
+        }
+        assert!(negative_impossible(r"(?!(?!))", false, true).is_none());
+    }
+
+    #[test]
+    fn negative_impossible_empty_matches_keep_unicode_boundaries_and_actual_work() {
+        for (unicode, sets) in [(false, false), (true, false), (true, true)] {
+            let plan = negative_impossible(r"(?!(?!(a{0})))", unicode, sets).unwrap();
+            let input = JsString::from("😀");
+            assert_eq!(
+                plan.find_with_work(&input, 1, |n| {
+                    assert_eq!(n, 1);
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+                Some(usize::from(!unicode)..usize::from(!unicode))
+            );
+            assert_eq!(
+                plan.find_with_work(&input, 3, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                None
+            );
+            assert_eq!(
+                plan.find_with_work(&input, usize::MAX, |_| Err(11)),
+                Err(11)
+            );
+        }
+    }
+
+    #[test]
+    fn negative_impossible_source_depth_capture_masks_and_interruptions_are_explicit() {
+        let source = JsString::from(r"(?<!(?i:((?!)|((?<!a{0})(b)))){2,3})");
+        let mut work = Vec::new();
+        let plan = RegExpZeroCountSequenceMatcher::compile_negative_impossible_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_negative_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let source = format!(
+            "(?<!{}(?!(a{{0}})){})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = negative_impossible(&source, true, true).unwrap();
+        assert_eq!(plan.capture_count(), 100_001);
+        assert!((0..plan.capture_count()).all(|slot| plan.capture_range(slot, &(0..0)).is_none()));
     }
 }
