@@ -13543,3 +13543,11 @@ empty operand result or capture mask. Arbitrary validated matching data inside
 the skippable group is unnecessary. The shared flat scanner has a separate mode
 preserving earlier domains and work. Source/copy/frame work precedes allocation;
 construction is source-sized and retained storage/actual no-match work constant.
+
+
+Runtime selects whole positive assertions over optional-impossible empty forms
+after the first-root-choice optional proof. Complete original normalized source
+preserves exported body masks, erased forward bindings and duplicate-name
+selection, including participating empty captures. Shared empty execution keeps
+Unicode boundaries, source/flags, lastIndex, String callbacks/split captures,
+cloning and collection behavior. Original errors still precede proof selection.

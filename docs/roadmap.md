@@ -929,6 +929,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove root choices beginning with independently empty optional-impossible arms, retaining first-arm masks and undefined later capture inventories.
 - [x] Execute first optional-impossible root choices through Runtime and String consumers with exact first/skipped masks, original bindings and duplicate-name selection.
 - [x] Prove complete positive assertions over optional-impossible empty forms, exporting original capture masks in both directions with final operand continuations.
+- [x] Execute positive assertions over optional-impossible empty forms through Runtime and String consumers with original exported capture masks in both directions.
 - [x] Prove root negative assertions over complete nullable ordinary/modifier group spines always fail, including operands that could consume greedily.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

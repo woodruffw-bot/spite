@@ -24442,3 +24442,22 @@ Strict workspace Clippy with all targets passes (28.32 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Positive assertions over optional-impossible empty forms (Runtime)
+-----------------------------------------------------------------
+
+Runtime selects complete positive lookahead/lookbehind over independently empty
+optional-impossible spines, sequences or root choices. All 15 focused integration
+groups pass (0.11 s), including three new groups for both directions, exported
+interleaved masks, original erased forward references, duplicate-name selection
+of an empty capture, later original errors, Unicode starts, lastIndex,
+callback/split captures, cloning, collection, 1,000 required operand groups and
+20,000-digit upper bounds.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v assertions agree on the fresh CLI, as do all 15 complete JavaScript
+programs. All 436 Runtime unit tests pass (10.27 s). Strict workspace Clippy with
+all targets passes (28.32 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.
