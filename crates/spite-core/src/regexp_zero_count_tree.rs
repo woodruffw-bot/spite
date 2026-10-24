@@ -186,6 +186,21 @@ fn clear(ends: &mut [usize], start: usize) {
     }
 }
 
+// Complete safe literal/class/property atom boundaries in the most capable
+// existing tree mode. Callers charge source work before scanning or copying.
+pub(crate) fn surrogate_atom_end(
+    units: &[u16],
+    cursor: usize,
+    unicode: bool,
+    sets: bool,
+) -> Option<usize> {
+    if matches!(units.get(cursor), Some(0x28 | 0x29 | 0x7c)) {
+        return None;
+    }
+    leaf(units, cursor, unicode, sets, EscapeAtoms::Surrogate)
+        .and_then(|(end, safe)| safe.then_some(end))
+}
+
 // Unknown escapes stay unproved even with a following zero bound: legacy
 // escapes can span more than one atom. An erased enclosing group can still
 // suppress them without executing or reinterpreting their original bindings.

@@ -13331,3 +13331,15 @@ assertion proof. It uses the complete original capture source and exports
 required empty enclosing captures while optional repetitions retain undefined
 descendant slots. The shared empty execution path preserves Unicode boundaries,
 source/flags, lastIndex, String callbacks and split captures, cloning and collection.
+
+
+A separate empty-sequence constructor composes negative-impossible assertions
+or spines with independently empty tree terms (22.2.2.2, 22.2.2.4). Each complete
+root term is proved independently with its original binding context; at least
+one must use the negative-impossible proof. Root choices and unproved consuming
+terms reject this constructor. A shared safe-atom boundary helper reuses the
+existing surrogate-aware tree scanner without changing earlier tree modes.
+Interleaved masks remain in lexical order, including undefined assertion slots.
+Source/copy and mask work precede allocation; disjoint segments keep construction
+and storage source-sized. Actual empty matching and individual capture queries
+reuse the existing constant-work implementation.

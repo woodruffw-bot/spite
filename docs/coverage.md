@@ -23935,3 +23935,31 @@ Runtime unit tests pass (10.22 s). Strict workspace Clippy with all targets
 passes (55.38 s), alongside documentation tests, formatting, dependency policy,
 inventories and diff checks. The grouped inventory remains 616 Runtime cases;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Concatenated negative-impossible assertions and empty terms (Core)
+----------------------------------------------------------------
+
+The new constructor composes complete root terms independently proved empty,
+requiring at least one whole/enclosing negative-impossible assertion. It keeps
+original bindings and interleaved masks; root choices, active references and
+consuming/unproved terms require other proofs. A safe atom-boundary helper
+shares the established surrogate-aware tree scanner without changing old APIs.
+
+All 91 actual-source focused Core tests pass (0.62 s), including four new groups
+for interleaved required/optional/undefined captures, original erased forward
+bindings, escaped delimiters, class/property terms, surrogate pair/braced/mixed
+boundaries, root/consumption exclusions, 20,000 assertion terms, constant actual
+Unicode empty matching and interruption before every constructor step. All
+12,800 exact native input/start/capture comparisons across 512 independently
+composed ordinary/u/v sequences agree. A lexed review of 2,732 direct unsupported
+control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (22.54 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime case inventory remains 616; fixtures, snapshots, dependencies and quotas
+are unchanged.
+
+The earlier positive-impossible-assertion Runtime snapshot also passes all 35
+Test262 runner tests and the unchanged 16,343-case corpus (484.52 s). This broad
+result predates Runtime selection of the negative-impossible empty proofs.

@@ -275,6 +275,75 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves concatenated empty trees and negative-impossible assertions or spines.
+    ///
+    /// Full original validation and normalized capture heads are required. Each
+    /// complete root term independently stays empty; at least one term must
+    /// use the negative-impossible proof. Root choices and consuming/unproved
+    /// terms reject this constructor. Segment masks retain original lexical
+    /// order and bindings (22.2.2.2, 22.2.2.4). Source, copy and mask work
+    /// precedes allocation; disjoint segments keep construction source-sized.
+    pub fn compile_negative_impossible_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(16).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let mut cursor = 0;
+        let mut terms = 0;
+        let mut negative = false;
+        let mut defined = Vec::new();
+        while cursor < units.len() {
+            let end = if units[cursor] == 0x28 {
+                group_end(units, cursor, sets)
+            } else {
+                crate::regexp_zero_count_tree::surrogate_atom_end(units, cursor, unicode, sets)
+            };
+            let Some(end) = end else { return Ok(None) };
+            let Some((end, _, _)) = quantifier(units, end) else {
+                return Ok(None);
+            };
+            let segment = JsString::from_code_units(units[cursor..end].to_vec());
+            let mut plan = Self::compile_negative_impossible_validated_with_work(
+                &segment,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+            if plan.is_none() {
+                plan = Self::compile_enclosing_negative_impossible_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+            }
+            negative |= plan.is_some();
+            if plan.is_none() {
+                plan = Self::compile_surrogate_tree_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+            }
+            let Some(plan) = plan else { return Ok(None) };
+            charge(plan.capture_count())?;
+            defined.extend(plan.defined);
+            cursor = end;
+            terms += 1;
+        }
+        Ok((terms >= 2 && negative).then(|| Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -1620,6 +1689,111 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpZeroCountSequenceMatcher::compile_first_negative_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn negative_impossible_sequence(
+        source: &str,
+        unicode: bool,
+        sets: bool,
+    ) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
+            &JsString::from(source),
+            unicode,
+            sets,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_impossible_sequences_preserve_interleaved_masks_and_original_bindings() {
+        for (source, mask) in [
+            (r"a{0}(?!(?!(b{0})))(c{0})", &[false, true][..]),
+            (
+                r"(a{0})(?<!(?<!b{0})(c))((d{0}))?",
+                &[true, false, false, false][..],
+            ),
+            (r"(a{0})(?!(?!(\3){0}))(b{0})", &[true, false, true][..]),
+            (
+                r"(?i:(((?!(?!(a{0}))))?)+)(b{0})",
+                &[true, false, false, true][..],
+            ),
+            (r"\x28{0}\u007C{0}(?!(?!))[\p{RGI_Emoji}]{0}", &[][..]),
+        ] {
+            assert_eq!(
+                negative_impossible_sequence(source, true, true)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn negative_impossible_sequences_require_only_independently_empty_root_terms() {
+        for source in [
+            r"(?!(?!))",
+            r"a{0}b{0}",
+            r"a(?!(?!))",
+            r"(?!(?!))a",
+            r"(?!(?!))|a{0}",
+            r"(?!a)(b{0})",
+            r"(a{0})(?!(?!))\1",
+            r"(?!(?!))(?=a)",
+        ] {
+            assert!(
+                negative_impossible_sequence(source, true, true).is_none(),
+                "{source}"
+            );
+        }
+        assert!(negative_impossible_sequence(r"(?!(?!))a{0}", false, true).is_none());
+    }
+
+    #[test]
+    fn negative_impossible_sequences_share_mode_aware_surrogate_atom_boundaries() {
+        for mode in [(false, false), (true, false), (true, true)] {
+            let plan = negative_impossible_sequence(r"\uD83D\uDE00{0}(?!(?!))", mode.0, mode.1);
+            assert_eq!(plan.is_some(), mode.0);
+        }
+        for source in [
+            r"\u{D800}{0}(?!(?!))",
+            r"\uD800{0}(?!(?!))",
+            r"😀{0}(?!(?!))",
+        ] {
+            let plan = negative_impossible_sequence(source, true, true).unwrap();
+            assert_eq!(
+                plan.find_with_work(&JsString::from("😀"), 1, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(0..0)
+            );
+        }
+        assert!(negative_impossible_sequence(r"\u{D800}\uDC00{0}(?!(?!))", true, true).is_none());
+    }
+
+    #[test]
+    fn negative_impossible_sequence_masks_and_interruptions_stay_source_sized() {
+        let source = format!("{}(a{{0}})", r"(?!(?!(a{0})))".repeat(20_000));
+        let plan = negative_impossible_sequence(&source, true, true).unwrap();
+        assert_eq!(plan.capture_count(), 20_001);
+        assert!(plan.defined[..20_000].iter().all(|&v| !v));
+        assert!(plan.defined[20_000]);
+        let source = JsString::from(r"(a{0})(?!(?!(\3){0}))(b{0})");
+        let mut work = Vec::new();
+        assert!(RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())}
+        ).unwrap().is_some());
+        assert_eq!(work[0], source.len() * 16 + 16);
+        assert!(work.iter().sum::<usize>() < source.len() * 1024);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_negative_impossible_sequence_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );
