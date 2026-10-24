@@ -13134,3 +13134,12 @@ source work. Both constructors use the same flat stack, capture-clear markers
 and constant-work retained plan; the new constructor explicitly enables only
 proved positive assertions. Source/frame work precedes allocation, and deeply
 nested assertions do not add native recursion.
+
+
+Runtime selects the positive empty-tree proof after the earlier tree proof,
+retaining the complete original lexical capture layout. Forward/reverse
+assertion imports, optional rollback and unselected slots use the shared named
+and numbered result path, including index-array aliases. Erased references
+retain their original bindings, and original early errors precede proof
+selection. String consumers, cloning, collection and actual-work accounting
+reuse the existing sequence body.

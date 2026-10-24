@@ -887,6 +887,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove arbitrary nested empty-expression trees with every active alternative independently empty, flat capture-clear intervals and exact-zero atom/group erasure.
 - [x] Execute composable empty-expression trees through Runtime and String consumers, preserving live captures around erased subtrees and selected/unselected branch slots.
 - [x] Prove positive lookahead/lookbehind over independently empty expression trees, exporting capture masks without input access or recursive matching.
+- [x] Execute positive empty-tree lookahead/lookbehind through Runtime and String consumers, preserving assertion capture imports, optional rollback and named/index aliases.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

@@ -23456,7 +23456,43 @@ after the shared reducer refactor.
 
 Strict workspace Clippy with all targets passes (25.79 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
-A lexical review of all 2,685 retained unsupported controls finds none newly
+A lexical review of 2,685 retained raw-string unsupported controls finds none newly
 admitted by the positive proof. Source/frame work precedes allocation; retained
 storage and construction remain source-sized, with constant matching work and
 capture queries. Runtime integration follows separately.
+
+
+## Runtime positive assertions over empty-expression trees
+
+Runtime selects the positive tree proof after the earlier tree constructor.
+Forward/reverse assertion imports retain original capture numbering and named
+index aliases, including optional rollback, unselected branches and references
+inside erased bodies. Original early errors still precede proof selection.
+
+All 29 focused integration groups pass (1.53 s), including four new groups for
+named assertion imports in both directions, duplicate-name aliases, erased
+forward references, String consumers, cloning, collection, 1,000 alternating
+positive assertions, a 20,000-digit required count, syntax errors and opt-in
+constructor aborts. All 55,296 exact native metadata records across 512 generated
+ordinary/u/v positive trees agree on the fresh CLI, as do all 29 complete
+JavaScript programs.
+
+The earlier quantified-enclosing RegExp sweep finishes with 2,796 passes and one
+stale unsupported expectation (915.13 s): `/(?i:|)*/u.exec('a')`. That test used
+an ordinary Rust string, outside the earlier raw-string control review. Both
+newly supported ordinary-string controls in that module now assert exact Node
+metadata, and all six affected tests pass (2.63 s). Both complete programs agree
+on Node and the fresh CLI. An expanded lexical review covers 2,732 direct
+source/pattern literal-array controls in both ordinary and raw Rust strings;
+none of the remaining controls is admitted by the positive proof. Earlier
+raw-string-only review counts do not include these additional entries.
+
+All 435 Runtime unit tests pass (3.21 s). Final strict workspace Clippy with all
+targets passes (5.34 s), alongside workspace documentation tests, formatting,
+dependency policy, inventories and diff checks. The grouped inventory remains
+614 Runtime cases; fixtures, snapshots, dependencies and default quotas are
+unchanged.
+
+The preceding basic-tree Runtime snapshot passes all 35 Test262 runner tests and
+all 16,343 reviewed variants (216.42 s for the corpus group). This broad snapshot
+precedes positive-assertion Runtime integration.

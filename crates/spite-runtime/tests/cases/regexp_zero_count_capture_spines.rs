@@ -560,3 +560,99 @@ fn tree_erasure_keeps_original_early_errors_and_opt_in_host_aborts() {
     ));
     assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
+
+#[test]
+fn empty_positive_assertion_trees_export_named_captures_in_both_directions() {
+    check(
+        r#"
+        var cases=[
+            ['(?=(?<ahead>[\\p{RGI_Emoji}]{0}))(?<=(?<behind>a{0}))(?<tail>b{0})',[1,1,1],['ahead','behind','tail']],
+            ['(?:(?=(?<ahead>a{0}))|(?<=(?<behind>b{0})))+(?<tail>\\p{RGI_Emoji}{0})',[1,0,1],['ahead','behind','tail']],
+            ['(?<outer>(?=(?<ahead>a{0}))(?<=(?<behind>\\p{RGI_Emoji}{0})))?(?<tail>c{0})',[0,0,0,1],['outer','ahead','behind','tail']],
+            ['(?=(?<before>(?<erased>\\k<later>|[\\p{RGI_Emoji}]+){0}))(?<=(?<later>c{0}|d{0}))',[1,0,1],['before','erased','later']]
+        ],ok=true;
+        for(var pair of cases)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pair[0],flags);r.lastIndex=start;var m=r.exec(input),global=r.global||r.sticky;
+            if(global&&start>input.length){ok=ok&&m===null&&r.lastIndex===0;continue}
+            var point=global?start:0;if(point>0&&input.charCodeAt(point)>=0xdc00&&input.charCodeAt(point)<=0xdfff&&input.charCodeAt(point-1)>=0xd800&&input.charCodeAt(point-1)<=0xdbff)point--;
+            ok=ok&&m.index===point&&m[0]===''&&m.length===pair[1].length+1&&r.source===pair[0]&&r.lastIndex===(global?point:start)&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            for(var i=1;i<m.length;i++){
+                var name=pair[2][i-1];ok=ok&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i)&&Object.hasOwn(m.groups,name)&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===m[i]&&m.indices.groups[name]===m.indices[i];
+                ok=ok&&(pair[1][i-1]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+            }
+        }
+        var m=/(?=(?<same>a{0})|(?<same>b{0}))(?<tail>[\p{RGI_Emoji}]{0})/dgv.exec('ab');
+        ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.groups.same===''&&m.indices.groups.same===m.indices[1]&&m.indices.groups.tail===m.indices[3]&&Object.hasOwn(m.indices,'2')&&m.indices[2]===undefined
+    "#,
+    );
+}
+
+#[test]
+fn empty_positive_assertion_string_consumers_clones_and_gc_keep_capture_aliases() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?:(?=(?<ahead>a{0}))|(?<=(?<behind>b{0})))+(?<tail>\p{RGI_Emoji}{0})/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.indices.groups.ahead===m.indices[1]&&m.indices.groups.tail===m.indices[3];
+        var calls=[];var value='ab'.replace(r,function(m,ahead,behind,tail,at,input,groups){calls.push(at);return arguments.length===7&&m===''&&ahead===''&&behind===undefined&&tail===''&&input==='ab'&&groups.ahead===''&&groups.tail===''?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,,,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m[1]===''&&m[2]===undefined&&m[3]===''
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.ahead===''&&m.groups.behind===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[3]"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deep_positive_assertion_trees_and_required_counts_have_no_default_quotas() {
+    check(
+        r#"
+        var depth=10,prefix='';for(var i=0;i<depth;i++)prefix+=i%2?'(?<=':'(?=';
+        var pattern=prefix+'(?<leaf>[\\p{RGI_Emoji}]{0})'+')'.repeat(depth)+'(?<tail>a{0})',m=new RegExp(pattern,'dgv').exec('ab');
+        m.length===3&&m[1]===''&&m[2]===''&&m.indices.groups.leaf===m.indices[1]&&m.indices.groups.tail===m.indices[2]
+    "#,
+    );
+    let depth = 1000;
+    let prefix: String = ["(?=", "(?<="].into_iter().cycle().take(depth).collect();
+    let pattern = JsString::from(
+        format!(
+            r"{prefix}(?<leaf>[\p{{RGI_Emoji}}]{{0}}){}(?<tail>a{{0}})",
+            ")".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&r.lastIndex===0&&m.length===3&&m[1]===''&&m[2]===''&&m.indices.groups.leaf===m.indices[1]&&m.indices.groups.tail===m.indices[2]&&m.indices[1]!==m.indices[2]"
+    ));
+    let count = "9".repeat(20_000);
+    let pattern = JsString::from(
+        format!(r"(?<outer>(?=(?<ahead>a{{0}}))(?<=(?<behind>\p{{RGI_Emoji}}{{0}}))){{{count}}}")
+            .as_str(),
+    );
+    check(&format!(
+        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===4&&m[1]===''&&m[2]===''&&m[3]===''&&m.groups.outer===''&&m.groups.ahead===''&&m.groups.behind===''&&m.indices.groups.behind===m.indices[3]"
+    ));
+}
+
+#[test]
+fn positive_tree_early_errors_and_constructor_aborts_precede_matching_effects() {
+    check(
+        r#"
+        var invalid=['(?=(?<x>[\\P{RGI_Emoji}]{0}))','(?<=(?<same>a{0})(?<same>b{0}))','(?=((\\k<missing>){0}))'],ok=true;
+        for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
+    "#,
+    );
+    let count = "9".repeat(20_000);
+    let pattern =
+        JsString::from(format!(r"((?=(a{{0}}))(?<=([\p{{RGI_Emoji}}]{{0}}))){{{count}}}").as_str());
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30_000),
+        ..Limits::default()
+    });
+    realm.eval("var r=7,marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!(
+            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
+        )),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
+}

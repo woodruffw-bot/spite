@@ -134,16 +134,9 @@ fn unicode_pure_empty_explicit_work_abort_preserves_state() {
 }
 
 #[test]
-fn unicode_pure_empty_keeps_existing_effectful_dispatch() {
-    for source in ["/(?:|())*/u.exec('a')", "/(?i:|)*/u.exec('a')"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+fn unicode_pure_empty_modifier_and_skipped_capture_results_keep_native_metadata() {
+    assert_eq!(Realm::default().eval(r####"var pattern="(?:|())*",input="A😀!",r=new RegExp(pattern,"dgu");r.lastIndex=2;var m=r.exec(input);var own=true;for(var i=0;i<m.length;i++)own=own&&Object.hasOwn(m,""+i)&&Object.hasOwn(m.indices,""+i);own&&r.source===pattern&&r.flags==="dgu"&&r.hasIndices&&r.unicode&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(?i:|)*",input="A😀!",r=new RegExp(pattern,"dgu");r.lastIndex=2;var m=r.exec(input);var own=true;for(var i=0;i<m.length;i++)own=own&&Object.hasOwn(m,""+i)&&Object.hasOwn(m.indices,""+i);own&&r.source===pattern&&r.flags==="dgu"&&r.hasIndices&&r.unicode&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\"],[[1,1]],1,1]""####),Ok(Value::Boolean(true)));
     check(
         "let m=/(?:|a){0}/dv.exec('a');m.length===1&&m[0]===''&&m.index===0&&m.indices[0][0]===0&&m.indices[0][1]===0",
     );
