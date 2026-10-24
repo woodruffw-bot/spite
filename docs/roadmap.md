@@ -882,6 +882,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute unconditional empty first alternatives through Runtime and String consumers, preserving unselected captures and duplicate-name aliases across root alternatives.
 - [x] Prove mandatory ordinary enclosing groups around zero-erased sequences and unconditional first choices, preserving the complete interleaved capture layout.
 - [x] Execute mandatory enclosing zero sequences and first choices through Runtime, preserving outer captures, interleaved inner slots and original reference bindings.
+- [x] Prove quantified ordinary/modifier enclosing spines around empty sequences and first choices, retaining interleaved masks and optional-iteration rollback.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

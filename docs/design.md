@@ -13056,3 +13056,17 @@ so named aliases and indices keep original slot numbers without an additional
 Runtime offset. References to enclosing groups inside erased terms are never
 revalidated in isolation. String consumers, cloning, collection and actual-work
 accounting use the existing sequence result path.
+
+
+The lexical-mask plan also proves quantified ordinary/ims modifier spines around
+a complete empty sequence or first choice. A flat delimiter scan records each
+leading group's first closure, and a linear suffix pass selects the deepest
+complete outside spine. Required empty iterations retain the body's mask; the
+first optional outside group rolls all descendant captures back (22.2.2.3.1).
+The complete mask combines the defined outside prefix, any cleared suffix and
+the retained inner mask. Modifier flags cannot change these unconditional empty
+results, and decimal bounds stay symbolic without expanding required empty
+iterations. Source/frame work is charged before allocation; construction,
+storage and clone/drop are source-sized, while matching and capture queries
+remain constant. Outside siblings, conditions and unproved consuming bodies
+require other proofs. Earlier APIs and their work are unchanged.

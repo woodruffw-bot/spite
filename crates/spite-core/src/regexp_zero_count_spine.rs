@@ -228,7 +228,7 @@ struct GroupFrame {
     maximum_zero: bool,
 }
 
-fn opener(units: &[u16], index: usize) -> Option<(usize, bool)> {
+pub(crate) fn opener(units: &[u16], index: usize) -> Option<(usize, bool)> {
     if units.get(index) != Some(&0x28) {
         return None;
     }

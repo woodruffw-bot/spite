@@ -23312,3 +23312,29 @@ The preceding arbitrary-group quantified-spine Runtime snapshot completes all
 2,783 RegExp integration tests without failures (1,024.21 s). Together with the
 previously recorded Test262 result, this broad snapshot precedes sequence,
 first-alternative and enclosing Runtime integration.
+
+
+## Core quantified enclosing empty sequences and first choices
+
+A separate constructor proves quantified ordinary/modifier spines enclosing a
+complete zero sequence or unconditional first choice. Its flat first-closure
+scan and linear suffix pass retain the complete outside scope. Required empty
+iterations preserve captures; an optional outside group clears all descendant
+writes after zero-progress failure (22.2.2.3.1). The full lexical mask combines
+the defined outside prefix with the retained or cleared inner mask.
+
+All 36 actual-source focused Core tests pass (0.39 s), including four new groups
+for eight independently checked native masks, optional rollback, modifier
+scopes, outside-scope exclusions, every construction-work abort, 100,000
+quantified enclosing groups and a 20,000-digit required count. All 4,096 exact
+boundary/capture comparisons across 512 independently native-validated quantified
+enclosed ordinary/u/v patterns agree. Decimal bounds stay symbolic; construction,
+retained storage and clone/drop are source-sized, with constant matching and
+capture queries.
+
+Strict workspace Clippy with all targets passes (22.57 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Earlier APIs and Runtime behavior are unchanged. A lexical review of 2,701
+retained unsupported controls identifies 20 entries across 11 modules for native
+metadata conversion during Runtime integration. No fixtures, snapshots,
+dependencies or default quotas change.

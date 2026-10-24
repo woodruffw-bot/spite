@@ -4,7 +4,7 @@ use crate::{
     JsString,
     regexp_literal::unicode_start,
     regexp_zero_count_group::enclosing_group_body,
-    regexp_zero_count_spine::{RegExpZeroCountSpineMatcher, atom_end, quantifier},
+    regexp_zero_count_spine::{RegExpZeroCountSpineMatcher, atom_end, opener, quantifier},
 };
 use std::ops::Range;
 
@@ -184,6 +184,53 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves quantified ordinary/modifier spines around an empty sequence or choice.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Required empty repetitions retain the body's mask; optional empty
+    /// repetitions roll back all descendant writes (22.2.2.3.1). Bounds remain
+    /// symbolic, including oversized minima. Modifier flags cannot change an
+    /// unconditional empty body's result. All source/frame work precedes allocation.
+    pub fn compile_quantified_enclosing_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), unicode_sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut inner =
+            Self::compile_validated_with_work(&body, unicode, unicode_sets, &mut charge)?;
+        if inner.is_none() {
+            inner = Self::compile_first_alternative_validated_with_work(
+                &body,
+                unicode,
+                unicode_sets,
+                &mut charge,
+            )?;
+        }
+        Ok(inner.map(|inner| {
+            let mut defined = Vec::with_capacity(scope.captures + inner.capture_count());
+            defined.resize(scope.defined, true);
+            defined.resize(scope.captures, false);
+            if scope.optional {
+                defined.resize(scope.captures + inner.capture_count(), false);
+            } else {
+                defined.extend(inner.defined);
+            }
+            Self {
+                unicode,
+                defined: defined.into_boxed_slice(),
+            }
+        }))
+    }
+
     /// Original lexical capture count, excluding the whole match (22.2.7.2).
     pub fn capture_count(&self) -> usize {
         self.defined.len()
@@ -215,6 +262,106 @@ impl RegExpZeroCountSequenceMatcher {
         };
         Ok(start.map(|start| start..start))
     }
+}
+
+struct EnclosingFrame {
+    before: usize,
+    captures: usize,
+    body_start: usize,
+    close: usize,
+    end: usize,
+    minimum_zero: bool,
+}
+
+struct EnclosingScope {
+    body: Range<usize>,
+    captures: usize,
+    defined: usize,
+    optional: bool,
+}
+
+fn quantified_enclosing_scope(units: &[u16], sets: bool) -> Option<EnclosingScope> {
+    let mut opening_end = 0;
+    let mut captures = 0;
+    let mut frames = Vec::new();
+    while let Some((width, capturing)) = opener(units, opening_end) {
+        let before = captures;
+        captures += usize::from(capturing);
+        opening_end += width;
+        frames.push(EnclosingFrame {
+            before,
+            captures,
+            body_start: opening_end,
+            close: 0,
+            end: 0,
+            minimum_zero: false,
+        });
+    }
+    if frames.is_empty() {
+        return None;
+    }
+    let mut remaining = frames.len();
+    let mut cursor = 0;
+    let mut depth = 0usize;
+    let mut class_depth = 0usize;
+    while let Some(&unit) = units.get(cursor) {
+        if unit == 0x5c {
+            cursor += 2;
+            continue;
+        }
+        if class_depth != 0 {
+            if unit == 0x5d {
+                class_depth -= 1;
+            } else if sets && unit == 0x5b {
+                class_depth += 1;
+            }
+        } else {
+            match unit {
+                0x5b => class_depth = 1,
+                0x28 => depth += 1,
+                0x29 => {
+                    depth = depth.checked_sub(1)?;
+                    if depth < remaining {
+                        remaining = depth;
+                        let (end, minimum_zero, _) = quantifier(units, cursor + 1)?;
+                        frames[depth].close = cursor;
+                        frames[depth].end = end;
+                        frames[depth].minimum_zero = minimum_zero;
+                    }
+                }
+                _ => {}
+            }
+        }
+        cursor += 1;
+    }
+    if depth != 0 || class_depth != 0 || remaining != 0 {
+        return None;
+    }
+    let mut complete = 0usize;
+    let mut defined = usize::MAX;
+    let mut optional = false;
+    for (index, frame) in frames.iter().enumerate() {
+        let expected_end = if index == 0 {
+            units.len()
+        } else {
+            frames[index - 1].close
+        };
+        if frame.end != expected_end {
+            break;
+        }
+        complete += 1;
+        if frame.minimum_zero {
+            optional = true;
+            defined = defined.min(frame.before);
+        }
+    }
+    let frame = frames.get(complete.checked_sub(1)?)?;
+    Some(EnclosingScope {
+        body: frame.body_start..frame.close,
+        captures: frame.captures,
+        defined: defined.min(frame.captures),
+        optional,
+    })
 }
 
 // First root alternative and all lexical capture slots, including skipped arms.
@@ -678,6 +825,126 @@ mod tests {
                     }
                 },
             );
+            assert!(matches!(result, Err(n) if n==stop));
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    fn quantified(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_quantified_enclosing_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn quantified_enclosing_masks_distinguish_required_and_rolled_back_captures() {
+        for (source, expected) in [
+            (r"(([a]{0})?([b]{0})+)+", &[true, false, true][..]),
+            (r"(([a]{0})?([b]{0})+)*", &[false, false, false][..]),
+            (
+                r"((([a]{0})?([b]{0})+)+)?",
+                &[false, false, false, false][..],
+            ),
+            (r"(?i:(([a]{0})?([b]{0})+)){2,3}", &[true, false, true][..]),
+            (
+                r"(?i:(([a]{0})?([b]{0})+)){0,2}",
+                &[false, false, false][..],
+            ),
+            (
+                r"((([a]{0})+|((b)))){2,3}?",
+                &[true, true, true, false, false][..],
+            ),
+            (r"(?-i:(|((a))))+", &[true, false, false][..]),
+            (r"((|((a))){0})+", &[true, false, false, false][..]),
+        ] {
+            let plan = quantified(source).unwrap_or_else(|| panic!("{source}"));
+            assert_eq!(plan.capture_count(), expected.len(), "{source}");
+            for (index, &defined) in expected.iter().enumerate() {
+                assert_eq!(
+                    plan.capture_range(index, &(2..2)),
+                    defined.then_some(2..2),
+                    "{source}: {index}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn quantified_enclosing_scope_excludes_siblings_conditions_and_nonempty_bodies() {
+        for source in [
+            "[a]{0}[b]{0}",
+            "([a]{0}[b]{0})+x",
+            "([a]{0}[b]{0})+(x)",
+            "x([a]{0}[b]{0})+",
+            "([a]{0}[b]{0})+|x",
+            "(a|[b]{0})+",
+            "(?=[a]{0}[b]{0})",
+            "([a]+[b]{0})*",
+            "([a]{0})+",
+        ] {
+            assert!(quantified(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn quantified_enclosing_depth_and_huge_required_bounds_remain_symbolic() {
+        let source = format!(
+            "{}([a]{{0}})?([b]{{0}})+{}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = quantified(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert_eq!(plan.capture_range(99_999, &(0..0)), Some(0..0));
+        assert_eq!(plan.capture_range(100_000, &(0..0)), None);
+        assert_eq!(plan.capture_range(100_001, &(0..0)), Some(0..0));
+        let source = format!("(([a]{{0}})?([b]{{0}})+){{{}}}", "9".repeat(20_000));
+        let plan = quantified(&source).unwrap();
+        assert_eq!(plan.capture_count(), 3);
+        assert_eq!(plan.capture_range(0, &(0..0)), Some(0..0));
+        assert_eq!(plan.capture_range(1, &(0..0)), None);
+        assert_eq!(plan.capture_range(2, &(0..0)), Some(0..0));
+    }
+
+    #[test]
+    fn quantified_enclosing_work_aborts_before_every_source_or_frame_step() {
+        let source = JsString::from(r"(?i:(([a]{0})?([b]{0})+)){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpZeroCountSequenceMatcher::compile_quantified_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert!(work.len() >= 4);
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            let result =
+                RegExpZeroCountSequenceMatcher::compile_quantified_enclosing_validated_with_work(
+                    &source,
+                    true,
+                    true,
+                    |n| {
+                        seen.push(n);
+                        if seen.len() == stop + 1 {
+                            Err(stop)
+                        } else {
+                            Ok(())
+                        }
+                    },
+                );
             assert!(matches!(result, Err(n) if n==stop));
             assert_eq!(seen, work[..=stop]);
         }
