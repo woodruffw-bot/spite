@@ -13035,3 +13035,16 @@ values, undefined unselected slots and duplicate-name aliases across root
 alternatives. Full original syntax and named-reference validation precedes the
 proof, including early errors in arms that never execute. String consumers,
 cloning, collection and actual-work accounting share the sequence result path.
+
+
+A separate enclosing constructor applies the shared flat ordinary-group scope
+proof to a complete zero sequence or unconditional first choice. Every
+mandatory enclosing capture is defined empty (22.2.2.7), preceding the body's
+interleaved capture mask. The plan stores the complete original layout, so
+Runtime need not shift or reconstruct lexical slots. Projected bodies keep
+original reference bindings, including enclosing targets inside erased terms.
+Source/copy/mask work is charged before allocation, and the shared first-closure
+scan excludes outside terms and later siblings without rescanning nested
+suffixes. Construction, clone/drop and retained storage are source-sized;
+matching and capture queries remain constant. Quantified/modifier enclosing
+groups require additional proofs. Existing constructors are unchanged.

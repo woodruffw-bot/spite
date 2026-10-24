@@ -3,6 +3,7 @@
 use crate::{
     JsString,
     regexp_literal::unicode_start,
+    regexp_zero_count_group::enclosing_group_body,
     regexp_zero_count_spine::{RegExpZeroCountSpineMatcher, atom_end, quantifier},
 };
 use std::ops::Range;
@@ -138,6 +139,48 @@ impl RegExpZeroCountSequenceMatcher {
         Ok(Some(Self {
             unicode,
             defined: defined.into_boxed_slice(),
+        }))
+    }
+
+    /// Proves mandatory ordinary groups enclosing a zero sequence or choice.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Enclosing captures are defined empty (22.2.2.7); the body's lexical mask
+    /// retains interleaved or unselected slots. Original references inside
+    /// erased bodies keep their bindings, including enclosing targets. The
+    /// flat scope scan excludes quantified/modifier wrappers and outside terms.
+    pub fn compile_enclosing_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let Some(group) = enclosing_group_body(source.code_units(), unicode_sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[group.body].to_vec());
+        let mut inner =
+            Self::compile_validated_with_work(&body, unicode, unicode_sets, &mut charge)?;
+        if inner.is_none() {
+            inner = Self::compile_first_alternative_validated_with_work(
+                &body,
+                unicode,
+                unicode_sets,
+                &mut charge,
+            )?;
+        }
+        Ok(inner.map(|inner| {
+            let mut defined = Vec::with_capacity(group.captures + inner.capture_count());
+            defined.resize(group.captures, true);
+            defined.extend(inner.defined);
+            Self {
+                unicode,
+                defined: defined.into_boxed_slice(),
+            }
         }))
     }
 
@@ -511,6 +554,130 @@ mod tests {
                         }
                     },
                 );
+            assert!(matches!(result, Err(n) if n==stop));
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    fn enclosing(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_enclosing_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn mandatory_enclosing_captures_precede_sequence_and_choice_masks() {
+        for (source, expected) in [
+            (r"((([a]{0})?([b]{0})+))", &[true, true, false, true][..]),
+            (r"(?:(|((a))))", &[true, false, false][..]),
+            (r"(((a)\1){0}|(b))", &[true, false, false, false][..]),
+            (
+                r"((([a]{0})+|((b))))",
+                &[true, true, true, false, false][..],
+            ),
+            (
+                r"((([\q{\(|\)|\|}]{0})+)([\p{RGI_Emoji}]{0})?)",
+                &[true, true, true, false][..],
+            ),
+            (r"(?:([a]{0})([b]{0}))", &[true, true][..]),
+        ] {
+            let plan = enclosing(source).unwrap_or_else(|| panic!("{source}"));
+            assert_eq!(plan.capture_count(), expected.len(), "{source}");
+            for (index, &defined) in expected.iter().enumerate() {
+                assert_eq!(
+                    plan.capture_range(index, &(2..2)),
+                    defined.then_some(2..2),
+                    "{source}: {index}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn enclosing_scope_excludes_quantified_modifier_and_later_sibling_groups() {
+        for source in [
+            "[a]{0}[b]{0}",
+            "([a]{0}[b]{0})+",
+            "(?i:[a]{0}[b]{0})",
+            "(([a]{0})?([b]{0})+)x",
+            "(([a]{0})?([b]{0})+)(x)",
+            "x(([a]{0})?([b]{0})+)",
+            "(([a]{0})?([b]{0})+)|x",
+            "(a|[b]{0})",
+            "([a]{0})",
+            "(?=([a]{0}[b]{0}))",
+        ] {
+            assert!(enclosing(source).is_none(), "{source}");
+        }
+        assert!(
+            RegExpZeroCountSequenceMatcher::compile_enclosing_validated_with_work(
+                &JsString::from("([a]{0}[b]{0})"),
+                false,
+                true,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn hundred_thousand_enclosing_groups_keep_flat_interleaved_capture_storage() {
+        let source = format!(
+            "{}([a]{{0}})?([b]{{0}})+{}",
+            "(".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let plan = enclosing(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        for index in 0..100_000 {
+            assert_eq!(plan.capture_range(index, &(1..1)), Some(1..1));
+        }
+        assert_eq!(plan.capture_range(100_000, &(1..1)), None);
+        assert_eq!(plan.capture_range(100_001, &(1..1)), Some(1..1));
+        let copy = plan.clone();
+        drop(plan);
+        assert_eq!(copy.capture_count(), 100_002);
+    }
+
+    #[test]
+    fn enclosing_construction_work_aborts_before_each_delegated_step() {
+        let source = JsString::from(r"(((a)\1){0}|(b))");
+        let mut work = Vec::new();
+        assert!(
+            RegExpZeroCountSequenceMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert!(work.len() >= 4);
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            let result = RegExpZeroCountSequenceMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    seen.push(n);
+                    if seen.len() == stop + 1 {
+                        Err(stop)
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
             assert!(matches!(result, Err(n) if n==stop));
             assert_eq!(seen, work[..=stop]);
         }

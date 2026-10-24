@@ -23262,3 +23262,27 @@ The preceding arbitrary-group quantified-spine Runtime snapshot passes all 35
 Test262 runner tests and all 16,343 reviewed variants (475.33 s for the corpus
 group). This broad result precedes Runtime sequence and first-alternative
 integration.
+
+
+## Core mandatory enclosing zero sequences and first choices
+
+A separate lexical-mask constructor proves mandatory ordinary groups enclosing
+a complete zero-erased sequence or unconditional first choice. The shared flat
+first-closure scope scan excludes outside siblings and terms. Enclosing captures
+are defined empty (22.2.2.7), preceding the body's interleaved mask in the full
+original lexical layout. References inside erased bodies keep original
+bindings, including enclosing targets. No projected body is rebound.
+
+All 32 actual-source focused Core tests pass (0.36 s), including four new groups
+for six independently checked native capture masks, scope exclusions, every
+construction-work abort and 100,000 mandatory enclosing captures with an
+interleaved inner mask. All 4,096 exact boundary/capture comparisons across 512
+independently native-validated enclosed ordinary/u/v sequences and choices
+agree. A lexical review of 2,701 retained unsupported controls finds none newly
+admitted by this proof.
+
+Strict workspace Clippy with all targets passes (14.24 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Construction, clone/drop and retained storage remain source-sized; matching and
+individual capture queries are constant. Existing constructors and Runtime
+behavior remain unchanged; integration follows separately.
