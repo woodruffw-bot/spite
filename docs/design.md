@@ -12322,4 +12322,7 @@ find methods and their charged work remain unchanged. New continuation probes
 charge sixteen work units; flat source-sized storage and complete class/body
 validation precede matching even behind never profiles. Branch-local conditional
 scopes, other class counts, references and consuming siblings retain separate
-proofs. Runtime selection remains separate.
+proofs. Runtime selects this alternatives truth-profile proof after the
+required-single proof on the full normalized capture source. The dedicated body
+retains actual endpoint truth, class/empty selection, source/flags, named aliases,
+indices, lastIndex and String consumers through cloning and collection.

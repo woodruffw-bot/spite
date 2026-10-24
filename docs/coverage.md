@@ -21534,3 +21534,30 @@ The preceding arbitrary repetition and larger nullable-count Runtime sources
 pass a fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants
 pass, including the pinned corpus gate (501.93 s). This run compiled before the
 required-single and class/empty truth-profile extensions.
+
+
+## Runtime arbitrary predicate choices around class/empty alternatives
+
+Four focused groups pass (0.37 s), covering source-priority conditional
+captures, required empty class versus empty-branch identity, bare/padded
+exact-one paths, named and escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and strict lastIndex writes.
+Explicit controls retry failed empty-first branches and shorter class members;
+branch-specific reversed line gates retain original context. Deep 1,000-level
+scopes and 20,000-unit shared-prefix scalar/string members remain flat. Complete
+unknown leaves behind never gates, branch-local conditional scopes and host
+constructor aborts retain their distinct proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Two
+preceding rejection controls in two existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+Five source-shape scans retain all other rejection domains. All 100,352 exact
+differential records agree across 256 independent pairs; all 1,024 proof/flag
+combinations are supported. Eight finite/scalar/known-empty layouts, four
+bare/exact-one counts, eight truth profiles and four remaining live profiles
+cover all input starts, sticky, multiline and ignore-case. All six tests in the
+two migrated groups pass (0.26 s and 0.30 s). All 431 Runtime unit tests pass
+(3.68 s), alongside strict workspace Clippy (51.03 s), documentation tests,
+formatting, policy, inventories and diff checks. The grouped Runtime inventory
+contains 588 case files. Fixtures, snapshots, dependencies and default quotas
+remain unchanged.

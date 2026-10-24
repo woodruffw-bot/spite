@@ -37,6 +37,7 @@ use spite_core::{
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
+    RegExpUnicodeTruthTableStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableStringClassCaptureMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
@@ -172,6 +173,9 @@ pub(crate) enum RegExpMatcherBody {
     UnicodeTruthTableSingleStringClassCaptures(
         RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
     ),
+    UnicodeTruthTableStringClassAlternativeCaptures(
+        RegExpUnicodeTruthTableStringClassAlternativeMatcher,
+    ),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
@@ -301,6 +305,9 @@ impl RegExpMatcher {
                 m.capture_count()
             }
             RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(m) => {
+                m.capture_count()
+            }
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
@@ -331,6 +338,26 @@ impl RegExpMatcher {
         sticky: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(matcher) =
+            &self.body
+        {
+            return matcher
+                .find_with_captures_and_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.repeated.range,
+                        matcher: self,
+                        // This dedicated body packs the two endpoint profiles beside
+                        // the final class-selection bit; no other body reads them.
+                        branch: usize::from(found.repeated.class_selected)
+                            | usize::from(found.before) << 1
+                            | usize::from(found.after) << 4,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: found.repeated.last_iteration,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(matcher) = &self.body {
             return matcher
                 .find_with_captures_and_work(input, start, sticky, charge)
@@ -1234,6 +1261,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
@@ -1348,6 +1376,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_) => 0,
             RegExpMatcherBody::Literal(_)
@@ -1494,6 +1523,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeTruthTableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
@@ -1594,6 +1624,20 @@ impl RegExpMatch<'_> {
             }
             RegExpMatcherBody::UnicodeSingleStringClassCaptures(matcher) => {
                 return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::UnicodeTruthTableStringClassAlternativeCaptures(matcher) => {
+                return matcher.capture_range(
+                    index,
+                    &spite_core::RegExpUnicodePredicateChoiceStringClassMatch {
+                        repeated: spite_core::RegExpUnicodeRepeatedStringClassMatch {
+                            range: self.range.clone(),
+                            last_iteration: self.atom_capture.clone(),
+                            class_selected: self.branch & 1 != 0,
+                        },
+                        before: ((self.branch >> 1) & 7) as u8,
+                        after: ((self.branch >> 4) & 7) as u8,
+                    },
+                );
             }
             RegExpMatcherBody::UnicodeTruthTableSingleStringClassCaptures(matcher) => {
                 return matcher.capture_range(
