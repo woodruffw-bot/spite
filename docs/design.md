@@ -11817,4 +11817,7 @@ three, with fallible growth and charged transitions. The final range/tag still
 suffices for projection because all prior body captures reset on entry.
 Huge upper bounds retain exact decimal allowance and bounded lazy empty work.
 Matching work/capacity failures remain host errors. Unknown zero-width paths and
-unselected class leaves remain fully proved. Runtime selection remains separate.
+unselected class leaves remain fully proved. Runtime selects this proof after
+the zero/one-minimum nullable asserted constructor on the full capture source.
+Its dedicated body retains source, lexical names/indices, lastIndex, String
+consumers, cloning and collection, including required-empty capture resets.

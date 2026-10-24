@@ -20375,3 +20375,31 @@ All 63,752 prior API records retain exact domains, construction/search work and
 capture projection. Strict workspace Clippy, documentation tests, formatting,
 dependency policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime asserted two-required nullable string-class counts
+
+Three groups execute thirty-six native capture tables and eight additional native
+consumer programs, plus collection. They retain each required-empty reset,
+class-first and empty-first priority, word/count retries constrained by upper
+bounds, scalar one-point matches, empty-only and known-empty classes, Unicode
+boundaries/folding, named and escaped-name aliases, and source/flags. matchAll,
+callback replacement, split/search, cloning, collection and read-only lastIndex
+preserve the final body profile. Deep required-empty scopes and long shared-
+prefix members remain flat. Opt-in constructor and execution aborts preserve
+bindings, lastIndex and host-failure isolation; short required-empty successes
+retain bounded work on long input. Execution search and short-success probes
+retain their existing 100,000-step quota with compact fixed-count patterns.
+Four earlier rejection controls become native eight-record capture/finalizer
+checks with unproved leaves retained. Other nullable minima, conditional/body
+predicates, references, nested class-path loops, consuming siblings and additional
+classes retain separate proofs.
+
+Execution passes all 1,658 Unicode integration cases (560.29 s), all 431 Runtime
+unit tests, all 44 native reference programs and all four migrated controls.
+All 230,400 differential records agree across 32 class forms, twelve minimum-two
+count forms, three nullable body modes, eight rotated assertion profiles, six
+capture layouts and twelve inputs with every requested start/sticky/i/m.
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+564 Runtime case-file registrations, Parser/Test262 inventories and diff checks
+pass. Fixtures, snapshots, dependencies and default quotas are unchanged.

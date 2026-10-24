@@ -13,6 +13,7 @@ use spite_core::{
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher, RegExpUnicodeCharacterMatcher,
     RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
     RegExpUnicodeClassLiteralMatcher, RegExpUnicodeClassMatcher,
@@ -2513,13 +2514,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeAssertedRepeatedStringClassCaptures(body)));
                 }
-                RegExpUnicodeAssertedNullableStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeAssertedNullableStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeAssertedNullableStringClassCaptures(body)));
+                }
+                RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedNullableStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedTwoRequiredNullableStringClassCaptures))
 
             })?;
             if body.is_some() {
