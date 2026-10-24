@@ -190,6 +190,10 @@ impl RegExpZeroCountSpineMatcher {
         self.captures
     }
 
+    pub(crate) fn defined_capture_count(&self) -> usize {
+        self.defined
+    }
+
     /// Absolute empty span for a participating group, or an undefined slot.
     pub fn capture_range(&self, index: usize, matched: &Range<usize>) -> Option<Range<usize>> {
         (index < self.defined).then(|| matched.clone())
@@ -238,7 +242,7 @@ fn opener(units: &[u16], index: usize) -> Option<(usize, bool)> {
     (units.get(end) == Some(&0x3a)).then_some((end + 1 - index, false))
 }
 
-fn atom_end(units: &[u16], index: usize, unicode: bool, sets: bool) -> Option<usize> {
+pub(crate) fn atom_end(units: &[u16], index: usize, unicode: bool, sets: bool) -> Option<usize> {
     if units.get(index) == Some(&0x5b) {
         let mut depth = 1usize;
         let mut end = index + 1;
@@ -271,7 +275,7 @@ fn atom_end(units: &[u16], index: usize, unicode: bool, sets: bool) -> Option<us
 
 // Validated quantifier end, whether its minimum is zero, and whether max is zero.
 // An absent quantifier has the single-iteration bounds of an ordinary Term.
-fn quantifier(units: &[u16], index: usize) -> Option<(usize, bool, bool)> {
+pub(crate) fn quantifier(units: &[u16], index: usize) -> Option<(usize, bool, bool)> {
     let (mut end, minimum_zero, maximum_zero) = match units.get(index) {
         Some(0x3f | 0x2a) => (index + 1, true, false),
         Some(0x2b) => (index + 1, false, false),

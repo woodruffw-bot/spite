@@ -876,6 +876,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute zero-erased quantified class/property spines through Runtime, preserving required and skipped capture states and String consumers.
 - [x] Prove arbitrary validated zero-count groups inside quantified ordinary/modifier spines, reserving erased slots and checking complete outside scope in linear work.
 - [x] Execute arbitrary erased groups inside quantified spines through Runtime, retaining duplicate-name aliases, erased reference/lookaround slots and outside capture ranges.
+- [x] Prove concatenated zero-erased class/property and arbitrary-group spines with interleaved defined/undefined capture slots and original erased reference bindings.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

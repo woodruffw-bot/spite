@@ -23159,3 +23159,25 @@ The preceding class/property quantified-spine snapshot passes all 2,780 RegExp
 integration tests (787.25 s), all 35 Test262 runner tests and all 16,343 reviewed
 variants (395.93 s for the corpus group). These broad results precede the
 arbitrary-body Runtime integration above.
+
+
+## Core concatenated zero-erased capture spines
+
+A separate sequence plan composes at least two complete zero-erased class,
+property or arbitrary-group spines. A flat mode-aware term scan retains original
+validated bindings, including references to other terms' slots inside erased
+bodies. A lexical capture mask composes each term's defined prefix and undefined
+suffix independently (22.2.2.2, 22.2.2.3.1), allowing interleaved capture states.
+Construction, retained storage and cloning are source-sized; matching and
+individual capture queries are constant.
+
+All 24 actual-source focused Core tests pass (0.44 s), including four new groups
+for native masks, escaped and class delimiters, scope exclusions, opt-in aborts,
+Unicode boundaries, cloning, 100,000 interleaved capture slots and a 20,000-digit
+required count. All 4,096 exact boundary/capture comparisons across 512
+independently native-validated sequences agree. A lexical review of all 2,700
+retained unsupported controls finds none newly admitted by this proof.
+
+Strict workspace Clippy with all targets passes (38.38 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Existing APIs and Runtime behavior are unchanged; integration follows separately.

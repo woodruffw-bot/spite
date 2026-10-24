@@ -12986,3 +12986,20 @@ count, defined outside prefix and erased inside suffix. Named aliases (including
 duplicate names in erased alternatives), references inside erased bodies,
 indices, lastIndex and String consumers keep the standard result path through
 cloning and collection. No matching body data is queried by the retained plan.
+
+
+A separate zero-count sequence plan composes at least two complete top-level
+class/property or arbitrary-group spines. Each constituent proof matches empty
+without input conditions or executed references, so concatenation preserves
+each term's capture state independently (22.2.2.2, 22.2.2.3.1). A flat mode-aware
+term scan preserves escaped and class delimiters; projected terms retain their
+original validated bindings, including references to other lexical slots inside
+erased bodies. No projected term is validated or rebound in isolation.
+
+The plan appends each term's defined prefix and undefined suffix to a lexical
+capture mask. Unlike a single spine, a sequence can alternate these roles any
+number of times. Construction, retained storage and cloning are source-sized;
+matching and individual capture queries are constant. Source and temporary
+storage work is charged before allocation, and actual matching charges before
+input access. Shared enclosing groups, choices, assertions and unproved
+consuming terms require additional proofs. Earlier APIs are unchanged.
