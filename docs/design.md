@@ -11793,3 +11793,28 @@ nonnullable asserted constructor on the full capture source. Its dedicated body
 retains original source, lexical names/indices, lastIndex, String consumers,
 cloning and collection, including defined required-empty captures and undefined
 zero-iteration captures.
+
+
+Core separately proves asserted nullable string-class bodies with minimum exactly
+two. It retains the same complete class/capture proof and unconditional outside
+predicates. The shared nullable continuation finder now receives its proved plan;
+the earlier zero/one-minimum API retains its original domain and exact callback
+sequence. Nullable minima above two remain separate.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher accepts each required empty iteration,
+resetting captures for the newly entered body. A consuming first iteration may
+therefore be overwritten by a required empty second iteration. Class-first and
+empty-first bodies retain their original ordering during word, branch and count
+retries. A required empty second result is retained as a defined zero-width final
+range with its class/empty tag; optional empty copies remain rejected.
+
+Positive-body pruning tests available input independently of the remaining
+required count: other required copies may be empty. Thus one input point can
+satisfy a consuming first copy and an empty second copy, preserving the latter's
+capture profile. At most two required zero-width children can be added; later
+children consume input. Live continuation depth is bounded by input points plus
+three, with fallible growth and charged transitions. The final range/tag still
+suffices for projection because all prior body captures reset on entry.
+Huge upper bounds retain exact decimal allowance and bounded lazy empty work.
+Matching work/capacity failures remain host errors. Unknown zero-width paths and
+unselected class leaves remain fully proved. Runtime selection remains separate.

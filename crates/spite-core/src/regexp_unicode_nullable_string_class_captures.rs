@@ -14,6 +14,7 @@ mod repeated_string_classes;
 pub use repeated_string_classes::{
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+    RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher,

@@ -1761,6 +1761,15 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         input: &JsString,
         requested: usize,
         sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        Self::find_plan_with_work(&self.plan, input, requested, sticky, charge)
+    }
+    fn find_plan_with_work<E>(
+        plan: &RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
         use RegExpUnicodeMatchError::{Capacity, Work};
@@ -1771,12 +1780,7 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         let mut frames = Vec::<NullableAssertedStringRepeatFrame>::new();
         loop {
             charge(8).map_err(Work)?;
-            if self.plan.assertions[0].matches(
-                input,
-                start,
-                self.plan.ignore_case,
-                self.plan.multiline,
-            ) {
+            if plan.assertions[0].matches(input, start, plan.ignore_case, plan.multiline) {
                 if frames.capacity() == 0 {
                     charge(6).map_err(Work)?;
                     frames.try_reserve(1).map_err(|_| Capacity)?;
@@ -1788,23 +1792,15 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                     let depth = frames.len() - 1;
                     let frame = frames.last_mut().expect("continuation frame");
                     let at = frame.at;
-                    let can_stop = depth >= self.plan.minimum;
-                    if can_stop && !self.plan.plan.greedy && !frame.stop_done {
+                    let can_stop = depth >= plan.minimum;
+                    if can_stop && !plan.plan.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if self.plan.assertions[1].matches(
-                            input,
-                            at,
-                            self.plan.ignore_case,
-                            self.plan.multiline,
-                        ) {
-                            return Ok(Some(self.result(&frames, start)));
+                        if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
+                            return Ok(Some(Self::result(&frames, start)));
                         }
                     }
-                    if depth < self.plan.minimum
-                        && self.plan.plan.empty_first
-                        && !frame.epsilon_done
-                    {
+                    if depth < plan.minimum && plan.plan.empty_first && !frame.epsilon_done {
                         frame.epsilon_done = true;
                         if frames.len() == frames.capacity() {
                             charge(frames.capacity().saturating_mul(8).saturating_add(8))
@@ -1815,25 +1811,28 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                         continue;
                     }
                     if !frame.body_done {
-                        if self.plan.maximum.is_some_and(|maximum| depth >= maximum)
-                            || input.len() - at < self.plan.minimum.saturating_sub(depth)
+                        if plan.maximum.is_some_and(|maximum| depth >= maximum)
+                            || if plan.minimum > 1 {
+                                at == input.len()
+                            } else {
+                                input.len() - at < plan.minimum.saturating_sub(depth)
+                            }
                         {
                             frame.body_done = true;
                         } else {
                             let next = if let Some(before) = frame.before {
                                 let inspected = (input.len() - at)
-                                    .min(self.plan.plan.class.max_match_code_units())
+                                    .min(plan.plan.class.max_match_code_units())
                                     .saturating_add(1);
                                 charge(
                                     inspected
-                                        .saturating_mul(self.plan.plan.class.search_passes(true))
+                                        .saturating_mul(plan.plan.class.search_passes(true))
                                         .saturating_add(4),
                                 )
                                 .map_err(Work)?;
-                                self.plan.plan.class.prefix_before(input, at, before)
+                                plan.plan.class.prefix_before(input, at, before)
                             } else {
-                                self.plan
-                                    .plan
+                                plan.plan
                                     .class_prefix(input, at, &mut charge)
                                     .map_err(Work)?
                             };
@@ -1850,10 +1849,10 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                             frame.body_done = true;
                         }
                     }
-                    if depth < self.plan.minimum && !frame.epsilon_done {
+                    if depth < plan.minimum && !frame.epsilon_done {
                         frame.epsilon_done = true;
-                        let selected = self.plan.plan.class.has_empty_member();
-                        if selected || self.plan.plan.empty_alternative {
+                        let selected = plan.plan.class.has_empty_member();
+                        if selected || plan.plan.empty_alternative {
                             if frames.len() == frames.capacity() {
                                 charge(frames.capacity().saturating_mul(8).saturating_add(8))
                                     .map_err(Work)?;
@@ -1863,16 +1862,11 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                             continue;
                         }
                     }
-                    if can_stop && self.plan.plan.greedy && !frame.stop_done {
+                    if can_stop && plan.plan.greedy && !frame.stop_done {
                         frame.stop_done = true;
                         charge(8).map_err(Work)?;
-                        if self.plan.assertions[1].matches(
-                            input,
-                            at,
-                            self.plan.ignore_case,
-                            self.plan.multiline,
-                        ) {
-                            return Ok(Some(self.result(&frames, start)));
+                        if plan.assertions[1].matches(input, at, plan.ignore_case, plan.multiline) {
+                            return Ok(Some(Self::result(&frames, start)));
                         }
                     }
                     frames.pop();
@@ -1889,7 +1883,6 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
         }
     }
     fn result(
-        &self,
         frames: &[NullableAssertedStringRepeatFrame],
         start: usize,
     ) -> RegExpUnicodeRepeatedStringClassMatch {
@@ -1906,5 +1899,65 @@ impl RegExpUnicodeAssertedNullableStringClassCaptureMatcher {
                     .expect("successful continuation")
                     .class_selected,
         }
+    }
+}
+
+/// A nullable asserted string-class body with exactly two required iterations.
+///
+/// Requires validated v/vi input and normalized capture names. Each required
+/// empty body participates and resets captures; optional empty progress is
+/// rejected. Word, branch and repetition continuations use a flat stack.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher {
+    plan: RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
+}
+impl RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher {
+    /// Proves a nullable body, unconditional assertions and minimum exactly two.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(plan) =
+            RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher::compile_plan_with_work(
+                source,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        if plan.minimum != 2 || !(plan.plan.empty_alternative || plan.plan.class.has_empty_member())
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self { plan }))
+    }
+    /// Counts every original lexical capture.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects outside scopes on the whole match and body slots on its last iteration.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodeRepeatedStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes two required bodies and consuming optional continuations.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodeRepeatedStringClassMatch>, RegExpUnicodeMatchError<E>> {
+        RegExpUnicodeAssertedNullableStringClassCaptureMatcher::find_plan_with_work(
+            &self.plan, input, requested, sticky, charge,
+        )
     }
 }

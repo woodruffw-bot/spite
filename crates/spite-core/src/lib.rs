@@ -100,6 +100,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
