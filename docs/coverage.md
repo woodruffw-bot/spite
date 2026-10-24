@@ -25488,10 +25488,8 @@ control for the property-fold case.
 
 All 436 Runtime unit tests pass (5.80 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
-diff checks pass. Runtime inventory is 619 case files. Full RegExp and Test262
-runs started from this source snapshot are still in progress; the previously
-recorded complete compositional-static snapshot remains the last finished broad
-run. Fixtures, snapshots, dependencies, profiles, native stacks and default
+diff checks pass. Runtime inventory is 619 case files. The full RegExp run started from this snapshot remains in progress. The
+completed Test262 result from the same snapshot is recorded below. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
 
 ## Core Unicode lookahead with operand word boundaries
@@ -25516,3 +25514,12 @@ All 2,732 lexed direct Unsupported controls remain excluded. Strict workspace
 Clippy with all targets, documentation tests, formatting, dependency policy,
 inventories and diff checks pass. Runtime selection remains separate. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Complete Unicode lookahead Test262 snapshot
+
+The complete-positive-lookahead Runtime snapshot at `4c595b80` passes all
+35 Test262 package tests and all 16,343 reviewed corpus execution variants.
+The corpus test completes in 390.54 s with the existing conformance profile.
+Fixture, harness and review inventories retain their preceding values. This
+snapshot covers consuming operand captures; the word-boundary extension has
+separate focused evidence.
