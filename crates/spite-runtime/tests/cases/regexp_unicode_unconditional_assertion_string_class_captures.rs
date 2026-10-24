@@ -198,6 +198,12 @@ fn unconditional_assertion_string_class_required_captures_consumers_and_scope() 
     check(
         r"var marker=0,m,r;try{r=/($)([\q{a|ab}])/dvg;r.lastIndex=1;m=r.exec('ab')}finally{marker=3}marker===3&&m===null&&r.lastIndex===0",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(^)([\\q{a|ab}]|)($)",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",{\"values\":[\"\",\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",null,0],[false,\"x\\nab\",null,0],[true,\"ab!\",null,0],[true,\"\",{\"values\":[\"\",\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[2,4],[2,2],[2,4],[4,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"(\b)?([\q{a|ab}])",
         r"(^){0}([\q{a|ab}])",
@@ -209,7 +215,7 @@ fn unconditional_assertion_string_class_required_captures_consumers_and_scope() 
         r"(\b)(\B)([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
         r"(\b)(\B)([\q{a|ab}])\1",
         r"(\b)(\B)([\q{a|ab}])+",
-        r"(^)([\q{a|ab}]|)($)",
+        r"(^)([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|)($)",
     ] {
         let mut realm = Realm::default();
         assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");

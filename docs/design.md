@@ -11433,4 +11433,7 @@ branch slots are inserted between the outside lexical slots. Projection uses
 the selected root range and explicit branch tag, including class-selected empty
 members. Searching delegates to the bounded ordered root finder. Construction,
 cloning and dropping use source-sized flat storage. Older constructors and exact
-callbacks remain unchanged. Runtime selection remains separate from this proof.
+callbacks remain unchanged. Runtime selects the surrounding proof after the
+mixed-layer constructor on the full normalized source. Its dedicated body
+retains explicit class/empty tags, lexical point/whole/branch projection, original
+source and names, String consumers, cloning, collection and opt-in host aborts.

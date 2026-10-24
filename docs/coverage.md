@@ -19639,3 +19639,40 @@ advancement, initial leading normalization and ordinary vi singleton controls.
 Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. No Runtime selection,
 corpus fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime required assertion siblings around string-class alternatives
+
+Three groups retain 64 class/input witnesses, seven paired branch/spine
+profiles, six inner layouts, seven outside spine layouts and both orders.
+Independent finite native controls determine original alternative eligibility;
+outside start/end points, whole ranges and never-participating slots are checked
+separately from branch-local masks. All lexical names, index aliases, original
+source and sticky state remain intact. Exact consumers cover shorter eligible
+members, distinct class/alternative empty selections, pure empty choices and
+counts, captured required predicates, root-local assertions, supplementary
+initial offsets and folding, escaped names, matchAll, callback replacement,
+search, split, read-only lastIndex, clones and collection. A specified failed
+Unicode search excludes surrogate interiors. Twenty-two previous rejection
+controls in eight files become native-verified success/normal-finalizer checks;
+unknown-leaf replacements remain. Deep enclosing roles and long words stay
+flat. Opt-in constructor/exec aborts preserve bindings/lastIndex and winning
+initial sticky empty alternatives retain bounded work. Full root and surrounding
+spine proofs remain required; optional assertions, assertion-bearing choices,
+quantified class ancestors, extra branches/classes, consuming outside terms,
+references and unknown leaves remain separate host unsupported cases.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/
+spine pairs match independent finite-alternative native sticky controls with
+shared predicates outside the original choice, explicit Unicode advancement and
+initial leading normalization. They cover 32 class families, thirteen local
+predicate profiles, seven shared profiles, seven outside layouts, twelve inputs,
+all starts and sticky/i/m flags. All seventeen fixed consumer programs and all
+22 eight-record migrated controls match Runtime/native references, with ordinary
+finite vi singleton controls. Stable passes all 431 Runtime unit cases and all
+1,619 Unicode RegExp integration cases. The conformance profile passes all 35
+harness/corpus checks, including every one of the 16,343 reviewed variants.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is 551
+case files and 4,325 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

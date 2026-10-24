@@ -941,6 +941,8 @@ mod regexp_unicode_string_then_checked_class;
 mod regexp_unicode_string_unions;
 #[path = "cases/regexp_unicode_surrogate_literals.rs"]
 mod regexp_unicode_surrogate_literals;
+#[path = "cases/regexp_unicode_surrounding_asserted_string_class_captures.rs"]
+mod regexp_unicode_surrounding_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_surrounding_line_string_class_captures.rs"]
 mod regexp_unicode_surrounding_line_string_class_captures;
 #[path = "cases/regexp_unicode_surrounding_word_string_class_captures.rs"]
