@@ -27,6 +27,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
     RegExpUnicodeUnassertedZeroMinimumSingleStringClassCaptureMatcher,
+    RegExpUnicodeUnassertedZeroMinimumStringClassAlternativeMatcher,
     RegExpUnicodeUnassertedZeroMinimumStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,

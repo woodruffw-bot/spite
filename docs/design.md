@@ -12095,3 +12095,19 @@ selects this live-predicate single-class proof after its assertion-free
 counterpart on the full normalized capture source. Its dedicated body retains
 source/flags, named aliases, lastIndex, String consumers, cloning and collection,
 including shorter-member retries and defined required empty class captures.
+
+
+Core separately proves one class/empty alternative when every outside predicate
+belongs to a zero-minimum scope. The shared single-occurrence scan masks only
+known optional predicates and preserves all original groups. Complete root,
+grouped and bare/exact-one alternative proofs validate both branches, including
+an unselected class. Remaining live predicates decline before selection.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 retain earliest Unicode candidates and
+original branch order. An empty-first choice keeps class captures undefined;
+a selected empty class member in a class-first branch keeps them defined.
+Ordinary outside point scopes retain their own ranges, while optional scopes
+and unselected branches stay undefined. Unknown leaves, references, additional
+classes and other class-path counts retain separate proofs. Clone/drop, charged
+work, cancellation and constructor/capacity failures retain their distinction.
+Runtime selection remains separate.

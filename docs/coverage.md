@@ -20991,3 +20991,21 @@ zero-minimum scope layouts and eight live predicate profiles cover starts,
 sticky, ignore-case and multiline behavior. Strict workspace Clippy,
 documentation tests, formatting, policy and inventories pass; fixtures,
 snapshots, dependencies and default quotas remain unchanged.
+
+
+## Core class/empty alternatives with only zero-minimum outside predicates
+
+Four new focused groups pass using the existing independent oracle helpers.
+Six finite/scalar/known-empty families, five bare/exact-one forms, four capture
+layouts, both branch orders, four zero-minimum scope layouts and four skipped
+predicate profiles cover six UTF-16 inputs and all starts/sticky/i/m settings.
+Forty native tables preserve source order, required empty class identity and
+original lexical captures. Deep 20,000 optional scopes, defined outside points,
+long shared-prefix members, clone/drop, every callback cancellation/recovery and
+full proof of unselected unknown/literal/reference/additional-class leaves pass.
+
+The preceding sixty focused groups passed before this separate proof was added.
+All 73,320 prior API records retain exact domains, charged work and capture
+projection. Strict workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime selection remains separate; fixtures,
+snapshots, dependencies and default quotas are unchanged.
