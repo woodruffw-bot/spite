@@ -11317,3 +11317,29 @@ separate proofs. Runtime selects this proof after the common-line constructor on
 the full normalized source. The shared capture body retains original source,
 flags, lexical names and aliases, String consumers, cloning, collection and
 opt-in constructor/exec abort behavior.
+
+
+Core `compile_nested_assertion_wrappers_with_work` on the asserted alternative
+matcher admits canonical assertion layers interleaved with complete ordinary
+wrappers. One flat v-aware delimiter pass indexes group ends. Recovery commits
+a frame's predicates only when its retained body is one complete wrapper;
+otherwise it keeps the original payload boundaries. This preserves local root
+assertions without repeatedly scanning nested bodies. Partial and quantified
+wrappers retain separate proofs.
+
+Common line flags and same-side word conjunctions are applied to each original
+alternative at its actual start/end. ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7
+require the selected member and its continuation to succeed before captures are
+projected. Opposite start/end words can hold across a consuming class, while the
+empty alternative checks both at one point. Same-side contradictions still pass
+both complete original branches and every class leaf through the existing root
+proof before they become never matches. Original root predicates keep their
+branch-specific scope.
+
+Every peeled capture owns the whole selected range in lexical prefix order;
+inner branch slots retain conditional participation and class-selected empty
+members keep their explicit identity. Source-sized construction and delimiter
+storage remain flat, with no per-match capture history. Earlier constructors
+retain their domains and exact callbacks. Noncanonical single layers, outside
+siblings, choice counts, optional assertions, references and unknown leaves
+remain separate proofs. Runtime selection remains separate from this constructor.

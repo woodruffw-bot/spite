@@ -2,7 +2,7 @@
 use super::{
     JsString, RegExpUnicodeSetCompileError, RegExpUnicodeSingleStringClassCaptureMatcher,
     RegExpUnicodeStringClassBranchMatch, enclosed_v_group_body, has_root_alternative,
-    single_word_gate_frame, unicode_start,
+    single_v_group_closes, single_word_gate_frame, unicode_start,
 };
 use std::ops::Range;
 
@@ -253,6 +253,119 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
             .checked_add(enclosing_captures)
             .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
         plan.enclosing_captures = enclosing_captures;
+        Ok(Some(plan))
+    }
+
+    /// Proves canonical assertion layers around complete alternative wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. One flat
+    /// delimiter pass bounds all subsequent frame recovery. Original root
+    /// alternatives end recovery before their local predicates are inspected.
+    /// Common predicates are conjoined on each original branch at its actual
+    /// endpoints; even false conjunctions require full leaf/body proof.
+    /// Complete wrappers preserve lexical whole-range slots (22.2.2.3–4, .7).
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_nested_assertion_wrappers_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(40).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(closes) = single_v_group_closes(units) else {
+            return Ok(None);
+        };
+        let (mut begin, mut end, mut captures, mut wrappers) =
+            (0usize, units.len(), 0usize, 0usize);
+        let (mut start_line, mut end_line) = (false, false);
+        let (mut start_words, mut end_words) = (0u8, 0u8);
+        loop {
+            // Root predicates belong to their own alternatives. The delimiter
+            // map identifies that payload without repeatedly scanning it.
+            let tail = &units[begin..end];
+            let Some(frame) = single_word_gate_frame(tail) else {
+                return Ok(None);
+            };
+            let candidate_begin = begin + frame.body.start;
+            let candidate_end = begin + frame.body.end;
+            let candidate = &units[candidate_begin..candidate_end];
+            let width = if candidate.starts_with(&[0x28, 0x3f, 0x3a]) {
+                3
+            } else if candidate.first() == Some(&0x28) && candidate.get(1) != Some(&0x3f) {
+                1
+            } else {
+                break;
+            };
+            if closes.get(candidate_begin) != Some(&(candidate_end - 1)) {
+                break;
+            }
+            start_line |= frame.start_line;
+            end_line |= frame.end_line;
+            if let Some(word) = frame.start_word {
+                start_words |= if word { 1 } else { 2 };
+            }
+            if let Some(word) = frame.end_word {
+                end_words |= if word { 1 } else { 2 };
+            }
+            wrappers += 1;
+            captures += usize::from(width == 1);
+            begin = candidate_begin + width;
+            end = candidate_end - 1;
+        }
+        if wrappers == 0 || (!start_line && !end_line && start_words == 0 && end_words == 0) {
+            return Ok(None);
+        }
+        let payload = &units[begin..end];
+        let Some(bar) = root_bar(payload) else {
+            return Ok(None);
+        };
+        let mut decorated = Vec::with_capacity(units.len().saturating_add(12));
+        for (index, branch) in [&payload[..bar], &payload[bar + 1..]]
+            .into_iter()
+            .enumerate()
+        {
+            if index != 0 {
+                decorated.push(0x7c);
+            }
+            if start_line {
+                decorated.push(0x5e);
+            }
+            if start_words & 1 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x62]);
+            }
+            if start_words & 2 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x42]);
+            }
+            decorated.extend_from_slice(branch);
+            if end_words & 1 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x62]);
+            }
+            if end_words & 2 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x42]);
+            }
+            if end_line {
+                decorated.push(0x24);
+            }
+        }
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(decorated),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = captures;
         Ok(Some(plan))
     }
 
