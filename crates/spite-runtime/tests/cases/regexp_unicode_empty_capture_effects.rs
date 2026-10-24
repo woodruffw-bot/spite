@@ -253,18 +253,46 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    for inner in [
-        r"[\q{a|b}]|\b()?",
-        r"[\q{a|b}]|(?=())",
-        r"[\q{a|b}]|\1()?",
-        r"[\q{a|b}]|x()?",
-        r"([\q{a|b}])(\b)|()?",
-        r"([\q{a|b}])+|()?",
-        r"[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()?",
-        r"[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()?",
+    for (inner, expected_zero) in [
+        (
+            r"[\q{a|b}]|\b()?",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|(?=())",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|\1()?",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|x()?",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"([\q{a|b}])(\b)|()?",
+            r#"[["","<undefined>","<undefined>","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>","<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"([\q{a|b}])+|()?",
+            r#"[["","<undefined>","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()?",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
     ] {
         for count in ["+?", "{0}", "{2,3}", "{999999999999999999999999999999}"] {
             let source = format!("({inner}){count}");
+            if count == "{0}" {
+                let pattern = JsString::from(source.as_str());
+                let expected = JsString::from(expected_zero);
+                check(&format!(
+                    "var pattern={pattern:?},input='a😀b',r=new RegExp(pattern,'dvgy');r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==='dgvy'&&m.input===input&&Object.hasOwn(m,'groups')&&Object.hasOwn(m.indices,'groups')&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,r.lastIndex])==={expected:?}"
+                ));
+                continue;
+            }
             assert!(
                 matches!(
                     Realm::default().eval(&format!("/{source}/v.test('a')")),

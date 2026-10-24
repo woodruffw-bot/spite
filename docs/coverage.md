@@ -22788,3 +22788,18 @@ complete.
 Strict workspace Clippy with all targets, workspace documentation tests,
 formatting, dependency policy, case/fixture inventories and diff checks pass.
 Dependencies and default quotas are unchanged.
+
+
+## Nested zero-bound controls after whole-pattern erasure
+
+Review of generated negative loops now checks 63 zero-bound source forms in nine
+additional case files against native full-match metadata, including undefined
+capture slots and indices at a normalized surrogate-pair boundary. Larger bounds
+retain their unsupported checks. Superseded zero-only exceptions and duplicate
+source forms are removed from those loops.
+
+All 76 affected integration tests pass: 40 empty-body tests (23.02 s), 24 partial
+empty-body tests (5.73 s), six counted-sequence tests (0.75 s), and six quantified
+sequence tests (0.89 s). The 57 additional generated native records also agree
+on the fresh CLI. Strict workspace Clippy, formatting, dependency policy,
+inventories and diff checks pass. Snapshots and fixtures remain unchanged.

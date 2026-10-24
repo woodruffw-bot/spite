@@ -260,16 +260,39 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    for inner in [
-        r"(?:|)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"(?:|)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
-        r"([\q{a|b}])|(?:X|)*",
-        r"[\q{a|b}]|(?:|a)",
-        r"[\q{a|b}]|(?:\b|())",
-        r"[\q{a|b}]|(?:|\b)",
-        r"[\q{a|b}]|(\b)?",
-        r"[\q{a|ab}&&a]||(?:|)*",
-        r"\b[\q{a|ab}&&a]|(?:|)*",
+    for (inner, expected_zero) in [
+        (
+            r"(?:|)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
+            r#"[["","<undefined>"],[[1,1],"<undefined>"],1,1]"#,
+        ),
+        (
+            r"([\q{a|b}])|(?:X|)*",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|(?:|a)",
+            r#"[["","<undefined>"],[[1,1],"<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|(?:\b|())",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|(?:|\b)",
+            r#"[["","<undefined>"],[[1,1],"<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|b}]|(\b)?",
+            r#"[["","<undefined>","<undefined>"],[[1,1],"<undefined>","<undefined>"],1,1]"#,
+        ),
+        (
+            r"[\q{a|ab}&&a]||(?:|)*",
+            r#"[["","<undefined>"],[[1,1],"<undefined>"],1,1]"#,
+        ),
+        (
+            r"\b[\q{a|ab}&&a]|(?:|)*",
+            r#"[["","<undefined>"],[[1,1],"<undefined>"],1,1]"#,
+        ),
     ] {
         for count in [
             "+?",
@@ -278,10 +301,12 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
             "{999999999999999999999999999999,1000000000000000000000000000000}",
         ] {
             let source = format!("({inner}){count}");
-            if inner == r"\b[\q{a|ab}&&a]|(?:|)*" && count == "{0}" {
-                check(
-                    r####"var pattern="(\\b[\\q{a|ab}&&a]|(?:|)*){0}",input="a",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\"],[[0,0],\"<undefined>\"],0,0]""####,
-                );
+            if count == "{0}" {
+                let pattern = JsString::from(source.as_str());
+                let expected = JsString::from(expected_zero);
+                check(&format!(
+                    "var pattern={pattern:?},input='a😀b',r=new RegExp(pattern,'dvgy');r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==='dgvy'&&m.input===input&&Object.hasOwn(m,'groups')&&Object.hasOwn(m.indices,'groups')&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,r.lastIndex])==={expected:?}"
+                ));
                 continue;
             }
             assert!(
