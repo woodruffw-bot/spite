@@ -710,6 +710,19 @@ impl RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
         else {
             return Ok(None);
         };
+        Self::compile_projection(
+            Projection { shadow, overlays },
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+    fn compile_projection<E>(
+        Projection { shadow, overlays }: Projection,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
         use crate::RegExpUnicodeSingleStringClassCaptureMatcher as P;
         macro_rules! attempt {
             ($method:ident) => {
@@ -954,6 +967,61 @@ impl RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher {
         self.plan.capture_range(index, found)
     }
     /// Executes live conjunction gates with original class and count priority.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+/// One required class beside predicate choices equivalent to live conjunctions.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Complete
+/// predicate scopes retain ordered conditional captures; live gates preserve
+/// member retries and required empty class identity on bare/exact-one paths.
+/// https://262.ecma-international.org/17.0/#sec-compileassertion
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher {
+    plan: RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+}
+impl RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher {
+    /// Proves complete outside choices and a bare or exact-one class spine.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(projection) = project_choices(source, true, false, true, &mut charge)? else {
+            return Ok(None);
+        };
+        RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher::compile_projection(
+            projection,
+            ignore_case,
+            multiline,
+            charge,
+        )
+        .map(|plan| plan.map(|plan| Self { plan }))
+    }
+    /// Counts original lexical captures, including unselected assertion branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects original slots using this result's actual endpoint truth.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes the proved class and live gates with original member priority.
     pub fn find_with_captures_and_work<E>(
         &self,
         input: &JsString,

@@ -21284,3 +21284,23 @@ documentation tests, formatting, policy, inventories and diff checks pass.
 Fixtures, snapshots, dependencies and default quotas remain unchanged.
 
 All 431 Runtime unit tests also pass (5.86 s).
+
+
+The preceding always-successful-choice Runtime suite passes all 1,709 Unicode
+RegExp tests (613.07 s), including both newly supported surrounding-choice
+controls and the required single-class and alternatives groups.
+
+## Core single classes beside conjunctive predicate choices
+
+Four new focused groups pass (0.14 s), comparing 160 independent native tables
+and a finite-string endpoint/continuation oracle. Bare/exact-one paths, required
+empty class members, source-priority predicate branches, huge required counts,
+skipped scopes, all UTF-16 starts, sticky, multiline and ignore-case preserve
+whole/class ranges and conditional lexical slots. Deep 20,000-level scopes,
+20,000-unit shared-prefix members, shorter successful member retries, clone/drop,
+every charged cancellation/recovery and complete unknown/reference/nonconjunctive
+proofs remain flat. All 77,736 frozen prior API records retain exact domains,
+charged work and capture projection. Strict workspace Clippy (16.95 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and
+default quotas are unchanged.

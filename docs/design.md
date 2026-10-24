@@ -12213,3 +12213,13 @@ this proof after the three always-successful choice proofs on the full normalize
 capture source. Its dedicated body retains endpoint truth, last-iteration state,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+Core separately proves one required class beside predicate choices equivalent to
+live conjunction gates. Bare and exact-one class paths retain required empty
+class identity and original lexical capture slots. The complete single-class
+proof sees canonical outside gates, so a failed suffix can retry a shorter
+member before search advances. Endpoint truth projects the original ordered
+predicate captures; zero-minimum scopes still remain undefined (ECMA-262 edition
+17 22.2.2.3–4). Other class counts, consuming siblings, unknown leaves and
+nonconjunctive choices retain their separate proofs. Earlier choice APIs retain
+exact domains and charged work. Runtime selection remains separate.

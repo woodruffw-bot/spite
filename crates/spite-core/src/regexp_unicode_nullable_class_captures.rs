@@ -16,6 +16,7 @@ pub use string_class_captures::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
+    RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
@@ -1236,4 +1237,5 @@ mod tests {
     include!("regexp_unicode_predicate_choice_single_string_class_tests.rs");
     include!("regexp_unicode_predicate_choice_string_class_alternative_tests.rs");
     include!("regexp_unicode_conjunctive_predicate_choice_string_class_tests.rs");
+    include!("regexp_unicode_conjunctive_predicate_choice_single_string_class_tests.rs");
 }
