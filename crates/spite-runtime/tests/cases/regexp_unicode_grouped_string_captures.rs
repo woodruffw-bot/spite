@@ -186,11 +186,17 @@ fn grouped_string_proofs_finish_finalizers_and_keep_counts_assertions_and_refere
     check(
         r"var marker=0,m;try{m=/([\q{|ab}]|())$/dv.exec('ab!')}finally{marker=3}var a=/([\q{|ab}]|())$/dv.exec('ab');marker===3&&m.length===3&&m.index===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===3&&a[0]==='ab'&&a[1]==='ab'&&a[2]===undefined",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="([\\q{a|ab}]|())+",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[false,\"\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[true,\"\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())$",
         r"([\q{|ab}]|())\1",
-        r"([\q{a|ab}]|())+",
+        r"([[\q{a|ab}]&&\p{RGI_Emoji}]|())+",
         r"([\q{|ab}]|()){0}",
         r"([\q{a|ab}]x|())",
         r"([\q{|ab}]|[\q{cd}])",

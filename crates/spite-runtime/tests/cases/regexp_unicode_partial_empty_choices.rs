@@ -251,6 +251,12 @@ fn partial_choice_capture_complete_proofs_finish_finalizers_and_keep_empty_side_
             ));
         }
     }
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="((?:(?:|)*?)(?:|)+?|([\\q{ab}&&\\q{cd}]))+?",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for inner in [
         r"([\q{a|b}])|(\b)?",
         r"([\q{a|b}])|(?:X|(?:(?:(?:(?:|)*?)(?:|)+?|)*?)(?:(?:(?:|)*?)(?:|)+?|)+?)?",
@@ -258,7 +264,7 @@ fn partial_choice_capture_complete_proofs_finish_finalizers_and_keep_empty_side_
         r"([\q{a|b}])+|(?:(?:|)*?)(?:|)+?",
         r"\b([\q{a|b}])|(?:(?:|)*?)(?:|)+?",
         r"([\q{a|b}])||(?:(?:|)*?)(?:|)+?",
-        r"(?:(?:|)*?)(?:|)+?|([\q{ab}&&\q{cd}])",
+        r"(?:(?:|)*?)(?:|)+?|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
         r"(?:(?:|)*?)(?:|)+?|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
     ] {
         for count in ["+?", "{0}", "{2,3}", "{999999999999999999999999999999}"] {

@@ -11547,4 +11547,6 @@ undefined when none executes; outside slots project the whole range. A capturing
 group enclosing a repeated class atom therefore differs from a repeated
 capturing group. Storage/clone/drop remain flat and source-sized. Class-prefix
 and search work is charged before inspection; no default quota or per-iteration
-capture history is added. Runtime selection remains separate.
+capture history is added. Runtime stores the same whole range, final iteration
+and selected-class tag through a dedicated body, preserving original source,
+names/indices, lastIndex, String consumers, cloning and collection.

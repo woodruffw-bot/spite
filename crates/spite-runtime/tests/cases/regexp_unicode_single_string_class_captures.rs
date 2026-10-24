@@ -178,11 +178,17 @@ fn single_string_class_proofs_finish_finalizers_and_keep_other_features_separate
     check(
         r"var marker=0,m;try{m=/()([\q{|ab}])\b()$/dv.exec('!ab')}finally{marker=3}marker===3&&m.length===4&&m.index===1&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===''&&m.indices[3][0]===3&&/()([\q{|ab}])\b()$/v.exec('!')===null",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="()([\\q{a|ab}])+()",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[0,2],[0,0],[0,2],[2,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[2,4],[2,2],[2,4],[4,4]],\"index\":2},4],[true,\"ab!\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[0,2],[0,0],[0,2],[2,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[2,4],[2,2],[2,4],[4,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
         r"()([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])\b()$",
         r"()([\q{a|ab}])\1",
-        r"()([\q{a|ab}])+()",
+        r"()([[\q{a|ab}]&&\p{RGI_Emoji}])+()",
         r"()([\q{|ab}]){0}()",
         r"()([\q{a|ab}])x",
         r"()([\q{|ab}])([\q{cd}])",

@@ -106,8 +106,14 @@ fn complete_nullable_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(|[\\q{ab}&&\\q{cd}])+",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for source in [
-        r"/(|[\q{ab}&&\q{cd}])+/v.test('')",
+        r"/(|[[\q{ab}&&\q{cd}]&&\p{RGI_Emoji}])+/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])+?/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('aaa')",

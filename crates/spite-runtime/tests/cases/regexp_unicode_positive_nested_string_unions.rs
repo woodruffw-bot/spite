@@ -97,12 +97,24 @@ fn former_controls_complete_finalizers_and_other_algebra_remains_pending() {
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[[\\q{ab}]]+",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4],[true,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="(?:[[\\q{ab}]])+",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4],[true,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for source in [
         r"/[[^a]\q{ab}]/v.test('ab')",
         r"/[[\q{}][\p{RGI_Emoji}]]/v.test('')",
-        r"/[[\q{ab}]]+/v.test('ab')",
+        r"/[[[\q{ab}]]&&\p{RGI_Emoji}]+/v.test('ab')",
         r"/[[\q{ab}]][a]/v.test('aba')",
-        r"/(?:[[\q{ab}]])+/v.test('ab')",
+        r"/(?:[[[\q{ab}]]&&\p{RGI_Emoji}])+/v.test('ab')",
         r"/\b^[[\q{ab}]&&\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(

@@ -19917,3 +19917,38 @@ capture projection. Twenty native fixed tables agree with the new matcher.
 Strict workspace Clippy, documentation tests, formatting, dependency policy,
 inventories and diff checks pass. No Runtime selection, fixture, snapshot,
 dependency or default quota changes.
+
+
+## Runtime simple variable-width string-class repetition
+
+Three groups execute twenty native capture tables and eight additional native
+String/metadata consumers, plus collection. They preserve whole-versus-last
+capture scopes, required versus skipped empty participation, empty-first progress
+retries, source priority over global maximum length, nonsticky search, sticky
+failure, original UTF-16 endpoints/folding, named indices aliases, replacement,
+matchAll, search/split, clones and read-only lastIndex. Counted deep scopes and
+long members remain flat. Opt-in constructor and execution aborts preserve
+bindings and lastIndex; lazy zero-iteration success retains bounded work on long
+inputs. Other counts, nested loops, predicates, references and unknown leaves
+retain closed controls.
+
+
+Execution passes all three new groups and 431 Runtime units. A full Unicode
+run passes 1,624 cases and identifies ten obsolete unsupported expectations;
+after migrating them, all 44 finalizer groups, the affected character-result
+group and three v-set state/consumer groups pass, covering all 1,634 Unicode
+cases. Twenty-eight fixed consumer references and 28 migrated eight-record
+capture/finalizer controls agree with the fresh CLI and native references.
+Unsupported leaves remain explicit controls under every original count loop.
+
+All 230,400 exact differential records agree across 384 independent pairs,
+32 class families, six simple counts, six capture layouts, class-first,
+empty-first and plain bodies, atom/group scopes, twelve inputs and all
+starts/sticky/i/m combinations. Native finite controls group complete words
+before quantification; Unicode candidate stepping retains the approved leading
+boundary and ordinary finite vi folding controls. A fresh conformance-profile
+Test262 run passes all 35 tests, including every one of the 16,343 reviewed
+variants. Strict workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. The Runtime inventory is 556 case files and
+4,340 integration cases; fixtures, snapshots, dependencies and default quotas
+are unchanged.
