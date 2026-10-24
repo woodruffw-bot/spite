@@ -36,6 +36,7 @@ use spite_core::{
     RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
@@ -113,6 +114,9 @@ pub(crate) enum RegExpMatcherBody {
     ),
     UnicodeZeroCountAssertedStringClassAlternativeCaptures(
         RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
+    ),
+    UnicodeZeroMinimumAssertedStringClassCaptures(
+        RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
     ),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
@@ -202,6 +206,9 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(m) => {
                 m.capture_count()
             }
+            RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(m) => {
+                m.capture_count()
+            }
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
@@ -232,6 +239,22 @@ impl RegExpMatcher {
         sticky: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(matcher) =
+            &self.body
+        {
+            return matcher
+                .find_with_captures_and_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: usize::from(found.class_selected),
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: found.last_iteration,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(matcher) =
             &self.body
         {
@@ -844,6 +867,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeZeroCountAssertedSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeUnassertedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
@@ -941,6 +965,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeZeroCountAssertedSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeUnassertedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_) => 0,
             RegExpMatcherBody::Literal(_)
@@ -1070,6 +1095,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeZeroCountAssertedSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeUnassertedZeroCountStringClassAlternativeCaptures(_)
             | RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(_)
+            | RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
@@ -1170,6 +1196,16 @@ impl RegExpMatch<'_> {
             }
             RegExpMatcherBody::UnicodeSingleStringClassCaptures(matcher) => {
                 return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::UnicodeZeroMinimumAssertedStringClassCaptures(matcher) => {
+                return matcher.capture_range(
+                    index,
+                    &spite_core::RegExpUnicodeRepeatedStringClassMatch {
+                        range: self.range.clone(),
+                        last_iteration: self.atom_capture.clone(),
+                        class_selected: self.branch != 0,
+                    },
+                );
             }
             RegExpMatcherBody::UnicodeZeroCountAssertedStringClassAlternativeCaptures(matcher) => {
                 return matcher.capture_range(

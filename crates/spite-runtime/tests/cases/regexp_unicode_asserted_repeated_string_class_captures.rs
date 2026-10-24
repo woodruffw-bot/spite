@@ -209,12 +209,12 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\",\"aaa\",\"<undefined>\"],\"indices\":[[0,6],[3,6],[3,6],\"<undefined>\"],\"index\":0},6],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"aaa\",\"aaa\",\"<undefined>\"],\"indices\":[[0,6],[3,6],[3,6],\"<undefined>\"],\"index\":0},6],[true,\"ababa\",null,0],[true,\"\\nab\\n\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
+    assert_eq!(Realm::default().eval(r####"var pattern="(^)*([\\q{aa|aaa}])*$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\"],[[3,3],\"<undefined>\",\"<undefined>\"],3,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"^([[\q{|aa|aaa}]&&\p{RGI_Emoji}])*$",
         r"^(([[\q{aa|aaa}]&&\p{RGI_Emoji}])|())*$",
         r"(^([\q{aa|aaa}]))*$",
         r"(^|)([\q{aa|aaa}])*$",
-        r"(^)*([\q{aa|aaa}])*$",
         r"^([\q{aa|aaa}])*(\b|)",
         r"^([\q{aa|aaa}])*\1",
         r"a^([\q{aa|aaa}])*$",

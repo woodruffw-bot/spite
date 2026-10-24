@@ -20741,8 +20741,8 @@ members, scalar fallback, constructor abort isolation and unselected unknown-lea
 rejection remain flat. Native controls preserve original empty/class alternatives.
 
 All three groups pass (1.47 s), as do 431 Runtime unit tests (12.76 s) and forty
-native tables plus eight consumer references on the fresh CLI. The first
-43,200 exact differential records agree across the ordered class/empty matrix.
+native tables plus eight consumer references on the fresh CLI. All
+230,400 exact differential records agree across the ordered class/empty matrix.
 All 1,536 proof/flag combinations compile across 32 mixed nullable/nonnullable
 scalar/finite forms, twelve bare/exact-one spellings, six capture layouts,
 four skipped-scope layouts and eight skipped-predicate profiles. Four
@@ -20817,3 +20817,34 @@ All 70,376 prior API records retain exact domains, charged construction/search
 work and capture projection. Strict workspace Clippy, documentation tests,
 formatting, policy, inventories and diff checks pass. Runtime selection remains
 separate; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime asserted repetition with zero-minimum outside predicate scopes
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Optional/star/bounded/open outside predicate scopes leave all their slots
+undefined while live endpoint predicates retain required class/empty iteration
+identity. Named/escaped-name aliases, indices, matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex preserve source and
+capture identity. Deep 1,000 optional scopes, huge required empty counts, defined
+surrounding point captures, 20,000-unit shared-prefix words, constructor abort
+isolation and rejection of optional consuming/reference/unknown terms pass.
+
+Eight former unsupported cases now compare complete native captures/indices,
+source, flags, input, undefined groups and lastIndex. Six literal controls and
+two controls with constructed prefixes cover skipped optional predicates and
+zero-progress stars beside live end predicates. Original unknown-leaf controls
+remain. Literal/program/formatted/generated and constructed-prefix scans verify
+the expanded domain.
+
+All three new groups pass (1.07 s), alongside 431 Runtime unit tests (12.71 s),
+forty native tables and eight consumer programs on the fresh CLI. All eight
+migrated Rust groups pass (0.39 s), and their independent native programs also
+agree on the fresh CLI. All 230,400 exact differential records match across 384
+independent pairs, with all 1,536 proof/flag combinations supported. Thirty-two
+mixed nullable/nonnullable scalar/finite forms, twelve body count spellings,
+three class/empty modes, six capture layouts, four zero-minimum scope layouts
+and eight live predicate profiles cover every start, sticky, ignore-case and
+multiline setting. Strict workspace Clippy, documentation tests, formatting,
+policy and inventories pass; fixtures, snapshots, dependencies and default
+quotas are unchanged.

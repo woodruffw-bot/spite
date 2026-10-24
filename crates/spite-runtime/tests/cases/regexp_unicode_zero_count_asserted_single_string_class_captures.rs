@@ -207,9 +207,9 @@ fn zero_count_asserted_single_string_class_required_empty_deep_skips_and_prefix_
 #[test]
 fn zero_count_asserted_single_string_class_conditional_body_predicates_unknown_terms_and_references_remain_closed()
  {
+    assert_eq!(Realm::default().eval(r####"var pattern="^(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B))?([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((\b)|(\B)){1}([\q{|a|ab}]){3}",
-        r"((\b)|(\B))?([\q{|a|ab}]){3}",
         r"(^([\q{|a|ab}])){3}",
         r"([\q{|a|ab}]){3}(\b|)",
         r"([\q{|a|ab}]){3}\1",

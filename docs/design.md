@@ -12032,4 +12032,8 @@ must be proved and decline. A zero-minimum class-containing ancestor also
 declines. Required predicates outside skipped scopes remain live and retain
 actual endpoint continuations. Construction and storage remain flat and
 source-sized; constructor/capacity errors and callback cancellation retain their
-existing distinction. Runtime selection remains separate.
+existing distinction. Runtime selects the zero-minimum outside-scope repetition
+proof after the skipped class/empty alternative proofs on the full normalized
+capture source. Its dedicated body retains original source/flags, lexical named
+aliases, lastIndex, String consumers, cloning and collection. Optional predicate
+scope captures remain undefined beside defined ordinary outside point captures.
