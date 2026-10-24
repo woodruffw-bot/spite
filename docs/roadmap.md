@@ -896,6 +896,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute impossible negative-empty root sequences through Runtime and String consumers with original capture inventories, coercion order and lastIndex rules.
 - [x] Prove mandatory ordinary enclosing groups around impossible negative-empty sequences, retaining all original outside and inside capture slots.
 - [x] Execute mandatory enclosing impossible sequences through Runtime, preserving original capture inventories, bindings and String consumers.
+- [x] Prove impossible root choices only when every alternative independently proves no match, preserving complete inventories and original projected bindings.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

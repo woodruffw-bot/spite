@@ -23698,3 +23698,26 @@ All 436 Runtime unit tests pass (8.82 s). Strict workspace Clippy with all targe
 passes (17.51 s), alongside workspace documentation tests, formatting, dependency
 policy, inventories and diff checks. The grouped inventory remains 615 Runtime
 cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+## Core impossible root alternatives
+
+A separate constructor proves a root disjunction only when every alternative
+independently proves no match (22.2.2.2). A flat mode-aware split preserves
+escaped/class/nested separators. Each arm keeps original bindings and uses the
+direct or mandatory-enclosing proof; empty, possible or unproved arms prevent
+the proof. Full original capture inventories are summed across all arms.
+
+All 67 actual-source focused Core tests pass (0.52 s), including four new groups
+for direct/wrapped arms, cross-arm original references inside erased operands,
+separator scopes, possible-arm exclusions, 20,000 root alternatives and every
+construction-work abort. All 12,800 actual native input/start no-match records
+and full capture inventories agree across 512 independently composed ordinary/
+u/v choices.
+
+Strict workspace Clippy with all targets passes (26.89 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A review of 2,732 direct source/pattern literal-array controls in ordinary/raw
+Rust strings finds none newly admitted. Construction remains source-sized;
+retained storage and matching remain constant. Earlier APIs and Runtime behavior
+are unchanged; integration follows separately.

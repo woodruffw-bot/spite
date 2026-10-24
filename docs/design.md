@@ -13231,3 +13231,14 @@ so constructor capture checks use the full source without an extra offset.
 Erased references to outside/later names keep their original bindings. Shared
 execution preserves source/flags, lastIndex, String consumers, cloning and
 collection while the retained matcher still performs constant no-match work.
+
+
+A separate impossible-choice constructor admits a root disjunction only when
+every alternative independently proves no match. A flat mode-aware scan splits
+root separators while retaining escaped, class and nested choice boundaries.
+Each arm uses the direct or mandatory-enclosing proof with its original binding
+context; empty, possible or unproved arms reject the constructor. Original
+capture inventories are summed without renumbering references. Source/copy
+work precedes allocation, each projected arm is scanned independently and total
+construction stays source-sized. Retained storage and actual no-match work
+remain constant; earlier constructors and their work are unchanged.

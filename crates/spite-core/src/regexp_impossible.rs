@@ -124,6 +124,86 @@ impl RegExpImpossibleMatcher {
         )
     }
 
+    /// Proves a root choice only when every alternative is independently impossible.
+    ///
+    /// Requires full original validation and normalized capture heads. Empty or
+    /// unproved alternatives prevent this proof. Each projected arm retains its
+    /// original binding context and uses the direct or mandatory-enclosing proof.
+    /// Source/copy work precedes allocation; branch scans remain source-sized.
+    pub fn compile_alternatives_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(8).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let units = source.code_units();
+        let mut ranges = Vec::new();
+        let mut start = 0;
+        let mut cursor = 0;
+        let mut depth = 0usize;
+        let mut class_depth = 0usize;
+        while let Some(&unit) = units.get(cursor) {
+            if unit == 0x5c {
+                cursor += 2;
+                continue;
+            }
+            if class_depth != 0 {
+                if unit == 0x5d {
+                    class_depth -= 1;
+                } else if sets && unit == 0x5b {
+                    class_depth += 1;
+                }
+            } else {
+                match unit {
+                    0x5b => class_depth = 1,
+                    0x28 => depth += 1,
+                    0x29 => {
+                        let Some(next) = depth.checked_sub(1) else {
+                            return Ok(None);
+                        };
+                        depth = next;
+                    }
+                    0x7c if depth == 0 => {
+                        ranges.push(start..cursor);
+                        start = cursor + 1;
+                    }
+                    _ => {}
+                }
+            }
+            cursor += 1;
+        }
+        if ranges.is_empty() || depth != 0 || class_depth != 0 {
+            return Ok(None);
+        }
+        ranges.push(start..units.len());
+        let mut captures = 0;
+        for range in ranges {
+            if range.is_empty() {
+                return Ok(None);
+            }
+            let arm = JsString::from_code_units(units[range].to_vec());
+            let mut plan =
+                Self::compile_negative_validated_with_work(&arm, unicode, sets, &mut charge)?;
+            if plan.is_none() {
+                plan = Self::compile_enclosing_negative_validated_with_work(
+                    &arm,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+            }
+            let Some(plan) = plan else {
+                return Ok(None);
+            };
+            captures += plan.captures;
+        }
+        Ok(Some(Self { captures }))
+    }
+
     /// Returns no match, charging actual work before any possible input access.
     pub fn find_with_work<E>(
         &self,
@@ -341,6 +421,98 @@ mod tests {
                 matches!(RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
                 &source, true, true, |n| {seen.push(n); if seen.len()==stop+1 {Err(stop)}else{Ok(())}}
             ), Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    fn alternatives(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn impossible_alternatives_reserve_all_original_slots_without_rebinding_arms() {
+        for (source, captures) in [
+            (r"(?!)|(?<!a{0})", 0),
+            (r"[\p{RGI_Emoji}]+(?!(a{0}))|((?<!b{0})(c))", 3),
+            (r"((?!(\3){0})[\p{RGI_Emoji}]+)|(?<!(\uD800{0}))(a)", 4),
+            (r"\|(?!(a{0}))|[\q{a|ab}](?<!b{0})", 1),
+        ] {
+            assert_eq!(
+                alternatives(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn any_empty_possible_or_unproved_alternative_prevents_no_match_proof() {
+        for source in [
+            "(?!)",
+            "(?!)|a{0}",
+            "a|(?!)",
+            "(?!)|",
+            "|(?!)",
+            "(?!)|(?:(?!a{0}))?",
+            "(?!(a))|(?!)",
+            "(?:(?!)|a{0})",
+        ] {
+            assert!(alternatives(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn many_impossible_alternatives_have_linear_source_work_and_constant_retained_state() {
+        let source = std::iter::repeat_n("(?!a{0})", 20_000)
+            .collect::<Vec<_>>()
+            .join("|");
+        let mut work = 0;
+        let plan = RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+            &JsString::from(source.as_str()),
+            true,
+            true,
+            |n| {
+                work += n;
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(plan.capture_count(), 0);
+        assert!(work <= source.len() * 128);
+    }
+
+    #[test]
+    fn impossible_alternative_work_aborts_before_each_arm_projection_and_operand_step() {
+        let source = JsString::from("(?!a{0})|((?<!b{0}))");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert!(work.len() >= 5);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
             );
             assert_eq!(seen, work[..=stop]);
         }
