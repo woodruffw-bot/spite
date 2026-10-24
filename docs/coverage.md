@@ -21561,3 +21561,27 @@ two migrated groups pass (0.26 s and 0.30 s). All 431 Runtime unit tests pass
 formatting, policy, inventories and diff checks. The grouped Runtime inventory
 contains 588 case files. Fixtures, snapshots, dependencies and default quotas
 remain unchanged.
+
+
+## Core branch-local predicate choices in root class/empty alternatives
+
+Four focused groups pass (2.19 s), comparing 160 native capture tables and an
+independent earliest-start/branch-priority oracle. Finite, scalar, known-empty
+and empty-member classes, both root orders, bare/padded exact-one paths,
+required/skipped scopes and huge pure-predicate counts retain original captures.
+All UTF-16 starts, sticky, multiline and ignore-case preserve branch-local
+endpoint conditions. Explicit controls retry shorter members and later starts,
+retain required empty class identity and clear every unselected branch slot.
+Deep 20,000-level branches, 20,000-unit shared-prefix words, cloning/drop, forged
+truth and every charged cancellation/recovery remain flat. Complete unknown
+terms in either branch, including behind never gates, retain their proof limits.
+
+All 82,152 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (57.51 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding arbitrary repetition and larger nullable-count Runtime sources
+pass all 1,724 Unicode RegExp integration tests (885.57 s). This run compiled
+before the required-single and class/empty truth-profile extensions.

@@ -828,7 +828,7 @@ fn single_branch<E>(
         charge,
     )
 }
-fn root_bar(units: &[u16]) -> Option<usize> {
+pub(super) fn root_bar(units: &[u16]) -> Option<usize> {
     let (mut depth, mut class, mut at) = (0usize, 0usize, 0usize);
     let mut bar = None;
     while let Some(&unit) = units.get(at) {

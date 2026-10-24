@@ -1690,3 +1690,181 @@ fn profiled_plain_alternative<E>(
                 .1;
     }
 }
+
+/// Two root alternatives with branch-local predicate choices and one class.
+///
+/// Requires validated Unicode Sets source and normalized capture names. One
+/// branch contains a bare/exact-one string class; the other contains only pure
+/// empty terms and line/word predicates. Complete branch proofs precede matching,
+/// even behind never gates. Earliest start and original branch order determine
+/// conditional captures, including required empty class identity (22.2.2.3–4).
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableRootStringClassAlternativeMatcher {
+    class: RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
+    empty: RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
+    class_first: bool,
+    captures: usize,
+}
+impl RegExpUnicodeTruthTableRootStringClassAlternativeMatcher {
+    /// Proves exactly two complete root branches without enclosing choice counts.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(4).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let units = source.code_units();
+        let Some(bar) = super::super::super::asserted_alternatives::root_bar(units) else {
+            return Ok(None);
+        };
+        let left = root_truth_branch_source(&units[..bar], false)?;
+        let right = root_truth_branch_source(&units[bar + 1..], false)?;
+        let (class, empty_source, class_first) = if let Some(class) =
+            RegExpUnicodeTruthTableSingleStringClassCaptureMatcher::compile_with_work(
+                &left,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )? {
+            (class, &units[bar + 1..], true)
+        } else if let Some(class) =
+            RegExpUnicodeTruthTableSingleStringClassCaptureMatcher::compile_with_work(
+                &right,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        {
+            (class, &units[..bar], false)
+        } else {
+            return Ok(None);
+        };
+        // An appended empty class executes the original pure-empty branch at
+        // one input position without adding any lexical capture slots. The
+        // complete single-class proof rejects an original class or unknown term.
+        let empty_source = root_truth_branch_source(empty_source, true)?;
+        let Some(empty) =
+            RegExpUnicodeTruthTableSingleStringClassCaptureMatcher::compile_with_work(
+                &empty_source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let captures = class
+            .capture_count()
+            .checked_add(empty.capture_count())
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(Some(Self {
+            class,
+            empty,
+            class_first,
+            captures,
+        }))
+    }
+    /// Counts original lexical slots across both root alternatives.
+    pub fn capture_count(&self) -> usize {
+        self.captures
+    }
+    /// Projects only the selected branch's original lexical capture slots.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        let (plan, offset) = if found.repeated.class_selected {
+            (
+                &self.class,
+                if self.class_first {
+                    0
+                } else {
+                    self.empty.capture_count()
+                },
+            )
+        } else {
+            (
+                &self.empty,
+                if self.class_first {
+                    self.class.capture_count()
+                } else {
+                    0
+                },
+            )
+        };
+        let local = index.checked_sub(offset)?;
+        (local < plan.capture_count())
+            .then(|| plan.capture_range(local, found))
+            .flatten()
+    }
+    /// Searches each complete branch and applies source-priority ties.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+        let Some(start) = crate::regexp_literal::unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        let (first, second) = if self.class_first {
+            (&self.class, &self.empty)
+        } else {
+            (&self.empty, &self.class)
+        };
+        let a = first.find_with_captures_and_work(input, start, sticky, &mut charge)?;
+        if a.as_ref().is_some_and(|f| f.repeated.range.start == start) {
+            return Ok(a.map(|mut f| {
+                f.repeated.class_selected = self.class_first;
+                f
+            }));
+        }
+        let b = second.find_with_captures_and_work(input, start, sticky, charge)?;
+        let chosen = match (a, b) {
+            (Some(a), Some(b)) => {
+                if a.repeated.range.start <= b.repeated.range.start {
+                    Some((a, self.class_first))
+                } else {
+                    Some((b, !self.class_first))
+                }
+            }
+            (Some(a), None) => Some((a, self.class_first)),
+            (None, Some(b)) => Some((b, !self.class_first)),
+            (None, None) => None,
+        };
+        Ok(chosen.map(|(mut f, selected)| {
+            f.repeated.class_selected = selected;
+            f
+        }))
+    }
+}
+
+fn root_truth_branch_source<E>(
+    units: &[u16],
+    empty: bool,
+) -> Result<JsString, RegExpUnicodeSetCompileError<E>> {
+    // The noncapturing tautology supplies a proved outside choice even when
+    // the original branch contains only bare assertions or pure empty terms.
+    let prefix = JsString::from(r"(?:\b|\B)");
+    let suffix = JsString::from(if empty { r"[\q{}]" } else { "" });
+    let capacity = units
+        .len()
+        .checked_add(prefix.len())
+        .and_then(|n| n.checked_add(suffix.len()))
+        .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+    let mut source = Vec::new();
+    source
+        .try_reserve_exact(capacity)
+        .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
+    source.extend_from_slice(prefix.code_units());
+    source.extend_from_slice(units);
+    source.extend_from_slice(suffix.code_units());
+    Ok(JsString::from_code_units(source))
+}

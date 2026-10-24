@@ -12326,3 +12326,22 @@ proofs. Runtime selects this alternatives truth-profile proof after the
 required-single proof on the full normalized capture source. The dedicated body
 retains actual endpoint truth, class/empty selection, source/flags, named aliases,
 indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves two root alternatives with branch-local predicate
+choices: one bare/exact-one string-class branch and one pure-empty predicate
+branch. Each complete branch reuses the single-class truth-profile proof. A
+noncapturing tautology permits branches with bare predicates; an appended empty
+class proves the pure-empty branch at one position without adding capture slots.
+Complete validation rejects original extra classes, references and unknown terms
+even when a preceding branch always succeeds or a profile is never true.
+
+Each immutable branch search retains its own endpoint continuations. The earliest
+start wins; ties follow original root order (ECMA-262 edition 17 22.2.2.3–4).
+Explicit branch selection preserves required empty class identity and leaves all
+unselected branch captures undefined. Lexical offsets project the original
+slots; neither synthetic proof term appears in captures or Runtime source.
+Source, branch storage and clone/drop remain flat. Enclosing root-choice wrappers,
+additional branches, other class counts and consuming empty-branch terms retain
+separate proofs. Earlier APIs retain exact domains and charged work. Runtime
+selection remains separate.
