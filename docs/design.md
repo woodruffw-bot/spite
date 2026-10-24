@@ -13952,3 +13952,14 @@ all lexical slots as undefined without exposing consumed data or spans. Counter
 merges and prefix clear markers avoid scanning nested masks; construction stays
 source-sized at arbitrary depth. Earlier static modes retain their domains and
 source-work charges, with original full validation and bindings intact.
+
+
+Runtime selects the undefined-capture positive mode after the earlier static
+constructors. Guaranteed-successful operands can consume while all their
+lexical captures remain undefined, including negative-assertion, erased and
+skipped groups. Both directions export exact undefined body slots and retain
+required/optional outside masks. Full normalized source preserves original
+bindings; shared execution keeps Unicode boundaries, indices/groups, source/
+flags, lastIndex, String consumers, cloning and collection, with original errors
+and coercions before proof execution. The large compiler remains outside
+reentrant conversion frames.

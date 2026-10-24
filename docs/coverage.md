@@ -25380,3 +25380,23 @@ documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 618; fixtures, snapshots, dependencies and default
 quotas are unchanged. This commit adds the Core API; Runtime selection follows
 separately.
+
+
+Successful positive static proofs with undefined operand captures (Runtime)
+-------------------------------------------------------------------------
+
+Runtime selects the undefined-capture positive mode after earlier static proofs.
+All thirteen focused integration groups pass (0.45 s), including four new groups
+for both directions, negative/erased/skipped body slots and outside masks, own
+undefined group properties and indices, source/flags and lastIndex, String
+consumers, cloning, collection, original errors and coercion order, 1,000 outside
+groups plus 1,000 positive layers and 20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 independently generated
+ordinary/u/v undefined-capture patterns agree on the fresh CLI, as do all
+thirteen complete JavaScript programs. All thirteen constructor regression
+groups pass (0.07 s), including native reentry. All 436 Runtime unit tests pass
+(3.96 s). Strict workspace Clippy with all targets passes (6.77 s), alongside
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 618; fixtures, snapshots, dependencies and default
+quotas are unchanged.
