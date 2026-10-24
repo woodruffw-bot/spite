@@ -1137,3 +1137,6 @@ mod regexp_unicode_prefix_free_string_class_captures;
 
 #[path = "cases/regexp_unicode_two_required_string_class_captures.rs"]
 mod regexp_unicode_two_required_string_class_captures;
+
+#[path = "cases/regexp_unicode_required_string_class_captures.rs"]
+mod regexp_unicode_required_string_class_captures;

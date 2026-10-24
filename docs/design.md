@@ -11704,4 +11704,8 @@ succeeds, the proved pure-empty continuation admits greedy/lazy optional members
 without further required-history search. Only the whole range and final body
 range escape for capture projection. Nonsticky failed runs retry the next Unicode
 boundary after their starting position. Earlier matcher APIs retain their exact
-domains, callback work and projection. Runtime selection remains separate.
+domains, callback work and projection. Runtime selects this proof after the
+earlier two-required constructor on the full capture source. Its dedicated body
+preserves original source, lexical names/indices, lastIndex, String consumers,
+cloning and collection. Runtime dispatch carries matching work and storage errors
+separately, mapping capacity failures to host heap errors.

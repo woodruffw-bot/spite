@@ -20176,6 +20176,9 @@ inventories and diff checks pass. The Runtime inventory is 560 case files and
 4,352 integration cases. Fixtures, snapshots, dependencies and default quotas
 are unchanged.
 
+A fresh conformance-profile Test262 run on this Runtime implementation passes
+all 35 tests, including all 16,343 reviewed variants.
+
 
 ## Core larger required string-class counts
 
@@ -20196,3 +20199,35 @@ Clippy, documentation tests, formatting, dependency policy, inventories and diff
 checks pass. Matching capacity and opt-in work failures retain separate host
 error variants. Runtime selection remains separate; fixtures, snapshots,
 dependencies and default quotas are unchanged.
+
+
+## Runtime larger required string-class counts
+
+Three groups execute twenty native capture tables and eight additional native
+consumer programs, plus collection. They retain required-continuation priority
+through earlier shorter-member retries, scalar fallback, whole-versus-last
+scopes, greedy/lazy counts, huge uppers, Unicode boundaries/folding, named and
+escaped-name aliases, source/flags, matchAll, callback replacement, split/search,
+cloning and read-only lastIndex. Deep counted scopes and long overlapping
+members stay flat. Opt-in constructor and greedy execution aborts preserve
+bindings, lastIndex and host-failure isolation; short required successes retain
+bounded matching work on long inputs. Two earlier rejection controls become
+native eight-record capture/finalizer checks with unproved class leaves retained.
+Runtime dispatch carries matching-capacity and work errors separately, preserving
+host failure isolation. Assertions, references, nested class-path loops,
+consuming siblings and additional classes retain separate proofs.
+
+
+Execution passes all 1,649 Unicode RegExp integration cases, including the three
+new groups, and 431 Runtime units. All 28 fixed consumer references and two
+migrated eight-record tables agree with the fresh CLI and native references.
+All 230,400 differential records agree across 384 independent pairs, twelve
+counts, 32 overlapping/algebraic/scalar class forms, six capture layouts, twelve
+inputs and all starts/sticky/i/m combinations. Finite native alternatives retain
+longest-member priority and the earlier vi folding and Unicode leading-boundary
+reference policy.
+
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. The Runtime inventory is 561 case files and
+4,355 integration cases. Fixtures, snapshots, dependencies and default quotas
+are unchanged.

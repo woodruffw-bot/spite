@@ -148,7 +148,14 @@ impl Realm {
                 Ok(())
             })?;
             self.object_work(span, |_, budget| {
-                matcher.find_with_work(string, index, sticky, |work| budget.charge(work))
+                matcher
+                    .find_with_work(string, index, sticky, |work| budget.charge(work))
+                    .map_err(|error| match error {
+                        spite_core::RegExpUnicodeMatchError::Work(error) => error,
+                        spite_core::RegExpUnicodeMatchError::Capacity => {
+                            crate::object::Error::Heap(spite_heap::Error::Capacity)
+                        }
+                    })
             })?
         };
         let Some(found) = found else {

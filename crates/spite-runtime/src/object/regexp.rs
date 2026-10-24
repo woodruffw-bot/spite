@@ -17,11 +17,13 @@ use spite_core::{
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
     RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
-    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeMatchError, RegExpUnicodeNullableClassCaptureMatcher,
+    RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher, RegExpUnicodePropertyDotMatcher,
     RegExpUnicodeRepeatedAtomMatcher, RegExpUnicodeRepeatedClassCaptureMatcher,
-    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeSingleStringClassCaptureMatcher,
-    RegExpUnicodeStringSetMatcher, RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
+    RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRequiredStringClassCaptureMatcher,
+    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringSetMatcher,
+    RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
 };
 use spite_heap::Handle;
@@ -67,6 +69,7 @@ pub(crate) enum RegExpMatcherBody {
     ),
     UnicodePrefixFreeStringClassCaptures(RegExpUnicodePrefixFreeStringClassCaptureMatcher),
     UnicodeTwoRequiredStringClassCaptures(RegExpUnicodeTwoRequiredStringClassCaptureMatcher),
+    UnicodeRequiredStringClassCaptures(RegExpUnicodeRequiredStringClassCaptureMatcher),
     UnicodePropertyDot(RegExpUnicodePropertyDotMatcher),
     Sequence(RegExpSequenceMatcher),
     Disjunction(RegExpDisjunctionMatcher),
@@ -127,6 +130,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodeCountedNullableStringClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodeRequiredStringClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePropertyDot(_) => 2,
             RegExpMatcherBody::Prefixed(m) => m.capture_count(),
             RegExpMatcherBody::RepeatedLiteral(m) => m.capture_count(),
@@ -151,6 +155,31 @@ impl RegExpMatcher {
     }
 
     pub fn find_with_work<'a, E>(
+        &'a self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::UnicodeRequiredStringClassCaptures(matcher) = &self.body {
+            return matcher
+                .find_with_captures_and_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|found| RegExpMatch {
+                        range: found.range,
+                        matcher: self,
+                        branch: usize::from(found.class_selected),
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: found.last_iteration,
+                    })
+                });
+        }
+        self.find_without_capacity_with_work(input, start, sticky, charge)
+            .map_err(RegExpUnicodeMatchError::Work)
+    }
+
+    fn find_without_capacity_with_work<'a, E>(
         &'a self,
         input: &JsString,
         start: usize,
@@ -560,6 +589,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeRequiredStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::UnicodePropertyDot(_)
@@ -645,6 +675,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeRequiredStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_) => 0,
             RegExpMatcherBody::Literal(_)
@@ -762,6 +793,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodeCountedNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodePrefixFreeStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures(_)
+            | RegExpMatcherBody::UnicodeRequiredStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeSingleStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeRepeatedClassCaptures(_)
             | RegExpMatcherBody::QuantifiedContinuation(_)
@@ -862,6 +894,16 @@ impl RegExpMatch<'_> {
             }
             RegExpMatcherBody::UnicodeSingleStringClassCaptures(matcher) => {
                 return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::UnicodeRequiredStringClassCaptures(matcher) => {
+                return matcher.capture_range(
+                    index,
+                    &spite_core::RegExpUnicodeRepeatedStringClassMatch {
+                        range: self.range.clone(),
+                        last_iteration: self.atom_capture.clone(),
+                        class_selected: self.branch != 0,
+                    },
+                );
             }
             RegExpMatcherBody::UnicodeTwoRequiredStringClassCaptures(matcher) => {
                 return matcher.capture_range(
@@ -1688,7 +1730,7 @@ mod tests {
             );
             assert!(matches!(
                 matcher.find_with_work(&input, 1, true, |_| Err(7)),
-                Err(7)
+                Err(spite_core::RegExpUnicodeMatchError::Work(7))
             ));
             assert!(
                 matcher
@@ -1758,7 +1800,7 @@ mod tests {
             );
             assert!(matches!(
                 matcher.find_with_work(&input, 1, true, |_| Err(7)),
-                Err(7)
+                Err(spite_core::RegExpUnicodeMatchError::Work(7))
             ));
             assert!(
                 matcher
@@ -1828,7 +1870,7 @@ mod tests {
             );
             assert!(matches!(
                 matcher.find_with_work(&input, 1, true, |_| Err(7)),
-                Err(7)
+                Err(spite_core::RegExpUnicodeMatchError::Work(7))
             ));
             assert!(
                 matcher
@@ -1891,7 +1933,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 1), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 1, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -1953,7 +1995,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2015,7 +2057,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2077,7 +2119,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2141,7 +2183,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 1), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 1, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2215,7 +2257,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2310,7 +2352,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2383,7 +2425,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2456,7 +2498,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2528,7 +2570,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2600,7 +2642,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2674,7 +2716,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2748,7 +2790,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 6);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(7)),
-            Err(7)
+            Err(spite_core::RegExpUnicodeMatchError::Work(7))
         ));
         assert!(
             matcher
@@ -2911,7 +2953,7 @@ mod tests {
         assert_eq!(found.capture(2), None);
         assert!(matches!(
             matcher.find_with_work(&input, 0, true, |_| Err(19u8)),
-            Err(19)
+            Err(spite_core::RegExpUnicodeMatchError::Work(19))
         ));
     }
 
@@ -2965,7 +3007,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(29u8)),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert!(
             matcher
@@ -3036,7 +3078,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(29u8)),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert!(
             matcher
@@ -3107,7 +3149,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(29u8)),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert!(
             matcher
@@ -3178,7 +3220,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(29u8)),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert!(
             matcher
@@ -3249,7 +3291,7 @@ mod tests {
         assert_eq!(matcher.search_work(true, source.len(), input.len() - 2), 4);
         assert!(matches!(
             matcher.find_with_work(&input, 2, true, |_| Err(29u8)),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert!(
             matcher
@@ -3322,7 +3364,7 @@ mod tests {
                 aborted.push(units);
                 Err(29u8)
             }),
-            Err(29)
+            Err(spite_core::RegExpUnicodeMatchError::Work(29))
         ));
         assert_eq!(aborted, [1]);
         let mut outside = Vec::new();
@@ -3406,7 +3448,9 @@ mod tests {
                 Ok(())
             }
         });
-        assert!(matches!(cancelled, Err(at) if at == complete.len()));
+        assert!(
+            matches!(cancelled, Err(spite_core::RegExpUnicodeMatchError::Work(at)) if at == complete.len())
+        );
         assert_eq!(seen, complete);
         let source = JsString::from(r"((?:([\q{a}--a]))){0}");
         let body = RegExpUnicodeRepeatedAtomMatcher::compile_wrapped_v_set_with_single_character_strings_and_work(
@@ -3513,7 +3557,9 @@ mod tests {
                         Ok(())
                     }
                 });
-                assert!(matches!(result, Err(at) if at == complete.len()));
+                assert!(
+                    matches!(result, Err(spite_core::RegExpUnicodeMatchError::Work(at)) if at == complete.len())
+                );
                 assert_eq!(seen, complete);
             }
         }
