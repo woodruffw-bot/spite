@@ -11984,5 +11984,9 @@ empty member selected from a class-first branch retains class identity and its
 captures. Pure-empty siblings and enclosing captures retain their own points
 and ranges, while skipped scopes and unselected branch captures stay undefined.
 A class containing only unknown leaves still declines when an empty branch
-would win. Construction and searches retain charged work and callback recovery.
-Runtime selection remains separate.
+would win. Construction and searches retain charged work and callback recovery. Runtime
+selects this alternative proof after the two skipped-predicate single-class
+proofs on the full normalized source. Dedicated capture projection retains
+source/flags, named aliases, lastIndex, String consumers, cloning and collection;
+empty-first choices keep class slots undefined and class-first empty members
+keep their selected captures defined.

@@ -20727,3 +20727,25 @@ combinations compile. Four unsupported-control scans found no newly supported
 cases to migrate. Strict workspace Clippy, documentation tests, formatting,
 policy and inventories pass; fixtures, snapshots, dependencies and default
 quotas are unchanged.
+
+
+## Runtime class/empty alternatives with only skipped predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Root/grouped choice ownership and bare/exact-one class paths retain original
+source order, including class-first empty members versus empty-first choices.
+Named/escaped-name aliases, indices, matchAll, callback replacement, split/search,
+cloning, collection and read-only lastIndex retain source and capture identity.
+Deep 1,000 skipped scopes, defined outside empty points, 20,000-unit shared-prefix
+members, scalar fallback, constructor abort isolation and unselected unknown-leaf
+rejection remain flat. Native controls preserve original empty/class alternatives.
+
+All three groups pass (1.47 s), as do 431 Runtime unit tests (12.76 s) and forty
+native tables plus eight consumer references on the fresh CLI. The first
+43,200 exact differential records agree across the ordered class/empty matrix.
+All 1,536 proof/flag combinations compile across 32 mixed nullable/nonnullable
+scalar/finite forms, twelve bare/exact-one spellings, six capture layouts,
+four skipped-scope layouts and eight skipped-predicate profiles. Four
+unsupported-control scans found no cases to migrate. Strict workspace Clippy,
+documentation tests, formatting, policy and inventories pass; fixtures,
+snapshots, dependencies and default quotas are unchanged.
