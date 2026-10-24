@@ -3370,3 +3370,143 @@ impl RegExpUnicodeTruthTableNestedOptionalStringClassAlternativeMatcher {
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+/// A zero-count root around complete ordinary/exact-one class/empty wrappers.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Every
+/// capture inside the zero-count root remains undefined,
+/// including mandatory inner wrappers around the branch-local truth choice.
+/// Both original branches validate before matching erases every iteration.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableNestedZeroCountStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
+}
+impl RegExpUnicodeTruthTableNestedZeroCountStringClassAlternativeMatcher {
+    /// Proves all nested ordinary/exact-one wrappers before erasing root iterations.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let u = source.code_units();
+        let width = if u.starts_with(&[0x28, 0x3f, 0x3a]) {
+            3
+        } else if u.first() == Some(&0x28) && u.get(1) != Some(&0x3f) {
+            1
+        } else {
+            return Ok(None);
+        };
+        let (mut at, mut depth, mut class, mut close) = (0, 0usize, 0usize, None);
+        while let Some(&unit) = u.get(at) {
+            if unit == 0x5c {
+                if u.get(at + 1).is_none() {
+                    return Ok(None);
+                }
+                at += 2;
+                continue;
+            }
+            if unit == 0x5b {
+                class += 1;
+                at += 1;
+                continue;
+            }
+            if class != 0 {
+                if unit == 0x5d {
+                    class -= 1;
+                }
+                at += 1;
+                continue;
+            }
+            if unit == 0x28 {
+                depth += 1;
+            } else if unit == 0x29 {
+                let Some(n) = depth.checked_sub(1) else {
+                    return Ok(None);
+                };
+                depth = n;
+                if depth == 0 {
+                    close = Some(at);
+                    break;
+                }
+            }
+            at += 1;
+        }
+        let Some(close) = close else { return Ok(None) };
+        let count = close
+            .checked_add(1)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let Some((end, minimum, delta, _)) = asserted_repeat_count(u, count) else {
+            return Ok(None);
+        };
+        if minimum != 0 || delta != Some(0) {
+            return Ok(None);
+        }
+        if end != u.len() {
+            return Ok(None);
+        }
+        let body = &u[..count];
+        let normalized =
+            super::super::super::asserted_alternatives::exact_single_count_source(body)
+                .unwrap_or_else(|| body.to_vec());
+        let Some((body, enclosing)) = super::super::super::enclosed_v_group_body(&normalized)
+        else {
+            return Ok(None);
+        };
+        if body.start <= width {
+            return Ok(None);
+        }
+        let inner_source = JsString::from_code_units(normalized[body].to_vec());
+        let Some(inner) =
+            RegExpUnicodeTruthTableRootStringClassAlternativeMatcher::compile_with_work(
+                &inner_source,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let captures = inner
+            .capture_count()
+            .checked_add(enclosing)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(Some(Self {
+            plan: RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher {
+                inner,
+                enclosing,
+                captures,
+                greedy: false,
+                ignore_case,
+                multiline,
+            },
+        }))
+    }
+    /// Counts every original optional/enclosed and branch-local lexical slot.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Every original capture is undefined for a zero-count root.
+    pub fn capture_range(
+        &self,
+        _index: usize,
+        _found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        None
+    }
+    /// Returns an empty match at the normalized Unicode start without body queries.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}

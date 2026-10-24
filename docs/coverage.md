@@ -22180,3 +22180,29 @@ All 431 Runtime unit tests pass (11.71 s), alongside strict workspace Clippy
 (28.52 s), documentation tests, formatting, policy, inventories and diff checks.
 The grouped Runtime inventory contains 600 case files. Fixtures, snapshots,
 dependencies and default quotas remain unchanged.
+
+
+## Core zero-count outer roots around nested truth-choice wrappers
+
+Four focused groups pass (7.68 s), comparing 160 native capture tables and an
+independent 17-slot zero-iteration oracle across every UTF-16 start, sticky,
+multiline and ignore-case. Padded/lazy exact zero counts clear every enclosed
+capture, including ordinary/exact-one mandatory inner wrappers, while complete
+construction validates both original branch orders and
+finite/scalar/known-empty bodies. Matching retains bounded work at the normalized
+Unicode start. Deep 20,000-level counted wrappers, 20,000-unit shared-prefix
+bodies, thousand-digit padded bounds, cloning/drop and every charged
+cancellation/recovery remain flat. Unknown terms even in the unexecuted body,
+additional optional/zero inner counts, outside terms and other outer counts
+retain separate proofs.
+
+All 92,456 frozen prior API records retain exact domains, charged work and capture
+projection in eight bounded batches. Final strict workspace Clippy (26.28 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+The preceding captured-scope optional and zero-count root Runtime sources pass a
+fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants, including
+the pinned corpus gate (489.69 s). This run compiled before nested optional-root
+Runtime sources.

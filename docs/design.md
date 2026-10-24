@@ -12603,3 +12603,19 @@ nested optional proof after zero-count root alternatives. The dedicated body
 retains complete enclosed ranges, zero-iteration absence, original lexical slots,
 actual endpoint truth, source/flags, named aliases, indices, lastIndex and String
 consumers through cloning and collection.
+
+
+Core separately proves an exact zero-count outer root containing nested
+ordinary/exact-one wrappers around a class/empty truth choice. The complete
+outer count and all inner wrappers validate before both original branches compile.
+Every original capture inside the root remains undefined, including otherwise
+mandatory inner wrappers. Matching returns an empty range at the normalized
+Unicode start with bounded work and no body queries (ECMA-262 edition 17
+22.2.2.3, 22.2.2.7).
+
+The existing flat optional kernel executes only its zero-iteration path; the
+zero-count capture projection always returns undefined. Deep wrappers, long
+finite bodies, source-sized storage and clone/drop remain flat. Unknown terms
+in the unexecuted body, additional optional/zero inner counts, outside terms and
+other outer counts retain separate proofs. Earlier API domains, charged work
+and captures remain unchanged. Runtime selection remains separate.
