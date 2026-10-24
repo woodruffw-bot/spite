@@ -25595,8 +25595,8 @@ with the same property-range control.
 All 436 Runtime unit tests pass (3.41 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
 diff checks pass. The complete Test262 run from this snapshot is recorded
-below. Its full RegExp run remains in progress; the finished `4c595b80`
-results remain separately recorded. Runtime
+below. Its full RegExp run passes all 2,954 tests (736.36 s); the finished
+`4c595b80` results remain separately recorded. Runtime
 inventory remains 619. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
 
@@ -25646,6 +25646,11 @@ surrogate expectations stay outside direct V8 search comparison.
 All 436 Runtime unit tests pass (8.64 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
 diff checks pass. Runtime inventory remains 619. The finished broad Test262
-result records the preceding `04ce1dcc` snapshot; its full RegExp run is still
-in progress. Fixtures, snapshots, dependencies, profiles, native stacks and
+result records the preceding `04ce1dcc` snapshot; its full RegExp run passes
+all 2,954 tests (736.36 s). Fixtures, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+The `04ce1dcc` bare-atom snapshot also passes all 2,954 RegExp integration
+tests (736.36 s), completing both recorded broad checks for that snapshot.
+The later unquantified word-predicate extension retains its separate focused
+and differential evidence.
