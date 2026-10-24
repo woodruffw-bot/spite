@@ -837,13 +837,35 @@ impl RegExpUnicodeStringSetMatcher {
     /// Search allocates no state and preserves original UTF-16 ranges. Initial
     /// offsets within a surrogate pair use the approved leading-boundary rule.
     pub fn find(&self, input: &JsString, start: usize, sticky: bool) -> Option<Range<usize>> {
+        match self.find_with_endpoint_filter(input, start, sticky, |_, _| {
+            Ok::<bool, std::convert::Infallible>(true)
+        }) {
+            Ok(found) => found,
+            Err(never) => match never {},
+        }
+    }
+
+    // A continuation rejects individual complete members before longest-member
+    // selection, leaving shorter members and subsequent search starts eligible.
+    pub(crate) fn find_with_endpoint_filter<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut accept: impl FnMut(usize, usize) -> Result<bool, E>,
+    ) -> Result<Option<Range<usize>>, E> {
         let p = &self.program;
         let units = input.code_units();
-        let mut candidate = unicode_start(input, start)?;
+        let Some(mut candidate) = unicode_start(input, start) else {
+            return Ok(None);
+        };
         loop {
             let mut node = 0;
             let mut at = candidate;
-            let mut best = if p.terminal[0] && p.assertions_match(units, candidate, candidate) {
+            let mut best = if p.terminal[0]
+                && p.assertions_match(units, candidate, candidate)
+                && accept(candidate, candidate)?
+            {
                 Some(candidate)
             } else {
                 None
@@ -856,6 +878,7 @@ impl RegExpUnicodeStringSetMatcher {
                         .as_ref()
                         .is_some_and(|plan| plan.matches_original_character(point))
                     && p.assertions_match(units, candidate, at + width)
+                    && accept(candidate, at + width)?
                 {
                     best = Some(at + width);
                 }
@@ -869,17 +892,22 @@ impl RegExpUnicodeStringSetMatcher {
                 };
                 node = next;
                 at += width;
-                if p.terminal[node] && p.assertions_match(units, candidate, at) {
+                if p.terminal[node]
+                    && p.assertions_match(units, candidate, at)
+                    && accept(candidate, at)?
+                {
                     best = Some(at)
                 }
             }
             if let Some(end) = best {
-                return Some(candidate..end);
+                return Ok(Some(candidate..end));
             }
             if sticky {
-                return None;
+                return Ok(None);
             }
-            let &first = units.get(candidate)?;
+            let Some(&first) = units.get(candidate) else {
+                return Ok(None);
+            };
             candidate += unicode_input_character(units, candidate, first).1;
         }
     }

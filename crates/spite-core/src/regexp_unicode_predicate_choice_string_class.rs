@@ -1376,3 +1376,124 @@ impl RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher {
         }))
     }
 }
+
+/// A required single class beside arbitrary outside predicate-only choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Bare and
+/// exact-one class paths preserve defined empty class identity. Each complete
+/// member tests both endpoint profiles before longest-member selection; failed
+/// gates retain shorter-member and later-start continuations (22.2.2.4, 22.2.2.7).
+/// https://262.ecma-international.org/17.0/#sec-compileassertion
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableSingleStringClassCaptureMatcher {
+    plan: RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    profiles: [u8; 2],
+}
+impl RegExpUnicodeTruthTableSingleStringClassCaptureMatcher {
+    /// Proves complete outside scopes and a bare or exact-one class spine.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(projection) = project_choices(source, true, false, false, true, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        let profiles = projection.profiles;
+        Ok(
+            RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher::compile_projection(
+                projection,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+            .map(|plan| Self { plan, profiles }),
+        )
+    }
+    /// Counts original lexical captures, including unselected choice branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects original capture slots from accepted endpoint truth.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes required class members with live endpoint-profile continuations.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        let Plan::Single(single) = &self.plan.plan.plan else {
+            return Ok(None);
+        };
+        charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+        let Some(start) = crate::regexp_literal::unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        // An empty member cannot make searching first-only when profile gates
+        // can reject its position. Sticky scans still inspect one prefix.
+        let remaining = input.len() - start;
+        let inspected = if sticky {
+            remaining.min(single.class.max_match_code_units())
+        } else {
+            remaining
+        }
+        .saturating_add(1);
+        charge(inspected.saturating_mul(single.class.search_passes(sticky)))
+            .map_err(RegExpUnicodeMatchError::Work)?;
+        let truth = |at| {
+            use crate::regexp_unicode_character::{
+                unicode_assertions_match, unicode_word_boundary,
+            };
+            let units = input.code_units();
+            let p = &self.plan.plan;
+            u8::from(unicode_assertions_match(
+                units,
+                at,
+                at,
+                true,
+                false,
+                p.multiline,
+            )) | u8::from(unicode_assertions_match(
+                units,
+                at,
+                at,
+                false,
+                true,
+                p.multiline,
+            )) << 1
+                | u8::from(unicode_word_boundary(units, at, p.ignore_case)) << 2
+        };
+        let Some(range) = single
+            .class
+            .find_with_endpoint_filter(input, start, sticky, |begin, end| {
+                charge(16)?;
+                Ok(self.profiles[0] & (1u8 << truth(begin)) != 0
+                    && self.profiles[1] & (1u8 << truth(end)) != 0)
+            })
+            .map_err(RegExpUnicodeMatchError::Work)?
+        else {
+            return Ok(None);
+        };
+        charge(16).map_err(RegExpUnicodeMatchError::Work)?;
+        Ok(Some(RegExpUnicodePredicateChoiceStringClassMatch {
+            before: truth(range.start),
+            after: truth(range.end),
+            repeated: RegExpUnicodeRepeatedStringClassMatch {
+                last_iteration: Some(range.clone()),
+                range,
+                class_selected: true,
+            },
+        }))
+    }
+}

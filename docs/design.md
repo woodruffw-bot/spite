@@ -12284,3 +12284,20 @@ and charged work. Runtime selects this counted truth-profile proof after the
 smaller-minimum proof on the complete normalized capture source. Its dedicated
 body retains final iteration identity, endpoint truth, source/flags, named
 aliases, indices, lastIndex and String consumers through cloning and collection.
+
+
+Core separately proves a required single class beside arbitrary outside
+predicate-choice profiles. Complete bare/exact-one source validation retains
+required empty class identity and original lexical slots. A private member
+continuation checks both truth masks before longest-member selection, so rejected
+longer or empty members leave shorter members and later starts eligible
+(ECMA-262 edition 17 22.2.2.4, 22.2.2.7). Existing string-set find uses an
+infallible accepting continuation and retains exact behavior and charged work.
+
+The new proof charges bounded prefix/search work and sixteen units per actual
+profile probe. An empty member does not restrict searching to the first start
+when profiles can reject it. Accepted endpoint truth projects ordered predicate
+captures; all class/body terms are validated even behind never profiles. Other
+counts, class-bearing choices, references and consuming siblings retain their
+separate proofs. Source, storage, clone/drop and capture projection remain flat.
+Runtime selection remains separate.

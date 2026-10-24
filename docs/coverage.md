@@ -21463,3 +21463,21 @@ pass together (0.44 s); all 431 unit tests pass (6.27 s). Strict workspace Clipp
 (12.08 s), documentation tests, formatting, policy, inventories and diff checks
 pass. The grouped Runtime inventory contains 586 case files. Fixtures, snapshots,
 dependencies and default quotas remain unchanged.
+
+
+## Core arbitrary predicate-choice profiles beside a required class
+
+Five focused groups pass (0.61 s), comparing 160 native tables and an
+independent finite-member/endpoint oracle across bare and padded exact-one
+counts, required/skipped scopes, huge scope minima, all UTF-16 starts, sticky,
+multiline and ignore-case. Explicit controls retry shorter members and later
+starts after rejected empty members while retaining required empty class
+identity. Deep 20,000-level scopes, 20,000-unit class members, clone/drop, every
+charged cancellation and recovery, forged endpoint truth, unknown leaves behind
+never profiles and unsupported class spines retain their proof boundaries.
+
+All 80,680 frozen prior API records retain exact domains, charged work and capture
+projection in six bounded batches. Strict workspace Clippy (62 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.
