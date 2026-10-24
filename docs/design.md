@@ -13406,3 +13406,14 @@ capture source preserves all nested, cross-arm and duplicate-name bindings for
 validation. The shared constant no-match body keeps source/flags, lastIndex,
 String consumers, cloning and collection behavior. Original errors still
 precede proof selection, including errors in otherwise skipped operand arms.
+
+
+A separate composite-alternatives impossibility constructor admits a root
+choice only when every arm independently proves a direct or required-enclosing
+composite-negative failure (22.2.2.2). Empty, possible or unproved arms reject
+the proof. The earlier negative-empty alternative constructor and this new
+constructor share a flat mode-aware separator scanner, with distinct arm-proof
+modes preserving earlier domains and charges. Every projected arm keeps its
+original binding context and contributes its full lexical capture inventory.
+Source/copy work precedes allocation; disjoint arms keep construction
+source-sized, while retained storage and actual no-match work stay constant.

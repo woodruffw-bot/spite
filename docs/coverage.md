@@ -24110,3 +24110,27 @@ programs. All 436 Runtime unit tests pass (11.19 s). Strict workspace Clippy wit
 all targets passes (28.67 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Composite-negative root alternatives (Core)
+-------------------------------------------
+
+The new constructor proves a root choice only when every arm independently has
+a direct or required-enclosing composite-negative failure. Empty, possible,
+unproved or nonroot choices reject the proof. The shared flat separator scanner
+keeps distinct earlier/new arm-proof modes and original projected bindings.
+
+All 107 actual-source focused Core tests pass (0.71 s), including four new groups
+for direct/required arm inventories, original erased cross-arm references,
+escaped/class/nested separators, optional/possible/nonroot exclusions, 20,000
+root arms, source-sized work and interruption before every separator/copy/arm
+step. All 12,800 exact native input/start records and original capture
+inventories across 512 independently composed ordinary/u/v choices agree. All
+seven earlier impossible-proof families retain their 12,800 native records and
+inventories each after the separator-scanner refactor. A lexed review of 2,732
+direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (23.59 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
+unchanged.

@@ -252,6 +252,35 @@ impl RegExpImpossibleMatcher {
         source: &JsString,
         unicode: bool,
         sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_alternatives_assertion_validated_with_work::<false, E>(
+            source, unicode, sets, charge,
+        )
+    }
+
+    /// Proves root choices whose every arm independently has a composite-negative failure.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Direct or required-enclosing composite-negative arms keep their original
+    /// bindings and lexical inventories. Empty, possible or unproved arms reject
+    /// the proof (22.2.2.2). Source/copy work precedes allocation, using the same
+    /// flat separator scan as the earlier negative-empty choice constructor.
+    pub fn compile_alternatives_composite_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_alternatives_assertion_validated_with_work::<true, E>(
+            source, unicode, sets, charge,
+        )
+    }
+
+    fn compile_alternatives_assertion_validated_with_work<const COMPOSITE: bool, E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         charge(source.len().saturating_mul(8).saturating_add(16))?;
@@ -304,15 +333,32 @@ impl RegExpImpossibleMatcher {
                 return Ok(None);
             }
             let arm = JsString::from_code_units(units[range].to_vec());
-            let mut plan =
-                Self::compile_negative_validated_with_work(&arm, unicode, sets, &mut charge)?;
-            if plan.is_none() {
-                plan = Self::compile_enclosing_negative_validated_with_work(
+            let mut plan = if COMPOSITE {
+                Self::compile_composite_negative_validated_with_work(
                     &arm,
                     unicode,
                     sets,
                     &mut charge,
-                )?;
+                )?
+            } else {
+                Self::compile_negative_validated_with_work(&arm, unicode, sets, &mut charge)?
+            };
+            if plan.is_none() {
+                plan = if COMPOSITE {
+                    Self::compile_wrapped_composite_negative_validated_with_work(
+                        &arm,
+                        unicode,
+                        sets,
+                        &mut charge,
+                    )?
+                } else {
+                    Self::compile_enclosing_negative_validated_with_work(
+                        &arm,
+                        unicode,
+                        sets,
+                        &mut charge,
+                    )?
+                };
             }
             let Some(plan) = plan else {
                 return Ok(None);
@@ -1078,6 +1124,98 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpImpossibleMatcher::compile_wrapped_composite_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+    fn composite_alternatives(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_alternatives_composite_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn composite_alternatives_prove_every_arm_and_keep_original_cross_arm_inventories() {
+        for (source, captures) in [
+            (r"(?!(?!(?!(a{0}))))|((?!(?!(?!(b{0})))))+", 3),
+            (r"(?!(?!(?!(\3){0})))|((?!(?!(?!(a{0})))))+", 3),
+            (r"[\q{\||\)}]+(?!(?!(?!)))|(?<!(?!(?!)))", 0),
+            (r"(a|b)*(?!(?!(?!)))|\u007C(?<!(?!(?!)))", 1),
+        ] {
+            assert_eq!(
+                composite_alternatives(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn composite_alternatives_reject_empty_possible_unproved_and_nonroot_arms() {
+        for source in [
+            r"(?!(?!(?!)))",
+            r"(?!(?!(?!)))|",
+            r"a|(?!(?!(?!)))",
+            r"(?!(?!(?!)))|(?=a)",
+            r"((?!(?!(?!)))|(?!(?!(?!))))",
+            r"(?!(?!(?!)))|((?!(?!(?!))))?",
+            r"(?!(?!(?!)))|(?!)",
+        ] {
+            assert!(composite_alternatives(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn many_composite_alternatives_have_source_sized_work_and_constant_retained_plan() {
+        let source = std::iter::repeat_n(r"(?!(?!(?!(a{0}))))", 20_000)
+            .collect::<Vec<_>>()
+            .join("|");
+        let source = JsString::from(source.as_str());
+        let mut work = 0usize;
+        let plan =
+            RegExpImpossibleMatcher::compile_alternatives_composite_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work = work.saturating_add(n);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(plan.capture_count(), 20_000);
+        assert!(work < source.len() * 2048);
+    }
+
+    #[test]
+    fn composite_alternative_work_interrupts_before_splitting_projection_and_every_arm_proof() {
+        let source = JsString::from(r"(?!(?!(?!(a{0}))))|(?i:((?!(?!(?!(b{0})))))){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_alternatives_composite_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_alternatives_composite_negative_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );
