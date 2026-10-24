@@ -223,9 +223,15 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^(()|([\\q{a|ab}])){3}$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[4,5]],\"index\":0},5],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"aaaaaa\",null,0],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[4,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"^([[\q{|a|ab}]&&\p{RGI_Emoji}]){2}$",
-        r"^(()|([\q{a|ab}])){3}$",
+        r"^(()|([[\q{a|ab}]&&\p{RGI_Emoji}])){3}$",
         r"(^([\q{|a|ab}]))+$",
         r"(^|)([\q{|a|ab}])+$",
         r"(^)*([\q{|a|ab}])+$",

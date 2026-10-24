@@ -11848,7 +11848,11 @@ body preserves its own range and identity. Empty-only bodies directly check the
 suffix predicate and project the preferred required empty. Large decimal bounds
 therefore allocate no count-sized stack. Transitions and fallible continuation
 growth remain charged, with work/capacity failures separate from JS exceptions.
-Scalar fallback and Runtime selection remain separate.
+Scalar fallback remains a separate proof. Runtime selects the finite larger-count
+proof after the two-required nullable asserted constructor on the full normalized
+capture source. Its dedicated body preserves source, flags, lexical names and
+indices, lastIndex, String consumers, cloning and collection. Required-empty and
+consuming final bodies retain their distinct capture profiles.
 
 
 Core separately proves larger asserted nullable string-class counts with scalar

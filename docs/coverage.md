@@ -20448,3 +20448,36 @@ construction/search work and capture projection. Strict workspace Clippy,
 documentation tests, formatting, dependency policy, inventories and diff checks
 pass. Runtime selection remains separate; fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Runtime larger asserted nullable finite string-class counts
+
+Three groups execute fifty-five capture tables and eight additional consumer
+programs. Huge minimum controls use a finite required count above the input bound
+with the exact original upper-minus-lower allowance; finite counts compare
+directly. Class-first and empty-first continuations retain source-priority word
+retries, required-empty resets and lexical named/escaped-name indices. matchAll,
+callback replacement, split/search, cloning, collection, sticky/global lastIndex
+and read-only lastIndex preserve results, including undefined versus empty slots.
+Deep capture scopes accept a huge minimum without count-sized storage; long
+shared-prefix members and constructor/execution aborts remain flat. The execution
+search and short-success probes retain their 100,000-step quota and compact
+fixed-count patterns. Five former rejection controls become native eight-record
+capture/finalizer checks with unproved class leaves retained. Scalar fallback,
+conditional/body predicates, references, nested class-path loops, consuming
+siblings and additional classes remain separate proofs.
+
+Focused execution passes all three new groups, all 431 Runtime unit tests,
+63 native reference programs and five migrated native controls. Strict workspace
+Clippy, documentation tests, formatting, dependency policy, 565 Runtime case-file
+registrations and Parser/Test262 inventories pass.
+
+The full Unicode suite passes all 1,661 cases (737.19 s), and all 230,400
+exact differential records agree across 32 finite/algebraic class forms, twelve
+larger count forms, three body modes, eight rotated assertion profiles, six
+capture layouts and twelve inputs with every requested start/sticky/i/m.
+Huge reference minima exceed the longest input while preserving the original
+exact optional allowance. A periodic pinned Test262 run of the shared counted
+Core with the preceding Runtime also passes all 35 runner tests and 16,343
+reviewed variants (210.90 s corpus execution). Fixtures, snapshots, dependencies
+and default quotas are unchanged.

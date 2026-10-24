@@ -10,6 +10,7 @@ use spite_core::{
     RegExpQuantifiedContinuationMatcher, RegExpQuantifiedMatcher, RegExpRepeatedCaptureMatcher,
     RegExpRepeatedContinuationMatcher, RegExpRepeatedLiteralMatcher, RegExpRepeatedPrefixedMatcher,
     RegExpRepeatedSequenceMatcher, RegExpSequenceMatcher,
+    RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
     RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
@@ -2522,13 +2523,21 @@ impl Realm {
                 ).map_err(unicode_set_compile_error)? {
                     return Ok(Some(RegExpMatcherBody::UnicodeAssertedNullableStringClassCaptures(body)));
                 }
-                RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher::compile_with_work(
+                if let Some(body) = RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher::compile_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                ).map_err(unicode_set_compile_error)? {
+                    return Ok(Some(RegExpMatcherBody::UnicodeAssertedTwoRequiredNullableStringClassCaptures(body)));
+                }
+                RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher::compile_with_work(
                     &capture_source,
                     flags.code_units().contains(&u16::from(b'i')),
                     flags.code_units().contains(&u16::from(b'm')),
                     |work| budget.charge(work),
                 ).map_err(unicode_set_compile_error)
-                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedTwoRequiredNullableStringClassCaptures))
+                 .map(|body| body.map(RegExpMatcherBody::UnicodeAssertedCountedNullableStringClassCaptures))
 
             })?;
             if body.is_some() {
