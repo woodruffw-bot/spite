@@ -11577,4 +11577,7 @@ limit any observable execution. No iteration history or count-sized storage is
 allocated. A larger minimum remains a separate proof: `[\q{aa|aaa}]{2}` on `aaaa`
 needs to retry the shorter first member. The existing simple constructor retains
 its domain and exact work callbacks through the shared private finder. Runtime
-selection of braced repetition remains separate.
+selects the braced proof after the earlier simple and exact-one constructors on
+the full capture source. Its dedicated body retains the whole/final ranges and
+class-selected tag, preserving original source, names/indices, lastIndex, String
+consumers, cloning and collection.

@@ -1125,3 +1125,6 @@ mod regexp_unicode_exact_single_unasserted_string_class_captures;
 
 #[path = "cases/regexp_unicode_simple_repeated_string_class_captures.rs"]
 mod regexp_unicode_simple_repeated_string_class_captures;
+
+#[path = "cases/regexp_unicode_bounded_string_class_captures.rs"]
+mod regexp_unicode_bounded_string_class_captures;

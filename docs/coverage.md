@@ -19978,3 +19978,36 @@ checks pass. The fresh 35-test Test262 gate, including all 16,343 reviewed
 variants, passes with the shared finder. Runtime selection of the new braced
 proof remains separate; fixtures, snapshots, dependencies and default quotas
 are unchanged.
+
+
+## Runtime braced string-class repetition with zero/one minima
+
+Three groups execute 23 native capture tables and eight additional native
+consumer programs, plus collection. They preserve finite and huge upper bounds,
+zero iterations and skipped inside captures, required empty participation,
+class/empty branch identity, whole-versus-last scopes, longest-member priority,
+search/sticky behavior, Unicode indices/folding, named aliases, source/flag
+metadata, matchAll, replacement, search/split, cloning and read-only lastIndex.
+Deep counted scopes and long members retain flat storage. Opt-in constructor
+and execution aborts preserve bindings, lastIndex and host-failure isolation;
+lazy zero-iteration matching retains bounded work on long inputs. Seventeen
+static controls and one generated count-loop control become native eight-record
+capture/finalizer checks, retaining explicit unknown leaves under the original
+counts. Larger minima, nested loops, predicates, references, consuming siblings
+and additional classes remain separate proofs.
+
+
+Execution passes all 1,637 Unicode Runtime cases and 431 Runtime units. All
+31 fixed consumer references and 18 migrated eight-record capture/finalizer
+tables agree with the fresh CLI and native references. All 230,400 differential
+records agree across 384 independent pairs, twelve braced counts, 32 class
+families, six capture layouts, plain/class-first/empty-first bodies and atom/group
+scopes, twelve UTF-16 inputs and all starts/sticky/i/m combinations. Native
+controls group complete finite words before quantification and retain exact
+small minima and huge principal upper bounds; approved leading-boundary stepping
+and finite vi folding controls match the earlier reference policy.
+
+Strict workspace Clippy, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. The Runtime inventory is 557 case files and
+4,343 integration cases. Fixtures, snapshots, dependencies and default quotas
+are unchanged.
