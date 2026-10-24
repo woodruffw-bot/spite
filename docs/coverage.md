@@ -22747,3 +22747,44 @@ All 431 Runtime unit tests pass (10.30 s), alongside strict workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks. The grouped
 Runtime inventory contains 611 case files. Fixtures, snapshots, dependencies and
 default quotas remain unchanged.
+
+
+## Validated whole-pattern zero-count groups
+
+Core and Runtime now execute a complete Pattern consisting of one group with
+an exact zero upper bound, independently of its unexecuted body's matching
+support. The new Core API requires completed parser validation and normalized
+capture heads. Its flat scan respects escapes and ordinary versus nested Unicode
+Sets classes, retains every lexical capture slot, and recognizes padded and lazy
+zero bounds without numeric expansion. RepeatMatcher's immediate continuation
+for max zero leaves all body captures undefined (ECMA-262 edition 17
+22.2.2.3.1). Runtime selects the fallback after all earlier successful plans.
+
+Three focused Core tests pass, including 100,000 nested captures and two
+100,000-digit zero counts, constant matching work, boundary normalization and
+pre-inspection callback aborts. Six new Runtime integration tests pass, covering
+unexecuted lookarounds, named and numbered references, modifiers, scalar and
+string-valued properties, nested classes, ordinary/u/v modes, every lastIndex
+boundary, named/escaped/duplicate aliases, indices, String consumers, 1,000 nested
+captures, cloning, collection and an opt-in constructor host abort. Invalid
+names, references, properties, bounds and flags still throw SyntaxError before
+erasure. All 432 Runtime unit tests pass, including direct fallback work and
+capture checks (3.13 s).
+
+All 22,464 exact native differential records agree with the fresh CLI across 26
+body/mode tables, four zero-bound forms, eight flag combinations, six inputs and
+every starting index. Eighteen formerly unsupported valid controls in seven
+existing integration modules now compare complete native match metadata; every
+promoted control and all seven modules pass. Five additional native JavaScript
+regression programs also agree on the fresh CLI. No snapshot or fixture changes
+are needed. The Runtime inventory contains 612 case files.
+
+The preceding outside grouped-optional Runtime snapshot separately passes all
+1,797 Unicode RegExp integration tests (809.27 s) and all 35 Test262 runner tests
+with all 16,343 reviewed variants (424.67 s for the corpus group). Those broad
+results precede the whole-pattern fallback; fresh broad runs are recorded when
+complete.
+
+Strict workspace Clippy with all targets, workspace documentation tests,
+formatting, dependency policy, case/fixture inventories and diff checks pass.
+Dependencies and default quotas are unchanged.

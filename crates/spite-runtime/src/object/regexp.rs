@@ -74,13 +74,14 @@ use spite_core::{
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher, RegExpZeroCountGroupMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegExpMatcherBody {
+    ZeroCountGroup(RegExpZeroCountGroupMatcher),
     Backreferences(RegExpBackreferenceMatcher),
     Literal(RegExpLiteralMatcher),
     UnicodeEmpty(RegExpLiteralMatcher),
@@ -292,6 +293,7 @@ pub(crate) struct RegExpMatcher {
 impl RegExpMatcher {
     pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
         let inner = match &body {
+            RegExpMatcherBody::ZeroCountGroup(m) => m.capture_count(),
             RegExpMatcherBody::Backreferences(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeFoldedLiteral(m) => m.capture_count(),
             RegExpMatcherBody::Literal(m)
@@ -499,6 +501,21 @@ impl RegExpMatcher {
         sticky: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::ZeroCountGroup(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, charge)
+                .map_err(RegExpUnicodeMatchError::Work)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeCaptures(
             matcher,
         ) = &self.body
@@ -1859,7 +1876,8 @@ impl RegExpMatcher {
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
         let (range, branch) = match &self.body {
-            RegExpMatcherBody::Backreferences(_)
+            RegExpMatcherBody::ZeroCountGroup(_)
+            | RegExpMatcherBody::Backreferences(_)
             | RegExpMatcherBody::UnicodeFoldedLiteral(_)
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
@@ -2001,7 +2019,8 @@ impl RegExpMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
             // These plans charge actual operations through find_with_work.
-            RegExpMatcherBody::Backreferences(_)
+            RegExpMatcherBody::ZeroCountGroup(_)
+            | RegExpMatcherBody::Backreferences(_)
             | RegExpMatcherBody::UnicodeFoldedLiteral(_)
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
@@ -2176,7 +2195,8 @@ impl RegExpMatcher {
             remaining
         };
         let full_suffix = match &self.body {
-            RegExpMatcherBody::Quantified(_)
+            RegExpMatcherBody::ZeroCountGroup(_)
+            | RegExpMatcherBody::Quantified(_)
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
@@ -2291,6 +2311,7 @@ impl RegExpMatch<'_> {
         }
         let index = index - self.matcher.enclosing_captures;
         let fixed = match &self.matcher.body {
+            RegExpMatcherBody::ZeroCountGroup(_) => return None,
             RegExpMatcherBody::Backreferences(_) | RegExpMatcherBody::UnicodeFoldedLiteral(_) => {
                 unreachable!("dynamic captures")
             }
@@ -5866,6 +5887,51 @@ mod tests {
                 assert_eq!(found.capture(index + 1), range);
             }
             assert_eq!(found.capture(5), None);
+        }
+    }
+}
+
+#[cfg(test)]
+mod zero_count_group_tests {
+    use super::*;
+
+    #[test]
+    fn zero_group_captures_and_actual_work_stay_constant_and_abort_atomically() {
+        let source = JsString::from("((?=(a))b){0}");
+        let body =
+            RegExpZeroCountGroupMatcher::compile_validated_with_work(&source, true, false, |_| {
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::ZeroCountGroup(body), 0);
+        let input = JsString::from("A😀!");
+        assert_eq!(matcher.capture_count(), 2);
+        for sticky in [false, true] {
+            assert_eq!(matcher.search_passes(sticky), 0);
+            let mut work = 0;
+            let found = matcher
+                .find_with_work(&input, 2, sticky, |n| {
+                    work += n;
+                    Ok::<(), u8>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, 1);
+            assert_eq!(found.range, 1..1);
+            for slot in 0..=2 {
+                assert_eq!(found.capture(slot), None);
+            }
+            assert!(matches!(
+                matcher.find_with_work(&input, 2, sticky, |_| Err(31u8)),
+                Err(RegExpUnicodeMatchError::Work(31))
+            ));
+            assert!(
+                matcher
+                    .find_with_work(&input, input.len() + 1, sticky, |_| Ok::<(), u8>(()))
+                    .unwrap()
+                    .is_none()
+            );
         }
     }
 }

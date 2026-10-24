@@ -12833,3 +12833,26 @@ after the corresponding optional-root proof. Its dedicated body preserves every
 undefined inner slot, conditional outside points, mandatory enclosing ranges,
 source/flags, named aliases, indices, lastIndex and String consumers through
 cloning and collection.
+
+
+A final whole-Pattern zero-group fallback relies on the parser's completed
+Pattern and flag validation, including early errors. It recognizes only an
+entire group followed by an exact zero upper bound (`{0}` or `{0,0}`, with
+padded decimal zeros and an optional lazy marker). RepeatMatcher invokes its
+continuation immediately when max is zero, without executing the body
+(ECMA-262 edition 17 22.2.2.3.1); every lexical capture therefore remains undefined
+(22.2.7.2). Validated lookarounds, references, modifiers and Unicode class bodies
+need no matching implementation within this erased group. Invalid syntax,
+properties, names, references and quantifiers still fail full parser validation.
+
+The Core API explicitly requires validated source and normalized capture heads.
+An iterative structural scan counts captures, skips escapes and distinguishes
+ordinary classes from nested Unicode Sets classes. Construction charges
+source-sized work before scanning; matching charges constant work before input
+inspection and uses the shared Unicode leading-boundary rule. Storage and
+clone/drop are constant. Runtime tries this fallback after all older successful
+plans, retains the complete original capture layout, and uses the usual named
+aliases, indices, lastIndex and String operations. The fallback does not erase
+outside terms, a larger repetition bound or only part of a Pattern; those
+patterns still require their own matching proof. The preceding specialized APIs
+retain their existing acceptance domains and work accounting.
