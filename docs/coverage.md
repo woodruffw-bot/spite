@@ -19863,3 +19863,32 @@ prior API records preserve exact domains, construction/search work and capture
 projection. Eight fixed tables match native references. Strict workspace Clippy,
 documentation tests, formatting, dependency policy, inventories and diff checks
 pass. No Runtime selection, fixture, snapshot, dependency or default quota changes.
+
+
+## Runtime exact-one unasserted string-class alternatives
+
+Three groups retain the independent grouped lexical-role matrix with mandatory
+counted frames, conditional class/empty captures and surrounding points. Eighteen
+native consumer references cover required defined-empty versus undefined slots,
+source priority, escaped names, supplementary starts/folding, indices aliases,
+String consumers, clones, collection and read-only lastIndex. Direct root cases
+exercise both class-result domains and class-atom counts. Counted deep ancestors
+and long words remain flat. An opt-in constructor abort preserves bindings;
+a short empty-first root retains bounded execution under the unchanged budget.
+Two older unsupported empty-first intersections become native eight-record
+result/finalizer checks, with unknown-leaf replacements retained. Other counts,
+assertions, references and leaf domains remain explicit unsupported controls.
+
+
+Execution passes all 1,631 Unicode integration groups, 431 Runtime units,
+38 targeted finalizer groups, 18 native/fresh-CLI consumer references and both
+migrated eight-record controls. All 230,400 exact differential records match
+across 384 pattern/control pairs, 32 class families, root/two grouped frames,
+six layouts, both orders and twelve inputs with every start/sticky/i/m
+combination. Native controls retain exact-one counts, Unicode candidate
+loops/leading normalization and finite vi alternatives; only effect-free huge
+empty counts reduce. Fresh conformance-profile Test262 passes all 35 checks,
+including all 16,343 reviewed variants. Strict workspace Clippy, documentation
+tests, formatting, dependency policy, inventories and diff checks pass. Runtime
+inventory is 555 files and 4,337 integration cases. No fixture, snapshot,
+dependency, intrinsic inventory or default quota changes.

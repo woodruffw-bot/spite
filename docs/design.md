@@ -11513,4 +11513,7 @@ undefined captures in this reference-free choice; outside empty counts retain
 all required/optional/later capture roles (22.2.2.3, RepeatMatcher). Existing
 constructors retain domains and exact callbacks, and storage/clone/drop remain
 flat. Other counts, assertions, references and unknown leaves stay separate
-proofs. Runtime selection remains separate.
+proofs. Runtime selects the new constructors after the earlier Single proof on
+the complete normalized capture source. Existing result types retain original
+metadata, names/indices, branch identity, String consumers, cloning, collection
+and opt-in host-abort behavior.

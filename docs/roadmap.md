@@ -775,7 +775,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile exact-one counts around a single string class with plain or mandatory canonical/reversed assertion siblings, preserving point/whole/never roles and complete leaf proof.
 - [x] Execute exact-one single string-class captures through Runtime RegExp and String consumers.
 - [x] Compile exact-one counts in unasserted root/grouped string-class alternatives, preserving surrounding points, conditional captures, empty-member identity and full leaf proof.
-- [ ] Execute exact-one unasserted string-class alternatives through Runtime RegExp and String consumers.
+- [x] Execute exact-one unasserted string-class alternatives through Runtime RegExp and String consumers.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
