@@ -461,6 +461,124 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves canonical and reversed line/word layers around full wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. At least one
+    /// common $ before or ^ after a wrapper is required. A flat delimiter map
+    /// bounds inward recovery; local root predicates keep their branch scope.
+    /// All original leaves/terms prove before false same-point conjunctions.
+    /// Selected consuming endpoints may differ (22.2.2.3–4, 22.2.2.7).
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_nested_endpoint_assertion_wrappers_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(48).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let Some(closes) = single_v_group_closes(units) else {
+            return Ok(None);
+        };
+        let (mut begin, mut end, mut captures, mut wrappers) =
+            (0usize, units.len(), 0usize, 0usize);
+        let (mut start_line, mut end_line, mut start_end_line, mut end_start_line) =
+            (false, false, false, false);
+        let (mut start_words, mut end_words) = (0u8, 0u8);
+        loop {
+            let Some(frame) = endpoint_gate_frame(&units[begin..end]) else {
+                return Ok(None);
+            };
+            let candidate_begin = begin + frame.body.start;
+            let candidate_end = begin + frame.body.end;
+            let candidate = &units[candidate_begin..candidate_end];
+            let width = if candidate.starts_with(&[0x28, 0x3f, 0x3a]) {
+                3
+            } else if candidate.first() == Some(&0x28) && candidate.get(1) != Some(&0x3f) {
+                1
+            } else {
+                break;
+            };
+            if closes.get(candidate_begin) != Some(&(candidate_end - 1)) {
+                break;
+            }
+            start_line |= frame.start_line == Some(0x5e);
+            start_end_line |= frame.start_line == Some(0x24);
+            end_line |= frame.end_line == Some(0x24);
+            end_start_line |= frame.end_line == Some(0x5e);
+            if let Some(word) = frame.start_word {
+                start_words |= if word == 0x62 { 1 } else { 2 };
+            }
+            if let Some(word) = frame.end_word {
+                end_words |= if word == 0x62 { 1 } else { 2 };
+            }
+            wrappers += 1;
+            captures += usize::from(width == 1);
+            begin = candidate_begin + width;
+            end = candidate_end - 1;
+        }
+        if wrappers == 0 || (!start_end_line && !end_start_line) {
+            return Ok(None);
+        }
+        let payload = &units[begin..end];
+        let Some(bar) = root_bar(payload) else {
+            return Ok(None);
+        };
+        let mut decorated = Vec::with_capacity(units.len().saturating_add(16));
+        for (index, branch) in [&payload[..bar], &payload[bar + 1..]]
+            .into_iter()
+            .enumerate()
+        {
+            if index != 0 {
+                decorated.push(0x7c);
+            }
+            if start_line {
+                decorated.push(0x5e);
+            }
+            if start_end_line {
+                decorated.push(0x24);
+            }
+            if start_words & 1 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x62]);
+            }
+            if start_words & 2 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x42]);
+            }
+            decorated.extend_from_slice(branch);
+            if end_words & 1 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x62]);
+            }
+            if end_words & 2 != 0 {
+                decorated.extend_from_slice(&[0x5c, 0x42]);
+            }
+            if end_start_line {
+                decorated.push(0x5e);
+            }
+            if end_line {
+                decorated.push(0x24);
+            }
+        }
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(decorated),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = captures;
+        Ok(Some(plan))
+    }
+
     /// Counts original lexical captures in wrappers and both alternatives.
     pub fn capture_count(&self) -> usize {
         self.captures
@@ -622,4 +740,53 @@ fn root_bar(units: &[u16]) -> Option<usize> {
         at += 1;
     }
     (depth == 0 && class == 0).then_some(bar).flatten()
+}
+
+struct EndpointGateFrame {
+    body: Range<usize>,
+    start_line: Option<u16>,
+    end_line: Option<u16>,
+    start_word: Option<u16>,
+    end_word: Option<u16>,
+}
+fn endpoint_gate_frame(units: &[u16]) -> Option<EndpointGateFrame> {
+    let mut begin = 0;
+    let mut end = units.len();
+    let start_line = units.first().copied().filter(|u| matches!(u, 0x5e | 0x24));
+    begin += usize::from(start_line.is_some());
+    let end_line = if end > begin
+        && matches!(units[end - 1], 0x5e | 0x24)
+        && !super::super::escaped(units, end - 1)
+    {
+        end -= 1;
+        Some(units[end])
+    } else {
+        None
+    };
+    let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+        Some([0x5c, word @ (0x62 | 0x42)]) => {
+            begin += 2;
+            Some(*word)
+        }
+        _ => None,
+    };
+    let end_word = if end >= begin + 2
+        && units[end - 2] == 0x5c
+        && matches!(units[end - 1], 0x62 | 0x42)
+        && !super::super::escaped(units, end - 2)
+    {
+        let word = units[end - 1];
+        end -= 2;
+        Some(word)
+    } else {
+        None
+    };
+    units.get(begin..end)?;
+    Some(EndpointGateFrame {
+        body: begin..end,
+        start_line,
+        end_line,
+        start_word,
+        end_word,
+    })
 }

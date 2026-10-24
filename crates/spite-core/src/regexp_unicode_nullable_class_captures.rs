@@ -1174,4 +1174,5 @@ mod tests {
     include!("regexp_unicode_common_word_asserted_string_class_tests.rs");
     include!("regexp_unicode_layered_asserted_string_class_tests.rs");
     include!("regexp_unicode_reversed_common_line_asserted_string_class_tests.rs");
+    include!("regexp_unicode_layered_endpoint_asserted_string_class_tests.rs");
 }

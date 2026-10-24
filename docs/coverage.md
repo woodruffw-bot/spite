@@ -19554,3 +19554,29 @@ Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is 549
 case files and 4,319 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core mixed endpoint layers around complete string-class alternatives
+
+Three groups compare 32 class families, seven paired local branch profiles, ten
+mixed line/word layer profiles, six layouts, both orders and three inner wrapper
+shapes with independent predicates, ordered choice and capture-tree evaluation.
+Twelve inputs, all starts and sticky/i/m flags retain actual consuming endpoints,
+one-point empty conjunctions and lexical prefix/branch masks. Exact witnesses
+cover all four line requirements together, consuming and empty fallback, opposite
+word boundaries across a newline, pinned folding of newline-terminated words,
+supplementary folding and initial normalization. A structural witness interleaves
+reversed line predicates with each of 20,000 enclosing captures to check flat
+recovery, cloning and dropping. Every constructor/search callback cancellation
+prefix and recovery is checked. Earlier APIs, root scope, duplicate/noncanonical
+single layers, partial wrappers/siblings, choice counts, extra alternatives or
+classes, optional assertions, references and unknown leaves remain closed.
+
+Stable passes all 1,239 Core unit cases and 431 Runtime unit cases. All 52,712
+prior public API records retain exact constructor/search work and capture
+projection, including the reversed common-line API. All 60 static mixed-layer
+class witnesses validate in native v/vi modes, and four exact mixed-layer
+range/capture examples match native controls. Workspace documentation tests,
+strict workspace Clippy, formatting, dependency policy, source/fixture inventories
+and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
+or default quota changes.

@@ -11375,3 +11375,31 @@ selects the reversed common-line proof after the layered constructor on the
 full normalized source. The existing capture body retains original source,
 flags, lexical name/index aliases, String consumers, cloning, collection and
 opt-in constructor/exec abort behavior.
+
+
+Core `compile_nested_endpoint_assertion_wrappers_with_work` on the asserted
+alternative matcher admits canonical and reversed line/word layers interleaved
+with complete ordinary wrappers. At least one common $ before or ^ after a
+wrapper is required. A flat v-aware delimiter map bounds recovery. Each frame
+admits one line predicate and one word predicate per side; recovery commits them
+only after identifying a complete wrapper, preserving the original local root
+source when it stops. Earlier constructors retain their domains and callbacks.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 require every shared continuation at
+the selected alternative's actual endpoints. Canonical and reversed line flags
+form four independent requirements, with word conjunctions at each side. On a
+newline, `^($(([\q{\n|\na}])|())^)$` with multiline matching selects the newline
+and defines both enclosing captures. On newline-plus-a, both consuming members
+fail their continuation and the original empty alternative wins instead. All
+line predicates can hold at an empty-line point. Opposite start/end words may
+hold across a consuming member, while the empty alternative uses one point.
+
+Only predicates are duplicated into the original root branches. Both complete
+branches and every original class leaf must prove before same-side conflicts
+become never matches. Checked lexical prefixes retain whole selected ranges;
+branch-local slots and class-selected empty members retain their identity.
+Construction, cloning, dropping and matching remain flat with source-sized
+storage and existing bounded searches. Same-layer duplicates, noncanonical
+orders, partial wrappers/siblings, choice counts, optional assertions, references
+and unknown leaves remain separate proofs. Runtime selection remains separate
+from this constructor.
