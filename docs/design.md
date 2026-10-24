@@ -13658,3 +13658,11 @@ constructor, and callback type erasure bounds compiler expansion through older
 alternative proofs. Original projected bindings and full lexical inventories
 remain intact. Source/copy work precedes allocation; disjoint arm scans stay
 source-sized and the retained no-match plan and actual work remain constant.
+
+
+Runtime selects required ordinary/modifier spines around nullable-operand
+negative failures after the direct nullable-guard proofs. Every outside minimum
+must be positive. Complete original normalized source retains all outside/inside
+slots and incoming bindings; operand matching data is unnecessary. Shared
+constant no-match execution keeps source/flags, lastIndex, String consumers,
+cloning and collection, with original errors before proof selection.
