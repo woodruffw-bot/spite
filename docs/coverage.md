@@ -21687,3 +21687,31 @@ projection in seven bounded batches. Strict workspace Clippy (67 s), documentati
 tests, formatting, policy, inventories and diff checks pass. Runtime selection
 remains separate; fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime exact-one counts around grouped branch-local alternatives
+
+Three focused groups pass (0.81 s), covering nested required enclosing ranges,
+conditional branch-local captures, bare/bounded/padded/lazy exact-one class paths,
+required empty class identity, named and escaped-name aliases, indices, matchAll,
+callback replacement, split/search, cloning, collection and strict lastIndex
+writes. Deep 1,000-level counted wrappers retain consuming and empty captures.
+Thousand-digit padded values of one, shorter-member/later-start retries and
+20,000-unit shared-prefix scalar/string words preserve original complete ranges.
+Unknown terms behind never profiles, other wrapper counts and constructor abort
+isolation retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+source-shape scans retain every preceding rejection domain. All 100,352 exact
+differential records agree across 256 independent pairs, with all 1,024 proof/flag
+combinations supported. Mixed exact-one wrappers, finite/scalar/known-empty
+classes, independent branch profiles and both root orders cover all input starts,
+sticky, multiline and ignore-case. All 431 Runtime unit tests pass (5.80 s),
+alongside strict workspace Clippy (78 s), documentation tests, formatting, policy,
+inventories and diff checks. The grouped Runtime inventory contains 591 case
+files. Fixtures, snapshots, dependencies and default quotas remain unchanged.
+
+The preceding branch-local root and ordinary enclosing-group sources pass a
+fresh Test262 run: all 35 runner tests and all 16,343 reviewed variants pass,
+including the pinned corpus gate (430.74 s). This run compiled before exact-one
+enclosing counts.

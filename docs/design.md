@@ -12383,5 +12383,8 @@ predicate counts off the class path retain their original participation.
 Construction charges before normalization; matching and capture projection reuse
 the immutable grouped proof without extra matching work. Other class-path
 counts, references and unknown leaves behind never profiles retain separate
-proofs. Earlier APIs retain exact domains and charged work. Runtime selection
-remains separate.
+proofs. Earlier APIs retain exact domains and charged work. Runtime selects the
+exact-one wrapper proof after the unquantified complete-wrapper proof on the
+full normalized capture source. Its dedicated body retains required complete
+captures, branch ownership, endpoint truth, source/flags, named aliases, indices,
+lastIndex and String consumers through cloning and collection.
