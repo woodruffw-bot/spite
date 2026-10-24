@@ -24556,3 +24556,29 @@ The earlier positive-optional-impossible Runtime snapshot passes all 35 Test262
 runner tests and the unchanged 16,343-case corpus (435.44 s), and all 2,871 RegExp
 integration tests (886.04 s). These broad runs predate Runtime selection of the
 nullable-group and nullable-atom negative proofs.
+
+
+Negative assertions over choices with a nullable arm (Core)
+----------------------------------------------------------
+
+The new constructor proves root negative assertions fail when their complete
+operand choice has an empty or independently nullable arm. Complete outside
+spines preserve existence of a match. Earlier arms may consume; no operand
+capture values or empty result are fabricated. Unproved choices, conditions,
+outside siblings and nonroot contexts require other proofs.
+
+All 147 actual-source focused Core tests pass (0.66 s), including four new groups
+for early/late nullable and empty arms, incoming original references, full
+inventories, encoded delimiters, modifier/required wrappers, exclusions,
+100,000 outside groups, 20,000 consuming arms before an empty arm and interruption
+before every scope/range/arm/input step. All 12,800 exact native input/start
+records and original capture inventories across 512 independently composed
+ordinary/u/v patterns agree, with exact source identity checked by the scratch
+oracle generator. All twelve earlier impossible-proof families retain their
+12,800 native records and inventories each after the scanner extension. A lexed
+review of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (13.84 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

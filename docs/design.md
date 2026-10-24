@@ -13591,3 +13591,14 @@ normalized source preserves every lexical capture and mode-aware atom boundary.
 A successful operand path is guaranteed even if greedy matching could consume,
 so the constant no-match body avoids otherwise necessary matching data. Shared
 execution retains source/flags, lastIndex, String consumers, cloning and collection.
+
+
+A separate negative-nullable-choice proof accepts complete root operand choices
+with at least one empty or independently nullable arm, optionally inside complete
+ordinary/modifier spines (22.2.2.2). Earlier arms may consume; one guaranteed
+successful path is sufficient to make the negative assertion fail (22.2.2.4).
+All original capture slots and incoming bindings remain in the inventory, but
+no operand captures are fabricated. A flat mode-aware scan separates root arms
+without interpreting class/escaped/nested separators. Source/frame/copy work
+precedes allocation; disjoint arm proofs stay source-sized and the retained
+no-match plan and actual work remain constant.

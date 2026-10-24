@@ -116,6 +116,23 @@ impl RegExpImpossibleMatcher {
         Self::compile_assertion_validated_with_work::<5, E>(source, unicode, sets, charge)
     }
 
+    /// Proves root negative assertions over choices with an unconditionally successful arm.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// One empty or independently nullable arm guarantees a successful operand
+    /// path (22.2.2.2), so the negative assertion fails (22.2.2.4). Earlier arms
+    /// may consume; their capture values are never exposed. Complete outside
+    /// spines preserve existence of a match. Source/copy/frame work precedes
+    /// allocation and the flat arm scans remain source-sized.
+    pub fn compile_nullable_alternatives_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<6, E>(source, unicode, sets, charge)
+    }
+
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -199,6 +216,13 @@ impl RegExpImpossibleMatcher {
                                     )?
                                 } else if MODE == 5 {
                                     Self::nullable_sequence_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 6 {
+                                    Self::nullable_alternatives_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -360,6 +384,76 @@ impl RegExpImpossibleMatcher {
             terms += 1;
         }
         Ok(terms >= 2)
+    }
+
+    fn nullable_alternatives_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        charge(body.len().saturating_mul(48).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(false);
+        }
+        let units = body.code_units();
+        let units = if let Some(scope) = quantified_enclosing_scope(units, sets) {
+            &units[scope.body]
+        } else {
+            units
+        };
+        let mut ranges = Vec::new();
+        let mut start = 0;
+        let mut cursor = 0;
+        let mut depth = 0usize;
+        let mut class_depth = 0usize;
+        while let Some(&unit) = units.get(cursor) {
+            if unit == 0x5c {
+                cursor += 2;
+                continue;
+            }
+            if class_depth != 0 {
+                if unit == 0x5d {
+                    class_depth -= 1
+                } else if sets && unit == 0x5b {
+                    class_depth += 1
+                }
+            } else {
+                match unit {
+                    0x5b => class_depth = 1,
+                    0x28 => depth += 1,
+                    0x29 => {
+                        let Some(next) = depth.checked_sub(1) else {
+                            return Ok(false);
+                        };
+                        depth = next;
+                    }
+                    0x7c if depth == 0 => {
+                        ranges.push(start..cursor);
+                        start = cursor + 1;
+                    }
+                    _ => {}
+                }
+            }
+            cursor += 1;
+        }
+        if depth != 0 || class_depth != 0 || ranges.is_empty() {
+            return Ok(false);
+        }
+        ranges.push(start..units.len());
+        for range in ranges {
+            if range.is_empty() {
+                return Ok(true);
+            }
+            let arm = JsString::from_code_units(units[range].to_vec());
+            if Self::nullable_group_with_work(&arm, unicode, sets, &mut charge)?
+                || Self::nullable_atom_with_work(&arm, unicode, sets, &mut charge)?
+                || Self::nullable_sequence_with_work(&arm, unicode, sets, &mut charge)?
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -1804,6 +1898,112 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpImpossibleMatcher::compile_nullable_sequence_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("a😀ab"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
+        );
+    }
+    fn nullable_alternatives_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_nullable_alternatives_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_nullable_alternatives_need_only_one_successful_arm_and_keep_all_slots() {
+        for (source, captures) in [
+            (r"[\p{RGI_Emoji}]+(?!a|(b)?)", 1),
+            (r"(?<!(?i:((a)+|[\p{RGI_Emoji}]*)){2,3})(b)", 3),
+            (r"(a)(?!(\1)+|(?:[\q{ab}])?)(b)", 3),
+            (r"(?![\p{RGI_Emoji}]+|)", 0),
+            (r"(?!|a(b))", 1),
+            (r"(?!\u007C|b*)", 0),
+        ] {
+            assert_eq!(
+                nullable_alternatives_negative(source)
+                    .unwrap()
+                    .capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn negative_nullable_alternatives_exclude_unproved_arms_siblings_and_nonroot_contexts() {
+        for source in [
+            r"(?!a*)",
+            r"(?!a|b)",
+            r"(?!^|a)",
+            r"(?!a*(?=b)|c+)",
+            r"((?!a|b*))",
+            r"(?!a|b*)|c",
+            r"(?=a|b*)",
+        ] {
+            assert!(nullable_alternatives_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn negative_nullable_alternative_depth_many_arms_and_work_remain_flat() {
+        let source = format!(
+            "(?<!{}a|[\\p{{RGI_Emoji}}]*{})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            nullable_alternatives_negative(&source)
+                .unwrap()
+                .capture_count(),
+            100_000
+        );
+        let source = format!(
+            "(?!{}|)",
+            std::iter::repeat_n(r"([\p{RGI_Emoji}]+)", 20_000)
+                .collect::<Vec<_>>()
+                .join("|")
+        );
+        assert_eq!(
+            nullable_alternatives_negative(&source)
+                .unwrap()
+                .capture_count(),
+            20_000
+        );
+    }
+
+    #[test]
+    fn negative_nullable_alternative_work_interrupts_before_scope_ranges_and_each_arm_proof() {
+        let source = JsString::from(r"(a)(?!(?i:(\1)+|[\p{RGI_Emoji}]*){2,3})(b)");
+        let mut work = Vec::new();
+        let plan =
+            RegExpImpossibleMatcher::compile_nullable_alternatives_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_nullable_alternatives_negative_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );
