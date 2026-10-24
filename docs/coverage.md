@@ -24772,3 +24772,26 @@ programs. All 436 Runtime unit tests pass (3.83 s). Strict workspace Clippy with
 all targets passes (6.67 s), alongside documentation tests, formatting, dependency
 policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+Optional spines over established impossible operands (Core)
+---------------------------------------------------------
+
+The new empty constructor accepts optional ordinary/modifier spines over the
+complete earlier impossibility families, including nullable guards and mixed
+known choices. At least one outside zero minimum skips the failing operand.
+Required captures before that wrapper stay empty; every skipped descendant is
+undefined. Earlier proof domains/work remain unchanged and the finite operand
+chain never re-enters the new empty proof.
+
+All 167 actual-source focused Core tests pass (0.60 s), including four new groups
+for complete interleaved masks, required-prefix captures, exclusions, 100,000
+outside groups, 20,000-digit upper bounds, original bindings, every charged
+construction interruption and Unicode actual-work/boundary behavior. All 12,800
+exact native input/start/capture records across 512 independently composed
+ordinary/u/v patterns agree. A lexed review of 2,732 direct unsupported
+control-array entries admits none. Strict workspace Clippy with all targets
+passes (8.45 s). Documentation tests, formatting, dependency policy, inventories
+and diff checks retain the passing results recorded with the immediately
+preceding Runtime increment. Runtime inventory remains 617; fixtures, snapshots,
+dependencies and quotas are unchanged.

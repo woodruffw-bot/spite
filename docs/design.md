@@ -13683,3 +13683,14 @@ source keeps original bindings, duplicate-name alternatives and all lexical
 capture slots. Shared constant no-match execution preserves source/flags,
 lastIndex, String consumers, cloning and collection; original validation errors
 precede proof selection.
+
+
+A separate optional-spine empty proof accepts complete established impossible
+operands, including nullable guards and mixed known choices. At least one outside
+zero minimum skips the failing body (22.2.2.3.1). Required captures before the
+first optional wrapper stay defined empty; every skipped descendant stays
+undefined. The finite earlier-operand chain preserves original bindings and
+full lexical slots. Flat scopes and symbolic bounds keep construction source-
+sized; source/frame/copy and mask work precede allocation, while matching and
+individual capture queries stay constant. Nullable operands themselves never
+produce fabricated empty captures.

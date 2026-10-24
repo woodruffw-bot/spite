@@ -904,7 +904,7 @@ impl RegExpImpossibleMatcher {
     // Closed earlier proof families only; this helper never calls the new
     // known-alternatives constructor. Erasing the callback type bounds compiler
     // expansion through the earlier alternative proofs.
-    fn known_arm_with_work<E>(
+    pub(crate) fn known_arm_with_work<E>(
         source: &JsString,
         unicode: bool,
         sets: bool,

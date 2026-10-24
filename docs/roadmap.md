@@ -944,6 +944,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute required spines around nullable-operand negative failures through Runtime and String consumers with full original capture inventories and bindings.
 - [x] Prove required ordinary/modifier spines around complete established impossible operands and mixed impossible root choices, preserving original bindings and symbolic counts.
 - [x] Execute mixed established impossible root alternatives through Runtime and String consumers with original bindings and complete capture inventories.
+- [x] Prove optional ordinary/modifier spines over established impossible operands and mixed choices, preserving required-prefix captures and skipped descendant masks.
 - [x] Prove root alternatives mixing established and nullable-guard impossibility families, requiring every arm to fail with original projected bindings and inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
