@@ -204,11 +204,11 @@ fn truth_table_string_classes_preserve_deep_points_and_disjunctive_endpoint_retr
     assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
 #[test]
-fn truth_table_string_classes_keep_larger_nullable_and_unknown_proofs_distinct() {
+fn truth_table_string_classes_keep_unproved_class_spines_and_unknown_proofs_distinct() {
+    assert_eq!(Realm::default().eval(r####"var pattern="(^|\\b)(([\\q{|a|ab}])|()){3}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"\",\"<undefined>\"],[[0,3],[0,0],[3,3],[3,3],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="(^|\\b)([\\p{Any}\\q{|ab}]){3}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[0,0],[3,3]],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"(^|\b)([\q{a|ab}])",
-        r"(^|\b)(([\q{|a|ab}])|()){3}",
-        r"(^|\b)([\p{Any}\q{|ab}]){3}",
         r"((\b)|z|())([\q{a|ab}])+",
         r"((\b)|\1|())([\q{a|ab}])+",
         r"((\b\B)|(\b\B))(()|([\q{ab}&&\p{RGI_Emoji}]))+",

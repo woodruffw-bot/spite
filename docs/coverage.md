@@ -21438,3 +21438,28 @@ projection in six bounded batches. Strict workspace Clippy (15.84 s),
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime selection remains separate; fixtures, snapshots, dependencies and
 default quotas are unchanged.
+
+
+## Runtime larger nullable counts with arbitrary predicate-choice profiles
+
+Three new focused groups pass (0.27 s), covering ordered conditional captures,
+required empty final iterations, named and escaped-name aliases, indices,
+matchAll, callback replacement, split/search, cloning, collection and strict
+lastIndex writes. Thousand-digit exact/bounded minima retain exact optional
+allowances and class-first versus empty-first final identity after failed
+endpoint disjunctions. Deep 1,000-level scopes and 20,000-unit shared-prefix
+scalar/string members remain flat. Complete unknown leaves behind never gates
+and constructor abort isolation remain distinct from JavaScript exceptions.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Two
+preceding rejection controls now compare full native captures, indices, source,
+flags, input and lastIndex and agree on the fresh CLI. Five source-shape scans
+retain all other rejection domains. All 100,352 exact differential records agree
+across 256 independent pairs; all 1,024 proof/flag combinations are supported.
+Eight finite/scalar/known-empty layouts, four larger body counts, eight truth
+profiles and four remaining live profiles cover all input starts, sticky,
+multiline and ignore-case. The six current and migrated truth-profile groups
+pass together (0.44 s); all 431 unit tests pass (6.27 s). Strict workspace Clippy
+(12.08 s), documentation tests, formatting, policy, inventories and diff checks
+pass. The grouped Runtime inventory contains 586 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.

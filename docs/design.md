@@ -12280,4 +12280,7 @@ No matcher storage or iteration scales with the numeric required-empty count.
 Conditional captures use accepted whole-match endpoint truth; unknown class
 leaves, references and other class spines retain separate proofs even behind
 never gates. Earlier constructors and matching callbacks retain exact domains
-and charged work. Runtime selection remains separate.
+and charged work. Runtime selects this counted truth-profile proof after the
+smaller-minimum proof on the complete normalized capture source. Its dedicated
+body retains final iteration identity, endpoint truth, source/flags, named
+aliases, indices, lastIndex and String consumers through cloning and collection.
