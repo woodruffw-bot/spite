@@ -13602,3 +13602,11 @@ no operand captures are fabricated. A flat mode-aware scan separates root arms
 without interpreting class/escaped/nested separators. Source/frame/copy work
 precedes allocation; disjoint arm proofs stay source-sized and the retained
 no-match plan and actual work remain constant.
+
+
+Runtime selects negative assertions over complete independently nullable
+sequences after the nullable-group and nullable-atom proofs. Complete original
+normalized source preserves full inventories and incoming reference bindings.
+Every term has a successful path, so matching data and operand capture values
+are unnecessary for the outside negative failure. Shared constant no-match
+execution retains source/flags, lastIndex, String consumers, cloning and collection.

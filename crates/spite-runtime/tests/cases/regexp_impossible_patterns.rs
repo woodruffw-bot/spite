@@ -652,3 +652,64 @@ fn negative_nullable_atom_depth_and_huge_upper_bounds_need_no_matching_data_or_d
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
+
+#[test]
+fn negative_nullable_sequences_keep_original_references_counts_and_mode_aware_term_boundaries() {
+    check(
+        r#"
+        var patterns=[
+            '(?!(?<maybe>a)?[\\p{RGI_Emoji}]*[\\q{ab}]?)',
+            '(?<outside>a{0})(?!(?<inside>\\k<outside>)?[\\p{RGI_Emoji}]*)',
+            '(?<!(?im-s:((?<many>[\\p{RGI_Emoji}]+)?)(?<part>ab)*[\\q{ab}]?){2,3})',
+            '(?!(?:\\x28*[\\p{RGI_Emoji}]*\\u007C?))'
+        ],ok=true;
+        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pattern,flags);r.lastIndex=start;
+            ok=ok&&r.exec(input)===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start);
+        }
+        for(var source of ['(?!a*[\\p{Not_A_Property}]*)','(?!a*b*)(?<x>a)(?<x>b)','(?!a*b*)\\k<missing>']){
+            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_nullable_sequence_consumers_clones_and_collection_keep_no_match_state() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?!(?<maybe>a)?[\p{RGI_Emoji}]*[\q{ab}]?)/dgv,called=0,ok='a😀'.match(r)===null&&Array.from('a😀'.matchAll(r)).length===0;
+        ok=ok&&'a😀'.replace(r,function(){called++;return '!/'})==='a😀'&&called===0&&'a😀'.search(r)===-1&&'a😀'.split(r).length===1&&'a😀'.split(r)[0]==='a😀'&&''.split(r).length===1;
+        var copy=new RegExp(r);copy.lastIndex=1;ok&&copy.exec('a😀')===null&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn negative_nullable_sequence_many_terms_and_deep_spines_need_no_matching_data_or_default_quotas() {
+    check(
+        r#"
+        var count=10,pattern='(?!'+'[\\p{RGI_Emoji}]*'.repeat(count)+'(?<maybe>a)?)',r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    let pattern = JsString::from(
+        (r"(?!".to_owned() + &r"[\p{RGI_Emoji}]*".repeat(1000) + r"(?<maybe>a)?)").as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+    let depth = 1000;
+    let pattern = JsString::from(
+        format!(
+            r"(?<!{}a*[\p{{RGI_Emoji}}]?(?<maybe>b)?{})",
+            "(".repeat(depth),
+            ")+".repeat(depth)
+        )
+        .as_str(),
+    );
+    check(&format!(
+        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
+    ));
+}

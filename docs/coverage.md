@@ -24582,3 +24582,21 @@ Strict workspace Clippy with all targets passes (13.84 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Negative assertions over nullable sequences (Runtime)
+----------------------------------------------------
+
+Runtime selects root negative assertions over complete independently nullable
+sequences or enclosing ordinary/modifier spines. All 37 focused integration
+groups pass (0.64 s), including three new groups for greedy class/string-property
+terms, original incoming references, modifier/required wrappers, encoded
+literal delimiters and later errors, source/flags and lastIndex, String
+consumers, cloning, collection, 1,000 nullable terms and 1,000 enclosing groups.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 37 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.09 s). Strict workspace Clippy with
+all targets passes (9.43 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.
