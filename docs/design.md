@@ -13158,3 +13158,11 @@ The new constructor enables the positive empty-tree proof as well. Earlier
 tree constructors retain their escape exclusions and work. Escape boundaries
 are scanned only during construction, without matching data; the retained
 lexical mask, capture-clear markers and actual matching work are unchanged.
+
+
+Runtime selects the escaped-atom tree proof after the earlier positive-tree
+proof. Complete escape spellings retain their original source text and lexical
+capture layout. Encoded delimiters, optional rollback, assertion imports and
+erased reference bindings use the same named/index result path through String
+consumers, cloning and collection. Original escape syntax and binding errors
+precede erasure; actual matching work is charged before input access.

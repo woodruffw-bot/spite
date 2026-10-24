@@ -23522,3 +23522,30 @@ ordinary and raw Rust strings, finds none newly admitted. Earlier tree APIs
 retain their escape exclusions and source work. Construction and retained
 storage stay source-sized; matching and capture queries remain constant.
 Runtime integration follows separately.
+
+
+## Runtime zero-erased hexadecimal and Unicode escape trees
+
+Runtime selects the escaped-atom tree proof after the earlier positive-tree
+proof. Complete escape spellings preserve original source text and capture
+numbering; encoded delimiters remain literal atoms. Named/index aliases,
+optional rollback, assertion imports and erased bindings share the standard
+String consumer, clone and collection paths.
+
+All 33 focused integration groups pass (6.63 s), including four new groups for
+encoded delimiter masks, hexadecimal/braced escapes, assertion imports, erased
+surrogate bodies, duplicate-name aliases, String consumers, cloning, collection,
+1,000 nested choice groups, a 20,000-zero Unicode spelling, original syntax
+errors and opt-in constructor aborts. All 55,296 exact native metadata records
+across 512 generated ordinary/u/v escaped trees agree on the fresh CLI, as do
+all 33 complete JavaScript programs. Node also agrees on the complete
+20,000-zero spelling and both live capture aliases.
+
+All 435 Runtime unit tests pass (8.91 s). Strict workspace Clippy with all targets
+passes (12.79 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped inventory remains 614 Runtime
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding positive-tree Runtime snapshot passes all 35 Test262 runner tests
+and all 16,343 reviewed variants (428.04 s for the corpus group). This broad
+snapshot precedes escaped-atom Runtime integration.
