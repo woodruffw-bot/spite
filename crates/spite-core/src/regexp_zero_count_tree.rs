@@ -31,7 +31,7 @@ pub(crate) fn compile_with_work<E>(
     sets: bool,
     charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
-    compile_mode_with_work(source, unicode, sets, false, charge)
+    compile_mode_with_work(source, unicode, sets, false, false, charge)
 }
 
 pub(crate) fn compile_positive_with_work<E>(
@@ -40,7 +40,16 @@ pub(crate) fn compile_positive_with_work<E>(
     sets: bool,
     charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
-    compile_mode_with_work(source, unicode, sets, true, charge)
+    compile_mode_with_work(source, unicode, sets, true, false, charge)
+}
+
+pub(crate) fn compile_escaped_with_work<E>(
+    source: &JsString,
+    unicode: bool,
+    sets: bool,
+    charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Box<[bool]>>, E> {
+    compile_mode_with_work(source, unicode, sets, true, true, charge)
 }
 
 fn compile_mode_with_work<E>(
@@ -48,6 +57,7 @@ fn compile_mode_with_work<E>(
     unicode: bool,
     sets: bool,
     positive_assertions: bool,
+    escaped_atoms: bool,
     mut charge: impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Box<[bool]>>, E> {
     charge(source.len().saturating_mul(64).saturating_add(16))?;
@@ -111,7 +121,8 @@ fn compile_mode_with_work<E>(
                 cursor += 1;
             }
             _ => {
-                let Some((end, erasable)) = leaf(units, cursor, unicode, sets) else {
+                let Some((end, erasable)) = leaf(units, cursor, unicode, sets, escaped_atoms)
+                else {
                     return Ok(None);
                 };
                 let Some((end, _, maximum_zero)) = quantifier(units, end) else {
@@ -155,7 +166,13 @@ fn clear(ends: &mut [usize], start: usize) {
 // Unknown escapes stay unproved even with a following zero bound: legacy
 // escapes can span more than one atom. An erased enclosing group can still
 // suppress them without executing or reinterpreting their original bindings.
-fn leaf(units: &[u16], cursor: usize, unicode: bool, sets: bool) -> Option<(usize, bool)> {
+fn leaf(
+    units: &[u16],
+    cursor: usize,
+    unicode: bool,
+    sets: bool,
+    escaped_atoms: bool,
+) -> Option<(usize, bool)> {
     if let Some(end) = atom_end(units, cursor, unicode, sets) {
         return Some((end, true));
     }
@@ -164,6 +181,11 @@ fn leaf(units: &[u16], cursor: usize, unicode: bool, sets: bool) -> Option<(usiz
         return None;
     }
     if unit == 0x5c {
+        if escaped_atoms {
+            if let Some(atom) = escaped_atom(units, cursor, unicode) {
+                return Some(atom);
+            }
+        }
         let escaped = *units.get(cursor + 1)?;
         let safe = matches!(
             escaped,
@@ -202,6 +224,49 @@ fn leaf(units: &[u16], cursor: usize, unicode: bool, sets: bool) -> Option<(usiz
             .get(cursor + 1)
             .is_some_and(|u| (0xdc00..=0xdfff).contains(u));
     Some((cursor + 1 + usize::from(pair), erasable))
+}
+
+// Literal escape boundaries only; exact-zero matching never reads their values.
+// Surrogate escapes remain unproved because adjacent escapes can form one atom.
+fn escaped_atom(units: &[u16], cursor: usize, unicode: bool) -> Option<(usize, bool)> {
+    let prefix = *units.get(cursor + 1)?;
+    let (end, value) = if prefix == 0x75 && unicode && units.get(cursor + 2) == Some(&0x7b) {
+        let mut end = cursor + 3;
+        let start = end;
+        let mut value = 0u32;
+        while let Some(digit) = units.get(end).copied().and_then(hex) {
+            value = value.checked_mul(16)?.checked_add(digit)?;
+            end += 1;
+        }
+        if end == start || units.get(end) != Some(&0x7d) || value > 0x10ffff {
+            return None;
+        }
+        (end + 1, value)
+    } else {
+        let digits = match prefix {
+            0x78 => 2,
+            0x75 => 4,
+            _ => return None,
+        };
+        let mut end = cursor + 2;
+        let mut value = 0u32;
+        for _ in 0..digits {
+            value = value * 16 + hex(*units.get(end)?)?;
+            end += 1;
+        }
+        (end, value)
+    };
+    // Keep the entire spelling opaque even when it denotes a surrogate.
+    Some((end, !(0xd800..=0xdfff).contains(&value)))
+}
+
+fn hex(unit: u16) -> Option<u32> {
+    match unit {
+        0x30..=0x39 => Some(u32::from(unit - 0x30)),
+        0x61..=0x66 => Some(u32::from(unit - 0x61) + 10),
+        0x41..=0x46 => Some(u32::from(unit - 0x41) + 10),
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -429,5 +494,128 @@ mod tests {
             .is_none()
         );
         assert_eq!(earlier, seen);
+    }
+
+    fn escaped(source: &str, unicode: bool, sets: bool) -> Option<Box<[bool]>> {
+        compile_escaped_with_work(&JsString::from(source), unicode, sets, |_| Ok::<(), ()>(()))
+            .unwrap()
+    }
+
+    #[test]
+    fn native_escape_atom_masks_preserve_literal_delimiters_and_assertion_imports() {
+        for (source, unicode, sets, expected) in [
+            (r"(\x61{0})(\u0062{0})", false, false, &[true, true][..]),
+            (
+                r"(?=(\u0028{0}))(?<=(\x29{0}))",
+                true,
+                true,
+                &[true, true][..],
+            ),
+            (
+                r"((\x61{0})?|(\u0062{0})+)+",
+                true,
+                false,
+                &[true, false, false][..],
+            ),
+            (
+                r"(\u{1F600}{0}|(\x61){0})(\u{000061}{0})",
+                true,
+                true,
+                &[true, false, true][..],
+            ),
+            (
+                r"(?<=(?i:((\u0041{0})?)))(\u{10FFFF}{0})",
+                true,
+                false,
+                &[true, false, true][..],
+            ),
+            (r"(\x7c{0}|(\u005c){0})*", true, true, &[false, false][..]),
+            (
+                r"((\uD83D\uDE00){0})(\x00{0})",
+                true,
+                false,
+                &[true, false, true][..],
+            ),
+        ] {
+            assert_eq!(
+                escaped(source, unicode, sets).as_deref(),
+                Some(expected),
+                "{source}"
+            );
+            assert!(
+                compile_positive_with_work(
+                    &JsString::from(source),
+                    unicode,
+                    sets,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "earlier API: {source}"
+            );
+        }
+    }
+
+    #[test]
+    fn escape_atom_scope_excludes_surrogates_consumption_and_nonunicode_braced_forms() {
+        for (source, unicode) in [
+            (r"\x61", true),
+            (r"\x61{0}b", true),
+            (r"\u0061+", true),
+            (r"\uD83D\uDE00{0}", true),
+            (r"\uD800{0}", true),
+            (r"\u{D800}{0}", true),
+            (r"\u{DC00}{0}", true),
+            (r"\u{61}{0}", false),
+            (r"\u{1F600}{0}", false),
+            (r"(?=\x61)", true),
+            (r"(?!\u0061{0})", true),
+        ] {
+            assert!(escaped(source, unicode, false).is_none(), "{source}");
+        }
+        assert!(escaped(r"\x61{0}", false, true).is_none());
+    }
+
+    #[test]
+    fn long_escape_spellings_and_deep_capture_clears_remain_source_sized() {
+        let source = format!(r"(\u{{{}61}}{{0}})(\x62{{0}})", "0".repeat(20_000));
+        assert_eq!(
+            escaped(&source, true, true).as_deref(),
+            Some(&[true, true][..])
+        );
+        let depth = 100_000;
+        let source = format!(
+            r"{}(\u0028{{0}})?|(\x29){{0}}{}",
+            "(".repeat(depth),
+            ")+".repeat(depth)
+        );
+        let mask = escaped(&source, true, true).unwrap();
+        assert_eq!(mask.len(), depth + 2);
+        assert!(mask[..depth].iter().all(|&defined| defined));
+        assert_eq!(&mask[depth..], &[false, false]);
+    }
+
+    #[test]
+    fn escaped_tree_source_work_aborts_before_parsing_and_keeps_earlier_costs() {
+        let source = JsString::from(r"(?=(\u0028{0}))(?<=(\x29{0}))");
+        let mut seen = Vec::new();
+        assert!(matches!(
+            compile_escaped_with_work(&source, true, true, |n| {
+                seen.push(n);
+                Err(43)
+            }),
+            Err(43)
+        ));
+        assert_eq!(seen, [source.len() * 64 + 16]);
+        let mut earlier = Vec::new();
+        assert!(
+            compile_positive_with_work(&source, true, true, |n| {
+                earlier.push(n);
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .is_none()
+        );
+        assert_eq!(seen, earlier);
     }
 }

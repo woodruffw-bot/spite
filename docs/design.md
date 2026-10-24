@@ -13143,3 +13143,18 @@ and numbered result path, including index-array aliases. Erased references
 retain their original bindings, and original early errors precede proof
 selection. String consumers, cloning, collection and actual-work accounting
 reuse the existing sequence body.
+
+
+A separate escaped-atom tree constructor recognizes complete hexadecimal and
+non-surrogate Unicode literal escapes before applying an exact-zero bound
+(22.2.1, 22.2.2.3.1). Fixed hexadecimal/Unicode spellings retain their complete
+source widths; Unicode braced spellings require u/v and scan leading zeros
+without expansion. Encoded delimiters remain literal atoms rather than group
+or choice syntax. Surrogate escapes remain unproved because adjacent escaped
+code units can combine into one Unicode atom. Erased enclosing groups can
+still suppress such bodies without reinterpreting them.
+
+The new constructor enables the positive empty-tree proof as well. Earlier
+tree constructors retain their escape exclusions and work. Escape boundaries
+are scanned only during construction, without matching data; the retained
+lexical mask, capture-clear markers and actual matching work are unchanged.

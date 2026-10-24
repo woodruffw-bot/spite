@@ -68,6 +68,28 @@ impl RegExpZeroCountSequenceMatcher {
         .map(|defined| Self { unicode, defined }))
     }
 
+    /// Proves positive empty trees with zero-erased hexadecimal/Unicode atoms.
+    ///
+    /// Requires complete original validation and normalized capture heads.
+    /// Fixed hexadecimal escapes and non-surrogate Unicode escapes are scanned
+    /// as complete literal atoms (22.2.1). Unicode braced escapes require u/v;
+    /// surrogate escapes stay unproved to avoid combining adjacent code units
+    /// incorrectly. Earlier tree constructors and their work remain unchanged.
+    pub fn compile_escaped_tree_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Ok(crate::regexp_zero_count_tree::compile_escaped_with_work(
+            source,
+            unicode,
+            unicode_sets,
+            charge,
+        )?
+        .map(|defined| Self { unicode, defined }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment

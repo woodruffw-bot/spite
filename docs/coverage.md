@@ -23496,3 +23496,29 @@ unchanged.
 The preceding basic-tree Runtime snapshot passes all 35 Test262 runner tests and
 all 16,343 reviewed variants (216.42 s for the corpus group). This broad snapshot
 precedes positive-assertion Runtime integration.
+
+
+## Core zero-erased hexadecimal and Unicode escape atoms
+
+A separate positive-tree constructor recognizes complete hexadecimal and
+non-surrogate Unicode literal escape atoms before an exact-zero bound
+(22.2.1, 22.2.2.3.1). Encoded delimiters stay literal atoms. Unicode braced
+spellings require u/v, including long leading-zero spellings. Surrogate escapes
+remain unproved to avoid changing adjacent escaped code units' atom boundaries;
+an erased enclosing group may still suppress such bodies.
+
+All 50 actual-source focused Core tests pass (0.51 s), including four new groups
+for seven independently checked native masks, encoded delimiters, positive
+assertion imports, optional rollback, scope/surrogate exclusions, 100,000 nested
+capture clears, a 20,000-zero Unicode spelling and pre-source work aborts. All
+12,800 exact input/start/capture comparisons across 512 generated escaped trees
+agree with actual native records. All 12,800 earlier positive-tree baseline
+records also agree after the shared reducer extension.
+
+Strict workspace Clippy with all targets passes (26.55 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+A review of 2,732 direct source/pattern literal-array controls, including both
+ordinary and raw Rust strings, finds none newly admitted. Earlier tree APIs
+retain their escape exclusions and source work. Construction and retained
+storage stay source-sized; matching and capture queries remain constant.
+Runtime integration follows separately.
