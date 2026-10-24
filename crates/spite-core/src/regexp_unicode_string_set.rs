@@ -719,6 +719,52 @@ impl RegExpUnicodeStringSetMatcher {
         best
     }
 
+    /// Returns the preferred consuming member ending strictly before a bound.
+    /// The caller proves no assertions and charges the full prefix inspection.
+    pub(crate) fn prefix_before(
+        &self,
+        input: &JsString,
+        start: usize,
+        before: usize,
+    ) -> Option<Range<usize>> {
+        debug_assert!(!self.has_outside_assertions());
+        let p = &self.program;
+        let units = input.code_units();
+        let mut best = None;
+        if let Some(&first) = units.get(start) {
+            let (point, width) = unicode_input_character(units, start, first);
+            if start + width < before
+                && p.scalars
+                    .as_ref()
+                    .is_some_and(|plan| plan.matches_original_character(point))
+            {
+                best = Some(start..start + width);
+            }
+        }
+        let (mut node, mut at) = (0usize, start);
+        for _ in 0..p.max_characters {
+            let Some(&first) = units.get(at) else { break };
+            let (point, width) = unicode_input_character(units, at, first);
+            at += width;
+            if at >= before {
+                break;
+            }
+            let point = if p.ignore_case {
+                regexp_canonicalize_character(point, true, true)
+            } else {
+                point
+            };
+            let Some(&next) = p.edges.get(&(node, point)) else {
+                break;
+            };
+            node = next;
+            if p.terminal[node] {
+                best = Some(start..at);
+            }
+        }
+        best
+    }
+
     /// Whether the underlying class contains the empty string, before assertions.
     pub(crate) fn has_empty_member(&self) -> bool {
         self.program.terminal[0]

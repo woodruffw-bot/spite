@@ -13,9 +13,10 @@ use std::ops::Range;
 mod repeated_string_classes;
 pub use repeated_string_classes::{
     RegExpUnicodeBoundedStringClassCaptureMatcher,
-    RegExpUnicodeCountedNullableStringClassCaptureMatcher,
+    RegExpUnicodeCountedNullableStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
+    RegExpUnicodeRequiredStringClassCaptureMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
 };
 

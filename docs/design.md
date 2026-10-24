@@ -11675,3 +11675,33 @@ All earlier public matcher domains, work callbacks and projections stay unchange
 Runtime selects this proof after the earlier prefix-free constructor on the full
 capture source. A dedicated matcher body retains original source, names/indices,
 lastIndex, String consumers, cloning and collection.
+
+
+Core proves a separate nonnullable plain string-class body with three or more
+required iterations. The full existing simple-body proof retains lexical capture
+scopes and pure-empty outside terms; empty class members, empty alternatives,
+assertions and nested class-path loops remain separate. Count bounds retain original
+decimal digits for exact upper-minus-lower arithmetic before the resulting
+optional allowance saturates at the platform index limit.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher may revisit earlier member choices
+when a later required iteration fails. The finder stores one selected range per
+required iteration in a flat vector. It tries the preferred next member, and on
+failure pops ranges until an earlier member has a strictly shorter accepted
+endpoint. It then retries the required continuation. Thus `[\q{aa|aaa}]{3}` on
+`aaaaaa` selects three `aa` members after longer first/second choices fail.
+The endpoint helper considers scalar fallback and canonical finite words in the
+same original UTF-16 coordinate space as the preferred class matcher.
+
+Every transition, shorter-endpoint inspection and class search is charged before
+inspection. The vector reserves fallibly after a charge, and holds at most the
+required count, bounded by remaining input units because every member consumes.
+Its storage is reused across candidate starts; construction, cloning and drop
+remain flat. A separate RegExpUnicodeMatchError distinguishes callback failures
+from matching-storage capacity failures; both are host failures. Impossible huge
+minima fail with constant finder work before allocation. Once the required run
+succeeds, the proved pure-empty continuation admits greedy/lazy optional members
+without further required-history search. Only the whole range and final body
+range escape for capture projection. Nonsticky failed runs retry the next Unicode
+boundary after their starting position. Earlier matcher APIs retain their exact
+domains, callback work and projection. Runtime selection remains separate.

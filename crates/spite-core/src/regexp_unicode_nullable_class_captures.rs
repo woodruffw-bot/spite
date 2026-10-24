@@ -12,10 +12,12 @@ pub use string_class_captures::{
     RegExpUnicodeAssertedStringClassAlternativeMatcher,
     RegExpUnicodeBoundedStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
-    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
+    RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
-    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
+    RegExpUnicodeRequiredStringClassCaptureMatcher, RegExpUnicodeSingleStringClassCaptureMatcher,
+    RegExpUnicodeStringClassBranchMatch,
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
 };
@@ -1191,4 +1193,5 @@ mod tests {
     include!("regexp_unicode_counted_nullable_string_class_tests.rs");
     include!("regexp_unicode_prefix_free_string_class_tests.rs");
     include!("regexp_unicode_two_required_string_class_tests.rs");
+    include!("regexp_unicode_required_string_class_tests.rs");
 }
