@@ -12406,5 +12406,8 @@ construction; unknown terms behind that gate remain unsupported. Construction
 charges before source inspection and normalization. Normal matching reuses the
 profiled branch searches; storage and clone/drop remain flat. Outside captured
 scopes, consuming siblings and other class-path counts retain separate proofs.
-Earlier APIs retain exact domains and charged work. Runtime selection remains
-separate.
+Earlier APIs retain exact domains and charged work. Runtime selects the common
+outside-gate proof after exact-one grouped alternatives on the complete
+normalized capture source. The dedicated body retains complete ranges, branch
+ownership, endpoint truth, source/flags, named aliases, indices, lastIndex and
+String consumers through cloning and collection.

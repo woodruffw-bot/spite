@@ -21739,3 +21739,30 @@ quotas remain unchanged.
 The preceding branch-local root and ordinary enclosing-group Runtime sources
 pass all 1,737 Unicode RegExp integration tests (815.53 s). This run compiled
 before exact-one enclosing counts and outside common gates.
+
+
+## Runtime outside assertions around grouped branch-local alternatives
+
+Three focused groups pass (0.25 s), retaining common line/word gates inside
+member and empty-branch continuations. Complete and conditional captures,
+required empty identity, exact-one wrappers, named and escaped-name aliases,
+indices, matchAll, callback replacement, split/search, cloning, collection and
+strict lastIndex writes retain original behavior. Explicit suffix failures retry
+shorter members, empty-first branches and later starts; reversed line gates
+retain multiline context. Deep 1,000-level counted wrappers and 20,000-unit
+shared-prefix scalar/string words remain flat. Contradictory common gates match
+with bounded work after complete construction; unknown terms behind them and
+host constructor aborts retain distinct proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Two
+preceding rejection controls in two existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+Both affected Rust proof tests pass (0.02 s each). Five source-shape scans retain
+all other rejection domains. All 100,352 exact differential records agree across
+256 independent pairs, with all 1,024 proof/flag combinations supported. Common
+canonical/reversed line and word/nonword frames, contradictions, mixed exact-one
+wrappers and independent branch profiles cover all starts, sticky, multiline and
+ignore-case. All 431 Runtime unit tests pass (3.51 s), alongside strict workspace
+Clippy (29.21 s), documentation tests, formatting, policy, inventories and diff
+checks. The grouped Runtime inventory contains 592 case files. Fixtures,
+snapshots, dependencies and default quotas remain unchanged.

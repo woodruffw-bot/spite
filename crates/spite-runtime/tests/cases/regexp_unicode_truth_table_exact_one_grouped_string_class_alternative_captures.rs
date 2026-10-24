@@ -212,6 +212,7 @@ fn truth_table_exact_grouped_alternative_string_classes_preserve_deep_required_e
 #[test]
 fn truth_table_exact_grouped_alternative_string_classes_prove_unknown_branches_and_other_wrapper_counts()
  {
+    assert_eq!(Realm::default().eval(r####"var pattern="^(((^)|(\\b))([\\q{a|ab}])|()){1}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"(((\b\B)|(\b\B))([\q{ab}&&\p{RGI_Emoji}])|()){1}",
         r"(((\b\B)|(\b\B))([\q{|a|ab}])|((\b\B)|(\b\B))z){1}",
@@ -219,7 +220,6 @@ fn truth_table_exact_grouped_alternative_string_classes_prove_unknown_branches_a
         r"(((^)|(\b))([\q{a|ab}])|([a])){1}",
         r"(((^)|(\b))([\q{a|ab}])|()){2}",
         r"(((^)|(\b))([\q{a|ab}])|()){1,2}",
-        r"^(((^)|(\b))([\q{a|ab}])|()){1}",
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
