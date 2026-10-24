@@ -13817,3 +13817,11 @@ first arm, preserving its mask and leaving every later lexical slot undefined
 Shared empty execution preserves Unicode boundaries, indices/groups, lastIndex,
 String consumers, cloning and collection, with original errors before proof
 selection. This root-only proof is not composed under repeat continuations.
+
+
+Runtime selects complete positive lookahead/lookbehind over independently empty
+optional established-impossible forms, including root-first choices with their
+final successful continuation (22.2.2.4). Full normalized source keeps original
+bindings and lexical slots. Both directions export exact operand masks. Shared
+empty execution preserves Unicode boundaries, indices/groups, lastIndex, String
+consumers, cloning and collection, with original errors before proof selection.

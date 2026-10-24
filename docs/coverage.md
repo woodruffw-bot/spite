@@ -25105,3 +25105,22 @@ programs. All 436 Runtime unit tests pass (3.57 s). Strict workspace Clippy with
 all targets passes (6.45 s), alongside documentation tests, formatting, dependency
 policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+Positive assertions over optional established-impossible forms (Runtime)
+----------------------------------------------------------------------
+
+Runtime selects complete positive lookahead/lookbehind over optional established-
+impossible operands, sequences, enclosing sequences and root-first choices. Both
+directions export exact original operand masks; root-first proofs use the
+operand's final successful continuation. All 30 focused integration groups pass
+(0.17 s), including three new groups for every operand family in both directions,
+later lexical slots/errors, indices/groups and lastIndex, String consumers,
+cloning, collection, 1,000 later arms and 20,000-digit positive minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v assertions agree on the fresh CLI, as do all 30 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.55 s). Strict workspace Clippy with
+all targets passes (6.60 s), alongside documentation tests, formatting, dependency
+policy, inventories and diff checks. Runtime inventory remains 617; fixtures,
+snapshots, dependencies and default quotas are unchanged.
