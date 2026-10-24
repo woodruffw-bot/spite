@@ -23314,27 +23314,29 @@ previously recorded Test262 result, this broad snapshot precedes sequence,
 first-alternative and enclosing Runtime integration.
 
 
-## Core quantified enclosing empty sequences and first choices
+## Core quantified enclosing empty sequences and choices
 
-A separate constructor proves quantified ordinary/modifier spines enclosing a
-complete zero sequence or unconditional first choice. Its flat first-closure
-scan and linear suffix pass retain the complete outside scope. Required empty
-iterations preserve captures; an optional outside group clears all descendant
-writes after zero-progress failure (22.2.2.3.1). The full lexical mask combines
-the defined outside prefix with the retained or cleared inner mask.
+The quantified enclosing constructor accepts an empty sequence or a choice
+whose every alternative is independently proved empty. RepeatMatcher can reject
+an empty iteration and backtrack into later arms: `(|a)+` consumes `a` on that
+input. A root first-alternative proof alone is therefore insufficient inside
+repetition (22.2.2.3.1). The constructor checks every later arm before retaining
+the first arm's mask, so all backtracking paths keep the same input position and
+failed optional attempts roll capture writes back. Root and mandatory-enclosing
+first choices retain their final-success proof and remain unchanged.
 
-All 36 actual-source focused Core tests pass (0.39 s), including four new groups
-for eight independently checked native masks, optional rollback, modifier
-scopes, outside-scope exclusions, every construction-work abort, 100,000
-quantified enclosing groups and a 20,000-digit required count. All 4,096 exact
-boundary/capture comparisons across 512 independently native-validated quantified
-enclosed ordinary/u/v patterns agree. Decimal bounds stay symbolic; construction,
-retained storage and clone/drop are source-sized, with constant matching and
-capture queries.
+All 37 actual-source focused Core tests pass (0.29 s), including consuming-tail
+exclusions and every work-abort step while checking later arms. Eight native
+mask cases cover required/optional captures and safe choices; 100,000 quantified
+enclosing groups and a 20,000-digit required count stay symbolic and flat. All
+4,096 exact boundary/capture comparisons across 512 independently native-validated
+patterns with safe choice arms agree. The original empty-input capture tables
+did not expose consuming later alternatives; nonempty emoji input identified
+that gap before Runtime integration was committed.
 
-Strict workspace Clippy with all targets passes (22.57 s), alongside workspace
+Strict workspace Clippy with all targets passes (28.02 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
-Earlier APIs and Runtime behavior are unchanged. A lexical review of 2,701
-retained unsupported controls identifies 20 entries across 11 modules for native
-metadata conversion during Runtime integration. No fixtures, snapshots,
-dependencies or default quotas change.
+A lexical review of all 2,701 retained unsupported controls finds none newly
+admitted after the restriction; their original expectations remain intact.
+Construction, retained storage and clone/drop are source-sized, with constant
+matching and capture queries. Earlier APIs and their work remain unchanged.

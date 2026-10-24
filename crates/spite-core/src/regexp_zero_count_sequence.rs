@@ -92,6 +92,8 @@ impl RegExpZeroCountSequenceMatcher {
     /// sequence. Later alternatives may contain any fully validated body: the
     /// first alternative's successful continuation prevents their execution
     /// (22.2.2.2). Their original lexical slots are reserved as undefined.
+    /// This proof assumes the final successful continuation; repetition needs
+    /// an additional proof that backtracking cannot select a consuming arm.
     /// Validation and capture-head normalization requirements are unchanged.
     pub fn compile_first_alternative_validated_with_work<E>(
         source: &JsString,
@@ -188,7 +190,9 @@ impl RegExpZeroCountSequenceMatcher {
     ///
     /// Full original validation and normalized capture heads are required.
     /// Required empty repetitions retain the body's mask; optional empty
-    /// repetitions roll back all descendant writes (22.2.2.3.1). Bounds remain
+    /// repetitions roll back all descendant writes (22.2.2.3.1). Every arm of
+    /// an inner choice must itself be zero-erased: an empty iteration's failing
+    /// continuation can backtrack into later arms. Bounds remain
     /// symbolic, including oversized minima. Modifier flags cannot change an
     /// unconditional empty body's result. All source/frame work precedes allocation.
     pub fn compile_quantified_enclosing_validated_with_work<E>(
@@ -208,7 +212,7 @@ impl RegExpZeroCountSequenceMatcher {
         let mut inner =
             Self::compile_validated_with_work(&body, unicode, unicode_sets, &mut charge)?;
         if inner.is_none() {
-            inner = Self::compile_first_alternative_validated_with_work(
+            inner = Self::compile_backtracking_safe_choice_with_work(
                 &body,
                 unicode,
                 unicode_sets,
@@ -229,6 +233,82 @@ impl RegExpZeroCountSequenceMatcher {
                 defined: defined.into_boxed_slice(),
             }
         }))
+    }
+
+    fn compile_backtracking_safe_choice_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        let Some(first) = Self::compile_first_alternative_validated_with_work(
+            source,
+            unicode,
+            unicode_sets,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let units = source.code_units();
+        let mut cursor = 0;
+        let mut depth = 0usize;
+        let mut class_depth = 0usize;
+        let mut arm_start = None;
+        while cursor <= units.len() {
+            let unit = units.get(cursor).copied();
+            if unit == Some(0x5c) {
+                cursor += 2;
+                continue;
+            }
+            if class_depth != 0 {
+                if unit == Some(0x5d) {
+                    class_depth -= 1;
+                } else if unicode_sets && unit == Some(0x5b) {
+                    class_depth += 1;
+                }
+            } else {
+                match unit {
+                    Some(0x5b) => class_depth = 1,
+                    Some(0x28) => depth += 1,
+                    Some(0x29) => depth -= 1,
+                    Some(0x7c) | None if depth == 0 => {
+                        if let Some(start) = arm_start {
+                            if start != cursor {
+                                let arm = JsString::from_code_units(units[start..cursor].to_vec());
+                                let mut spine =
+                                    RegExpZeroCountSpineMatcher::compile_validated_with_work(
+                                        &arm,
+                                        unicode,
+                                        unicode_sets,
+                                        &mut charge,
+                                    )?;
+                                if spine.is_none() {
+                                    spine = RegExpZeroCountSpineMatcher::compile_group_validated_with_work(
+                                        &arm, unicode, unicode_sets, &mut charge,
+                                    )?;
+                                }
+                                if spine.is_none()
+                                    && Self::compile_validated_with_work(
+                                        &arm,
+                                        unicode,
+                                        unicode_sets,
+                                        &mut charge,
+                                    )?
+                                    .is_none()
+                                {
+                                    return Ok(None);
+                                }
+                            }
+                        }
+                        arm_start = Some(cursor + 1);
+                    }
+                    _ => {}
+                }
+            }
+            cursor += 1;
+        }
+        Ok(Some(first))
     }
 
     /// Original lexical capture count, excluding the whole match (22.2.7.2).
@@ -855,11 +935,11 @@ mod tests {
                 &[false, false, false][..],
             ),
             (
-                r"((([a]{0})+|((b)))){2,3}?",
+                r"((([a]{0})+|((b){0}))){2,3}?",
                 &[true, true, true, false, false][..],
             ),
-            (r"(?-i:(|((a))))+", &[true, false, false][..]),
-            (r"((|((a))){0})+", &[true, false, false, false][..]),
+            (r"(?-i:(|((a){0})))+", &[true, false, false][..]),
+            (r"((|((a){0})){0})+", &[true, false, false, false][..]),
         ] {
             let plan = quantified(source).unwrap_or_else(|| panic!("{source}"));
             assert_eq!(plan.capture_count(), expected.len(), "{source}");
@@ -885,6 +965,11 @@ mod tests {
             "(?=[a]{0}[b]{0})",
             "([a]+[b]{0})*",
             "([a]{0})+",
+            "(|a)+",
+            "(|a)*",
+            "(|a){2,3}",
+            "((|a)){2,3}?",
+            r"(?i:(|[\p{RGI_Emoji}]+))+",
         ] {
             assert!(quantified(source).is_none(), "{source}");
         }
@@ -929,6 +1014,46 @@ mod tests {
         );
         assert!(work.len() >= 4);
         assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            let result =
+                RegExpZeroCountSequenceMatcher::compile_quantified_enclosing_validated_with_work(
+                    &source,
+                    true,
+                    true,
+                    |n| {
+                        seen.push(n);
+                        if seen.len() == stop + 1 {
+                            Err(stop)
+                        } else {
+                            Ok(())
+                        }
+                    },
+                );
+            assert!(matches!(result, Err(n) if n==stop));
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    #[test]
+    fn quantified_choices_charge_each_backtracking_safe_arm_before_construction() {
+        let source = JsString::from(r"(?i:(|([a]{0})+)){2,3}");
+        let mut work = Vec::new();
+        let plan =
+            RegExpZeroCountSequenceMatcher::compile_quantified_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(plan.capture_count(), 2);
+        assert_eq!(plan.capture_range(0, &(0..0)), Some(0..0));
+        assert_eq!(plan.capture_range(1, &(0..0)), None);
         for stop in 0..work.len() {
             let mut seen = Vec::new();
             let result =

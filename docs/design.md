@@ -13059,7 +13059,8 @@ accounting use the existing sequence result path.
 
 
 The lexical-mask plan also proves quantified ordinary/ims modifier spines around
-a complete empty sequence or first choice. A flat delimiter scan records each
+a complete empty sequence or choice whose every alternative is proved empty.
+A flat delimiter scan records each
 leading group's first closure, and a linear suffix pass selects the deepest
 complete outside spine. Required empty iterations retain the body's mask; the
 first optional outside group rolls all descendant captures back (22.2.2.3.1).
@@ -13070,3 +13071,13 @@ iterations. Source/frame work is charged before allocation; construction,
 storage and clone/drop are source-sized, while matching and capture queries
 remain constant. Outside siblings, conditions and unproved consuming bodies
 require other proofs. Earlier APIs and their work are unchanged.
+
+
+A root first-alternative proof depends on its final successful continuation.
+Inside RepeatMatcher, a rejected empty iteration can backtrack into later arms:
+`(|a)+` consumes `a` on that input despite its empty first arm. The quantified
+enclosing constructor therefore checks every later arm independently as an
+erased spine/sequence or an empty arm before retaining the first arm's mask.
+All backtracking paths then stay at the same input position, and optional
+attempts roll every capture write back. Root and mandatory-enclosing first
+choices still use their final-success proof and may skip arbitrary later bodies.
