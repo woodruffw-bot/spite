@@ -11346,3 +11346,29 @@ remain separate proofs. Runtime selects the layered proof after the common-word
 constructor on the full normalized source. The existing capture body retains
 original source, flags, lexical name/index aliases, String consumers, cloning,
 collection and opt-in constructor/exec abort behavior.
+
+
+Core `compile_reversed_surrounding_line_assertions_with_work` on the asserted
+alternative matcher admits common $ before and/or ^ after complete ordinary
+wrappers, with optional common word predicates beside them. It declines original
+root choices before recovering any outside frame. Flat wrapper scans retain
+lexical prefixes; common predicates are conjoined with each original branch,
+then both complete branches pass the existing root proof. Earlier constructors
+retain their domains and exact callbacks.
+
+ECMA-262 edition 17 22.2.2.3–4 and 22.2.2.7 require predicates at the actual
+selected endpoints. On `x\nab`, `$(()|([\q{\n|\na}]))^` with multiline matching
+rejects the empty alternative at index one and the longer newline-plus-a member,
+then selects the newline at 1..2. Both reversed line predicates can succeed
+across different consuming boundaries or together at an empty-line point. The
+existing Single matcher records $ at the start and ^ at the end before selecting
+the longest eligible member; no global false-pattern shortcut is introduced.
+
+Every original class leaf and term must prove even when common/local predicates
+conflict. Original class-selected empty members retain their explicit branch
+identity. Enclosing captures keep whole selected ranges and inner slots keep
+conditional lexical participation. Construction, searches, cloning and dropping
+remain flat with source-sized storage and the existing work bounds. Duplicate or
+noncanonical outside layers, partial wrappers/siblings, choice counts, optional
+assertions, references and unknown leaves retain separate proofs. Runtime
+selection remains separate from this constructor.

@@ -369,6 +369,98 @@ impl RegExpUnicodeAssertedStringClassAlternativeMatcher {
         Ok(Some(plan))
     }
 
+    /// Proves common $ before and/or ^ after complete alternative wrappers.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Optional
+    /// common word predicates share each actual boundary. Every original branch
+    /// and class leaf passes the existing full proof, including false predicates.
+    /// Multiline $...^ may consume a newline between different endpoints; shorter
+    /// eligible members remain available (22.2.2.3–4, 22.2.2.7).
+    /// https://262.ecma-international.org/17.0/#sec-compileassertion
+    pub fn compile_reversed_surrounding_line_assertions_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(32).saturating_add(160))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        if has_root_alternative(units) {
+            return Ok(None);
+        }
+        let start_end_line = units.first() == Some(&0x24);
+        let end_start_line =
+            units.last() == Some(&0x5e) && !super::super::escaped(units, units.len() - 1);
+        if !start_end_line && !end_start_line {
+            return Ok(None);
+        }
+        let mut begin = usize::from(start_end_line);
+        let mut end = units.len() - usize::from(end_start_line);
+        let start_word = match units.get(begin..end).and_then(|body| body.get(..2)) {
+            Some([0x5c, word @ (0x62 | 0x42)]) => {
+                begin += 2;
+                Some(*word)
+            }
+            _ => None,
+        };
+        let end_word = if end >= begin + 2
+            && units[end - 2] == 0x5c
+            && matches!(units[end - 1], 0x62 | 0x42)
+            && !super::super::escaped(units, end - 2)
+        {
+            let word = units[end - 1];
+            end -= 2;
+            Some(word)
+        } else {
+            None
+        };
+        let Some(inner) = units.get(begin..end) else {
+            return Ok(None);
+        };
+        let Some((body, enclosing_captures)) = enclosed_v_group_body(inner) else {
+            return Ok(None);
+        };
+        let body = &inner[body];
+        let Some(bar) = root_bar(body) else {
+            return Ok(None);
+        };
+        let mut decorated = Vec::with_capacity(units.len().saturating_add(8));
+        for (index, branch) in [&body[..bar], &body[bar + 1..]].into_iter().enumerate() {
+            if index != 0 {
+                decorated.push(0x7c);
+            }
+            if start_end_line {
+                decorated.push(0x24);
+            }
+            if let Some(word) = start_word {
+                decorated.extend_from_slice(&[0x5c, word]);
+            }
+            decorated.extend_from_slice(branch);
+            if let Some(word) = end_word {
+                decorated.extend_from_slice(&[0x5c, word]);
+            }
+            if end_start_line {
+                decorated.push(0x5e);
+            }
+        }
+        let Some(mut plan) = Self::compile_with_work(
+            &JsString::from_code_units(decorated),
+            ignore_case,
+            multiline,
+            charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        plan.captures = plan
+            .captures
+            .checked_add(enclosing_captures)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        plan.enclosing_captures = enclosing_captures;
+        Ok(Some(plan))
+    }
+
     /// Counts original lexical captures in wrappers and both alternatives.
     pub fn capture_count(&self) -> usize {
         self.captures

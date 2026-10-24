@@ -762,6 +762,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute common canonical word predicates outside complete string-class/empty alternative wrappers through Runtime RegExp and String consumers, preserving original metadata, branch aliases, Unicode progress and host aborts.
 - [x] Compile canonical assertion layers interleaved with complete string-class/empty alternative wrappers, preserving shared and local scope, lexical prefixes, full leaf proof and linear recovery.
 - [x] Execute canonical assertion layers interleaved with complete string-class/empty alternative wrappers through Runtime RegExp and String consumers, preserving layered scope, prefix/branch aliases and host aborts.
+- [x] Compile common $ before and/or ^ after complete string-class/empty alternative wrappers, preserving actual endpoints, ordered continuation, lexical prefixes and full leaf proof.
+- [ ] Execute common $ before and/or ^ after complete string-class/empty alternative wrappers through Runtime RegExp and String consumers, preserving multiline endpoints, source metadata, aliases and host aborts.
 - [ ] Compile and execute nullable repetition of variable-width string classes with branch captures and exact count/progress semantics.
 - [ ] Compile validated Patterns and implement native RegExp matching, result construction and lastIndex semantics.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.

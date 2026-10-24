@@ -19496,3 +19496,28 @@ formatting, dependency policy, source/fixture inventories and diff checks pass.
 Runtime inventory is 548 case files and 4,316 integration cases. Corpus
 sources/helpers, snapshots, dependencies, intrinsic counts and default resource
 policy are unchanged.
+
+
+## Core reversed common line predicates around complete string-class alternatives
+
+Three groups compare 32 class families, seven paired local branch profiles, ten
+reversed common line/word profiles, six layouts, both orders and three wrapper
+shapes with independent predicate, ordered-choice and capture-tree evaluation.
+Twelve inputs, all starts and sticky/i/m flags retain actual consuming endpoints,
+one-point empty conjunctions, and lexical prefix/branch masks. Exact witnesses
+cover a first empty alternative and a longer member rejected by the common
+continuation, class-selected and alternative-selected empty results, opposite
+word gates across a consuming newline, vi folding of a newline-terminated word
+and supplementary initial normalization. A structural witness keeps 20,000
+enclosing captures flat. Every constructor/search callback cancellation prefix
+and recovery is checked. Earlier APIs, root scope, duplicate/noncanonical layers,
+partial wrappers/siblings, choice counts, extra alternatives/classes, optional
+assertions, references and unknown leaves remain closed.
+
+Stable passes all 1,236 Core unit cases and 431 Runtime unit cases. All 51,976
+prior public API records retain exact constructor/search work and capture
+projection, including the layered assertion API. All 55 static reversed-line
+class witnesses validate in native v/vi modes. Workspace documentation tests,
+strict workspace Clippy, formatting, dependency policy, source/fixture inventories
+and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
+or default quota changes.
