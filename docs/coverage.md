@@ -19761,3 +19761,30 @@ projection. The six fixed capture tables match native references. Strict
 workspace Clippy, documentation tests, formatting, dependency policy, inventories
 and diff checks pass. No Runtime selection, fixture, snapshot, dependency or
 default quota changes.
+
+
+## Runtime exact-one counted class branches in asserted root alternatives
+
+Three groups retain the root lexical-role matrix with independently tabulated
+class/input witnesses, five branch predicate profiles, six layouts and both
+source orders. Exact-one counts occur on the original class atom and a complete
+noncapturing branch wrapper. Twelve native consumer references cover branch
+identity, named indices, shorter eligible members, leading surrogate boundaries,
+folding, empty progress, replacements, split/search and read-only lastIndex.
+Clones and collection retain aliases and original source. Deep counted ancestors,
+long words, first-branch bounded work and opt-in constructor/exec aborts retain
+flat storage and atomic bindings/lastIndex. Other counts, branch shapes, leaves
+and references retain explicit unsupported controls.
+
+
+Execution passes all 1,625 Unicode integration groups, 431 Runtime units and
+12 native/fresh-CLI consumer references. All 230,400 exact differential records
+match across 384 pattern/control pairs, 32 class families, twelve branch
+predicate profiles, six layouts, both orders and twelve inputs with every
+start/sticky/i/m combination. Native controls retain the exact-one counts,
+explicit Unicode candidate loops/leading normalization and finite vi alternatives;
+only huge effect-free empty counts reduce. Fresh conformance-profile Test262
+passes all 35 checks, including all 16,343 reviewed variants. Strict workspace
+Clippy, documentation tests, formatting, dependency policy, inventories and diff
+checks pass. Runtime inventory is 553 files and 4,331 integration cases. No
+fixture, snapshot, dependency, intrinsic inventory or default quota changes.

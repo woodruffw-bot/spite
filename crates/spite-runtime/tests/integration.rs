@@ -1113,3 +1113,6 @@ mod weak_ref;
 mod weak_set;
 #[path = "cases/with.rs"]
 mod with;
+
+#[path = "cases/regexp_unicode_exact_single_root_asserted_string_class_captures.rs"]
+mod regexp_unicode_exact_single_root_asserted_string_class_captures;

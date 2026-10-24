@@ -11474,6 +11474,8 @@ mandatory single execution includes empty bodies; initial capture clearing has
 no additional effect in this reference-free, unquantified choice. Empty-branch
 counts retain their original participation rules. Other class-path counts,
 unknown leaves even behind impossible assertions, and references still decline.
-Existing constructors retain their domains and callbacks; Runtime selection is
-separate. Construction, clone/drop and matching reuse the flat existing plans
+Existing constructors retain their domains and callbacks. Runtime selects the
+root exact-one constructor after the preceding surrounding proofs, retaining
+original source/flags/names, branch aliases, String consumers, cloning and host
+abort behavior. Construction, clone/drop and matching reuse the flat existing plans
 (22.2.2.3, RepeatMatcher).
