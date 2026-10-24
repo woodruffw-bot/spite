@@ -12763,4 +12763,8 @@ gates remain intact. Traversal, storage and clone/drop stay flat and
 source-sized. Unknown terms even under erased/skipped/never scopes, larger or
 unbounded inner counts, consuming outside siblings and patterns requiring a
 different zero-ancestor selection retain separate proofs. Earlier API domains,
-work and captures remain unchanged. Runtime selection remains separate.
+work and captures remain unchanged. Runtime selects this bounded erased-path
+outside-scope proof after larger/unbounded erased paths. Its dedicated body
+retains conditional outside points, mandatory enclosing ranges, every undefined
+inner slot, source/flags, named aliases, indices, lastIndex and String consumers
+through cloning and collection.

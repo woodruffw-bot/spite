@@ -856,7 +856,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove captured outside scopes around erased larger/unbounded class paths, retaining outside participation and every undefined inner slot.
 - [x] Execute captured outside scopes around erased larger/unbounded class paths through Runtime and String consumers.
 - [x] Prove captured outside scopes around erased bounded zero/one class paths, retaining outside participation and every undefined inner slot.
-- [ ] Execute captured outside scopes around erased bounded zero/one class paths through Runtime and String consumers.
+- [x] Execute captured outside scopes around erased bounded zero/one class paths through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

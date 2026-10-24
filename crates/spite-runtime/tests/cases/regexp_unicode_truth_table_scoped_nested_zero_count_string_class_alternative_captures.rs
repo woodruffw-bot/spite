@@ -203,6 +203,7 @@ fn truth_table_scoped_nested_zero_count_alternative_string_classes_keep_outside_
 #[test]
 fn truth_table_scoped_nested_zero_count_alternative_string_classes_validate_complete_unexecuted_regions()
  {
+    assert_eq!(Realm::default().eval(r####"var pattern="()((((^)|(\\b))([\\q{a|ab}])|()){0,1}){0}()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0,\"<undefined>\",\"<undefined>\"]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((\b\B)|(\b\B))()((([\q{ab}&&\p{RGI_Emoji}])|())){0}()",
         r"((^)|(\b))?()((((^)|(\b))([\q{a|ab}])|z)){0}()",
@@ -210,7 +211,6 @@ fn truth_table_scoped_nested_zero_count_alternative_string_classes_validate_comp
         r"()((((^)|(\b))([\q{a|ab}])|([a]))){0}()",
         r"((^)|z){0}()((((^)|(\b))([\q{a|ab}])|())){0}()",
         r"((\b\B)|([a]))?()((((^)|(\b))([\q{a|ab}])|())){0}()",
-        r"()((((^)|(\b))([\q{a|ab}])|()){0,1}){0}()",
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();

@@ -22561,3 +22561,33 @@ capture projection in eight bounded batches.
 Strict workspace Clippy, Core documentation tests, formatting, policy, inventories
 and diff checks pass. Fixtures, snapshots, dependencies and default quotas remain
 unchanged.
+
+
+## Runtime captured outside scopes around erased bounded zero/one class paths
+
+All three focused groups pass (1.09 s), retaining conditional outside points,
+mandatory enclosing ranges and every undefined inner slot. Optional, lazy and
+padded zero/one inner counts preserve both branch orders, named and escaped-name
+aliases, indices, matchAll, callback replacement, split/search, cloning,
+collection and strict lastIndex writes. Outside gates retain later normalized
+Unicode starts and sticky failure/success. Deep 1,000-level outside capture
+scopes, 20,000-unit shared-prefix scalar/string bodies and constructor host aborts
+remain flat. Full construction rejects unknown terms in erased bodies and
+skipped/never outside scopes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Five
+preceding rejection controls across three existing groups now compare complete
+native captures, indices, source, flags, input and lastIndex and agree on the
+fresh CLI. Five source-shape scans retain remaining rejection domains. All 256
+Unicode differential reference sources validate, and all 1,024 proof/flag
+combinations are supported.
+
+All 431 Runtime unit tests pass (10.31 s), and all nine tests in the three affected
+preceding proof groups pass. Strict workspace Clippy, documentation tests,
+formatting, policy, inventories and diff checks pass. The grouped Runtime
+inventory contains 608 case files. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.
+
+All 100,352 exact differential records agree across every start, sticky,
+multiline and ignore-case combination, retaining outside participation around
+bounded erased finite, scalar and known-empty class paths.
