@@ -21822,3 +21822,25 @@ The preceding exact-one enclosing-count and bare common-gate sources pass all
 1,743 Unicode RegExp integration tests (791.82 s). Their fresh Test262 run passes
 all 35 runner tests and all 16,343 reviewed variants, including the pinned corpus
 gate (394.78 s). Both runs compiled before captured outside scopes.
+
+
+## Core optional direct root truth alternatives
+
+Four focused groups pass (8.44 s), comparing 160 native capture tables and an
+independent nonempty-member/progress oracle. Greedy/lazy question and padded
+zero-to-one counts, both branch orders, finite/scalar/known-empty classes,
+required/skipped inner predicate scopes and all UTF-16 starts preserve captures
+across sticky, multiline and ignore-case. Empty-first alternatives retry
+consuming classes; rejected empty class members and zero iterations leave every
+original slot undefined, including the root group. Explicit controls retain
+shorter-member retries without advancing to a later start ahead of a valid zero
+iteration result. Deep 20,000-level branch scopes, 20,000-unit shared-prefix
+words, cloning/drop and every charged cancellation/recovery remain flat. Unknown
+leaves even in lazy/never branches, outside terms, wrappers and other root counts
+retain their proof boundaries.
+
+All 87,304 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (58.50 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.

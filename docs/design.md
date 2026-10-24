@@ -12441,3 +12441,25 @@ normalized capture source. The dedicated body retains outside point roles,
 complete ranges, inner branch ownership, actual endpoint truth, source/flags,
 named aliases, indices, lastIndex and String consumers through cloning and
 collection.
+
+
+Core separately proves one optional direct root group containing a class/empty
+alternative with branch-local predicate choices. `?`/`{0,1}`, including padded and
+lazy forms, retain minimum zero and maximum one. RepeatMatcher rejects every
+zero-width body iteration at minimum zero: an empty-first alternative must still
+retry consuming class members, and an empty class member cannot establish a
+participating iteration (ECMA-262 edition 17 22.2.2.3).
+
+Greedy matching probes only consuming class members at the current normalized
+Unicode start; lazy matching chooses zero iterations immediately. No later start
+can precede the valid zero-iteration result in this complete direct pattern. Both
+original branches undergo full construction even when lazy/never paths would
+skip them. A missing final iteration leaves every original capture, including
+the optional root group, undefined; consuming iterations retain original lexical
+branch offsets and complete ranges. Defined empty matches remain distinct from
+participating empty bodies.
+
+Prefix work and endpoint probes charge before inspection; storage and clone/drop
+remain flat. Outside terms, enclosing choice wrappers and other root counts
+retain separate proofs. Earlier APIs retain exact domains and charged work.
+Runtime selection remains separate.

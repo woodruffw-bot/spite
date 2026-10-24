@@ -2354,3 +2354,178 @@ fn scoped_alternative_outer_plan<E>(
     }
     P::compile_reversed_line_assertions_with_work(source, ignore_case, multiline, charge)
 }
+
+/// One optional direct class/empty root group with branch-local truth choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Only
+/// direct ordinary root groups with ?/{0,1}, including padded/lazy forms, are
+/// admitted. RepeatMatcher rejects every zero-width body iteration at minimum
+/// zero; an empty-first branch therefore still retries consuming class members.
+/// Both complete original branches are validated before matching (22.2.2.3).
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher {
+    inner: RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
+    enclosing: usize,
+    captures: usize,
+    greedy: bool,
+    ignore_case: bool,
+    multiline: bool,
+}
+impl RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher {
+    /// Proves a direct root group, its optional count and both complete branches.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(8).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let u = source.code_units();
+        let (width, enclosing) = if u.starts_with(&[0x28, 0x3f, 0x3a]) {
+            (3, 0)
+        } else if u.first() == Some(&0x28) && u.get(1) != Some(&0x3f) {
+            (1, 1)
+        } else {
+            return Ok(None);
+        };
+        let Some((body, _)) =
+            super::super::super::asserted_alternatives::opaque_truth_choice_hole(u)
+        else {
+            return Ok(None);
+        };
+        if body.start != width {
+            return Ok(None);
+        }
+        let count = body
+            .end
+            .checked_add(1)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        let (end, greedy) = if let Some((end, min, max, greedy)) = simple_count(u, count) {
+            if min || !max {
+                return Ok(None);
+            }
+            (end, greedy)
+        } else if let Some((end, min, delta, greedy)) = asserted_repeat_count(u, count) {
+            if min != 0 || delta != Some(1) {
+                return Ok(None);
+            }
+            (end, greedy)
+        } else {
+            return Ok(None);
+        };
+        if end != u.len() {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(u[body].to_vec());
+        let Some(inner) =
+            RegExpUnicodeTruthTableRootStringClassAlternativeMatcher::compile_with_work(
+                &body,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let captures = inner
+            .capture_count()
+            .checked_add(enclosing)
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(Some(Self {
+            inner,
+            enclosing,
+            captures,
+            greedy,
+            ignore_case,
+            multiline,
+        }))
+    }
+    /// Counts the original optional root capture and every inner lexical slot.
+    pub fn capture_count(&self) -> usize {
+        self.captures
+    }
+    /// Zero iterations leave all captures, including the root group, undefined.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        found.repeated.last_iteration.as_ref()?;
+        if index < self.enclosing {
+            return Some(found.repeated.range.clone());
+        }
+        self.inner
+            .capture_range(index.checked_sub(self.enclosing)?, found)
+    }
+    /// Greedy optional bodies try consuming members; lazy bodies choose zero.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        _sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+        let Some(start) = crate::regexp_literal::unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        let truth = |at| {
+            use crate::regexp_unicode_character::{
+                unicode_assertions_match, unicode_word_boundary,
+            };
+            let u = input.code_units();
+            u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                true,
+                false,
+                self.multiline,
+            )) | u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                false,
+                true,
+                self.multiline,
+            )) << 1
+                | u8::from(unicode_word_boundary(u, at, self.ignore_case)) << 2
+        };
+        let range = if self.greedy {
+            let Plan::Single(single) = &self.inner.class.plan.plan.plan else {
+                return Ok(None);
+            };
+            let inspected = (input.len() - start)
+                .min(single.class.max_match_code_units())
+                .saturating_add(1);
+            charge(inspected.saturating_mul(single.class.search_passes(true)))
+                .map_err(RegExpUnicodeMatchError::Work)?;
+            single
+                .class
+                .find_with_endpoint_filter(input, start, true, |a, b| {
+                    charge(16)?;
+                    Ok(b > a
+                        && self.inner.class.profiles[0] & (1u8 << truth(a)) != 0
+                        && self.inner.class.profiles[1] & (1u8 << truth(b)) != 0)
+                })
+                .map_err(RegExpUnicodeMatchError::Work)?
+        } else {
+            None
+        };
+        let selected = range.is_some();
+        let range = range.unwrap_or(start..start);
+        charge(16).map_err(RegExpUnicodeMatchError::Work)?;
+        Ok(Some(RegExpUnicodePredicateChoiceStringClassMatch {
+            before: truth(range.start),
+            after: truth(range.end),
+            repeated: RegExpUnicodeRepeatedStringClassMatch {
+                last_iteration: selected.then(|| range.clone()),
+                range,
+                class_selected: selected,
+            },
+        }))
+    }
+}
