@@ -24600,3 +24600,30 @@ programs. All 436 Runtime unit tests pass (3.09 s). Strict workspace Clippy with
 all targets passes (9.43 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Negative assertions over successful positive assertions (Core)
+-------------------------------------------------------------
+
+The new constructor proves root negative assertions fail when their complete
+operand is a positive assertion over a nullable group, atom, sequence or choice.
+Complete ordinary/modifier spines preserve existence of a match. Both directions
+are supported, and variable operand capture values remain unobserved. Conditional
+operands, additional assertion layers, siblings and nonroot contexts require
+other proofs.
+
+All 151 actual-source focused Core tests pass (0.53 s), including four new groups
+for both directions, nullable operand families, original incoming references,
+full inventories, modifier/required wrappers, exclusions, 100,000 outside groups,
+20,000-digit positive minima and interruption before each scope/projection/
+operand/input step. All 12,800 exact native input/start records and original
+capture inventories across 512 independently composed ordinary/u/v patterns
+agree, with exact source identity checked by the scratch oracle generator.
+All thirteen earlier impossible-proof families retain their 12,800 native
+records and inventories each after the scanner extension. A lexed review of
+2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (9.43 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

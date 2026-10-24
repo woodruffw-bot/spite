@@ -13610,3 +13610,14 @@ normalized source preserves full inventories and incoming reference bindings.
 Every term has a successful path, so matching data and operand capture values
 are unnecessary for the outside negative failure. Shared constant no-match
 execution retains source/flags, lastIndex, String consumers, cloning and collection.
+
+
+A separate negative-over-successful-positive proof accepts a complete positive
+assertion over a nullable group, atom, sequence or choice, optionally inside
+ordinary/modifier spines. Both positive assertion directions always have a
+successful operand path and therefore succeed; the outside negative assertion
+must fail (22.2.2.4). Operand captures may contain input data and are never
+fabricated. The finite proof handles one positive assertion layer without
+recursing through arbitrary assertion nesting. Source/frame/copy work precedes
+allocation, construction stays source-sized and retained no-match storage and
+actual work remain constant. Earlier scanner modes and work are unchanged.

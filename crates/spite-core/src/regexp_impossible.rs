@@ -133,6 +133,23 @@ impl RegExpImpossibleMatcher {
         Self::compile_assertion_validated_with_work::<6, E>(source, unicode, sets, charge)
     }
 
+    /// Proves root negative assertions over a positive assertion with an always-successful operand.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A complete positive assertion over a nullable group, atom, sequence or
+    /// choice always succeeds (22.2.2.4), so its outside negative assertion
+    /// fails. Required outside ordinary/modifier spines preserve that existence
+    /// proof. Operand captures may contain data and are never fabricated.
+    /// This finite proof handles one positive assertion layer without recursion.
+    pub fn compile_nullable_positive_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<7, E>(source, unicode, sets, charge)
+    }
+
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -223,6 +240,13 @@ impl RegExpImpossibleMatcher {
                                     )?
                                 } else if MODE == 6 {
                                     Self::nullable_alternatives_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else if MODE == 7 {
+                                    Self::nullable_positive_with_work(
                                         &body,
                                         unicode,
                                         sets,
@@ -454,6 +478,41 @@ impl RegExpImpossibleMatcher {
             }
         }
         Ok(false)
+    }
+
+    fn nullable_positive_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        charge(body.len().saturating_mul(48).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(false);
+        }
+        let units = body.code_units();
+        let units = if let Some(scope) = quantified_enclosing_scope(units, sets) {
+            &units[scope.body]
+        } else {
+            units
+        };
+        let start = if units.starts_with(&[0x28, 0x3f, 0x3d]) {
+            3
+        } else if units.starts_with(&[0x28, 0x3f, 0x3c, 0x3d]) {
+            4
+        } else {
+            return Ok(false);
+        };
+        if crate::regexp_zero_count_sequence::group_end(units, 0, sets) != Some(units.len()) {
+            return Ok(false);
+        }
+        let operand = JsString::from_code_units(units[start..units.len() - 1].to_vec());
+        Ok(
+            Self::nullable_group_with_work(&operand, unicode, sets, &mut charge)?
+                || Self::nullable_atom_with_work(&operand, unicode, sets, &mut charge)?
+                || Self::nullable_sequence_with_work(&operand, unicode, sets, &mut charge)?
+                || Self::nullable_alternatives_with_work(&operand, unicode, sets, charge)?,
+        )
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -2015,6 +2074,97 @@ mod tests {
                 Ok::<(), ()>(())
             }),
             Ok(None)
+        );
+    }
+    fn nullable_positive_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_nullable_positive_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_assertions_over_successful_positive_assertions_keep_full_original_slots() {
+        for (source, captures) in [
+            (r"(?!(?=a*))", 0),
+            (r"(?<!(?<=[\p{RGI_Emoji}]*))", 0),
+            (r"(?!(?im-s:((?=(a)?[\q{ab}]*))){2,3})", 2),
+            (r"(a)(?!(?<=(\1)*|[\p{RGI_Emoji}]+))(b)", 3),
+            (r"(?!((?=a*)))", 1),
+        ] {
+            assert_eq!(
+                nullable_positive_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn negative_positive_nullable_proofs_exclude_conditions_siblings_other_layers_and_contexts() {
+        for source in [
+            r"(?!(?=a))",
+            r"(?!(?<=a))",
+            r"(?!(?=(?=a*)))",
+            r"(?=(?=a*))",
+            r"(?!(?=a*)b)",
+            r"(?!(?=a*)|b)",
+            r"((?!(?=a*)))",
+            r"(?!(?=a*))|b",
+        ] {
+            assert!(nullable_positive_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn negative_positive_nullable_depth_and_huge_counts_keep_flat_constant_retained_plans() {
+        let source = format!(
+            "(?<!{}(?=(a)?[\\p{{RGI_Emoji}}]*){})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            nullable_positive_negative(&source).unwrap().capture_count(),
+            100_001
+        );
+        let source = format!("(?!((?=a*)){{{}}})", "9".repeat(20_000));
+        assert_eq!(
+            nullable_positive_negative(&source).unwrap().capture_count(),
+            1
+        );
+    }
+
+    #[test]
+    fn negative_positive_nullable_work_interrupts_before_scope_projection_and_each_operand_step() {
+        let source = JsString::from(r"(a)(?!(?i:((?<=(\1)+|[\p{RGI_Emoji}]*))){2,3})(b)");
+        let mut work = Vec::new();
+        let plan = RegExpImpossibleMatcher::compile_nullable_positive_negative_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_nullable_positive_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(33)),
+            Err(33)
         );
     }
 }
