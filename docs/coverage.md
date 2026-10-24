@@ -21304,3 +21304,26 @@ charged work and capture projection. Strict workspace Clippy (16.95 s),
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime selection remains separate; fixtures, snapshots, dependencies and
 default quotas are unchanged.
+
+
+## Runtime single classes beside conjunctive predicate choices
+
+Three new groups pass (0.18 s), and all six single-class and preceding repetition
+groups pass together (0.28 s). Forty native tables and eight consumer references
+agree on the fresh CLI, including named/escaped-name aliases and indices,
+matchAll, replacement callbacks, split/search, cloning, collection and strict
+lastIndex writes. Deep 1,000-level scopes, 20,000-unit shared-prefix members,
+scalar fallback, shorter successful members, required empty class capture points
+and constructor abort isolation preserve full source and lexical capture state.
+Unknown leaves behind never gates and nonconjunctive scopes remain unproved.
+
+One preceding bare-class rejection now compares the complete native result and
+agrees on the fresh CLI and in its existing Rust group. Five source-shape scans
+retain all remaining rejection domains. All 100,352 exact differential records
+agree across 256 independent pairs; all 1,024 proof/flag combinations are
+supported. Eight finite/scalar/known-empty layouts, four bare/exact-one spellings,
+eight gate profiles and four remaining live profiles cover all input starts,
+sticky, multiline and ignore-case. All 431 unit tests pass (3.18 s), alongside
+strict workspace Clippy (6.22 s), documentation tests, formatting, policy,
+inventories and diff checks. Fixtures, snapshots, dependencies and default
+quotas remain unchanged.

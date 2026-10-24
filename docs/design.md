@@ -12222,4 +12222,7 @@ member before search advances. Endpoint truth projects the original ordered
 predicate captures; zero-minimum scopes still remain undefined (ECMA-262 edition
 17 22.2.2.3–4). Other class counts, consuming siblings, unknown leaves and
 nonconjunctive choices retain their separate proofs. Earlier choice APIs retain
-exact domains and charged work. Runtime selection remains separate.
+exact domains and charged work. Runtime selects this single-class proof after
+the conjunctive repetition proof on the full normalized capture source. The
+dedicated body retains endpoint truth, required class identity, source/flags,
+named aliases, indices, lastIndex and String consumers through clone/collection.
