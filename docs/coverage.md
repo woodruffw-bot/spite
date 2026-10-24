@@ -25594,8 +25594,9 @@ with the same property-range control.
 
 All 436 Runtime unit tests pass (3.41 s). Strict workspace Clippy with all
 targets, documentation tests, formatting, dependency policy, inventories and
-diff checks pass. Fresh complete RegExp and Test262 runs from this snapshot are
-in progress; the finished `4c595b80` results remain separately recorded. Runtime
+diff checks pass. The complete Test262 run from this snapshot is recorded
+below. Its full RegExp run remains in progress; the finished `4c595b80`
+results remain separately recorded. Runtime
 inventory remains 619. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
 
@@ -25616,3 +25617,12 @@ Unsupported controls stay excluded. Strict workspace Clippy with all targets,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Bare-atom lookahead Test262 snapshot
+
+The Runtime snapshot at `04ce1dcc` passes all 35 Test262 package tests and
+16,343 reviewed corpus variants with the existing conformance profile
+(399.55 s for the corpus). This includes repeated word-boundary operands,
+unquantified character atoms and the four migrated Unsupported controls.
+The later bare-word-atom extension has separate focused evidence. Fixture,
+harness and review inventories retain their preceding values.

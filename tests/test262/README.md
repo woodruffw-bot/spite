@@ -4093,10 +4093,11 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-24 complete-Unicode-positive-lookahead Runtime snapshot at
-`4c595b80` passes all 16,343 corpus variants and 35 runner tests with the
-conformance profile (390.54 s for the corpus). It covers consuming operand
-captures; the later word-boundary extension has separate focused evidence.
+The 2026-10-24 bare-atom-Unicode-lookahead Runtime snapshot at `04ce1dcc`
+passes all 16,343 corpus variants and 35 runner tests with the conformance
+profile (399.55 s for the corpus). It covers repeated word-boundary operands,
+unquantified atoms and migrated former Unsupported controls. The later
+bare-word-atom extension has separate focused evidence.
 Fixture, harness and reviewed-entry inventories are unchanged.
 
 These results do not measure whole-suite conformance. Other tests require grammar,
