@@ -13267,3 +13267,15 @@ proof, using the complete normalized original source. Positive-minimum counts
 and ordinary/modifier wrappers keep their original lexical inventories and
 bindings. The constant no-match body continues to use normal lastIndex,
 source/flags, String consumer, clone and collection behavior.
+
+
+A separate positive-assertion impossibility constructor proves root sequences
+containing a direct positive lookahead/lookbehind whose complete operand is
+independently impossible (22.2.2.4). The shared flat scanner retains every
+original capture and rejects root choices. Projected operands preserve their
+original bindings and use only the established negative-empty direct,
+enclosing, root-choice or required-spine proofs. This finite proof chain never
+re-enters the positive constructor. Callback type erasure at the private proof
+boundary prevents recursive generic expansion; earlier negative construction
+work and domains stay unchanged. Source/copy work precedes allocation, total
+construction is source-sized and the retained no-match plan stays constant.

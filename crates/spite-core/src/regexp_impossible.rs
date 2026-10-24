@@ -1,4 +1,4 @@
-//! Root alternatives blocked by an always-failing assertion (22.2.2.4).
+//! Patterns blocked by an independently always-failing assertion (22.2.2.4).
 
 use crate::{
     JsString, RegExpZeroCountSequenceMatcher, regexp_zero_count_group::enclosing_group_body,
@@ -6,12 +6,13 @@ use crate::{
 };
 use std::ops::Range;
 
-/// A validated root sequence containing an always-failing negative assertion.
+/// A validated root sequence containing an independently always-failing assertion.
 ///
 /// The complete original Pattern/flags must be validated and named capture
-/// heads normalized first. A direct root negative lookahead/lookbehind whose
-/// body always succeeds empty must fail at every position (22.2.2.4). Other
-/// validated terms cannot rescue the sequence; no matching data is needed.
+/// heads normalized first. A negative assertion over an independently empty
+/// body, or a positive assertion over an independently impossible body, must
+/// fail at every position (22.2.2.4). Other validated sequence terms cannot
+/// rescue the failure; no matching data is needed.
 #[derive(Clone, Debug)]
 pub struct RegExpImpossibleMatcher {
     captures: usize,
@@ -28,6 +29,30 @@ impl RegExpImpossibleMatcher {
         source: &JsString,
         unicode: bool,
         sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<false, E>(source, unicode, sets, charge)
+    }
+
+    /// Proves a root sequence blocked by a positive assertion over an impossible body.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A positive assertion whose complete body cannot match must fail in either
+    /// direction (22.2.2.4). Projected bodies retain original bindings and use
+    /// only the independently established negative-empty impossibility proofs.
+    pub fn compile_positive_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<true, E>(source, unicode, sets, charge)
+    }
+
+    fn compile_assertion_validated_with_work<const POSITIVE: bool, E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         charge(source.len().saturating_mul(8).saturating_add(16))?;
@@ -39,7 +64,7 @@ impl RegExpImpossibleMatcher {
         let mut depth = 0usize;
         let mut class_depth = 0usize;
         let mut captures = 0;
-        let mut negative_body = None;
+        let mut assertion_body = None;
         let mut impossible = false;
         while let Some(&unit) = units.get(cursor) {
             if unit == 0x5c {
@@ -57,9 +82,10 @@ impl RegExpImpossibleMatcher {
                     0x5b => class_depth = 1,
                     0x28 => {
                         if depth == 0 {
-                            negative_body = if units[cursor..].starts_with(&[0x28, 0x3f, 0x21]) {
+                            let kind = if POSITIVE { 0x3d } else { 0x21 };
+                            assertion_body = if units[cursor..].starts_with(&[0x28, 0x3f, kind]) {
                                 Some(cursor + 3)
-                            } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, 0x21]) {
+                            } else if units[cursor..].starts_with(&[0x28, 0x3f, 0x3c, kind]) {
                                 Some(cursor + 4)
                             } else {
                                 None
@@ -74,11 +100,20 @@ impl RegExpImpossibleMatcher {
                         };
                         depth = next;
                         if depth == 0 {
-                            if let Some(start) = negative_body.take().filter(|_| !impossible) {
+                            if let Some(start) = assertion_body.take().filter(|_| !impossible) {
                                 let body = JsString::from_code_units(units[start..cursor].to_vec());
-                                impossible |= RegExpZeroCountSequenceMatcher::compile_surrogate_tree_validated_with_work(
-                                    &body, unicode, sets, &mut charge,
-                                )?.is_some();
+                                impossible |= if POSITIVE {
+                                    Self::negative_impossibility_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
+                                } else {
+                                    RegExpZeroCountSequenceMatcher::compile_surrogate_tree_validated_with_work(
+                                        &body, unicode, sets, &mut charge,
+                                    )?.is_some()
+                                };
                             }
                         }
                     }
@@ -89,6 +124,38 @@ impl RegExpImpossibleMatcher {
             cursor += 1;
         }
         Ok((impossible && depth == 0 && class_depth == 0).then_some(Self { captures }))
+    }
+
+    // This finite proof chain never calls the positive-assertion constructor.
+    fn negative_impossibility_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        if Self::compile_negative_validated_with_work(body, unicode, sets, &mut charge)?.is_some()
+            || Self::compile_enclosing_negative_validated_with_work(
+                body,
+                unicode,
+                sets,
+                &mut charge,
+            )?
+            .is_some()
+            || Self::compile_alternatives_negative_validated_with_work(
+                body,
+                unicode,
+                sets,
+                &mut charge,
+            )?
+            .is_some()
+            || Self::compile_required_enclosing_negative_validated_with_work(
+                body, unicode, sets, charge,
+            )?
+            .is_some()
+        {
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     /// Full original lexical capture count, including unobservable slots.
@@ -641,5 +708,105 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
         }
+    }
+
+    fn positive(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_positive_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn positive_assertions_over_impossible_bodies_preserve_all_original_slots() {
+        for (source, captures) in [
+            (r"[\p{RGI_Emoji}]+(?=(?!(a{0})))(b)", 2),
+            (r"(?<=(?<!\uD800{0})(a))(b)", 2),
+            (r"(?=(((?!(a{0})))))(b)", 4),
+            (r"(?<=((?!)|((?<!a{0})(b))))(c)", 4),
+            (r"(?=(?i:((?!(\3){0})(a))){2,3})(b)", 4),
+        ] {
+            assert_eq!(
+                positive(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn positive_impossible_proof_excludes_possible_optional_and_nonroot_bodies() {
+        for source in [
+            r"(?=a)",
+            r"(?<=a)",
+            r"(?=(?!)|)",
+            r"(?=(((?!))?))",
+            r"(?=(?!a))",
+            r"(?=(?=a{0}))",
+            r"(?=(?!))|a{0}",
+            r"((?=(?!)))",
+            r"(?!(?!))",
+            r"(?<!(?!))",
+        ] {
+            assert!(positive(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn positive_impossible_work_is_flat_and_aborts_before_every_body_proof() {
+        let source = JsString::from(r"(?=(?i:((?!)|((?<!a{0})(b)))){2,3})");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_positive_impossible_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 8 + 16);
+        assert!(work.iter().sum::<usize>() < source.len() * 1024);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_positive_impossible_validated_with_work(
+                &source,true,true,|n| {seen.push(n);if seen.len()==stop+1 {Err(stop)}else{Ok(())}}
+            ),Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let source = format!(
+            "(?={}(?!(a{{0}})){})",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(positive(&source).unwrap().capture_count(), 100_001);
+    }
+
+    #[test]
+    fn positive_impossible_match_charges_before_input_or_start_access() {
+        let plan = positive(r"(?=(?!))").unwrap();
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            }),
+            Ok(None)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |n| {
+                assert_eq!(n, 1);
+                Err(17)
+            }),
+            Err(17)
+        );
     }
 }

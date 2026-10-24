@@ -23791,3 +23791,28 @@ inventory remains 615; fixtures, snapshots, dependencies and quotas are unchange
 The earlier direct-impossible Runtime snapshot also completes all 2,817 RegExp
 integration tests successfully (845.03 s). This broad run predates the enclosing,
 root-choice and required-spine increments.
+
+
+Positive assertions over impossible operands (Core)
+--------------------------------------------------
+
+The new constructor proves a root sequence cannot match when a direct positive
+lookahead/lookbehind has an independently impossible complete operand. The
+finite operand proof chain uses only earlier negative-empty constructors,
+preserving original bindings and full capture inventories. Possible/optional
+operands, enclosing assertions and outer choices require other proofs.
+
+All 75 actual-source focused Core tests pass (0.18 s), including four new groups
+for both assertion directions, all earlier operand proof families, original
+outside references, optional/possible/nonroot exclusions, 100,000 required
+operand wrappers and interruption at every constructor charge. Actual no-match
+work charges before input or start access. All 12,800 exact native input/start
+records and original capture inventories across 512 composed ordinary/u/v
+patterns agree. All four earlier negative proof families also retain their
+12,800 native records and inventories each after the scanner refactor. A lexed
+review of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (7.90 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 615; fixtures, snapshots, dependencies and quotas are
+unchanged.
