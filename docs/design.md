@@ -11437,3 +11437,25 @@ callbacks remain unchanged. Runtime selects the surrounding proof after the
 mixed-layer constructor on the full normalized source. Its dedicated body
 retains explicit class/empty tags, lexical point/whole/branch projection, original
 source and names, String consumers, cloning, collection and opt-in host aborts.
+
+
+Core `compile_exact_single_counts_with_work` on the surrounding asserted
+alternative matcher proves exact-one counts on the sole class atom and all
+class-containing ancestors. A flat v-aware scan removes only {1} and {1,1},
+including leading zeros and lazy forms, before invoking the unchanged surrounding
+proof. It requires at least one such count and rejects every other count on
+that path. Counts on outside empty/predicate groups remain original. Every
+original class leaf, branch and outside term still passes the full proof.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher executes an exact-one body once, even
+when it matches an empty string. Within this reference-free single-choice spine,
+the body's capture slots are initially undefined and clearing them for that one
+iteration preserves the unquantified result. No capture delimiter or branch is
+removed, so lexical roles, original source order, class-selected empty identity
+and whole/start/end ranges remain unchanged. On `ab!`,
+`(\b)(([\q{a|ab}]){1}|()){1}(\B)` still selects `a` with outside points at zero
+and one. Other minima/maxima, optional/open counts, references and class-bearing
+repetition retain separate proofs. Existing constructors retain their exact
+callbacks and accepted domains. Construction, normalization and dropping remain
+flat with source-sized storage; matching reuses the bounded root finder.
+Runtime selection remains separate from this constructor.

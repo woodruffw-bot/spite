@@ -122,6 +122,35 @@ impl RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher {
             captures,
         }))
     }
+    /// Proves exact-one counts on the sole class atom and its ancestors.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Counts {1}
+    /// and {1,1}, including leading zeros and lazy forms, execute their body
+    /// exactly once. Removing only those counts preserves all capture slots
+    /// and source order in this reference-free single-choice spine. Every
+    /// original term/class still passes the full surrounding proof; other
+    /// class-spine counts retain separate proofs (22.2.2.3, RepeatMatcher).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_exact_single_counts_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let units = source.code_units();
+        charge(units.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some(normalized) = exact_single_count_source(units) else {
+            return Ok(None);
+        };
+        Self::compile_with_work(
+            &JsString::from_code_units(normalized),
+            ignore_case,
+            multiline,
+            charge,
+        )
+    }
+
     /// Counts original outside and branch captures in lexical source order.
     pub fn capture_count(&self) -> usize {
         self.captures
@@ -307,4 +336,85 @@ fn outside_gates(units: &[u16]) -> Option<Gates> {
         }
     }
     class_seen.then_some(gates)
+}
+
+// A decimal value of exactly one cannot overflow, regardless of leading zeros.
+fn one_digits_end(units: &[u16], mut at: usize) -> Option<usize> {
+    while units.get(at) == Some(&0x30) {
+        at += 1;
+    }
+    if units.get(at) != Some(&0x31) {
+        return None;
+    }
+    at += 1;
+    if units.get(at).is_some_and(|u| (0x30..=0x39).contains(u)) {
+        return None;
+    }
+    Some(at)
+}
+fn one_count_end(units: &[u16], at: usize) -> Option<usize> {
+    if units.get(at) != Some(&0x7b) {
+        return None;
+    }
+    let mut end = one_digits_end(units, at + 1)?;
+    if units.get(end) == Some(&0x2c) {
+        end = one_digits_end(units, end + 1)?;
+    }
+    if units.get(end) != Some(&0x7d) {
+        return None;
+    }
+    end += 1;
+    end += usize::from(units.get(end) == Some(&0x3f));
+    Some(end)
+}
+fn exact_single_count_source(units: &[u16]) -> Option<Vec<u16>> {
+    let (mut at, mut class_seen) = (0usize, false);
+    let mut frames = Vec::<bool>::new();
+    let mut removed = Vec::<Range<usize>>::new();
+    while let Some(&unit) = units.get(at) {
+        match unit {
+            0x5c => {
+                units.get(at + 1)?;
+                at += 2;
+            }
+            0x5b => {
+                if class_seen {
+                    return None;
+                }
+                class_seen = true;
+                at = class_end(units, at)?;
+                frames.fill(true);
+                if matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+                    let end = one_count_end(units, at)?;
+                    removed.push(at..end);
+                    at = end;
+                }
+            }
+            0x28 => {
+                frames.push(false);
+                at += 1;
+            }
+            0x29 => {
+                let owns_class = frames.pop()?;
+                at += 1;
+                if owns_class && matches!(units.get(at), Some(0x2a | 0x2b | 0x3f | 0x7b)) {
+                    let end = one_count_end(units, at)?;
+                    removed.push(at..end);
+                    at = end;
+                }
+            }
+            _ => at += 1,
+        }
+    }
+    if !class_seen || !frames.is_empty() || removed.is_empty() {
+        return None;
+    }
+    let mut normalized = Vec::with_capacity(units.len());
+    let mut previous = 0;
+    for range in removed {
+        normalized.extend_from_slice(&units[previous..range.start]);
+        previous = range.end;
+    }
+    normalized.extend_from_slice(&units[previous..]);
+    Some(normalized)
 }

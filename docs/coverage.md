@@ -19676,3 +19676,29 @@ Workspace documentation tests, strict workspace Clippy, formatting, dependency
 policy, source/fixture inventories and diff checks pass. Runtime inventory is 551
 case files and 4,325 integration cases. Corpus sources/helpers, snapshots,
 dependencies, intrinsic counts and default resource policy are unchanged.
+
+
+## Core exact-one counts on surrounding asserted string-class alternatives
+
+Three groups retain 32 class families, seven paired branch profiles, six shared
+predicate profiles, six inner layouts, seven counted outside layouts, both
+orders, twelve inputs, all starts and sticky/i/m flags against independent
+predicates, ordered choice, capture trees and outside lexical role tables.
+Explicit {1}/{1,1}, leading-zero and lazy counts are added at known wrapper
+positions without using the implementation normalizer. Eight fixed capture
+tables match native controls and cover class/choice counts, consuming and empty
+branches, reversed endpoints, supplementary starts, root-local predicates and
+pinned vi folding. A 20,000-digit one and 20,000 counted ancestors check linear
+normalization, cloning and dropping. Every constructor/search cancellation prefix
+and recovery is checked. The original constructor still declines these counts;
+other class-path counts, optional assertions, assertion-bearing choices, extra
+classes, references, outside consuming terms and unknown leaves remain closed.
+
+Stable passes all 1,246 Core unit cases and 431 Runtime unit cases. All 54,184
+prior public API records retain exact constructor/search work and capture
+projection, including the surrounding-spine API. Eight exact-one capture tables
+match native sticky controls with explicit Unicode advancement, initial leading
+normalization and ordinary vi singleton controls. Workspace documentation tests,
+strict workspace Clippy, formatting, dependency policy, source/fixture inventories
+and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
+or default quota changes.
