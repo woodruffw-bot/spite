@@ -75,13 +75,14 @@ use spite_core::{
     RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher, RegExpZeroCountClassMatcher,
-    RegExpZeroCountGroupMatcher,
+    RegExpZeroCountGroupMatcher, RegExpZeroCountSpineMatcher,
 };
 use spite_heap::Handle;
 use std::{ops::Range, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub(crate) enum RegExpMatcherBody {
+    ZeroCountSpine(RegExpZeroCountSpineMatcher),
     ZeroCountClass(RegExpZeroCountClassMatcher),
     ZeroCountGroup(RegExpZeroCountGroupMatcher),
     Backreferences(RegExpBackreferenceMatcher),
@@ -295,6 +296,7 @@ pub(crate) struct RegExpMatcher {
 impl RegExpMatcher {
     pub fn new(body: RegExpMatcherBody, enclosing_captures: usize) -> Self {
         let inner = match &body {
+            RegExpMatcherBody::ZeroCountSpine(m) => m.capture_count(),
             RegExpMatcherBody::ZeroCountGroup(m) => m.capture_count(),
             RegExpMatcherBody::Backreferences(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeFoldedLiteral(m) => m.capture_count(),
@@ -504,6 +506,21 @@ impl RegExpMatcher {
         sticky: bool,
         charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<RegExpMatch<'a>>, RegExpUnicodeMatchError<E>> {
+        if let RegExpMatcherBody::ZeroCountSpine(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, charge)
+                .map_err(RegExpUnicodeMatchError::Work)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::ZeroCountClass(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, charge)
@@ -1894,7 +1911,8 @@ impl RegExpMatcher {
         sticky: bool,
     ) -> Option<RegExpMatch<'a>> {
         let (range, branch) = match &self.body {
-            RegExpMatcherBody::ZeroCountClass(_)
+            RegExpMatcherBody::ZeroCountSpine(_)
+            | RegExpMatcherBody::ZeroCountClass(_)
             | RegExpMatcherBody::ZeroCountGroup(_)
             | RegExpMatcherBody::Backreferences(_)
             | RegExpMatcherBody::UnicodeFoldedLiteral(_)
@@ -2038,7 +2056,8 @@ impl RegExpMatcher {
     pub fn search_passes(&self, sticky: bool) -> usize {
         match &self.body {
             // These plans charge actual operations through find_with_work.
-            RegExpMatcherBody::ZeroCountClass(_)
+            RegExpMatcherBody::ZeroCountSpine(_)
+            | RegExpMatcherBody::ZeroCountClass(_)
             | RegExpMatcherBody::ZeroCountGroup(_)
             | RegExpMatcherBody::Backreferences(_)
             | RegExpMatcherBody::UnicodeFoldedLiteral(_)
@@ -2215,7 +2234,8 @@ impl RegExpMatcher {
             remaining
         };
         let full_suffix = match &self.body {
-            RegExpMatcherBody::ZeroCountClass(_)
+            RegExpMatcherBody::ZeroCountSpine(_)
+            | RegExpMatcherBody::ZeroCountClass(_)
             | RegExpMatcherBody::ZeroCountGroup(_)
             | RegExpMatcherBody::Quantified(_)
             | RegExpMatcherBody::UnicodeRepeatedAtom(_)
@@ -2332,6 +2352,7 @@ impl RegExpMatch<'_> {
         }
         let index = index - self.matcher.enclosing_captures;
         let fixed = match &self.matcher.body {
+            RegExpMatcherBody::ZeroCountSpine(matcher) => return matcher.capture_range(index, &self.range),
             RegExpMatcherBody::ZeroCountClass(_) | RegExpMatcherBody::ZeroCountGroup(_) => return None,
             RegExpMatcherBody::Backreferences(_) | RegExpMatcherBody::UnicodeFoldedLiteral(_) => {
                 unreachable!("dynamic captures")
@@ -5998,6 +6019,45 @@ mod zero_count_class_tests {
                     .unwrap()
                     .is_none()
             );
+        }
+    }
+}
+
+#[cfg(test)]
+mod zero_count_spine_tests {
+    use super::*;
+
+    #[test]
+    fn zero_spines_preserve_defined_and_undefined_slots_with_constant_actual_work() {
+        let body = RegExpZeroCountSpineMatcher::compile_validated_with_work(
+            &JsString::from(r"(([\p{RGI_Emoji}]{0})?)+"),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::ZeroCountSpine(body), 0);
+        let input = JsString::from("A😀!");
+        assert_eq!(matcher.capture_count(), 2);
+        for sticky in [false, true] {
+            assert_eq!(matcher.search_passes(sticky), 0);
+            let mut work = 0;
+            let found = matcher
+                .find_with_work(&input, 2, sticky, |n| {
+                    work += n;
+                    Ok::<(), u8>(())
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(work, 1);
+            assert_eq!(found.range, 1..1);
+            assert_eq!(found.capture(0), Some(1..1));
+            assert_eq!(found.capture(1), None);
+            assert!(matches!(
+                matcher.find_with_work(&input, 2, sticky, |_| Err(43u8)),
+                Err(RegExpUnicodeMatchError::Work(43))
+            ));
         }
     }
 }

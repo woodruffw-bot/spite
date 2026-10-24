@@ -12958,3 +12958,10 @@ Temporary frames and source work are charged before the flat scan; retained
 storage, clone/drop and matching remain constant. Assertions, alternatives,
 consuming siblings and expressions without a proven zero bound require other
 proofs. Earlier APIs and their work are unchanged.
+
+Runtime selects the quantified zero-spine proof after the earlier zero-atom
+proofs. Its dedicated body carries the complete original lexical count and
+queries Core for each defined or undefined capture. The common result path
+preserves own undefined slots, named aliases, index-array identity, source/flags,
+lastIndex and String consumers through cloning and collection. Actual matching
+work is charged by the plan before input access.

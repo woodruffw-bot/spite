@@ -23075,3 +23075,36 @@ Strict workspace Clippy with all targets passes (16.52 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Earlier APIs and matching behavior are unchanged. Runtime integration of this
 additional quantified-spine proof follows separately.
+
+
+## Runtime zero-erased quantified class/property capture spines
+
+Runtime now selects the complete quantified-spine proof after all earlier
+zero-atom plans. Its dedicated body retains the original lexical count and
+queries Core for the defined prefix and skipped undefined suffix. Named and
+numbered captures, own undefined slots, index aliases and lastIndex share the
+standard result path. Modifier groups and symbolic positive minima require no
+membership data or expansion of empty iterations.
+
+All four new Runtime integration groups pass (0.25 s), covering named capture
+masks across flags/inputs/starts, modifier scopes, required versus skipped
+iterations, String consumers, cloning, collection, 1,000 positive wrappers and a
+20,000-digit required count. Syntax early errors still precede erasure, while
+un-erased membership and consuming siblings retain unsupported checks. An
+opt-in constructor abort preserves assignment and handler/finalizer state.
+
+All 41,472 exact native metadata records across 384 independently generated
+patterns agree on the fresh CLI, including full values/indices, normalized
+starts, groups presence and lastIndex. All four complete native JavaScript
+regression programs also agree. All 434 Runtime unit tests pass (3.11 s),
+including direct defined/undefined capture queries and one unit of actual
+matching work with pre-input aborts. Strict workspace Clippy with all targets
+passes (6.42 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped Runtime inventory contains 614
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding mandatory-enclosing property Runtime snapshot passes all 2,776
+RegExp integration tests (787.12 s), including the corrected literal-control
+expectations. It also passes all 35 Test262 runner tests and all 16,343 reviewed
+variants (385.81 s for the corpus group). These broad results precede the new
+quantified-spine Runtime body.
