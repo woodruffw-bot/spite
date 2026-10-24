@@ -24263,3 +24263,30 @@ are unchanged.
 The earlier direct-composite-negative Runtime snapshot completes all 2,847
 RegExp integration tests successfully (953.82 s). This broad result predates
 Runtime selection of the required-wrapper, alternative and optional proofs.
+
+
+Optional-impossible empty sequences (Core)
+------------------------------------------
+
+The new constructor composes complete root terms independently proved empty,
+requiring at least one optional-impossible spine. Other terms use existing
+empty-tree or negative-impossible proofs. Root choices, consuming/unproved
+terms and sequences without the selected proof require other constructors.
+
+All 119 actual-source focused Core tests pass (0.39 s), including four new groups
+for interleaved required/undefined masks, original erased forward references,
+modifier scopes, escaped surrogate pairs, negative-impossible sibling assertions,
+root/consumption exclusions, 20,000 optional terms, 40,001 capture slots, Unicode
+empty matching and interruption before every constructor step. All 12,800 exact
+native input/start/capture comparisons across 512 independently composed
+ordinary/u/v sequences agree. The scratch oracle generator decodes UTF-8 across
+input chunks and verifies source identity before producing these records.
+Both earlier direct/enclosing negative-impossible sequence families retain
+their 12,800 native input/start/capture records each after the shared-scanner
+refactor. A lexed review of 2,732 direct unsupported control-array entries admits
+none.
+
+Strict workspace Clippy with all targets passes (9.28 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 617; fixtures, snapshots, dependencies and quotas are
+unchanged.

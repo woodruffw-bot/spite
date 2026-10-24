@@ -922,6 +922,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute required spines around impossible composite alternatives through Runtime and String consumers with original enclosing and cross-arm inventories.
 - [x] Prove optional ordinary/modifier spines over independently impossible operands stay empty, retaining required outside captures and undefined skipped descendants.
 - [x] Execute optional impossible operands through Runtime and String consumers with exact required outside and undefined descendant capture masks.
+- [x] Prove optional impossible spines concatenated with independently empty terms, preserving original interleaved masks and mode-aware atom boundaries.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

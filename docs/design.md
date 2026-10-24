@@ -13468,3 +13468,14 @@ source preserves required outside captures and undefined skipped descendants.
 Normal empty execution retains Unicode boundaries, source/flags, lastIndex,
 global String advancement, named indices, replacement/split captures, cloning
 and collection. Original early errors still precede proof selection.
+
+
+A separate optional-impossible sequence constructor composes complete optional
+impossible spines with independently empty tree or negative-impossible terms.
+At least one term must use the optional-impossible proof; root choices and
+consuming/unproved terms reject the constructor (22.2.2.2, 22.2.2.3.1). Original
+bindings and interleaved masks remain in lexical order. A shared flat term
+scanner has separate earlier-negative and new-optional modes, preserving earlier
+domains and charges. Source, copy and mask work precedes allocation; disjoint
+terms keep construction and storage source-sized. Actual empty matching keeps
+the existing constant work and Unicode boundary behavior.

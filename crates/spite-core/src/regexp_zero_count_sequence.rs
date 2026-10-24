@@ -287,6 +287,32 @@ impl RegExpZeroCountSequenceMatcher {
         source: &JsString,
         unicode: bool,
         sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impossible_empty_sequence_with_work::<false, E>(source, unicode, sets, charge)
+    }
+
+    /// Proves optional impossible spines concatenated with independently empty terms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// At least one complete root term must use the optional-impossible proof;
+    /// other terms use the existing negative-impossible or empty-tree proofs.
+    /// Each term independently stays empty, retaining original interleaved masks
+    /// and bindings (22.2.2.2, 22.2.2.3.1). Root choices and consuming/unproved
+    /// terms reject the proof. Source, copy and mask work precedes allocation.
+    pub fn compile_optional_impossible_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impossible_empty_sequence_with_work::<true, E>(source, unicode, sets, charge)
+    }
+
+    fn compile_impossible_empty_sequence_with_work<const OPTIONAL: bool, E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
         charge(source.len().saturating_mul(16).saturating_add(16))?;
@@ -296,7 +322,7 @@ impl RegExpZeroCountSequenceMatcher {
         let units = source.code_units();
         let mut cursor = 0;
         let mut terms = 0;
-        let mut negative = false;
+        let mut selected = false;
         let mut defined = Vec::new();
         while cursor < units.len() {
             let end = if units[cursor] == 0x28 {
@@ -309,12 +335,27 @@ impl RegExpZeroCountSequenceMatcher {
                 return Ok(None);
             };
             let segment = JsString::from_code_units(units[cursor..end].to_vec());
-            let mut plan = Self::compile_negative_impossible_validated_with_work(
-                &segment,
-                unicode,
-                sets,
-                &mut charge,
-            )?;
+            let mut plan = if OPTIONAL {
+                Self::compile_optional_impossible_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?
+            } else {
+                None
+            };
+            if OPTIONAL {
+                selected |= plan.is_some();
+            }
+            if plan.is_none() {
+                plan = Self::compile_negative_impossible_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+            }
             if plan.is_none() {
                 plan = Self::compile_enclosing_negative_impossible_validated_with_work(
                     &segment,
@@ -323,7 +364,9 @@ impl RegExpZeroCountSequenceMatcher {
                     &mut charge,
                 )?;
             }
-            negative |= plan.is_some();
+            if !OPTIONAL {
+                selected |= plan.is_some();
+            }
             if plan.is_none() {
                 plan = Self::compile_surrogate_tree_validated_with_work(
                     &segment,
@@ -338,7 +381,7 @@ impl RegExpZeroCountSequenceMatcher {
             cursor = end;
             terms += 1;
         }
-        Ok((terms >= 2 && negative).then(|| Self {
+        Ok((terms >= 2 && selected).then(|| Self {
             unicode,
             defined: defined.into_boxed_slice(),
         }))
@@ -2142,5 +2185,99 @@ mod tests {
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(23)),
             Err(23)
         );
+    }
+    fn optional_impossible_sequence(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_optional_impossible_sequence_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn optional_impossible_sequences_preserve_interleaved_required_and_skipped_masks() {
+        for (source, mask) in [
+            (
+                r"(a{0})((?!(b{0})))?(c{0})",
+                &[true, false, false, true][..],
+            ),
+            (
+                r"(?i:(((?!(a{0})))?)+)(b{0})",
+                &[true, false, false, true][..],
+            ),
+            (
+                r"(a{0})((?!(\4){0}))?(b{0})",
+                &[true, false, false, true][..],
+            ),
+            (
+                r"((?!(a{0})))?(?!(?!(b{0})))(c{0})",
+                &[false, false, false, true][..],
+            ),
+            (r"\uD83D\uDE00{0}((?!))?[\p{RGI_Emoji}]{0}", &[false][..]),
+        ] {
+            assert_eq!(
+                optional_impossible_sequence(source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_impossible_sequences_exclude_unproved_terms_root_choices_and_missing_optional_proofs()
+     {
+        for source in [
+            r"((?!))?",
+            r"a{0}b{0}",
+            r"(?!(?!))(a{0})",
+            r"a((?!))?",
+            r"((?!))?a",
+            r"((?!))?|a{0}",
+            r"((?!a))?(b{0})",
+            r"((?!))?(a{0})\1",
+        ] {
+            assert!(optional_impossible_sequence(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn optional_impossible_sequences_keep_many_term_masks_and_unicode_actual_work_flat() {
+        let source = format!("{}(a{{0}})", r"((?!(a{0})))?".repeat(20_000));
+        let plan = optional_impossible_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 40_001);
+        assert!(plan.defined[..40_000].iter().all(|&v| !v));
+        assert!(plan.defined[40_000]);
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+    }
+
+    #[test]
+    fn optional_impossible_sequences_interrupt_before_terms_proofs_and_mask_growth() {
+        let source = JsString::from(r"(a{0})((?!(\4){0}))?(b{0})");
+        let mut work = Vec::new();
+        assert!(RegExpZeroCountSequenceMatcher::compile_optional_impossible_sequence_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())}
+        ).unwrap().is_some());
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_optional_impossible_sequence_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
     }
 }
