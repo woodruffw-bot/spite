@@ -23,6 +23,7 @@ pub use nullable_class_captures::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeRepeatedStringClassCaptureMatcher,

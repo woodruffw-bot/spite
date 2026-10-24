@@ -20,6 +20,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeBoundedStringClassCaptureMatcher,
     RegExpUnicodeCountedNullableStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,

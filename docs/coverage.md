@@ -21184,3 +21184,26 @@ profiles cover every input start, sticky, multiline and ignore-case. Strict
 workspace Clippy, documentation tests, formatting, policy, inventories and
 diff checks pass; fixtures, snapshots, dependencies and default quotas are
 unchanged.
+
+
+## Core required predicate choices around class/empty alternatives
+
+Twelve focused groups pass (0.96 s), including the eight preceding repetition
+and single-class groups. Four new groups compare 160 independent native tables
+and a finite/scalar/class-empty branch oracle. Both branch orders, required
+empty class identity, known-empty sets, bare/exact-one class paths, nested
+capture groups, required and skipped predicate scopes and huge counts retain
+source-priority captures at every UTF-16 start under sticky, multiline and
+Unicode ignore-case. Deep 20,000-level required/skipped scopes, 20,000-unit
+shared-prefix members, shorter endpoint continuations, empty-first retries,
+clone/drop, forged public truth profiles and every charged cancellation/recovery
+pass. Conditional class branches cannot gain outside-scope overlays; every
+unknown/reference/additional-class leaf and other class count retains proof.
+All 1,024 proof/flag combinations of the 256-pair Runtime matrix are supported.
+
+All 76,264 frozen prior API records retain exact domains, charged work and capture
+projection. Six bounded transcript batches compare the unchanged original
+sources byte-for-byte with their frozen references. Strict workspace Clippy
+(60 s), documentation tests, formatting, policy, inventories and diff checks
+pass. Runtime selection remains separate; fixtures, snapshots, dependencies and
+default quotas remain unchanged.

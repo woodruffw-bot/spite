@@ -108,6 +108,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,

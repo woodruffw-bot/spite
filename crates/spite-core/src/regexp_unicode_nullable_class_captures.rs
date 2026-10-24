@@ -20,6 +20,7 @@ pub use string_class_captures::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
     RegExpUnicodeNullableStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
@@ -1232,4 +1233,5 @@ mod tests {
     include!("regexp_unicode_zero_minimum_asserted_string_class_alternative_tests.rs");
     include!("regexp_unicode_predicate_choice_string_class_tests.rs");
     include!("regexp_unicode_predicate_choice_single_string_class_tests.rs");
+    include!("regexp_unicode_predicate_choice_string_class_alternative_tests.rs");
 }

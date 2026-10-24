@@ -14,6 +14,8 @@ enum Plan {
     Asserted(RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher),
     Plain(RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher),
     Single(crate::RegExpUnicodeSingleStringClassCaptureMatcher),
+    PlainAlternative(super::RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher),
+    AssertedAlternative(super::RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher),
 }
 /// String-class repetition beside always-successful predicate choices.
 ///
@@ -53,7 +55,8 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        let Some(Projection { shadow, overlays }) = project_choices(source, false, &mut charge)?
+        let Some(Projection { shadow, overlays }) =
+            project_choices(source, false, false, &mut charge)?
         else {
             return Ok(None);
         };
@@ -171,6 +174,8 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
             Plan::Asserted(p) => p.capture_range(index, &found.repeated),
             Plan::Plain(p) => p.capture_range(index, &found.repeated),
             Plan::Single(p) => p.capture_range(index, &found.repeated.range),
+            Plan::PlainAlternative(p) => p.capture_range(index, &found.repeated),
+            Plan::AssertedAlternative(p) => p.capture_range(index, &found.repeated),
         }
     }
     /// Executes the proved repetition and records endpoint assertion truth.
@@ -197,6 +202,12 @@ impl RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
                     last_iteration: Some(range),
                     class_selected: true,
                 }),
+            Plan::PlainAlternative(p) => {
+                p.find_with_captures_and_work(input, requested, sticky, &mut charge)?
+            }
+            Plan::AssertedAlternative(p) => {
+                p.find_with_captures_and_work(input, requested, sticky, &mut charge)?
+            }
         };
         let Some(repeated) = found else {
             return Ok(None);
@@ -274,9 +285,15 @@ fn leaf(
     });
     id
 }
-fn pair(nodes: &mut Vec<Node>, left: usize, right: usize, choice: bool) -> Option<usize> {
+fn pair(
+    nodes: &mut Vec<Node>,
+    left: usize,
+    right: usize,
+    choice: bool,
+    alternative: bool,
+) -> Option<usize> {
     let (a, b) = (&nodes[left], &nodes[right]);
-    if choice && (a.payload || b.payload) {
+    if choice && (a.payload || b.payload) && !alternative {
         return None;
     }
     let (success, predicate, payload, span) = (
@@ -302,21 +319,21 @@ fn pair(nodes: &mut Vec<Node>, left: usize, right: usize, choice: bool) -> Optio
         span,
     ))
 }
-fn append(nodes: &mut Vec<Node>, frame: &mut Frame, node: usize) -> Option<()> {
+fn append(nodes: &mut Vec<Node>, frame: &mut Frame, node: usize, alternative: bool) -> Option<()> {
     frame.sequence = Some(if let Some(left) = frame.sequence {
-        pair(nodes, left, node, false)?
+        pair(nodes, left, node, false, alternative)?
     } else {
         node
     });
     Some(())
 }
-fn finish(nodes: &mut Vec<Node>, frame: &mut Frame, at: usize) -> Option<usize> {
+fn finish(nodes: &mut Vec<Node>, frame: &mut Frame, at: usize, alternative: bool) -> Option<usize> {
     let sequence = frame
         .sequence
         .take()
         .unwrap_or_else(|| leaf(nodes, Kind::Empty, 0xff, false, false, at..at));
     Some(if let Some(left) = frame.choices.take() {
-        pair(nodes, left, sequence, true)?
+        pair(nodes, left, sequence, true, alternative)?
     } else {
         sequence
     })
@@ -328,6 +345,7 @@ struct Projection {
 fn project_choices<E>(
     source: &JsString,
     single: bool,
+    alternative: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Projection>, RegExpUnicodeSetCompileError<E>> {
     use RegExpUnicodeSetCompileError::{Capacity, Work};
@@ -443,7 +461,7 @@ fn project_choices<E>(
                     let Some(frame) = frames.last_mut() else {
                         return Ok(None);
                     };
-                    let Some(done) = finish(&mut nodes, frame, at) else {
+                    let Some(done) = finish(&mut nodes, frame, at, alternative) else {
                         return Ok(None);
                     };
                     frame.choices = Some(done);
@@ -457,7 +475,7 @@ fn project_choices<E>(
                     let Some(mut frame) = frames.pop() else {
                         return Ok(None);
                     };
-                    let Some(child) = finish(&mut nodes, &mut frame, at) else {
+                    let Some(child) = finish(&mut nodes, &mut frame, at, alternative) else {
                         return Ok(None);
                     };
                     at += 1;
@@ -522,7 +540,7 @@ fn project_choices<E>(
         let Some(frame) = frames.last_mut() else {
             return Ok(None);
         };
-        if append(&mut nodes, frame, node).is_none() {
+        if append(&mut nodes, frame, node, alternative).is_none() {
             return Ok(None);
         }
     }
@@ -532,7 +550,7 @@ fn project_choices<E>(
     let Some(mut frame) = frames.pop() else {
         return Ok(None);
     };
-    let Some(root) = finish(&mut nodes, &mut frame, at) else {
+    let Some(root) = finish(&mut nodes, &mut frame, at, alternative) else {
         return Ok(None);
     };
     let mut overlays = Vec::new();
@@ -547,11 +565,12 @@ fn project_choices<E>(
     pending
         .try_reserve_exact(nodes.len())
         .map_err(|_| Capacity)?;
-    pending.push((root, None));
+    pending.push((root, None, false));
     let mut selected = false;
-    while let Some((id, active)) = pending.pop() {
+    while let Some((id, active, gated)) = pending.pop() {
         let n = &nodes[id];
-        let active = if active.is_none()
+        let active = if !gated
+            && active.is_none()
             && !n.payload
             && n.predicate
             && n.success == 0xff
@@ -575,26 +594,31 @@ fn project_choices<E>(
                         mask: mask & n.success,
                     });
                 }
-                pending.push((child, active));
+                pending.push((child, active, gated));
             }
             Kind::Repeat(child, zero) => {
-                pending.push((child, active.map(|mask| if zero { 0 } else { mask })))
+                pending.push((child, active.map(|mask| if zero { 0 } else { mask }), gated))
             }
             Kind::Concat(a, b) => {
-                pending.push((b, active));
-                pending.push((a, active));
+                pending.push((b, active, gated));
+                pending.push((a, active, gated));
             }
             Kind::Choice(a, b) => {
                 // A selected scope below an unselected choice could be skipped.
                 // Such an ancestor must itself have been proved always successful.
-                if active.is_none() && n.predicate {
+                if active.is_none() && n.predicate && !(alternative && n.payload) {
                     return Ok(None);
                 }
                 pending.push((
                     b,
                     active.map(|mask| mask & !nodes[a].success & nodes[b].success),
+                    gated || (alternative && n.payload),
                 ));
-                pending.push((a, active.map(|mask| mask & nodes[a].success)));
+                pending.push((
+                    a,
+                    active.map(|mask| mask & nodes[a].success),
+                    gated || (alternative && n.payload),
+                ));
             }
             Kind::Empty | Kind::Payload => {}
         }
@@ -640,7 +664,8 @@ impl RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        let Some(Projection { shadow, overlays }) = project_choices(source, true, &mut charge)?
+        let Some(Projection { shadow, overlays }) =
+            project_choices(source, true, false, &mut charge)?
         else {
             return Ok(None);
         };
@@ -681,6 +706,139 @@ impl RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher {
         self.plan.capture_range(index, found)
     }
     /// Executes one class and records assertion truth at its actual endpoints.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+/// A required class/empty alternative beside always-successful predicate choices.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Projected
+/// scopes must be mandatory outside every class-bearing alternative. Full branch
+/// proofs retain source priority, endpoint gates and required empty class identity.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodePredicateChoiceStringClassAlternativeMatcher {
+    plan: RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
+}
+impl RegExpUnicodePredicateChoiceStringClassAlternativeMatcher {
+    /// Proves mandatory outside choices before complete class/empty branches.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        let Some(Projection { shadow, overlays }) =
+            project_choices(source, true, true, &mut charge)?
+        else {
+            return Ok(None);
+        };
+        charge(shadow.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let source = super::super::normalize_ones(shadow.code_units());
+        macro_rules! attempt {
+            ($matcher:ty,$method:ident,$family:ident,$variant:ident,$wrapper:ident,$plan:ident) => {
+                if let Some(p) = <$matcher>::$method(&source, ignore_case, multiline, &mut charge)?
+                {
+                    if p.capture_count() != overlays.len() {
+                        return Ok(None);
+                    }
+                    return Ok(Some(Self {
+                        plan: RegExpUnicodePredicateChoiceStringClassCaptureMatcher {
+                            plan: Plan::$plan(super::$wrapper {
+                                body: super::$family::$variant(p),
+                            }),
+                            overlays: overlays.into_boxed_slice(),
+                            ignore_case,
+                            multiline,
+                        },
+                    }));
+                }
+            };
+        }
+        macro_rules! asserted {
+            ($method:ident) => {
+                attempt!(
+                    crate::RegExpUnicodeAssertedStringClassAlternativeMatcher,
+                    $method,
+                    AssertedAlternativeBody,
+                    Root,
+                    RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
+                    AssertedAlternative
+                );
+            };
+        }
+        asserted!(compile_with_work);
+        asserted!(compile_grouped_with_work);
+        attempt!(
+            crate::RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
+            compile_with_work,
+            AssertedAlternativeBody,
+            Surrounding,
+            RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
+            AssertedAlternative
+        );
+        asserted!(compile_surrounding_line_assertions_with_work);
+        asserted!(compile_surrounding_word_assertions_with_work);
+        asserted!(compile_nested_assertion_wrappers_with_work);
+        asserted!(compile_reversed_surrounding_line_assertions_with_work);
+        asserted!(compile_nested_endpoint_assertion_wrappers_with_work);
+        attempt!(
+            crate::RegExpUnicodeNullableStringClassCaptureMatcher,
+            compile_with_work,
+            UnassertedAlternativeBody,
+            Nonempty,
+            RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
+            PlainAlternative
+        );
+        attempt!(
+            crate::RegExpUnicodeNullableStringClassCaptureMatcher,
+            compile_grouped_with_work,
+            UnassertedAlternativeBody,
+            Nonempty,
+            RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
+            PlainAlternative
+        );
+        attempt!(
+            crate::RegExpUnicodeEmptyStringClassCaptureMatcher,
+            compile_with_work,
+            UnassertedAlternativeBody,
+            Empty,
+            RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
+            PlainAlternative
+        );
+        attempt!(
+            crate::RegExpUnicodeEmptyStringClassCaptureMatcher,
+            compile_grouped_with_work,
+            UnassertedAlternativeBody,
+            Empty,
+            RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
+            PlainAlternative
+        );
+        Ok(None)
+    }
+    /// Counts original lexical slots, including unselected class/empty branches.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Projects class selection and conditional outside points at actual endpoints.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Executes original branch order and records assertion truth at both endpoints.
     pub fn find_with_captures_and_work<E>(
         &self,
         input: &JsString,

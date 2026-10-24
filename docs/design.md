@@ -12174,3 +12174,16 @@ accounting are unchanged. Runtime selects this proof after the repetition
 choice proof on the full normalized capture source. The dedicated body retains
 endpoint truth, source/flags, named aliases, indices, lastIndex and String
 consumer behavior through cloning and collection.
+
+Core also proves mandatory always-successful predicate choices around one
+class/empty alternative. The flat parser keeps the class-bearing choice explicit
+and marks both of its branch subtrees conditional. Only scopes outside every
+such choice receive endpoint masks, so a skipped branch cannot gain captures.
+Every remaining branch and class leaf retains its full asserted or assertion-free
+proof. Bare/exact-one class paths preserve ordered class/empty selection,
+required empty class identity and shorter successful endpoint continuations.
+Line/word choices project captures at actual whole-match endpoints, including
+empty-first retries after failed live gates (ECMA-262 edition 17 22.2.2.3–4).
+Branch-local required predicate choices, other class counts and unknown leaves
+retain separate proofs. Repetition and single-class domains and charged work
+remain unchanged. Runtime selection remains separate.

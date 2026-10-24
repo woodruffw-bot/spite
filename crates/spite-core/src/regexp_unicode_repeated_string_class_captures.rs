@@ -2275,6 +2275,7 @@ mod zero_count_asserted {
 }
 pub use zero_count_asserted::{
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
+    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassMatch,
     RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
