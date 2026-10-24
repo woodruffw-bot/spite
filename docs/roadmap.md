@@ -898,6 +898,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute mandatory enclosing impossible sequences through Runtime, preserving original capture inventories, bindings and String consumers.
 - [x] Prove impossible root choices only when every alternative independently proves no match, preserving complete inventories and original projected bindings.
 - [x] Execute independently impossible root choices through Runtime and String consumers, retaining complete cross-arm inventories and original early errors.
+- [x] Prove required quantified ordinary/modifier spines enclosing impossible sequences or choices, preserving symbolic bounds and original capture inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

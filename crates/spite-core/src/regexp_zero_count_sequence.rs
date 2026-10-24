@@ -444,14 +444,14 @@ struct EnclosingFrame {
     minimum_zero: bool,
 }
 
-struct EnclosingScope {
-    body: Range<usize>,
-    captures: usize,
+pub(crate) struct EnclosingScope {
+    pub(crate) body: Range<usize>,
+    pub(crate) captures: usize,
     defined: usize,
-    optional: bool,
+    pub(crate) optional: bool,
 }
 
-fn quantified_enclosing_scope(units: &[u16], sets: bool) -> Option<EnclosingScope> {
+pub(crate) fn quantified_enclosing_scope(units: &[u16], sets: bool) -> Option<EnclosingScope> {
     let mut opening_end = 0;
     let mut captures = 0;
     let mut frames = Vec::new();

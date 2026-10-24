@@ -2,6 +2,7 @@
 
 use crate::{
     JsString, RegExpZeroCountSequenceMatcher, regexp_zero_count_group::enclosing_group_body,
+    regexp_zero_count_sequence::quantified_enclosing_scope,
 };
 use std::ops::Range;
 
@@ -202,6 +203,41 @@ impl RegExpImpossibleMatcher {
             captures += plan.captures;
         }
         Ok(Some(Self { captures }))
+    }
+
+    /// Proves required ordinary/modifier spines enclosing impossible sequences or choices.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every outside minimum must be positive: an optional wrapper could skip
+    /// the impossible body. Bounds stay symbolic and modifier flags cannot
+    /// rescue a body blocked at every position (22.2.2.3.1, 22.2.2.4).
+    pub fn compile_required_enclosing_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut plan =
+            Self::compile_negative_validated_with_work(&body, unicode, sets, &mut charge)?;
+        if plan.is_none() {
+            plan = Self::compile_alternatives_negative_validated_with_work(
+                &body, unicode, sets, charge,
+            )?;
+        }
+        Ok(plan.map(|plan| Self {
+            captures: scope.captures + plan.captures,
+        }))
     }
 
     /// Returns no match, charging actual work before any possible input access.
@@ -511,6 +547,95 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+    }
+
+    fn required(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn required_impossible_spines_preserve_modifier_counts_and_original_inventories() {
+        for (source, captures) in [
+            (r"([\p{RGI_Emoji}]+(?!(a{0})))+", 2),
+            (r"(?i:((?<!\uD800{0})(a))){2,3}?", 2),
+            (r"((a|b)(?!(c{0}))(d)){1,}", 4),
+            (r"(?im-s:((?!(\2){0})[\p{RGI_Emoji}]+)){0001,0002}", 2),
+            (r"((?!)|((?<!a{0})(b)))+", 3),
+        ] {
+            assert_eq!(
+                required(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_wrappers_unproved_bodies_and_siblings_cannot_prove_no_match() {
+        for source in [
+            "(?!a{0})",
+            "((?!a{0}))?",
+            "((?!a{0}))*",
+            "((?!a{0})){0,2}",
+            "(?i:((?!a{0}))?)+",
+            "((?!a{0}))+x",
+            "x((?!a{0}))+",
+            "((?!a{0}))+|a{0}",
+            "((?!)|a{0})+",
+            "((?!a))+",
+        ] {
+            assert!(required(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn required_impossible_depth_and_large_minima_remain_symbolic() {
+        let source = format!(
+            "{}(?!(a{{0}})){}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(required(&source).unwrap().capture_count(), 100_001);
+        let source = format!(
+            r"([\p{{RGI_Emoji}}]+(?!(a{{0}}))){{{}}}",
+            "9".repeat(20_000)
+        );
+        assert_eq!(required(&source).unwrap().capture_count(), 2);
+    }
+
+    #[test]
+    fn required_impossible_work_aborts_before_each_scope_projection_or_body_step() {
+        let source = JsString::from(r"(?i:((?!)|((?<!a{0})(b)))){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
                 &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
             ),Err(n)if n==stop)
             );

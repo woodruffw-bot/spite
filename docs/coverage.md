@@ -23744,3 +23744,28 @@ targets passes (12.21 s), alongside workspace documentation tests, formatting,
 dependency policy, inventories and diff checks. The grouped inventory remains
 615 Runtime cases; fixtures, snapshots, dependencies and default quotas are
 unchanged.
+
+
+Required enclosing impossible groups (Core)
+-------------------------------------------
+
+The new constructor proves complete ordinary/modifier spines with positive
+minimum counts around independently impossible sequences or choices. Any
+optional wrapper, possible choice arm, outside sibling or unproved body rejects
+the proof. Original lexical capture counts and erased references remain intact.
+
+All 71 actual-source focused Core tests pass (0.66 s), including four new groups
+for required/lazy/padded counts, modifier scopes, original bindings and capture
+inventories, optional/sibling exclusions, 100,000 wrappers, 20,000-digit minima
+and interruption before every charged constructor step. All 12,800 exact native
+input/start comparisons and original capture inventories across 512 composed
+ordinary/u/v patterns agree. A lexed review of all 2,732 direct unsupported
+control-array entries, including normal Rust strings, admits none.
+
+Strict workspace Clippy with all targets passes (25.05 s), as do documentation
+tests, formatting, dependency policy, inventories and diff checks. Runtime case
+inventory remains 615; fixtures, snapshots, dependencies and quotas are unchanged.
+
+The earlier direct-impossible Runtime snapshot also passes all 35 Test262 runner
+tests and the unchanged 16,343-case corpus (421.51 s). This broad result predates
+the enclosing and alternatives increments.

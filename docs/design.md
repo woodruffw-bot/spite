@@ -13250,3 +13250,13 @@ selected. Full capture inventories preserve cross-arm and duplicate-name
 bindings for original validation; no arm's result is fabricated or exposed.
 Shared execution keeps lastIndex, source/flags, String consumers, cloning and
 collection behavior. Original errors in later arms still precede proof selection.
+
+
+A separate impossible constructor accepts complete enclosing ordinary/modifier
+group spines only when every outside minimum is positive (22.2.2.3.1,
+22.2.2.4). The first required body attempt must fail; any optional wrapper
+rejects the proof. Counts remain symbolic, including very large minima.
+The shared flat scope scan projects a direct impossible sequence or a choice
+whose every arm independently fails, preserving original reference bindings
+and adding all outside captures. Source/frame/copy work precedes allocation;
+construction stays source-sized and the retained no-match plan is constant.
