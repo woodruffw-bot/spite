@@ -11895,4 +11895,8 @@ must still satisfy the unconditional proof, including at least one live outside
 predicate. The existing nonnullable, zero/one-minimum nullable, two-required,
 larger finite and larger scalar plans retain live count/word/branch behavior.
 Both preprocessing and delegated compilation/search remain charged and fallible;
-no storage depends on huge decimal counts. Runtime selection remains separate.
+no storage depends on huge decimal counts. Runtime selects the skipped-scope
+proof after larger nullable scalar counts on the full normalized capture source.
+Its dedicated body preserves original source/flags, names and index aliases,
+lastIndex, String consumers, cloning and collection, including undefined captures
+in every skipped scope. All-inert outside predicates remain a separate proof.

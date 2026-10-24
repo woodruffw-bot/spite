@@ -20537,3 +20537,29 @@ eight rotated assertion profiles, six capture layouts and twelve inputs with
 every requested start/sticky/i/m. Native controls preserve class empty priority,
 exact huge optional allowances and specification ASCII folding. Fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime skipped outside assertion scopes around string-class repetition
+
+Three groups execute forty native equivalent capture tables and eight consumer
+programs. Skipped before/after scopes preserve their original undefined slots,
+including named and escaped-name index aliases. Nested alternatives and counts
+inside zero scopes impose no matching predicate. Live class, body and count
+priority retain their separate proofs. matchAll, callback replacement,
+split/search, cloning, collection and read-only lastIndex preserve metadata and
+capture identity. Deep 1,000-scope skips and long 20,000-unit shared-prefix words
+with scalar fallback remain flat. A 30,000-step constructor abort preserves the
+binding and host-failure isolation. Live conditional/body predicates, references,
+unknown terms and additional classes retain rejection coverage. Static, program,
+formatted and generated control inventories require no migrations.
+
+Execution passes all 1,667 Unicode cases (733.38 s), all 431 Runtime unit tests,
+48 native references and all 230,400 exact differential records. The broad matrix
+covers 32 mixed nullable/nonnullable scalar, finite and nested-union forms, twelve
+live count forms, three body modes, four skipped-scope layouts, eight rotated live
+assertion profiles, six capture layouts and twelve inputs with every requested
+start/sticky/i/m. Native controls preserve class-empty priority, exact huge
+optional allowances and specification ASCII folding. Strict workspace Clippy,
+documentation tests, formatting, dependency policy, 567 Runtime case-file
+registrations and Parser/Test262 inventories pass. Fixtures, snapshots,
+dependencies and default quotas are unchanged.
