@@ -11479,3 +11479,19 @@ root exact-one constructor after the preceding surrounding proofs, retaining
 original source/flags/names, branch aliases, String consumers, cloning and host
 abort behavior. Construction, clone/drop and matching reuse the flat existing plans
 (22.2.2.3, RepeatMatcher).
+
+
+### Exact-one counts around a single string class
+
+A separate Single constructor reuses the flat class-path normalizer for {1} and
+{1,1}, including padded and lazy forms, on the sole atom and its ordinary
+ancestors. It then tries the original plain, mandatory canonical and reversed
+assertion proofs. Every class and outside term still requires complete proof,
+including false predicates. Removing only exact-one count tokens preserves all
+capture delimiters and endpoint roles; mandatory single execution includes
+empty members and only clears initially undefined inside captures in this
+reference-free spine (22.2.2.3, RepeatMatcher). Original empty sibling counts
+retain optional/later undefined slots and required point participation. Other
+class counts, references, class-bearing alternatives and unknown leaves remain
+separate proofs. Existing constructors retain exact domains/callbacks and flat
+storage. Runtime selection remains separate.

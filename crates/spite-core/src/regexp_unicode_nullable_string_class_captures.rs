@@ -432,6 +432,46 @@ impl RegExpUnicodeSingleStringClassCaptureMatcher {
         Self::compile_single(source, ignore_case, multiline, false, charge)
     }
 
+    /// Proves exact-one counts around one class and its ordinary ancestors.
+    ///
+    /// Requires validated v/vi input and normalized capture names. Counts {1}
+    /// and {1,1}, with leading zeros and lazy forms, execute the body once even
+    /// when empty. Removing only class-path count tokens preserves lexical
+    /// slots, point captures and mandatory predicates in this reference-free
+    /// spine. Plain, canonical and reversed assertion proofs still validate
+    /// every original term and class, including impossible conjunctions.
+    /// Empty sibling counts retain their original capture participation; other
+    /// class counts, references and class-bearing choices remain separate
+    /// proofs (22.2.2.3, RepeatMatcher).
+    /// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+    pub fn compile_exact_single_counts_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(24).saturating_add(128))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some(normalized) =
+            asserted_alternatives::exact_single_count_source(source.code_units())
+        else {
+            return Ok(None);
+        };
+        let source = JsString::from_code_units(normalized);
+        if let Some(plan) = Self::compile_with_work(&source, ignore_case, multiline, &mut charge)? {
+            return Ok(Some(plan));
+        }
+        if let Some(plan) = Self::compile_unconditional_assertions_with_work(
+            &source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )? {
+            return Ok(Some(plan));
+        }
+        Self::compile_reversed_line_assertions_with_work(&source, ignore_case, multiline, charge)
+    }
+
     /// Proves a single string class with canonical outside word/line assertions.
     ///
     /// Requires validated v/vi input and normalized capture names. Leading ^ and

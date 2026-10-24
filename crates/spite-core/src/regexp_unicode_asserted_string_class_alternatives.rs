@@ -9,6 +9,7 @@ use std::ops::Range;
 #[path = "regexp_unicode_surrounding_asserted_string_class_alternatives.rs"]
 mod surrounding;
 pub use surrounding::RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher;
+pub(super) use surrounding::exact_single_count_source;
 
 /// A proved two-way root choice with branch-specific mandatory assertions.
 ///

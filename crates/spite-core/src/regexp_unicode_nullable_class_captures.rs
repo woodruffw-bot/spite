@@ -1179,4 +1179,5 @@ mod tests {
     include!("regexp_unicode_surrounding_asserted_string_class_tests.rs");
     include!("regexp_unicode_exact_single_surrounding_asserted_string_class_tests.rs");
     include!("regexp_unicode_exact_single_root_asserted_string_class_tests.rs");
+    include!("regexp_unicode_exact_single_class_spine_tests.rs");
 }

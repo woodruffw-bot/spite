@@ -19788,3 +19788,27 @@ passes all 35 checks, including all 16,343 reviewed variants. Strict workspace
 Clippy, documentation tests, formatting, dependency policy, inventories and diff
 checks pass. Runtime inventory is 553 files and 4,331 integration cases. No
 fixture, snapshot, dependency, intrinsic inventory or default quota changes.
+
+
+## Core exact-one counts around a single string class
+
+Four groups retain the independent plain, mandatory canonical and reversed
+assertion capture-tree oracles. Atom and complete noncapturing counts retain
+padded/lazy spellings, defined empty members, point/whole ranges and permanently
+undefined slots. The plain/canonical matrices exercise 27 class families and six
+layouts, with ten canonical profiles and three frames; the reversed matrix adds
+five newline families, eighteen profiles and twelve inputs. Every matrix covers
+all starts/sticky/i/m combinations. Seven fixed native tables cover empty
+members, shorter eligible words, line reversal, supplementary leading starts,
+folding and never slots. Counted 20,000-level ancestors and 20,000-digit zero
+prefixes remain flat through clone/drop. Every constructor/search callback can
+cancel and recover; other counts, references, optional predicates, class-bearing
+choices, extra consuming terms/classes and unknown leaves behind false gates
+retain explicit proof boundaries.
+
+
+Execution passes all 1,253 Core tests and 431 Runtime units. All 55,656 prior API
+records retain exact domains, construction/search work and capture projection.
+The seven fixed capture tables match native references. Strict workspace Clippy,
+documentation tests, formatting, dependency policy, inventories and diff checks
+pass. No Runtime selection, fixture, snapshot, dependency or default quota changes.
