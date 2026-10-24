@@ -13441,3 +13441,15 @@ required-enclosing composite-negative proofs. Every arm must independently
 fail. Full original normalized source preserves cross-arm, duplicate-name and
 erased forward bindings for validation. The shared constant no-match body
 retains source/flags, lastIndex, String consumers, cloning and collection.
+
+
+A separate optional-impossible empty proof admits complete ordinary/modifier
+spines with at least one zero-minimum wrapper around an independently impossible
+body (22.2.2.3.1). Every attempted body fails, so the first optional wrapper can
+skip it without exporting operand captures. Required enclosing captures before
+that wrapper remain defined empty; all later wrapper/body slots are undefined.
+The finite operand chain uses the existing impossible constructors and never
+calls this new empty proof. Original bindings and symbolic bounds stay intact.
+Source/frame/copy and full-mask work precedes allocation; construction and
+retained storage are source-sized. Shared empty matching keeps Unicode
+boundaries, constant actual work and lexical capture indexing.

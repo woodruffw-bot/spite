@@ -24193,3 +24193,31 @@ programs. All 436 Runtime unit tests pass (9.73 s). Strict workspace Clippy with
 all targets passes (26.84 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Optional spines over impossible operands (Core)
+----------------------------------------------
+
+The new constructor proves complete ordinary/modifier spines stay empty when a
+zero-minimum wrapper can skip an independently impossible body. Required captures
+before the first optional wrapper remain defined empty; all descendant slots
+are undefined. Required-only spines, conditional/possible bodies and outside
+contexts require other proofs. Original bindings and symbolic bounds remain intact.
+
+All 115 actual-source focused Core tests pass (0.68 s), including four new groups
+for required/optional/outside capture masks, modifier scopes, original erased
+self/outside references, all established impossible operand families, exclusions,
+100,000 required outside captures, 20,000-digit upper bounds, interruption before
+every constructor/mask step and actual Unicode empty matching interrupted before
+input or unrepresentable-start access. All 12,800 exact native input/start/capture
+comparisons across 512 independently composed ordinary/u/v spines agree. A lexed
+review of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (19.66 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
+unchanged.
+
+The earlier direct-composite-negative Runtime snapshot also passes all 35
+Test262 runner tests and the unchanged 16,343-case corpus (473.40 s). This broad
+result predates Runtime selection of its required-wrapper and alternative proofs.

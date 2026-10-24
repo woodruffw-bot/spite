@@ -391,6 +391,103 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves optional ordinary/modifier spines whose complete inner body cannot match.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A zero-minimum wrapper can skip the impossible body; every attempted body
+    /// fails, so no operand capture is exported (22.2.2.3.1). Required captures
+    /// outside the first optional wrapper remain defined empty. Original bindings
+    /// and symbolic bounds are preserved. The finite operand chain never calls
+    /// this constructor; source/frame/copy and mask work precede allocation.
+    pub fn compile_optional_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if !scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let mut plan = RegExpImpossibleMatcher::compile_negative_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?;
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_enclosing_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_alternatives_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan =
+                RegExpImpossibleMatcher::compile_required_enclosing_negative_validated_with_work(
+                    &body,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_positive_impossible_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_composite_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan = RegExpImpossibleMatcher::compile_wrapped_composite_negative_validated_with_work(
+                &body,
+                unicode,
+                sets,
+                &mut charge,
+            )?;
+        }
+        if plan.is_none() {
+            plan=RegExpImpossibleMatcher::compile_alternatives_composite_negative_validated_with_work(&body,unicode,sets,&mut charge)?;
+        }
+        if plan.is_none() {
+            plan=RegExpImpossibleMatcher::compile_enclosing_composite_alternatives_validated_with_work(&body,unicode,sets,&mut charge)?;
+        }
+        let Some(plan) = plan else { return Ok(None) };
+        let captures = scope.captures + plan.capture_count();
+        charge(captures)?;
+        let mut defined = vec![false; captures];
+        defined[..scope.defined].fill(true);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -1940,5 +2037,110 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
         }
+    }
+    fn optional_impossible(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_optional_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn optional_impossible_bodies_keep_outside_required_and_skipped_capture_masks() {
+        for (source, mask) in [
+            (r"((?!(a{0})))?", &[false, false][..]),
+            (r"(((?!(a{0})))?)+", &[true, false, false][..]),
+            (r"(?i:(((?!(\1){0}))*){2,3})", &[true, false, false][..]),
+            (r"((?=(?!(a{0})))){0,3}", &[false, false][..]),
+            (r"((?!(?!(?!(a{0})))))?", &[false, false][..]),
+            (
+                r"((?!(?!(?!(a{0}))))|(?<!(?!(?!(b{0})))))*",
+                &[false, false, false][..],
+            ),
+        ] {
+            assert_eq!(
+                optional_impossible(source).unwrap().defined.as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_impossible_proof_excludes_required_only_conditional_and_outside_contexts() {
+        for source in [
+            r"(?!)",
+            r"((?!))+",
+            r"((?!)){2,3}",
+            r"((?!a))?",
+            r"(a)?",
+            r"((?!))?a",
+            r"a((?!))?",
+            r"((?!))?|a",
+            r"((?!)|a)?",
+        ] {
+            assert!(optional_impossible(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn optional_impossible_depth_masks_and_large_bounds_remain_source_sized() {
+        let source = format!(
+            "{}((?!(a{{0}})))?{}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = optional_impossible(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_002);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert!(plan.defined[100_000..].iter().all(|&v| !v));
+        let source = format!("((?!(a{{0}}))){{0,{}}}", "9".repeat(20_000));
+        assert_eq!(
+            optional_impossible(&source).unwrap().defined.as_ref(),
+            &[false, false]
+        );
+    }
+
+    #[test]
+    fn optional_impossible_work_interrupts_before_scope_operand_mask_and_input_access() {
+        let source = JsString::from(r"(?i:(((?!(a{0})))?)+)");
+        let mut work = Vec::new();
+        let plan = RegExpZeroCountSequenceMatcher::compile_optional_impossible_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_optional_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(23)),
+            Err(23)
+        );
     }
 }
