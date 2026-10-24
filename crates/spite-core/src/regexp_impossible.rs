@@ -357,6 +357,38 @@ impl RegExpImpossibleMatcher {
         }))
     }
 
+    /// Proves required ordinary/modifier spines enclosing a composite-negative failure.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every outside minimum must be positive: optional wrappers can skip the
+    /// impossible body (22.2.2.3.1). Bounds remain symbolic; original references
+    /// and full lexical inventories are preserved. The flat scope scan and
+    /// projected body proof charge source work before allocation.
+    pub fn compile_wrapped_composite_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        if scope.optional {
+            return Ok(None);
+        }
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        Ok(
+            Self::compile_composite_negative_validated_with_work(&body, unicode, sets, charge)?
+                .map(|body| Self {
+                    captures: scope.captures + body.captures,
+                }),
+        )
+    }
+
     /// Returns no match, charging actual work before any possible input access.
     pub fn find_with_work<E>(
         &self,
@@ -957,5 +989,99 @@ mod tests {
             }),
             Err(19)
         );
+    }
+    fn wrapped_composite_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_wrapped_composite_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn wrapped_composite_negative_assertions_keep_required_counts_modifiers_and_inventory() {
+        for (source, captures) in [
+            (r"((?!(?!(?!(a{0})))))+", 2),
+            (r"(?i:((a{0})(?!(?!(?!(b{0})))))){2,3}", 3),
+            (
+                r"(?im-s:(([\p{RGI_Emoji}]+)(?<!(?!(?!(a{0})))))){0002,0003}?",
+                3,
+            ),
+            (r"((?!(?!(?!(\2){0}))))+", 2),
+        ] {
+            assert_eq!(
+                wrapped_composite_negative(source).unwrap().capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn wrapped_composite_negative_assertions_exclude_optional_wrappers_and_outer_contexts() {
+        for source in [
+            r"(?!(?!(?!)))",
+            r"((?!(?!(?!))))?",
+            r"((?!(?!(?!))))*",
+            r"((?!(?!(?!)))){0,2}",
+            r"(?i:((?!(?!(?!))))?)+",
+            r"((?!(?!(?!))))+a",
+            r"a((?!(?!(?!))))+",
+            r"((?!(?!(?!))))+|a",
+            r"((?!(?!(?!)))|a)+",
+            r"((?!a))+",
+        ] {
+            assert!(wrapped_composite_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn wrapped_composite_negative_depth_and_huge_minima_keep_constant_retained_storage() {
+        let source = format!(
+            "{}(?!(?!(?!(a{{0}})))){}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        assert_eq!(
+            wrapped_composite_negative(&source).unwrap().capture_count(),
+            100_001
+        );
+        let body = r"((?!(?!(?!(a{0})))))";
+        let source = format!("{body}{{{}}}", "9".repeat(20_000));
+        assert_eq!(
+            wrapped_composite_negative(&source).unwrap().capture_count(),
+            2
+        );
+    }
+
+    #[test]
+    fn wrapped_composite_negative_assertions_interrupt_before_scope_and_operand_steps() {
+        let source = JsString::from(r"(?i:((a{0})(?!(?!(?!(b{0})))))){2,3}");
+        let mut work = Vec::new();
+        assert!(
+            RegExpImpossibleMatcher::compile_wrapped_composite_negative_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    work.push(n);
+                    Ok::<(), ()>(())
+                }
+            )
+            .unwrap()
+            .is_some()
+        );
+        assert_eq!(work[0], source.len() * 32 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_wrapped_composite_negative_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
     }
 }

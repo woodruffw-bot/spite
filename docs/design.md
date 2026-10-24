@@ -13388,3 +13388,13 @@ and interleaved body capture roles: required wrappers export empty captures,
 while optional repetitions clear descendant writes. Shared empty execution
 retains Unicode boundaries, source/flags, lastIndex, String callback/split
 captures, cloning and collection behavior.
+
+
+A separate wrapped-composite impossibility constructor applies the shared flat
+ordinary/modifier scope scan to a complete composite-negative failing sequence.
+Every enclosing minimum must be positive; an optional wrapper could skip the
+failing body (22.2.2.3.1). Bounds stay symbolic, references retain their original
+bindings and every enclosing capture joins the full lexical inventory.
+Source/frame/copy work precedes allocation. Construction stays source-sized,
+without recursive wrapper processing; retained storage and actual no-match
+work reuse the constant impossible plan. Earlier constructor work is unchanged.

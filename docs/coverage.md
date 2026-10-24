@@ -24069,3 +24069,25 @@ programs. All 436 Runtime unit tests pass (3.67 s). Strict workspace Clippy with
 all targets passes (10.71 s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 616;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Required spines around composite-negative failures (Core)
+--------------------------------------------------------
+
+The new constructor admits complete required ordinary/modifier spines around a
+composite-negative failing sequence. Any optional wrapper, outside sibling,
+outer choice or unproved body rejects the proof. Counts remain symbolic and
+all outside/inside captures retain their original lexical inventory and bindings.
+
+All 103 actual-source focused Core tests pass (0.74 s), including four new groups
+for required/lazy/padded counts, modifier scopes, original erased outside/self
+references and inventories, optional/sibling/choice exclusions, 100,000 required
+wrappers, 20,000-digit minima and interruption before every scope/operand step.
+All 12,800 exact native input/start records and original capture inventories
+across 512 independently composed ordinary/u/v spines agree. A lexed review of
+2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (28.67 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
+unchanged.
