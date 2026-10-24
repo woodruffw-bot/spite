@@ -13837,3 +13837,14 @@ binding and lexical slot. Shared execution preserves Unicode boundaries,
 indices/groups where matches exist, source/flags, lastIndex, String consumers,
 cloning and collection, with original validation errors before proof
 selection.
+
+
+Runtime selects complete required ordinary/modifier spines around negative
+assertions over independently empty optional-established-impossible forms.
+Every outside minimum is positive, keeping the failing body mandatory
+(22.2.2.3.1). Original bindings, complete lexical inventories and symbolic
+counts remain intact. Full normalized source retains every original binding
+and lexical slot. Shared execution preserves Unicode boundaries,
+indices/groups where matches exist, source/flags, lastIndex, String consumers,
+cloning and collection, with original validation errors before proof
+selection.

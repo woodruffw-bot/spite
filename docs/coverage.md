@@ -25147,3 +25147,25 @@ programs. All 436 Runtime unit tests pass (3.81 s). Strict workspace Clippy
 with all targets passes (6.55s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Required spines around negative optional established-impossible forms (Runtime)
+-------------------------------------------------------------------------------
+
+Runtime selects complete required ordinary/modifier spines around negative
+assertions over independently empty optional-established-impossible forms.
+Every outside minimum is positive, keeping the failing body mandatory
+(22.2.2.3.1). Original bindings, complete lexical inventories and symbolic
+counts remain intact.
+
+All 58 focused integration groups pass (1.34 s), including three new groups
+for required/lazy/padded counts, modifiers, original incoming bindings and
+inventories, later errors, source/flags and lastIndex, String consumers,
+cloning, collection, 1,000 outside groups and 20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v patterns agree on the fresh CLI, as do all 58 complete JavaScript
+programs. All 436 Runtime unit tests pass (3.62 s). Strict workspace Clippy
+with all targets passes (6.41s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.
