@@ -21060,3 +21060,35 @@ added. All 74,056 prior API records retain exact domains, charged work and captu
 projection. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime alternatives with zero-minimum scopes and live predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Root/grouped choices and bare/exact-one class paths retain original branch order,
+actual endpoint gates, required empty class identity and undefined optional
+predicate slots. Named/escaped-name aliases, indices, matchAll, callback
+replacement, split/search, cloning, collection and read-only lastIndex retain
+source and capture identity. Deep 1,000 optional scopes, defined outside points,
+empty-first priority and retries after failed live suffixes, shorter successful
+members, 20,000-unit shared-prefix words, scalar fallback, constructor abort
+isolation and complete rejection of unselected unknown leaves pass.
+
+Eight former unsupported cases in eight existing groups now compare complete
+native results, captures/indices, source, flags, input and lastIndex. Controls
+include supported no-match patterns, common and branch-specific line/word
+predicates, grouped/root ownership and exact-one class paths. Original unknown-
+leaf rejection controls remain. Five source-shape scans verify the expanded
+domain, including actual constructed prefixes.
+
+All three new groups pass (0.25 s), alongside 431 Runtime unit tests (6.03 s),
+forty native tables and eight consumer references on the fresh CLI. All eight
+migrated controls agree on the fresh CLI, and their eight existing Rust groups
+pass (0.66 s). All 230,400 exact differential records agree across 384 independent
+pairs; all 1,536 proof/flag combinations are supported. Thirty-two mixed
+nullable/nonnullable finite/scalar forms, twelve bare/exact-one spellings, six
+capture layouts, both branch orders, four optional-scope layouts and eight live
+predicate profiles cover starts, sticky, ignore-case and multiline. The full
+Unicode Runtime suite passes all 1,700 tests (661.05 s). Strict workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks pass;
+fixtures, snapshots, dependencies and default quotas remain unchanged.

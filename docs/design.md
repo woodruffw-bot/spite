@@ -12131,4 +12131,7 @@ keep their own participation. Every class leaf is proved before selection,
 including unknown leaves in an unselected branch. Other class counts,
 references and consuming siblings retain separate proofs. Clone/drop, charged
 work, cancellation and constructor/capacity failures retain their distinction.
-Runtime selection remains separate.
+Runtime selects this live-predicate alternative proof after its assertion-free
+counterpart on the full normalized capture source. Its dedicated body retains
+source/flags, named aliases, lastIndex, String consumers, cloning and collection,
+including endpoint retries and distinct empty-first/class-first captures.

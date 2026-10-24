@@ -1188,3 +1188,6 @@ mod regexp_unicode_zero_minimum_asserted_single_string_class_captures;
 
 #[path = "cases/regexp_unicode_unasserted_zero_minimum_alternative_string_class_captures.rs"]
 mod regexp_unicode_unasserted_zero_minimum_alternative_string_class_captures;
+
+#[path = "cases/regexp_unicode_zero_minimum_asserted_alternative_string_class_captures.rs"]
+mod regexp_unicode_zero_minimum_asserted_alternative_string_class_captures;

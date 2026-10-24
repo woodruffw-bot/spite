@@ -1123,6 +1123,7 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"a\",\"a\",\"a\",\"a\",\"<undefined>\"],\"indices\":[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],\"index\":0},1],[false,\"ababa\",{\"values\":[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[false,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[1,3],[1,3],[1,3],[1,3],\"<undefined>\"],\"index\":1},3],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"a\",\"a\",\"a\",\"a\",\"<undefined>\"],\"indices\":[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],\"index\":0},1],[true,\"ababa\",{\"values\":[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[1,3],[1,3],[1,3],[1,3],\"<undefined>\"],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
+    assert_eq!(Realm::default().eval(r####"var pattern="\\b((([\\q{a|ab}])|(\\b)?))",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"\b\b((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))",
         r"\b((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))\b\b",
@@ -1131,7 +1132,6 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"a\",\
         r"\b((([[\q{a|ab}]&&\p{RGI_Emoji}])|()))?",
         r"\b((([\q{a|ab}])|()|()))",
         r"\b((([\q{a|ab}])|([\q{}])))",
-        r"\b((([\q{a|ab}])|(\b)?))",
         r"\b((([\q{a|ab}])|\1))",
         r"\b((\B([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))",
         r"\b((([\q{a|ab}])+|(^)))",
