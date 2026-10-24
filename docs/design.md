@@ -12091,4 +12091,7 @@ no constraint and ordinary enclosing points stay defined. Search, folding,
 leading surrogate boundaries, cloning, charged work, cancellation and constructor/
 capacity failures retain their existing semantics. Other class-path counts,
 alternatives, references and unknown leaves remain separate proofs. Runtime
-selection remains separate.
+selects this live-predicate single-class proof after its assertion-free
+counterpart on the full normalized capture source. Its dedicated body retains
+source/flags, named aliases, lastIndex, String consumers, cloning and collection,
+including shorter-member retries and defined required empty class captures.

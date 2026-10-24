@@ -20937,7 +20937,7 @@ expanded domain, including actual constructed prefixes.
 All three new groups pass (0.67 s), alongside 431 Runtime unit tests (12.89 s),
 forty native tables and eight consumer references on the fresh CLI. All six
 migrated native programs agree on the fresh CLI, and their three existing Rust
-groups pass (0.39 s). The first 144,000 exact differential records agree across
+groups pass (0.39 s). All 230,400 exact differential records agree across
 the prepared 384-pair matrix, and all 1,536 proof/flag combinations compile.
 Thirty-two mixed nullable/nonnullable scalar/finite forms, twelve bare/exact-one
 spellings, six capture layouts, four zero-minimum scope layouts and eight
@@ -20967,3 +20967,27 @@ added. All 72,584 prior API records retain exact domains, charged work and captu
 projection. Strict workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime selection remains separate; fixtures,
 snapshots, dependencies and default quotas are unchanged.
+
+
+## Runtime single class with zero-minimum scopes and live predicates
+
+Three groups execute forty native equivalent tables and eight consumer programs.
+Bare/exact-one paths retain actual endpoint predicates, shorter-member retries,
+required empty class identity and undefined optional predicate slots. Named/
+escaped-name aliases, indices, matchAll, callback replacement, split/search,
+cloning, collection and read-only lastIndex retain original source and capture
+identity. Deep 1,000 optional scopes, defined surrounding points, a shorter
+successful member after a failed live boundary, 20,000-unit shared-prefix words,
+scalar fallback, constructor abort isolation and closed unproved paths pass.
+Native controls enter the required class once and retain unused capture slots
+under zero counts. Five source-shape scans found no cases requiring migration.
+
+All three new groups pass (0.27 s), alongside 431 Runtime unit tests (7.85 s),
+forty native tables and eight consumer references on the fresh CLI. All 230,400
+exact differential records agree across 384 independent pairs, with all 1,536
+proof/flag combinations supported. Thirty-two mixed nullable/nonnullable scalar/
+finite forms, twelve bare/exact-one spellings, six capture layouts, four
+zero-minimum scope layouts and eight live predicate profiles cover starts,
+sticky, ignore-case and multiline behavior. Strict workspace Clippy,
+documentation tests, formatting, policy and inventories pass; fixtures,
+snapshots, dependencies and default quotas remain unchanged.
