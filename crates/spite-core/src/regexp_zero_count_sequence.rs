@@ -328,6 +328,25 @@ impl RegExpZeroCountSequenceMatcher {
         Self::compile_impossible_empty_sequence_with_work::<2, E>(source, unicode, sets, charge)
     }
 
+    /// Proves optional established-negative terms concatenated with independently empty terms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// At least one complete root term must use the optional-established-negative
+    /// proof. Other terms use earlier optional-known, negative-impossible or empty-tree proofs.
+    /// Every selected term always stays empty, so independently composed masks
+    /// and original bindings survive concatenation (22.2.2.2, 22.2.2.4).
+    /// Root choices, consuming and unproved terms reject the constructor.
+    /// Disjoint source/copy/mask work precedes allocation; earlier modes retain
+    /// their domains and work.
+    pub fn compile_optional_established_negative_sequence_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_impossible_empty_sequence_with_work::<3, E>(source, unicode, sets, charge)
+    }
+
     fn compile_impossible_empty_sequence_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -354,7 +373,14 @@ impl RegExpZeroCountSequenceMatcher {
                 return Ok(None);
             };
             let segment = JsString::from_code_units(units[cursor..end].to_vec());
-            let mut plan = if MODE == 2 {
+            let mut plan = if MODE == 3 {
+                Self::compile_optional_established_negative_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?
+            } else if MODE == 2 {
                 Self::compile_optional_known_impossible_validated_with_work(
                     &segment,
                     unicode,
@@ -373,6 +399,14 @@ impl RegExpZeroCountSequenceMatcher {
             };
             if MODE != 0 {
                 selected |= plan.is_some();
+            }
+            if MODE == 3 && plan.is_none() {
+                plan = Self::compile_optional_known_impossible_validated_with_work(
+                    &segment,
+                    unicode,
+                    sets,
+                    &mut charge,
+                )?;
             }
             if plan.is_none() {
                 plan = Self::compile_negative_impossible_validated_with_work(
@@ -3611,6 +3645,114 @@ mod tests {
         assert_eq!(
             plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(47)),
             Err(47)
+        );
+    }
+    fn optional_established_negative_sequence(
+        source: &str,
+    ) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_optional_established_negative_sequence_validated_with_work(
+            &JsString::from(source),true,true,|_|Ok::<(),()>(()),
+        ).unwrap()
+    }
+
+    #[test]
+    fn optional_established_negative_sequences_keep_mixed_interleaved_masks_and_global_bindings() {
+        for (source, mask) in [
+            (
+                r"((?!((?![\p{RGI_Emoji}]*))?))?((a)\4){0}",
+                &[false, false, false, false][..],
+            ),
+            (
+                r"(((?!((?![\p{RGI_Emoji}]*))?))?)+([a]{0})+((?![\p{RGI_Emoji}]*))?",
+                &[true, false, false, true, false][..],
+            ),
+            (
+                r"((?![\p{RGI_Emoji}]*))?((?!((?![\p{RGI_Emoji}]*))?))*",
+                &[false, false, false][..],
+            ),
+            (
+                r"((?!((?![\p{RGI_Emoji}]*))?))?\uD83D\uDE00{0}",
+                &[false, false][..],
+            ),
+        ] {
+            assert_eq!(
+                optional_established_negative_sequence(source)
+                    .unwrap_or_else(|| panic!("rejected {source}"))
+                    .defined
+                    .as_ref(),
+                mask,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_established_negative_sequences_reject_single_terms_possible_and_continuation_sensitive_terms()
+     {
+        for source in [
+            r"((?!((?!a*))?))?",
+            r"((?!((?!a*))?))?a",
+            r"a((?!((?!a*))?))?",
+            r"((?!((?!a*))?))?|[a]{0}",
+            r"((?!((?!a*))?))?(|a)+",
+            r"((?!a))?[a]{0}",
+            r"((?!a*))?[a]{0}",
+            r"[a]{0}[b]{0}",
+        ] {
+            assert!(
+                optional_established_negative_sequence(source).is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_established_negative_sequences_keep_many_masks_and_large_bounds_flat() {
+        let source = r"(((?!((?![\p{RGI_Emoji}]*))?))?)+([a]{0})+".repeat(20_000);
+        let plan = optional_established_negative_sequence(&source).unwrap();
+        assert_eq!(plan.capture_count(), 80_000);
+        assert!(
+            plan.defined
+                .chunks_exact(4)
+                .all(|v| v == [true, false, false, true])
+        );
+        let source = format!(
+            r"((?!((?![\p{{RGI_Emoji}}]*))?)){{0,{}}}([a]{{0}})+",
+            "9".repeat(20_000)
+        );
+        assert_eq!(
+            optional_established_negative_sequence(&source)
+                .unwrap()
+                .defined
+                .as_ref(),
+            &[false, false, true]
+        );
+    }
+
+    #[test]
+    fn optional_established_negative_sequence_work_interrupts_before_each_segment_proof_and_mask() {
+        let source = JsString::from(r"((?!((?![\p{RGI_Emoji}]*))?))?((a)\4){0}([b]{0})+");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_optional_established_negative_sequence_validated_with_work(&source,true,true,|n|{work.push(n);Ok::<(),()>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_optional_established_negative_sequence_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from("😀"), 1, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(0..0)
+        );
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |_| Err(53)),
+            Err(53)
         );
     }
 }

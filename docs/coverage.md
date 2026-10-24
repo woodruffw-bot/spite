@@ -25014,3 +25014,30 @@ dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged. The preceding
 optional-spine Runtime snapshot also passes all 35 Test262 runner tests and
 16,343 corpus variants in the conformance profile (520.52 s for the corpus).
+
+
+Optional established-negative concatenations (Core)
+-------------------------------------------------
+
+The new sequence mode composes optional established-negative spines with earlier
+independently empty optional-known, negative-impossible or empty-tree terms. At
+least one root term must use the new optional-established-negative proof. Every
+term stays empty, preserving original bindings and interleaved masks. Root
+choices and consuming/unproved terms reject this mode; earlier modes retain
+their domains and work.
+
+All 199 actual-source focused Core tests pass (1.35 s), including four new groups
+for mixed interleaved masks and erased global references, single/possible/root-
+choice/continuation-sensitive exclusions, 20,000 repeated segments with 80,000
+slots, 20,000-digit bounds, every charged segment/proof/mask interruption and
+Unicode actual work/boundaries. All 12,800 exact native input/start/capture records
+across 512 independently composed ordinary/u/v sequences agree. All six earlier
+negative-impossible, optional-impossible and optional-known sequence/enclosing-
+sequence constructors retain their 12,800 native records each after the scanner
+mode extension. A lexed review of 2,732 direct unsupported control-array entries
+admits none.
+
+Strict workspace Clippy with all targets passes (20.10 s), alongside the passing
+documentation, formatting, dependency policy, inventories and diff checks for
+the active Runtime enclosing-sequence increment. Runtime inventory remains 617;
+fixtures, snapshots, dependencies and default quotas are unchanged.

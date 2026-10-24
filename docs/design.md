@@ -13781,3 +13781,13 @@ original normalized source. Interleaved empty/undefined term masks retain their
 original bindings and lexical slots. Shared empty execution preserves Unicode
 boundaries, indices/groups, lastIndex, String consumers, cloning and collection;
 original validation errors precede proof selection.
+
+
+A separate sequence mode composes optional established-negative spines with
+independently empty optional-known, negative-impossible or empty-tree terms. At
+least one root term must use the new optional-established-negative proof and
+every term must stay empty (22.2.2.2, 22.2.2.4). Interleaved masks and original
+bindings survive. Root choices and consuming/unproved terms reject the proof;
+earlier scanner modes retain their domains and work. Disjoint source/copy/mask
+work precedes allocation, with source-sized retained masks and constant actual
+matching and capture queries.

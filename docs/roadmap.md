@@ -955,6 +955,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove complete required ordinary/modifier spines around negative assertions over optional established-impossible empty forms, retaining symbolic bounds and original inventories.
 - [x] Prove optional ordinary/modifier spines over established negative failures of optional-empty forms, preserving required-prefix and skipped descendant masks.
 - [x] Execute optional established-impossible concatenations through Runtime and String consumers with exact interleaved masks and original bindings.
+- [x] Prove concatenations of optional established-negative spines and independently empty earlier terms, preserving interleaved masks and original bindings.
 - [x] Prove root alternatives mixing established and nullable-guard impossibility families, requiring every arm to fail with original projected bindings and inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
