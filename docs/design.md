@@ -14097,5 +14097,15 @@ end assertions, so repeated candidate retries remain linear rather than
 rescanning input suffixes. Actual work precedes all input access. Initial
 trailing-pair offsets retain the approved leading-boundary policy. Construction,
 cloning and dropping stay flat, with no input-sized capture storage. Earlier
-forward constructors retain their domains and work; Runtime integration remains
-separate.
+forward constructors retain their domains and work.
+
+
+Runtime selects the positive single-character lookbehind constructor after the
+existing lookahead proofs, using full validated normalized source. On success
+it resets the projected outer offset and uses the existing independently cached
+empty/operand ranges. Operand slots may precede the whole-match position;
+outside slots remain empty at that position. Named indices and String consumers
+slice captures from the full original input, so replacement and split preserve
+predecessor values. Source/flags, copies, collection, original coercions and
+stateful execution retain the shared result path. The compiler frame remains
+separate from reentrant user conversions.

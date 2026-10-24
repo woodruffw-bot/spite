@@ -25672,3 +25672,26 @@ Unsupported controls stay excluded. Strict workspace Clippy with all targets,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime captured single-character Unicode lookbehind
+
+Five new Runtime groups pass (0.72 s), covering named predecessor/outside
+captures and indices, original source, raw/escaped astral atoms, lone surrogates,
+ordinary/global/sticky candidates, end and initial-pair offsets, original
+line/dot/property context, String consumers, copies, collection and 2,000 wrapper
+slots. All thirteen constructor regressions pass (0.08 s), including native
+reentry. Runtime inventory is 620 case files.
+
+The fresh CLI agrees on 106,496 metadata records across 512 lookbehind patterns
+against the native sticky-candidate oracle with independent complete-character
+advancement and state bookkeeping. Source/flags, input, all starts, execution
+state, whole/capture values and ranges, and lastIndex are checked. Nine ASCII
+iv patterns contribute 1,872 equivalent-range controls for the documented Node
+property-fold discrepancy. Five complete JavaScript programs agree separately.
+
+All 436 Runtime unit tests pass (3.53 s). Strict workspace Clippy with all
+targets, documentation tests, formatting, dependency policy, inventories and
+diff checks pass. The finished broad runs record the preceding `04ce1dcc`
+lookahead snapshot; lookbehind has the focused and differential evidence above.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
