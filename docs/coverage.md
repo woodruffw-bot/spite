@@ -23286,3 +23286,29 @@ documentation tests, formatting, dependency policy, inventories and diff checks.
 Construction, clone/drop and retained storage remain source-sized; matching and
 individual capture queries are constant. Existing constructors and Runtime
 behavior remain unchanged; integration follows separately.
+
+
+## Runtime mandatory enclosing zero sequences and first choices
+
+Runtime selects the mandatory enclosing proof and retains its complete lexical
+mask, including defined enclosing captures and interleaved or unselected inner
+slots. Named aliases and indices keep original numbering; references to outer
+slots inside erased bodies retain their original bindings.
+
+All 17 focused integration groups pass (3.18 s), including three new groups for
+named layouts, duplicate names across enclosed alternatives, enclosing-target
+references, String consumers, distinct capture index arrays, cloning, collection
+and 1,000 enclosing captures around both sequences and choices. All 55,296 exact
+native metadata comparisons across 512 independently generated enclosed
+ordinary/u/v patterns agree on the fresh CLI, as do all 17 complete JavaScript
+regression programs.
+
+All 435 Runtime unit tests pass (4.85 s). Strict workspace Clippy with all targets
+passes (22.57 s), alongside workspace documentation tests, formatting, dependency
+policy, inventories and diff checks. The grouped Runtime inventory remains 614
+cases; fixtures, snapshots, dependencies and default quotas are unchanged.
+
+The preceding arbitrary-group quantified-spine Runtime snapshot completes all
+2,783 RegExp integration tests without failures (1,024.21 s). Together with the
+previously recorded Test262 result, this broad snapshot precedes sequence,
+first-alternative and enclosing Runtime integration.

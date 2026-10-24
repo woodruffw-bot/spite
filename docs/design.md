@@ -13048,3 +13048,11 @@ scan excludes outside terms and later siblings without rescanning nested
 suffixes. Construction, clone/drop and retained storage are source-sized;
 matching and capture queries remain constant. Quantified/modifier enclosing
 groups require additional proofs. Existing constructors are unchanged.
+
+
+Runtime selects the mandatory enclosing sequence/choice proof after the root
+proofs. Its complete-layout lexical mask includes the defined enclosing prefix,
+so named aliases and indices keep original slot numbers without an additional
+Runtime offset. References to enclosing groups inside erased terms are never
+revalidated in isolation. String consumers, cloning, collection and actual-work
+accounting use the existing sequence result path.

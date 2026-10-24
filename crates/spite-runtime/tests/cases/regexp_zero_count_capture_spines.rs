@@ -295,3 +295,58 @@ fn deeply_unselected_alternatives_keep_all_slots_and_validate_original_early_err
     "#,
     );
 }
+
+#[test]
+fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
+    check(
+        r#"
+        var cases=[
+            ['(?<outside>(?<skip>\\p{RGI_Emoji}{0})?(?<keep>\\p{RGI_Emoji}{0})+)',[1,0,1],['outside','skip','keep']],
+            ['(?<outside>|(?<never>[\\p{RGI_Emoji}]+))',[1,0],['outside','never']],
+            ['(?<outside>(?<keep>\\p{RGI_Emoji}{0})+|(?<never>(?<inner>a)))',[1,1,0,0],['outside','keep','never','inner']],
+            ['(?<outside>(?<keep>(?<erased>\\k<outside>|\\k<later>){0})+|(?<later>[\\p{RGI_Emoji}]+))',[1,1,0,0],['outside','keep','erased','later']]
+        ],ok=true;
+        for(var pair of cases)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
+            var r=new RegExp(pair[0],flags);r.lastIndex=start;var m=r.exec(input),global=r.global||r.sticky;
+            if(global&&start>input.length){ok=ok&&m===null&&r.lastIndex===0;continue}
+            var point=global?start:0;if(point>0&&input.charCodeAt(point)>=0xdc00&&input.charCodeAt(point)<=0xdfff&&input.charCodeAt(point-1)>=0xd800&&input.charCodeAt(point-1)<=0xdbff)point--;
+            ok=ok&&m.index===point&&m[0]===''&&m.length===pair[1].length+1&&r.source===pair[0]&&r.lastIndex===(global?point:start)&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            for(var i=1;i<m.length;i++){
+                var name=pair[2][i-1];ok=ok&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i)&&Object.hasOwn(m.groups,name)&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===m[i]&&m.indices.groups[name]===m.indices[i];
+                ok=ok&&(pair[1][i-1]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+            }
+        }
+        var m=/(?<outside>(?<same>\p{RGI_Emoji}{0})+|(?<same>[\p{RGI_Emoji}]+))/dgv.exec('ab');
+        ok&&m.length===4&&m[1]===''&&m[2]===''&&m[3]===undefined&&m.groups.same===''&&m.indices.groups.outside===m.indices[1]&&m.indices.groups.same===m.indices[2]&&Object.hasOwn(m.indices,'3')&&m.indices[3]===undefined
+    "#,
+    );
+}
+
+#[test]
+fn enclosing_empty_masks_preserve_string_consumer_slots_and_collection() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?<skip>\p{RGI_Emoji}{0})?(?<keep>\p{RGI_Emoji}{0})+)/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.indices.groups.outside===m.indices[1]&&m.indices.groups.keep===m.indices[3]&&m.indices[1]!==m.indices[3];
+        var calls=[];var value='ab'.replace(r,function(m,outside,skip,keep,at,input,groups){calls.push(at);return arguments.length===7&&m===''&&outside===''&&skip===undefined&&keep===''&&input==='ab'&&groups.outside===''&&groups.keep===''?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,,,b'&&'ab'.search(r)===0;
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m[1]===''&&m[2]===undefined&&m[3]===''
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outside===''&&m.groups.skip===undefined&&m.groups.keep===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.keep===m.indices[3]"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn deep_mandatory_enclosing_masks_keep_defined_prefixes_and_every_inner_slot() {
+    check(
+        r#"
+        var depth=1000,pattern='('.repeat(depth)+'([\\p{RGI_Emoji}]{0})?([\\p{RGI_Emoji}]{0})+'+')'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===depth+3;
+        for(var i=1;i<=depth;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
+        ok=ok&&m[depth+1]===undefined&&m.indices[depth+1]===undefined&&m[depth+2]===''&&m.indices[depth+2][0]===0;
+        var choice='('.repeat(depth)+'|(?<never>(?=(a))[\\p{RGI_Emoji}]+)'+')'.repeat(depth),m=new RegExp(choice,'dgv').exec('ab');
+        ok=ok&&m.length===depth+3&&m.groups.never===undefined&&m[depth+1]===undefined&&m[depth+2]===undefined&&Object.hasOwn(m.indices,''+(depth+2));
+        for(var i=1;i<=depth;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
+        ok
+    "#,
+    );
+}
