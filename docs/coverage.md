@@ -21971,3 +21971,25 @@ quotas remain unchanged.
 The preceding grouped optional-root sources pass a fresh Test262 run: all 35
 runner tests and all 16,343 reviewed variants, including the pinned corpus gate
 (478.70 s). This run compiled before exact-one grouped optional-root sources.
+
+
+## Core outside assertions around optional root truth alternatives
+
+Four focused groups pass (9.21 s), comparing 160 native capture tables and an
+independent outside-continuation/progress oracle across every UTF-16 start,
+sticky, multiline and ignore-case. Common line/word gates can force lazy roots
+to consume, reject zero iterations, retry shorter members or search later
+starts. Greedy/lazy ties preserve original priority, mandatory enclosing ranges
+remain defined on zero iterations, and skipped inner slots remain undefined.
+Both branch orders, finite/scalar/known-empty classes, mixed ordinary/exact-one
+wrappers and independent branch scopes retain lexical participation. Deep
+20,000-level counted wrappers, 20,000-unit shared-prefix members, cloning/drop
+and every charged cancellation/recovery remain flat. Contradictory common gates
+use bounded matching work after complete construction; unknown leaves even in
+lazy/never bodies and other class-path counts retain separate proofs.
+
+All 89,512 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (51.94 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.

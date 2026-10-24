@@ -12503,3 +12503,27 @@ exact-one grouped optional proof after ordinary grouped optional alternatives.
 The dedicated body retains mandatory outer ranges, final-iteration absence,
 actual endpoint truth, source/flags, named aliases, indices, lastIndex and String
 consumers through cloning and collection.
+
+
+Core separately proves bare outside line/word gates around an optional
+branch-local class/empty root. The complete optional body, including ordinary
+and exact-one enclosing paths, validates both original branches before any
+zero-iteration shortcut. Common profiles stay separate for zero iterations and
+join the live class endpoint masks for consuming continuations. An outside gate
+can reject zero iterations and force a lazy optional root to consume
+(ECMA-262 edition 17 22.2.2.3–4).
+
+The matcher compares the earliest valid zero and nonempty starts, using original
+greediness only when they coincide. A valid zero continuation at the requested
+start bounds greedy class probing to that start; lazy matching can return zero
+immediately. Rejected member endpoints still retry shorter members. Later zero
+starts advance by Unicode scalar boundaries, with leading-boundary normalization
+for requested trailing surrogates. Mandatory enclosing captures cover accepted
+empty ranges; all skipped optional-root slots remain undefined.
+
+Source-sized proof, storage and clone/drop stay flat. Prefix scans and each truth
+probe charge before inspection; contradictory common gates use bounded matching
+work only after full construction. Captured outside scopes, consuming siblings,
+other counts and unknown leaves even in lazy/never bodies retain separate
+proofs. Earlier API domains and charged work remain unchanged. Runtime selection
+remains separate.

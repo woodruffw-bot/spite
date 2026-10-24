@@ -2673,3 +2673,198 @@ impl RegExpUnicodeTruthTableExactOneGroupedOptionalStringClassAlternativeMatcher
             .find_with_captures_and_work(input, requested, sticky, charge)
     }
 }
+
+/// Bare outside truth gates around one optional branch-local class/empty root.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Both
+/// original branches and every ordinary/exact-one enclosing path are proved
+/// before zero-iteration or consuming continuations are tested. Outside gates
+/// can force a lazy optional root to consume or require a later search start.
+/// https://262.ecma-international.org/17.0/#sec-repeatmatcher
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
+    profiles: [u8; 2],
+}
+impl RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher {
+    /// Proves the complete optional body before conjoining bare outside gates.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some((body, profiles)) = outside_truth_frame(source.code_units()) else {
+            return Ok(None);
+        };
+        let original = &source.code_units()[body];
+        let normalized =
+            super::super::super::asserted_alternatives::optional_single_count_source(original)
+                .unwrap_or_else(|| original.to_vec());
+        let mut wrapped = Vec::with_capacity(
+            normalized
+                .len()
+                .checked_add(4)
+                .ok_or(RegExpUnicodeSetCompileError::Capacity)?,
+        );
+        wrapped.extend_from_slice(&[0x28, 0x3f, 0x3a]);
+        wrapped.extend_from_slice(&normalized);
+        wrapped.push(0x29);
+        let Some(mut plan) =
+            RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher::compile_with_work(
+                &JsString::from_code_units(wrapped),
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        for (mask, common) in plan.plan.inner.class.profiles.iter_mut().zip(profiles) {
+            *mask &= common;
+        }
+        Ok(Some(Self { plan, profiles }))
+    }
+    /// Counts original enclosing, optional-root and branch-local capture slots.
+    pub fn capture_count(&self) -> usize {
+        self.plan.capture_count()
+    }
+    /// Mandatory enclosing captures remain defined when the optional root skips.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        self.plan.capture_range(index, found)
+    }
+    /// Tests zero and nonempty continuations with source greediness at each start.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+        let Some(start) = crate::regexp_literal::unicode_start(input, requested) else {
+            return Ok(None);
+        };
+        if self.profiles.contains(&0) {
+            return Ok(None);
+        }
+        let optional = &self.plan.plan;
+        let branch = &optional.inner.class;
+        let truth = |at| {
+            use crate::regexp_unicode_character::{
+                unicode_assertions_match, unicode_word_boundary,
+            };
+            let u = input.code_units();
+            u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                true,
+                false,
+                optional.multiline,
+            )) | u8::from(unicode_assertions_match(
+                u,
+                at,
+                at,
+                false,
+                true,
+                optional.multiline,
+            )) << 1
+                | u8::from(unicode_word_boundary(u, at, optional.ignore_case)) << 2
+        };
+        let zero_profile = self.profiles[0] & self.profiles[1];
+        charge(8).map_err(RegExpUnicodeMatchError::Work)?;
+        let zero_at_start = zero_profile & (1u8 << truth(start)) != 0;
+        let mut selected = false;
+        let range = if zero_at_start && !optional.greedy {
+            Some(start..start)
+        } else {
+            let Plan::Single(single) = &branch.plan.plan.plan else {
+                return Ok(None);
+            };
+            let class_sticky = sticky || zero_at_start;
+            let consuming = if branch.profiles.contains(&0) {
+                None
+            } else {
+                let remaining = input.len() - start;
+                let inspected = if class_sticky {
+                    remaining.min(single.class.max_match_code_units())
+                } else {
+                    remaining
+                }
+                .saturating_add(1);
+                charge(inspected.saturating_mul(single.class.search_passes(class_sticky)))
+                    .map_err(RegExpUnicodeMatchError::Work)?;
+                single
+                    .class
+                    .find_with_endpoint_filter(input, start, class_sticky, |a, b| {
+                        charge(16)?;
+                        Ok(b > a
+                            && branch.profiles[0] & (1u8 << truth(a)) != 0
+                            && branch.profiles[1] & (1u8 << truth(b)) != 0)
+                    })
+                    .map_err(RegExpUnicodeMatchError::Work)?
+            };
+            if zero_at_start {
+                selected = consuming.is_some();
+                Some(consuming.unwrap_or(start..start))
+            } else if sticky || consuming.as_ref().is_some_and(|r| r.start == start) {
+                selected = consuming.is_some();
+                consuming
+            } else {
+                let limit = consuming.as_ref().map_or(input.len(), |r| r.start);
+                let units = input.code_units();
+                let mut at = start;
+                let mut zero = None;
+                if zero_profile != 0 {
+                    while at < limit {
+                        charge(8).map_err(RegExpUnicodeMatchError::Work)?;
+                        let pair = units.get(at).is_some_and(|u| (0xd800..=0xdbff).contains(u))
+                            && units
+                                .get(at + 1)
+                                .is_some_and(|u| (0xdc00..=0xdfff).contains(u));
+                        at += if pair { 2 } else { 1 };
+                        if at > limit {
+                            break;
+                        }
+                        if zero_profile & (1u8 << truth(at)) != 0 {
+                            zero = Some(at..at);
+                            break;
+                        }
+                    }
+                }
+                match (consuming, zero) {
+                    (Some(c), Some(z))
+                        if c.start < z.start || (c.start == z.start && optional.greedy) =>
+                    {
+                        selected = true;
+                        Some(c)
+                    }
+                    (_, Some(z)) => Some(z),
+                    (c, None) => {
+                        selected = c.is_some();
+                        c
+                    }
+                }
+            }
+        };
+        let Some(range) = range else { return Ok(None) };
+        charge(16).map_err(RegExpUnicodeMatchError::Work)?;
+        Ok(Some(RegExpUnicodePredicateChoiceStringClassMatch {
+            before: truth(range.start),
+            after: truth(range.end),
+            repeated: RegExpUnicodeRepeatedStringClassMatch {
+                last_iteration: selected.then(|| range.clone()),
+                range,
+                class_selected: selected,
+            },
+        }))
+    }
+}
