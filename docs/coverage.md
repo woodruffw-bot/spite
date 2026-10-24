@@ -20503,3 +20503,37 @@ construction/search work and capture projection. Strict workspace Clippy,
 documentation tests, formatting, dependency policy, inventories and diff checks
 pass. Runtime selection remains separate; fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Runtime larger asserted nullable scalar/string-class counts
+
+Three groups execute thirty scalar/string capture tables and nine consumer
+programs over Any, ASCII and folded scalar ranges. Finite members retain priority
+above scalar progress and the final class empty. Huge counts preserve the exact
+optional allowance and last required-empty versus consuming capture profile.
+Named/escaped-name index aliases, supplementary starts, multiline matching,
+matchAll, callback replacement, split/search, cloning, collection and read-only
+lastIndex retain their results. Deep scopes, long shared-prefix words with scalar
+fallback, opt-in constructor/execution aborts and bounded short-success work
+remain flat. Resource search/short-success probes retain their 100,000-step quota
+with compact scalar-plus-empty classes. Two previous rejection controls become
+native eight-record capture/finalizer checks while retaining unknown leaves.
+Conditional/body predicates, references, nested class-path loops, consuming
+siblings and additional classes remain separate proofs.
+
+Execution passes all 1,664 Unicode cases (672.28 s), followed by the added ASCII
+folding regression in all three focused groups, all 431 Runtime unit tests,
+39 native equivalent controls and two migrated controls. The inherited Node ASCII
+iv property discrepancy uses an explicit ASCII-range native control; the
+edition-17 result retains long s/Kelvin folding. Scalar subtraction remains an
+unproved class operation; the broad comparison uses accepted scalar and nested
+union forms. Strict workspace Clippy, documentation tests, formatting,
+dependency policy, 566 Runtime case-file registrations and Parser/Test262
+inventories pass.
+
+All 230,400 corrected exact differential records agree across 32 accepted scalar,
+finite and nested-union forms, twelve larger count forms, three body modes,
+eight rotated assertion profiles, six capture layouts and twelve inputs with
+every requested start/sticky/i/m. Native controls preserve class empty priority,
+exact huge optional allowances and specification ASCII folding. Fixtures,
+snapshots, dependencies and default quotas are unchanged.

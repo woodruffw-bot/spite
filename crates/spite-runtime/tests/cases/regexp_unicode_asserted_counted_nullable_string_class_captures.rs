@@ -267,9 +267,21 @@ fn asserted_counted_nullable_string_class_deep_empty_scopes_long_members_and_hos
 #[test]
 fn asserted_counted_nullable_string_class_proofs_keep_scalar_fallback_conditional_predicates_and_unknown_leaves_closed()
  {
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^([a-z\\q{|ab}]){3}$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",{\"values\":[\"ababa\",\"a\"],\"indices\":[[0,5],[4,5]],\"index\":0},5],[false,\"\\nab\\n\",null,0],[false,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"aaaaaa\",null,0],[true,\"ababa\",{\"values\":[\"ababa\",\"a\"],\"indices\":[[0,5],[4,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^(()|([\\p{Any}\\q{a|ab}])){3}$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[4,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"\\nab\\n\",\"\\n\",\"<undefined>\",\"\\n\"],\"indices\":[[0,4],[3,4],\"<undefined>\",[3,4]],\"index\":0},4],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"aaaaaa\",null,0],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"<undefined>\",\"a\"],\"indices\":[[0,5],[4,5],\"<undefined>\",[4,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
-        r"^([a-z\q{|ab}]){3}$",
-        r"^(()|([\p{Any}\q{a|ab}])){3}$",
+        r"^([[a-z\q{|ab}]&&\p{RGI_Emoji}]){3}$",
+        r"^(()|([[\p{Any}\q{a|ab}]&&\p{RGI_Emoji}])){3}$",
         r"(^([\q{|a|ab}])){3}$",
         r"(^|)([\q{|a|ab}]){3}$",
         r"(^)*([\q{|a|ab}]){3}$",

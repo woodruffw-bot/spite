@@ -11872,7 +11872,10 @@ The finite candidate bound counts a scalar fallback as potentially consuming,
 so an unproved empty scalar language cannot trigger the empty-only shortcut.
 No storage depends on a huge count's decimal value. Required-empty capture
 identity, Unicode boundaries/folding and host work/capacity failures retain
-the shared semantics. Runtime selection remains separate.
+the shared semantics. Runtime selects the scalar proof after the finite larger-
+count constructor on the full normalized capture source. Its dedicated body
+preserves source/flags, lexical names and index aliases, lastIndex, String
+consumers, cloning and collection, including the final required-empty identity.
 
 
 Core separately proves exact-zero outside assertion scopes around an already

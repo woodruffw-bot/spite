@@ -1152,3 +1152,6 @@ mod regexp_unicode_asserted_two_required_nullable_string_class_captures;
 
 #[path = "cases/regexp_unicode_asserted_counted_nullable_string_class_captures.rs"]
 mod regexp_unicode_asserted_counted_nullable_string_class_captures;
+
+#[path = "cases/regexp_unicode_asserted_counted_nullable_scalar_string_class_captures.rs"]
+mod regexp_unicode_asserted_counted_nullable_scalar_string_class_captures;
