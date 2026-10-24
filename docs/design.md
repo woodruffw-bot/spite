@@ -13746,3 +13746,14 @@ wrappers and additional positive layers require other proofs. Original bindings
 and all lexical slots survive; the finite earlier-operand chain never re-enters
 the new constructor. Source/copy work precedes allocation, with constant actual
 matching and capture queries over a source-sized retained mask.
+
+
+A separate negative-assertion mode accepts independently empty optional
+established-impossible operands, sequences, enclosing sequences, root-first
+choices and complete positive assertions. A guaranteed-successful operand makes
+the negative assertion fail (22.2.2.4); its final successful continuation admits
+the first-arm proof. Root disjunctions and unproved/nonroot guards reject this
+constructor. The finite closed earlier-operand chain never re-enters the new
+mode, and erased callback types bound compiler expansion. Full original
+bindings/inventories survive, source/copy work precedes allocation, and retained
+no-match storage and actual matching work remain constant.

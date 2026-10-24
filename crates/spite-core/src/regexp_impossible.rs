@@ -150,6 +150,25 @@ impl RegExpImpossibleMatcher {
         Self::compile_assertion_validated_with_work::<7, E>(source, unicode, sets, charge)
     }
 
+    /// Proves root negative assertions over independently empty established-optional forms.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// A complete operand proved independently empty always succeeds, so its
+    /// negative assertion fails (22.2.2.4). Optional established-impossible
+    /// spines, sequences, enclosing sequences, root-first choices and complete
+    /// positive assertions are earlier closed operand families. Root-first
+    /// proofs use the assertion operand's final successful continuation.
+    /// Original bindings and full lexical inventories remain intact; the
+    /// finite operand chain never re-enters this constructor.
+    pub fn compile_optional_known_negative_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_assertion_validated_with_work::<8, E>(source, unicode, sets, charge)
+    }
+
     fn compile_assertion_validated_with_work<const MODE: u8, E>(
         source: &JsString,
         unicode: bool,
@@ -252,6 +271,13 @@ impl RegExpImpossibleMatcher {
                                         sets,
                                         &mut charge,
                                     )?
+                                } else if MODE == 8 {
+                                    Self::optional_known_empty_with_work(
+                                        &body,
+                                        unicode,
+                                        sets,
+                                        &mut charge,
+                                    )?
                                 } else {
                                     RegExpZeroCountSequenceMatcher::compile_surrogate_tree_validated_with_work(
                                         &body, unicode, sets, &mut charge,
@@ -267,6 +293,39 @@ impl RegExpImpossibleMatcher {
             cursor += 1;
         }
         Ok((impossible && depth == 0 && class_depth == 0).then_some(Self { captures }))
+    }
+
+    // Only earlier empty proofs; no operand can call the new negative mode.
+    // Callback erasure bounds compiler expansion through established proofs.
+    fn optional_known_empty_with_work<E>(
+        body: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<bool, E> {
+        if RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_validated_with_work(
+            body,
+            unicode,
+            sets,
+            &mut charge,
+        )?
+        .is_some()
+        {
+            return Ok(true);
+        }
+        if RegExpZeroCountSequenceMatcher::compile_optional_known_impossible_sequence_validated_with_work(
+            body, unicode, sets, &mut charge,
+        )?.is_some() { return Ok(true); }
+        if RegExpZeroCountSequenceMatcher::compile_enclosing_optional_known_impossible_sequence_validated_with_work(
+            body, unicode, sets, &mut charge,
+        )?.is_some() { return Ok(true); }
+        if RegExpZeroCountSequenceMatcher::compile_first_optional_known_impossible_validated_with_work(
+            body, unicode, sets, &mut charge,
+        )?.is_some() { return Ok(true); }
+        if RegExpZeroCountSequenceMatcher::compile_positive_optional_known_impossible_validated_with_work(
+            body, unicode, sets, &mut charge,
+        )?.is_some() { return Ok(true); }
+        Ok(false)
     }
 
     // This finite proof chain never calls the positive-assertion constructor.
@@ -2685,5 +2744,95 @@ mod tests {
             ),Err(n)if n==stop));
             assert_eq!(seen, work[..=stop]);
         }
+    }
+    fn optional_known_negative(source: &str) -> Option<RegExpImpossibleMatcher> {
+        RegExpImpossibleMatcher::compile_optional_known_negative_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn optional_known_negative_operands_cover_closed_empty_families_and_full_original_inventories()
+    {
+        for (source, captures) in [
+            (r"(?!((?![\p{RGI_Emoji}]*))?)", 1),
+            (r"(?<!(?=(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*))", 5),
+            (r"(a|ab)*(?!(((?![\p{RGI_Emoji}]*))?)+([a]{0})+)(z)*", 5),
+            (r"(?<!((((?![\p{RGI_Emoji}]*))?([a]{0})+)*)+)", 4),
+            (r"(?!(\3){0}((?![\p{RGI_Emoji}]*))?|((a)\1)+)", 4),
+        ] {
+            assert_eq!(
+                optional_known_negative(source)
+                    .unwrap_or_else(|| panic!("rejected {source}"))
+                    .capture_count(),
+                captures,
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn optional_known_negative_proofs_reject_possible_operands_root_bars_and_nonroot_guards() {
+        for source in [
+            r"((?!a*))?",
+            r"(?!(?!a))",
+            r"(?!(?=a))",
+            r"(?!(a))",
+            r"(?!(a)?)",
+            r"(?!(?=((?!a))?))",
+            r"(?!((?!a*))?)|a",
+            r"((?!((?!a*))?))+",
+            r"(?:(?!((?!a*))?))?",
+            r"(?!(a|((?!a*))?))",
+        ] {
+            assert!(optional_known_negative(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn optional_known_negative_many_operands_and_large_bounds_retain_constant_plans() {
+        let source = format!(r"(?!((?![\p{{RGI_Emoji}}]*))?|{})", "(a)|".repeat(20_000));
+        let plan = optional_known_negative(&source).unwrap();
+        assert_eq!(plan.capture_count(), 20_001);
+        let source = format!(r"(?!(((?![\p{{RGI_Emoji}}]*))?){{{}}})", "9".repeat(20_000));
+        assert_eq!(optional_known_negative(&source).unwrap().capture_count(), 2);
+    }
+
+    #[test]
+    fn optional_known_negative_work_interrupts_before_projection_selected_operand_and_input() {
+        let source =
+            JsString::from(r"(a)*(?!(?<=(((?![\p{RGI_Emoji}]*))?)+([a]{0})+|(b)(c)*))(z)*");
+        let mut work = Vec::new();
+        let plan = RegExpImpossibleMatcher::compile_optional_known_negative_validated_with_work(
+            &source,
+            true,
+            true,
+            |n| {
+                work.push(n);
+                Ok::<(), ()>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(work[0], source.len() * 8 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpImpossibleMatcher::compile_optional_known_negative_validated_with_work(&source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            plan.find_with_work(&JsString::from(""), usize::MAX, |n| {
+                assert_eq!(n, 1);
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            None
+        );
     }
 }

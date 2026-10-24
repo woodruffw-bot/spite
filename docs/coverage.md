@@ -24923,3 +24923,29 @@ passes (14.36 s including a build-directory wait), alongside the passing
 documentation, formatting, dependency policy, inventories and diff checks for
 the active Runtime sequence increment. Runtime inventory remains 617; fixtures,
 snapshots, dependencies and quotas are unchanged.
+
+
+Negative assertions over optional established-impossible empty forms (Core)
+------------------------------------------------------------------------
+
+The new negative-assertion mode accepts complete independently empty operands
+from the optional-established-impossible, sequence, enclosing-sequence, root-first
+and positive-assertion families. The operand always succeeds, so either negative
+assertion direction fails. Root-first proofs use the complete operand's final
+successful continuation. Earlier scanner modes retain their domains and work;
+the finite closed chain never re-enters the new mode.
+
+All 187 actual-source focused Core tests pass (1.75 s), including four new groups
+for the closed operand families, incoming references and complete inventories,
+root/nonroot/possible exclusions, 20,000 arms, 20,000-digit minima, every charged
+construction interruption and constant actual work before any input access. All
+12,800 exact native input/start records and capture inventories across 512
+independently composed ordinary/u/v patterns agree. All seventeen earlier
+impossibility families retain their 12,800 native records and inventories each
+after the scanner extension. A lexed review of 2,732 direct unsupported
+control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (27.92 s), alongside the passing
+documentation, formatting, dependency policy, inventories and diff checks for
+the active Runtime sequence increment. Runtime inventory remains 617; fixtures,
+snapshots, dependencies and default quotas are unchanged.
