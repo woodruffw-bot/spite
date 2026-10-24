@@ -75,3 +75,68 @@ fn negative_impossible_deep_operands_and_capture_masks_have_no_default_quotas() 
         ));
     }
 }
+
+#[test]
+fn enclosing_negative_impossible_assertions_keep_required_optional_and_named_capture_masks() {
+    check(
+        r#"
+        var rows=[
+            ['(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))+', [true,false,false]],
+            ['(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))?', [false,false,false]],
+            ['(?<outer>(?<inner>(?<!(?<inside>[\\p{RGI_Emoji}]+)(?<!a{0})))?){2,3}', [true,false,false]],
+            ['(?i:(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>\\k<outside>){0})))){2,3}', [true,false,false]]
+        ],ok=true;
+        for(var row of rows)for(var flags of ['dv','dgv','dgyv','dgimsv']) {
+            var r=new RegExp(row[0],flags);r.lastIndex=1;var m=r.exec('😀a');
+            ok=ok&&m.index===0&&m[0]===''&&m.length===row[1].length+1&&r.lastIndex===(r.global||r.sticky?0:1)&&r.source===row[0];
+            for(var i=0;i<row[1].length;i++)ok=ok&&(row[1][i]?m[i+1]===''&&m.indices[i+1][0]===0&&m.indices[i+1][1]===0:m[i+1]===undefined&&m.indices[i+1]===undefined);
+            var key=Object.hasOwn(m.groups,'outside')?'outside':'outer';ok=ok&&m.groups[key]===m[1]&&m.indices.groups[key]===m.indices[1];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn enclosing_negative_impossible_consumers_clones_and_collection_keep_capture_roles() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var r=/(?<outside>(?!(?<inside>[\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))+/dgv,ok=true,offsets=[];
+        ok=ok&&JSON.stringify('😀a'.match(r))==='["","",""]';
+        ok=ok&&'😀a'.replace(r,function(match,outside,inside,zero,offset,input,groups){ok=ok&&outside===''&&inside===undefined&&zero===undefined&&groups.outside==='';offsets.push(offset);return '!';})==='!😀!a!'&&JSON.stringify(offsets)==='[0,2,3]';
+        ok=ok&&JSON.stringify('a😀b'.split(r))==='["a","",null,null,"😀","",null,null,"b"]';
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('😀');ok&&m.index===0&&m[1]===''&&m[2]===undefined&&copy.lastIndex===0&&copy.source===r.source&&copy.flags===r.flags
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.inside===undefined&&after.indices.groups.outside[0]===0&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn enclosing_negative_impossible_deep_masks_and_huge_counts_have_no_default_quotas() {
+    check(
+        r#"
+        var depth=10,pattern='('.repeat(depth)+'(?<![\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0})))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
+        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+2&&m[depth]===''&&m[depth+1]===undefined&&r.lastIndex===0&&r.source===pattern
+    "#,
+    );
+    for (depth, minimum, expected) in [
+        (1000, "1".to_owned(), "''"),
+        (1, "9".repeat(20_000), "''"),
+        (1, "0".to_owned(), "undefined"),
+    ] {
+        let pattern = JsString::from(
+            format!(
+                r"{}(?<![\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}}))){}{{{minimum}}}",
+                "(".repeat(depth),
+                ")+".repeat(depth - 1) + ")"
+            )
+            .as_str(),
+        );
+        check(&format!(
+            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]==={expected}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
+            depth + 2,
+            depth,
+            depth + 1,
+            depth + 1
+        ));
+    }
+}

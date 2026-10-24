@@ -23917,3 +23917,21 @@ unsupported control-array entries admits none.
 Strict workspace Clippy with all targets passes (55.38 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Enclosing negative assertions over impossible operands (Runtime)
+---------------------------------------------------------------
+
+Runtime selects ordinary/modifier spines around empty negative-impossible
+assertions, retaining required empty and optional undefined enclosing captures.
+All six focused integration groups pass (0.19 s), including three new groups for
+required/optional/named capture masks, erased enclosing bindings, modifiers,
+Unicode boundaries, lastIndex, replacement arguments, split captures, cloning,
+collection, 1,000 enclosing captures, 20,000-digit positive minima and zero maxima.
+
+All 55,296 exact native metadata records across 512 composed ordinary/u/v spines
+agree on the fresh CLI, as do all six complete JavaScript programs. All 436
+Runtime unit tests pass (10.22 s). Strict workspace Clippy with all targets
+passes (55.38 s), alongside documentation tests, formatting, dependency policy,
+inventories and diff checks. The grouped inventory remains 616 Runtime cases;
+fixtures, snapshots, dependencies and default quotas are unchanged.

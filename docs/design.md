@@ -13324,3 +13324,10 @@ undefined, with original bindings and no renumbering. This proof is restricted
 to the root and must not be used as a repetition operand: an empty iteration's
 failing continuation could backtrack into a consuming later arm. Source/copy
 and full-mask work precede allocation; construction and storage are source-sized.
+
+
+Runtime selects the enclosing negative-impossible empty proof after the whole
+assertion proof. It uses the complete original capture source and exports
+required empty enclosing captures while optional repetitions retain undefined
+descendant slots. The shared empty execution path preserves Unicode boundaries,
+source/flags, lastIndex, String callbacks and split captures, cloning and collection.
