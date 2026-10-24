@@ -13424,3 +13424,13 @@ failures after the direct composite-negative proof. Complete original normalized
 capture source retains every outside/inside slot and erased enclosing binding.
 The constant no-match body preserves source/flags, lastIndex, String consumers,
 cloning and collection behavior. Original early errors still precede selection.
+
+
+A separate enclosing-composite-alternatives constructor applies the flat
+ordinary/modifier scope proof to a complete impossible composite root choice.
+Every enclosing minimum must be positive, and every body arm must independently
+prove impossible (22.2.2.2, 22.2.2.3.1). Optional wrappers, outside siblings and
+unproved body arms reject the proof. Original bindings and all outside/inside
+capture slots remain intact, with symbolic bounds. Source/frame/copy work
+precedes allocation; the finite body proof never recursively processes outside
+wrappers. Construction stays source-sized and retained no-match storage constant.
