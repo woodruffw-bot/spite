@@ -23856,3 +23856,25 @@ Strict workspace Clippy with all targets passes (22.98 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 615; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Enclosing negative assertions over impossible operands (Core)
+------------------------------------------------------------
+
+A separate constructor admits complete ordinary/modifier spines around empty
+negative-impossible assertions. Required wrappers export empty captures;
+optional repeats roll descendant writes back. All original operand captures
+remain undefined, and counts stay symbolic. Siblings, root alternatives and
+unproved bodies require other proofs.
+
+All 83 actual-source focused Core tests pass (0.60 s), including four new groups
+for required/optional/named-reference masks, modifier scopes, sibling/choice
+exclusions, 100,000 enclosing captures, 20,000-digit positive minima, zero maxima
+and interruption before every source, projection and mask step. All 12,800
+exact native input/start/capture comparisons across 512 independently composed
+ordinary/u/v spines agree. A lexed review of 2,732 direct unsupported control
+array entries admits none.
+
+Strict workspace Clippy with all targets passes (27.68 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Fixtures, snapshots, dependencies and default quotas are unchanged.

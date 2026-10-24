@@ -189,6 +189,46 @@ impl RegExpZeroCountSequenceMatcher {
         }))
     }
 
+    /// Proves enclosing ordinary/modifier spines around a negative impossible assertion.
+    ///
+    /// Full original validation and normalized capture heads are required.
+    /// Every inner attempt stays empty, so required repetitions export empty
+    /// enclosing captures and optional repetitions roll descendant writes back
+    /// (22.2.2.3.1, 22.2.2.7). Operand captures always remain undefined. Bounds
+    /// stay symbolic; flat scope and mask work precede allocation.
+    pub fn compile_enclosing_negative_impossible_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        charge(source.len().saturating_mul(32).saturating_add(16))?;
+        if sets && !unicode {
+            return Ok(None);
+        }
+        let Some(scope) = quantified_enclosing_scope(source.code_units(), sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[scope.body].to_vec());
+        let Some(inner) = Self::compile_negative_impossible_validated_with_work(
+            &body,
+            unicode,
+            sets,
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let captures = scope.captures + inner.capture_count();
+        charge(captures)?;
+        let mut defined = vec![false; captures];
+        defined[..scope.defined].fill(true);
+        Ok(Some(Self {
+            unicode,
+            defined: defined.into_boxed_slice(),
+        }))
+    }
+
     /// Proves concatenated class/property or arbitrary zero-group spines.
     ///
     /// A flat mode-aware scan separates complete top-level terms. Each segment
@@ -1365,5 +1405,91 @@ mod tests {
         let plan = negative_impossible(&source, true, true).unwrap();
         assert_eq!(plan.capture_count(), 100_001);
         assert!((0..plan.capture_count()).all(|slot| plan.capture_range(slot, &(0..0)).is_none()));
+    }
+    fn enclosing_negative_impossible(source: &str) -> Option<RegExpZeroCountSequenceMatcher> {
+        RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_validated_with_work(
+            &JsString::from(source),
+            true,
+            true,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_masks_keep_required_and_optional_capture_roles() {
+        for (source, mask) in [
+            (r"((?!(?!(a{0}))))", &[true, false][..]),
+            (r"((?!(?!(a{0}))))+", &[true, false][..]),
+            (r"((?!(?!(a{0}))))?", &[false, false][..]),
+            (r"(?i:(((?<!(?<!a{0})(b)))){2,3})", &[true, true, false][..]),
+            (r"(((?!(?!(a{0}))))?)+", &[true, false, false][..]),
+            (r"(((?!(?!(a{0}))))+)?", &[false, false, false][..]),
+            (
+                r"((?!(?i:((?!(\1){0})(a))){2,3})){1,}",
+                &[true, false, false, false][..],
+            ),
+        ] {
+            let plan = enclosing_negative_impossible(source).unwrap();
+            assert_eq!(plan.defined.as_ref(), mask, "{source}");
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_scope_excludes_siblings_choices_and_possible_bodies() {
+        for source in [
+            r"(?!(?!))",
+            r"((?!(?!)))a",
+            r"a((?!(?!)))",
+            r"((?!(?!)))|",
+            r"((?!a))",
+            r"((?!(?!)|))",
+            r"((?!(?!))|a{0})",
+        ] {
+            assert!(enclosing_negative_impossible(source).is_none(), "{source}");
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_deep_masks_and_huge_counts_remain_source_sized() {
+        let source = format!(
+            "{}(?!(?!(a{{0}}))){}",
+            "(".repeat(100_000),
+            ")+".repeat(100_000)
+        );
+        let plan = enclosing_negative_impossible(&source).unwrap();
+        assert_eq!(plan.capture_count(), 100_001);
+        assert!(plan.defined[..100_000].iter().all(|&v| v));
+        assert!(!plan.defined[100_000]);
+        for (minimum, expected) in [("0".to_owned(), false), ("9".repeat(20_000), true)] {
+            let source = format!("((?!(?!(a{{0}})))){{{minimum}}}");
+            assert_eq!(
+                enclosing_negative_impossible(&source)
+                    .unwrap()
+                    .defined
+                    .as_ref(),
+                &[expected, false]
+            );
+        }
+    }
+
+    #[test]
+    fn enclosing_negative_impossible_interrupts_before_scope_body_and_mask_allocations() {
+        let source = JsString::from(r"(?i:(((?!(?!(a{0}))))?)+)");
+        let mut work = Vec::new();
+        let plan=RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_validated_with_work(
+            &source,true,true,|n|{work.push(n);Ok::<(),()>(())}
+        ).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 32 + 16);
+        assert_eq!(*work.last().unwrap(), plan.capture_count());
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpZeroCountSequenceMatcher::compile_enclosing_negative_impossible_validated_with_work(
+                &source,true,true,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}
+            ),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
     }
 }

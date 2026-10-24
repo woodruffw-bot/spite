@@ -13297,3 +13297,12 @@ normalized heads are required; siblings, outside groups and quantifiers require
 other proofs. Source/copy work precedes allocation, and a separate capture-mask
 charge precedes allocating undefined slots. The existing empty matcher preserves
 Unicode leading boundaries, constant actual work and lexical capture indexing.
+
+
+The empty negative-impossible proof has a separate enclosing ordinary/modifier
+spine constructor. The shared flat scope scan keeps original bindings and
+symbolic counts. Each inner attempt stays empty, so required enclosing captures
+are defined empty and optional repetitions roll descendant writes back
+(22.2.2.3.1, 22.2.2.7). All assertion-operand slots remain undefined. Source,
+projection and full-mask work precede allocation; construction and retained
+storage are source-sized, without recursive wrapper processing.
