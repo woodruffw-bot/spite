@@ -16,6 +16,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodePrefixFreeStringClassCaptureMatcher,
     RegExpUnicodeRepeatedStringClassCaptureMatcher, RegExpUnicodeRepeatedStringClassMatch,
+    RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
 };
 
 #[path = "regexp_unicode_asserted_string_class_alternatives.rs"]

@@ -663,6 +663,62 @@ impl RegExpUnicodeStringSetMatcher {
         Ok(true)
     }
 
+    /// Charges the finite word count used to bound endpoint continuation probes.
+    pub(crate) fn prefix_candidate_bound_with_work<E>(
+        &self,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<usize, E> {
+        charge(self.program.terminal.len().saturating_add(1))?;
+        Ok(self
+            .program
+            .terminal
+            .iter()
+            .filter(|&&terminal| terminal)
+            .count()
+            .saturating_add(usize::from(self.program.scalars.is_some())))
+    }
+    /// Finds the preferred first member whose preferred second member exists.
+    /// The caller proves nonnullability/no assertions and charges all probes.
+    pub(crate) fn prefix_pair(
+        &self,
+        input: &JsString,
+        start: usize,
+    ) -> Option<(Range<usize>, Range<usize>)> {
+        debug_assert!(!self.has_empty_member() && !self.has_outside_assertions());
+        let p = &self.program;
+        let units = input.code_units();
+        let (mut node, mut at, mut best) = (0usize, start, None);
+        for _ in 0..p.max_characters {
+            let Some(&first) = units.get(at) else { break };
+            let (point, width) = unicode_input_character(units, at, first);
+            if at == start
+                && p.scalars
+                    .as_ref()
+                    .is_some_and(|plan| plan.matches_original_character(point))
+            {
+                if let Some(second) = self.find(input, at + width, true) {
+                    best = Some((start..at + width, second));
+                }
+            }
+            let point = if p.ignore_case {
+                regexp_canonicalize_character(point, true, true)
+            } else {
+                point
+            };
+            let Some(&next) = p.edges.get(&(node, point)) else {
+                break;
+            };
+            node = next;
+            at += width;
+            if p.terminal[node] {
+                if let Some(second) = self.find(input, at, true) {
+                    best = Some((start..at, second));
+                }
+            }
+        }
+        best
+    }
+
     /// Whether the underlying class contains the empty string, before assertions.
     pub(crate) fn has_empty_member(&self) -> bool {
         self.program.terminal[0]

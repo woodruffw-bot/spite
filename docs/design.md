@@ -11648,3 +11648,28 @@ Only the whole/final ranges and class-selected tag are retained. Runtime selects
 this proof after the earlier nullable-count constructors on the full capture
 source. Its dedicated body preserves original source, lexical names/indices,
 lastIndex, String consumers, cloning and collection.
+
+
+Core separately proves a nonnullable plain string-class body with minimum exactly
+two. This admits overlapping finite words and scalar fallback while retaining
+the existing full proof of capture scopes, empty outside terms and class leaves.
+Empty members, empty alternatives, assertions and larger required counts use
+separate proofs. Optional counts retain exact decimal upper-minus-lower arithmetic.
+
+ECMA-262 edition 17 22.2.2.3 RepeatMatcher retries class alternatives when the
+second required iteration fails. The finder walks accepted first-member endpoints
+from shortest to longest and retains the latest endpoint admitting a second
+member. It queries the preferred second member at each endpoint. This yields the
+same preferred successful pair as longest-first backtracking: `[\q{aa|aaa}]{2}`
+on `aaaa` must choose `aa` then `aa`; `[\p{Any}\q{ab}]{2}` on `ab` must choose
+scalar `a` then scalar `b`. Greedy or lazy optional iterations follow only after
+the required pair succeeds, with no failing continuation beyond the proved pure
+empty suffix. The whole range and final body range suffice for capture projection.
+
+Construction charges and counts active trie terminals plus one possible scalar
+endpoint. Each pair search precharges its trie walk and all second-member probes
+using the lesser of the candidate count and input inspection bound. Execution
+allocates no endpoint lists or capture history. Failed nonsticky pairs retry the
+next Unicode boundary after their start, including starts within a prior word.
+All earlier public matcher domains, work callbacks and projections stay unchanged.
+Runtime selection of this two-required proof remains separate.
