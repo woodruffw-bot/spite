@@ -219,14 +219,14 @@ fn truth_table_exact_grouped_optional_alternative_string_classes_keep_mandatory_
 #[test]
 fn truth_table_exact_grouped_optional_alternative_string_classes_validate_unknowns_inside_mandatory_wrappers()
  {
+    assert_eq!(Realm::default().eval(r####"var pattern="^((((^)|(\\b))([\\q{a|ab}])|())?)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
+    assert_eq!(Realm::default().eval(r####"var pattern="((((^)|(\\b))([\\q{a|ab}])|())?)$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[3,3],[3,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],3,0]""####),Ok(Value::Boolean(true)));
     for pattern in [
         r"((((\b\B)|(\b\B))([\q{ab}&&\p{RGI_Emoji}])|())??)",
         r"((((^)|(\b))([\q{a|ab}])|z)??)",
         r"((((^)|(\b))([\q{a|ab}])|\1)?)",
         r"((((^)|(\b))([\q{a|ab}])|([a]))?)",
         r"((((^)|(\b))([\q{a|ab}])|())?){2}",
-        r"^((((^)|(\b))([\q{a|ab}])|())?)",
-        r"((((^)|(\b))([\q{a|ab}])|())?)$",
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();

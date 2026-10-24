@@ -21993,3 +21993,35 @@ projection in seven bounded batches. Strict workspace Clippy (51.94 s),
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime selection remains separate; fixtures, snapshots, dependencies and default
 quotas remain unchanged.
+
+
+## Runtime outside assertions around optional root truth alternatives
+
+Three focused groups pass (0.35 s), retaining zero/consuming optional priority
+inside common line/word continuations. Lazy roots retry consuming members when
+zero iterations fail outside gates; rejected endpoints retry shorter members,
+and unanchored searches retain earliest complete starts. Defined mandatory outer
+ranges, undefined skipped inner slots, named and escaped-name aliases, indices,
+matchAll, callback replacement, split/search, cloning, collection and strict
+lastIndex writes retain native behavior. Deep 1,000-level counted enclosing
+groups, 20,000-unit shared-prefix scalar/string members and constructor aborts
+remain flat. Unknown terms even behind contradictory gates and lazy/never bodies
+retain distinct host proof outcomes.
+
+Forty native tables and eight consumer programs agree on the fresh CLI. Six
+preceding rejection controls in three existing groups now compare full native
+captures, indices, source, flags, input and lastIndex and agree on the fresh CLI.
+All three affected Rust proof groups pass (0.08 s combined). Five source-shape
+scans retain all other rejection domains. All 100,352 exact differential records
+agree across 256 independent pairs, with all 1,024 proof/flag combinations
+supported. Canonical/reversed line gates, word/nonword gates, contradictions,
+mixed ordinary/exact-one wrappers, finite/scalar/known-empty classes and
+independent branch profiles cover every start, sticky, multiline and ignore-case.
+All 431 Runtime unit tests pass (4.30 s), alongside strict workspace Clippy
+(7.20 s), documentation tests, formatting, policy, inventories and diff checks.
+The grouped Runtime inventory contains 597 case files. Fixtures, snapshots,
+dependencies and default quotas remain unchanged.
+
+The preceding grouped optional-root sources pass all 1,752 Unicode RegExp
+integration tests (896.67 s). This run compiled before exact-one grouped optional
+and outside-asserted optional sources.

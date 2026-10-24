@@ -12525,5 +12525,8 @@ Source-sized proof, storage and clone/drop stay flat. Prefix scans and each trut
 probe charge before inspection; contradictory common gates use bounded matching
 work only after full construction. Captured outside scopes, consuming siblings,
 other counts and unknown leaves even in lazy/never bodies retain separate
-proofs. Earlier API domains and charged work remain unchanged. Runtime selection
-remains separate.
+proofs. Earlier API domains and charged work remain unchanged. Runtime selects
+this outside-gate optional proof after exact-one grouped optional alternatives.
+The dedicated body retains zero/consuming identity, mandatory enclosing ranges,
+actual endpoint truth, original lexical slots, source/flags, named aliases,
+indices, lastIndex and String consumers through cloning and collection.
