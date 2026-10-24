@@ -201,11 +201,17 @@ fn asserted_single_string_class_proofs_finish_finalizers_and_keep_inner_scope_cl
     check(
         r"var marker=0,m;try{m=/()([\q{a|ab}])|()$/dv.exec('ab!')}finally{marker=3}var e=/()([\q{a|ab}])|()$/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]==='ab'&&m[3]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===undefined&&e[3]===''&&e.index===1",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^()([\\q{a|ab}])+()$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[5,5]],\"index\":0},5],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"^()\b([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])$",
         r"()([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])\b()$",
         r"^()([\q{a|ab}])\1$",
-        r"^()([\q{a|ab}])+()$",
+        r"^()([[\q{a|ab}]&&\p{RGI_Emoji}])+()$",
         r"^()([\q{|ab}]){0}()$",
         r"^()([\q{a|ab}])x$",
         r"^()([\q{|ab}])([\q{cd}])$",

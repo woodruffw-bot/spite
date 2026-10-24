@@ -197,10 +197,16 @@ fn nested_assertion_string_class_values_aliases_consumers_and_scope_preserve_ori
     check(
         r"var marker=0,m,r=/\b(^(\B()[\q{a|ab}]|())$)\b/dvgm;r.lastIndex=1;try{m=r.exec('ab\n\n')}finally{marker=3}marker===3&&m===null&&r.lastIndex===0",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="\\b(^(\\B()([\\q{a|ab}])+())$)\\b",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"\b(^(\B()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])())$)\b",
         r"\b(^(\B()([\q{a|ab}])\1)$)\b",
-        r"\b(^(\B()([\q{a|ab}])+())$)\b",
+        r"\b(^(\B()([[\q{a|ab}]&&\p{RGI_Emoji}])+())$)\b",
         r"\b(^(\B()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())$)\b",
         r"(^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)()",
         r"^\b\B((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))$",

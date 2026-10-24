@@ -165,12 +165,24 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['aaaa','ab','ſaX','😀aX']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"aaaa\",{\"values\":[\"aa\",\"a\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[false,\"ab\",{\"values\":[\"ab\",\"b\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[false,\"\u017faX\",{\"values\":[\"\u017fa\",\"a\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[false,\"\ud83d\ude00aX\",{\"values\":[\"\ud83d\ude00a\",\"a\"],\"indices\":[[0,3],[2,3]],\"index\":0},3],[true,\"aaaa\",{\"values\":[\"aa\",\"a\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[true,\"ab\",{\"values\":[\"ab\",\"b\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[true,\"\u017faX\",{\"values\":[\"\u017fa\",\"a\"],\"indices\":[[0,2],[1,2]],\"index\":0},2],[true,\"\ud83d\ude00aX\",{\"values\":[\"\ud83d\ude00a\",\"a\"],\"indices\":[[0,3],[2,3]],\"index\":0},3]]"})();}finally{marker=3}ok&&marker===3"#,
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^()([\\q{ab|cd}]){2}()",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",{\"values\":[\"abab\",\"\",\"ab\",\"\"],\"indices\":[[0,4],[0,0],[2,4],[4,4]],\"index\":0},4],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",{\"values\":[\"abab\",\"\",\"ab\",\"\"],\"indices\":[[0,4],[0,0],[2,4],[4,4]],\"index\":0},4],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="()([\\q{ab|cd}]){2}()$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"()([[\q{a|ab}]&&\p{RGI_Emoji}]){2}()",
         r"()([[\q{aa|aaa}]&&\p{RGI_Emoji}]){2}()",
         r"([[\p{Any}\q{ab}]&&\p{RGI_Emoji}]){2}",
-        r"^()([\q{ab|cd}]){2}()",
-        r"()([\q{ab|cd}]){2}()$",
+        r"^()([[\q{ab|cd}]&&\p{RGI_Emoji}]){2}()",
+        r"()([[\q{ab|cd}]&&\p{RGI_Emoji}]){2}()$",
         r"()([\q{ab|cd}]){2}()\1",
         r"()([\q{ab|cd}]){2}()a",
         r"a()([\q{ab|cd}]){2}()",

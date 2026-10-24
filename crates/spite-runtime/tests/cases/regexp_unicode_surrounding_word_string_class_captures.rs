@@ -190,14 +190,26 @@ fn surrounding_word_string_class_values_conflicts_and_consumers_preserve_origina
     check(
         r"var marker=0,m;try{m=/\b((()[\q{a|ab}]|()))/dv.exec('ab!')}finally{marker=3}var e=/\b((()[\q{a|ab}]|()))/dv.exec('z');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e[3]===undefined&&e[4]===''&&e.indices[4][0]===0",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="\\b((()([\\q{a|ab}])()))+",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="\\b((\\B()([\\q{a|ab}])+()))",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"\b()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()",
         r"\b((()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()))",
-        r"\b((()([\q{a|ab}])()))+",
+        r"\b((()([[\q{a|ab}]&&\p{RGI_Emoji}])()))+",
         r"\b((\B()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))",
         r"((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()\b))\B",
         r"\b((\B()([\q{a|ab}])\1))",
-        r"\b((\B()([\q{a|ab}])+()))",
+        r"\b((\B()([[\q{a|ab}]&&\p{RGI_Emoji}])+()))",
     ] {
         let mut realm = Realm::default();
         assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");

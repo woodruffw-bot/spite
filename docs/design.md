@@ -11747,4 +11747,7 @@ outside scopes remain defined at their lexical points. A short lazy empty
 success retains bounded matching work on long input. Failed nonsticky starts
 advance one Unicode point, retaining the established leading-boundary policy.
 Earlier public matcher domains, callback work and projections stay unchanged.
-Runtime selection of this asserted repetition proof remains separate.
+Runtime selects this proof after the larger-required-count constructor on the full
+capture source. A dedicated body retains original source, names/indices,
+lastIndex, String consumers, cloning and collection, with matching-capacity and
+work failures retained as separate host errors.

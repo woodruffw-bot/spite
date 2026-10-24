@@ -178,10 +178,16 @@ fn surrounding_line_string_class_values_consumers_and_scope_preserve_original_sl
     check(
         r"var marker=0,m;try{m=/^((()[\q{a|ab}]|()))$/dv.exec('ab')}finally{marker=3}marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]===undefined&&m.indices[3][0]===0&&/^((()[\q{a|ab}]|()))$/v.exec('!')===null",
     );
+    check(
+        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^((()([\\q{a|ab}])()))+$",rows=[],metadata=true;
+for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
+for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
+return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+    );
     for pattern in [
         r"^()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()$",
         r"^((()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()))$",
-        r"^((()([\q{a|ab}])()))+$",
+        r"^((()([[\q{a|ab}]&&\p{RGI_Emoji}])()))+$",
         r"^((\b()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])())())$",
         r"^((()([\q{a|ab}])\1))$",
         r"^((()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()))$",

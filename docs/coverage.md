@@ -20255,3 +20255,36 @@ Clippy, documentation tests, formatting, dependency policy, inventories and diff
 checks pass. Matching capacity and opt-in work failures remain separate host
 errors. Runtime selection remains separate; fixtures, snapshots, dependencies
 and default quotas are unchanged.
+
+
+## Runtime asserted nonnullable string-class repetition
+
+Three groups execute thirty-two native capture tables and eight additional
+native consumer programs, plus collection. They retain suffix-driven member and
+count retries, greedy/lazy zero iterations, required/optional capture scopes,
+known-empty classes, scalar fallback, multiline predicates, Unicode word folding,
+leading boundaries, escaped names and indices aliases. matchAll, callback
+replacement, split/search, cloning, collection and read-only lastIndex agree
+with native references. Deep capture scopes and long shared-prefix words remain
+flat. Opt-in constructor and continuation-stack execution aborts preserve
+bindings, lastIndex and host-failure isolation; lazy empty success retains
+bounded work on long inputs. Eighteen earlier rejection controls become native
+eight-record capture/finalizer checks with unproved leaves retained. Conditional
+predicates, nullable bodies, body assertions, references, nested class-path loops,
+consuming siblings and additional classes retain separate proofs.
+
+
+Execution passes all 1,652 Unicode RegExp integration cases, including the three
+new groups, and 431 Runtime units. All 40 fixed consumer references and 18
+migrated eight-record tables agree with the fresh CLI and native references.
+All 230,400 differential records agree across 384 independent pairs, twelve
+counts, 32 overlapping/algebraic/scalar class forms, eight rotated prefix/suffix
+predicate profiles, six capture layouts, twelve inputs and all starts/sticky/i/m
+combinations. Finite native alternatives retain longest-member priority and the
+earlier vi folding and Unicode leading-boundary reference policy.
+
+A fresh conformance-profile Test262 run passes all 35 tests, including all 16,343
+reviewed variants. Strict workspace Clippy, documentation tests, formatting,
+dependency policy, inventories and diff checks pass. The Runtime inventory is
+562 case files and 4,358 integration cases. Fixtures, snapshots, dependencies
+and default quotas are unchanged.
