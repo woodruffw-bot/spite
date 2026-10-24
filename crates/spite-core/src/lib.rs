@@ -121,6 +121,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,

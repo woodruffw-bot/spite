@@ -30,6 +30,7 @@ pub use repeated_string_classes::{
     RegExpUnicodeRequiredStringClassCaptureMatcher,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,

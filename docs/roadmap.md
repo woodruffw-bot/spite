@@ -829,6 +829,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove captured pure-predicate/empty scopes around grouped branch-local alternatives, preserving optional points, whole ranges and inner lexical slots.
 - [x] Prove optional direct root class/empty alternatives with branch-local predicates, rejecting empty iterations and clearing zero-iteration captures.
 - [x] Execute optional direct root truth alternatives through Runtime and String consumers.
+- [x] Prove mandatory enclosing groups around optional root truth alternatives, preserving defined outer captures on zero iterations.
+- [ ] Execute grouped optional root truth alternatives through Runtime and String consumers.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.
 - [x] Execute exact-one grouped branch-local alternatives through Runtime and String consumers.

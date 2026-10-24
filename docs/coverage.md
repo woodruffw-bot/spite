@@ -21875,3 +21875,23 @@ The preceding captured outside-scope sources pass all 1,746 Unicode RegExp
 integration tests (752.45 s). Their fresh Test262 run passes all 35 runner tests
 and all 16,343 reviewed variants, including the pinned corpus gate (371.67 s).
 Both runs compiled before optional direct root alternatives.
+
+
+## Core grouped optional root truth alternatives
+
+Four focused groups pass (2.63 s), comparing 160 native capture tables and an
+independent progress/capture oracle across all UTF-16 starts, sticky, multiline
+and ignore-case. Mandatory enclosing captures remain defined on zero iterations,
+while all skipped optional-root slots remain undefined. Both branch orders,
+greedy/lazy question and padded zero-to-one counts, finite/scalar/known-empty
+classes and conditional inner predicate scopes retain lexical participation.
+Deep 20,000-level enclosing groups, 20,000-unit shared-prefix members and
+cloning/drop remain flat. Every charged constructor/matcher cancellation and
+recovery preserves the proof boundary. Unknown leaves, references, additional
+classes, outside terms and quantified enclosing wrappers remain unproved.
+
+All 88,040 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (17.16 s),
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime selection remains separate; fixtures, snapshots, dependencies and default
+quotas remain unchanged.

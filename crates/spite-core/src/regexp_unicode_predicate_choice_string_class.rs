@@ -2529,3 +2529,81 @@ impl RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher {
         }))
     }
 }
+
+/// Complete ordinary wrappers around one optional class/empty truth choice.
+///
+/// Requires validated Unicode Sets source and normalized capture names. Only
+/// complete unquantified capturing/noncapturing wrappers are removed before the
+/// complete optional-root proof. Enclosing captures retain the accepted range,
+/// including zero-iteration empty matches; skipped inner slots remain undefined.
+/// https://262.ecma-international.org/17.0/#sec-compileatom
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher {
+    plan: RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
+    enclosing: usize,
+    captures: usize,
+}
+impl RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher {
+    /// Proves complete ordinary wrappers and the complete optional inner root.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(8).saturating_add(64))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let Some((body, enclosing)) =
+            super::super::super::enclosed_v_group_body(source.code_units())
+        else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[body].to_vec());
+        let Some(plan) =
+            RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher::compile_with_work(
+                &body,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let captures = enclosing
+            .checked_add(plan.capture_count())
+            .ok_or(RegExpUnicodeSetCompileError::Capacity)?;
+        Ok(Some(Self {
+            plan,
+            enclosing,
+            captures,
+        }))
+    }
+    /// Counts original enclosing and branch-local lexical capture slots.
+    pub fn capture_count(&self) -> usize {
+        self.captures
+    }
+    /// Projects mandatory complete captures and the selected inner branch.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        if index < self.enclosing {
+            return Some(found.repeated.range.clone());
+        }
+        self.plan
+            .capture_range(index.checked_sub(self.enclosing)?, found)
+    }
+    /// Executes optional progress rules and retains enclosing capture participation.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        self.plan
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}

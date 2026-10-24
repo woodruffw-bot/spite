@@ -2437,6 +2437,7 @@ pub use zero_count_asserted::{
     RegExpUnicodePredicateChoiceStringClassMatch,
     RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
+    RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
     RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,

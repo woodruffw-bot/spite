@@ -12466,3 +12466,15 @@ Runtime selects this complete optional-root proof after captured outside-scope
 alternatives. Its dedicated body preserves final-iteration absence, actual
 endpoint truth, branch ownership, source/flags, named aliases, indices, lastIndex
 and String consumers through cloning and collection.
+
+
+Core separately proves complete unquantified ordinary wrappers around an optional
+branch-local class/empty root. A flat scan removes only complete wrappers before
+the existing optional proof validates both original branches. Mandatory enclosing
+captures cover the accepted whole range, including a zero-iteration empty match;
+every skipped optional-root capture remains undefined (ECMA-262 edition 17
+22.2.2.3, 22.2.2.7). Lexical inner slots shift by the checked enclosing count.
+Matching delegates progress and member retry rules unchanged. Storage, traversal
+and clone/drop remain flat and source-sized. Outside terms and quantified
+wrappers retain separate proofs; earlier API domains and charged work remain
+unchanged. Runtime selection remains separate.
