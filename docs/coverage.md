@@ -21766,3 +21766,24 @@ ignore-case. All 431 Runtime unit tests pass (3.51 s), alongside strict workspac
 Clippy (29.21 s), documentation tests, formatting, policy, inventories and diff
 checks. The grouped Runtime inventory contains 592 case files. Fixtures,
 snapshots, dependencies and default quotas remain unchanged.
+
+
+## Core captured outside scopes around branch-local alternatives
+
+Four focused groups pass (2.07 s), comparing 160 native capture tables and an
+independent scope/branch/endpoint oracle with 24 original slots. Required and
+skipped outside scopes, empty point captures, complete enclosing groups, both
+root orders and finite/scalar/known-empty classes retain original participation
+across every UTF-16 start, sticky, multiline and ignore-case. Bare common gates
+and exact-one class paths preserve shorter-member, empty-first and later-start
+retries. Deep 20,000-level outside captured scopes, 20,000-unit shared-prefix
+words, cloning/drop and every charged cancellation/recovery remain flat. Common
+never profiles use bounded matching work after complete construction. Unknown
+terms in either region, including under skipped/never scopes, retain their proof
+boundaries.
+
+All 86,568 frozen prior API records retain exact domains, charged work and capture
+projection in seven bounded batches. Strict workspace Clippy (60 s), documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime selection
+remains separate; fixtures, snapshots, dependencies and default quotas remain
+unchanged.

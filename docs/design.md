@@ -12411,3 +12411,29 @@ outside-gate proof after exact-one grouped alternatives on the complete
 normalized capture source. The dedicated body retains complete ranges, branch
 ownership, endpoint truth, source/flags, named aliases, indices, lastIndex and
 String consumers through cloning and collection.
+
+
+Core separately proves captured pure-predicate/empty scopes around a grouped
+class/empty choice. A flat choice-hole proof isolates the complete inner root
+alternative while preserving its original lexical insertion point. Both inner
+branches compile before outside profile extraction. The outside parser treats
+that proved choice as one opaque payload, retains every original slot, and
+combines pure predicate scopes and bare gates into endpoint masks. Predicates
+inside an ordered selected scope retain its disjunctive success mask; they are
+not individually conjoined.
+
+A synthetic empty class builds only outside capture roles, without adding slots.
+Accepted endpoint truth projects conditional outside points, whole-range roles
+project enclosing groups, and the original numeric interval delegates inner
+branch captures (ECMA-262 edition 17 22.2.2.3–4, 22.2.2.7). Both inner branches
+conjoin outside profiles before member/empty continuations succeed, retaining
+shorter-member, empty-first and later-start retries. Optional zero-width scopes
+remain undefined. Contradictory common profiles use bounded matching work only
+after complete inner and outside validation.
+
+Existing projection callers use the unchanged parser mode and retain exact
+domains and callback sequences. All traversal, storage and clone/drop remain
+flat and source-sized; class-path counts still require exact one. Further
+class-bearing choices, references, consuming outside siblings and unknown terms
+even behind skipped/never scopes retain separate proofs. Runtime selection
+remains separate.

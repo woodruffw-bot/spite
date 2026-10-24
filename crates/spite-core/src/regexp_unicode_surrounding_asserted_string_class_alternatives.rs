@@ -294,6 +294,11 @@ fn choice_hole(units: &[u16]) -> Option<Hole> {
     }
     (class_seen && frames.is_empty()).then_some(hole).flatten()
 }
+// Preserve the original lexical insertion point while proving outer scopes.
+pub(in super::super) fn opaque_truth_choice_hole(units: &[u16]) -> Option<(Range<usize>, usize)> {
+    choice_hole(units).map(|hole| (hole.body, hole.before))
+}
+
 #[derive(Default)]
 struct Gates {
     start_line: bool,

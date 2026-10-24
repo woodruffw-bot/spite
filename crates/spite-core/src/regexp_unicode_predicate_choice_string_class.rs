@@ -363,6 +363,11 @@ struct Projection {
     overlays: Vec<Option<Overlay>>,
     profiles: [u8; 2],
 }
+struct OpaqueChoice {
+    atom: Range<usize>,
+    before: usize,
+    inner: usize,
+}
 fn project_choices<E>(
     source: &JsString,
     single: bool,
@@ -371,36 +376,68 @@ fn project_choices<E>(
     arbitrary: bool,
     charge: &mut impl FnMut(usize) -> Result<(), E>,
 ) -> Result<Option<Projection>, RegExpUnicodeSetCompileError<E>> {
+    project_choices_with_opaque(
+        source,
+        single,
+        alternative,
+        conjunctive,
+        arbitrary,
+        None,
+        charge,
+    )
+}
+
+fn project_choices_with_opaque<E>(
+    source: &JsString,
+    single: bool,
+    alternative: bool,
+    conjunctive: bool,
+    arbitrary: bool,
+    opaque: Option<OpaqueChoice>,
+    charge: &mut impl FnMut(usize) -> Result<(), E>,
+) -> Result<Option<Projection>, RegExpUnicodeSetCompileError<E>> {
     use RegExpUnicodeSetCompileError::{Capacity, Work};
     let units = source.code_units();
     charge(units.len().saturating_mul(128).saturating_add(256)).map_err(Work)?;
-    let Some(hole) = counted_hole(units, |u, at| {
-        if single {
-            if at == 0 || u.get(at - 1) != Some(&0x5d) {
+    let hole = if let Some(choice) = &opaque {
+        super::super::Hole {
+            atom: choice.atom.clone(),
+            count_end: choice.atom.end,
+            before: choice.before,
+            minimum_one: true,
+            maximum_one: true,
+            greedy: true,
+        }
+    } else {
+        let Some(hole) = counted_hole(units, |u, at| {
+            if single {
+                if at == 0 || u.get(at - 1) != Some(&0x5d) {
+                    return None;
+                }
+                if let Some((end, min, delta, greedy)) = asserted_repeat_count(u, at) {
+                    return (min == 1 && delta == Some(0)).then_some((end, true, true, greedy));
+                }
+                return simple_count(u, at)
+                    .is_none()
+                    .then_some((at, true, true, true));
+            }
+            if let Some(c) = simple_count(u, at) {
+                return Some(c);
+            }
+            let (end, min, delta, greedy) = asserted_repeat_count(u, at)?;
+            if min == 1 && delta == Some(0) {
                 return None;
             }
-            if let Some((end, min, delta, greedy)) = asserted_repeat_count(u, at) {
-                return (min == 1 && delta == Some(0)).then_some((end, true, true, greedy));
-            }
-            return simple_count(u, at)
-                .is_none()
-                .then_some((at, true, true, true));
-        }
-        if let Some(c) = simple_count(u, at) {
-            return Some(c);
-        }
-        let (end, min, delta, greedy) = asserted_repeat_count(u, at)?;
-        if min == 1 && delta == Some(0) {
-            return None;
-        }
-        Some((
-            end,
-            min > 0,
-            min.saturating_add(delta.unwrap_or(usize::MAX)) == 1,
-            greedy,
-        ))
-    }) else {
-        return Ok(None);
+            Some((
+                end,
+                min > 0,
+                min.saturating_add(delta.unwrap_or(usize::MAX)) == 1,
+                greedy,
+            ))
+        }) else {
+            return Ok(None);
+        };
+        hole
     };
     // At most two binary nodes plus a group/count node per source unit.
     // All parser and traversal state is flat, including deeply nested scopes.
@@ -428,23 +465,27 @@ fn project_choices<E>(
             if captures != hole.before {
                 return Ok(None);
             }
-            let mut p = at;
-            while p < hole.count_end {
-                match units[p] {
-                    0x5b => {
-                        let Some(end) = super::super::class_end(units, p) else {
-                            return Ok(None);
-                        };
-                        p = end;
-                    }
-                    0x5c => p += 2,
-                    0x28 => {
-                        if units.get(p + 1) != Some(&0x3f) {
-                            captures += 1
+            if let Some(choice) = &opaque {
+                captures = captures.checked_add(choice.inner).ok_or(Capacity)?;
+            } else {
+                let mut p = at;
+                while p < hole.count_end {
+                    match units[p] {
+                        0x5b => {
+                            let Some(end) = super::super::class_end(units, p) else {
+                                return Ok(None);
+                            };
+                            p = end;
                         }
-                        p += 1;
+                        0x5c => p += 2,
+                        0x28 => {
+                            if units.get(p + 1) != Some(&0x3f) {
+                                captures += 1
+                            }
+                            p += 1;
+                        }
+                        _ => p += 1,
                     }
-                    _ => p += 1,
                 }
             }
             node = leaf(
@@ -594,7 +635,7 @@ fn project_choices<E>(
         .try_reserve_exact(nodes.len())
         .map_err(|_| Capacity)?;
     pending.push((root, None, false));
-    let mut selected = false;
+    let mut selected = opaque.is_some();
     let mut profiles = [0xff; 2];
     while let Some((id, active, gated)) = pending.pop() {
         let n = &nodes[id];
@@ -622,6 +663,9 @@ fn project_choices<E>(
             Kind::Predicate => {
                 if active.is_some() {
                     erased[n.span.start] = true
+                } else if opaque.is_some() {
+                    profiles[usize::from(n.span.start >= hole.count_end)] &= n.success;
+                    erased[n.span.start] = true;
                 }
             }
             Kind::Group(child, capture) => {
@@ -674,6 +718,11 @@ fn project_choices<E>(
         .map_err(|_| Capacity)?;
     let mut at = 0;
     while at < units.len() {
+        if opaque.is_some() && at == hole.atom.start {
+            shadow.extend_from_slice(&[0x5b, 0x5c, 0x71, 0x7b, 0x7d, 0x5d]);
+            at = hole.atom.end;
+            continue;
+        }
         if let Some(&mask) = gates.get(at) {
             if let Some(flags) = canonical_assertions(mask) {
                 for (required, tokens) in [
@@ -2136,4 +2185,172 @@ fn outside_truth_frame(units: &[u16]) -> Option<(Range<usize>, [u8; 2])> {
         seen = true;
     }
     seen.then_some((begin..end, masks))
+}
+
+/// Captured pure-predicate/empty scopes around a grouped class/empty alternative.
+///
+/// Requires validated Unicode Sets source and normalized capture names. The
+/// complete inner root choice remains opaque while a flat outside proof retains
+/// original captures, skipped scopes and bare gates. Both original branches and
+/// every outside term are fully validated before endpoint masks are installed.
+/// https://262.ecma-international.org/17.0/#sec-disjunction
+#[derive(Clone, Debug)]
+pub struct RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher {
+    inner: RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
+    outside: crate::RegExpUnicodeSingleStringClassCaptureMatcher,
+    overlays: Box<[Option<Overlay>]>,
+    before_inner: usize,
+    never: bool,
+}
+impl RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher {
+    /// Proves the complete reference-free outside spine and both inner branches.
+    pub fn compile_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        charge(source.len().saturating_mul(32).saturating_add(192))
+            .map_err(RegExpUnicodeSetCompileError::Work)?;
+        let normalized = super::super::super::asserted_alternatives::exact_single_count_source(
+            source.code_units(),
+        )
+        .unwrap_or_else(|| source.code_units().to_vec());
+        let source = JsString::from_code_units(normalized);
+        let Some((body, before_inner)) =
+            super::super::super::asserted_alternatives::opaque_truth_choice_hole(
+                source.code_units(),
+            )
+        else {
+            return Ok(None);
+        };
+        let inner_source = JsString::from_code_units(source.code_units()[body.clone()].to_vec());
+        let Some(mut inner) =
+            RegExpUnicodeTruthTableRootStringClassAlternativeMatcher::compile_with_work(
+                &inner_source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        else {
+            return Ok(None);
+        };
+        let Some(Projection {
+            shadow,
+            overlays,
+            profiles,
+        }) = project_choices_with_opaque(
+            &source,
+            true,
+            false,
+            false,
+            true,
+            Some(OpaqueChoice {
+                atom: body,
+                before: before_inner,
+                inner: inner.capture_count(),
+            }),
+            &mut charge,
+        )?
+        else {
+            return Ok(None);
+        };
+        let Some(outside) = scoped_alternative_outer_plan(&shadow, ignore_case, multiline, charge)?
+        else {
+            return Ok(None);
+        };
+        if outside.capture_count().checked_add(inner.capture_count()) != Some(overlays.len())
+            || before_inner > outside.capture_count()
+        {
+            return Ok(None);
+        }
+        for branch in [&mut inner.class, &mut inner.empty] {
+            branch.profiles[0] &= profiles[0];
+            branch.profiles[1] &= profiles[1];
+        }
+        Ok(Some(Self {
+            inner,
+            outside,
+            overlays: overlays.into_boxed_slice(),
+            before_inner,
+            never: profiles.contains(&0),
+        }))
+    }
+    /// Counts original outside, enclosing and branch-local capture slots.
+    pub fn capture_count(&self) -> usize {
+        self.overlays.len()
+    }
+    /// Projects conditional outer points, complete ranges and inner branch slots.
+    pub fn capture_range(
+        &self,
+        index: usize,
+        found: &RegExpUnicodePredicateChoiceStringClassMatch,
+    ) -> Option<Range<usize>> {
+        if index >= self.capture_count() {
+            return None;
+        }
+        if let Some(overlay) = self.overlays[index] {
+            let (truth, point) = if overlay.at_end {
+                (found.after, found.repeated.range.end)
+            } else {
+                (found.before, found.repeated.range.start)
+            };
+            return (overlay.mask & 1u8.checked_shl(u32::from(truth)).unwrap_or(0) != 0)
+                .then_some(point..point);
+        }
+        if index < self.before_inner {
+            return self.outside.capture_range(index, &found.repeated.range);
+        }
+        let local = index.checked_sub(self.before_inner)?;
+        if local < self.inner.capture_count() {
+            return self.inner.capture_range(local, found);
+        }
+        self.outside.capture_range(
+            index.checked_sub(self.inner.capture_count())?,
+            &found.repeated.range,
+        )
+    }
+    /// Enforces outside profiles inside every original member/branch continuation.
+    pub fn find_with_captures_and_work<E>(
+        &self,
+        input: &JsString,
+        requested: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<RegExpUnicodePredicateChoiceStringClassMatch>, RegExpUnicodeMatchError<E>>
+    {
+        if self.never {
+            charge(4).map_err(RegExpUnicodeMatchError::Work)?;
+            let _ = crate::regexp_literal::unicode_start(input, requested);
+            return Ok(None);
+        }
+        self.inner
+            .find_with_captures_and_work(input, requested, sticky, charge)
+    }
+}
+
+fn scoped_alternative_outer_plan<E>(
+    source: &JsString,
+    ignore_case: bool,
+    multiline: bool,
+    mut charge: impl FnMut(usize) -> Result<(), E>,
+) -> Result<
+    Option<crate::RegExpUnicodeSingleStringClassCaptureMatcher>,
+    RegExpUnicodeSetCompileError<E>,
+> {
+    use crate::RegExpUnicodeSingleStringClassCaptureMatcher as P;
+    if let Some(p) = P::compile_with_work(source, ignore_case, multiline, &mut charge)? {
+        return Ok(Some(p));
+    }
+    if let Some(p) =
+        P::compile_exact_single_counts_with_work(source, ignore_case, multiline, &mut charge)?
+    {
+        return Ok(Some(p));
+    }
+    if let Some(p) =
+        P::compile_unconditional_assertions_with_work(source, ignore_case, multiline, &mut charge)?
+    {
+        return Ok(Some(p));
+    }
+    P::compile_reversed_line_assertions_with_work(source, ignore_case, multiline, charge)
 }
