@@ -154,6 +154,9 @@ impl RegExpZeroCountGroupMatcher {
             body_start += width;
         }
         let body = JsString::from_code_units(units[body_start..units.len() - complete].to_vec());
+        // Original Pattern validation also covers references to enclosing
+        // slots. Such references stay unexecuted; the projected body must not
+        // be revalidated or assigned new lexical bindings in isolation.
         Ok(
             Self::compile_validated_with_work(&body, unicode, unicode_sets, charge)?
                 .map(|matcher| (matcher, captures)),
@@ -334,6 +337,7 @@ mod tests {
             (r"(((?:(([[a]--[b]](c)){000,000}?))))", true, true, 3, 2),
             (r"((([[](a)){0}))", false, false, 2, 2),
             (r"(?:(?i:(a)(b)){0})", true, false, 0, 2),
+            (r"(((((?=\4)a){0})))", true, false, 3, 1),
         ] {
             let source = JsString::from(source);
             let (matcher, captures) =

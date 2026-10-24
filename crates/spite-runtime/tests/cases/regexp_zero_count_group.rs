@@ -125,3 +125,59 @@ fn deep_erased_captures_clone_and_collect_without_executing_body() {
         Ok(Value::Boolean(true))
     );
 }
+
+#[test]
+fn mandatory_enclosing_captures_select_empty_spans_and_inner_names_stay_undefined() {
+    check(
+        r#"
+        var ok=true,body='(?<root>(?=(?<x>a))b|(?<=(?<y>c))d)';
+        for(var mode of ['','u','v']) for(var count of ['{0}','{000,000}?']) {
+            for(var wrapper of [['(?<outside>',')',1],['(?<outside>(?:(?<second>',')))',2],['(?:',')',0]]) {
+                var pattern=wrapper[0]+body+count+wrapper[1],r=new RegExp(pattern,'dgy'+mode),point=mode===''?2:1;
+                r.lastIndex=2;var m=r.exec('A😀!');
+                ok=ok&&r.source===pattern&&m.index===point&&m[0]===''&&r.lastIndex===point&&m.length===wrapper[2]+4;
+                for(var i=1;i<m.length;i++)ok=ok&&(i<=wrapper[2]?m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point:m[i]===undefined&&m.indices[i]===undefined);
+                ok=ok&&m.groups.root===undefined&&m.groups.x===undefined&&m.groups.y===undefined&&m.indices.groups.root===undefined&&m.indices.groups.x===undefined&&m.indices.groups.y===undefined;
+                if(wrapper[2]>0)ok=ok&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
+                if(wrapper[2]>1)ok=ok&&m.groups.second===''&&m.indices.groups.second===m.indices[2];
+            }
+        }
+        var sets=new RegExp('(?<outside>(?<root>[[a-z]--[b]](?<x>[\\p{RGI_Emoji}])){0})','dgvy');
+        sets.lastIndex=2;var m=sets.exec('A😀!');
+        ok=ok&&m.length===4&&m.index===1&&m.groups.outside===''&&m.groups.root===undefined&&m.groups.x===undefined&&m.indices.groups.outside===m.indices[1]&&m.indices[1][0]===1&&m.indices[1][1]===1;
+        var references=new RegExp('(?<outside>(?<second>(?<third>(?<root>(?=\\4)b|\\k<outside>){0})))','dgu'),m=references.exec('x');
+        ok&&m.length===5&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===undefined&&m.groups.root===undefined&&m.indices.groups.outside===m.indices[1]&&m.indices.groups.second===m.indices[2]&&m.indices.groups.third===m.indices[3]
+    "#,
+    );
+}
+
+#[test]
+fn enclosing_empty_captures_flow_through_matchall_replace_search_and_split() {
+    check(
+        r#"
+        var pattern='(?<outside>(?<root>(?=(?<x>a))b){0})',r=new RegExp(pattern,'dgu');
+        var ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
+        for(var m of ms)ok=ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
+        var calls=[];var value='ab'.replace(r,function(m,outside,root,x,at,input,groups){calls.push(at);return m===''&&outside===''&&root===undefined&&x===undefined&&input==='ab'&&groups.outside===''&&groups.root===undefined?'!':'?'});
+        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.search(r)===0&&'ab'.split(r).join(',')==='a,,,,b';
+        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');
+        ok&&m.index===1&&copy.lastIndex===1&&m.groups.outside===''&&m.groups.root===undefined&&m.indices.groups.outside===m.indices[1]
+    "#,
+    );
+}
+
+#[test]
+fn deep_mandatory_enclosing_and_erased_capture_slots_survive_collection() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var depth=1000,pattern='('.repeat(depth)+'('.repeat(depth)+'(?=(a))b'+')'.repeat(depth)+'{0}'+')'.repeat(depth),r=new RegExp(pattern,'dgu'),copy=new RegExp(r);
+        copy.lastIndex=1;var m=copy.exec('😀'),ok=m.index===0&&m.length===2002&&m[0]==='';
+        for(var i=1;i<m.length;i++)ok=ok&&(i<=depth?m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0:m[i]===undefined&&m.indices[i]===undefined);
+        ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("var m=copy.exec('x');m[1000]===''&&m[1001]===undefined&&m[2001]===undefined"),
+        Ok(Value::Boolean(true))
+    );
+}

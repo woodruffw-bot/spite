@@ -22821,3 +22821,39 @@ construction callback abort, and constant matching work at normalized Unicode
 boundaries. Strict workspace Clippy with all targets (26.27 s), workspace
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration of this additional proof follows separately.
+
+
+## Runtime mandatory enclosing groups around erased bodies
+
+Runtime now selects the separate enclosing zero-group proof after the complete
+zero-group fallback. Mandatory enclosing captures select the empty match span;
+all captures inside the zero-count body remain undefined. References retain
+their original validated lexical bindings, including references whose numbers
+exceed the projected body's capture count. No isolated-body revalidation or
+renumbering occurs.
+
+All nine focused Runtime tests pass (0.37 s), including ordinary/u/v boundaries,
+named and noncapturing wrappers, undefined inner names, index aliases, matchAll,
+replacement callbacks, search/split, cloning and collection with 1,000 enclosing
+and 1,001 erased slots. All five actual-source focused Core tests pass (0.09 s),
+including the enclosing-reference case. All 432 Runtime unit tests pass (3.31 s).
+All 67,392 exact native records agree on the fresh CLI across 78 body/mode/wrapper
+tables, and all eight complete native JavaScript regression programs also agree.
+
+A scan of 1,850 literal-source rejection controls identifies 16 additional
+whole-pattern zero forms in four files. They now compare complete native match
+metadata, including named and unnamed undefined slots, normalized positions and
+lastIndex. All 16 agree on the fresh CLI. All 19 affected integration tests pass
+(1/6/6/6 tests across the four selections), alongside strict workspace Clippy
+(9.07 s, then 8.65 s after the literal-control edits), documentation tests,
+formatting, dependency policy, inventories and diff checks. The case inventory
+remains 612; snapshots, fixtures, dependencies and default quotas are unchanged.
+
+The initial 1,800-test Unicode sweep of the whole-pattern fallback identified
+13 stale unsupported expectations; their nine nested-loop and four literal-form
+modules now pass 95 focused integration tests using native metadata. A fresh
+2,763-test RegExp sweep includes all those corrections and the enclosing Runtime
+extension; that broader run is still in progress. The preceding
+whole-pattern Runtime snapshot passes all 35 Test262 runner tests and all
+16,343 reviewed variants (406.79 s for the corpus group); this result precedes
+the enclosing Runtime extension.

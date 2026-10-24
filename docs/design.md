@@ -12869,3 +12869,11 @@ zero-count group remain undefined (22.2.2.2, 22.2.2.3.1, 22.2.2.7). The API
 charges source-sized scanning and temporary body storage before allocation;
 matching, retained storage and clone/drop stay constant. Outside terms, choices
 and quantified wrappers remain outside this additional proof.
+
+Runtime selects the enclosing zero-group proof after the whole-pattern zero
+fallback. The common match layout defines the returned capture prefix at the
+empty whole-match span and retains undefined body slots. Named aliases, indices,
+lastIndex, String consumers, cloning and collection use the existing machinery.
+Original Pattern validation preserves enclosing reference bindings before
+projection; unexecuted references are never revalidated in an isolated,
+renumbered body.
