@@ -24134,3 +24134,21 @@ Strict workspace Clippy with all targets passes (23.59 s), alongside workspace
 documentation tests, formatting, dependency policy, inventories and diff checks.
 Runtime inventory remains 616; fixtures, snapshots, dependencies and quotas are
 unchanged.
+
+
+Required spines around composite-negative failures (Runtime)
+-----------------------------------------------------------
+
+Runtime selects complete required ordinary/modifier spines around independently
+composite-negative failing sequences. All 22 focused integration groups pass
+(1.23 s), including three new groups for required/lazy/padded counts, modifier
+scopes, original erased enclosing bindings and errors, source/flags and
+lastIndex, String consumers, cloning, collection, 1,000 required wrappers and
+20,000-digit minima.
+
+All 55,296 exact native metadata records across 512 independently composed
+ordinary/u/v spines agree on the fresh CLI, as do all 22 complete JavaScript
+programs. All 436 Runtime unit tests pass (8.98 s). Strict workspace Clippy with
+all targets passes (23.59 s), alongside documentation tests, formatting,
+dependency policy, inventories and diff checks. Runtime inventory remains 616;
+fixtures, snapshots, dependencies and default quotas are unchanged.

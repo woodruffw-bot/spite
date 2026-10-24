@@ -915,6 +915,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prove root negative assertions over composite empty negative-impossible operands force no match, preserving full inventories and original bindings.
 - [x] Execute negative assertions over composite empty operands through Runtime and String consumers with complete original capture inventories and no-match behavior.
 - [x] Prove required quantified ordinary/modifier spines around composite-negative failing sequences, preserving symbolic bounds and complete original capture inventories.
+- [x] Execute required ordinary/modifier spines around composite-negative failures through Runtime and String consumers with full original capture inventories.
 - [x] Prove root alternatives whose every arm independently has a direct or required-enclosing composite-negative failure, retaining original cross-arm capture inventories.
 - [x] Execute captured outside scopes around branch-local alternatives through Runtime and String consumers.
 - [x] Execute outside assertions around grouped branch-local alternatives through Runtime and String consumers.

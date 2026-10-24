@@ -13417,3 +13417,10 @@ modes preserving earlier domains and charges. Every projected arm keeps its
 original binding context and contributes its full lexical capture inventory.
 Source/copy work precedes allocation; disjoint arms keep construction
 source-sized, while retained storage and actual no-match work stay constant.
+
+
+Runtime selects required ordinary/modifier spines around composite-negative
+failures after the direct composite-negative proof. Complete original normalized
+capture source retains every outside/inside slot and erased enclosing binding.
+The constant no-match body preserves source/flags, lastIndex, String consumers,
+cloning and collection behavior. Original early errors still precede selection.
