@@ -12895,3 +12895,13 @@ existing zero-group proofs, retaining all earlier successful plans. The common
 match result supplies source/flags, indices, lastIndex and String consumers with
 no capture slots. Continuations, nonzero upper bounds and enclosing groups
 remain outside this particular proof.
+
+
+Core separately proves mandatory ordinary enclosing groups around a whole
+zero-count class. The group and class proofs share the same flat, mode-aware
+first-closure scan. The class proof returns the enclosing capture prefix; every
+capture selects the empty match span because the retained class has no captures
+(22.2.2.7). Full original Pattern validation precedes normalized-head projection.
+Construction charges source scanning and temporary body storage before copying;
+matching and retained storage remain constant. Earlier group and class APIs
+retain their exact acceptance domains, results and work callbacks.

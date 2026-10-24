@@ -22897,3 +22897,29 @@ quotas remain unchanged.
 The preceding mandatory-enclosing zero-group Runtime snapshot passes all 35
 Test262 runner tests and all 16,343 reviewed variants (394.68 s for the corpus
 group). This result precedes the whole-class fallback.
+
+
+## Core mandatory enclosing captures around zero-count classes
+
+Core now separately proves complete mandatory ordinary enclosing groups around a
+whole zero-count class. The group and class compilers share the flat mode-aware
+first-closure scan. Every returned capture belongs to the enclosing prefix and
+selects the empty match span; the class itself contributes no captures. Source
+work and temporary body storage are charged before copying, while matching and
+retained storage remain constant.
+
+All ten actual-source focused Core tests pass (0.03 s), including two new
+class-enclosing tests with 100,000 enclosing captures and every construction
+callback abort. All six new enclosing capture tables validate and agree with
+native Node. A frozen comparison across 920 natively validated source/mode cases
+retains all 8,216 exact API/result/work records for the earlier whole-group,
+enclosing-group and whole-class constructors after extracting the shared scan.
+Strict workspace Clippy with all targets passes (8.99 s), alongside workspace
+documentation tests, formatting, dependency policy, inventories and diff checks.
+Runtime integration of the additional class-enclosing proof follows separately.
+
+The mandatory-enclosing zero-group Runtime snapshot also passes its full fresh
+RegExp integration sweep: all 2,763 tests pass (821.74 s), including ordinary and
+Unicode patterns, the nine zero-group tests and all 13 corrected expectation
+groups. Together with its previously recorded 35 Test262 runner tests and
+16,343 reviewed variants, this broad result precedes the whole-class fallback.

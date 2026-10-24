@@ -92,68 +92,11 @@ impl RegExpZeroCountGroupMatcher {
         if unicode_sets && !unicode {
             return Ok(None);
         }
-        let units = source.code_units();
-        let mut opening_end = 0;
-        let mut leading = 0;
-        while let Some(width) = ordinary_opener(units, opening_end) {
-            opening_end += width;
-            leading += 1;
-        }
-        if leading == 0 {
+        let Some(group) = enclosing_group_body(source.code_units(), unicode_sets) else {
             return Ok(None);
-        }
-        let mut depth = 0usize;
-        let mut class_depth = 0usize;
-        let mut complete = 0;
-        let mut remaining = leading;
-        let mut index = 0;
-        while let Some(&unit) = units.get(index) {
-            index += 1;
-            if unit == 0x5c {
-                index += 1;
-                continue;
-            }
-            if class_depth != 0 {
-                if unit == 0x5d {
-                    class_depth -= 1;
-                } else if unicode_sets && unit == 0x5b {
-                    class_depth += 1;
-                }
-                continue;
-            }
-            match unit {
-                0x5b => class_depth = 1,
-                0x28 => depth += 1,
-                0x29 => {
-                    let Some(next) = depth.checked_sub(1) else {
-                        return Ok(None);
-                    };
-                    depth = next;
-                    // Only the first closure at a leading wrapper's depth
-                    // belongs to it; a later sibling must not replace it.
-                    if depth < remaining {
-                        remaining = depth;
-                        if index == units.len() - depth {
-                            complete = complete.max(depth + 1);
-                        }
-                    }
-                }
-                _ => {}
-            }
-        }
-        if complete == 0 || depth != 0 || class_depth != 0 {
-            return Ok(None);
-        }
-        let mut body_start = 0;
-        let mut captures = 0;
-        for _ in 0..complete {
-            let Some(width) = ordinary_opener(units, body_start) else {
-                return Ok(None);
-            };
-            captures += usize::from(width == 1);
-            body_start += width;
-        }
-        let body = JsString::from_code_units(units[body_start..units.len() - complete].to_vec());
+        };
+        let captures = group.captures;
+        let body = JsString::from_code_units(source.code_units()[group.body].to_vec());
         // Original Pattern validation also covers references to enclosing
         // slots. Such references stay unexecuted; the projected body must not
         // be revalidated or assigned new lexical bindings in isolation.
@@ -187,6 +130,71 @@ impl RegExpZeroCountGroupMatcher {
         };
         Ok(start.map(|start| start..start))
     }
+}
+
+pub(crate) fn enclosing_group_body(
+    units: &[u16],
+    unicode_sets: bool,
+) -> Option<crate::RegExpOuterGroupBody> {
+    let mut opening_end = 0;
+    let mut leading = 0;
+    while let Some(width) = ordinary_opener(units, opening_end) {
+        opening_end += width;
+        leading += 1;
+    }
+    if leading == 0 {
+        return None;
+    }
+    let mut depth = 0usize;
+    let mut class_depth = 0usize;
+    let mut complete = 0;
+    let mut remaining = leading;
+    let mut index = 0;
+    while let Some(&unit) = units.get(index) {
+        index += 1;
+        if unit == 0x5c {
+            index += 1;
+            continue;
+        }
+        if class_depth != 0 {
+            if unit == 0x5d {
+                class_depth -= 1;
+            } else if unicode_sets && unit == 0x5b {
+                class_depth += 1;
+            }
+            continue;
+        }
+        match unit {
+            0x5b => class_depth = 1,
+            0x28 => depth += 1,
+            0x29 => {
+                depth = depth.checked_sub(1)?;
+                // Only the first closure at a leading wrapper's depth
+                // belongs to it; a later sibling must not replace it.
+                if depth < remaining {
+                    remaining = depth;
+                    if index == units.len() - depth {
+                        complete = complete.max(depth + 1);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    if complete == 0 || depth != 0 || class_depth != 0 {
+        return None;
+    }
+    let mut body_start = 0;
+    let mut captures = 0;
+    for _ in 0..complete {
+        let width = ordinary_opener(units, body_start)?;
+        captures += usize::from(width == 1);
+        body_start += width;
+    }
+    Some(crate::RegExpOuterGroupBody {
+        body: body_start..units.len() - complete,
+        captures,
+    })
 }
 
 fn ordinary_opener(units: &[u16], start: usize) -> Option<usize> {

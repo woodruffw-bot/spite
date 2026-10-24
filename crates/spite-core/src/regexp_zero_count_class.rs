@@ -1,6 +1,10 @@
 //! Erased whole-Pattern class iterations (ECMA-262 22.2.2.3.1).
 
-use crate::{JsString, regexp_literal::unicode_start, regexp_zero_count_group::zero_count};
+use crate::{
+    JsString,
+    regexp_literal::unicode_start,
+    regexp_zero_count_group::{enclosing_group_body, zero_count},
+};
 use std::ops::Range;
 
 /// An exactly-zero repetition of one complete, validated character class.
@@ -51,6 +55,33 @@ impl RegExpZeroCountClassMatcher {
             index += 1;
         }
         Ok(None)
+    }
+
+    /// Proves complete mandatory ordinary wrappers around a zero-count class.
+    ///
+    /// The complete original Pattern and flags must already be validated and
+    /// named capture heads normalized. The returned count gives every capture:
+    /// all are enclosing wrappers and select the empty match span (22.2.2.7).
+    /// The shared flat scan excludes continuations, choices and quantified
+    /// wrappers, charging source work before temporary body allocation.
+    pub fn compile_enclosing_validated_with_work<E>(
+        source: &JsString,
+        unicode: bool,
+        unicode_sets: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<(Self, usize)>, E> {
+        charge(source.len().saturating_mul(6).saturating_add(1))?;
+        if unicode_sets && !unicode {
+            return Ok(None);
+        }
+        let Some(group) = enclosing_group_body(source.code_units(), unicode_sets) else {
+            return Ok(None);
+        };
+        let body = JsString::from_code_units(source.code_units()[group.body].to_vec());
+        Ok(
+            Self::compile_validated_with_work(&body, unicode, unicode_sets, charge)?
+                .map(|matcher| (matcher, group.captures)),
+        )
     }
 
     /// Returns the empty match at the requested boundary with constant work.
@@ -175,5 +206,127 @@ mod tests {
             clone.find_with_work(&JsString::from(""), 0, |_| Ok::<(), ()>(())),
             Ok(Some(0..0))
         );
+    }
+
+    #[test]
+    fn enclosing_class_proofs_return_the_complete_defined_capture_prefix() {
+        for (source, unicode, sets, captures) in [
+            (r"([\p{RGI_Emoji}]{0})", true, true, 1),
+            (r"(?:(?:([\p{RGI_Emoji}]{0})))", true, true, 1),
+            (
+                r"((?:([[\q{ab}]&&\p{RGI_Emoji}]{000,000}?)))",
+                true,
+                true,
+                2,
+            ),
+            (r"(([[]{0}))", false, false, 2),
+            (r"((?:([()\]]{0})))", true, false, 2),
+            (r"(?:[\p{RGI_Emoji}]{0})", true, true, 0),
+        ] {
+            let source = JsString::from(source);
+            let (matcher, count) =
+                RegExpZeroCountClassMatcher::compile_enclosing_validated_with_work(
+                    &source,
+                    unicode,
+                    sets,
+                    |_| Ok::<(), ()>(()),
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(count, captures, "{source:?}");
+            assert_eq!(
+                matcher
+                    .find_with_work(&JsString::from("A😀!"), 2, |_| Ok::<(), ()>(()))
+                    .unwrap(),
+                Some(if unicode { 1..1 } else { 2..2 })
+            );
+            assert!(
+                RegExpZeroCountClassMatcher::compile_validated_with_work(
+                    &source,
+                    unicode,
+                    sets,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none()
+            );
+        }
+        for source in [
+            r"([\p{RGI_Emoji}]{0})?",
+            r"([\p{RGI_Emoji}]{0}){1}",
+            r"([\p{RGI_Emoji}]{0})|x",
+            r"([\p{RGI_Emoji}]{0}|x)",
+            r"(a)([\p{RGI_Emoji}]{0})",
+            r"([\p{RGI_Emoji}]{0})(b)",
+            r"([\p{RGI_Emoji}]{0,1})",
+            r"[\p{RGI_Emoji}]{0}",
+        ] {
+            assert!(
+                RegExpZeroCountClassMatcher::compile_enclosing_validated_with_work(
+                    &JsString::from(source),
+                    true,
+                    true,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn deep_class_enclosing_captures_and_each_construction_abort_are_flat() {
+        let depth = 100_000;
+        let source = JsString::from(
+            format!(
+                r"{}[\p{{RGI_Emoji}}]{{0}}{}",
+                "(".repeat(depth),
+                ")".repeat(depth)
+            )
+            .as_str(),
+        );
+        let mut trace = Vec::new();
+        let (matcher, captures) =
+            RegExpZeroCountClassMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |n| {
+                    trace.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(captures, depth);
+        assert_eq!(trace.len(), 2);
+        assert!(trace.iter().sum::<usize>() <= source.len() * 10);
+        for fail in 0..trace.len() {
+            let mut calls = 0;
+            let result = RegExpZeroCountClassMatcher::compile_enclosing_validated_with_work(
+                &source,
+                true,
+                true,
+                |_| {
+                    let at = calls;
+                    calls += 1;
+                    if at == fail { Err(fail) } else { Ok(()) }
+                },
+            );
+            assert!(matches!(result,Err(at) if at==fail));
+            assert_eq!(calls, fail + 1);
+        }
+        let mut work = 0;
+        assert_eq!(
+            matcher
+                .find_with_work(&JsString::from("A😀!"), 2, |n| {
+                    work += n;
+                    Ok::<(), ()>(())
+                })
+                .unwrap(),
+            Some(1..1)
+        );
+        assert_eq!(work, 1);
     }
 }
