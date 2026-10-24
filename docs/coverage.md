@@ -25234,3 +25234,35 @@ programs. All 436 Runtime unit tests pass (3.63 s). Strict workspace Clippy
 with all targets passes (6.57s), alongside documentation tests, formatting,
 dependency policy, inventories and diff checks. Runtime inventory remains 617;
 fixtures, snapshots, dependencies and default quotas are unchanged.
+
+
+Flat compositional empty/impossible Pattern proofs (Core)
+-------------------------------------------------------
+
+The separate static constructor composes empty, impossible and unproved facts
+without recursively calling earlier proof families. A choice may skip impossible
+arms and export its first successful empty arm, provided every successful arm
+independently stays empty. Nullability only proves an outside negative assertion
+impossible; consuming/capture data is never fabricated. Original lexical slots
+and bindings remain intact. Unsupported atom boundaries conservatively reject
+the constructor, even where an earlier erased-group proof may apply.
+
+All 213 actual-source focused Core tests pass (0.55 s), including ten new groups
+for nested fact composition, failed/late arm rollback, continuation-sensitive and
+unknown-capture exclusions, 100,000 ordinary groups, 100,000/100,001 alternating
+negative assertion layers, 20,000-digit bounds, source-work interruption, public
+plan ownership, full inventories, constant actual work before input access and
+ordinary/Unicode surrogate boundaries.
+
+All 12,800 exact native mixed input/start/capture records and full inventories
+across 512 independently generated ordinary/u/v patterns agree. On that mixed
+corpus, all 268 successful admissions by the forty-five earlier sequence/
+impossible constructors retain exact outcomes, inventories and masks; 330
+patterns are unproved by every one of those earlier constructors. A lexed review
+of 2,732 direct unsupported control-array entries admits none.
+
+Strict workspace Clippy with all targets passes (7.93 s after the final import/
+comment cleanup), alongside documentation tests, formatting, dependency policy,
+inventories and diff checks. Runtime inventory remains 617; fixtures, snapshots,
+dependencies and default quotas are unchanged. This commit adds the Core API;
+Runtime selection is a separate increment.

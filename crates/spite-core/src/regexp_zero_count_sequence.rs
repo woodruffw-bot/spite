@@ -21,6 +21,10 @@ pub struct RegExpZeroCountSequenceMatcher {
 }
 
 impl RegExpZeroCountSequenceMatcher {
+    pub(crate) fn from_static_mask(unicode: bool, defined: Box<[bool]>) -> Self {
+        Self { unicode, defined }
+    }
+
     /// Proves an arbitrary tree whose every active alternative stays empty.
     ///
     /// Requires complete original validation and normalized capture heads.

@@ -13878,3 +13878,23 @@ intact. Full normalized source retains every original binding and lexical
 slot. Shared execution preserves Unicode boundaries, indices/groups where
 matches exist, source/flags, lastIndex, String consumers, cloning and
 collection, with original validation errors before proof selection.
+
+
+A separate flat static Pattern constructor composes independently empty,
+impossible and otherwise unproved facts across ordinary/modifier groups,
+sequences, choices, both assertion directions and symbolic quantifiers
+(22.2.2.2–4, 22.2.2.7). A successful empty choice retains its first possible
+arm and clears failed/later arms. Every successful arm must independently stay
+empty before a mask can be exported; a merely nullable operand may consume or
+capture data and only proves an outside negative assertion impossible. Unknown
+escape boundaries and conditional consuming forms remain unproved. Earlier
+constructors retain their exact domains and work.
+
+The constructor scans complete original normalized source without rebinding or
+projecting references. Safe literal/class/property/surrogate boundaries reuse
+the existing tree scanner. Flat frames and prefix maxima for overlapping capture
+clears keep construction source-sized at arbitrary depth, without recursive
+proof calls or count expansion. Source-sized work precedes frame/mask
+allocation. The public result reuses existing empty/no-match plans: an empty
+plan retains a source-sized mask, an impossible plan retains only its full
+lexical capture count, and actual matching and capture queries remain constant.

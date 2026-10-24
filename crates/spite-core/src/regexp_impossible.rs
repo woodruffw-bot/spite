@@ -19,6 +19,10 @@ pub struct RegExpImpossibleMatcher {
 }
 
 impl RegExpImpossibleMatcher {
+    pub(crate) fn from_static_capture_count(captures: usize) -> Self {
+        Self { captures }
+    }
+
     /// Proves a root sequence blocked by a negative assertion over an empty tree.
     ///
     /// Root choices and assertions inside enclosing groups require other proofs.
