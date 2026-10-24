@@ -572,9 +572,15 @@ fn grouped_asserted_string_class_consumers_preserve_defined_prefixes_and_conditi
     check(&format!(
         "var r=new RegExp({pattern:?},'dvg');r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.enclosing===''&&m.groups.part===''&&m.groups.empty===undefined&&m.indices.groups.enclosing[0]===5&&m.indices.groups.part===m.indices[2]&&r.lastIndex===5"
     ));
+    check(
+        r"var marker=0,m;try{m=/^((?:([\q{a|ab}])|()))/dv.exec('ab!')}finally{marker=3}var e=/^((?:([\q{a|ab}])|()))/dv.exec('!ab');marker===3&&m.length===4&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===undefined&&e[0]===''&&e[1]===''&&e[2]===undefined&&e[3]===''&&e.index===0",
+    );
+    check(
+        r"var marker=0,m;try{m=/((^([\q{a|ab}])|()))$/dv.exec('ab')}finally{marker=3}var e=/((^([\q{a|ab}])|()))$/dv.exec('ab!');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]==='ab'&&m[4]===undefined&&e.index===3&&e[0]===''&&e[1]===''&&e[2]===''&&e[3]===undefined&&e[4]===''&&e.indices[1][0]===3&&e.indices[2][0]===3",
+    );
     for pattern in [
-        r"^((?:([\q{a|ab}])|()))",
-        r"((^([\q{a|ab}])|()))$",
+        r"^((?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))",
+        r"((^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))$",
         r"(^([\q{a|ab}])|())()",
         r"()(^([\q{a|ab}])|())",
         r"(^([\q{a|ab}])|())?",

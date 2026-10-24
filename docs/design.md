@@ -11288,4 +11288,7 @@ drop and matching stay flat with source-sized storage and existing bounded
 searches. Older root/grouped constructors retain their domains and callbacks.
 Nonsticky asserted branches keep their conservative suffix work precharge;
 sticky queries retain the established member-width bound. Default quotas remain
-unset. Runtime common-line selection is a subsequent step.
+unset. Runtime selects the common-line proof after root and complete-wrapper
+proofs on the full normalized source. The shared capture body keeps original
+source metadata, prefix/branch aliases, String consumers, cloning, collection and
+opt-in abort behavior.

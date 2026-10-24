@@ -19350,3 +19350,35 @@ validate in native v/vi modes. Workspace documentation tests, strict workspace
 Clippy, formatting, dependency policy, source/fixture inventories and diff checks
 pass. No Runtime selection, corpus fixture, snapshot, dependency or default quota
 changes.
+
+
+## Runtime common line predicates around complete string-class alternatives
+
+Three groups retain 64 class/input witnesses, eighteen branch/common-line
+profiles, six layouts, both orders and three wrapper shapes. Independent finite
+native controls keep common predicates outside wrappers while determining branch
+eligibility. All prefix/inner values, name order, index aliases, undefined masks,
+source and sticky state remain original. Exact consumers cover an empty first
+alternative rejected by the shared continuation, late empty results, shorter
+eligible newline members, empty-line conjunctions, supplementary initial offsets,
+pinned vi singleton folds, escaped names, matchAll, callback replacement, search,
+split, read-only lastIndex, clones and collection. Six earlier rejection controls
+in four files become exact success/normal-finalizer witnesses with unknown-leaf
+replacements retained. Deep prefixes and long words stay flat; opt-in constructor/
+exec aborts preserve bindings/lastIndex and sticky initial success remains bounded.
+Original ungrouped choices keep branch-local scope. Outside words, noncanonical
+layers, partial groups/siblings, choice counts, extra alternatives/classes,
+optional assertions, references and unknown leaves remain separate host errors.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/frame
+pairs match independent finite-alternative native sticky controls with common
+predicates outside wrappers, explicit Unicode advancement and initial boundary
+normalization. They cover 32 class families, thirteen inner predicate profiles,
+twelve inputs, all starts and sticky/i/m flags. Twelve fixed consumer programs,
+six migrated controls and three additional noncapturing-wrapper checks pass;
+vi singleton controls use pinned ordinary finite alternatives. Stable passes all
+431 Runtime unit cases and all 1,604 Unicode RegExp integration cases. Workspace
+documentation tests, strict workspace Clippy, formatting, dependency policy,
+source/fixture inventories and diff checks pass. Runtime inventory is 546 case
+files and 4,310 integration cases. Corpus sources/helpers, snapshots, dependencies,
+intrinsic counts and default resource policy are unchanged.

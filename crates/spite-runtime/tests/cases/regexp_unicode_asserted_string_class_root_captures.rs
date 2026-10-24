@@ -559,8 +559,11 @@ fn asserted_string_class_root_consumers_keep_branch_identity_metadata_and_unicod
     check(&format!(
         "var r=new RegExp({pattern:?},'dvg');r.lastIndex=2;var m=r.exec('😀a😀!');m.index===5&&m.groups.part===''&&m.groups.empty===undefined&&m.indices.groups.part[0]===5&&r.lastIndex===5"
     ));
+    check(
+        r"var marker=0,m;try{m=/^([\q{a|ab}]|())/dv.exec('ab!')}finally{marker=3}var e=/^([\q{a|ab}]|())/dv.exec('!ab');marker===3&&m.length===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e.index===0",
+    );
     for pattern in [
-        r"^([\q{a|ab}]|())",
+        r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"^([\q{a|ab}])+|()",
         r"^([\q{a|ab}])|()|()",
         r"^([\q{a|ab}])|([\q{}])",
