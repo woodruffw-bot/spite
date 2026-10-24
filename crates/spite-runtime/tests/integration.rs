@@ -893,6 +893,8 @@ mod regexp_unicode_repeated_atom_word_boundaries;
 mod regexp_unicode_repeated_atoms;
 #[path = "cases/regexp_unicode_repeated_class_captures.rs"]
 mod regexp_unicode_repeated_class_captures;
+#[path = "cases/regexp_unicode_reversed_common_line_asserted_string_class_captures.rs"]
+mod regexp_unicode_reversed_common_line_asserted_string_class_captures;
 #[path = "cases/regexp_unicode_reversed_line_string_class_captures.rs"]
 mod regexp_unicode_reversed_line_string_class_captures;
 #[path = "cases/regexp_unicode_scalar_classes.rs"]

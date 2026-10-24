@@ -19521,3 +19521,36 @@ class witnesses validate in native v/vi modes. Workspace documentation tests,
 strict workspace Clippy, formatting, dependency policy, source/fixture inventories
 and diff checks pass. No Runtime selection, corpus fixture, snapshot, dependency
 or default quota changes.
+
+
+## Runtime reversed common line predicates around complete string-class alternatives
+
+Three groups retain 64 class/input witnesses, ten paired branch/reversed-line
+profiles, six layouts, both orders and three complete wrapper shapes. Independent
+finite native controls retain shared predicates outside wrappers. Prefix/branch
+values, indices, names, aliases, source and sticky state stay original. Exact
+consumers cover empty-first rejection followed by a shorter eligible newline,
+class-selected and alternative-selected empty results, opposite common word
+predicates across a newline, supplementary initial offsets, vi folding of a
+newline-terminated word, escaped names, matchAll, callback replacement, search,
+split, read-only lastIndex, clones and collection. Deep prefixes and long words
+stay flat; opt-in constructor/exec aborts preserve bindings/lastIndex, and a
+winning initial sticky empty alternative retains bounded work. Duplicate or
+noncanonical outside layers, partial wrappers/siblings, choice counts, extra
+branches/classes, optional assertions, references and unknown leaves remain
+separate host unsupported cases.
+
+All 230,400 exact differential records over 384 class/capture/order/predicate/frame
+pairs match independent finite-alternative native sticky controls with shared
+reversed predicates outside wrappers, explicit Unicode advancement and initial
+boundary normalization. They cover 32 class families, thirteen local predicate
+profiles, ten shared line/word profiles, twelve inputs, all starts and sticky/i/m
+flags. All twelve fixed consumer programs match native references; an additional
+supplementary Deseret-fold/newline check retains the original three-code-unit
+capture and lastIndex. Stable passes all 431 Runtime unit cases and all 1,613
+Unicode RegExp integration cases. The conformance profile passes all 35 harness/
+corpus checks, including every one of the 16,343 reviewed corpus variants.
+Workspace documentation tests, strict workspace Clippy, formatting, dependency
+policy, source/fixture inventories and diff checks pass. Runtime inventory is 549
+case files and 4,319 integration cases. Corpus sources/helpers, snapshots,
+dependencies, intrinsic counts and default resource policy are unchanged.

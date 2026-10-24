@@ -11371,4 +11371,7 @@ conditional lexical participation. Construction, searches, cloning and dropping
 remain flat with source-sized storage and the existing work bounds. Duplicate or
 noncanonical outside layers, partial wrappers/siblings, choice counts, optional
 assertions, references and unknown leaves retain separate proofs. Runtime
-selection remains separate from this constructor.
+selects the reversed common-line proof after the layered constructor on the
+full normalized source. The existing capture body retains original source,
+flags, lexical name/index aliases, String consumers, cloning, collection and
+opt-in constructor/exec abort behavior.
