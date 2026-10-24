@@ -46,6 +46,52 @@ impl RegExpUnicodePositiveAtomMatcher {
         dot_all: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, E> {
+        Self::compile_mode_with_work::<false, E>(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )
+    }
+
+    /// Compiles complete lookahead with operand word boundaries and line gates.
+    ///
+    /// Full original u/v validation and normalized capture heads are required.
+    /// Leading/trailing word predicates belong to the selected operand extent;
+    /// they retain original input context while the assertion consumes nothing
+    /// (22.2.2.4). Complete operand wrappers capture that selected extent. Other
+    /// wrapper, atom and capture requirements match the line-only constructor.
+    /// Its proof domain and work events remain separate.
+    pub fn compile_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
+        Self::compile_mode_with_work::<true, E>(
+            source,
+            unicode_sets,
+            ignore_case,
+            multiline,
+            dot_all,
+            &mut charge,
+        )
+    }
+
+    // Share the wrapper parser and delegated compiler across callback types.
+    #[inline(never)]
+    fn compile_mode_with_work<const WORD: bool, E>(
+        source: &JsString,
+        unicode_sets: bool,
+        ignore_case: bool,
+        multiline: bool,
+        dot_all: bool,
+        mut charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, E> {
         charge(source.len().saturating_mul(16).saturating_add(16))?;
         let units = source.code_units();
         let (assertion, outside_captures) =
@@ -66,15 +112,26 @@ impl RegExpUnicodePositiveAtomMatcher {
             (body, 0)
         };
         let body = JsString::from_code_units(body.to_vec());
-        let Some(operand) = RegExpUnicodeRepeatedAtomMatcher::compile_with_line_anchors_and_work(
-            &body,
-            unicode_sets,
-            ignore_case,
-            multiline,
-            dot_all,
-            &mut charge,
-        )?
-        else {
+        let operand = if WORD {
+            RegExpUnicodeRepeatedAtomMatcher::compile_with_word_boundaries_and_work(
+                &body,
+                unicode_sets,
+                ignore_case,
+                multiline,
+                dot_all,
+                &mut charge,
+            )?
+        } else {
+            RegExpUnicodeRepeatedAtomMatcher::compile_with_line_anchors_and_work(
+                &body,
+                unicode_sets,
+                ignore_case,
+                multiline,
+                dot_all,
+                &mut charge,
+            )?
+        };
+        let Some(operand) = operand else {
             return Ok(None);
         };
         if operand.capture_count() != 0 {
@@ -293,6 +350,179 @@ mod tests {
         assert_eq!(
             plan("(?=(a*))").find_with_work(&JsString::from(""), usize::MAX, false, |_| Err(59)),
             Err(59)
+        );
+    }
+
+    fn word_plan(source: &str, i: bool, m: bool) -> RegExpUnicodePositiveAtomMatcher {
+        RegExpUnicodePositiveAtomMatcher::compile_with_word_boundaries_validated_with_work(
+            &JsString::from(source),
+            false,
+            i,
+            m,
+            false,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn lookahead_word_endpoints_constrain_lazy_operands_without_consuming_the_match() {
+        let p = word_plan(r"((?=((\ba+?\b))))", false, false);
+        let m = p
+            .find_with_work(&JsString::from("!aaa!"), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 1..1);
+        assert_eq!(m.operand, 1..4);
+        assert_eq!(p.capture_count(), 3);
+        assert_eq!(p.capture_range(0, &m), Some(1..1));
+        assert_eq!(p.capture_range(1, &m), Some(1..4));
+        assert_eq!(p.capture_range(2, &m), Some(1..4));
+        assert!(
+            RegExpUnicodePositiveAtomMatcher::compile_validated_with_work(
+                &JsString::from(r"(?=(\ba+\b))"),
+                false,
+                false,
+                false,
+                false,
+                |_| Ok::<(), ()>(())
+            )
+            .unwrap()
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn lookahead_word_folds_line_context_and_empty_nonboundaries_keep_operand_positions() {
+        for i in [false, true] {
+            let p = word_plan(r"(?=(\bſ+\b))", i, false);
+            let m = p
+                .find_with_work(&JsString::from("!ſſ!"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap();
+            if i {
+                assert_eq!(m.unwrap().operand, 1..3);
+            } else {
+                assert!(m.is_none());
+            }
+        }
+        let p = word_plan(r"(?=(^\b.+\b$))", false, true);
+        let m = p
+            .find_with_work(&JsString::from("\nAA\n"), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 1..1);
+        assert_eq!(m.operand, 1..3);
+        let p = word_plan(r"(?=(\B.*?\B))", false, false);
+        let m = p
+            .find_with_work(&JsString::from("!a"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 0..0);
+        assert_eq!(p.capture_range(0, &m), Some(0..0));
+    }
+
+    #[test]
+    fn lookahead_word_candidates_respect_original_surrogate_context_and_proof_boundaries() {
+        let p = word_plan(r"(?=(\ba+\b))", false, false);
+        let input = JsString::from("😀a!");
+        assert!(
+            p.find_with_work(&input, 1, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(
+            p.find_with_work(&input, 1, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            2..3
+        );
+        // RegExpBuiltinExec advances by complete Unicode characters (22.2.7.2).
+        // The empty nonboundary occurs between the final a and b, never between
+        // the surrogate halves of the intervening emoji.
+        let p = word_plan(r"(?=(\Bſ*?\B))", false, false);
+        let m = p
+            .find_with_work(&JsString::from("a😀ab!"), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 4..4);
+        assert_eq!(m.operand, 4..4);
+        for source in [
+            r"(?<=(\ba+\b))",
+            r"(?=(\ba+\b))a",
+            r"(?=(\b(a)+\b))",
+            r"(?i:(?=(\ba+\b)))",
+            r"((?=(\ba+\b)))*",
+        ] {
+            assert!(
+                RegExpUnicodePositiveAtomMatcher::compile_with_word_boundaries_validated_with_work(
+                    &JsString::from(source),
+                    false,
+                    false,
+                    false,
+                    false,
+                    |_| Ok::<(), ()>(())
+                )
+                .unwrap()
+                .is_none(),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn lookahead_word_deep_capture_storage_and_every_work_abort_remain_flat() {
+        let source = format!(
+            "{}(?={}\\ba+?\\b{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        assert_eq!(word_plan(&source, false, false).capture_count(), 200_000);
+        let source = JsString::from(r"((?=(\ba+?\b)))");
+        let mut work = Vec::new();
+        RegExpUnicodePositiveAtomMatcher::compile_with_word_boundaries_validated_with_work(
+            &source,
+            false,
+            false,
+            false,
+            false,
+            |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodePositiveAtomMatcher::compile_with_word_boundaries_validated_with_work(&source, false, false, false, false, |n| { seen.push(n); if seen.len()==stop+1 { Err(stop) } else { Ok(()) } }), Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let p = word_plan(r"(?=(\ba+?\b))", false, false);
+        let input = JsString::from("!aaa!");
+        let mut work = Vec::new();
+        let expected = p
+            .find_with_work(&input, 0, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap();
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(p.find_with_work(&input,0,false, |n| { seen.push(n); if seen.len()==stop+1 { Err(stop) } else { Ok(()) } }),Err(n) if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            p.find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
         );
     }
 }

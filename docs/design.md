@@ -13996,3 +13996,23 @@ capture vector or input copy. Named groups and indices, ordinary/global/sticky
 lastIndex, String consumers, cloning and collection share the existing result
 path. Source/flags validation and conversions still precede compilation, whose
 large frame stays outside reentrant getters and conversions.
+
+
+A separate positive-lookahead constructor composes leading/trailing operand
+word assertions with optional line gates (22.2.2.4). The repeated-atom endpoint
+matcher chooses the consumed extent that passes both word predicates, including
+retrying lazy endpoints. Outside captures remain empty and operand wrappers
+retain that selected extent. Original Unicode input context and i-mode word
+folds apply at both boundaries; empty operands keep defined empty captures.
+The earlier line-only constructor retains its proof domain and work events.
+Both public entries borrow their callbacks into a shared flat wrapper parser,
+so callback types do not duplicate its delegated compiler graph.
+
+Unicode searches enumerate complete-character candidate boundaries. V8 can
+return an interior surrogate position for an empty nonboundary search, for
+example `\Bſ*?\B` between the halves of an emoji. The implementation follows
+RegExpBuiltinExec's complete-character advancement. This differs from the
+approved initial-offset rule: an explicitly supplied trailing-pair start still
+uses the leading boundary. A native sticky-candidate oracle enumerates legal
+search positions independently and checks operand ranges and captures at each
+position. Runtime selection of this additional constructor remains separate.

@@ -25493,3 +25493,26 @@ runs started from this source snapshot are still in progress; the previously
 recorded complete compositional-static snapshot remains the last finished broad
 run. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
+
+## Core Unicode lookahead with operand word boundaries
+
+The actual-source focused harness passes 230 tests, including four additional
+word-lookahead groups. Tests cover lazy endpoint retries, outside/operand masks,
+Unicode-i word folds, original multiline context, empty nonboundaries, initial
+trailing-pair offsets, unproved scopes, 200,000 wrappers, and every construction
+and actual-search work interruption followed by recovery. An independent case
+requires the empty nonboundary between a and b in `a😀ab!`, excluding the
+interior surrogate position that V8's ordinary search can return.
+
+A 512-pattern oracle checks 53,248 input/start/sticky/range/capture records using
+Node sticky matches at independently enumerated complete-character candidates.
+Initial offsets use the approved leading boundary. Fourteen ASCII iv patterns
+contribute 1,456 equivalent-range control records for the previously documented
+property-fold discrepancy. Original full input context is retained throughout.
+The line-only constructor separately agrees byte-for-byte with its earlier
+implementation on 512 construction-work traces and 25,600 match/work records.
+
+All 2,732 lexed direct Unsupported controls remain excluded. Strict workspace
+Clippy with all targets, documentation tests, formatting, dependency policy,
+inventories and diff checks pass. Runtime selection remains separate. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
