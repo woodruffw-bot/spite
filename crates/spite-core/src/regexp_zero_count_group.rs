@@ -200,7 +200,7 @@ fn ordinary_opener(units: &[u16], start: usize) -> Option<usize> {
     }
 }
 
-fn zero_count(mut units: &[u16]) -> bool {
+pub(crate) fn zero_count(mut units: &[u16]) -> bool {
     if units.last() == Some(&0x3f) {
         units = &units[..units.len() - 1];
     }

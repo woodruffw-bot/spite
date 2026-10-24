@@ -12877,3 +12877,21 @@ lastIndex, String consumers, cloning and collection use the existing machinery.
 Original Pattern validation preserves enclosing reference bindings before
 projection; unexecuted references are never revalidated in an isolated,
 renumbered body.
+
+
+A separate whole-class zero-count plan accepts a complete validated character
+class followed by an exact zero bound, including padded/lazy forms. It requires
+full Pattern and flag validation before its structural scan. Character classes
+have no captures, and RepeatMatcher with max zero never evaluates membership
+(22.2.2.3.1), including string-valued properties whose matching data is not yet
+implemented. Invalid negation, property names, set operations and string escapes
+still fail the parser's ordinary grammar and early-error checks.
+
+The flat scan distinguishes ordinary/u classes from nested v classes and skips
+escaped delimiters. Source work is charged before scanning; the retained plan
+and clone/drop are constant-sized, and matching charges constant actual work
+before checking the normalized start. Runtime selects this fallback after the
+existing zero-group proofs, retaining all earlier successful plans. The common
+match result supplies source/flags, indices, lastIndex and String consumers with
+no capture slots. Continuations, nonzero upper bounds and enclosing groups
+remain outside this particular proof.

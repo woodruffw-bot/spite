@@ -40,6 +40,7 @@ mod regexp_unicode_literal_class_pair;
 mod regexp_unicode_property_dot;
 mod regexp_unicode_repeated_atom;
 mod regexp_unicode_string_set;
+mod regexp_zero_count_class;
 mod regexp_zero_count_group;
 mod replacement;
 mod symbol;
@@ -162,6 +163,7 @@ pub use regexp_unicode_repeated_atom::{
     RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
 };
 pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
+pub use regexp_zero_count_class::RegExpZeroCountClassMatcher;
 pub use regexp_zero_count_group::RegExpZeroCountGroupMatcher;
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};

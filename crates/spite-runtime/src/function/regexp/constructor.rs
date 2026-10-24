@@ -76,8 +76,8 @@ use spite_core::{
     RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
     RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher, RegExpZeroCountGroupMatcher, Span,
-    regexp_outer_group_body,
+    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher, RegExpZeroCountClassMatcher,
+    RegExpZeroCountGroupMatcher, Span, regexp_outer_group_body,
 };
 use spite_parser::parse_regexp_pattern;
 use std::{collections::HashMap, sync::Arc};
@@ -3052,6 +3052,22 @@ impl Realm {
                 enclosing_captures = captures;
                 RegExpMatcherBody::ZeroCountGroup(body)
             })
+        } else {
+            matcher
+        };
+        let matcher = if matcher.is_none() {
+            let zero = self.object_work(span, |_, budget| {
+                RegExpZeroCountClassMatcher::compile_validated_with_work(
+                    &capture_source,
+                    unicode,
+                    flags.code_units().contains(&u16::from(b'v')),
+                    |work| budget.charge(work),
+                )
+            })?;
+            if zero.is_some() {
+                enclosing_captures = 0;
+            }
+            zero.map(RegExpMatcherBody::ZeroCountClass)
         } else {
             matcher
         };

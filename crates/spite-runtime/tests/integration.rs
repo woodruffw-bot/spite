@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/regexp_zero_count_class.rs"]
+mod regexp_zero_count_class;
+
 #[path = "cases/regexp_zero_count_group.rs"]
 mod regexp_zero_count_group;
 

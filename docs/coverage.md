@@ -22857,3 +22857,43 @@ extension; that broader run is still in progress. The preceding
 whole-pattern Runtime snapshot passes all 35 Test262 runner tests and all
 16,343 reviewed variants (406.79 s for the corpus group); this result precedes
 the enclosing Runtime extension.
+
+
+## Validated whole-class zero-count execution
+
+A separate Core plan and Runtime fallback now execute one complete validated
+character class with an exact zero upper bound. This includes string-valued
+Unicode properties without matching data, such as `[\p{RGI_Emoji}]{0}`. The
+parser still validates the entire Pattern and flags, including all class early
+errors. A flat structural scan distinguishes ordinary/u classes from nested v
+classes, skips escaped delimiters, and proves the complete zero suffix without
+expanding decimal bounds. Membership is never evaluated by the matching plan
+(ECMA-262 edition 17 22.2.2.3.1), and classes contribute no capture slots.
+
+All eight actual-source focused Core tests pass (0.07 s), including the three
+new class tests with 100,000 nested classes, two 100,000-digit zero counts,
+ordinary/u/v boundaries, callback aborts and constant matching work. All four
+new Runtime tests pass (4.68 s), covering property/string/set-operation classes,
+flag and lastIndex combinations, capture-free result metadata, String consumers,
+cloning, collection, 1,000 nested classes and an opt-in constructor host abort.
+Invalid negation of string properties, property names, ranges, mixed set
+operators and class-string escapes still throw SyntaxError before erasure.
+Larger upper bounds, continuations and enclosing groups retain separate proofs.
+
+All 17,280 exact native records agree with the fresh CLI across 20 tables,
+including all seven string-valued Unicode properties, four zero-bound forms,
+eight flag combinations, six inputs and every starting index. All four complete
+native JavaScript regression programs also agree on the fresh CLI. Scans of the
+existing literal-source and raw-pattern rejection controls find no new admitted
+controls for this class-only proof.
+
+All 433 Runtime unit tests pass (5.73 s), including a direct class-plan check for
+zero captures, one unit of actual matching work and pre-inspection aborts.
+Strict workspace Clippy with all targets passes (28.39 s), alongside workspace
+documentation tests, formatting, policy, inventories and diff checks. The Runtime
+case inventory contains 613 files. Dependencies, snapshots, fixtures and default
+quotas remain unchanged.
+
+The preceding mandatory-enclosing zero-group Runtime snapshot passes all 35
+Test262 runner tests and all 16,343 reviewed variants (394.68 s for the corpus
+group). This result precedes the whole-class fallback.
