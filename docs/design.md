@@ -14722,3 +14722,13 @@ all operand slots undefined. Bounded sticky probes, checked errors, complete
 Unicode advancement, initial-pair rewind, flat storage and actual-work
 cancellation retain their established paths. Earlier entries keep their
 domains and charges. Runtime integration remains separate.
+
+
+Runtime selects checked negative character-result lookbehind after its negative
+character-result lookahead entries, gated by v mode and using full normalized
+source. Successful selection resets the projected outer offset; checked errors
+retain their host mapping. Shared negative capture caching preserves empty
+outside and undefined operand slots through named indices, String consumers,
+copies and collection. Original q/set syntax, predecessor/line context and
+complete Unicode execution remain in Core; user conversions stay outside the
+compiler frame.
