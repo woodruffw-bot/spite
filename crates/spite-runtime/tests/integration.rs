@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_await_blocks.rs"]
+mod async_await_blocks;
+
 #[path = "cases/async_await_throw.rs"]
 mod async_await_throw;
 

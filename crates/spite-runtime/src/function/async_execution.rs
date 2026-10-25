@@ -1,5 +1,6 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
+mod block;
 mod expression;
 
 use super::{
@@ -8,18 +9,31 @@ use super::{
 use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
     object::{
-        async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
+        async_execution::{
+            AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData, StatementLocation,
+        },
         async_expression::ExprRoot,
     },
 };
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, BindingPatternKind, Statement, StatementKind};
 
-fn active_statement(body: &ArrowBody, statement: Option<usize>) -> &Statement {
+fn active_statement<'a>(
+    body: &'a ArrowBody,
+    location: Option<&StatementLocation>,
+) -> &'a Statement {
     let ArrowBody::Block(body) = body else {
         unreachable!("block statement continuation");
     };
-    &body.statements()[statement.expect("active source statement")]
+    let location = location.expect("active source statement");
+    let mut statement = &body.statements()[location.root];
+    for index in &location.children {
+        let StatementKind::Block(body) = &statement.kind else {
+            unreachable!("typed block statement path");
+        };
+        statement = &body[*index];
+    }
+    statement
 }
 
 pub(super) enum AsyncBodyOutcome {
@@ -86,6 +100,7 @@ impl Realm {
             expression: None,
             index: 0,
             statement: None,
+            blocks: Vec::new(),
             pending: AsyncAwaitAction::Discard,
             root_scope,
             var_target: None,
@@ -173,49 +188,50 @@ impl Realm {
                     })
                 }
             }
-            ArrowBody::Block(body) => {
-                let Some(statement) = body.statements().get(data.index) else {
-                    return Ok(Step::Complete(Completion::normal(None)));
-                };
-                data.index += 1;
-                data.statement = Some(data.index - 1);
-                if matches!(
-                    statement.kind,
-                    StatementKind::Lexical { .. } | StatementKind::Using(_) | StatementKind::Var(_)
-                ) {
-                    self.tick(statement.span)?;
-                    return self.async_binding_step(data, 0, None);
-                }
-                let action = match &statement.kind {
-                    StatementKind::Expression(expression)
-                        if expression::has_supported_await(expression) =>
-                    {
-                        Some(AsyncAwaitAction::Discard)
-                    }
-                    StatementKind::Return(Some(expression))
-                        if expression::has_supported_await(expression) =>
-                    {
-                        Some(AsyncAwaitAction::Return)
-                    }
-                    StatementKind::Throw(expression)
-                        if expression::has_supported_await(expression) =>
-                    {
-                        Some(AsyncAwaitAction::Throw)
-                    }
-                    _ => None,
-                };
-                if let Some(action) = action {
-                    self.tick(statement.span)?;
-                    return self.start_async_expression(data, ExprRoot::Statement, action);
-                }
-                let completion = self.statement(statement)?;
-                Ok(if completion.kind == CompletionKind::Normal {
-                    Step::Continue
-                } else {
-                    Step::Complete(completion)
-                })
-            }
+            ArrowBody::Block(_) => self.async_block_step(data),
         }
+    }
+
+    fn async_source_statement(&mut self, data: &mut AsyncExecutionData) -> Result<Step, Error> {
+        let statement = active_statement(&data.body, data.statement.as_ref());
+        if matches!(statement.kind, StatementKind::Block(_)) {
+            let span = statement.span;
+            self.tick(span)?;
+            return self.enter_async_block(data, span);
+        }
+        if matches!(
+            statement.kind,
+            StatementKind::Lexical { .. } | StatementKind::Using(_) | StatementKind::Var(_)
+        ) {
+            self.tick(statement.span)?;
+            return self.async_binding_step(data, 0, None);
+        }
+        let action = match &statement.kind {
+            StatementKind::Expression(expression)
+                if expression::has_supported_await(expression) =>
+            {
+                Some(AsyncAwaitAction::Discard)
+            }
+            StatementKind::Return(Some(expression))
+                if expression::has_supported_await(expression) =>
+            {
+                Some(AsyncAwaitAction::Return)
+            }
+            StatementKind::Throw(expression) if expression::has_supported_await(expression) => {
+                Some(AsyncAwaitAction::Throw)
+            }
+            _ => None,
+        };
+        if let Some(action) = action {
+            self.tick(statement.span)?;
+            return self.start_async_expression(data, ExprRoot::Statement, action);
+        }
+        let completion = self.statement(statement)?;
+        Ok(if completion.kind == CompletionKind::Normal {
+            Step::Continue
+        } else {
+            Step::Complete(completion)
+        })
     }
 
     fn async_binding_step(
@@ -224,13 +240,14 @@ impl Realm {
         first: usize,
         mut resumed: Option<Value>,
     ) -> Result<Step, Error> {
-        let (bindings, using, var) = match &active_statement(&data.body, data.statement).kind {
-            StatementKind::Lexical { bindings, .. } => (bindings, false, false),
-            StatementKind::Using(bindings) => (bindings, true, false),
-            StatementKind::Var(bindings) => (bindings, false, true),
-            _ => unreachable!("declaration continuation"),
-        };
-        let environment = data.root_scope.as_ref().expect("body lexical scope");
+        let (bindings, using, var) =
+            match &active_statement(&data.body, data.statement.as_ref()).kind {
+                StatementKind::Lexical { bindings, .. } => (bindings, false, false),
+                StatementKind::Using(bindings) => (bindings, true, false),
+                StatementKind::Var(bindings) => (bindings, false, true),
+                _ => unreachable!("declaration continuation"),
+            };
+        let environment = self.scopes.last().expect("body lexical scope").clone();
         for (element, binding) in bindings.iter().enumerate().skip(first) {
             if let Some(value) = resumed.take() {
                 if var {
@@ -246,9 +263,9 @@ impl Realm {
                     }
                 } else if using {
                     // AddDisposableResource still precedes binding initialization.
-                    self.initialize_using_value(&binding.pattern, value, environment)?;
+                    self.initialize_using_value(&binding.pattern, value, &environment)?;
                 } else {
-                    self.initialize_pattern(&binding.pattern, value, environment)?;
+                    self.initialize_pattern(&binding.pattern, value, &environment)?;
                 }
             } else if binding
                 .initializer
@@ -338,15 +355,21 @@ impl Realm {
 
     fn finish_async_execution(
         &mut self,
-        data: AsyncExecutionData,
-        completion: Result<Completion, Error>,
+        mut data: AsyncExecutionData,
+        mut completion: Result<Completion, Error>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
-        let completion = match completion {
-            Err(error) if !error.is_language_exception() => {
-                return Err(self.abort_async_execution(base, error));
-            }
-            completion => completion,
+        let completion = loop {
+            let result = match completion {
+                Err(error) if !error.is_language_exception() => {
+                    return Err(self.abort_async_execution(base, error));
+                }
+                result => result,
+            };
+            let Some(block) = data.blocks.pop() else {
+                break result;
+            };
+            completion = self.finish_async_block(block, result);
         };
         let completion = if let Some(environment) = &data.root_scope {
             self.dispose_environment_resources(environment, completion, data.span)?

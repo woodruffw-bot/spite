@@ -55,10 +55,29 @@ not an alternative language specification.
 | AsyncDisposableStack | Shared registration/move with distinct brands, async/sync disposal lookup, native suspension and FIFO resumption, nullish Await timing, suppression and traced continuations |
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts and suspension in supported value expressions, initializers and calls |
+| Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18556 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Nested block suspension
+
+Plain nested blocks retain lexical cursors and source paths across await. Existing
+block instantiation and resource operations preserve TDZ, block functions, scope
+shadowing, var targets, normal exits and abrupt unwinding. Return/throw/rejection
+dispose inner scopes before root resources. Host failures bypass JavaScript
+cleanup and release captures even with no remaining work allowance. Exited block
+scopes are collectible while the function continues to await elsewhere.
+
+Seven Runtime groups cover these rules, private eval/this/arguments and collection;
+a Symbol ownership control covers a suspended block environment. The host-limit
+test splits setup across ordinary turns with the same 10,000-step allowance.
+All 416 units and 1,947 non-RegExp integrations pass across 647 Runtime case files.
+Conditions, loops, labels and try statements retain explicit await gaps.
+The original reviews remain at 32 passing/12 Unsupported await variants and 146
+passing/116 Unsupported Array/adapter variants, with no new admissions. Counts
+remain 9,573 fixtures, twenty helpers, 9,554 reviewed sources and 18,556 variants.
+Intrinsic entries, Parser checks and product quotas are unchanged.
 
 ## Awaited throw and statement preparation
 

@@ -23,12 +23,27 @@ pub(crate) enum AsyncAwaitAction {
 }
 
 #[derive(Debug)]
+pub(crate) struct StatementLocation {
+    pub root: usize,
+    pub children: Vec<usize>,
+}
+
+#[derive(Debug)]
+pub(crate) struct AsyncBlockCursor {
+    pub location: StatementLocation,
+    pub index: usize,
+    pub environment: EnvironmentHandle,
+    pub span: Span,
+}
+
+#[derive(Debug)]
 pub(crate) struct AsyncExecutionData {
     pub capability: PromiseCapability,
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub index: usize,
-    pub statement: Option<usize>,
+    pub statement: Option<StatementLocation>,
+    pub blocks: Vec<AsyncBlockCursor>,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
     pub var_target: Option<EnvironmentHandle>,
@@ -46,11 +61,15 @@ impl AsyncExecutionData {
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
-        self.root_scope.iter().chain(&self.var_target).chain(
-            self.context
-                .iter()
-                .flat_map(|context| context.scopes.iter().chain(&context.variable)),
-        )
+        self.root_scope
+            .iter()
+            .chain(&self.var_target)
+            .chain(self.blocks.iter().map(|block| &block.environment))
+            .chain(
+                self.context
+                    .iter()
+                    .flat_map(|context| context.scopes.iter().chain(&context.variable)),
+            )
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {

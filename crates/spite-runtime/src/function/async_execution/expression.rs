@@ -61,7 +61,7 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
     match (&data.body, root) {
         (ArrowBody::Expression(expression), ExprRoot::Arrow) => expression,
         (ArrowBody::Block(_), ExprRoot::Statement) => {
-            match &active_statement(&data.body, data.statement).kind {
+            match &active_statement(&data.body, data.statement.as_ref()).kind {
                 StatementKind::Expression(expression)
                 | StatementKind::Return(Some(expression))
                 | StatementKind::Throw(expression) => expression,
@@ -69,7 +69,7 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
             }
         }
         (ArrowBody::Block(_), ExprRoot::Binding { element }) => {
-            let bindings = match &active_statement(&data.body, data.statement).kind {
+            let bindings = match &active_statement(&data.body, data.statement.as_ref()).kind {
                 StatementKind::Lexical { bindings, .. }
                 | StatementKind::Using(bindings)
                 | StatementKind::Var(bindings) => bindings,
