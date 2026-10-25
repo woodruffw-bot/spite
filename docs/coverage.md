@@ -27557,3 +27557,23 @@ the negative class-domain selector change (80,640 total records). None of the
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select the new constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Adjacent-q-union negative lookahead Runtime execution
+
+All 47 negative-lookahead integration groups (2.92 s) and 13 constructor groups
+(0.30 s) pass. Four new groups cover union membership and accepted-empty-member
+failure, named undefined operand slots and outside indices, original line/fold/
+surrogate context, lastIndex, String consumers, copies, collection and deep
+lexical scopes. Initial-pair rewind and braced-surrogate behavior retain
+independent specification checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 41 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete union classes and legal Unicode-candidate enumeration.
+Complete programs retain earlier documented equivalent controls; Runtime always
+receives original q source. Strict all-target workspace Clippy, documentation
+tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
+checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.

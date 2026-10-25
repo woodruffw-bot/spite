@@ -14935,3 +14935,12 @@ share prefixes or the class contains an empty string. An explicit private class-
 domain selector keeps earlier single-q constructor domains and work sequences
 unchanged. Other class domains, word gates, repetition, continuation terms and
 references require separate proofs.
+
+
+Runtime selects negative q-union lookahead as a checked v-mode fallback after
+full original validation, retaining complete normalized capture scopes and
+original source. It uses the existing negative string-class matcher and cache:
+only the empty assertion range is retained, with outside empty captures and
+named undefined operand slots. Checked host errors, enclosing-offset reset on
+proof success, consumers, copies and collection retain the established behavior.
+Reentrant conversions remain outside the compilation frame.
