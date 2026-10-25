@@ -27191,3 +27191,16 @@ pass. Runtime inventory remains 622. Completed broad RegExp and Test262 results
 record `f32bcefb`; negative character-result assertions retain separate focused
 and differential evidence. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+
+## Complete character-result assertion Core validation on Rust 1.85
+
+The Core sources at `5b2929cd` pass all 1,849 library tests on Rust 1.85.0 with
+the normal test profile (407.09 s). This includes positive/negative
+character-result lookahead/lookbehind with word predicates, alongside all
+earlier q-class and scalar-set paths. Compilation completed in 6m32s; total
+elapsed time was 799.90 s. The measured maximum child RSS was 4,117,984 KiB in
+this incremental run. No diagnostic compiler flags, profile changes,
+native-stack overrides or default quotas were used. Later variable-length
+string-class work retains separate focused and differential evidence.
+Fixtures, snapshots and dependencies are unchanged.
