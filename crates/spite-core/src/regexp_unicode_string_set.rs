@@ -875,6 +875,86 @@ impl RegExpUnicodeStringSetMatcher {
         }
     }
 
+    /// Finds the earliest start and longest accepted member with cancellable work.
+    ///
+    /// Each visited candidate and trie step charges the program's conservative
+    /// per-step weight. Search allocates no state and retains original UTF-16
+    /// context, including empty members and initial surrogate-pair rewind.
+    pub fn find_with_work<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        self.find_with_work_impl(input, start, sticky, &mut charge)
+    }
+
+    // Keep the charged traversal shared across callback types. The established
+    // endpoint-filter path retains its existing callbacks and work contracts.
+    #[inline(never)]
+    fn find_with_work_impl<E>(
+        &self,
+        input: &JsString,
+        start: usize,
+        sticky: bool,
+        charge: &mut dyn FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Range<usize>>, E> {
+        charge(1)?;
+        let p = &self.program;
+        let units = input.code_units();
+        let Some(mut candidate) = unicode_start(input, start) else {
+            return Ok(None);
+        };
+        let step = self.search_passes(true);
+        loop {
+            charge(step)?;
+            let mut node = 0;
+            let mut at = candidate;
+            let mut best = if p.terminal[0] && p.assertions_match(units, candidate, candidate) {
+                Some(candidate)
+            } else {
+                None
+            };
+            for _ in 0..p.max_characters {
+                charge(step)?;
+                let Some(&first) = units.get(at) else { break };
+                let (point, width) = unicode_input_character(units, at, first);
+                if at == candidate
+                    && p.scalars
+                        .as_ref()
+                        .is_some_and(|plan| plan.matches_original_character(point))
+                    && p.assertions_match(units, candidate, at + width)
+                {
+                    best = Some(at + width);
+                }
+                let point = if p.ignore_case {
+                    regexp_canonicalize_character(point, true, true)
+                } else {
+                    point
+                };
+                let Some(&next) = p.edges.get(&(node, point)) else {
+                    break;
+                };
+                node = next;
+                at += width;
+                if p.terminal[node] && p.assertions_match(units, candidate, at) {
+                    best = Some(at);
+                }
+            }
+            if let Some(end) = best {
+                return Ok(Some(candidate..end));
+            }
+            if sticky {
+                return Ok(None);
+            }
+            let Some(&first) = units.get(candidate) else {
+                return Ok(None);
+            };
+            candidate += unicode_input_character(units, candidate, first).1;
+        }
+    }
+
     /// Finds the earliest start and longest member satisfying outside assertions.
     ///
     /// A rejected longer member leaves shorter successful continuations eligible.
@@ -1464,3 +1544,7 @@ impl Program {
 #[cfg(test)]
 #[path = "regexp_unicode_string_set_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "regexp_unicode_string_set_metered_tests.rs"]
+mod metered_tests;

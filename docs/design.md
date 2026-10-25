@@ -14755,3 +14755,16 @@ outside ranges empty and operand slots undefined through named indices, String
 consumers, copies and collection. Original q/set syntax, word/line/predecessor
 context and complete Unicode execution remain in Core; user conversions stay
 outside the compiler frame.
+
+
+Unicode string-set matching exposes a separate cancellable traversal for
+callers that meter visited search work. Each candidate and traversed trie step
+charges the existing conservative sticky per-step weight, rather than charging
+unvisited input or prefixes. The flat walk preserves earliest-start and
+longest-accepted-member priority, including empty members and shorter members
+whose endpoint predicates succeed after longer members are rejected
+(22.2.2.7). Scalar union membership, original word/line context, folding and
+initial-pair rewind retain their established semantics. Search allocates no
+state, and errors return before additional traversal. A private erased callback
+body shares code across callers. Existing find/endpoint-filter entries retain
+their matching, callback and precharged-work contracts.

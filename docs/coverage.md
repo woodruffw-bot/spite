@@ -27204,3 +27204,26 @@ this incremental run. No diagnostic compiler flags, profile changes,
 native-stack overrides or default quotas were used. Later variable-length
 string-class work retains separate focused and differential evidence.
 Fixtures, snapshots and dependencies are unchanged.
+
+
+## Cancellable Unicode string-set traversal
+
+Two focused actual-source test groups pass (0.35 s), covering longest-member
+priority, empty-member selection at the earliest candidate and multiline
+boundaries, word/line gates, folded original input, scalar unions, surrogate
+pairs and out-of-range starts. Every cancellation event is replayed followed
+by successful recovery. A 100,000-character nonterminal prefix is interrupted
+on its seventeenth callback and then completes correctly, including clone/drop.
+
+All 53,248 input/start/sticky/range records across 512 patterns agree between
+the new metered API, the established API and a native sticky-candidate oracle.
+The reference uses twelve independently specified longest-first equivalent
+literal-alternative controls, avoiding the documented Node q-fold discrepancy,
+and independently enumerates Unicode candidates. The established API agreed
+with the same oracle before the addition. Existing find and endpoint-filter
+implementations are unchanged.
+
+Strict all-target workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. No Runtime matcher selects the new traversal
+yet. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.
