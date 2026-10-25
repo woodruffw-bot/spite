@@ -3273,6 +3273,13 @@ host failures bypass rejection and JavaScript handlers without resetting work.
 PromiseResolve's branded identity path remains deferred with intrinsic Promise
 construction. Constructed results retain the supplied constructor's identity.
 
+Promise.prototype.catch implements Invoke(this, "then", [undefined, onRejected])
+(27.2.5.1). It reads then once and calls it with the original receiver and exactly
+two arguments, returning the result unchanged. Primitive receivers retain their
+identity through inherited getters and strict methods. Nullish receivers and
+non-callable then values throw TypeError; getter/call failures propagate.
+Neither the receiver's Promise brand nor the rejection argument is validated.
+
 The complete global own-key set supports reflection, enumeration, copying, and
 integrity operations through ordinary object behavior. Standard bindings can be
 replaced, shadowed through prototypes, or deleted. Deleted names follow ordinary

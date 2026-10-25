@@ -493,6 +493,9 @@ impl Realm {
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
             Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
             Member::PromiseWithResolvers => self.promise_with_resolvers(receiver, span),
+            Member::PromiseCatch => {
+                self.promise_catch(receiver, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Member::PromiseReject => {
                 self.promise_reject(receiver, arguments.next().unwrap_or(Value::Undefined), span)
             }

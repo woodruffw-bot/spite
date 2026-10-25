@@ -52,10 +52,26 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise capabilities | Shared native capability executors and generic withResolvers/reject/try calls through supplied constructors; intrinsic Promise construction/jobs remain deferred |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16627 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Shared native capability executors, generic withResolvers/reject/try calls through supplied constructors, and generic catch dispatch; intrinsic Promise construction/jobs remain deferred |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16647 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise.prototype.catch
+
+Catch implements generic Invoke of then with the original receiver and exactly
+undefined/onRejected arguments (27.2.5.1). Four Runtime regressions cover one-time
+lookup, exact arguments and return identity, primitive getter/strict receivers,
+language failures and Proxy get/apply ordering. Intrinsic Promise creation and
+reaction jobs remain deferred.
+
+Ten complete unchanged Test262 originals pass twenty Script variants. Two async
+originals and two originals requiring Promise.resolve/construction remain
+deferred, with no passing credit. Current inventories contain 8,604 fixtures,
+seventeen helpers, 8,585 reviewed sources and 624 Runtime case files.
+All 16,647 variants and all 35 Test262 package tests pass, together with 392 Runtime
+units, 1,785 integration tests outside RegExp groups, strict Clippy, Rust 1.88
+all-target checks, formatting, dependency policy and fixture inventories.
 
 ## Generic Promise capabilities
 

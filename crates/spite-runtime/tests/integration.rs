@@ -320,6 +320,8 @@ mod private_methods;
 mod private_syntax;
 #[path = "cases/promise_capability.rs"]
 mod promise_capability;
+#[path = "cases/promise_catch.rs"]
+mod promise_catch;
 #[path = "cases/properties.rs"]
 mod properties;
 #[path = "cases/prototypes.rs"]

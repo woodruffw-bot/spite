@@ -1,4 +1,4 @@
-//! Shared NewPromiseCapability and generic Promise static methods (27.2).
+//! Shared Promise capabilities, generic static methods and catch dispatch (27.2).
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
@@ -10,6 +10,19 @@ pub(super) struct PromiseCapability {
 }
 
 impl Realm {
+    // Promise.prototype.catch: Invoke(this, "then", [undefined, onRejected]).
+    // No Promise brand or callback validation is performed (27.2.5.1).
+    pub(super) fn promise_catch(
+        &mut self,
+        this: Value,
+        on_rejected: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        Self::require_object_coercible(&this, span)?;
+        let then = self.get_property_value(&this, &JsString::from("then"), span)?;
+        self.call(then, this, vec![Value::Undefined, on_rejected], span)
+    }
+
     // NewPromiseCapability (27.2.1.5) uses the supplied constructor without
     // branding its result. Its executor captures a private traced Record.
     pub(super) fn new_promise_capability(

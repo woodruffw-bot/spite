@@ -161,7 +161,7 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Promise.resolve(7)",
         "Promise.try(()=>0)",
         "Promise.withResolvers()",
-        "Promise.prototype.catch.call({},()=>{hits++})",
+        "Promise.prototype.catch.call({then:Promise.prototype.then},()=>{hits++})",
         "Promise.prototype.finally.call({},()=>{hits++})",
         "Promise.prototype.then.call({},()=>{hits++},()=>{hits++})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'byteLength').get.call({})",

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8594 unmodified test fixtures and seventeen harness files come from
+These 8604 unmodified test fixtures and seventeen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,23 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Promise.prototype.catch fixtures
+
+Ten unchanged complete originals in `Promise/prototype/catch/` cover metadata,
+generic then invocation, coercible primitive receivers, non-callable methods and
+getter/call failures. All twenty Script variants pass. Pinned Git blob hashes and
+manifest SHA-256 digests were verified; no harness additions were needed.
+
+The four other originals remain deferred: two use async completion, one requires
+Promise.resolve, and the constructor check first creates an intrinsic Promise.
+The separate fourteen-source review records twenty passing and eight Unsupported
+variants. No source is rewritten or credited for Unsupported. Four native
+Runtime regressions additionally verify exact receivers/arguments/results and
+Proxy get/apply order; existing reflection tests retain non-constructibility.
+
+The inventory has 8,604 fixtures, seventeen helpers, 8,585 reviewed sources and
+16,647 variants. The pin, licenses and existing source/helper bytes are unchanged.
 
 ## Generic Promise capability fixtures
 
@@ -4151,7 +4168,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16627 variants from 8575 reviewed sources.
+The `spite-test262` command runs 16647 variants from 8585 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

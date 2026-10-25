@@ -8574,3 +8574,13 @@ test/built-ins/Promise/reject/length.js	-	-	-
 test/built-ins/Promise/reject/name.js	-	-	-
 test/built-ins/Promise/reject/not-a-constructor.js	-	-	-
 test/built-ins/Promise/reject/prop-desc.js	-	-	-
+test/built-ins/Promise/prototype/catch/S25.4.5.1_A1.1_T1.js	-	-	-
+test/built-ins/Promise/prototype/catch/invokes-then.js	-	-	-
+test/built-ins/Promise/prototype/catch/length.js	-	-	-
+test/built-ins/Promise/prototype/catch/name.js	-	-	-
+test/built-ins/Promise/prototype/catch/prop-desc.js	-	-	-
+test/built-ins/Promise/prototype/catch/this-value-non-object.js	-	-	-
+test/built-ins/Promise/prototype/catch/this-value-obj-coercible.js	-	-	-
+test/built-ins/Promise/prototype/catch/this-value-then-not-callable.js	-	-	-
+test/built-ins/Promise/prototype/catch/this-value-then-poisoned.js	-	-	-
+test/built-ins/Promise/prototype/catch/this-value-then-throws.js	-	-	-

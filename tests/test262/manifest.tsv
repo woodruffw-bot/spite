@@ -8610,3 +8610,13 @@ script-pass	f36f1623c4b50aca4453b59f4e81507fc7d3869aaab7a8ecc480f98cc37e5c30	tes
 script-pass	f92f2c422b49b2d9fbc590066d301cb3be81f36d261b2860b0d1c00307752cac	test/built-ins/Promise/reject/name.js
 script-pass	fc9e4d034d4a0273bb30d4bf482af210d742611ce1783182fc25c118a64ed25e	test/built-ins/Promise/reject/not-a-constructor.js
 script-pass	e654f42d3b04afcf5ccda805418bc945c91be3300dcf8642f23992647716520a	test/built-ins/Promise/reject/prop-desc.js
+script-pass	93dacb1aae4c304b577c2aec4ffc68193da761cfd38af654efd431f9d5f8bb43	test/built-ins/Promise/prototype/catch/S25.4.5.1_A1.1_T1.js
+script-pass	bb0c46c7768f57dc03ddbc797d72b075f7fa8fe0892933a282379bba7804e104	test/built-ins/Promise/prototype/catch/invokes-then.js
+script-pass	7cd4ed0ccc9c47bb331de98ba4a22efb6c42a962f7821eade74c091159738e31	test/built-ins/Promise/prototype/catch/length.js
+script-pass	fb3b46d95266c0ab3f7d0e23d98dc09bc5a1e460d225f38d05937ba45fe78db8	test/built-ins/Promise/prototype/catch/name.js
+script-pass	ee6567846f44a374d219968d199e5eddd5c494a891836e8a7e4e6974a6671f34	test/built-ins/Promise/prototype/catch/prop-desc.js
+script-pass	eef69b9d9d84d34b6cfaf68bd7659025661a9a96dbc927027d56e9769fed2093	test/built-ins/Promise/prototype/catch/this-value-non-object.js
+script-pass	c4bbb7f1cdd6503c31db77925dfe5bd23072ab31aab554249165a1f103cb8400	test/built-ins/Promise/prototype/catch/this-value-obj-coercible.js
+script-pass	9f2ac88d2a85463511666c7c8e8c887fb4088d1f59b1c9d742389e93f0bccc00	test/built-ins/Promise/prototype/catch/this-value-then-not-callable.js
+script-pass	913f659119ef6dc335f1491a0ee84097a852740da52263fa76e39990413c52a4	test/built-ins/Promise/prototype/catch/this-value-then-poisoned.js
+script-pass	1a9c66838c45c979b5c964d179b834802d088c51d787203524422f09bdce0cd7	test/built-ins/Promise/prototype/catch/this-value-then-throws.js
