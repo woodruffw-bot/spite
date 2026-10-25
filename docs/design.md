@@ -14407,6 +14407,17 @@ original set syntax, indices, String consumers, copies and collection. Nested
 set algebra, original line/fold context and complete-character search stay in
 Core. User conversions remain outside the compiler frame.
 
+A separate checked scalar-set lookahead entry admits leading/trailing operand
+word predicates with optional ^/$ gates. The flat envelope requires at least
+one word predicate and a nested/operator class with character-valued leaves;
+its fixed iteration stays inside those predicates (22.2.2.4, 22.2.2.9). The
+existing checked word-set compiler preserves original line/word context,
+folded set algebra and backspace class data. Outside wrappers remain empty;
+operand wrappers capture the original complete character. Actual-work search,
+checked construction errors, initial-pair rewind and flat storage retain their
+shared paths. Earlier scalar/q entries keep their domains and charges. Runtime
+integration remains separate.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
