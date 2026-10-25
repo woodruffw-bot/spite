@@ -31,6 +31,7 @@ mod realm_proxy;
 mod realm_typed_array;
 #[cfg(test)]
 mod typed_array_tests;
+mod unary;
 mod value;
 pub use function::PromiseJobOutcome;
 pub use realm_finalization::FinalizationCleanupOutcome;
@@ -1785,33 +1786,7 @@ impl Realm {
                 } else {
                     self.expression(inner)?
                 };
-                match op {
-                    UnaryOp::Plus => Value::Number(self.number(value, expr.span)?),
-                    UnaryOp::Minus => match self.numeric(value, expr.span)? {
-                        Value::BigInt(value) => {
-                            Value::BigInt(self.integer_work(expr.span, |budget| value.neg(budget))?)
-                        }
-                        Value::Number(value) => Value::Number(-value),
-                        _ => unreachable!("ToNumeric returns a numeric value"),
-                    },
-                    UnaryOp::Not => Value::Boolean(!value.to_boolean()),
-                    UnaryOp::BitNot => match self.numeric(value, expr.span)? {
-                        Value::BigInt(value) => Value::BigInt(
-                            self.integer_work(expr.span, |budget| value.bitnot(budget))?,
-                        ),
-                        Value::Number(value) => Value::Number((!(to_uint32(value) as i32)) as f64),
-                        _ => unreachable!("ToNumeric returns a numeric value"),
-                    },
-                    UnaryOp::Void => Value::Undefined,
-                    UnaryOp::Typeof => {
-                        Value::String(JsString::from(if self.is_callable(&value, expr.span)? {
-                            "function"
-                        } else {
-                            value.type_name()
-                        }))
-                    }
-                    UnaryOp::Delete => Value::Boolean(true),
-                }
+                self.unary_value(*op, value, expr.span)?
             }
             ExprKind::Binary(op, left, right) => {
                 let left = self.expression(left)?;

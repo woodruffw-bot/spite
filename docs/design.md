@@ -427,7 +427,24 @@ fulfilled value is stored through that saved reference, preserving parameter and
 mapped-arguments aliases. Pattern var bindings initialize after the awaited RHS;
 non-awaited and absent initializers keep existing var evaluation and naming.
 Saved target environments participate in tracing and capture validation.
-Nested await operands, pattern defaults, general expressions and control-flow
+
+Unary, binary, flat binary-chain and conditional value expressions use an explicit
+task stack when their supported forms contain await. Typed root/child paths locate
+nodes in the retained immutable body; continuations do not clone or rewrite AST
+subtrees or replay evaluation. Raw left operands remain owned values until the
+right operand finishes, so primitive conversion still occurs in the existing
+binary operation after RHS fulfillment. Logical steps skip their own RHS and
+continue later chain operations; conditionals evaluate one branch. Nested awaits
+each suspend independently. Parentheses retain their expression boundaries.
+
+Unary value operations are shared with ordinary evaluation; delete and typeof
+reference handling stays in the ordinary evaluator. Expression tasks and current
+results participate in object tracing and the physical Symbol inventory. Their
+root return/discard/binding action runs only after the complete expression value
+is available. Var target references therefore still resolve before the entire RHS.
+Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
+including calls/references, literal elements, pattern defaults and control flow.
+Pattern defaults, call/reference expressions, literal elements and control-flow
 continuations retain their explicit gap. Await-using is distinct from a synchronous
 using declaration with an awaited initializer and remains Unsupported. Unreachable
 awaits remain unevaluated.

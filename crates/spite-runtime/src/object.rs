@@ -27,6 +27,7 @@ pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArrayS
 pub(crate) mod array_from_async;
 mod async_dispose;
 pub(crate) mod async_execution;
+pub(crate) mod async_expression;
 mod descriptor;
 mod disposable_stack;
 pub(crate) use disposable_stack::{DisposableResource, DisposableStackKind, DisposalHint};

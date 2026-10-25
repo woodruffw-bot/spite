@@ -9548,3 +9548,5 @@ test/built-ins/Array/fromAsync/sync-iterable-input-with-non-promise-thenable.js	
 test/built-ins/Array/fromAsync/sync-iterable-input-with-thenable.js	-	-	-
 test/built-ins/Array/fromAsync/sync-iterable-input.js	-	-	-
 test/language/expressions/await/await-awaits-thenable-not-callable.js	-	-	-
+test/language/expressions/await/syntax-await-has-UnaryExpression-with-MultiplicativeExpression.js	-	-	-
+test/language/expressions/await/syntax-await-in-ConditionalExpression.js	-	-	-

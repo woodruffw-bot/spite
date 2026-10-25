@@ -17,6 +17,7 @@ pub(crate) struct AsyncExecutionContext {
 pub(crate) enum AsyncAwaitAction {
     Discard,
     Return,
+    Expression,
     Binding { statement: usize, element: usize },
 }
 
@@ -24,6 +25,7 @@ pub(crate) enum AsyncAwaitAction {
 pub(crate) struct AsyncExecutionData {
     pub capability: PromiseCapability,
     pub body: ArrowBody,
+    pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub index: usize,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
@@ -34,7 +36,11 @@ pub(crate) struct AsyncExecutionData {
 
 impl AsyncExecutionData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.capability.values()
+        self.capability.values().chain(
+            self.expression
+                .iter()
+                .flat_map(|expression| expression.values()),
+        )
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {

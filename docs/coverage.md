@@ -56,9 +56,39 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18546 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18550 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Awaited value expressions
+
+Unary, binary, flat-chain and conditional expressions support nested awaits in
+concise arrows, returns, expression statements and declaration initializers.
+Typed child paths retain the original immutable syntax. Value tasks preserve
+operands and resume without replay; binary primitive conversion follows completed
+RHS evaluation. Logical operations skip unreachable RHS values while continuing
+later chain steps, and conditionals select one branch. Each nested await suspends
+independently. Completed values feed the original return/discard/binding action;
+var target references still resolve before the complete RHS.
+
+Ordinary and resumed evaluation share unary value operations, with reference-aware
+delete/typeof handling retained in the existing evaluator. Call/reference forms,
+literal elements, pattern defaults and suspended control flow remain Unsupported.
+Seven new Runtime groups cover precedence, FIFO timing, coercion, short circuits,
+conditionals, var aliases, suppression and collection. Symbol ownership controls
+cover an operand held only by a suspended expression task and unreachable cycles.
+All 416 units and 1,906 non-RegExp integrations pass; Runtime case files rise to
+641, with 75 Parser files and unchanged Parser checks. Intrinsic entries remain
+579 and quotas are unchanged.
+
+Two complete unchanged originals add four variants for multiplicative precedence
+and conditional-expression grouping. Their pinned Git blobs and manifest SHA-256
+digests were verified. The await review passes 26 variants from thirteen originals
+and defers nine; Array/adapter remains at 146 passing and 116 Unsupported variants.
+Inventories contain 9,570 fixtures, twenty helpers, 9,551 reviewed sources and
+18,550 variants. No originals or helpers are rewritten. All reviewed variants
+and forty Test262 package tests pass, along with formatting, strict Clippy,
+Rust 1.88, dependency policy and inventories.
 
 ## Awaited var initializers
 

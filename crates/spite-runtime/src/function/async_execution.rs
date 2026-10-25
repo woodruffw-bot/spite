@@ -1,14 +1,19 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
+mod expression;
+
 use super::{
     PromiseCapability, ScriptFunction, async_native::AsyncResumeKind, ordinary::OrdinaryInvocation,
 };
 use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
-    object::async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
+    object::{
+        async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
+        async_expression::ExprRoot,
+    },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPatternKind, Expr, ExprKind, StatementKind};
+use spite_parser::ast::{ArrowBody, BindingPatternKind, StatementKind};
 
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
@@ -71,6 +76,7 @@ impl Realm {
         let data = AsyncExecutionData {
             capability,
             body,
+            expression: None,
             index: 0,
             pending: AsyncAwaitAction::Discard,
             root_scope,
@@ -92,26 +98,9 @@ impl Realm {
         if let Some(completion) = resumed {
             match completion {
                 Err(error) => return self.finish_async_execution(data, Err(error), base),
-                Ok(value) if matches!(data.pending, AsyncAwaitAction::Return) => {
-                    return self.finish_async_execution(
-                        data,
-                        Ok(Completion {
-                            kind: CompletionKind::Return,
-                            value: Some(value),
-                            target: None,
-                        }),
-                        base,
-                    );
-                }
                 Ok(value) => {
-                    if let AsyncAwaitAction::Binding { statement, element } = data.pending {
-                        next_step = Some(self.async_binding_step(
-                            &mut data,
-                            statement,
-                            element,
-                            Some(value),
-                        ));
-                    }
+                    let action = data.pending;
+                    next_step = Some(self.complete_async_value(&mut data, action, value));
                 }
             }
         }
@@ -164,10 +153,8 @@ impl Realm {
             ArrowBody::Expression(expression) => {
                 debug_assert_eq!(data.index, 0);
                 data.index += 1;
-                if let Some((argument, span)) = direct_await(expression) {
-                    self.tick(expression.span)?;
-                    self.expression(argument)
-                        .map(|value| Step::Await(value, AsyncAwaitAction::Return, span))
+                if expression::has_supported_await(expression) {
+                    self.start_async_expression(data, ExprRoot::Arrow, AsyncAwaitAction::Return)
                 } else {
                     self.expression(expression).map(|value| {
                         Step::Complete(Completion {
@@ -190,21 +177,26 @@ impl Realm {
                     self.tick(statement.span)?;
                     return self.async_binding_step(data, data.index - 1, 0, None);
                 }
-                let awaiting = match &statement.kind {
-                    StatementKind::Expression(expression) => direct_await(expression)
-                        .map(|(argument, span)| (argument, span, AsyncAwaitAction::Discard)),
-                    StatementKind::Return(Some(expression)) => direct_await(expression)
-                        .map(|(argument, span)| (argument, span, AsyncAwaitAction::Return)),
+                let action = match &statement.kind {
+                    StatementKind::Expression(expression)
+                        if expression::has_supported_await(expression) =>
+                    {
+                        Some(AsyncAwaitAction::Discard)
+                    }
+                    StatementKind::Return(Some(expression))
+                        if expression::has_supported_await(expression) =>
+                    {
+                        Some(AsyncAwaitAction::Return)
+                    }
                     _ => None,
                 };
-                if let Some((argument, span, action)) = awaiting {
-                    // Match expression/statement entry work before evaluating the
-                    // operand. Nested Await forms retain their explicit gap.
+                if let Some(action) = action {
                     self.tick(statement.span)?;
-                    self.tick(span)?;
-                    return self
-                        .expression(argument)
-                        .map(|value| Step::Await(value, action, span));
+                    return self.start_async_expression(
+                        data,
+                        ExprRoot::Statement(data.index - 1),
+                        action,
+                    );
                 }
                 let completion = self.statement(statement)?;
                 Ok(if completion.kind == CompletionKind::Normal {
@@ -252,13 +244,13 @@ impl Realm {
                 } else {
                     self.initialize_pattern(&binding.pattern, value, environment)?;
                 }
-            } else if let Some((argument, span)) =
-                binding.initializer.as_ref().and_then(direct_await)
+            } else if binding
+                .initializer
+                .as_ref()
+                .is_some_and(expression::has_supported_await)
             {
                 self.tick(binding.pattern.span)?;
                 if var && let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
-                    // VariableDeclaration resolves before evaluating its RHS
-                    // (14.3.2.1). Root function vars own declarative bindings.
                     let Reference::Lexical(environment, _) =
                         self.resolve(name, binding.pattern.span)?
                     else {
@@ -269,15 +261,11 @@ impl Realm {
                     };
                     data.var_target = Some(environment);
                 }
-                self.tick(span)?;
-                // AwaitExpression is not an anonymous function definition: its
-                // fulfilled function values do not receive binding-name inference.
-                let value = self.expression(argument)?;
-                return Ok(Step::Await(
-                    value,
+                return self.start_async_expression(
+                    data,
+                    ExprRoot::Binding { statement, element },
                     AsyncAwaitAction::Binding { statement, element },
-                    span,
-                ));
+                );
             } else if var {
                 self.evaluate_var_bindings(std::slice::from_ref(binding))?;
             } else if using {
@@ -287,6 +275,26 @@ impl Realm {
             }
         }
         Ok(Step::Continue)
+    }
+
+    fn complete_async_value(
+        &mut self,
+        data: &mut AsyncExecutionData,
+        action: AsyncAwaitAction,
+        value: Value,
+    ) -> Result<Step, Error> {
+        match action {
+            AsyncAwaitAction::Discard => Ok(Step::Continue),
+            AsyncAwaitAction::Return => Ok(Step::Complete(Completion {
+                kind: CompletionKind::Return,
+                value: Some(value),
+                target: None,
+            })),
+            AsyncAwaitAction::Binding { statement, element } => {
+                self.async_binding_step(data, statement, element, Some(value))
+            }
+            AsyncAwaitAction::Expression => self.resume_async_expression(data, Some(value)),
+        }
     }
 
     fn capture_async_execution_context(
@@ -389,16 +397,5 @@ impl Realm {
             }
         }
         Ok(Value::Undefined)
-    }
-}
-
-fn direct_await(mut expression: &Expr) -> Option<(&Expr, Span)> {
-    while let ExprKind::Parenthesized(inner) = &expression.kind {
-        expression = inner;
-    }
-    if let ExprKind::Await(argument) = &expression.kind {
-        Some((argument, expression.span))
-    } else {
-        None
     }
 }

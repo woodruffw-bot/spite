@@ -122,8 +122,8 @@ fn host_failures_bypass_rejection_and_nested_await_remains_explicitly_unsupporte
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
-        "(async function(){}).constructor('return 1+await p')()",
-        "new (async function(){}).constructor('return 1+await p')()",
+        "(async function(){}).constructor('return Math.abs(await p)')()",
+        "new (async function(){}).constructor('return Math.abs(await p)')()",
     ] {
         assert!(
             matches!(

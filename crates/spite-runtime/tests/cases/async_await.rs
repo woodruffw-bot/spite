@@ -86,7 +86,7 @@ fn unreachable_await_is_skipped_and_nested_await_contexts_stay_explicit_gaps() {
     drain(&mut realm);
     check(&mut realm, "result===3");
     realm
-        .eval("let flag=0;async function g(){return 1+await (flag=1)}")
+        .eval("let flag=0;async function g(){return Math.abs(await (flag=1))}")
         .unwrap();
     assert!(matches!(
         realm.eval("try{g()}catch(e){flag=2}finally{flag=3}"),
