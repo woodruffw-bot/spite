@@ -26202,3 +26202,13 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Positive q-class assertion Test262 snapshot
+
+The Runtime snapshot at `3c6ca264` passes all 35 Test262 package tests and all
+16,343 reviewed corpus variants with the existing conformance profile (418.34 s
+for the corpus). It includes positive single-character q-class lookahead and
+lookbehind with word predicates, alongside the completed non-q Unicode
+assertions. Later negative q-class increments retain their focused and
+differential evidence. Fixture, harness and reviewed-entry inventories are
+unchanged.
