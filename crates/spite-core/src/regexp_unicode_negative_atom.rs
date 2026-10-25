@@ -355,6 +355,30 @@ impl RegExpUnicodeNegativeAtomMatcher {
         )
     }
 
+    /// Compiles negative character-result lookbehind with word predicates and line gates.
+    ///
+    /// Full original v/vi validation and normalized capture heads are required.
+    /// At least one leading/trailing word predicate surrounds a class with an
+    /// empty or longer q member and MayContainStrings false. Negation applies
+    /// to the original-context predecessor conjunction, leaving outside wrappers
+    /// empty and all operand slots undefined (22.2.2.4, 22.2.2.9). Other widths,
+    /// counts and scopes remain separate proofs.
+    pub fn compile_single_character_result_class_lookbehind_with_word_boundaries_validated_with_work<
+        E,
+    >(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single_character_class_assertion_with_work::<true, true, 2, E>(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+    }
+
     #[inline(never)]
     fn compile_single_character_class_assertion_with_work<
         const WORD: bool,
@@ -2821,6 +2845,156 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
             assert_eq!(find(&p, "ab!", 1, false), Some(3..3));
+        }
+    }
+    fn behind_word_character_result_plan(
+        source: &str,
+        i: bool,
+        m: bool,
+    ) -> RegExpUnicodeNegativeAtomMatcher {
+        RegExpUnicodeNegativeAtomMatcher::compile_single_character_result_class_lookbehind_with_word_boundaries_validated_with_work(
+            &JsString::from(source),i,m, |_| Ok::<(), ()>(()),
+        ).unwrap().unwrap()
+    }
+
+    #[test]
+    fn negative_character_result_word_lookbehind_negates_predecessors_and_keeps_operand_slots_undefined()
+     {
+        let p = behind_word_character_result_plan(
+            r"((?<!((\b[\q{a|b|ab|}&&\p{Any}]\b))))",
+            false,
+            false,
+        );
+        assert_eq!(p.capture_count(), 3);
+        assert_eq!(find(&p, "a!", 1, true), None);
+        let matched = find(&p, "a!", 1, false).unwrap();
+        assert_eq!(matched, 2..2);
+        assert_eq!(p.capture_range(0, &matched), Some(2..2));
+        for index in 1..=3 {
+            assert_eq!(p.capture_range(index, &matched), None);
+        }
+        assert_eq!(find(&p, "aa", 1, true), Some(1..1));
+        assert_eq!(find(&p, "", 0, true), Some(0..0));
+        let p =
+            behind_word_character_result_plan(r"(?<!(\b[\q{a|b|ab|}&&\p{Any}]\B))", false, false);
+        assert_eq!(find(&p, "ab!", 1, true), None);
+        assert_eq!(find(&p, "a!", 1, true), Some(1..1));
+    }
+
+    #[test]
+    fn negative_character_result_word_lookbehind_keeps_original_line_fold_backspace_and_pair_context()
+     {
+        let p =
+            behind_word_character_result_plan(r"(?<!(^\b[[\q{😀x|😀}&&\p{Any}]a]\b$))", true, true);
+        assert_eq!(find(&p, "\nA\n", 2, true), None);
+        assert_eq!(find(&p, "!A!", 2, true), Some(2..2));
+        let p =
+            behind_word_character_result_plan(r"(?<!(\b[\q{ſ|k|sk|}&&\p{Any}]\b))", true, false);
+        for text in ["!S!", "!ſ!", "!K!", "!K!"] {
+            assert_eq!(find(&p, text, 2, true), None);
+        }
+        let p = behind_word_character_result_plan(
+            r"(?<!(\B[\q{\u0008|a|ab|}&&\p{Any}]\B))",
+            false,
+            false,
+        );
+        assert_eq!(find(&p, "\u{8}", 1, true), None);
+        assert_eq!(find(&p, "a\u{8}b", 2, true), Some(2..2));
+        let p =
+            behind_word_character_result_plan(r"(?<!(\B[\q{😀|a|😀x|}&&\p{Any}]\B))", false, false);
+        assert_eq!(find(&p, "😀😀", 2, false), None);
+        assert_eq!(find(&p, "😀😀", 3, true), None);
+        assert_eq!(find(&p, "😀😀", 1, true), Some(0..0));
+    }
+
+    #[test]
+    fn negative_character_result_word_lookbehind_declines_other_domains_members_counts_and_scopes()
+    {
+        for source in [
+            r"(?<!([\q{a|b|ab|}&&\p{Any}]))",
+            r"(?<!(\b[ab]\b))",
+            r"(?<!(\b[\q{a|b}]\b))",
+            r"(?<!(\b[[\q{a|b}]--[x]]\b))",
+            r"(?<!(\b[\q{ab|a}]\b))",
+            r"(?<!(\b[\q{|a}]\b))",
+            r"(?<!(\b[\q{a|b|ab|}&&\p{Any}]+\b))",
+            r"(?<!(\b[\q{a|b|ab|}&&\p{Any}]{1}\b))",
+            r"(?<!(\b[\q{a|b|ab|}&&\p{Any}]\b))a",
+            r"(?<!(\b[\q{a|b|ab|}&&\p{Any}]\b))|b",
+            r"((?<!(\b[\q{a|b|ab|}&&\p{Any}]\b)))*",
+            r"(?<=(\b[\q{a|b|ab|}&&\p{Any}]\b))",
+            r"(?!(\b[\q{a|b|ab|}&&\p{Any}]\b))",
+            r"(?<!(\b([\q{a|b|ab|}&&\p{Any}])\b))",
+            r"((?<!(\b\1\b)))",
+        ] {
+            assert!(RegExpUnicodeNegativeAtomMatcher::compile_single_character_result_class_lookbehind_with_word_boundaries_validated_with_work(&JsString::from(source),false,false, |_| Ok::<(), ()>(())).unwrap().is_none(),"{source}");
+        }
+    }
+
+    #[test]
+    fn negative_character_result_word_lookbehind_deep_scopes_linear_retries_and_work_abort_recovery_stay_flat()
+     {
+        let source = format!(
+            "{}(?<!{}\\b[\\q{{a|b|ab|}}&&\\p{{Any}}]\\b{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let p = behind_word_character_result_plan(&source, false, false);
+        assert_eq!(p.capture_count(), 200_000);
+        let matched = find(&p.clone(), "!", 1, true).unwrap();
+        assert_eq!(p.capture_range(99_999, &matched), Some(1..1));
+        assert_eq!(p.capture_range(100_000, &matched), None);
+        let p =
+            behind_word_character_result_plan(r"(?<!(\B[\q{a|b|ab|}&&\p{Any}]\B))", false, false);
+        let input = JsString::from("a".repeat(20_000).as_str());
+        let mut total = 0usize;
+        assert_eq!(
+            p.find_with_work(&input, 2, false, |n| {
+                total += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(20_000..20_000)
+        );
+        assert!(total < 250 * input.len() + 128, "{total}");
+        let source = JsString::from(r"((?<!(\b[\q{a|b|ab|}&&\p{Any}]\b)))");
+        let mut work = Vec::new();
+        let p=RegExpUnicodeNegativeAtomMatcher::compile_single_character_result_class_lookbehind_with_word_boundaries_validated_with_work(&source,false,false,|n|{work.push(n);Ok::<(),usize>(())}).unwrap().unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodeNegativeAtomMatcher::compile_single_character_result_class_lookbehind_with_word_boundaries_validated_with_work(&source,false,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(crate::RegExpUnicodeSetCompileError::Work(n))if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let input = JsString::from("a!a");
+        work.clear();
+        assert_eq!(
+            p.find_with_work(&input, 1, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap(),
+            Some(2..2)
+        );
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert_eq!(
+                p.find_with_work(&input, 1, false, |n| {
+                    seen.push(n);
+                    if seen.len() == stop + 1 {
+                        Err(stop)
+                    } else {
+                        Ok(())
+                    }
+                }),
+                Err(stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+            assert_eq!(find(&p, "a!a", 1, false), Some(2..2));
         }
     }
 }
