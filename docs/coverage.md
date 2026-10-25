@@ -27907,3 +27907,22 @@ The positive character/string-union Runtime snapshot at `5c8fabb6` passes all
 3,123 RegExp integration tests through Cargo with the normal environment
 (1,179.70 s). Its full reviewed Test262 result is recorded separately. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Scalar/string-union positive lookahead: Runtime
+
+All 72 positive-lookahead integration groups (8.22 s) and 13 constructor
+groups (0.30 s) pass. Four new groups cover scalar/string membership and
+longest accepted priority, defined-empty and named operand spans, original
+line/fold/lone-surrogate context, consumers, lastIndex, copies, collection
+and deep scopes. Paired/braced-surrogate and folded ASCII/complement cases
+retain independent specification expectations.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 66 complete raw JavaScript programs. Metadata
+uses twelve independently specified scalar/literal-alternative controls and legal
+Unicode-candidate enumeration. Complete programs retain documented equivalent
+controls; Runtime receives original class source. Strict all-target workspace
+Clippy, documentation tests, Rust 1.85 all-target checks, formatting, policy,
+inventories and diff checks pass. Fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.

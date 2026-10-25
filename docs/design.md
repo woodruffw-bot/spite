@@ -15080,6 +15080,15 @@ proofs. Checked construction and cancellable traversal use existing host
 boundaries without input-sized capture state.
 
 
+Runtime selects scalar/string-union lookahead as a separate checked v-mode
+fallback after full original validation. Complete normalized capture scopes
+retain original bindings; checked errors and enclosing-offset reset on proof
+success use established boundaries. The positive string cache preserves
+selected scalar/string extents and defined-empty members through named indices,
+String consumers, copies and collection. Original source and reentrant conversion
+frames retain their established behavior.
+
+
 A separate scalar/string-union constructor admits operand word predicates and
 optional ^/$ gates, requiring at least one predicate, a scalar operand and an
 empty or longer q member. Folded scalar intervals and shared string prefixes
