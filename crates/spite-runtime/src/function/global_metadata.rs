@@ -518,9 +518,18 @@ impl Realm {
             Member::PromiseRace => {
                 self.promise_race(receiver, arguments.next().unwrap_or(Value::Undefined), span)
             }
-            Member::PromiseAll => {
-                self.promise_all(receiver, arguments.next().unwrap_or(Value::Undefined), span)
-            }
+            Member::PromiseAll => self.promise_aggregate(
+                super::PromiseAggregateKind::All,
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Member::PromiseAllSettled => self.promise_aggregate(
+                super::PromiseAggregateKind::AllSettled,
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             // Atomics.pause (sec-atomics.pause) observes no receiver/arguments.
             // The platform's spin-loop hint has no JavaScript-visible result.
             Member::AtomicsPause => {

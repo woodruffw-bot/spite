@@ -1,22 +1,32 @@
-//! Private ordered Promise.all results and shared completion count.
+//! Private ordered Promise aggregation results and shared completion count.
 
 use super::{Budget, Error, Objects};
 use crate::{
     Value,
-    function::{Callable, PromiseCapability},
+    function::{Callable, PromiseAggregateKind, PromiseCapability},
 };
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]
-pub(super) struct PromiseAllData {
-    values: Vec<Value>,
+struct Element {
+    value: Value,
+    called: bool,
+}
+
+#[derive(Debug)]
+pub(super) struct PromiseAggregateData {
+    values: Vec<Element>,
+    kind: PromiseAggregateKind,
     remaining: usize,
     capability: PromiseCapability,
 }
 
-impl PromiseAllData {
+impl PromiseAggregateData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.values.iter().chain(self.capability.values())
+        self.values
+            .iter()
+            .map(|entry| &entry.value)
+            .chain(self.capability.values())
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
@@ -25,27 +35,29 @@ impl PromiseAllData {
 }
 
 impl Objects {
-    pub(crate) fn create_promise_all_state(
+    pub(crate) fn create_promise_aggregate_state(
         &mut self,
         capability: PromiseCapability,
+        kind: PromiseAggregateKind,
     ) -> Result<Handle, Error> {
         let state = self.create(None)?;
-        self.object_mut(&state)?.promise_all = Some(Box::new(PromiseAllData {
+        self.object_mut(&state)?.promise_aggregate = Some(Box::new(PromiseAggregateData {
             values: Vec::new(),
+            kind,
             remaining: 1,
             capability,
         }));
         Ok(state)
     }
 
-    pub(crate) fn append_promise_all_slot(
+    pub(crate) fn append_promise_aggregate_slot(
         &mut self,
         state: &Handle,
         budget: &mut Budget,
     ) -> Result<usize, Error> {
         let data = self
             .object_mut(state)?
-            .promise_all
+            .promise_aggregate
             .as_mut()
             .ok_or(Error::WrongKind)?;
         budget.charge(1)?;
@@ -56,78 +68,95 @@ impl Objects {
             .try_reserve(1)
             .map_err(|_| spite_heap::Error::Capacity)?;
         let index = data.values.len();
-        data.values.push(Value::Undefined);
+        data.values.push(Element {
+            value: Value::Undefined,
+            called: false,
+        });
         Ok(index)
     }
 
-    pub(crate) fn create_promise_all_resolve_element(
+    pub(crate) fn create_promise_aggregate_element(
         &mut self,
         prototype: &Handle,
         state: &Handle,
         index: usize,
-        budget: &mut Budget,
+        fulfilled: bool,
     ) -> Result<Handle, Error> {
-        budget.charge(1)?;
-        let data = self
-            .object_mut(state)?
-            .promise_all
-            .as_mut()
-            .ok_or(Error::WrongKind)?;
-        let remaining = data
-            .remaining
-            .checked_add(1)
-            .ok_or(spite_heap::Error::Capacity)?;
+        self.inspect(state)?;
         let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable = Some(Callable::PromiseAllResolveElement {
+        self.object_mut(&function)?.callable = Some(Callable::PromiseAggregateElement {
             state: state.clone(),
             index,
-            called: false,
+            fulfilled,
         });
-        // No user code runs between creation and incrementing the shared count.
-        self.object_mut(state)?
-            .promise_all
-            .as_mut()
-            .expect("private all state")
-            .remaining = remaining;
         Ok(function)
     }
 
-    pub(crate) fn fulfill_promise_all_element(
+    pub(crate) fn increment_promise_aggregate_remaining(
+        &mut self,
+        state: &Handle,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(1)?;
+        let data = self
+            .object_mut(state)?
+            .promise_aggregate
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        data.remaining = data
+            .remaining
+            .checked_add(1)
+            .ok_or(spite_heap::Error::Capacity)?;
+        Ok(())
+    }
+
+    pub(crate) fn begin_promise_aggregate_element(
         &mut self,
         function: &Handle,
-        value: Value,
         budget: &mut Budget,
-    ) -> Result<Option<(Handle, Value, usize)>, Error> {
-        budget.charge(1)?;
-        let Some(Callable::PromiseAllResolveElement {
-            state,
-            index,
-            called,
-        }) = self.object_mut(function)?.callable.as_mut()
+    ) -> Result<Option<(Handle, usize, PromiseAggregateKind)>, Error> {
+        budget.charge(2)?;
+        let Some(Callable::PromiseAggregateElement { state, index, .. }) =
+            self.inspect(function)?.callable.as_ref()
         else {
             return Err(Error::WrongKind);
         };
-        if *called {
+        let (state, index) = (state.clone(), *index);
+        let data = self
+            .object_mut(&state)?
+            .promise_aggregate
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        let entry = data.values.get_mut(index).ok_or(Error::WrongKind)?;
+        if entry.called {
             return Ok(None);
         }
-        // Set AlreadyCalled before touching the shared result or calling resolve.
-        *called = true;
-        let (state, index) = (state.clone(), *index);
+        // Fulfill and reject closures share this guard for their input index.
+        entry.called = true;
+        Ok(Some((state, index, data.kind)))
+    }
+
+    pub(crate) fn store_promise_aggregate_element(
+        &mut self,
+        state: &Handle,
+        index: usize,
+        value: Value,
+        budget: &mut Budget,
+    ) -> Result<Option<(Value, usize)>, Error> {
         if let Value::Object(object) = &value {
             self.inspect(object)?;
         }
         budget.value(&value)?;
         let data = self
-            .object_mut(&state)?
-            .promise_all
+            .object_mut(state)?
+            .promise_aggregate
             .as_mut()
             .ok_or(Error::WrongKind)?;
-        *data.values.get_mut(index).ok_or(Error::WrongKind)? = value;
-        self.finish_promise_all_remaining(&state, budget)
-            .map(|result| result.map(|(resolve, len)| (state, resolve, len)))
+        data.values.get_mut(index).ok_or(Error::WrongKind)?.value = value;
+        self.finish_promise_aggregate_remaining(state, budget)
     }
 
-    pub(crate) fn finish_promise_all_remaining(
+    pub(crate) fn finish_promise_aggregate_remaining(
         &mut self,
         state: &Handle,
         budget: &mut Budget,
@@ -135,7 +164,7 @@ impl Objects {
         budget.charge(1)?;
         let data = self
             .object_mut(state)?
-            .promise_all
+            .promise_aggregate
             .as_mut()
             .ok_or(Error::WrongKind)?;
         data.remaining = data.remaining.checked_sub(1).ok_or(Error::WrongKind)?;
@@ -147,7 +176,7 @@ impl Objects {
         }
     }
 
-    pub(crate) fn promise_all_value(
+    pub(crate) fn promise_aggregate_value(
         &self,
         state: &Handle,
         index: usize,
@@ -155,11 +184,11 @@ impl Objects {
     ) -> Result<Value, Error> {
         let data = self
             .inspect(state)?
-            .promise_all
+            .promise_aggregate
             .as_ref()
             .ok_or(Error::WrongKind)?;
         let value = data.values.get(index).ok_or(Error::WrongKind)?;
-        budget.value(value)?;
-        Ok(value.clone())
+        budget.value(&value.value)?;
+        Ok(value.value.clone())
     }
 }

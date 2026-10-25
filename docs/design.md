@@ -3316,7 +3316,7 @@ bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
 preflight rollback moves rather than clones arbitrary argument values.
-The remaining allSettled/any combinators are separate work. Async Test262 execution
+The remaining any combinator is separate work. Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
 
 Promise.race constructs the supplied capability before reading its resolve
@@ -3332,7 +3332,7 @@ input leaves native Promises pending, with no automatic job execution.
 Promise.all uses the same capability-first resolve/iterator ordering
 (sec-promise.all). A private traced record holds an ordered native value list,
 the capability and an exact native remaining count starting at one. Anonymous
-resolve-element functions retain their index and AlreadyCalled state. Each input
+resolve-element functions retain their index and share its AlreadyCalled state. Each input
 appends an undefined slot before resolution, then increments the count before
 invoking then with that element's callback and the shared reject function.
 Exhaustion removes the initial count; fulfillment fills the original index once.
@@ -3342,6 +3342,16 @@ a temporary result vector. Empty input resolves an empty Array; native Promise
 observers still run as jobs. Callback return values preserve custom resolve
 results. Stored object/Symbol values and capabilities participate in collection.
 Native storage/count capacity failures remain host failures without default quotas.
+
+Promise.allSettled shares the aggregation loop and traced storage with all
+(sec-promise.allsettled). Each input has two anonymous native callbacks sharing
+one guard, so only its first fulfillment or rejection contributes. After setting
+that guard, a callback creates an intrinsic ordinary snapshot with enumerable,
+writable and configurable status and value/reason properties. Snapshot order
+follows input order, and the aggregate fulfills only when every input settles.
+Public Object/Array replacements and inherited setters do not affect snapshot
+or result allocation. Iterator failures still reject rather than becoming
+settlement snapshots; host failures retain their separate category.
 
 Promise.prototype.finally accepts object receivers without Promise branding
 (27.2.5.3). SpeciesConstructor precedes then lookup even for non-callable cleanup

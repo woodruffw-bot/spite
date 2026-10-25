@@ -362,6 +362,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement generic Promise.prototype.finally with captured species, observable then calls, awaited cleanup and original value/reason propagation.
 - [x] Implement Promise.race with generic capabilities, cached constructor resolution, ordered iterable subscription and phase-correct iterator cleanup.
 - [x] Implement Promise.all with ordered traced result lists, guarded native resolve elements, synchronous-callback reentry handling and intrinsic result Arrays.
+- [x] Implement Promise.allSettled with shared fulfill/reject guards, ordered intrinsic settlement snapshots and the common aggregation path.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

@@ -123,7 +123,7 @@ fn object_symbols(
         regexp: _,
         error_data: _,
         promise,
-        promise_all,
+        promise_aggregate,
         disposable_stack: _,
         disposable_resources,
         raw_json: _,
@@ -204,7 +204,7 @@ fn object_symbols(
             visit(symbol(value))?;
         }
     }
-    if let Some(data) = promise_all {
+    if let Some(data) = promise_aggregate {
         for value in data.values() {
             visit(symbol(value))?;
         }
@@ -252,7 +252,7 @@ fn object_symbols(
             | Callable::PromiseCapabilityExecutor(_)
             | Callable::PromiseResolvingFunction { .. }
             | Callable::PromiseFinally { .. }
-            | Callable::PromiseAllResolveElement { .. },
+            | Callable::PromiseAggregateElement { .. },
         )
         | None => visit(None)?,
     }

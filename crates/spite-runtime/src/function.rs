@@ -42,7 +42,7 @@ mod object;
 mod ordinary;
 mod promise;
 pub use promise::PromiseJobOutcome;
-pub(crate) use promise::{PromiseCapability, PromiseFinallyKind, PromiseJob};
+pub(crate) use promise::{PromiseAggregateKind, PromiseCapability, PromiseFinallyKind, PromiseJob};
 mod proxy;
 mod reflect;
 mod regexp;
@@ -930,10 +930,10 @@ pub(crate) enum Callable {
         cell: ObjectHandle,
         kind: PromiseFinallyKind,
     },
-    PromiseAllResolveElement {
+    PromiseAggregateElement {
         state: ObjectHandle,
         index: usize,
-        called: bool,
+        fulfilled: bool,
     },
     Bound(BoundFunction),
     Arrow(ScriptFunction),
@@ -956,7 +956,7 @@ impl Callable {
             | Self::PromiseCapabilityExecutor(_)
             | Self::PromiseResolvingFunction { .. }
             | Self::PromiseFinally { .. }
-            | Self::PromiseAllResolveElement { .. } => FunctionText::Native(""),
+            | Self::PromiseAggregateElement { .. } => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1480,12 +1480,13 @@ impl Realm {
                         span,
                     );
                 }
-                Some(Callable::PromiseAllResolveElement { .. }) => {
+                Some(Callable::PromiseAggregateElement { fulfilled, .. }) => {
                     let Value::Object(function) = function else {
                         unreachable!("resolve element is callable")
                     };
-                    return self.promise_all_resolve_element(
+                    return self.promise_aggregate_element(
                         function,
+                        fulfilled,
                         arguments.next().unwrap_or(Value::Undefined),
                         span,
                     );

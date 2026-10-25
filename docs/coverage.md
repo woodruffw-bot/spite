@@ -52,10 +52,30 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers/race/all, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17445 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers/race/all/allSettled, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17653 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise.allSettled
+
+AllSettled shares the ordered aggregation storage and iterator path with all.
+Each input's fulfill/reject pair shares one guard. Its first callback creates an
+intrinsic ordinary snapshot with standard status/value/reason descriptors; the
+aggregate fulfills after every input settles, in input order. Iteration errors
+reject directly, while host failures bypass JavaScript callbacks and cleanup.
+
+Five Runtime regressions cover mixed/deferred snapshots, empty input, shared
+guards, reentrant callbacks, metadata and return values, prototype/global
+mutation, object/Symbol retention and cleanup/error categories. The five all
+regressions also exercise the common path. All 104 complete unchanged upstream
+originals pass 208 variants, with verified Git blob hashes and SHA-256 digests.
+Inventories contain 9,110 fixtures, nineteen helpers, 9,091 reviewed sources and
+17,653 variants. Runtime has 630 case files, 398 units and 1,812 integrations
+outside RegExp groups.
+All 17,653 variants and all 40 Test262 package tests pass. Runtime units and
+integrations, strict Clippy, Rust 1.88 all-target checks, formatting, dependency
+policy and fixture inventories pass as well.
 
 ## Promise.all
 

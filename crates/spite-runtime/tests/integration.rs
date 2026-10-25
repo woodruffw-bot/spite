@@ -1297,5 +1297,7 @@ mod regexp_unicode_zero_minimum_asserted_alternative_string_class_captures;
 
 #[path = "cases/promise_all.rs"]
 mod promise_all;
+#[path = "cases/promise_all_settled.rs"]
+mod promise_all_settled;
 #[path = "cases/promise_race.rs"]
 mod promise_race;
