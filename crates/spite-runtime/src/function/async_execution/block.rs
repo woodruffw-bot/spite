@@ -3,7 +3,7 @@
 use super::{AsyncExecutionData, Step, active_statement};
 use crate::{
     Completion, Error, Realm,
-    object::async_execution::{AsyncBlockCursor, StatementLocation},
+    object::async_execution::{AsyncBlockCursor, StatementChild, StatementLocation},
 };
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, StatementKind};
@@ -19,7 +19,7 @@ fn child_location(
         .try_reserve(parent.children.len() + 1)
         .map_err(|_| allocation_error(span))?;
     children.extend_from_slice(&parent.children);
-    children.push(index);
+    children.push(StatementChild::Block(index));
     Ok(StatementLocation {
         root: parent.root,
         children,
@@ -38,7 +38,9 @@ impl Realm {
         &mut self,
         data: &mut AsyncExecutionData,
     ) -> Result<Step, Error> {
-        let location = if let Some(block) = data.blocks.last() {
+        let location = if let Some(next) = data.next.take() {
+            next
+        } else if let Some(block) = data.blocks.last() {
             let StatementKind::Block(body) =
                 &active_statement(&data.body, Some(&block.location)).kind
             else {

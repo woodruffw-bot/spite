@@ -60,6 +60,24 @@ not an alternative language specification.
 
 
 
+## Conditional suspension
+
+If conditions and selected branches can await. Completed conditions use Boolean
+truthiness once; unselected branches stay unevaluated. Queued source locations
+execute the selected statement before parent execution continues, and block
+branches reuse lexical cursors. Var branches keep their original references and
+parameter aliases. Condition rejection unwinds enclosing resources before either
+branch begins.
+
+Eight Runtime groups cover selection, else-if paths, TDZ/functions, skipped gaps,
+returns/throws/rejection, aliases, private context, collection and truthiness.
+A Symbol ownership control covers a suspended selected branch environment.
+All 416 units and 1,955 non-RegExp integrations pass across 648 Runtime case files.
+Complete original reviews remain 32 passing/12 Unsupported await variants and
+146 passing/116 Unsupported Array/adapter variants, with no new admissions.
+Inventories remain 9,573 fixtures, twenty helpers, 9,554 reviewed sources and
+18,556 variants. Intrinsics, Parser checks and quotas are unchanged.
+
 ## Nested block suspension
 
 Plain nested blocks retain lexical cursors and source paths across await. Existing

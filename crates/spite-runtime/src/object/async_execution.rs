@@ -19,13 +19,21 @@ pub(crate) enum AsyncAwaitAction {
     Return,
     Throw,
     Expression,
+    IfTest,
     Binding { element: usize },
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum StatementChild {
+    Block(usize),
+    IfConsequent,
+    IfAlternate,
 }
 
 #[derive(Debug)]
 pub(crate) struct StatementLocation {
     pub root: usize,
-    pub children: Vec<usize>,
+    pub children: Vec<StatementChild>,
 }
 
 #[derive(Debug)]
@@ -43,6 +51,7 @@ pub(crate) struct AsyncExecutionData {
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
+    pub next: Option<StatementLocation>,
     pub blocks: Vec<AsyncBlockCursor>,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,

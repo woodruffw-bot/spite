@@ -494,7 +494,7 @@ statement indices. Body-level throw expressions can suspend and resume to a real
 throw completion (14.14, Await); the completed throw value rejects the async
 function's Promise directly, without thenable assimilation. Await rejection keeps
 its reason. Root resource disposal, suppression and host-abort rules are shared
-with other abrupt completions. Conditional, loop and try continuations remain work.
+with other abrupt completions. Loop and try continuations remain work.
 
 Nested plain BlockStatements have owned lexical cursors (14.2.3). Typed statement
 locations retain a root index and child-block indices into immutable source;
@@ -508,8 +508,17 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Conditional, loop, labelled and try statements still use ordinary execution
-and retain their explicit await boundaries.
+them. Loop, labelled and try statements still use ordinary execution and retain
+their explicit await boundaries.
+
+If statements suspend in conditions and selected branches (14.6.2). A completed
+condition uses ordinary ToBoolean once; unselected branches remain unevaluated.
+Typed consequent/alternate child locations queue the selected statement before
+the parent cursor advances again. The owned active location moves into that
+queue, and nested block branches use existing lexical cursors. If adds no lexical
+environment. Return/throw/rejection use existing scope unwinding, including
+condition rejection before either branch starts. No further condition evaluation
+or branch replay occurs after suspension.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

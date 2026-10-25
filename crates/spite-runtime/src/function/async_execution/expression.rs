@@ -68,6 +68,14 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("expression statement root"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::IfTest) => {
+            let StatementKind::If { test, .. } =
+                &active_statement(&data.body, data.statement.as_ref()).kind
+            else {
+                unreachable!("conditional expression root");
+            };
+            test
+        }
         (ArrowBody::Block(_), ExprRoot::Binding { element }) => {
             let bindings = match &active_statement(&data.body, data.statement.as_ref()).kind {
                 StatementKind::Lexical { bindings, .. }

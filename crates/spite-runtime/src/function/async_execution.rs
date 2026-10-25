@@ -1,6 +1,7 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
 mod block;
+mod conditional;
 mod expression;
 
 use super::{
@@ -10,7 +11,8 @@ use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
     object::{
         async_execution::{
-            AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData, StatementLocation,
+            AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData, StatementChild,
+            StatementLocation,
         },
         async_expression::ExprRoot,
     },
@@ -27,11 +29,19 @@ fn active_statement<'a>(
     };
     let location = location.expect("active source statement");
     let mut statement = &body.statements()[location.root];
-    for index in &location.children {
-        let StatementKind::Block(body) = &statement.kind else {
-            unreachable!("typed block statement path");
+    for child in &location.children {
+        statement = match (child, &statement.kind) {
+            (StatementChild::Block(index), StatementKind::Block(body)) => &body[*index],
+            (StatementChild::IfConsequent, StatementKind::If { consequent, .. }) => consequent,
+            (
+                StatementChild::IfAlternate,
+                StatementKind::If {
+                    alternate: Some(alternate),
+                    ..
+                },
+            ) => alternate,
+            _ => unreachable!("typed statement child path"),
         };
-        statement = &body[*index];
     }
     statement
 }
@@ -100,6 +110,7 @@ impl Realm {
             expression: None,
             index: 0,
             statement: None,
+            next: None,
             blocks: Vec::new(),
             pending: AsyncAwaitAction::Discard,
             root_scope,
@@ -198,6 +209,18 @@ impl Realm {
             let span = statement.span;
             self.tick(span)?;
             return self.enter_async_block(data, span);
+        }
+        if let StatementKind::If { test, .. } = &statement.kind {
+            self.tick(statement.span)?;
+            if expression::has_supported_await(test) {
+                return self.start_async_expression(
+                    data,
+                    ExprRoot::IfTest,
+                    AsyncAwaitAction::IfTest,
+                );
+            }
+            let value = self.expression(test)?;
+            return self.finish_async_if(data, value);
         }
         if matches!(
             statement.kind,
@@ -314,6 +337,7 @@ impl Realm {
                 target: None,
             })),
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
+            AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
             AsyncAwaitAction::Binding { element } => {
                 self.async_binding_step(data, element, Some(value))
             }

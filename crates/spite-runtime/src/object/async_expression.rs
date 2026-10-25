@@ -9,6 +9,7 @@ use spite_parser::ast::{BinaryOp, UnaryOp};
 pub(crate) enum ExprRoot {
     Arrow,
     Statement,
+    IfTest,
     Binding { element: usize },
 }
 
