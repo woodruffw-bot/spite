@@ -345,8 +345,8 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. Await suspension and async generators remain
-Unsupported. Async objects inherit the retained non-callable
+that context. General await expressions and async generators remain
+Unsupported; direct awaited body continuations are implemented below. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
 tag follow 27.7. Direct async definitions have ordinary name/length/source
@@ -361,11 +361,11 @@ Function-body lexical and function-declaration preparation is separate from
 statement execution and resource disposal. This allows resumable body execution
 to reuse call setup without reconstructing or rerunning parameter initialization.
 
-Non-suspending async calls create a fresh intrinsic Promise capability before
+Async calls create a fresh intrinsic Promise capability before
 parameter/body instantiation (EvaluateAsyncFunctionBody). Normal returns resolve
 it; parameter, body and then-lookup language failures reject it. Host failures
-bypass rejection, and work allowances are preserved across the calls. Bodies run
-synchronously, while Promise handlers and thenable assimilation remain jobs.
+bypass rejection, and work allowances are preserved across the calls. Bodies run synchronously until a supported await suspends them. Promise
+handlers and thenable assimilation remain jobs.
 Returning an existing Promise still produces a fresh wrapper. Public Promise
 bindings and prototype changes cannot replace internal function kinds or the
 intrinsic capability constructor. Function environments, returned values and the
@@ -379,8 +379,8 @@ Async source includes the six-character prefix in string/source work limits.
 Default/fallback prototypes use the retained async intrinsics, while explicit
 newTarget prototypes and subclasses remain observable after all conversions and
 validation. UTF-16 literals/comments and source remain lossless. Await bodies
-compile with retained AwaitExpression nodes; executing an await still reports
-Unsupported until continuation execution is implemented.
+compile with retained AwaitExpression nodes and share source body execution.
+General nested await expressions retain explicit Unsupported boundaries.
 
 Async arrows (15.9) retain an explicit kind and their complete source prefix.
 Their heads use +Await independently of ordinary calls named async; their bodies
@@ -397,7 +397,7 @@ home objects. Super property evaluation uses the original receiver in parameters
 and bodies. Methods inherit %AsyncFunction.prototype% and cannot be constructed.
 Literal class constructors cannot be async; computed constructor names remain
 ordinary method names. Prefix line breaks, duplicate method parameters and await
-bindings are syntax errors. Generator methods and await execution remain Unsupported.
+bindings are syntax errors. Generator methods remain Unsupported.
 
 AwaitExpression (13.3.9) retains its UnaryExpression operand and complete source
 range. It binds before multiplication, logical operators and conditionals; an
@@ -408,10 +408,33 @@ computed keys inherit their appropriate Await grammar; parameters and class
 initialization enforce their separate restrictions. Arrow parameter probes
 isolate and restore that restriction so ordinary parenthesized expressions retain
 the enclosing async context. Nested async bodies in defaults remain valid.
-Until suspension frames are implemented, the evaluator reports Unsupported before
-evaluating an AwaitExpression operand. Unexecuted awaited bodies remain ordinary
-async function objects, including dynamically compiled functions. The host failure
-bypasses JavaScript rejection, catches and finalizers.
+The generic expression evaluator reports Unsupported before an AwaitExpression
+operand. An async body cursor intercepts direct await expression statements and
+return-await in block bodies, and direct await concise arrows, including transparent
+parentheses (Await, sec-asyncblockstart). The cursor advances once before
+suspending; ordinary statements and operands use existing evaluation. Nested
+await operands, initializers, general expressions and control-flow continuations
+retain their explicit gap. Unreachable awaits remain unevaluated.
+
+Before suspension the cursor captures only the global environment plus the
+callee's own scope suffix, VariableEnvironment and strictness. Environment outer
+links retain closures, this, arguments, home objects and private names without
+retaining unrelated caller scopes. A private traced object holds this state,
+body syntax, instruction position, root resource scope and intrinsic capability.
+There is no state object allocation for a body that completes without awaiting.
+Shared native Await uses intrinsic PromiseResolve and internal reactions without
+public then/species lookup. PromiseResolve language failures complete under the
+current context without suspension. Successful reactions resume from the saved
+position under the captured context, then restore their caller before settlement.
+
+Root using resources remain registered across suspension. Completion reuses
+DisposeResources, including original throw identity and suppression. Host aborts
+bypass rejection and cleanup calls, and release cached resources from owned
+scopes with prepaid, unmetered removal even after work exhaustion. Finished or
+aborted state slots release captures. Context installation does not restore old
+native stack depths or work counters: each host job keeps its existing execution
+sequence and allowance. Unexecuted awaited bodies remain ordinary async function
+objects, including dynamically compiled functions.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

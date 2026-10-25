@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9498 unmodified test fixtures and nineteen harness files come from
+These 9536 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,26 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Direct await execution fixtures
+
+Two complete unchanged await originals add four variants, including native job
+interleaving. Thirty-six complete Array.fromAsync originals add 68 variants for
+async errors, iteration closing, value assimilation counts, custom constructors,
+length failures and mapper this arguments. Four this-argument files select one
+mode each. Every admitted source's Git blob hash and manifest SHA-256 digest was
+verified; existing helpers suffice.
+
+The complete await review now passes eighteen variants from nine of 22 originals.
+The Array/adapter review passes 86 variants from 45 Array originals; fifty Array
+originals and all 38 adapter originals remain Unsupported. Reviews contain no
+failed, missing-helper, quota or unverified outcomes. These results do not cover
+general await expressions/control flow or async generators.
+
+Ten Runtime groups exercise direct suspension, contexts, resource lifetimes,
+host failures and collection; Symbol ownership controls cover frame cycles.
+Inventories contain 9,536 fixtures, nineteen helpers, 9,517 reviewed sources and
+18,482 variants. Native intrinsic counts and product quotas are unchanged.
 
 ## Await grammar fixtures
 

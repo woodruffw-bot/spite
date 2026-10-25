@@ -74,7 +74,7 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        self.with_arrow_call(arrow, arguments, span, |realm, body| match body {
+        self.with_arrow_call(arrow, arguments, span, |realm, body| match &body {
             ArrowBody::Expression(body) => realm.expression(body),
             ArrowBody::Block(body) => realm.function_body(body, span),
         })
@@ -85,7 +85,7 @@ impl Realm {
         arrow: ScriptFunction,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
-        evaluate_body: impl FnOnce(&mut Self, &ArrowBody) -> Result<T, Error>,
+        evaluate_body: impl FnOnce(&mut Self, ArrowBody) -> Result<T, Error>,
     ) -> Result<T, Error> {
         let bindings = self.pattern_bindings(
             arrow
@@ -117,7 +117,7 @@ impl Realm {
             }
             self.initialize_parameters(&arrow.parameters, &mut arguments)?;
             self.instantiate_function_vars(&arrow.parameters, &arrow.body, span)?;
-            evaluate_body(self, &arrow.body)
+            evaluate_body(self, arrow.body)
         })();
         self.strict = caller_strict;
         self.variable_environment = caller_variable;

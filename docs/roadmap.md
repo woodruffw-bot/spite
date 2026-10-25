@@ -376,7 +376,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse and execute non-suspending async arrows with lexical context, async intrinsic metadata and fresh Promise completion.
 - [x] Parse and execute non-suspending async object/class/static/private methods with live home objects, private brands and Promise completion.
 - [x] Parse AwaitExpression with unary precedence, context-sensitive parameters, strict validation and retained source spans.
-- [ ] Add await suspension and continuation execution.
+- [x] Suspend/resume direct await statements, return-await and concise await arrows with traced environments, intrinsic Promise jobs and lexical resource cleanup.
+- [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

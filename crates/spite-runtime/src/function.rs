@@ -10,6 +10,7 @@ mod arguments;
 mod array;
 mod array_buffer;
 mod arrow;
+mod async_execution;
 mod async_function;
 mod async_iterator;
 pub(crate) mod async_native;
@@ -1562,6 +1563,9 @@ impl Realm {
                         async_native::AsyncResumeKind::ArrayFromAsync => {
                             self.resume_array_from_async(state, fulfilled, value, span)
                         }
+                        async_native::AsyncResumeKind::Execution => {
+                            self.resume_async_execution(state, fulfilled, value, span)
+                        }
                     };
                 }
                 Some(Callable::PromiseAggregateElement { fulfilled, .. }) => {
@@ -1593,9 +1597,7 @@ impl Realm {
                 }
                 Some(Callable::Arrow(arrow)) => {
                     if arrow.kind == spite_parser::ast::FunctionKind::Async {
-                        return self.call_async_body(span, |realm| {
-                            realm.call_arrow(arrow, arguments, span)
-                        });
+                        return self.call_async_arrow(arrow, arguments, span);
                     }
                     return self.call_arrow(arrow, arguments, span);
                 }
@@ -1604,16 +1606,16 @@ impl Realm {
                         unreachable!("callable object")
                     };
                     if code.kind == spite_parser::ast::FunctionKind::Async {
-                        return self.call_async_body(span, |realm| {
-                            realm.call_ordinary(
+                        return self.call_async_ordinary(
+                            ordinary::OrdinaryInvocation {
                                 code,
                                 callee,
                                 this,
-                                Default::default(),
+                                context: Default::default(),
                                 arguments,
-                                span,
-                            )
-                        });
+                            },
+                            span,
+                        );
                     }
                     return self.call_ordinary(
                         code,
@@ -1636,9 +1638,16 @@ impl Realm {
                         class_field_initializer: false,
                     };
                     if code.kind == spite_parser::ast::FunctionKind::Async {
-                        return self.call_async_body(span, |realm| {
-                            realm.call_ordinary(code, callee, this, context, arguments, span)
-                        });
+                        return self.call_async_ordinary(
+                            ordinary::OrdinaryInvocation {
+                                code,
+                                callee,
+                                this,
+                                context,
+                                arguments,
+                            },
+                            span,
+                        );
                     }
                     return self.call_ordinary(code, callee, this, context, arguments, span);
                 }

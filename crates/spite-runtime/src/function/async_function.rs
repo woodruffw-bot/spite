@@ -1,6 +1,6 @@
-//! Async function intrinsics and non-suspending bodies (27.7, 15.8).
+//! Async function intrinsics and Promise body completion (27.7, 15.8).
 
-use super::Builtin;
+use super::{Builtin, PromiseCapability, async_execution::AsyncBodyOutcome};
 use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
@@ -66,13 +66,15 @@ impl Realm {
     pub(super) fn call_async_body(
         &mut self,
         span: Span,
-        execute: impl FnOnce(&mut Self) -> Result<Value, Error>,
+        execute: impl FnOnce(&mut Self, &PromiseCapability, usize) -> Result<AsyncBodyOutcome, Error>,
     ) -> Result<Value, Error> {
         // Async function/concise-body evaluation creates a fresh Promise before
         // declaration instantiation. Public Promise bindings/methods are unused.
         let capability = self.intrinsic_promise_capability(span)?;
-        match execute(self) {
-            Ok(value) => {
+        let base = self.scopes.len();
+        match execute(self, &capability, base) {
+            Ok(AsyncBodyOutcome::Suspended) => (),
+            Ok(AsyncBodyOutcome::Complete(value)) => {
                 self.call(capability.resolve, Value::Undefined, vec![value], span)?;
             }
             Err(error) => {

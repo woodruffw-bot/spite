@@ -7,6 +7,7 @@ use spite_core::{JsString, Span};
 pub(crate) enum AsyncResumeKind {
     DisposeResources,
     ArrayFromAsync,
+    Execution,
 }
 
 impl Realm {

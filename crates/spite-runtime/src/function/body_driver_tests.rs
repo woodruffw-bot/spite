@@ -42,7 +42,7 @@ fn invoke<T>(
                 let ArrowBody::Block(body) = body else {
                     panic!("block");
                 };
-                execute(realm, body)
+                execute(realm, &body)
             })
         }
         _ => panic!("ordinary or arrow"),

@@ -56,9 +56,44 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18410 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18482 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Direct await execution
+
+Async functions, methods, dynamic functions and arrows suspend at direct await
+expression statements and return-await in block bodies, and direct await concise
+arrow bodies. Each statement/operand executes once, then the saved cursor resumes
+through intrinsic Promise jobs. Fulfillment, rejection and constructor getter
+failures preserve timing and reasons. Native await bypasses public then/species
+hooks and replaced Promise names. Nested await expressions, initializers and
+suspended control-flow statements remain Unsupported; unreachable awaits are
+skipped. The generic expression evaluator keeps its explicit host boundary.
+
+Traced contexts retain callee scopes, parameters, arguments, this, private/home
+objects, variable environments and strictness across suspension. They exclude
+unrelated callers. Bodies that do not await need no state object. Root using
+resources survive suspension and dispose on completion, with suppression after
+rejection. Host failures skip JavaScript rejection/cleanup and release cached
+methods even at work budget zero. Finished states release captured environments.
+
+Ten new Runtime groups cover FIFO jobs, return values/reasons, hooks, lexical and
+private contexts, dynamic source, collection, disposal, suppression, host errors
+and opt-in work aborts. Symbol ownership checks include unreachable async-frame
+cycles. All 416 Runtime units and 1,890 non-RegExp integration groups pass.
+Runtime case files increase to 640; Parser inventories remain eighteen units,
+355 integrations and 75 files. Intrinsic entries remain 579 and quotas do not change.
+
+The unchanged 22-source await review passes eighteen variants from nine originals;
+thirteen sources remain Unsupported. The 133-source Array/adapter review passes
+86 variants from 45 Array originals and defers fifty Array plus 38 adapter
+originals. Thirty-six new Array originals add 68 variants; two new await originals
+add four, including interleaved job-order checks. Git blob hashes and manifest
+SHA-256 digests were verified, with existing helpers. Inventories contain 9,536
+fixtures, nineteen helpers, 9,517 reviewed sources and 18,482 variants. All
+reviewed variants and forty Test262 package tests pass. Formatting, strict Clippy,
+Rust 1.88, dependency policy and fixture inventories pass.
 
 ## Function-body driver preparation
 

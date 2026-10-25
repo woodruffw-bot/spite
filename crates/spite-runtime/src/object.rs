@@ -26,6 +26,7 @@ mod typed_array;
 pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArraySetAction};
 pub(crate) mod array_from_async;
 mod async_dispose;
+pub(crate) mod async_execution;
 mod descriptor;
 mod disposable_stack;
 pub(crate) use disposable_stack::{DisposableResource, DisposableStackKind, DisposalHint};
@@ -112,6 +113,7 @@ pub struct OrdinaryObject {
     promise_aggregate: Option<Box<promise_aggregate::PromiseAggregateData>>,
     disposable_stack: Option<Box<disposable_stack::DisposableStackData>>,
     async_disposal: Option<Box<async_dispose::AsyncDisposeData>>,
+    async_execution: Option<Box<async_execution::AsyncExecutionData>>,
     array_from_async: Option<Box<array_from_async::AsyncArrayData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
@@ -159,6 +161,7 @@ impl OrdinaryObject {
             promise_aggregate: None,
             disposable_stack: None,
             async_disposal: None,
+            async_execution: None,
             array_from_async: None,
             disposable_resources: None,
             raw_json: false,
@@ -498,6 +501,7 @@ impl Trace for OrdinaryObject {
             .chain(self.set.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_stack.iter().flat_map(|data| data.trace()))
             .chain(self.async_disposal.iter().flat_map(|data| data.trace()))
+            .chain(self.async_execution.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
                 resources
