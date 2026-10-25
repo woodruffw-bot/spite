@@ -14170,3 +14170,10 @@ remain empty and all operand captures undefined. The fixed-count sticky probe
 and complete-character candidate loop keep linear actual work and the approved
 initial-pair rewind. Earlier line-only negative proofs keep their domains and
 charges. Runtime integration remains separate.
+
+Runtime selects the negative word-atom proof after the line-only negative entry,
+using full normalized source and the same successful offset reset. Its empty
+result and undefined operand slots use the shared accessor, preserving own
+named indices properties, original source and flags, String consumers, copies
+and collection. Original-context word/line gates and complete-character search
+remain in Core; reentrant conversions remain outside the compiler frame.

@@ -25806,3 +25806,27 @@ and all 16,343 reviewed corpus variants with the existing conformance profile
 lookbehind constructors, including word predicates and predecessor captures.
 Later negative-lookahead increments retain separate focused and differential
 evidence. Fixture, harness and reviewed-entry inventories are unchanged.
+
+## Runtime single-character negative lookahead with word predicates
+
+All eleven current negative-lookahead groups pass (0.93 s), including four new
+groups for word polarity, named undefined capture/indices properties, original
+line/fold/property/backspace context, String consumers, copies and collection.
+Independent expectations require complete-character candidates and initial-pair
+rewind even where V8 selects an interior pair. All thirteen constructor
+regressions pass (0.25 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns against
+the native sticky-candidate oracle with independent Unicode search and state
+bookkeeping. Fourteen ASCII iv patterns contribute 2,912 equivalent-range
+controls for the documented property-fold discrepancy. Eight complete JavaScript
+programs agree separately; independent surrogate expectations stay outside
+direct V8 search comparison.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 621. The
+preceding negative-lookahead snapshot passed all 437 Runtime unit tests; this
+constructor-only Runtime extension has the focused and differential evidence
+above. Broad Test262 results record `8f624262`; negative assertions retain
+separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.
