@@ -27577,3 +27577,23 @@ receives original q source. Strict all-target workspace Clippy, documentation
 tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
 checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+
+## Adjacent-q-union negative lookahead with word predicates: Core
+
+The focused compiler/regression harness passes all 394 groups (2.78 s),
+including four new negative word-union groups. The production library API
+passes all 16 negative string-class groups (0.21 s). These cover complete
+conjunction negation, shorter endpoint retries across operands, empty members
+whose predicates reject, undefined operand slots, original line/fold/backspace/
+pair context, deep scopes, bounded retries and every construction/search work
+abort followed by recovery. Pair-search expectations remain independent
+specification checks.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. None of the
+2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select this constructor; fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

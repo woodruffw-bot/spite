@@ -14944,3 +14944,14 @@ only the empty assertion range is retained, with outside empty captures and
 named undefined operand slots. Checked host errors, enclosing-offset reset on
 proof success, consumers, copies and collection retain the established behavior.
 Reentrant conversions remain outside the compilation frame.
+
+
+A separate negative q-union constructor admits operand word predicates with
+optional ^/$ gates, requiring at least one predicate and two q operands with
+an empty or longer member overall. Sign-only projection delegates to the
+checked positive word-union proof, so successful negation means every member
+fails the complete original-context conjunction, including shorter endpoint
+retries across operands. Empty members alone do not guarantee failure when
+predicates reject their endpoints. Outside spans remain empty and every operand
+slot remains undefined; candidate search and work cancellation retain the
+earlier behavior (22.2.2.4, 22.2.2.7).

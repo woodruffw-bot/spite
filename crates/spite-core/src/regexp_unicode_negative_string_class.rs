@@ -62,6 +62,21 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         Self::compile_with_work_impl::<false, 1, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles negative q-union lookahead with word predicates and optional ^/$.
+    ///
+    /// At least one predicate and two q operands are required, with an empty or
+    /// longer member overall. Negation tests the complete original-context
+    /// conjunction, leaving all operand captures undefined on success. Full
+    /// original v/vi validation and normalized capture heads are required.
+    pub fn compile_q_union_lookahead_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<true, 1, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
