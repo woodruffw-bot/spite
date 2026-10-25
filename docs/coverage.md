@@ -27821,3 +27821,14 @@ alternative controls and legal Unicode-candidate enumeration. None of the
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete Test262 validation of positive character/string-union lookahead
+
+The Runtime snapshot at `5c8fabb6` passes all 16,343 reviewed Test262 variants
+and all 35 runner tests with the conformance profile (392.99 s for the corpus).
+This covers positive character/string-union lookahead with line and word
+predicates, complete single-q and q-union families and earlier assertion paths.
+Later negative character/string-union work has separate focused and differential
+evidence. Fixtures, harness files, reviewed entries, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.

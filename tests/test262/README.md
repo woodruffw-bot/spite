@@ -4093,14 +4093,14 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-25 Runtime snapshot with complete adjacent-q-union lookahead at
-`cfc85314` passes all 16,343 corpus variants and 35 runner tests with the
-conformance profile (382.75 s for the corpus). It covers Unicode positive/negative
-single-character, q-class, scalar and character-result lookahead/lookbehind,
-positive/negative variable-length single-q lookahead with line and word predicates,
-and positive/negative lookahead over adjacent q operands with line and word
-predicates. Later literal-character/string-union work has separate focused and
-differential evidence.
+The 2026-10-25 Runtime snapshot with positive literal-character/string-union
+lookahead at `5c8fabb6` passes all 16,343 corpus variants and 35 runner tests
+with the conformance profile (392.99 s for the corpus). It covers Unicode
+positive/negative single-character, q-class, scalar and character-result
+lookahead/lookbehind, complete variable-length single-q and adjacent-q-union
+lookahead families, and positive character/string-union lookahead with line and
+word predicates. Later negative character/string-union work has separate focused
+and differential evidence.
 Fixture, harness and reviewed-entry inventories are unchanged.
 
 These results do not measure whole-suite conformance. Other tests require grammar,
