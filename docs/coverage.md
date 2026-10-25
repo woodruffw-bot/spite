@@ -26942,3 +26942,17 @@ lexed direct Unsupported controls stay excluded. Strict all-target workspace
 Clippy, documentation tests, formatting, policy, inventories and diff checks
 pass. Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete broad validation of scalar-set assertions
+
+The Runtime snapshot at `3c1dd9f1` passes all 3,051 RegExp integration tests
+(958.62 s), completing its broad validation alongside 35 Test262 package tests
+and 16,343 reviewed corpus variants (510.07 s). Its Core sources pass all 1,817
+library tests on Rust 1.85.0, as recorded at `c599177f`; the earlier scalar
+lookahead snapshot also records all 437 Runtime units. It includes positive/
+negative scalar v-set lookahead/lookbehind with word predicates, independent
+predecessor captures and undefined negative operand slots. Later character-result
+assertion extensions retain separate focused and differential evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
