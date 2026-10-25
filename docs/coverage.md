@@ -25618,6 +25618,7 @@ documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
 
+
 ## Bare-atom lookahead Test262 snapshot
 
 The Runtime snapshot at `04ce1dcc` passes all 35 Test262 package tests and
@@ -25753,3 +25754,29 @@ direct Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime single-character Unicode negative lookahead
+
+Seven new Runtime groups pass (2.58 s), covering named outside/undefined operand
+slots and own indices properties, source and cloning, ordinary/global/sticky
+state, original line/dot/fold/property context, astral/lone-surrogate candidates,
+String consumers, copies, collection, 2,000 capture wrappers, ordered coercions,
+original early errors and construction-work aborts without partial publication.
+Independent expectations exclude V8's interior-pair negative-assertion search.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns against
+the native sticky-candidate oracle with independent complete-character search
+and state bookkeeping. Nine ASCII iv patterns contribute 1,872 equivalent-range
+controls for the documented property-fold discrepancy. Five complete JavaScript
+programs agree separately; independent surrogate expectations remain outside
+direct V8 search comparison.
+
+All 437 Runtime unit tests pass (7.18 s), including the shared negative-assertion
+result cache and every actual-work cancellation followed by recovery.
+All thirteen constructor regressions pass (0.24 s), including native reentry.
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory is 621 case files. Broad runs still record the preceding
+lookahead snapshot; this increment has the focused and differential evidence
+above. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.

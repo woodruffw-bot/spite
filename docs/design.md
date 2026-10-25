@@ -14149,3 +14149,13 @@ undefined, as required when negative lookahead succeeds. The plan stores only
 capture counts and the shared operand, with no input-sized capture allocation.
 Source and search cancellation precede their work, and callbacks share private
 compiler/search bodies. Runtime integration remains separate.
+
+Runtime selects the negative single-character entry after the existing positive
+assertion proofs, using full normalized source and resetting the projected
+capture offset on success. Its common result cache stores the empty match only;
+outside captures derive from that position and operand slots stay undefined.
+Named result/indices properties, replacement callbacks, split, copies and
+collection all use the shared capture accessor. The compiler remains separate
+from reentrant input conversions. Native V8 search can select an interior-pair
+candidate for `(?!😀)`; independent expectations and sticky probes at legal
+Unicode boundaries verify the complete-character search required here.
