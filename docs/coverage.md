@@ -26003,3 +26003,29 @@ with word predicates and undefined operand captures, alongside the completed
 positive assertion support. Later q-class assertion extensions retain their
 focused and differential evidence. Fixture, harness and reviewed-entry
 inventories are unchanged.
+
+## Runtime q-class lookahead with word predicates
+
+All twenty-eight current positive-lookahead groups pass (2.13 s), including four
+additional q-class word-predicate groups. Checks cover original boundary
+polarity, named independent capture ranges and original q source/flags, line and
+case-fold context, property members, backspace data, String consumers, copies,
+collection and independent initial-pair expectations. All thirteen constructor
+regressions pass (0.20 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+The 191 ignoreCase patterns contribute 39,728 equivalent ordinary-q control
+records for the documented Node defect. Twenty-two ASCII iv patterns also use
+the documented equivalent-range control (4,576 overlapping records). Twenty-four
+complete JavaScript programs pass with the same documented equivalent controls.
+Actual Runtime expectations retain the original q syntax; the earlier line-only
+Core record preserves the original-q baseline disagreements.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+preceding negative-lookahead snapshot records all 437 Runtime units; this
+constructor-only Runtime increment has the focused and differential evidence
+above. Broad Test262 results now record `427133a0`; later q-class assertions
+retain separate focused evidence. Fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.

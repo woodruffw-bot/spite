@@ -14258,3 +14258,11 @@ including a backspace member, stays distinct from outside word assertions.
 Outside wrappers remain empty; checked work/capacity errors retain their host
 contracts. The line-only q-class entry keeps its proof domain and callback
 sequence through the shared flat parser. Runtime integration remains separate.
+
+Runtime selects the word-predicate q-class lookahead entry after the line-only
+q-class proof, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset; checked construction errors retain
+the existing host mapping. Shared empty/operand range caching preserves names,
+original q source, indices, String consumers, copies and collection. Original
+context and complete-character search remain in Core; reentrant conversions
+remain outside the compiler frame.
