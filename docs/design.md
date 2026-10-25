@@ -14637,3 +14637,15 @@ mapping. Shared empty/predecessor range caching preserves original q/set
 syntax, named indices, String consumers, copies and collection. The static
 character-result proof, original line context and complete Unicode search
 remain in Core; user conversions stay outside the compiler frame.
+
+
+A separate checked character-result lookbehind entry admits leading/trailing
+operand word predicates with optional ^/$ gates, requiring at least one word
+predicate (22.2.2.4, 22.2.2.9). A class contains an empty or longer q member
+and has MayContainStrings false; the checked character-result compiler retains
+one fixed iteration inside those gates. A bounded predecessor probe preserves
+original line/word/fold context. Outside wrappers remain empty at its end, while
+operand wrappers capture the complete predecessor. Character-result algebra,
+checked errors, complete Unicode advancement, initial-pair rewind and
+actual-work cancellation retain their shared paths. Earlier entries keep their
+domains and charges. Runtime integration remains separate.
