@@ -27478,3 +27478,16 @@ receives original q source. Strict all-target workspace Clippy, documentation
 tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
 checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+
+## Complete variable-length single-q lookahead Core validation on Rust 1.85
+
+The Core snapshot at `269af9fd` passes all 1,867 library tests on Rust 1.85.0
+with the normal test profile (492.35 s). This includes cancellable string-trie
+search and positive/negative variable-length single-q lookahead with line and
+word predicates, alongside all earlier assertion paths. The reported build
+stage completed in 6m13s; total elapsed time was 865.61 s. Maximum child RSS
+was 5,322,320 KiB in this incremental run. No compiler diagnostic flags, profile
+changes, native-stack overrides or default quotas were used. Later adjacent-q-
+union work has separate focused and differential evidence. Fixtures, snapshots
+and dependencies are unchanged.
