@@ -29,11 +29,26 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<false, E>(source, ignore_case, multiline, &mut charge)
+    }
+
+    /// Compiles negative single-q lookahead with operand word predicates and line gates.
+    ///
+    /// At least one predicate is required. The checked positive proof tests the
+    /// complete original-context conjunction, including shorter-member retries.
+    /// Successful negation leaves every operand capture undefined (22.2.2.4).
+    /// Full original v/vi validation and normalized capture heads are required.
+    pub fn compile_single_q_lookahead_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<true, E>(source, ignore_case, multiline, &mut charge)
     }
 
     #[inline(never)]
-    fn compile_with_work_impl<E>(
+    fn compile_with_work_impl<const WORD: bool, E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
@@ -56,9 +71,19 @@ impl RegExpUnicodeNegativeStringClassMatcher {
             .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
         projected.extend_from_slice(units);
         projected[assertion.start + 2] = 0x3d;
-        let positive = RegExpUnicodePositiveStringClassMatcher::compile_single_q_lookahead_validated_with_work(
-            &JsString::from_code_units(projected), ignore_case, multiline, charge,
-        )?;
+        let source = JsString::from_code_units(projected);
+        let positive = if WORD {
+            RegExpUnicodePositiveStringClassMatcher::compile_single_q_lookahead_with_word_boundaries_validated_with_work(
+                &source, ignore_case, multiline, charge,
+            )?
+        } else {
+            RegExpUnicodePositiveStringClassMatcher::compile_single_q_lookahead_validated_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                charge,
+            )?
+        };
         Ok(positive.map(|positive| Self {
             positive,
             outside_captures,

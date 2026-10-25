@@ -14849,3 +14849,13 @@ caches the empty root with no operand range or dynamic capture state. Capture
 lookup retains outside empty spans and named undefined operand slots through
 RegExpBuiltinExec, String consumers, copies and collection. User coercions
 remain outside the compilation frame.
+
+
+A separate negative single-q lookahead constructor admits operand word predicates
+with optional ^/$ gates. At least one word predicate is required. Sign-only
+projection delegates to the checked positive word-predicate proof, so negation
+applies to the whole original-context conjunction, including all longer/shorter/
+empty endpoint retries. Failure of a boundary can make negation succeed even
+when the class has an empty member. Successful negative matches retain empty
+outside spans and undefined operand slots; candidate traversal and cancellation
+remain shared with the earlier negative string proof (22.2.2.4).

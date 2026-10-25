@@ -1041,6 +1041,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute variable-length q-class lookahead with word predicates through Runtime and String consumers, preserving named captures and original endpoint context.
 - [x] Compile negative lookahead over one variable-length q class with line gates, preserving checked errors, original context and undefined operand captures.
 - [x] Execute negative variable-length q-class lookahead through Runtime and String consumers with original bindings and named undefined slots.
+- [x] Compile negative variable-length q-class lookahead with operand word predicates and line gates, preserving checked conjunction semantics and undefined operand slots.
+- [ ] Execute negative variable-length q-class lookahead with word predicates through Runtime and String consumers, preserving original context and named undefined captures.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
