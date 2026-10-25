@@ -3287,6 +3287,11 @@ IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
 for widths one, two, and eight; width four always returns true. Shared buffers,
 wait queues, agents, and their memory-model events remain deferred.
 
+Atomics.pause uses the native processor spin-loop hint and returns undefined
+([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,
+requires no receiver or buffer, and ignores extra values after ordinary argument
+evaluation. It performs no coercion, waiting, or Promise work.
+
 ## Private Proxy state and dispatch boundaries
 
 Proxy records retain a checked target/handler pair and the target's callable and

@@ -8585,3 +8585,8 @@ script-pass	ad8c14663db0477dfcbb7385923e666e73a9a3eddd421fac80b8b488f26e16bd	tes
 script-pass	0a79059a14891f7810d4a0ea464596b628e08e48cee0f55f1ac1eca24d038aa5	test/built-ins/DisposableStack/prototype/use/throws-if-value-missing-Symbol.dispose.js
 script-pass	1b966e55dca59a9655a9b7d8463c69fb8ac5a5091431231e39a851d406d215a4	test/built-ins/DisposableStack/prototype/use/throws-if-value-not-object.js
 harness	b884b27b927d91c62eb9fc7d2ff9d76050d524d8179b9993eda3d5a2d9f86525	harness/deepEqual.js
+script-pass	eaebbb96bd7dce7faab9cac7288cd989cccc55ae1f597f25fb750974349b0267	test/built-ins/Atomics/pause/descriptor.js
+script-pass	065794493c37983a553ed910573ff0de00f8e3bc3828623feb21cd356e6fd5de	test/built-ins/Atomics/pause/length.js
+script-pass	902dfa8b969a36cb044f5fd98548d10a3fe773e6c0e5a195052437b974247055	test/built-ins/Atomics/pause/name.js
+script-pass	9c0adeb1e7983766d76e53f4855e7c9fd590abda72944783f10ea7e8e2dcd345	test/built-ins/Atomics/pause/not-a-constructor.js
+script-pass	993a354362bbc725a27c5428301f38311ac2fe26e303e45181bd1026877dfe39	test/built-ins/Atomics/pause/returns-undefined.js

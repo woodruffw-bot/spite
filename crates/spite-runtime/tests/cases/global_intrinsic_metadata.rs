@@ -44,9 +44,9 @@ fn deferred_intrinsic_metadata_graph_matches_edition_17() {
         graph.push(Atomics);
         if(!Object.hasOwn(Object.getOwnPropertyDescriptor(Atomics,Symbol.toStringTag),'value'))throw 2;
         rows.push('Atomics namespace parent='+(Object.getPrototypeOf(Atomics)===Object.prototype)+' global='+flags(Object.getOwnPropertyDescriptor(this,'Atomics'))+' keys='+keys(Atomics)+' tag='+Atomics[Symbol.toStringTag]+'/'+flags(Object.getOwnPropertyDescriptor(Atomics,Symbol.toStringTag)));
-        for(let name of ['add','and','compareExchange','exchange','isLockFree','load','or','store','sub','wait','waitAsync','notify','xor'])member('Atomics.'+name,Atomics,name);
+        for(let name of ['add','and','compareExchange','exchange','isLockFree','load','or','pause','store','sub','wait','waitAsync','notify','xor'])member('Atomics.'+name,Atomics,name);
         rows.push('graph '+graph.length+' distinct='+new Set(graph).size+' extensible='+graph.every(o=>Object.isExtensible(o)));
-        rows.push('absent Proxy.prototype='+Object.hasOwn(Proxy,'prototype')+' Atomics.pause='+('pause' in Atomics)+' FinalizationRegistry.cleanupSome='+('cleanupSome' in FinalizationRegistry.prototype));
+        rows.push('absent Proxy.prototype='+Object.hasOwn(Proxy,'prototype')+' FinalizationRegistry.cleanupSome='+('cleanupSome' in FinalizationRegistry.prototype));
         rows.join('\n')
     "#).unwrap();
     let Value::String(output) = result else {
@@ -84,7 +84,7 @@ fn deferred_intrinsic_metadata_graph_matches_edition_17() {
     WeakRef.prototype.deref deref/0 w-c meta=--c/--c parent=true keys=length,name construct=false
     FinalizationRegistry.prototype.register register/2 w-c meta=--c/--c parent=true keys=length,name construct=false
     FinalizationRegistry.prototype.unregister unregister/1 w-c meta=--c/--c parent=true keys=length,name construct=false
-    Atomics namespace parent=true global=w-c keys=add,and,compareExchange,exchange,isLockFree,load,notify,or,store,sub,wait,waitAsync,xor,@@Symbol.toStringTag tag=Atomics/--c
+    Atomics namespace parent=true global=w-c keys=add,and,compareExchange,exchange,isLockFree,load,notify,or,pause,store,sub,wait,waitAsync,xor,@@Symbol.toStringTag tag=Atomics/--c
     Atomics.add add/3 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.and and/3 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.compareExchange compareExchange/4 w-c meta=--c/--c parent=true keys=length,name construct=false
@@ -92,14 +92,15 @@ fn deferred_intrinsic_metadata_graph_matches_edition_17() {
     Atomics.isLockFree isLockFree/1 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.load load/2 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.or or/3 w-c meta=--c/--c parent=true keys=length,name construct=false
+    Atomics.pause pause/0 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.store store/3 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.sub sub/3 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.wait wait/4 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.waitAsync waitAsync/4 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.notify notify/3 w-c meta=--c/--c parent=true keys=length,name construct=false
     Atomics.xor xor/3 w-c meta=--c/--c parent=true keys=length,name construct=false
-    graph 45 distinct=45 extensible=true
-    absent Proxy.prototype=false Atomics.pause=false FinalizationRegistry.cleanupSome=false
+    graph 46 distinct=46 extensible=true
+    absent Proxy.prototype=false FinalizationRegistry.cleanupSome=false
     "###);
 }
 
@@ -248,7 +249,7 @@ fn additional_metadata_functions_reject_construction_before_deferred_bodies() {
         }
         let namespace=0;try{new Atomics();}catch(e){if(e instanceof TypeError)namespace++;}
         try{Atomics();}catch(e){if(e instanceof TypeError)namespace++;}
-        functions.length===35 && namespace===2
+        functions.length===36 && namespace===2
     "#,
     );
 }
@@ -505,7 +506,7 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
         Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'growable').get,
         Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get,SharedArrayBuffer.prototype.slice,
         WeakRef.prototype.deref,FinalizationRegistry.prototype.register,FinalizationRegistry.prototype.unregister,
-        Atomics.add,Atomics.and,Atomics.compareExchange,Atomics.exchange,Atomics.isLockFree,Atomics.load,Atomics.or,Atomics.store,Atomics.sub,Atomics.wait,Atomics.waitAsync,Atomics.notify,Atomics.xor
+        Atomics.add,Atomics.and,Atomics.compareExchange,Atomics.exchange,Atomics.isLockFree,Atomics.load,Atomics.or,Atomics.pause,Atomics.store,Atomics.sub,Atomics.wait,Atomics.waitAsync,Atomics.notify,Atomics.xor
     ];
     for(let object of values){
         for(let key of Reflect.ownKeys(object)){
@@ -515,9 +516,9 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
     return values;})()"#).unwrap();
     assert_eq!(
         realm.read_property(&objects, &JsString::from("length")),
-        Ok(Value::Number(45.0))
+        Ok(Value::Number(46.0))
     );
-    let handles: Vec<_> = (0..45)
+    let handles: Vec<_> = (0..46)
         .map(|index| {
             let value = realm
                 .read_property(&objects, &JsString::from(index.to_string().as_str()))

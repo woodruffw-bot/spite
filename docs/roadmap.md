@@ -347,6 +347,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement WeakRef construction and deref for object/non-registered Symbol targets, with explicit kept-object checkpoints and checked collection lifetimes.
 - [x] Implement FinalizationRegistry construction, branded register/unregister, object/non-registered Symbol weak cells, and explicit host cleanup jobs with kept-object checkpoints.
 - [x] Implement ordinary-buffer Atomics integer access and read-modify-write operations, isLockFree, notify, and non-shared wait rejection with ordered conversions and live buffer checks.
+- [x] Add Atomics.pause with a native processor spin-loop hint and standard zero-arity metadata.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
 
 ## 5. Modules and suspended execution

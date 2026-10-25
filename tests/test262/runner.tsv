@@ -8549,3 +8549,8 @@ test/built-ins/DisposableStack/prototype/use/throws-if-value-Symbol.dispose-prop
 test/built-ins/DisposableStack/prototype/use/throws-if-value-Symbol.dispose-property-not-callable.js	-	-	-
 test/built-ins/DisposableStack/prototype/use/throws-if-value-missing-Symbol.dispose.js	-	-	-
 test/built-ins/DisposableStack/prototype/use/throws-if-value-not-object.js	-	-	-
+test/built-ins/Atomics/pause/descriptor.js	-	-	-
+test/built-ins/Atomics/pause/length.js	-	-	-
+test/built-ins/Atomics/pause/name.js	-	-	-
+test/built-ins/Atomics/pause/not-a-constructor.js	-	-	-
+test/built-ins/Atomics/pause/returns-undefined.js	-	-	-

@@ -41,7 +41,7 @@ not an alternative language specification.
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
-| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, and non-shared wait/waitAsync rejection |
+| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, pause's processor hint, and non-shared wait/waitAsync rejection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
@@ -52,9 +52,25 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16577 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16587 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Atomics.pause
+
+Atomics.pause issues the platform's processor spin-loop hint and returns
+undefined. It has zero arity and ignores receivers and extra argument values.
+The Runtime regression verifies evaluation order without conversion hooks; the
+existing reflection and intrinsic-retention tests now include pause.
+
+Five unchanged Test262 originals cover descriptors, function metadata,
+non-constructibility and the return value, adding ten Script variants without
+new harness files. Current inventories contain 8,574 fixtures, seventeen helpers,
+8,555 reviewed sources and 16,587 variants.
+All 35 Test262 package tests, including the full corpus, pass. The 19 focused
+Atomics tests, 17 global reflection tests, 392 Runtime units and 1,774 integration
+tests outside the RegExp groups pass. Strict Clippy, Rust 1.88 all-target checks,
+formatting, dependency policy and fixture inventories also pass.
 
 ## DisposableStack
 

@@ -42,6 +42,13 @@ fn exception(source: &str, expected: ExceptionKind) {
 }
 
 #[test]
+fn pause_ignores_receivers_and_extra_values_after_argument_evaluation() {
+    check(
+        "let pause=Atomics.pause,log='',value=new Proxy({},{get(){throw 1}});pause.call(value,value)===undefined&&pause.call(null,Symbol())===undefined&&pause.call(undefined,NaN)===undefined&&pause((log+='a',value),(log+='b',value))===undefined&&log==='ab'",
+    );
+}
+
+#[test]
 fn all_integer_kinds_support_load_store_and_read_modify_write() {
     for (name, bigint) in INTEGER_KINDS {
         let n = if bigint { "n" } else { "" };

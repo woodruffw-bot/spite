@@ -72,6 +72,7 @@ pub(crate) enum Member {
     AtomicsIsLockFree,
     AtomicsLoad,
     AtomicsOr,
+    AtomicsPause,
     AtomicsStore,
     AtomicsSub,
     AtomicsWait,
@@ -111,6 +112,7 @@ impl Member {
             Self::AtomicsIsLockFree => "isLockFree",
             Self::AtomicsLoad => "load",
             Self::AtomicsOr => "or",
+            Self::AtomicsPause => "pause",
             Self::AtomicsStore => "store",
             Self::AtomicsSub => "sub",
             Self::AtomicsWait => "wait",
@@ -122,7 +124,8 @@ impl Member {
 
     pub(super) fn length(self) -> f64 {
         match self {
-            Self::PromiseWithResolvers
+            Self::AtomicsPause
+            | Self::PromiseWithResolvers
             | Self::PromiseSpecies
             | Self::SharedArrayBufferSpecies
             | Self::SharedArrayBufferByteLength
@@ -171,7 +174,7 @@ pub(crate) struct GlobalMetadataIntrinsics {
     // This exact prototype is already rooted in objects, independently of globals.
     pub finalization_registry_prototype: ObjectHandle,
     pub atomics: ObjectHandle,
-    // Four prototypes and 35 distinct method/getter objects remain rooted even
+    // Four prototypes and 36 distinct method/getter objects remain rooted even
     // after scripts replace their configurable properties and global bindings.
     objects: Vec<ObjectHandle>,
 }
@@ -199,7 +202,7 @@ impl Realm {
         span: Span,
     ) -> Result<GlobalMetadataIntrinsics, Error> {
         let mut objects = Vec::new();
-        objects.try_reserve_exact(39).map_err(|_| Error::Limit {
+        objects.try_reserve_exact(40).map_err(|_| Error::Limit {
             span,
             message: "global intrinsic metadata capacity exceeded".into(),
         })?;
@@ -360,6 +363,7 @@ impl Realm {
             Member::AtomicsIsLockFree,
             Member::AtomicsLoad,
             Member::AtomicsOr,
+            Member::AtomicsPause,
             Member::AtomicsStore,
             Member::AtomicsSub,
             Member::AtomicsWait,
@@ -389,7 +393,7 @@ impl Realm {
                 span,
             )?;
         }
-        debug_assert_eq!(objects.len(), 39);
+        debug_assert_eq!(objects.len(), 40);
         Ok(GlobalMetadataIntrinsics {
             promise,
             proxy,
@@ -488,6 +492,12 @@ impl Realm {
             // receiver branding, coercion, allocation, or species recursion.
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
             Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
+            // Atomics.pause (sec-atomics.pause) observes no receiver/arguments.
+            // The platform's spin-loop hint has no JavaScript-visible result.
+            Member::AtomicsPause => {
+                std::hint::spin_loop();
+                Ok(Value::Undefined)
+            }
             Member::AtomicsAdd
             | Member::AtomicsAnd
             | Member::AtomicsCompareExchange
