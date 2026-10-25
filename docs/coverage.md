@@ -25993,3 +25993,13 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Negative Unicode assertion Test262 snapshot
+
+The Runtime snapshot at `427133a0` passes all 35 Test262 package tests and all
+16,343 reviewed corpus variants with the existing conformance profile (430.56 s
+for the corpus). It includes single-character negative lookahead and lookbehind
+with word predicates and undefined operand captures, alongside the completed
+positive assertion support. Later q-class assertion extensions retain their
+focused and differential evidence. Fixture, harness and reviewed-entry
+inventories are unchanged.
