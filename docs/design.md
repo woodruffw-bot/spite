@@ -14768,3 +14768,25 @@ initial-pair rewind retain their established semantics. Search allocates no
 state, and errors return before additional traversal. A private erased callback
 body shares code across callers. Existing find/endpoint-filter entries retain
 their matching, callback and precharged-work contracts.
+
+
+### Positive lookahead over variable-length q classes
+
+Core now proves complete positive lookahead over one unquantified single-q
+class containing an empty or longer member, with optional operand ^/$ gates
+and complete ordinary/noncapturing wrappers around the assertion and operand.
+Full original v/vi Pattern validation and capture-head normalization precede
+this proof. It delegates decoded/folded class construction to the checked
+string-set compiler; source work is charged before scans or fallible projection.
+Other class operands, word gates, repetitions, alternatives, continuation terms
+and references remain separate proofs.
+
+CompileAtom's forward class-string priority selects the longest member whose
+continuation succeeds at the earliest legal Unicode candidate (22.2.2.4,
+22.2.2.7, 22.2.2.9). A failed trailing line gate can select a shorter member.
+An empty alternative at an earlier candidate precedes a consuming member at a
+later candidate. The assertion exports an empty root range and independent
+whole-operand wrapper ranges, including defined empty captures. Outside
+wrappers capture the root range. Matching uses cancellable visited trie steps,
+original input context and UTF-16 extents without input-sized capture state.
+This forward proof does not establish reverse class-string priority.

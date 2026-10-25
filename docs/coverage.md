@@ -27239,3 +27239,23 @@ lookahead/lookbehind modes with word predicates, alongside earlier primitive,
 q-class and scalar-set assertions. Later variable-length string-class work has
 separate focused and differential evidence. No fixtures, snapshots, dependencies,
 profiles, native-stack settings or default quotas changed.
+
+
+## Variable-length single-q positive lookahead Core proof
+
+The actual-source assertion harness passes 366 groups, including four new
+groups for longest-member priority, earliest empty choices, independent outside/
+operand captures, defined-empty members, line-gate endpoint retries, folding,
+lone surrogates, complete Unicode candidates, deep scopes, linear failed
+endpoints and construction/search cancellation with recovery. A braced-surrogate
+pair regression follows the specification independently of Node's documented
+q-escape discrepancy.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree, using twelve independently specified longest-first literal-
+alternative controls and independent Unicode-candidate enumeration. The original
+q Pattern is retained for Core and validated by the native grammar. None of
+2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy and documentation tests pass. Runtime does
+not select this matcher yet; fixtures, snapshots, dependencies, profiles,
+native-stack settings and default quotas are unchanged.

@@ -41,6 +41,7 @@ mod regexp_unicode_folded_literal;
 mod regexp_unicode_literal_class_pair;
 mod regexp_unicode_negative_atom;
 mod regexp_unicode_positive_atom;
+mod regexp_unicode_positive_string_class;
 mod regexp_unicode_property_dot;
 mod regexp_unicode_repeated_atom;
 mod regexp_unicode_string_set;
@@ -108,6 +109,7 @@ pub use regexp_unicode_negative_atom::RegExpUnicodeNegativeAtomMatcher;
 pub use regexp_unicode_positive_atom::{
     RegExpUnicodePositiveAtomMatch, RegExpUnicodePositiveAtomMatcher,
 };
+pub use regexp_unicode_positive_string_class::RegExpUnicodePositiveStringClassMatcher;
 pub use regexp_unicode_property_dot::{
     RegExpUnicodePropertyDotMatch, RegExpUnicodePropertyDotMatcher,
 };
