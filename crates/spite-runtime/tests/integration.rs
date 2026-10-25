@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_await_construction.rs"]
+mod async_await_construction;
+
 #[path = "cases/async_await_members.rs"]
 mod async_await_members;
 

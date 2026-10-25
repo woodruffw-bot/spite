@@ -60,6 +60,25 @@ not an alternative language specification.
 
 
 
+## Awaited construction
+
+New expressions suspend in constructor values and arguments. A typed invocation
+target shares argument continuations with calls while retaining the selected
+constructor. Existing construction handles constructibility, new.target and
+prototype lookup after arguments finish. Awaited member callees use their value;
+spread and host argument limits share the ordinary accumulation path.
+
+Eight Runtime groups cover selection and replacement, awaited callees, absent
+arguments, nonconstructors, spread, nesting, constructor collection, opt-in limits
+and Proxy prototype timing. A Symbol ownership control retains a nonconstructor
+target across an awaited argument, before constructibility is checked. All 416
+units and 1,936 non-RegExp integrations pass across 645 Runtime case files.
+The unchanged upstream reviews retain 32 passing/12 Unsupported await variants
+and 146 passing/116 Unsupported Array/adapter variants. No additional original
+qualifies for admission. Inventories remain 9,573 fixtures, twenty helpers,
+9,554 reviewed sources and 18,556 variants, with unchanged intrinsic entries,
+Parser coverage and quotas.
+
 ## Awaited member references
 
 Ordinary/private member reads, method calls and deletion suspend in bases and

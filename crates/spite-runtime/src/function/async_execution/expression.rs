@@ -7,7 +7,8 @@ use crate::function::CallTarget;
 use crate::{
     Error, Realm, Value,
     object::async_expression::{
-        AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask, MemberAction,
+        AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask, InvocationTarget,
+        MemberAction,
     },
     reference_expression,
 };
@@ -31,6 +32,14 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::Call { callee, arguments } => {
             has_supported_await(callee)
                 || arguments
+                    .iter()
+                    .any(|argument| has_supported_await(argument.expression()))
+        }
+        ExprKind::New { callee, arguments } => {
+            has_supported_await(callee)
+                || arguments
+                    .as_deref()
+                    .unwrap_or(&[])
                     .iter()
                     .any(|argument| has_supported_await(argument.expression()))
         }
@@ -92,9 +101,14 @@ fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) ->
             (ExprChild::Test, ExprKind::Conditional(test, _, _)) => test,
             (ExprChild::Yes, ExprKind::Conditional(_, yes, _)) => yes,
             (ExprChild::No, ExprKind::Conditional(_, _, no)) => no,
-            (ExprChild::CallCallee, ExprKind::Call { callee, .. }) => callee,
-            (ExprChild::CallArgument(index), ExprKind::Call { arguments, .. }) => {
+            (ExprChild::Callee, ExprKind::Call { callee, .. } | ExprKind::New { callee, .. }) => {
+                callee
+            }
+            (ExprChild::Argument(index), ExprKind::Call { arguments, .. }) => {
                 arguments[*index].expression()
+            }
+            (ExprChild::Argument(index), ExprKind::New { arguments, .. }) => {
+                arguments.as_ref().expect("construction arguments")[*index].expression()
             }
             (ExprChild::ArrayElement(index), ExprKind::Array(elements)) => elements[*index]
                 .expression()
@@ -105,6 +119,14 @@ fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) ->
         };
     }
     expression
+}
+
+fn invocation_arguments(expression: &Expr) -> &[Argument] {
+    match &expression.kind {
+        ExprKind::Call { arguments, .. } => arguments,
+        ExprKind::New { arguments, .. } => arguments.as_deref().unwrap_or(&[]),
+        _ => unreachable!("invocation argument cursor"),
+    }
 }
 
 fn child_path(path: &[ExprChild], child: ExprChild, span: Span) -> Result<ExprPath, Error> {
@@ -185,6 +207,7 @@ impl Realm {
                         | ExprKind::Call { .. }
                         | ExprKind::Array(_)
                         | ExprKind::Member(..)
+                        | ExprKind::New { .. }
                             if has_supported_await(expression) =>
                         {
                             self.tick(span)?;
@@ -278,7 +301,7 @@ impl Realm {
                                 ExprKind::Call { callee, .. } => {
                                     if has_supported_await(callee) {
                                         let callee_path =
-                                            child_path(&path, ExprChild::CallCallee, span)?;
+                                            child_path(&path, ExprChild::Callee, span)?;
                                         if reference_expression(callee) {
                                             self.begin_async_member(
                                                 &data.body,
@@ -289,7 +312,7 @@ impl Realm {
                                         } else {
                                             push(
                                                 &mut state,
-                                                ExprTask::CallCallee { path, span },
+                                                ExprTask::Callee { path, span },
                                                 span,
                                             )?;
                                             push(
@@ -299,10 +322,11 @@ impl Realm {
                                             )?;
                                         }
                                     } else {
-                                        let target = self.prepare_call(callee)?;
+                                        let target =
+                                            InvocationTarget::Call(self.prepare_call(callee)?);
                                         push(
                                             &mut state,
-                                            ExprTask::CallNext {
+                                            ExprTask::ArgumentNext {
                                                 path,
                                                 index: 0,
                                                 target,
@@ -312,6 +336,11 @@ impl Realm {
                                             span,
                                         )?;
                                     }
+                                }
+                                ExprKind::New { .. } => {
+                                    let callee = child_path(&path, ExprChild::Callee, span)?;
+                                    push(&mut state, ExprTask::Callee { path, span }, span)?;
+                                    push(&mut state, ExprTask::Evaluate(callee), span)?;
                                 }
                                 ExprKind::Array(_) => {
                                     let array =
@@ -420,16 +449,23 @@ impl Realm {
                         span,
                     )?;
                 }
-                ExprTask::CallCallee { path, span } => {
-                    let function = state.current.take().expect("awaited callee");
-                    let target = CallTarget {
-                        function,
-                        this: Value::Undefined,
-                        direct_eval: false,
+                ExprTask::Callee { path, span } => {
+                    let function = state.current.take().expect("callee value");
+                    let target = if matches!(
+                        expression_at(&data.body, state.root, &path).kind,
+                        ExprKind::New { .. }
+                    ) {
+                        InvocationTarget::Construct(function)
+                    } else {
+                        InvocationTarget::Call(CallTarget {
+                            function,
+                            this: Value::Undefined,
+                            direct_eval: false,
+                        })
                     };
                     push(
                         &mut state,
-                        ExprTask::CallNext {
+                        ExprTask::ArgumentNext {
                             path,
                             index: 0,
                             target,
@@ -439,7 +475,7 @@ impl Realm {
                         span,
                     )?;
                 }
-                ExprTask::CallNext {
+                ExprTask::ArgumentNext {
                     path,
                     index,
                     target,
@@ -447,19 +483,21 @@ impl Realm {
                     span,
                 } => {
                     let expression = expression_at(&data.body, state.root, &path);
-                    let ExprKind::Call {
-                        arguments: syntax, ..
-                    } = &expression.kind
-                    else {
-                        unreachable!("call argument cursor");
-                    };
+                    let syntax = invocation_arguments(expression);
                     if index == syntax.len() {
-                        state.current = Some(self.invoke_call(target, arguments, span)?);
+                        state.current = Some(match target {
+                            InvocationTarget::Call(target) => {
+                                self.invoke_call(target, arguments, span)?
+                            }
+                            InvocationTarget::Construct(constructor) => {
+                                self.construct(constructor, arguments, span)?
+                            }
+                        });
                     } else {
-                        let argument = child_path(&path, ExprChild::CallArgument(index), span)?;
+                        let argument = child_path(&path, ExprChild::Argument(index), span)?;
                         push(
                             &mut state,
-                            ExprTask::CallAppend {
+                            ExprTask::ArgumentAppend {
                                 path,
                                 index,
                                 target,
@@ -471,7 +509,7 @@ impl Realm {
                         push(&mut state, ExprTask::Evaluate(argument), span)?;
                     }
                 }
-                ExprTask::CallAppend {
+                ExprTask::ArgumentAppend {
                     path,
                     index,
                     target,
@@ -479,12 +517,7 @@ impl Realm {
                     span,
                 } => {
                     let expression = expression_at(&data.body, state.root, &path);
-                    let ExprKind::Call {
-                        arguments: syntax, ..
-                    } = &expression.kind
-                    else {
-                        unreachable!("call argument append");
-                    };
+                    let syntax = invocation_arguments(expression);
                     let argument = &syntax[index];
                     let value = state.current.take().expect("argument value");
                     self.append_evaluated_argument(
@@ -495,7 +528,7 @@ impl Realm {
                     )?;
                     push(
                         &mut state,
-                        ExprTask::CallNext {
+                        ExprTask::ArgumentNext {
                             path,
                             index: index + 1,
                             target,

@@ -3,7 +3,9 @@
 use super::{child_path, expression_at, push};
 use crate::{
     Error, Realm, Reference, Value,
-    object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask, MemberAction},
+    object::async_expression::{
+        AsyncExpressionData, ExprChild, ExprPath, ExprTask, InvocationTarget, MemberAction,
+    },
 };
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, ExprKind, PropertyName};
@@ -79,10 +81,10 @@ impl Realm {
                 path,
                 span: call_span,
             } => {
-                let target = self.prepare_reference_call(reference, span)?;
+                let target = InvocationTarget::Call(self.prepare_reference_call(reference, span)?);
                 push(
                     state,
-                    ExprTask::CallNext {
+                    ExprTask::ArgumentNext {
                         path,
                         index: 0,
                         target,

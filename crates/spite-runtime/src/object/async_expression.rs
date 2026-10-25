@@ -22,14 +22,32 @@ pub(crate) enum ExprChild {
     Test,
     Yes,
     No,
-    CallCallee,
-    CallArgument(usize),
+    Callee,
+    Argument(usize),
     ArrayElement(usize),
     MemberBase,
     MemberKey,
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
+
+#[derive(Debug)]
+pub(crate) enum InvocationTarget {
+    Call(CallTarget),
+    Construct(Value),
+}
+
+impl InvocationTarget {
+    fn values(&self) -> impl Iterator<Item = &Value> {
+        let (value, call) = match self {
+            Self::Call(call) => (None, Some(call)),
+            Self::Construct(value) => (Some(value), None),
+        };
+        value
+            .into_iter()
+            .chain(call.into_iter().flat_map(CallTarget::values))
+    }
+}
 
 #[derive(Debug)]
 pub(crate) enum MemberAction {
@@ -72,21 +90,21 @@ pub(crate) enum ExprTask {
         no: ExprPath,
         span: Span,
     },
-    CallCallee {
+    Callee {
         path: ExprPath,
         span: Span,
     },
-    CallNext {
+    ArgumentNext {
         path: ExprPath,
         index: usize,
-        target: CallTarget,
+        target: InvocationTarget,
         arguments: Vec<Value>,
         span: Span,
     },
-    CallAppend {
+    ArgumentAppend {
         path: ExprPath,
         index: usize,
-        target: CallTarget,
+        target: InvocationTarget,
         arguments: Vec<Value>,
         span: Span,
     },
@@ -119,26 +137,26 @@ pub(crate) enum ExprTask {
 
 impl ExprTask {
     fn values(&self) -> impl Iterator<Item = &Value> {
-        let (value, target, arguments): (Option<&Value>, Option<&CallTarget>, &[Value]) = match self
-        {
-            Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
-                (Some(left), None, &[])
-            }
-            Self::ArrayNext { array, .. } | Self::ArrayAppend { array, .. } => {
-                (Some(array), None, &[])
-            }
-            Self::MemberKey { base, .. } => (Some(base), None, &[]),
-            Self::CallNext {
-                target, arguments, ..
-            }
-            | Self::CallAppend {
-                target, arguments, ..
-            } => (None, Some(target), arguments),
-            _ => (None, None, &[]),
-        };
+        let (value, target, arguments): (Option<&Value>, Option<&InvocationTarget>, &[Value]) =
+            match self {
+                Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
+                    (Some(left), None, &[])
+                }
+                Self::ArrayNext { array, .. } | Self::ArrayAppend { array, .. } => {
+                    (Some(array), None, &[])
+                }
+                Self::MemberKey { base, .. } => (Some(base), None, &[]),
+                Self::ArgumentNext {
+                    target, arguments, ..
+                }
+                | Self::ArgumentAppend {
+                    target, arguments, ..
+                } => (None, Some(target), arguments),
+                _ => (None, None, &[]),
+            };
         value
             .into_iter()
-            .chain(target.into_iter().flat_map(CallTarget::values))
+            .chain(target.into_iter().flat_map(InvocationTarget::values))
             .chain(arguments)
     }
 }
