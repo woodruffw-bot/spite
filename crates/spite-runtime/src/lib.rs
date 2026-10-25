@@ -811,6 +811,10 @@ impl Realm {
                 target: None,
             }),
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
+            StatementKind::Using(_) => Err(Self::unsupported(
+                statement.span,
+                "using disposal is not implemented",
+            )),
             StatementKind::Lexical { bindings, .. } => {
                 self.initialize_bindings(bindings)?;
                 Ok(Completion::normal(None))
@@ -910,6 +914,10 @@ impl Realm {
                 // ECMA-262 14.7.4.2: all header bindings exist before any
                 // initializer runs, and the outer scope is restored on every exit.
                 match initializer {
+                    Some(ForInitializer::Using(_)) => Err(Self::unsupported(
+                        statement.span,
+                        "using loop disposal is not implemented",
+                    )),
                     Some(ForInitializer::Var(bindings)) => {
                         self.evaluate_var_bindings(bindings)?;
                         self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)
@@ -1991,6 +1999,7 @@ fn lexical_declarations(
 ) -> impl Iterator<Item = (&str, Span, bool)> {
     let (bindings, mutable) = match &statement.kind {
         StatementKind::Lexical { bindings, mutable } => (bindings.as_slice(), *mutable),
+        StatementKind::Using(bindings) => (bindings.as_slice(), false),
         _ => (&[][..], true),
     };
     let function = match &statement.kind {

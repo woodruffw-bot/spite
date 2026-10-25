@@ -140,6 +140,8 @@ mod this;
 mod try_finally;
 #[path = "updates.rs"]
 mod updates;
+#[path = "using.rs"]
+mod using;
 #[path = "var.rs"]
 mod var;
 #[path = "var_patterns.rs"]

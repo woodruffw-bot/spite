@@ -50,7 +50,8 @@ impl Realm {
                     .name
                     .as_ref()
                     .is_some_and(|name| name.name == "arguments"),
-                spite_parser::ast::StatementKind::Lexical { bindings, .. } => bindings
+                spite_parser::ast::StatementKind::Lexical { bindings, .. }
+                | spite_parser::ast::StatementKind::Using(bindings) => bindings
                     .iter()
                     .flat_map(|binding| binding.pattern.bound_names())
                     .any(|(name, _)| name == "arguments"),

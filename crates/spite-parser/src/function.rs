@@ -283,7 +283,9 @@ pub(super) fn validate_body(
     parameters: &BTreeSet<&str>,
 ) -> Result<(), Diagnostic> {
     for statement in body.statements() {
-        if let StatementKind::Lexical { bindings, .. } = &statement.kind {
+        if let StatementKind::Lexical { bindings, .. } | StatementKind::Using(bindings) =
+            &statement.kind
+        {
             for binding in bindings {
                 for (name, span) in binding.pattern.bound_names() {
                     if parameters.contains(name) {

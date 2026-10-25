@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/using_syntax.rs"]
+mod using_syntax;
+
 #[path = "cases/async_disposable_stack.rs"]
 mod async_disposable_stack;
 

@@ -20,6 +20,7 @@ mod private;
 mod regexp;
 mod source;
 mod template;
+mod using;
 
 pub use dynamic_function::{
     parse_dynamic_async_function, parse_dynamic_async_function_utf16, parse_dynamic_function,
@@ -135,6 +136,10 @@ fn parse_script_contents_with_strictness(
     while parser.current().kind != Kind::Eof {
         statements.push(parser.statement(true)?);
     }
+    using::reject_direct_using(
+        &statements,
+        "using declaration is not allowed at Script level",
+    )?;
     let strict = inherited_strict || has_use_strict(&statements, parser.source.lexical_text());
     if strict {
         reject_legacy_tokens(&parser.tokens)?;
@@ -464,6 +469,13 @@ impl Parser {
             let bindings = self.binding_list(false, false, false)?;
             self.semicolon()?;
             StatementKind::Var(bindings)
+        } else if self.at_using_declaration(false) {
+            if !allow_declaration {
+                return Err(self.error("using declaration requires a statement list"));
+            }
+            let bindings = self.using_bindings(false)?;
+            self.semicolon()?;
+            StatementKind::Using(bindings)
         } else if lexical {
             if !allow_declaration {
                 return Err(self.error("lexical declaration requires a statement list"));
@@ -1621,7 +1633,9 @@ enum ScopeKind {
 // LexicallyDeclaredNames of a block includes its function declarations (8.2.6).
 fn block_lexical_names(statement: &Statement) -> impl Iterator<Item = (&str, Span)> {
     let bindings = match &statement.kind {
-        StatementKind::Lexical { bindings, .. } => bindings.as_slice(),
+        StatementKind::Lexical { bindings, .. } | StatementKind::Using(bindings) => {
+            bindings.as_slice()
+        }
         _ => &[],
     };
     let function_name = match &statement.kind {
@@ -1697,7 +1711,7 @@ fn validate_statement<'a>(
         StatementKind::Expression(expr)
         | StatementKind::Throw(expr)
         | StatementKind::Return(Some(expr)) => validate_expr(expr, strict)?,
-        StatementKind::Lexical { bindings, .. } => {
+        StatementKind::Lexical { bindings, .. } | StatementKind::Using(bindings) => {
             for binding in bindings {
                 binding::validate_element(binding, strict)?;
             }
@@ -1786,7 +1800,7 @@ fn validate_statement<'a>(
                 match initializer {
                     ForInitializer::Expression(expr) => validate_expr(expr, strict)?,
                     ForInitializer::Var(bindings) => validate_var_bindings(bindings, strict)?,
-                    ForInitializer::Lexical { bindings, .. } => {
+                    ForInitializer::Lexical { bindings, .. } | ForInitializer::Using(bindings) => {
                         let mut names = BTreeSet::new();
                         validate_binding_names(bindings, strict, &mut names)?;
                         let mut declarations = Vec::new();
@@ -1864,7 +1878,7 @@ fn validate_statement<'a>(
                         });
                     }
                 }
-                ForBinding::Lexical { binding, .. } => {
+                ForBinding::Lexical { binding, .. } | ForBinding::Using(binding) => {
                     binding::validate_pattern(binding, strict)?;
                     let mut names = BTreeSet::new();
                     for (name, span) in binding.bound_names() {
@@ -1901,6 +1915,10 @@ fn validate_statement<'a>(
         } => {
             validate_expr(discriminant, strict)?;
             for clause in clauses {
+                using::reject_direct_using(
+                    &clause.statements,
+                    "using declaration requires a block inside switch clauses",
+                )?;
                 if let Some(test) = &clause.test {
                     validate_expr(test, strict)?;
                 }

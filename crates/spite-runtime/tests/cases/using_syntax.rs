@@ -1,0 +1,38 @@
+//! Resource grammar rejects real early errors; disposal remains a host boundary.
+
+use spite_runtime::{Error, Realm, Value};
+
+#[test]
+fn using_disposal_boundaries_abort_handlers_for_statements_and_loops() {
+    for source in [
+        "{using x=null;}",
+        "function f(){using x=null;}f();",
+        "async function f(){using x=null;}f();",
+        "for(using x=null;false;){}",
+        "for(using x of []){}",
+        "class C{static{using x=null;}}",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("let flag=0").unwrap();
+        assert!(
+            matches!(
+                realm.eval(&format!(
+                    "try{{{source}}}catch(e){{flag=1}}finally{{flag=2}}"
+                )),
+                Err(Error::Unsupported { .. })
+            ),
+            "{source}"
+        );
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
+}
+
+#[test]
+fn actual_using_early_errors_are_catchable_in_eval_and_dynamic_functions() {
+    assert_eq!(Realm::default().eval("let caught=0;for(const source of ['using x=null;','{using x;}','switch(0){case 0:using x=null;}']){try{eval(source)}catch(e){if(e instanceof SyntaxError)caught++}}try{Function('x','using x=null;')}catch(e){if(e instanceof SyntaxError)caught++}caught"),Ok(Value::Number(4.0)));
+}
+
+#[test]
+fn ordinary_using_identifiers_and_unexecuted_resource_bodies_are_preserved() {
+    assert_eq!(Realm::default().eval("let using=1;{using\nusing=2;}var of=[[9],[8],[7]],result=[];for(using of of[0,1,2])result.push(using);function f(){using x=null;}let g=Function('using x=null;');using===7&&result.join(',')==='7'&&typeof f==='function'&&g.toString().includes('using x=null;')"),Ok(Value::Boolean(true)));
+}

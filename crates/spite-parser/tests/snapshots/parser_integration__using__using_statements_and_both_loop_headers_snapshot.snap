@@ -1,0 +1,265 @@
+---
+source: crates/spite-parser/tests/using.rs
+expression: "parse_script(\"{using first=null,second=resource;for(using all=null;test;update){}for(using item of source){}}function f(){using value=null;return value}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Block(
+                [
+                    Statement {
+                        kind: Using(
+                            [
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "first",
+                                        ),
+                                        span: Span {
+                                            start: 7,
+                                            end: 12,
+                                        },
+                                    },
+                                    initializer: Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Null,
+                                            ),
+                                            span: Span {
+                                                start: 13,
+                                                end: 17,
+                                            },
+                                        },
+                                    ),
+                                },
+                                BindingElement {
+                                    pattern: BindingPattern {
+                                        kind: Identifier(
+                                            "second",
+                                        ),
+                                        span: Span {
+                                            start: 18,
+                                            end: 24,
+                                        },
+                                    },
+                                    initializer: Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "resource",
+                                            ),
+                                            span: Span {
+                                                start: 25,
+                                                end: 33,
+                                            },
+                                        },
+                                    ),
+                                },
+                            ],
+                        ),
+                        span: Span {
+                            start: 1,
+                            end: 34,
+                        },
+                    },
+                    Statement {
+                        kind: For {
+                            initializer: Some(
+                                Using(
+                                    [
+                                        BindingElement {
+                                            pattern: BindingPattern {
+                                                kind: Identifier(
+                                                    "all",
+                                                ),
+                                                span: Span {
+                                                    start: 44,
+                                                    end: 47,
+                                                },
+                                            },
+                                            initializer: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Null,
+                                                    ),
+                                                    span: Span {
+                                                        start: 48,
+                                                        end: 52,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                ),
+                            ),
+                            test: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "test",
+                                    ),
+                                    span: Span {
+                                        start: 53,
+                                        end: 57,
+                                    },
+                                },
+                            ),
+                            update: Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "update",
+                                    ),
+                                    span: Span {
+                                        start: 58,
+                                        end: 64,
+                                    },
+                                },
+                            ),
+                            body: Statement {
+                                kind: Block(
+                                    [],
+                                ),
+                                span: Span {
+                                    start: 65,
+                                    end: 67,
+                                },
+                            },
+                        },
+                        span: Span {
+                            start: 34,
+                            end: 67,
+                        },
+                    },
+                    Statement {
+                        kind: ForOf {
+                            binding: Using(
+                                BindingPattern {
+                                    kind: Identifier(
+                                        "item",
+                                    ),
+                                    span: Span {
+                                        start: 77,
+                                        end: 81,
+                                    },
+                                },
+                            ),
+                            iterable: Expr {
+                                depth: 1,
+                                kind: Identifier(
+                                    "source",
+                                ),
+                                span: Span {
+                                    start: 85,
+                                    end: 91,
+                                },
+                            },
+                            body: Statement {
+                                kind: Block(
+                                    [],
+                                ),
+                                span: Span {
+                                    start: 92,
+                                    end: 94,
+                                },
+                            },
+                        },
+                        span: Span {
+                            start: 67,
+                            end: 94,
+                        },
+                    },
+                ],
+            ),
+            span: Span {
+                start: 0,
+                end: 95,
+            },
+        },
+        Statement {
+            kind: Function(
+                Function {
+                    kind: Ordinary,
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 104,
+                                end: 105,
+                            },
+                        },
+                    ),
+                    parameters: [],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Using(
+                                    [
+                                        BindingElement {
+                                            pattern: BindingPattern {
+                                                kind: Identifier(
+                                                    "value",
+                                                ),
+                                                span: Span {
+                                                    start: 114,
+                                                    end: 119,
+                                                },
+                                            },
+                                            initializer: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Null,
+                                                    ),
+                                                    span: Span {
+                                                        start: 120,
+                                                        end: 124,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                ),
+                                span: Span {
+                                    start: 108,
+                                    end: 125,
+                                },
+                            },
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "value",
+                                            ),
+                                            span: Span {
+                                                start: 132,
+                                                end: 137,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 125,
+                                    end: 137,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function f(){using value=null;return value}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 95,
+                end: 138,
+            },
+        },
+    ],
+    strict: false,
+}

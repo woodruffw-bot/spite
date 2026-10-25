@@ -1791,8 +1791,7 @@ Native list growth is fallible. Registration prepays capture release; transfer
 is constant work. Host failures bypass remaining JavaScript cleanup and handlers,
 and release the removed captures. Existing opt-in work and heap quotas apply;
 no default resource count is imposed. Each stack also retains one private heap
-record for its list. Using/await using syntax remain
-separate implementation work.
+record for its list.
 
 AsyncDisposableStack shares construction, registration, move and resource storage
 with the synchronous stack, with a distinct internal brand and intrinsic graph
@@ -1817,6 +1816,19 @@ the pending error across jobs, and releases them on completion or host abort.
 Object and Symbol tracing includes every stored value, including closed
 ephemeron cycles. Resource storage and quotas remain shared with synchronous
 stacks; general await expressions and suspended Script contexts remain work.
+
+Synchronous using declarations (14.3.1, 14.7.4–5) have explicit statement,
+three-clause initializer and for-of binding nodes. Only an unescaped using prefix
+followed by an IdentifierName without a line break selects declaration grammar.
+Bindings require identifiers and initializers, except the single uninitialized
+for-of binding. For-in declarations are forbidden. The using-of lookahead keeps
+ordinary assignments to an identifier named using distinct from declarations.
+Lexical uniqueness, strict names, parameter conflicts and loop-body var conflicts
+use the existing scope checks. Direct Script/eval and switch-clause declarations
+are syntax errors; nested blocks and function bodies remain permitted.
+Binding environments treat these declarations as immutable lexical names.
+Execution reports Unsupported before initializer or iterable evaluation until
+lexical disposal is implemented. Await-using syntax remains Unsupported.
 
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced

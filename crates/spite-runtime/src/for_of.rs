@@ -13,6 +13,12 @@ impl Realm {
         labels: &[&str],
         span: Span,
     ) -> Result<Completion, Error> {
+        if matches!(binding, ForBinding::Using(_)) {
+            return Err(Self::unsupported(
+                span,
+                "using iteration disposal is not implemented",
+            ));
+        }
         let source = self.iteration_source(binding, iterable, span)?;
         let method = self
             .get_method(&source, &WellKnownSymbol::Iterator.symbol(), span)?
@@ -71,6 +77,10 @@ impl Realm {
         span: Span,
     ) -> Result<Completion, Error> {
         match binding {
+            ForBinding::Using(_) => Err(Self::unsupported(
+                span,
+                "using iteration disposal is not implemented",
+            )),
             ForBinding::Lexical { mutable, binding } => {
                 // Both let and const receive a new environment each iteration.
                 let bindings = self.pattern_bindings([binding], *mutable)?;

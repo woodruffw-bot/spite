@@ -249,7 +249,9 @@ impl Realm {
         }
         for statement in body.statements() {
             self.tick(statement.span)?;
-            if let StatementKind::Lexical { bindings, .. } = &statement.kind {
+            if let StatementKind::Lexical { bindings, .. } | StatementKind::Using(bindings) =
+                &statement.kind
+            {
                 for (name, span) in bindings
                     .iter()
                     .flat_map(|binding| binding.pattern.bound_names())

@@ -73,7 +73,7 @@ impl Parser {
         })
     }
 
-    fn binding_identifier(&mut self) -> Result<BindingPattern, Diagnostic> {
+    pub(super) fn binding_identifier(&mut self) -> Result<BindingPattern, Diagnostic> {
         let token = self.bump();
         self.binding_identifier_token(token)
     }

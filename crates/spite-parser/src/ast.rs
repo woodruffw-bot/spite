@@ -259,6 +259,7 @@ impl Statement {
             | StatementKind::Debugger
             | StatementKind::Expression(_)
             | StatementKind::Lexical { .. }
+            | StatementKind::Using(_)
             | StatementKind::Break(_)
             | StatementKind::Continue(_)
             | StatementKind::Throw(_)
@@ -291,6 +292,8 @@ pub enum StatementKind {
         /// Bindings in source order.
         bindings: Vec<BindingElement>,
     },
+    /// Immutable resource bindings disposed when their lexical scope exits.
+    Using(Vec<BindingElement>),
     /// A block with its own lexical environment.
     Block(Vec<Statement>),
     /// A non-strict statement whose object supplies additional identifier bindings.
@@ -650,6 +653,8 @@ pub enum ForInitializer {
     Expression(Expr),
     /// Variable declarations in the surrounding variable environment.
     Var(Vec<BindingElement>),
+    /// Immutable resource declarations retained for the lifetime of the loop.
+    Using(Vec<BindingElement>),
     /// A declaration in a new loop scope.
     Lexical {
         /// Whether bindings may be reassigned and are copied per iteration.
@@ -668,6 +673,8 @@ pub enum ForBinding {
     Pattern(AssignmentPattern),
     /// A var binding in the surrounding variable environment, without initializer.
     Var(BindingElement),
+    /// A fresh immutable resource binding disposed after each for-of iteration.
+    Using(BindingPattern),
     /// A fresh lexical binding for each iteration, without initializer.
     Lexical {
         /// Whether the iteration binding may be reassigned.

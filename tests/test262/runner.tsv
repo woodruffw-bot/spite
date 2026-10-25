@@ -9390,3 +9390,32 @@ test/built-ins/AsyncDisposableStack/prototype/use/throws-if-value-Symbol.dispose
 test/built-ins/AsyncDisposableStack/prototype/use/throws-if-value-Symbol.dispose-property-not-callable.js	-	-	-
 test/built-ins/AsyncDisposableStack/prototype/use/throws-if-value-missing-Symbol.asyncDispose-and-Symbol.dispose.js	-	-	-
 test/built-ins/AsyncDisposableStack/prototype/use/throws-if-value-not-object.js	-	-	-
+test/language/statements/using/syntax/block-scope-syntax-using-declarations-mixed-with-without-initializer.js	787	788	using requires an initializer
+test/language/statements/using/syntax/block-scope-syntax-using-declarations-mixed-without-with-initializer.js	777	778	using requires an initializer
+test/language/statements/using/syntax/block-scope-syntax-using-declarations-without-initializer.js	764	765	using requires an initializer
+test/language/statements/using/syntax/using-declaring-let-split-across-two-lines.js	-	-	-
+test/language/statements/using/syntax/using-for-using-of-of.js	-	-	-
+test/language/statements/using/syntax/using-invalid-arraybindingpattern-after-bindingidentifier.js	439	440	expected binding identifier
+test/language/statements/using/syntax/using-invalid-arraybindingpattern-does-not-break-element-access.js	-	-	-
+test/language/statements/using/syntax/using-invalid-arraybindingpattern.js	394	395	expected an expression
+test/language/statements/using/syntax/using-invalid-for-in.js	337	342	using declaration is not allowed in for-in
+test/language/statements/using/syntax/using-invalid-objectbindingpattern-after-bindingidentifier.js	440	441	expected binding identifier
+test/language/statements/using/syntax/using-invalid-objectbindingpattern.js	394	395	expected a semicolon or line terminator
+test/language/statements/using/syntax/using-invalid-switchstatement-caseclause.js	819	824	using declaration requires a block inside switch clauses
+test/language/statements/using/syntax/using-invalid-switchstatement-defaultclause.js	820	825	using declaration requires a block inside switch clauses
+test/language/statements/using/syntax/using-not-allowed-at-top-level-of-eval.js	-	-	-
+test/language/statements/using/syntax/using-not-allowed-at-top-level-of-script.js	746	751	using declaration is not allowed at Script level
+test/language/statements/using/syntax/with-initializer-case-expression-statement-list.js	711	716	using declaration requires a block inside switch clauses
+test/language/statements/using/syntax/with-initializer-default-statement-list.js	702	707	using declaration requires a block inside switch clauses
+test/language/statements/using/syntax/with-initializer-do-statement-while-expression.js	395	400	using declaration requires a statement list
+test/language/statements/using/syntax/with-initializer-for-statement.js	386	391	using declaration requires a statement list
+test/language/statements/using/syntax/with-initializer-if-expression-statement-else-statement.js	413	418	using declaration requires a statement list
+test/language/statements/using/syntax/with-initializer-if-expression-statement.js	390	395	using declaration requires a statement list
+test/language/statements/using/syntax/with-initializer-label-statement.js	383	388	using declaration requires a statement list
+test/language/statements/using/syntax/with-initializer-while-expression-statement.js	400	405	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-do-statement-while-expression.js	398	403	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-for-statement.js	390	395	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-if-expression-statement-else-statement.js	416	421	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-if-expression-statement.js	393	398	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-label-statement.js	386	391	using declaration requires a statement list
+test/language/statements/using/syntax/without-initializer-while-expression-statement.js	403	408	using declaration requires a statement list

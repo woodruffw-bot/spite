@@ -83,6 +83,8 @@ impl Parser {
             None
         } else if self.eat("var") {
             Some(ForInitializer::Var(self.binding_list(false, true, false)?))
+        } else if self.at_using_declaration(true) {
+            Some(ForInitializer::Using(self.using_bindings(true)?))
         } else if self.at("const")
             || (self.at("let")
                 && self
@@ -180,6 +182,23 @@ impl Parser {
                 }
                 let binding = bindings.pop().expect("one binding");
                 Ok(ForBinding::Var(binding))
+            }
+            ForInitializer::Using(mut bindings) => {
+                if !is_of {
+                    return Err(early(
+                        header_start.span,
+                        "using declaration is not allowed in for-in",
+                    ));
+                }
+                if bindings.len() != 1 {
+                    return Err(early(bindings[1].pattern.span, invalid_binding));
+                }
+                if let Some(initializer) = &bindings[0].initializer {
+                    return Err(early(initializer.span, invalid_binding));
+                }
+                Ok(ForBinding::Using(
+                    bindings.pop().expect("one binding").pattern,
+                ))
             }
             ForInitializer::Lexical {
                 mutable,

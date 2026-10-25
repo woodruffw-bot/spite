@@ -53,11 +53,39 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | AsyncDisposableStack | Shared registration/move with distinct brands, async/sync disposal lookup, native suspension and FIFO resumption, nullish Await timing, suppression and traced continuations |
+| Using grammar | Synchronous declarations and loop headers, contextual identifiers, immutable bindings and lexical/Script/switch early errors; execution remains Unsupported |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18236 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18293 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Using declaration grammar
+
+Synchronous declarations and both loop headers retain explicit resource-binding
+nodes. Contextual using prefixes require no line break and identifier bindings;
+the for-of using-of lookahead preserves ordinary identifier assignments. Required
+initializers, duplicate/strict names, lexical/var/parameter conflicts, forbidden
+for-in declarations and direct Script/eval/switch-clause restrictions are checked.
+Execution remains Unsupported before initializer or iterable evaluation until
+lexical disposal is implemented. Await using remains Unsupported.
+
+Five Parser groups and an inspected new snapshot cover syntax, scopes, lexical
+goals and contextual identifier controls. All eighteen units and 351 integrations
+pass. Three Runtime groups check host boundaries, genuine catchable early errors
+and ordinary identifiers/unexecuted resource bodies. All 402 Runtime units and
+1,856 non-RegExp integrations pass, with strict Clippy and Rust 1.88 checks.
+
+The complete 37-original syntax review passes 57 variants from 29 whole sources:
+25 parse-negative originals have individually reviewed diagnostic spans/messages,
+and four positive originals exercise ordinary identifiers or eval rejection.
+Two modules and six originals needing resource execution remain Unsupported.
+Original Git blob hashes and manifest SHA-256 digests were verified. Inventories
+contain 9,439 fixtures, nineteen helpers, 9,420 reviewed sources and 18,293
+variants, with 74 Parser and 637 Runtime case files. All 18,293 variants and all
+forty Test262 package tests pass. Formatting, dependency policy, inventories,
+strict Clippy and Rust 1.88 all-target checks pass. Intrinsic entries remain 571
+and product quotas are unchanged.
 
 ## AsyncDisposableStack
 
