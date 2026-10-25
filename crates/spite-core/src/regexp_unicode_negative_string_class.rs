@@ -107,6 +107,21 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         Self::compile_with_work_impl::<true, 2, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles negative lookahead over scalar escapes, properties or ranges and q strings.
+    ///
+    /// A scalar operand and an empty or longer q member are required. Sign-only
+    /// projection delegates folded membership, complete scope and original ^/$
+    /// context to the checked positive proof. All operand slots stay undefined
+    /// on success. Full original v/vi validation and normalized heads are required.
+    pub fn compile_scalar_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 3, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
@@ -149,6 +164,16 @@ impl RegExpUnicodeNegativeStringClassMatcher {
                 )?
             } else {
                 RegExpUnicodePositiveStringClassMatcher::compile_character_union_lookahead_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            }
+        } else if CLASS_KIND == 3 {
+            if WORD {
+                RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_with_word_boundaries_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            } else {
+                RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_validated_with_work(
                     &source, ignore_case, multiline, charge,
                 )?
             }

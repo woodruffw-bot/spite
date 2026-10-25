@@ -15096,3 +15096,21 @@ retain longest accepted membership while predicates inspect original endpoints.
 Rejected longer strings can select shorter scalar or empty members, with
 independent whole-operand captures and original UTF-16 spans (22.2.2.4, 22.2.2.7).
 Earlier constructor domains and work sequences remain unchanged.
+
+
+### Negative lookahead over scalar operands and q strings
+
+A separate checked negative constructor accepts scalar class escapes, properties
+and ranges beside q operands, with an empty or longer q member and optional
+operand ^/$ gates. Full original v/vi validation and normalized capture heads
+precede sign-only projection. The checked positive proof validates folded
+scalar/string membership and complete wrapper scope without independently
+validating or rebinding projected source. Negation succeeds only when every
+member fails the original-context conjunction at that candidate (22.2.2.4,
+22.2.2.7, 22.2.2.9).
+
+The existing cancellable sticky-probe search preserves complete Unicode
+candidates, empty outside spans and undefined operand captures. The private
+domain selector preserves earlier constructors and their work sequences. Word
+gates, nesting, operations, repetition, continuations and reference roles
+retain separate proof requirements.
