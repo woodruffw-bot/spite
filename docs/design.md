@@ -14327,3 +14327,12 @@ empty position and all operand slots remain undefined, including through deep
 scopes. Original line/fold/surrogate context, initial-pair rewind, linear actual
 work and checked work/capacity errors retain their existing paths. Earlier
 constructors keep their domains and charges. Runtime integration remains separate.
+
+Runtime selects checked negative q-class lookahead after the positive q-class
+entries, gated by v mode and using full normalized source. Successful selection
+resets the projected outer offset, and checked construction failures retain
+the existing host mapping. The shared negative result path keeps outside ranges
+empty and every operand slot undefined through names, own indices properties,
+String consumers, copies and collection. Original q source/flags, coercion
+ordering and stateful execution remain in their shared paths; user conversions
+stay outside the compiler frame.
