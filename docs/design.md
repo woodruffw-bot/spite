@@ -14584,3 +14584,12 @@ contracts remain unchanged. Character-result set projection, folded algebra,
 complete Unicode advancement, initial-pair rewind, flat capture storage and
 actual-work cancellation reuse their established paths. Runtime integration
 remains separate.
+
+
+Runtime selects checked character-result lookahead after the scalar assertion
+entries, gated by v mode and using full normalized source. Successful selection
+resets the projected outer offset; checked errors retain their host mapping.
+Shared empty/operand range caching preserves original q/set syntax, named
+indices, String consumers, copies and collection. The static character-result
+proof, original line context and complete Unicode search remain in Core, while
+user conversions stay outside the compiler frame.

@@ -26783,3 +26783,28 @@ Strict all-target workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime integration remains separate.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+
+## Runtime single-character result-class lookahead
+
+All forty current positive-lookahead groups pass (3.31 s), including four new
+character-result groups. Checks cover original empty/long q syntax, named
+independent empty/operand indices, original line/fold/property context,
+empty-set failure, unpaired surrogates, String consumers, copies, collection,
+deep wrappers and initial-pair rewind. All thirteen constructor regressions
+pass (0.32 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with a
+native sticky-candidate oracle using fifteen independently specified equivalent
+character-class controls and independent Unicode search/state bookkeeping.
+Thirty-five complete JavaScript programs pass with the documented equivalent
+class/property/q-fold controls where needed. Actual Runtime expectations retain
+original source and flags throughout.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The preceding scalar-lookahead snapshot
+records all 437 Runtime units; this constructor-only increment has the focused
+and differential evidence above. Completed broad RegExp and Test262 results
+record `7da9655b`; later assertions retain separate focused evidence. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
