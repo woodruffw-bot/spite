@@ -26886,3 +26886,14 @@ lexed direct Unsupported controls stay excluded. Strict all-target workspace
 Clippy, documentation tests, formatting, policy, inventories and diff checks
 pass. Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete scalar-set assertion Test262 snapshot
+
+The Runtime snapshot at `3c1dd9f1` passes all 35 Test262 package tests and all
+16,343 reviewed corpus variants with the existing conformance profile (510.07 s
+for the corpus). It includes positive/negative scalar v-set lookahead/lookbehind
+with word predicates, independent predecessor captures and undefined negative
+operand slots, alongside all earlier q-class paths. Later character-result
+assertion extensions retain their separate focused and differential evidence.
+Fixture, harness and reviewed-entry inventories are unchanged.

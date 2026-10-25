@@ -4093,12 +4093,12 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-25 Runtime snapshot with complete positive scalar v-set assertions at `7da9655b`
+The 2026-10-25 Runtime snapshot with complete scalar v-set assertions at `3c1dd9f1`
 passes all 16,343 corpus variants and 35 runner tests with the conformance
-profile (463.28 s for the corpus). It covers Unicode positive/negative
-single-character and q-class assertions, plus positive scalar v-set lookahead/
-lookbehind with word predicates and independent predecessor captures. Later
-negative scalar v-set assertion extensions have separate focused and
+profile (510.07 s for the corpus). It covers Unicode positive/negative
+single-character, q-class and scalar v-set lookahead/lookbehind with word
+predicates, independent predecessor captures and undefined negative slots.
+Later character-result assertion extensions have separate focused and
 differential evidence.
 Fixture, harness and reviewed-entry inventories are unchanged.
 
