@@ -35,7 +35,7 @@ impl Realm {
     /// Reads a string- or symbol-keyed property with JavaScript Get semantics, including
     /// inherited accessors and the original receiver. Each host call may execute
     /// JavaScript getters and resets the work allowance if `max_steps` is enabled,
-    /// except during a cleanup job whose callbacks share one allowance.
+    /// except during a host job whose callbacks share one allowance.
     ///
     /// The result is unrooted; use [`Self::root_value`] across explicit collection.
     /// Nullish values throw TypeError, and invalid object handles are rejected.
@@ -49,7 +49,7 @@ impl Realm {
             self.objects.inspect(handle).map_err(Error::InvalidObject)?;
         }
         self.initialize_realm()?;
-        if !self.finalization_cleanup_active {
+        if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
         }
         let span = Span::new(0, 0);
@@ -511,7 +511,7 @@ impl Realm {
     /// groups several domains into one synchronous sequence must wait until the
     /// complete sequence finishes before calling their checkpoints.
     pub fn clear_kept_objects(&mut self) -> Result<(), Error> {
-        if self.call_depth != 0 || self.evaluation_depth != 0 || self.finalization_cleanup_active {
+        if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
             return Err(Error::Host {
                 span: Span::new(0, 0),
                 message: "cannot clear kept objects during active execution".into(),
@@ -533,7 +533,7 @@ impl Realm {
     }
 
     /// Collects between evaluations, retaining bindings, intrinsics, cached templates,
-    /// and host roots.
+    /// queued Promise jobs, and host roots.
     ///
     /// Retain returned or thrown object values with [`Self::root_value`] before
     /// calling this method. Unrooted host values may become stale. Evaluation and
@@ -553,6 +553,12 @@ impl Realm {
                 )
             })
             .and_then(|count| count.checked_add(self.template_map.len()))
+            .and_then(|count| {
+                self.promise_jobs
+                    .len()
+                    .checked_mul(3)
+                    .and_then(|jobs| count.checked_add(jobs))
+            })
             .ok_or(spite_heap::Error::Limit)?;
         let remaining = max_work
             .checked_sub(scanned)
@@ -566,7 +572,9 @@ impl Realm {
                     .iter()
                     .flat_map(|intrinsics| intrinsics.roots()),
             );
-        let roots = roots.chain(self.template_map.iter().map(|(_, array)| array));
+        let roots = roots
+            .chain(self.template_map.iter().map(|(_, array)| array))
+            .chain(self.promise_jobs.iter().flat_map(|job| job.roots()));
         let mut result = self.objects.collect(roots, remaining)?;
         result.work_used += scanned;
         Ok(result)

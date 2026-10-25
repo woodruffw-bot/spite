@@ -151,16 +151,11 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // Each operation reaches a deferred algorithm or intrinsic constructor.
     // Reading its metadata must not stand in for executing that dependency.
     let operations = [
-        "new Promise(()=>{hits++})",
         "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
         "Promise.all([])",
         "Promise.allSettled([])",
         "Promise.any([])",
         "Promise.race([])",
-        "Promise.reject(7)",
-        "Promise.resolve(7)",
-        "Promise.try(()=>0)",
-        "Promise.withResolvers()",
         "Promise.prototype.catch.call({then:Promise.prototype.then},()=>{hits++})",
         "Promise.prototype.finally.call({},()=>{hits++})",
         "Promise.prototype.then.call({},()=>{hits++},()=>{hits++})",
@@ -188,22 +183,16 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     }
     // The deferred body cannot inspect newTarget.prototype or create a fake
     // instance. Ordinary evaluation of arguments still precedes construction.
-    for (constructor, arguments) in [
-        ("Promise", "[(order++,()=>7)]"),
-        ("SharedArrayBuffer", "[(order++,0)]"),
-    ] {
-        realm.eval("order=0").unwrap();
-        let result=realm.eval(&format!("try{{Reflect.construct({constructor},{arguments},bound);}}catch{{flag=1;}}finally{{flag=2;}}"));
-        assert!(
-            matches!(&result, Err(Error::Unsupported { .. })),
-            "{constructor}: {result:?}"
-        );
-        assert_eq!(
-            realm.eval("order===1 && flag===0 && hits===0"),
-            Ok(Value::Boolean(true)),
-            "{constructor}"
-        );
-    }
+    realm.eval("order=0").unwrap();
+    let result=realm.eval("try{Reflect.construct(SharedArrayBuffer,[(order++,0)],bound);}catch{flag=1;}finally{flag=2;}");
+    assert!(
+        matches!(&result, Err(Error::Unsupported { .. })),
+        "{result:?}"
+    );
+    assert_eq!(
+        realm.eval("order===1 && flag===0 && hits===0"),
+        Ok(Value::Boolean(true))
+    );
     // Proxy is implemented now: construction itself does not invoke handler
     // traps, while ordinary completion runs finally and later Get uses the trap.
     realm

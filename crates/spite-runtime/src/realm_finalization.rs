@@ -26,7 +26,7 @@ impl Realm {
     /// and explicitly collect before scheduling a later cleanup turn. Delivery
     /// order and eventual delivery are not guaranteed.
     ///
-    /// Active evaluation, a call, or another cleanup job returns a host error
+    /// Active evaluation, a call, or another host job returns a host error
     /// before consuming any work. An empty queue is inert, even on an uninitialized
     /// Realm. Other outer errors are preflight failures that preserve queue and
     /// cells. Once started, the job reports its first abrupt completion through
@@ -39,7 +39,7 @@ impl Realm {
     /// automatic checkpoint is introduced. Realms remain independent execution domains.
     pub fn run_finalization_cleanup_job(&mut self) -> Result<FinalizationCleanupOutcome, Error> {
         let span = Span::new(0, 0);
-        if self.call_depth != 0 || self.evaluation_depth != 0 || self.finalization_cleanup_active {
+        if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
             return Err(Error::Host {
                 span,
                 message: "cannot run a finalization cleanup job during active execution".into(),
@@ -81,7 +81,7 @@ impl Realm {
         let caller_variable = self.variable_environment.replace(global);
         let caller_strict = std::mem::replace(&mut self.strict, false);
         let caller_scope_depth = self.scopes.len();
-        self.finalization_cleanup_active = true;
+        self.job_active = true;
         let outcome = loop {
             let Some(prepared_cell) = cell else {
                 break FinalizationCleanupOutcome::Completed;
@@ -116,7 +116,7 @@ impl Realm {
         // The pre-reserved capture remains queued when cleared cells remain.
         // This finish is infallible even after the optional allowance is spent.
         self.objects.finish_finalization_cleanup_job(job);
-        self.finalization_cleanup_active = false;
+        self.job_active = false;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         self.remaining_steps = caller_work;
@@ -170,7 +170,7 @@ mod tests {
         {
             realm.call_depth = call_depth;
             realm.evaluation_depth = evaluation_depth;
-            realm.finalization_cleanup_active = job_active;
+            realm.job_active = job_active;
             assert!(matches!(
                 realm.run_finalization_cleanup_job(),
                 Err(Error::Host { .. })
@@ -183,11 +183,7 @@ mod tests {
             assert!(realm.scopes.is_empty());
             assert_eq!(realm.remaining_steps, Some(11));
             assert_eq!(
-                (
-                    realm.call_depth,
-                    realm.evaluation_depth,
-                    realm.finalization_cleanup_active
-                ),
+                (realm.call_depth, realm.evaluation_depth, realm.job_active),
                 (call_depth, evaluation_depth, job_active)
             );
         }
@@ -202,7 +198,7 @@ mod tests {
         // be replaced by the separate, positive allowance on any host entry.
         realm.limits.max_steps = Some(1000);
         realm.remaining_steps = Some(0);
-        realm.finalization_cleanup_active = true;
+        realm.job_active = true;
         realm.strict = true;
         realm.variable_environment = None;
         assert!(matches!(realm.eval("0"), Err(Error::Limit { .. })));
@@ -222,10 +218,10 @@ mod tests {
         assert_eq!(realm.remaining_steps, Some(0));
         assert!(realm.strict);
         assert!(realm.variable_environment.is_none());
-        assert!(realm.finalization_cleanup_active);
+        assert!(realm.job_active);
 
         // Idle host entries still receive their ordinary fresh allowance.
-        realm.finalization_cleanup_active = false;
+        realm.job_active = false;
         assert_eq!(realm.eval("1"), Ok(Value::Number(1.0)));
         assert!(realm.remaining_steps.is_some_and(|remaining| remaining > 0));
         realm.remaining_steps = Some(0);

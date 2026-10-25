@@ -41,6 +41,8 @@ mod number;
 mod object;
 mod ordinary;
 mod promise;
+pub(crate) use promise::PromiseJob;
+pub use promise::PromiseJobOutcome;
 mod proxy;
 mod reflect;
 mod regexp;
@@ -920,6 +922,7 @@ pub(crate) enum Callable {
     Builtin(Builtin),
     ProxyRevoker(Option<ObjectHandle>),
     PromiseCapabilityExecutor(ObjectHandle),
+    PromiseResolvingFunction { cell: ObjectHandle, resolve: bool },
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
@@ -936,9 +939,10 @@ impl Callable {
     fn source_text(&self) -> FunctionText {
         match self {
             Self::Builtin(builtin) => FunctionText::Native(builtin.initial_name()),
-            Self::Bound(_) | Self::ProxyRevoker(_) | Self::PromiseCapabilityExecutor(_) => {
-                FunctionText::Native("")
-            }
+            Self::Bound(_)
+            | Self::ProxyRevoker(_)
+            | Self::PromiseCapabilityExecutor(_)
+            | Self::PromiseResolvingFunction { .. } => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1445,6 +1449,14 @@ impl Realm {
                 Some(Callable::Builtin(builtin)) => builtin,
                 Some(Callable::PromiseCapabilityExecutor(capability)) => {
                     return self.promise_capability_executor(capability, arguments, span);
+                }
+                Some(Callable::PromiseResolvingFunction { cell, resolve }) => {
+                    return self.promise_resolving_function(
+                        cell,
+                        resolve,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
                 }
                 Some(Callable::ProxyRevoker(_)) => {
                     let Value::Object(revoker) = function else {

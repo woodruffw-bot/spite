@@ -1,7 +1,40 @@
-//! Shared Promise capabilities, generic static methods and catch dispatch (27.2).
+//! Promise construction, resolution, capabilities and protocol dispatch (27.2).
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
+
+/// The outcome of one explicitly scheduled Promise job.
+#[derive(Debug)]
+pub enum PromiseJobOutcome {
+    /// No job was queued; the Realm was not initialized or changed.
+    NoJob,
+    /// The selected job completed normally.
+    Completed,
+    /// The started job reported an abrupt completion. Object values are unrooted
+    /// after return; retain them with Realm::root_value before collection.
+    Reported(Error),
+}
+
+#[derive(Clone, Debug)]
+pub(crate) enum PromiseJob {
+    Thenable {
+        promise: ObjectHandle,
+        thenable: ObjectHandle,
+        then: ObjectHandle,
+    },
+}
+
+impl PromiseJob {
+    pub(crate) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
+        match self {
+            Self::Thenable {
+                promise,
+                thenable,
+                then,
+            } => [promise, thenable, then].into_iter(),
+        }
+    }
+}
 
 pub(super) struct PromiseCapability {
     pub promise: Value,
@@ -10,6 +43,257 @@ pub(super) struct PromiseCapability {
 }
 
 impl Realm {
+    pub(super) fn promise_constructor(
+        &mut self,
+        new_target: ObjectHandle,
+        executor: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // Promise (27.2.3.1) checks callability before observing the prototype.
+        if !self.is_callable(&executor, span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise executor is not callable",
+            ));
+        }
+        let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
+        let prototype = if let Value::Object(prototype) = prototype {
+            prototype
+        } else {
+            self.check_function_realm(&new_target, span)?;
+            self.intrinsics
+                .as_ref()
+                .expect("initialized")
+                .global_metadata
+                .promise_prototype
+                .clone()
+        };
+        let promise = self.object_work(span, |objects, _| objects.create_promise(&prototype))?;
+        let (resolve, reject) = self.promise_resolving_functions(&promise, span)?;
+        if let Err(error) = self.call(
+            executor,
+            Value::Undefined,
+            vec![resolve, reject.clone()],
+            span,
+        ) {
+            let value = self.language_exception_value(error)?;
+            self.call(reject, Value::Undefined, vec![value], span)?;
+        }
+        Ok(Value::Object(promise))
+    }
+
+    fn promise_resolving_functions(
+        &mut self,
+        promise: &ObjectHandle,
+        span: Span,
+    ) -> Result<(Value, Value), Error> {
+        let cell = self.object_work(span, |objects, _| objects.create(None))?;
+        self.define_builtin_property(&cell, "promise", Value::Object(promise.clone()), true, span)?;
+        self.define_builtin_property(&cell, "alreadyResolved", Value::Boolean(false), true, span)?;
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .function_prototype
+            .clone();
+        let mut functions = Vec::new();
+        for resolve in [true, false] {
+            let function = self.object_work(span, |objects, _| {
+                objects.create_promise_resolving_function(&prototype, &cell, resolve)
+            })?;
+            self.define_builtin_property(&function, "length", Value::Number(1.0), false, span)?;
+            self.define_builtin_property(
+                &function,
+                "name",
+                Value::String(JsString::from("")),
+                false,
+                span,
+            )?;
+            functions.push(Value::Object(function));
+        }
+        let reject = functions.pop().expect("reject");
+        let resolve = functions.pop().expect("resolve");
+        Ok((resolve, reject))
+    }
+
+    pub(super) fn promise_resolving_function(
+        &mut self,
+        cell: ObjectHandle,
+        resolve: bool,
+        value: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let done = self.get_property(&cell, &JsString::from("alreadyResolved"), span)?;
+        if matches!(done, Value::Boolean(true)) {
+            return Ok(Value::Undefined);
+        }
+        // Resolve and reject share this record, including while then is read.
+        self.define_builtin_property(&cell, "alreadyResolved", Value::Boolean(true), true, span)?;
+        let Value::Object(promise) = self.get_property(&cell, &JsString::from("promise"), span)?
+        else {
+            unreachable!("private resolving record")
+        };
+        if !resolve {
+            self.object_work(span, |objects, budget| {
+                objects.settle_promise(&promise, false, value, budget)
+            })?;
+            return Ok(Value::Undefined);
+        }
+        if value.same_value(&Value::Object(promise.clone())) {
+            let error = Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise cannot resolve itself",
+            );
+            let reason = self.language_exception_value(error)?;
+            self.object_work(span, |objects, budget| {
+                objects.settle_promise(&promise, false, reason, budget)
+            })?;
+            return Ok(Value::Undefined);
+        }
+        let Value::Object(thenable) = value else {
+            self.object_work(span, |objects, budget| {
+                objects.settle_promise(&promise, true, value, budget)
+            })?;
+            return Ok(Value::Undefined);
+        };
+        let then = match self.get_property(&thenable, &JsString::from("then"), span) {
+            Ok(then) => then,
+            Err(error) => {
+                let reason = self.language_exception_value(error)?;
+                self.object_work(span, |objects, budget| {
+                    objects.settle_promise(&promise, false, reason, budget)
+                })?;
+                return Ok(Value::Undefined);
+            }
+        };
+        if !self.is_callable(&then, span)? {
+            self.object_work(span, |objects, budget| {
+                objects.settle_promise(&promise, true, Value::Object(thenable), budget)
+            })?;
+            return Ok(Value::Undefined);
+        }
+        let Value::Object(then) = then else {
+            unreachable!("callable object")
+        };
+        self.object_work(span, |_, budget| budget.charge(3))?;
+        self.promise_jobs.try_reserve(1).map_err(|_| Error::Limit {
+            span,
+            message: "Promise job capacity exceeded".into(),
+        })?;
+        self.promise_jobs.push_back(PromiseJob::Thenable {
+            promise,
+            thenable,
+            then,
+        });
+        Ok(Value::Undefined)
+    }
+
+    pub(super) fn promise_resolve(
+        &mut self,
+        constructor: Value,
+        value: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        if !matches!(constructor, Value::Object(_)) {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise.resolve requires an object receiver",
+            ));
+        }
+        if let Value::Object(object) = &value {
+            let branded = self.object_work(span, |objects, _| {
+                Ok(objects.inspect(object)?.promise_state().is_some())
+            })?;
+            if branded {
+                let actual = self.get_property(object, &JsString::from("constructor"), span)?;
+                if actual.same_value(&constructor) {
+                    return Ok(value);
+                }
+            }
+        }
+        let capability = self.new_promise_capability(constructor, span)?;
+        self.call(capability.resolve, Value::Undefined, vec![value], span)?;
+        Ok(capability.promise)
+    }
+
+    /// Runs one queued Promise job at an idle host turn, without collecting or
+    /// clearing WeakRef kept objects. Empty queues are inert. Preflight errors
+    /// preserve the queue; started jobs report errors through PromiseJobOutcome.
+    /// All calls within the job share one optional work allowance. The host
+    /// controls subsequent jobs and explicit collection checkpoints.
+    pub fn run_next_promise_job(&mut self) -> Result<PromiseJobOutcome, Error> {
+        let span = Span::new(0, 0);
+        if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
+            return Err(Error::Host {
+                span,
+                message: "cannot run a Promise job during active execution".into(),
+            });
+        }
+        if self.promise_jobs.is_empty() {
+            return Ok(PromiseJobOutcome::NoJob);
+        }
+        let caller_work = self.remaining_steps;
+        self.remaining_steps = self.limits.max_steps;
+        let prepared = (|| -> Result<_, Error> {
+            self.object_work(span, |_, budget| budget.charge(3))?;
+            self.check_argument_count(2, span)?;
+            let job = self.promise_jobs.front().expect("queued job").clone();
+            let PromiseJob::Thenable { promise, .. } = &job;
+            let (resolve, reject) = self.promise_resolving_functions(promise, span)?;
+            let mut arguments = Vec::new();
+            arguments.try_reserve_exact(2).map_err(|_| Error::Limit {
+                span,
+                message: "Promise job argument capacity exceeded".into(),
+            })?;
+            arguments.push(resolve);
+            arguments.push(reject.clone());
+            Ok((job, reject, arguments))
+        })();
+        let (job, reject, arguments) = match prepared {
+            Ok(prepared) => prepared,
+            Err(error) => {
+                self.remaining_steps = caller_work;
+                return Err(error);
+            }
+        };
+        self.promise_jobs.pop_front();
+        let global = self
+            .scopes
+            .first()
+            .expect("queued Promise has a Realm")
+            .clone();
+        let caller_variable = self.variable_environment.replace(global);
+        let caller_strict = std::mem::replace(&mut self.strict, false);
+        let caller_scope_depth = self.scopes.len();
+        self.job_active = true;
+        let result = (|| -> Result<(), Error> {
+            let PromiseJob::Thenable { thenable, then, .. } = job;
+            if let Err(error) = self.call(
+                Value::Object(then),
+                Value::Object(thenable),
+                arguments,
+                span,
+            ) {
+                let reason = self.language_exception_value(error)?;
+                self.call(reject, Value::Undefined, vec![reason], span)?;
+            }
+            Ok(())
+        })();
+        self.job_active = false;
+        self.strict = caller_strict;
+        self.variable_environment = caller_variable;
+        self.remaining_steps = caller_work;
+        debug_assert_eq!(self.scopes.len(), caller_scope_depth);
+        debug_assert_eq!((self.call_depth, self.evaluation_depth), (0, 0));
+        Ok(match result {
+            Ok(()) => PromiseJobOutcome::Completed,
+            Err(error) => PromiseJobOutcome::Reported(error),
+        })
+    }
+
     // Promise.prototype.catch: Invoke(this, "then", [undefined, onRejected]).
     // No Promise brand or callback validation is performed (27.2.5.1).
     pub(super) fn promise_catch(
@@ -173,14 +457,7 @@ impl Realm {
         }
         let callback = arguments.next().unwrap_or(Value::Undefined);
         match self.call(callback, Value::Undefined, arguments.collect(), span) {
-            Ok(value) => {
-                // PromiseResolve's branded identity case becomes reachable when
-                // intrinsic Promise construction is implemented. Existing values
-                // require a fresh capability, including user-created lookalikes.
-                let capability = self.new_promise_capability(constructor, span)?;
-                self.call(capability.resolve, Value::Undefined, vec![value], span)?;
-                Ok(capability.promise)
-            }
+            Ok(value) => self.promise_resolve(constructor, value, span),
             Err(error) => {
                 let value = self.language_exception_value(error)?;
                 let capability = self.new_promise_capability(constructor, span)?;

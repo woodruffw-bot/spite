@@ -31,6 +31,7 @@ mod realm_typed_array;
 #[cfg(test)]
 mod typed_array_tests;
 mod value;
+pub use function::PromiseJobOutcome;
 pub use realm_finalization::FinalizationCleanupOutcome;
 pub use realm_object::RootedValue;
 pub use spite_heap::{Collection, Handle as ObjectHandle};
@@ -41,7 +42,7 @@ use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
 use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{BTreeMap, BTreeSet, VecDeque},
     fmt,
     rc::Rc,
 };
@@ -148,7 +149,7 @@ pub struct Limits {
     /// Optional maximum encoded bytes in Script, eval, or dynamic Function source.
     /// Scalars use UTF-8 lengths; each lone surrogate occupies three bytes.
     pub max_source_bytes: Option<usize>,
-    /// Optional maximum work per Script, including bindings, clauses, and arithmetic.
+    /// Optional maximum work per Script or host job, including bindings and arithmetic.
     /// Defaults to `None`, which disables the execution work limit.
     /// Realm initialization is outside this per-Script allowance.
     pub max_steps: Option<usize>,
@@ -291,8 +292,9 @@ pub struct Realm {
     template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
     // 9.11: retained until the embedding explicitly ends its synchronous sequence.
     kept_alive: Vec<RootedValue>,
-    // One host cleanup job is one execution sequence and one work allowance.
-    finalization_cleanup_active: bool,
+    // One host job is one execution sequence and one work allowance.
+    job_active: bool,
+    promise_jobs: VecDeque<function::PromiseJob>,
     time_zone: Option<TimeZone>,
 }
 
@@ -319,7 +321,8 @@ impl Realm {
             intrinsics: None,
             template_map: Vec::new(),
             kept_alive: Vec::new(),
-            finalization_cleanup_active: false,
+            job_active: false,
+            promise_jobs: VecDeque::new(),
             time_zone: None,
         }
     }
@@ -355,7 +358,7 @@ impl Realm {
         let caller_variable =
             std::mem::replace(&mut self.variable_environment, self.scopes.first().cloned());
         let caller_strict = self.strict;
-        if !self.finalization_cleanup_active {
+        if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
         }
         self.strict = script.is_strict();
@@ -366,7 +369,7 @@ impl Realm {
             debug_assert_eq!(completion.kind, CompletionKind::Normal);
             Ok(completion.value.unwrap_or(Value::Undefined))
         })();
-        if self.finalization_cleanup_active {
+        if self.job_active {
             self.variable_environment = caller_variable;
             self.strict = caller_strict;
         }

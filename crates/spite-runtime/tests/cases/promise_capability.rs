@@ -72,14 +72,10 @@ fn callback_errors_are_rejected_but_resolver_errors_propagate_unchanged() {
 }
 
 #[test]
-fn intrinsic_try_runs_the_callback_before_its_deferred_constructor_dependency() {
-    let mut realm = Realm::default();
-    realm.eval("let calls=0,flag=0").unwrap();
-    assert!(matches!(
-        realm.eval("try{Promise.try(()=>{calls++;return 1})}catch{flag=1}finally{flag=2}"),
-        Err(Error::Unsupported { .. })
-    ));
-    assert_eq!(realm.eval("calls===1&&flag===0"), Ok(Value::Boolean(true)));
+fn intrinsic_try_runs_the_callback_and_preserves_native_promise_identity() {
+    check(
+        "let calls=0,sentinel=Promise.resolve(7),result=Promise.try(()=>{calls++;return sentinel});calls===1&&result===sentinel",
+    );
 }
 
 #[test]

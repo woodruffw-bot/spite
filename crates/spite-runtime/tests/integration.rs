@@ -322,6 +322,8 @@ mod private_syntax;
 mod promise_capability;
 #[path = "cases/promise_catch.rs"]
 mod promise_catch;
+#[path = "cases/promise_construction.rs"]
+mod promise_construction;
 #[path = "cases/properties.rs"]
 mod properties;
 #[path = "cases/prototypes.rs"]

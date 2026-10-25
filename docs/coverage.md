@@ -34,7 +34,7 @@ not an alternative language specification.
 | Static semantics | Implemented ASI rules, strict directives, duplicate lexical bindings, strict binding and assignment restrictions, escaped reserved-word checks, enclosing-loop/switch checks, duplicate labels, control-target validation, duplicate defaults and case-block lexical names |
 | Runtime | Persistent realm state, lexical scope, declaration instantiation, per-iteration scopes, temporal dead zones, immutable bindings, ordered evaluation and synchronous iterator closing |
 | Completions | Empty versus undefined, statement-list values, if-statement UpdateEmpty, loop body values, return and break/continue propagation through blocks, conditionals, nested loops, and switch fall-through, primitive and object throws, finalizer preservation and overrides of language completions |
-| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained Promise and SharedArrayBuffer graphs with deferred bodies |
+| Global values | Complete standard global own-property metadata, reflection/enumeration, ordinary mutation/deletion and property-backed bindings; retained intrinsic graphs |
 | Eval | Standard intrinsic metadata, non-String identity returns, direct/indirect String execution, caller/global lookup and declaration checks, fresh lexical/strict var environments, deletable eval-created bindings, inherited this/new.target, exact UTF-16 source, and restored caller contexts |
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
@@ -52,10 +52,37 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Shared native capability executors, generic withResolvers/reject/try calls through supplied constructors, and generic catch dispatch; intrinsic Promise construction/jobs remain deferred |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16647 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch, and explicit FIFO thenable jobs; reactions/then remain deferred |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16765 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise construction and thenable jobs
+
+Native Promises have pending/fulfilled/rejected state and traced results.
+Construction checks executors before prototype hooks and invokes them
+synchronously; paired resolving functions share first-settlement state. Resolution
+handles self-reference, synchronous then lookup and queued thenable invocation.
+Resolve/try preserve branded identity through constructor checks. The public
+run_next_promise_job host API runs one FIFO job, preserves queues on preflight
+failure, reports started-job failures and shares one opt-in allowance per job.
+Native then/reactions, finally, combinators and async conformance completion
+remain deferred.
+
+Six new state/job unit regressions and three Runtime integration groups cover
+settlement/error ordering, metadata, subclasses/fallbacks, branded identity,
+nested FIFO jobs, collection of captures/Symbols, preflight and host failures.
+Existing FinalizationRegistry jobs retain their behavior through the shared
+active-job guard. All 398 Runtime units and 1,788 integration tests outside RegExp
+groups pass, as do strict Clippy and Rust 1.88 all-target checks.
+
+Sixty unchanged Test262 originals add 118 variants, including two single-mode
+sources. The 107-source candidate review records 118 passing and 94 Unsupported
+variants; the latter 47 originals remain deferred. Current inventories contain
+8,664 fixtures, seventeen helpers, 8,645 reviewed sources and 625 Runtime case files.
+All 16,765 variants and all 35 Test262 package tests pass. Formatting, dependency
+policy, fixture inventories and diff checks pass; JavaScript quotas remain
+disabled by default.
 
 ## Promise.prototype.catch
 

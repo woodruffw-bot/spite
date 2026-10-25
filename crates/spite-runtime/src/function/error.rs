@@ -78,7 +78,7 @@ impl ErrorIntrinsics {
 
 impl Realm {
     /// Obtains a JavaScript exception value, resetting any opted-in work allowance.
-    /// During an active finalization cleanup job, conversion instead shares the
+    /// During an active host job, conversion instead shares the
     /// existing job allowance, just like host evaluation and property reads.
     ///
     /// Thrown values retain their identity. Each conversion of a host-described
@@ -91,7 +91,7 @@ impl Realm {
             return Ok(None);
         }
         self.initialize_realm()?;
-        if !self.finalization_cleanup_active {
+        if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
         }
         match error {

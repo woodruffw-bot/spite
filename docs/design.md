@@ -3243,7 +3243,7 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Intrinsic Promise construction, reaction jobs and SharedArrayBuffer retain
+Promise reactions/combinators and SharedArrayBuffer construction retain
 explicit Unsupported results for their deferred bodies after ordinary argument
 evaluation and the specified call/new prefix checks. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
@@ -3266,12 +3266,36 @@ promise/resolve/reject data properties, bypassing inherited setters. Reject call
 the supplied reject function with undefined as receiver and the original reason.
 Promise.try follows edition 17's callback-first algorithm: reject non-object
 receivers before Call, invoke the callback with undefined and the remaining
-arguments, then construct a capability and forward the result or language throw
-to its resolve/reject callback. Callback validation therefore precedes constructor
-and capability validation for object receivers. Resolver failures propagate;
-host failures bypass rejection and JavaScript handlers without resetting work.
-PromiseResolve's branded identity path remains deferred with intrinsic Promise
-construction. Constructed results retain the supplied constructor's identity.
+arguments, then use PromiseResolve for normal results or a new capability/reject
+call for language throws. Callback validation therefore precedes construction
+for object receivers. Resolver failures propagate; host failures bypass rejection
+and JavaScript handlers without resetting work.
+
+Promise construction validates the executor before reading newTarget.prototype,
+allocates a branded pending instance, creates paired resolve/reject functions,
+and calls the executor synchronously with undefined and those two functions
+(27.2.3.1). They share a private already-resolved record, set before any then
+lookup. First settlement wins, including undefined and executor throws after
+resolution. Self-resolution rejects with an intrinsic TypeError. Non-object
+values and objects with non-callable then values fulfill directly; getter throws
+reject. A callable then is captured once and scheduled with the original object.
+Each thenable job creates a fresh resolving pair for the same target Promise.
+
+Promise.resolve requires an object constructor receiver, checks the real Promise
+brand, and reads constructor for the identity shortcut before testing
+constructibility (27.2.4.7). This preserves matching Promise identity even for a
+non-constructible object receiver. Prototype/tag lookalikes take the ordinary
+resolution path. Promise.try shares this path, preserving edition-17 no-wrap
+behavior. Constructor/prototype fallbacks use retained intrinsics across mutation.
+
+The host explicitly calls Realm::run_next_promise_job to run one FIFO thenable
+job. An empty queue is inert. Idle/preflight failures preserve queued captures;
+a started job returns Completed or Reported and restores caller execution state.
+Queued Promise/object/method handles and settled object/Symbol values participate
+in collection. Jobs share one opt-in work allowance across their calls; the host
+controls subsequent jobs and WeakRef/collection checkpoints. Native capacity
+failures remain host failures, with no default job or work quota. Promise.then,
+reaction jobs, finally and combinators remain separate implementation work.
 
 Promise.prototype.catch implements Invoke(this, "then", [undefined, onRejected])
 (27.2.5.1). It reads then once and calls it with the original receiver and exactly

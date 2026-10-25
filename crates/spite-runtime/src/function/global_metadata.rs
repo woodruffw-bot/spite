@@ -165,6 +165,8 @@ impl Member {
 #[derive(Debug)]
 pub(crate) struct GlobalMetadataIntrinsics {
     pub promise: ObjectHandle,
+    // Already retained by objects; preserve the intrinsic fallback across mutation.
+    pub promise_prototype: ObjectHandle,
     pub proxy: ObjectHandle,
     pub shared_array_buffer: ObjectHandle,
     pub weak_ref: ObjectHandle,
@@ -396,6 +398,7 @@ impl Realm {
         debug_assert_eq!(objects.len(), 40);
         Ok(GlobalMetadataIntrinsics {
             promise,
+            promise_prototype,
             proxy,
             shared_array_buffer,
             weak_ref,
@@ -493,6 +496,9 @@ impl Realm {
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
             Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
             Member::PromiseWithResolvers => self.promise_with_resolvers(receiver, span),
+            Member::PromiseResolve => {
+                self.promise_resolve(receiver, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Member::PromiseCatch => {
                 self.promise_catch(receiver, arguments.next().unwrap_or(Value::Undefined), span)
             }
