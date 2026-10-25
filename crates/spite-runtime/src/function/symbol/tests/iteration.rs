@@ -25,7 +25,7 @@ fn iterator_aliases_and_prototype_descriptors_are_standard() {
     );
     check(
         &mut realm,
-        "Object.getOwnPropertyNames(base).join(',')==='constructor,drop,every,filter,find,flatMap,forEach,map,reduce,some,take,toArray' && Reflect.ownKeys(base).length===14",
+        "Object.getOwnPropertyNames(base).join(',')==='constructor,drop,every,filter,find,flatMap,forEach,map,reduce,some,take,toArray' && Reflect.ownKeys(base).length===15",
     );
 }
 

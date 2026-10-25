@@ -44,6 +44,7 @@ pub(crate) struct IteratorIntrinsics {
     pub regexp_prototype: ObjectHandle,
     regexp_next: ObjectHandle,
     identity: ObjectHandle,
+    dispose: ObjectHandle,
     constructor_get: ObjectHandle,
     constructor_set: ObjectHandle,
     array_next: ObjectHandle,
@@ -81,6 +82,7 @@ impl IteratorIntrinsics {
             &self.regexp_prototype,
             &self.regexp_next,
             &self.identity,
+            &self.dispose,
             &self.constructor_get,
             &self.constructor_set,
             &self.array_next,
@@ -93,6 +95,19 @@ impl IteratorIntrinsics {
 }
 
 impl Realm {
+    // %IteratorPrototype% [ @@dispose ]: GetMethod, call with no arguments,
+    // discard its result, then return undefined (27.1.3.3).
+    pub(in crate::function) fn iterator_dispose(
+        &mut self,
+        this: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        if let Some(method) = self.get_method(&this, &JsString::from("return"), span)? {
+            self.call(method, this, vec![], span)?;
+        }
+        Ok(Value::Undefined)
+    }
+
     pub(super) fn iterator_intrinsics(
         &mut self,
         object_prototype: &ObjectHandle,
@@ -171,6 +186,7 @@ impl Realm {
             span,
         )?;
         let identity = self.new_builtin(function_prototype, Builtin::IteratorIdentity, span)?;
+        let dispose = self.new_builtin(function_prototype, Builtin::IteratorDispose, span)?;
         let constructor_get =
             self.new_builtin(function_prototype, Builtin::IteratorConstructorGet, span)?;
         let constructor_set =
@@ -283,6 +299,17 @@ impl Realm {
                 budget,
             )?;
             objects.define(
+                &prototype,
+                WellKnownSymbol::Dispose.symbol(),
+                DataDescriptor {
+                    value: Some(Value::Object(dispose.clone())),
+                    writable: Some(true),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                },
+                budget,
+            )?;
+            objects.define(
                 &string_prototype,
                 WellKnownSymbol::ToStringTag.symbol(),
                 DataDescriptor {
@@ -333,6 +360,7 @@ impl Realm {
             regexp_prototype,
             regexp_next,
             identity,
+            dispose,
             constructor_get,
             constructor_set,
             array_next,

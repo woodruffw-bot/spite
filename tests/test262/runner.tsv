@@ -8435,3 +8435,9 @@ test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-characte
 test/built-ins/Symbol/dispose/prop-desc.js	-	-	-
 test/built-ins/Symbol/asyncDispose/prop-desc.js	-	-	-
 test/built-ins/Symbol/asyncDispose/no-key.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/invokes-return.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/is-function.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/length.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/name.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/prop-desc.js	-	-	-
+test/built-ins/Iterator/prototype/Symbol.dispose/return-val.js	-	-	-

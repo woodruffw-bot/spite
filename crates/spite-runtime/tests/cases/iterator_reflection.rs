@@ -15,7 +15,7 @@ fn check(source: &str) {
 #[test]
 fn own_strings_and_symbols_follow_the_complete_specification_inventory() {
     check(
-        "let p=Iterator.prototype,names=Object.getOwnPropertyNames(p),symbols=Object.getOwnPropertySymbols(p),keys=Reflect.ownKeys(p);names.join(',')==='constructor,drop,every,filter,find,flatMap,forEach,map,reduce,some,take,toArray' && symbols.length===2 && symbols[0]===Symbol.toStringTag && symbols[1]===Symbol.iterator && keys.length===14 && keys.slice(0,12).join(',')===names.join(',') && keys[12]===symbols[0] && keys[13]===symbols[1] && Object.keys(p).length===0 && Object.values(p).length===0 && Object.entries(p).length===0",
+        "let p=Iterator.prototype,names=Object.getOwnPropertyNames(p),symbols=Object.getOwnPropertySymbols(p),keys=Reflect.ownKeys(p);names.join(',')==='constructor,drop,every,filter,find,flatMap,forEach,map,reduce,some,take,toArray' && symbols.length===3 && symbols[0]===Symbol.toStringTag && symbols[1]===Symbol.iterator && symbols[2]===Symbol.dispose && keys.length===15 && keys.slice(0,12).join(',')===names.join(',') && keys[12]===symbols[0] && keys[13]===symbols[1] && keys[14]===symbols[2] && Object.keys(p).length===0 && Object.values(p).length===0 && Object.entries(p).length===0",
     );
     check(
         "let p=Iterator.prototype;!Object.hasOwn(p,'dispose') && !Object.hasOwn(p,'zip') && !Object.hasOwn(p,'chunks') && !Object.hasOwn(p,'includes') && !Object.hasOwn(p,'join') && !Object.hasOwn(p,'windows') && !Object.hasOwn(p,'next') && !Object.hasOwn(p,'return')",
@@ -49,10 +49,10 @@ fn every_helper_has_standard_function_and_property_attributes() {
 #[test]
 fn descriptor_copying_preserves_accessors_without_observing_them() {
     check(
-        "let p=Iterator.prototype,d=Object.getOwnPropertyDescriptors(p),q=Object.create(null,d),c=Object.getOwnPropertyDescriptor(p,'constructor'),t=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag);Reflect.ownKeys(d).length===14 && Reflect.ownKeys(q).length===14 && d.constructor.get===c.get && d.constructor.set===c.set && d[Symbol.toStringTag].get===t.get && d[Symbol.toStringTag].set===t.set && q.constructor===Iterator && q[Symbol.toStringTag]==='Iterator' && q.map===p.map && q[Symbol.iterator]()===q",
+        "let p=Iterator.prototype,d=Object.getOwnPropertyDescriptors(p),q=Object.create(null,d),c=Object.getOwnPropertyDescriptor(p,'constructor'),t=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag);Reflect.ownKeys(d).length===15 && Reflect.ownKeys(q).length===15 && d.constructor.get===c.get && d.constructor.set===c.set && d[Symbol.toStringTag].get===t.get && d[Symbol.toStringTag].set===t.set && q.constructor===Iterator && q[Symbol.toStringTag]==='Iterator' && q.map===p.map && q[Symbol.iterator]()===q",
     );
     check(
-        "let p=Iterator.prototype,c=Object.getOwnPropertyDescriptor(p,'constructor'),t=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag),calls=0;Object.defineProperty(p,'constructor',{get(){calls++;throw 7;}});Object.defineProperty(p,Symbol.toStringTag,{get(){calls++;throw 8;}});let d=Object.getOwnPropertyDescriptors(p),copy=Object.assign({},p);Reflect.ownKeys(d).length===14 && Reflect.ownKeys(copy).length===0 && Object.keys(p).length===0 && calls===0 && d.constructor.set===c.set && d[Symbol.toStringTag].set===t.set",
+        "let p=Iterator.prototype,c=Object.getOwnPropertyDescriptor(p,'constructor'),t=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag),calls=0;Object.defineProperty(p,'constructor',{get(){calls++;throw 7;}});Object.defineProperty(p,Symbol.toStringTag,{get(){calls++;throw 8;}});let d=Object.getOwnPropertyDescriptors(p),copy=Object.assign({},p);Reflect.ownKeys(d).length===15 && Reflect.ownKeys(copy).length===0 && Object.keys(p).length===0 && calls===0 && d.constructor.set===c.set && d[Symbol.toStringTag].set===t.set",
     );
 }
 
@@ -87,7 +87,7 @@ fn enumeration_of_inheriting_iterators_reaches_complete_prototypes() {
 #[test]
 fn delete_and_redefine_use_ordinary_creation_order_and_intrinsics_remain_rooted() {
     check(
-        "let p=Iterator.prototype,f=p.map;delete p.map;let absent=!Object.hasOwn(p,'map') && p.map===undefined;Object.defineProperty(p,'map',{value:f,writable:true,configurable:true});let keys=Reflect.ownKeys(p);absent && keys.length===14 && keys[11]==='map' && keys[12]===Symbol.toStringTag && keys[13]===Symbol.iterator && p.map.call([7].values(),x=>x).next().value===7",
+        "let p=Iterator.prototype,f=p.map;delete p.map;let absent=!Object.hasOwn(p,'map') && p.map===undefined;Object.defineProperty(p,'map',{value:f,writable:true,configurable:true});let keys=Reflect.ownKeys(p);absent && keys.length===15 && keys[11]==='map' && keys[12]===Symbol.toStringTag && keys[13]===Symbol.iterator && p.map.call([7].values(),x=>x).next().value===7",
     );
     let mut realm = Realm::default();
     realm.eval("let I=Iterator,p=I.prototype;for(let key of Reflect.ownKeys(p))delete p[key];globalThis.Iterator=null;").unwrap();

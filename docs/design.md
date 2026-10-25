@@ -1056,7 +1056,7 @@ newTarget as required by 10.4.1.2. Constructor arguments are ignored after norma
 evaluation; no next method or iterator brand is installed on the resulting object.
 The global binding and native constructor metadata retain standard attributes.
 The complete edition-17 shared prototype has constructor, eleven helper methods,
-Symbol.toStringTag, and Symbol.iterator. Initialize string properties in
+Symbol.toStringTag, Symbol.iterator, and Symbol.dispose. Initialize string properties in
 specification order and Symbols after them. Ordinary reflection, copying,
 enumeration, and integrity operations use this complete inventory, preserving
 accessor identity without invoking getters. Post-edition-17 iterator additions
@@ -1070,6 +1070,14 @@ absent property is created as an own writable/enumerable/configurable data
 property without inherited lookups. An existing property uses strict Set,
 preserving its attributes and invoking its setter when present. These failures
 are catchable TypeErrors; recursive user setters retain the host reentry limit.
+
+The Symbol.dispose method performs GetMethod on the receiver's return property,
+calls a present method with the original receiver and no arguments, and returns
+undefined (27.1.3.3). Nullish methods are absent; other non-callable values and
+nullish receivers throw TypeError. Getter and call failures propagate unchanged.
+The return result is ignored, including primitive results; no iterator-result
+validation or thenable assimilation occurs. Primitive receivers retain their
+original identity through inherited getters and strict calls.
 
 Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
 (27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator

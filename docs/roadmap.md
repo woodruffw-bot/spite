@@ -269,6 +269,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Complete edition-17 shared Iterator prototype properties and enable ordered reflection and integrity operations.
 - [x] Expose the Symbol global with standard attributes.
 - [x] Expose Symbol.dispose and Symbol.asyncDispose as shared, non-registered well-known identities with fixed constructor descriptors.
+- [x] Add Iterator.prototype[Symbol.dispose] with live return-method lookup, original receivers, ignored results, and abrupt completion propagation.
 - [ ] Complete Array species-dependent methods and iterator integration.
 
 ## 4. Standard library

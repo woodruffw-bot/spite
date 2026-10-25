@@ -204,6 +204,8 @@ mod iterator_callbacks;
 mod iterator_concat;
 #[path = "cases/iterator_constructor.rs"]
 mod iterator_constructor;
+#[path = "cases/iterator_dispose.rs"]
+mod iterator_dispose;
 #[path = "cases/iterator_flat_map.rs"]
 mod iterator_flat_map;
 #[path = "cases/iterator_for_each.rs"]

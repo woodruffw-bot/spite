@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8455 unmodified test fixtures and sixteen harness files come from
+These 8461 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,18 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Iterator disposal fixtures
+
+Six complete unchanged originals in
+`built-ins/Iterator/prototype/Symbol.dispose/` cover return-method invocation,
+function type, name and length, property attributes, and ignored return values.
+Their pinned Git blob hashes and manifest SHA-256 digests were verified before
+admission. All twelve strict/non-strict variants pass in default realms.
+
+The full corpus passes all 16,361 variants from 8,442 reviewed sources. The
+inventory contains 8,461 fixtures and sixteen unchanged harness files; the pin,
+licenses and existing fixture bytes are unchanged.
 
 ## Well-known disposal symbol fixtures
 
@@ -4074,7 +4086,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16349 variants from 8436 reviewed sources.
+The `spite-test262` command runs 16361 variants from 8442 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

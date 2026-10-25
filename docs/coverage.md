@@ -51,9 +51,23 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16349 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16361 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Iterator disposal
+
+Iterator.prototype[Symbol.dispose] calls a present return method with the original
+receiver and no arguments, ignores its result, and returns undefined (27.1.3.3).
+Four Runtime regressions cover live lookup, nullish/non-callable methods,
+primitive receivers, abrupt completions, discarded return values and helper
+closing across collection. The complete iterator reflection inventory includes
+the new symbol property. All 144 focused iterator tests and 392 Runtime units pass.
+
+Six unchanged Test262 originals cover invocation, function metadata, property
+attributes and return values. Their twelve Script variants pass, as does the full
+16,361-variant corpus (203.49 s). The inventory now has 8,461 fixtures, sixteen
+harness files, 8,442 reviewed sources and 620 Runtime case files.
 
 ## Well-known disposal symbols
 

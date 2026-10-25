@@ -411,6 +411,7 @@ impl Realm {
                 self.iterator_from(arguments.next().unwrap_or(Value::Undefined), span)
             }
             Builtin::IteratorConcat => self.iterator_concat(arguments, span),
+            Builtin::IteratorDispose => self.iterator_dispose(this, span),
             Builtin::IteratorToArray => self.iterator_to_array(this, span),
             Builtin::IteratorForEach => {
                 self.iterator_for_each(this, arguments.next().unwrap_or(Value::Undefined), span)

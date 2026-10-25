@@ -8470,3 +8470,9 @@ script-pass	cfed06cf27225f7c836438f1cdd9a37a18057c337706513a682e968dbfa51f98	tes
 script-pass	8f8a30d08820ee923bb2382a6bf6c980f67bf0bcee57eb479aa45f0c28a3a938	test/built-ins/Symbol/dispose/prop-desc.js
 script-pass	dd490ef6732368767dfae52d4a2b2f433558175e1831615d3bbc12a08e9fb539	test/built-ins/Symbol/asyncDispose/prop-desc.js
 script-pass	800ac84aa7f38bafe175f0973dadd3422eb17c1cd4a3d7c0a931b1c98eece359	test/built-ins/Symbol/asyncDispose/no-key.js
+script-pass	ebeb5636b0cf76d4beca2a5a57fc234d2669334b24ce4988ea1ce1f2923b67c0	test/built-ins/Iterator/prototype/Symbol.dispose/invokes-return.js
+script-pass	a713baf8621f6f9a1bc45e18db1bef549794f6d933caabe329cea350048b8aa0	test/built-ins/Iterator/prototype/Symbol.dispose/is-function.js
+script-pass	1b0e79b6158df1a967538c4c9a75853dd6bf245b48fffb1f8bf1ad9b47dd398f	test/built-ins/Iterator/prototype/Symbol.dispose/length.js
+script-pass	27796a1cf2c19196a12ccc516b226523b36750b92c8572b72b2f9e280b329038	test/built-ins/Iterator/prototype/Symbol.dispose/name.js
+script-pass	51ac7eab808ddae6d2701564aa0ca82a14f8b179e19f7dad6f05700767eaf85b	test/built-ins/Iterator/prototype/Symbol.dispose/prop-desc.js
+script-pass	bf2eac139f2fca5caa672db0506f7b222f86864bcab03dcf43f67d638eacb4f0	test/built-ins/Iterator/prototype/Symbol.dispose/return-val.js
