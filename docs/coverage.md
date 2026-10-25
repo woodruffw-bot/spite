@@ -26408,3 +26408,13 @@ all 437 Runtime units; this constructor-only Runtime extension has the focused
 and differential evidence above. Completed broad results record `3c6ca264`;
 later assertions retain separate focused evidence. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Complete q-class assertion Test262 snapshot
+
+The Runtime snapshot at `c9b71cc1` passes all 35 Test262 package tests and all
+16,343 reviewed corpus variants with the existing conformance profile (497.37 s
+for the corpus). It includes single-character q-class positive/negative
+lookahead and lookbehind with word predicates, predecessor capture extents and
+undefined negative operand slots. Later scalar v-set assertion extensions
+retain their focused and differential evidence. Fixture, harness and
+reviewed-entry inventories are unchanged.
