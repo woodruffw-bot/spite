@@ -27718,3 +27718,23 @@ result and Core validation, this completes broad evidence for the q-union
 lookahead family. Later literal-character/string-union work has separate
 focused and differential evidence. Fixtures, snapshots, dependencies, profiles,
 native stacks and default quotas are unchanged.
+
+
+## Literal-character/string-union lookahead with word predicates: Core
+
+The focused compiler/regression harness passes all 402 groups (1.97 s),
+including four new word-character-union groups. The production library API
+passes all 24 positive string-class groups (0.02 s). These cover literal fallback
+after rejected longer strings, defined-empty members, independent captures,
+original line/fold/backspace/pair context, supplementary case folding, deep
+scopes, bounded retries, proof exclusions and every construction/search work
+abort followed by recovery. Pair-boundary expectations remain independent
+specification checks.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. None of the
+2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select this constructor; fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

@@ -14993,3 +14993,12 @@ proof success use the existing boundaries. The positive string-class cache
 retains selected literal or string extents, including defined-empty members,
 through named indices, consumers, copies and collection. Original source and
 reentrant conversion frames retain their established behavior.
+
+
+A separate character/string-union constructor admits operand word predicates
+with optional ^/$ gates, requiring at least one predicate, a literal character
+and an empty or longer q member. The checked union trie retains membership
+priority across literals and strings while predicates inspect original
+endpoints. A rejected longer string can select a shorter literal or an empty
+member, retaining independent operand capture extents and original UTF-16
+spans (22.2.2.4, 22.2.2.7). Earlier domains and work remain unchanged.
