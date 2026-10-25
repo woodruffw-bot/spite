@@ -27063,3 +27063,29 @@ with word predicates and independent character/predecessor captures, alongside
 all earlier positive/negative q-class and scalar-set paths. Later negative
 character-result assertion extensions retain their focused and differential
 evidence. Fixture, harness and reviewed-entry inventories are unchanged.
+
+
+## Runtime negative character-result lookahead with word predicates
+
+All thirty-five current negative-lookahead groups pass (1.12 s), including four
+new negative word character-result groups. Checks cover boundary polarity,
+named empty/undefined indices, original q/set syntax, line/property/fold/
+backspace context, String consumers, copies, collection and independent
+complete-pair/initial-rewind expectations. All thirteen constructor regressions
+pass (0.13 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with a
+native sticky-candidate oracle using fifteen independently specified equivalent
+character-class controls and independent Unicode search/state bookkeeping.
+Twenty-nine complete JavaScript programs pass with the documented equivalent
+class/property/q-fold controls where needed. Actual Runtime expectations retain
+original source and flags throughout.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+preceding scalar-lookahead snapshot records all 437 Runtime units; this
+constructor-only increment has the focused and differential evidence above.
+Completed broad RegExp results record `3c1dd9f1`, and Test262 results record
+`f32bcefb`; negative character-result assertions retain separate focused
+evidence. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.

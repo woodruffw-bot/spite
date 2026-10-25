@@ -14700,3 +14700,13 @@ slots undefined. Checked errors, complete Unicode advancement, initial-pair
 rewind, flat storage and actual-work cancellation retain their shared paths.
 Earlier entries keep their domains and charges. Runtime integration remains
 separate.
+
+
+Runtime selects checked negative word character-result lookahead after its
+line-only negative character-result entry, gated by v mode and using full
+normalized source. Successful selection resets the projected outer offset;
+checked errors retain their host mapping. Shared negative capture caching
+keeps outside ranges empty and operand slots undefined through named indices,
+String consumers, copies and collection. Original q/set syntax, word/line
+context and complete Unicode search remain in Core; user conversions stay
+outside the compiler frame.
