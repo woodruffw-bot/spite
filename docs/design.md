@@ -14131,3 +14131,21 @@ capture offset on success and shares the cached empty/predecessor ranges.
 Original word and line context therefore survives result construction, named
 indices, String consumers, copies and collection. Ordinary search visits only
 complete Unicode candidates, independently of native-engine surrogate search.
+
+A separate negative Unicode assertion plan proves complete lookahead over one
+unquantified non-reference character atom, with optional operand ^/$ gates
+(22.2.2.4). After charging source work, it identifies complete outside wrappers
+and changes only the assertion sign for the existing positive single-atom proof.
+That proof rejects references before projection; no projected source is
+independently validated or rebound. Other counts, word predicates, alternatives,
+continuations and assertion directions remain separate proof domains.
+
+Search probes the positive operand stickily at each complete Unicode candidate
+and succeeds exactly when that probe fails. A fixed single iteration bounds
+each probe, keeping retries linear without suffix rescans. Original line,
+dotAll, fold and surrogate semantics remain in the shared operand matcher.
+Outside captures select the empty assertion span; every operand slot remains
+undefined, as required when negative lookahead succeeds. The plan stores only
+capture counts and the shared operand, with no input-sized capture allocation.
+Source and search cancellation precede their work, and callbacks share private
+compiler/search bodies. Runtime integration remains separate.

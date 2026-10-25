@@ -25735,3 +25735,21 @@ dependency policy, inventories and diff checks pass. Runtime inventory remains
 620 case files. Broad results above record the preceding lookahead snapshot;
 this extension has the focused and differential evidence here. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Core single-character Unicode negative lookahead
+
+The actual-source focused harness passes 253 tests (2.47 s), including six new
+negative-lookahead groups. They check empty outside and undefined operand
+captures, original line/dot/fold/property context, complete astral characters,
+lone surrogates, initial-pair rewind, proof exclusions, 200,000 wrappers,
+clone/drop, linear retries over 20,000 failing candidates and every source/
+search work cancellation followed by recovery.
+
+The native sticky-candidate oracle with independent complete-character
+advancement agrees on all 53,248 input/start/sticky/range/capture records across
+512 patterns. Nine ASCII iv patterns contribute 936 equivalent-range controls
+for the documented Node property-fold discrepancy. All 2,728 remaining lexed
+direct Unsupported controls stay excluded. Strict all-target workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.
