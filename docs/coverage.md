@@ -27706,3 +27706,15 @@ Runtime always receives original q source. Strict all-target workspace Clippy,
 documentation tests, Rust 1.85 all-target checks, formatting, policy, inventories
 and diff checks pass. Fixtures, snapshots, dependencies, profiles, native stacks
 and default quotas are unchanged.
+
+
+## Complete RegExp validation of adjacent-q-union lookahead
+
+The Runtime snapshot at `cfc85314` passes all 3,115 RegExp integration tests
+through Cargo with the normal environment (750.37 s). This covers positive/
+negative q-union lookahead with line and word predicates, complete single-q
+modes and all earlier assertion paths. Together with its recorded full Test262
+result and Core validation, this completes broad evidence for the q-union
+lookahead family. Later literal-character/string-union work has separate
+focused and differential evidence. Fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.
