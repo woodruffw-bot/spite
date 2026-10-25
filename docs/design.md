@@ -14658,3 +14658,23 @@ retain their host mapping. Shared empty/predecessor range caching preserves
 original q/set syntax, named indices, String consumers, copies and collection.
 Original word/line/predecessor context and complete Unicode execution remain
 in Core; user conversions stay outside the compiler frame.
+
+
+A separate checked negative-lookahead entry admits one unquantified v-mode
+class with an empty or longer q member and MayContainStrings false
+(22.2.2.4, 22.2.2.9). The charged flat negative envelope changes only the
+proved assertion sign before delegating to checked positive character-result
+lookahead. Optional ^/$ gates keep original input context; negation applies
+to the complete conjunction. Outside wrappers capture the empty assertion
+position and every operand slot stays undefined, including when the proved
+class result is empty. Other widths, counts and word predicates retain
+separate proofs. Full original v/vi validation and normalized capture heads
+remain prerequisites; projected source is never independently validated or
+rebound.
+
+The shared checked negative envelope selects q-member, scalar-set and
+character-result proofs explicitly. Earlier q/scalar domains, work sequences
+and checked error contracts remain unchanged. Bounded sticky probes, complete
+Unicode advancement, initial-pair rewind, flat capture storage and actual-work
+cancellation retain their established paths. Runtime integration remains
+separate.
