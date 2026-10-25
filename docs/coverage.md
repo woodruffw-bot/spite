@@ -26956,3 +26956,29 @@ predecessor captures and undefined negative operand slots. Later character-resul
 assertion extensions retain separate focused and differential evidence.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+
+## Runtime character-result lookbehind with word predicates
+
+All thirty-three current positive-lookbehind groups pass (0.72 s), including
+four new word character-result predecessor groups. Checks cover original
+boundary polarity, named independent empty/predecessor indices, original q/set
+syntax, line/property/fold/backspace context, String consumers, copies,
+collection and independent complete-pair/initial-rewind expectations. All
+thirteen constructor regressions pass (0.09 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with a
+native sticky-candidate oracle using fifteen independently specified equivalent
+character-class controls and independent Unicode search/state bookkeeping.
+Twenty-nine complete JavaScript programs pass with the documented equivalent
+class/property/q-fold controls where needed. Actual Runtime expectations retain
+original source and flags throughout.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The preceding scalar-lookahead snapshot
+records all 437 Runtime units; this constructor-only increment has the focused
+and differential evidence above. Completed broad RegExp and Test262 results
+record `3c1dd9f1`; character-result assertions retain separate focused evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
