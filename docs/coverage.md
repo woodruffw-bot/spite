@@ -26050,3 +26050,29 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Runtime lookbehind over one single-character q class
+
+All thirteen current positive-lookbehind groups pass (0.81 s), including four
+new q-class groups. Checks cover original source and flags, named empty outside
+and predecessor indices, nested checked operations, original line/fold/property
+context, astral and lone-surrogate predecessors, String consumers, copies,
+collection, 2,000 wrapper slots and stateful pair/end boundaries. All thirteen
+constructor regressions pass (0.07 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+The 210 ignoreCase patterns contribute 43,680 equivalent ordinary-q control
+records for the documented Node defect. Seventeen ASCII iv patterns also use
+the documented equivalent-range control (3,536 overlapping records). Twelve
+complete JavaScript programs pass with the same documented equivalent controls.
+Actual Runtime expectations retain original q syntax; the earlier q-lookahead
+Core record retains the original-q baseline disagreements.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+preceding negative-lookahead snapshot records all 437 Runtime units; this
+constructor-only Runtime increment has the focused and differential evidence
+above. Broad Test262 results record `427133a0`; q-class assertions retain
+separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.

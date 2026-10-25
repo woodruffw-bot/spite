@@ -14283,3 +14283,12 @@ retain the shared path, without suffix rescans or input-sized capture storage.
 Construction, clone/drop and work/capacity errors keep their existing contracts.
 Earlier q-lookahead entries retain their domains and charges. Runtime integration
 remains separate.
+
+Runtime selects the single-character q-class lookbehind constructor after the
+q-lookahead entries, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset, and checked work/capacity failures
+retain the existing host mapping. The shared result cache retains independent
+empty outside and predecessor capture ranges, so named indices and String
+consumers slice the original preceding character. Original q source/flags,
+copies, collection and stateful execution keep their existing paths. User
+conversions remain outside the compiler frame.
