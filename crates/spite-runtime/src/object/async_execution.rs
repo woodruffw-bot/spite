@@ -17,6 +17,7 @@ pub(crate) struct AsyncExecutionContext {
 pub(crate) enum AsyncAwaitAction {
     Discard,
     Return,
+    Binding { statement: usize, element: usize },
 }
 
 #[derive(Debug)]

@@ -388,6 +388,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "source awaited lexical across suspension",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{const value=await key;await gate;return value};f();return gate})()",
+        ),
+        (
             "source async parameter across suspension",
             "(()=>{let gate=new Promise(()=>{}),f=async value=>{await gate;return value};f(key);return gate})()",
         ),
@@ -415,7 +419,11 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
                 .eval(&format!("var key=Symbol('census'),holder={expression};key"))
                 .unwrap(),
         );
-        if name == "Array.fromAsync close error across suspension" {
+        if matches!(
+            name,
+            "Array.fromAsync close error across suspension"
+                | "source awaited lexical across suspension"
+        ) {
             loop {
                 match realm.run_next_promise_job().unwrap() {
                     crate::PromiseJobOutcome::NoJob => break,

@@ -56,9 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18482 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18544 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Awaited lexical and using initializers
+
+Body-level let/const and synchronous using declaration lists resume direct awaited
+initializers through the existing cursor. Saved statement/binding indices preserve
+list order, TDZs and partial initialization without replay. Fulfilled values enter
+existing pattern initialization, including defaults and iterator closing. Awaited
+resources register their synchronous disposer before binding initialization; prior
+resources dispose after rejection and participate in suppression. Await-produced
+anonymous functions retain their names, while ordinary declarations and pattern
+defaults keep existing name inference. Var, nested pattern/default awaits, general
+expressions and suspended control-flow statements retain explicit gaps.
+
+Five new Runtime groups cover ordering/TDZ, destructuring, naming, resource timing
+and rejection identity. Symbol ownership controls cover an initialized awaited
+lexical across another suspension. All 416 units and 1,895 non-RegExp integrations
+pass; case files remain 640, with 75 Parser files and unchanged Parser checks.
+Intrinsic entries remain 579 and quotas are unchanged.
+
+Thirty-one complete originals add 62 variants: thirty Array.fromAsync originals
+and one await precedence original. The unchanged temporalHelpers.js is required
+by passing Array fixtures and is admitted with a verified pinned Git blob and
+SHA-256 digest. The complete await review passes twenty variants from ten originals
+and defers twelve; Array/adapter passes 146 variants from 75 Array originals and
+defers twenty Array plus 38 adapter originals. Reviews contain no other non-passing
+categories. Inventories contain 9,567 fixtures, twenty helpers, 9,548 reviewed
+sources and 18,544 variants. All originals remain unchanged. All reviewed
+variants and forty Test262 package tests pass, along with formatting, strict
+Clippy, Rust 1.88, dependency policy and fixture inventories.
 
 ## Direct await execution
 

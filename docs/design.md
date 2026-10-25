@@ -411,10 +411,21 @@ the enclosing async context. Nested async bodies in defaults remain valid.
 The generic expression evaluator reports Unsupported before an AwaitExpression
 operand. An async body cursor intercepts direct await expression statements and
 return-await in block bodies, and direct await concise arrows, including transparent
-parentheses (Await, sec-asyncblockstart). The cursor advances once before
-suspending; ordinary statements and operands use existing evaluation. Nested
-await operands, initializers, general expressions and control-flow continuations
-retain their explicit gap. Unreachable awaits remain unevaluated.
+parentheses (Await, sec-asyncblockstart). Body-level let/const and synchronous
+using declarations also support direct awaited initializers. Their continuations
+record statement/binding indices and resume the current binding before later
+declarators, preserving TDZs and partial initialization. Fulfilled values use the
+existing pattern initializer; using registration precedes binding initialization.
+Ordinary non-awaited declarators reuse existing initializer evaluation and name
+inference. Await-produced anonymous functions do not acquire a binding name, while
+pattern defaults retain their inference rules.
+
+The cursor advances once before suspending; ordinary statements and operands use
+existing evaluation. Var initializers still require saved pre-RHS references.
+Nested await operands, pattern defaults, general expressions and control-flow
+continuations retain their explicit gap. Await-using is distinct from a synchronous
+using declaration with an awaited initializer and remains Unsupported. Unreachable
+awaits remain unevaluated.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

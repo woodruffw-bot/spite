@@ -256,3 +256,88 @@ fn resumed_host_failures_skip_rejection_and_disposal_and_release_cached_methods_
         );
     }
 }
+
+#[test]
+fn lexical_initializers_resume_in_list_order_and_keep_later_bindings_in_the_tdz() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let state={},events=[],result,read;state.gate=new Promise(resolve=>{state.release=resolve});
+        async function f(){read=()=>[first,second];const first=await state.gate,second=(events.push('second'),first+1),third=await second;let fourth=await third;return[first,second,third,fourth]}
+        f().then(value=>{result=value});
+    "#).unwrap();
+    check(
+        &mut realm,
+        "let caught=0;try{read()}catch(e){if(e instanceof ReferenceError)caught++}caught===1&&events.length===0&&result===undefined",
+    );
+    realm.eval("state.release(7)").unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "result.join(',')==='7,8,8,8'&&read().join(',')==='7,8'&&events.join(',')==='second'",
+    );
+}
+
+#[test]
+fn awaited_binding_patterns_initialize_defaults_and_close_iterators() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let closed=0,result,source={[Symbol.iterator](){return this},next(){return{value:5,done:false}},return(){closed++;return{}}};
+        async function f(){const [first]=await source;let{value=first+1}=await{};return[first,value]}
+        f().then(value=>{result=value});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "closed===1&&result.join(',')==='5,6'");
+}
+
+#[test]
+fn awaited_function_values_keep_their_names_and_pattern_defaults_still_infer_names() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let result;
+        async function f(){const ordinary=()=>0,awaited=await(()=>1),{factory=()=>2}=await{};return[ordinary.name,awaited.name,factory.name]}
+        f().then(value=>{result=value});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "result.join(',')==='ordinary,,factory'");
+}
+
+#[test]
+fn awaited_using_initializers_register_before_binding_and_dispose_only_initialized_resources() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let state={},events=[],done=false;state.gate=new Promise(resolve=>{state.release=resolve});
+        let first={[Symbol.dispose](){events.push('first')}},second={[Symbol.dispose](){events.push('second')}};
+        async function f(){using a=first,b=await state.gate;events.push('body');return b===second}
+        f().then(value=>{done=value});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "events.length===0&&!done");
+    realm.eval("state.release(second)").unwrap();
+    drain(&mut realm);
+    check(&mut realm, "events.join(',')==='body,second,first'&&done");
+    realm.eval(r#"
+        let marker={},reason;
+        async function rejected(){using a=first,b=await Promise.reject(marker);events.push('unreachable')}
+        rejected().catch(error=>{reason=error});
+    "#).unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "reason===marker&&events.join(',')==='body,second,first,first'",
+    );
+}
+
+#[test]
+fn lexical_and_using_initializers_preserve_rejection_and_suppression_identity() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let original={},cleanup={},reason;
+        async function f(){using resource={[Symbol.dispose](){throw cleanup}};const value=await Promise.reject(original);return value}
+        f().catch(error=>{reason=error});
+    "#).unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "reason instanceof SuppressedError&&reason.error===cleanup&&reason.suppressed===original",
+    );
+}

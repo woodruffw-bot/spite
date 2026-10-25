@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9536 unmodified test fixtures and nineteen harness files come from
+These 9567 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,22 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Awaited initializer fixtures
+
+Thirty additional complete Array.fromAsync originals and one await precedence
+original add 62 variants after lexical/using initializer resumption. The pinned
+unchanged temporalHelpers.js joins the harness for passing Array originals;
+its Git blob hash is 7216cc551fc16bf8f51e7bf20f78949d605fdf2e. All new original
+source bytes and manifest SHA-256 digests were verified.
+
+The complete await review passes twenty variants from ten of 22 originals. The
+Array/adapter review passes 146 variants from 75 Array originals; twenty Array
+and all 38 adapter originals remain Unsupported. No original is rewritten and
+no unsupported variant receives passing credit. Five Runtime groups independently
+check binding order/TDZ, patterns, names and disposal, with Symbol lifetime controls
+for awaited lexical values. Inventories contain 9,567 fixtures, twenty helpers,
+9,548 reviewed sources and 18,544 variants; intrinsic entries and quotas do not change.
 
 ## Direct await execution fixtures
 

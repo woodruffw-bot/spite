@@ -87,6 +87,7 @@ impl Realm {
         resumed: Option<Result<Value, Error>>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
+        let mut next_step = None;
         if let Some(completion) = resumed {
             match completion {
                 Err(error) => return self.finish_async_execution(data, Err(error), base),
@@ -101,11 +102,19 @@ impl Realm {
                         base,
                     );
                 }
-                Ok(_) => (),
+                Ok(value) => {
+                    if let AsyncAwaitAction::Binding { statement, element } = data.pending {
+                        next_step =
+                            Some(self.async_binding_step(&data, statement, element, Some(value)));
+                    }
+                }
             }
         }
         loop {
-            match self.async_execution_step(&mut data) {
+            let step = next_step
+                .take()
+                .unwrap_or_else(|| self.async_execution_step(&mut data));
+            match step {
                 Ok(Step::Continue) => (),
                 Ok(Step::Complete(completion)) => {
                     return self.finish_async_execution(data, Ok(completion), base);
@@ -169,6 +178,13 @@ impl Realm {
                     return Ok(Step::Complete(Completion::normal(None)));
                 };
                 data.index += 1;
+                if matches!(
+                    statement.kind,
+                    StatementKind::Lexical { .. } | StatementKind::Using(_)
+                ) {
+                    self.tick(statement.span)?;
+                    return self.async_binding_step(data, data.index - 1, 0, None);
+                }
                 let awaiting = match &statement.kind {
                     StatementKind::Expression(expression) => direct_await(expression)
                         .map(|(argument, span)| (argument, span, AsyncAwaitAction::Discard)),
@@ -193,6 +209,52 @@ impl Realm {
                 })
             }
         }
+    }
+
+    fn async_binding_step(
+        &mut self,
+        data: &AsyncExecutionData,
+        statement: usize,
+        first: usize,
+        mut resumed: Option<Value>,
+    ) -> Result<Step, Error> {
+        let ArrowBody::Block(body) = &data.body else {
+            unreachable!("block declaration");
+        };
+        let (bindings, using) = match &body.statements()[statement].kind {
+            StatementKind::Lexical { bindings, .. } => (bindings, false),
+            StatementKind::Using(bindings) => (bindings, true),
+            _ => unreachable!("declaration continuation"),
+        };
+        let environment = data.root_scope.as_ref().expect("body lexical scope");
+        for (element, binding) in bindings.iter().enumerate().skip(first) {
+            if let Some(value) = resumed.take() {
+                if using {
+                    // AddDisposableResource still precedes binding initialization.
+                    self.initialize_using_value(&binding.pattern, value, environment)?;
+                } else {
+                    self.initialize_pattern(&binding.pattern, value, environment)?;
+                }
+            } else if let Some((argument, span)) =
+                binding.initializer.as_ref().and_then(direct_await)
+            {
+                self.tick(binding.pattern.span)?;
+                self.tick(span)?;
+                // AwaitExpression is not an anonymous function definition: its
+                // fulfilled function values do not receive binding-name inference.
+                let value = self.expression(argument)?;
+                return Ok(Step::Await(
+                    value,
+                    AsyncAwaitAction::Binding { statement, element },
+                    span,
+                ));
+            } else if using {
+                self.initialize_using_bindings(std::slice::from_ref(binding))?;
+            } else {
+                self.initialize_bindings(std::slice::from_ref(binding))?;
+            }
+        }
+        Ok(Step::Continue)
     }
 
     fn capture_async_execution_context(
