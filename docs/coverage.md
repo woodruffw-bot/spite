@@ -26624,3 +26624,14 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete positive scalar-set assertion Test262 snapshot
+
+The Runtime snapshot at `7da9655b` passes all 35 Test262 package tests and all
+16,343 reviewed corpus variants with the existing conformance profile (463.28 s
+for the corpus). It includes positive scalar v-set lookahead/lookbehind with
+word predicates and independent character/predecessor captures, alongside the
+complete earlier positive/negative q-class assertion paths. Later negative
+scalar-set assertion extensions retain their focused and differential evidence.
+Fixture, harness and reviewed-entry inventories are unchanged.
