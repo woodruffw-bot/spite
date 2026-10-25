@@ -14426,6 +14426,17 @@ names, indices, String consumers, copies and collection. Original-context word
 and line predicates stay in Core, while user conversions remain outside the
 compiler frame.
 
+A separate checked scalar-set lookbehind entry accepts one unquantified
+nested/operator class with character-valued leaves and optional ^/$ gates
+(22.2.2.4, 22.2.2.9). It shares the flat charged assertion envelope and checked
+scalar-set compiler while retaining the backward direction. A bounded sticky
+probe must consume exactly the complete predecessor ending at the candidate;
+line gates inspect original input context. Outside wrappers remain empty at
+that end and operand wrappers capture the predecessor. Strings, counts and
+word predicates retain separate proof domains. Checked errors, complete Unicode
+advancement, initial-pair rewind and actual-work cancellation keep their shared
+paths. Runtime integration remains separate.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring

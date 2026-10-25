@@ -1006,6 +1006,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute scalar v-set lookahead through Runtime and String consumers, preserving original nested set source, checked errors and independent capture ranges.
 - [x] Compile scalar v-set lookahead with operand word predicates and line gates, preserving original folded set algebra, checked errors and capture extents.
 - [x] Execute scalar v-set lookahead with word predicates through Runtime and String consumers, preserving original context, checked errors and named capture extents.
+- [x] Compile lookbehind over one scalar v-set class with nested operations, original line context, checked errors and complete-predecessor capture extents.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
