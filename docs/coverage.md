@@ -27446,3 +27446,15 @@ Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select the union constructor;
 fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+
+## Complete Test262 validation of variable-length single-q lookahead
+
+The Runtime snapshot at `b85b8a61` passes all 16,343 reviewed Test262 variants
+and all 35 runner tests with the conformance profile (480.23 s for the corpus).
+This includes positive/negative variable-length single-q lookahead with line
+and word predicates, independent defined-empty operand spans and undefined
+negative slots, alongside all earlier assertion paths. Later adjacent-q-union
+work has separate focused and differential evidence. Fixtures, harness files,
+reviewed entries, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.
