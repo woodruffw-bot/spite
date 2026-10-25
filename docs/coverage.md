@@ -26733,3 +26733,29 @@ and character/predecessor captures, and all earlier single-character positive/
 negative q-class paths. Later negative scalar-set assertion extensions retain
 their separate focused and differential evidence. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Runtime negative scalar v-set lookbehind with word predicates
+
+All twenty-five current negative-lookbehind groups pass (0.63 s), including
+four new scalar word-predecessor groups. Checks cover original boundary
+polarity, named empty/undefined indices, original nested source, line/property/
+fold/backspace context, String consumers, copies, collection and independent
+complete-pair/initial-rewind expectations. All thirteen constructor regressions
+pass (0.07 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+Fifty-four ASCII iv patterns contribute 11,232 equivalent-range controls for
+the documented property-fold discrepancy. Twenty-two complete JavaScript
+programs pass with the documented property/q-fold controls where needed;
+actual Runtime expectations retain original source syntax.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The preceding scalar-lookahead snapshot
+records all 437 Runtime units; this constructor-only increment has the focused
+and differential evidence above. Completed broad RegExp and Test262 results
+record `7da9655b`; negative scalar-set assertions retain separate focused
+evidence. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.

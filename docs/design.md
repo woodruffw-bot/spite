@@ -14554,3 +14554,13 @@ data, folded set algebra, bounded sticky probes, checked errors, complete Unicod
 advancement, initial-pair rewind and actual-work cancellation retain their
 shared paths. Earlier entries keep their domains and charges. Runtime
 integration remains separate.
+
+
+Runtime selects checked negative word-scalar-set lookbehind after its line-only
+negative scalar lookbehind entry, gated by v mode and using full normalized
+source. Successful selection resets the projected outer offset; checked errors
+retain their host mapping. Shared negative capture caching keeps outside ranges
+empty and operand slots undefined through named indices, String consumers,
+copies and collection. Original set syntax, word/line/predecessor context and
+stateful Unicode execution remain in Core; user conversions stay outside the
+compiler frame.
