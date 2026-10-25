@@ -48,6 +48,39 @@ fn fresh_and_registered_symbols_preserve_identity_across_script_evaluations_and_
     }
 }
 
+// 6.1.5.1 and Symbol.asyncDispose / Symbol.dispose (20.4.2).
+#[test]
+fn disposal_symbols_have_standard_descriptions_and_frozen_constructor_properties() {
+    let mut realm = Realm::default();
+    check(
+        &mut realm,
+        "for (const name of ['dispose','asyncDispose']) { const value=Symbol[name],d=Object.getOwnPropertyDescriptor(Symbol,name); if(typeof value!=='symbol'||value.description!=='Symbol.'+name||d.value!==value||d.writable||d.enumerable||d.configurable||Symbol.keyFor(value)!==undefined||value===Symbol(value.description)||value===Symbol.for(value.description))throw 1; } Symbol.dispose!==Symbol.asyncDispose",
+    );
+}
+
+#[test]
+fn disposal_symbol_properties_reject_mutation_and_remain_distinct_property_keys() {
+    let mut realm = Realm::default();
+    check(
+        &mut realm,
+        "'use strict';const saved=Symbol.dispose;let rejected=0;try{Symbol.dispose=Symbol()}catch(e){if(e instanceof TypeError)rejected++}try{Object.defineProperty(Symbol,'asyncDispose',{value:Symbol()})}catch(e){if(e instanceof TypeError)rejected++}const object={[Symbol.dispose]:'sync',[Symbol.asyncDispose]:'async'},keys=Reflect.ownKeys(object);rejected===2&&!Reflect.deleteProperty(Symbol,'dispose')&&Symbol.dispose===saved&&keys.length===2&&keys[0]===Symbol.dispose&&keys[1]===Symbol.asyncDispose&&object[keys[0]]==='sync'&&object[keys[1]]==='async'&&object['Symbol.dispose']===undefined",
+    );
+}
+
+#[test]
+fn disposal_symbols_remain_valid_weak_targets_across_collection() {
+    let mut realm = Realm::default();
+    realm
+        .eval("let map=new WeakMap([[Symbol.dispose,1],[Symbol.asyncDispose,2]]),set=new WeakSet([Symbol.dispose,Symbol.asyncDispose]),ref=new WeakRef(Symbol.dispose),asyncRef=new WeakRef(Symbol.asyncDispose)")
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(
+        &mut realm,
+        "map.get(Symbol.dispose)===1&&map.get(Symbol.asyncDispose)===2&&set.has(Symbol.dispose)&&set.has(Symbol.asyncDispose)&&ref.deref()===Symbol.dispose&&asyncRef.deref()===Symbol.asyncDispose",
+    );
+}
+
 #[test]
 fn computed_keys_and_coercion_hooks_are_usable_from_scripts() {
     let mut realm = Realm::default();

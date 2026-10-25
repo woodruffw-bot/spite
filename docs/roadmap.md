@@ -268,6 +268,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add lazy Iterator.prototype.flatMap with ordered iterator acquisition, one-level flattening, exact outer indices, and inner-before-outer closing.
 - [x] Complete edition-17 shared Iterator prototype properties and enable ordered reflection and integrity operations.
 - [x] Expose the Symbol global with standard attributes.
+- [x] Expose Symbol.dispose and Symbol.asyncDispose as shared, non-registered well-known identities with fixed constructor descriptors.
 - [ ] Complete Array species-dependent methods and iterator integration.
 
 ## 4. Standard library

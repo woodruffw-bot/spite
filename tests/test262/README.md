@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8452 unmodified test fixtures and sixteen harness files come from
+These 8455 unmodified test fixtures and sixteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -28,6 +28,22 @@ memory use peaked at 14.50 GiB including file cache, under its 16 GiB constraint
 with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
+
+
+## Well-known disposal symbol fixtures
+
+The complete `built-ins/Symbol/{dispose,asyncDispose}/prop-desc.js` originals
+verify both well-known values and their frozen constructor descriptors.
+`built-ins/Symbol/asyncDispose/no-key.js` verifies that the well-known identity
+has no key in the global Symbol registry. These three originals pass in both
+Script modes, adding six variants. Their pinned Git blob hashes and manifest
+SHA-256 digests were verified before admission. Fixture bytes are unchanged.
+
+The cross-realm originals require $262.createRealm and remain deferred. The
+pinned dispose/no-key.js also tests asyncDispose, so it is not admitted as an
+additional independent disposal-symbol check. Native Rust/Runtime tests cover
+both descriptions, identity across realms/threads, distinct computed keys and
+weak reachability across explicit collection checkpoints.
 
 ## String-first character-result intersection fixtures
 
@@ -4058,7 +4074,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16343 variants from 8433 reviewed sources.
+The `spite-test262` command runs 16349 variants from 8436 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
@@ -4092,11 +4108,11 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-25 regress backend passes all 16,343 corpus variants with the
+The 2026-10-25 regress migration at `69440b57` passes all 16,343 corpus variants with the
 conformance profile (294.94 s), plus the runner, metadata, harness and CLI tests.
 The original Pattern validator remains independent of matching. Backend native
 representation limits are host failures and cannot satisfy a negative fixture.
-Fixture, harness and reviewed-entry inventories are unchanged.
+That migration kept fixture, harness and reviewed-entry inventories unchanged.
 
 These results do not measure whole-suite conformance. Other tests require grammar,
 objects, functions, or harness facilities that have not been implemented yet.

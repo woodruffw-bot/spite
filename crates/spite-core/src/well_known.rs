@@ -6,8 +6,12 @@ use std::sync::OnceLock;
 /// A well-known symbol named by ECMA-262's edition-17 symbol table.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum WellKnownSymbol {
+    /// The asynchronous resource disposal method.
+    AsyncDispose,
     /// The default asynchronous iterator method.
     AsyncIterator,
+    /// The synchronous resource disposal method.
+    Dispose,
     /// The custom instance-check method.
     HasInstance,
     /// The Array concatenation spreading flag.
@@ -36,8 +40,10 @@ pub enum WellKnownSymbol {
 
 impl WellKnownSymbol {
     /// All well-known symbols in edition-17 table order.
-    pub const ALL: [Self; 13] = [
+    pub const ALL: [Self; 15] = [
+        Self::AsyncDispose,
         Self::AsyncIterator,
+        Self::Dispose,
         Self::HasInstance,
         Self::IsConcatSpreadable,
         Self::Iterator,
@@ -55,7 +61,9 @@ impl WellKnownSymbol {
     /// The corresponding property name on the Symbol constructor.
     pub const fn name(self) -> &'static str {
         match self {
+            Self::AsyncDispose => "asyncDispose",
             Self::AsyncIterator => "asyncIterator",
+            Self::Dispose => "dispose",
             Self::HasInstance => "hasInstance",
             Self::IsConcatSpreadable => "isConcatSpreadable",
             Self::Iterator => "iterator",
@@ -77,7 +85,7 @@ impl WellKnownSymbol {
     /// are separate from fresh symbols with the same description and from the
     /// runtime's global symbol registry.
     pub fn symbol(self) -> JsSymbol {
-        static SYMBOLS: OnceLock<[JsSymbol; 13]> = OnceLock::new();
+        static SYMBOLS: OnceLock<[JsSymbol; 15]> = OnceLock::new();
         SYMBOLS.get_or_init(|| {
             Self::ALL.map(|key| {
                 JsSymbol::new(Some(JsString::from(
@@ -109,7 +117,7 @@ mod tests {
             );
             assert_ne!(symbol, JsSymbol::new(symbol.description().cloned()));
         }
-        assert_eq!(identities.len(), 13);
+        assert_eq!(identities.len(), 15);
         assert_eq!(WellKnownSymbol::HasInstance.name(), "hasInstance");
         assert_eq!(WellKnownSymbol::ToPrimitive.name(), "toPrimitive");
         assert_eq!(WellKnownSymbol::Iterator.name(), "iterator");

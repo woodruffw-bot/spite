@@ -8432,3 +8432,6 @@ test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-characte
 test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-class-escape.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character.js	-	-	-
 test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-property-escape.js	-	-	-
+test/built-ins/Symbol/dispose/prop-desc.js	-	-	-
+test/built-ins/Symbol/asyncDispose/prop-desc.js	-	-	-
+test/built-ins/Symbol/asyncDispose/no-key.js	-	-	-

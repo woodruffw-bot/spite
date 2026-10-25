@@ -8467,3 +8467,6 @@ script-pass	8c2bc5993e47fc6e1f1f94f2bd08a16be24ee85cbbe12fffa2a4271be01f8594	tes
 script-pass	fbc54666488aba3f7ef3c9bd9f9b2eb5af1c7a2dbe43dd7d6812320b34fd854f	test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-class-escape.js
 script-pass	5ae7dcf0929d8fc8d2b49d7a15cde4539d0f1d95641e5427dc29a38dde2a9558	test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character.js
 script-pass	cfed06cf27225f7c836438f1cdd9a37a18057c337706513a682e968dbfa51f98	test/built-ins/RegExp/unicodeSets/generated/string-literal-intersection-character-property-escape.js
+script-pass	8f8a30d08820ee923bb2382a6bf6c980f67bf0bcee57eb479aa45f0c28a3a938	test/built-ins/Symbol/dispose/prop-desc.js
+script-pass	dd490ef6732368767dfae52d4a2b2f433558175e1831615d3bbc12a08e9fb539	test/built-ins/Symbol/asyncDispose/prop-desc.js
+script-pass	800ac84aa7f38bafe175f0973dadd3422eb17c1cd4a3d7c0a931b1c98eece359	test/built-ins/Symbol/asyncDispose/no-key.js

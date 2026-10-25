@@ -51,8 +51,27 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16343 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16349 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+
+
+## Well-known disposal symbols
+
+Symbol.dispose and Symbol.asyncDispose expose shared, non-registered identities
+with standard descriptions and non-writable/non-enumerable/non-configurable
+constructor properties (6.1.5.1, 20.4.2). Three Runtime regressions cover descriptor
+and registry behavior, rejected mutation, distinct property keys and weak
+references after clearing kept objects and collecting. The existing cross-realm
+and thread-identity tests now cover all fifteen well-known symbols.
+
+Three unchanged Test262 originals cover both property descriptors and the
+async-disposal symbol's absent registry key. All six strict/non-strict variants
+pass. Cross-realm originals still require the unavailable $262.createRealm host
+facility and are not admitted. The pin and sixteen harness files are unchanged;
+the corpus now has 8,455 source fixtures and 8,436 reviewed entries.
+All 16,349 variants pass in the conformance profile (198.48 s). The 65 focused
+Runtime tests, 392 Runtime units, shared Core identity tests, strict Clippy and
+Rust 1.88 all-target checks also pass.
 
 ## Shared RegExp backend
 
@@ -79,7 +98,8 @@ Kelvin sign in one-character q members and ASCII closure, retain independent
 edition-17/Canonicalize controls. Unicode 18 script aliases and empty Hrkt sets
 also have independent controls.
 
-Validation on 2026-10-25: all 4,369 Runtime integration tests pass with ordinary
+Validation of the RegExp migration at `69440b57` on 2026-10-25: all 4,369
+Runtime integration tests pass with ordinary
 limits, plus 392 Runtime units, 571 other Rust tests and the documentation test.
 The complete reviewed Test262 corpus passes all 16,343 variants; its 8,452 source
 fixtures, sixteen harness files and 8,433 reviewed entries are unchanged. The
@@ -360,14 +380,14 @@ length/indices, String wrapper indices, or mapped arguments by description.
 Borrowed lookup keys avoid allocation; symbol comparison/copy work is constant.
 Runtime Symbol values support identity equality, truthiness, typeof, and abrupt
 numeric/implicit string conversions. String(symbol) produces its descriptive
-UTF-16 string, with bounded allocation. The 13 edition-17 well-known identities
+UTF-16 string, with bounded allocation. The 15 edition-17 well-known identities
 are shared across realms and host threads. Realm property operations, descriptors,
 copying, integrity operations, and enumeration preserve both key kinds. Computed
 keys retain Symbol identity, and anonymous function names use bounded bracketed
 descriptions. ToPrimitive observes symbol-keyed hooks, exact hints, original
 receivers, and abrupt completions before ordinary conversion. Native and Script
 tests cover this foundation. Symbol wrappers, branded methods, description access,
-fresh intrinsic calls, and the 13 fixed constructor properties are implemented.
+fresh intrinsic calls, and the 15 fixed constructor properties are implemented.
 Symbol.prototype has no SymbolData, and new rejects the intrinsic before coercing
 the description. Symbol.for/keyFor share an append-only registry across realms
 and threads, preserving exact UTF-16 keys and identity through realm destruction.

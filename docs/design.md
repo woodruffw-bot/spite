@@ -786,7 +786,10 @@ toString, description, Symbol.toPrimitive, and Symbol.toStringTag have their sta
 attributes. Description and descriptive-string output are bounded before copying.
 The intrinsic Symbol callable creates fresh identities after description ToString;
 undefined preserves an absent description. It has length zero and no Construct
-method, and its 13 well-known properties are fixed identities (20.4.1–2).
+method, and its 15 well-known properties are fixed identities (20.4.1–2).
+Symbol.dispose and Symbol.asyncDispose identify the synchronous and asynchronous
+resource-cleanup hooks. They are non-registered symbols, shared across realms
+and usable as weak keys/targets; their constructor properties are immutable.
 
 The append-only GlobalSymbolRegistry is shared across realms (20.4.2.2/6).
 A process-wide Mutex protects a vector of registered identities. Each
