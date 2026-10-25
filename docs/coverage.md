@@ -60,6 +60,25 @@ not an alternative language specification.
 
 
 
+## Suspended while and do-while
+
+Conditions and bodies can await without replay. Do-while executes the body first;
+while can exit before any body execution. Normal/continue completions update the
+retained loop value, unlabelled break exits, and abrupt results pass through
+resource/finalizer handling before control proceeds. Body blocks have distinct
+iteration environments. Loop values remain traced through awaited retests and
+forward to parent statement lists when the loop exits.
+
+Eight Runtime groups cover timing, false tests, finalizer/disposal order,
+break/continue, closures, exceptions, context, aliases, value collection and host
+abort. A Symbol ownership control covers a retained loop value. All 416 units and
+1,977 non-RegExp integrations pass across 651 Runtime case files. Complete original
+reviews remain at 36 passing/8 Unsupported await variants and 148 passing/114
+Unsupported Array/adapter variants, with no new admissions. Inventories remain
+9,576 fixtures, twenty helpers, 9,557 reviewed sources and 18,562 variants;
+intrinsics, Parser checks and quotas are unchanged. Labelled loops and further
+iteration forms retain await gaps.
+
 ## Suspended try/catch/finally
 
 Try cursors preserve normal, return and throw completions while finally awaits.

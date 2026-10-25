@@ -20,6 +20,7 @@ pub(crate) enum AsyncAwaitAction {
     Throw,
     Expression,
     IfTest,
+    LoopTest,
     Binding { element: usize },
 }
 
@@ -31,6 +32,7 @@ pub(crate) enum StatementChild {
     TryBody,
     CatchBody,
     FinallyBody,
+    LoopBody,
 }
 
 #[derive(Debug)]
@@ -63,11 +65,25 @@ pub(crate) enum AsyncTryPhase {
 }
 
 #[derive(Debug)]
+pub(crate) struct AsyncLoopCursor {
+    pub location: StatementLocation,
+    pub phase: AsyncLoopPhase,
+    pub value: Value,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum AsyncLoopPhase {
+    Test,
+    Body,
+}
+
+#[derive(Debug)]
 pub(crate) enum AsyncStatementFrame {
     Block(AsyncBlockCursor),
     If,
     Try(AsyncTryCursor),
     Catch(EnvironmentHandle),
+    Loop(AsyncLoopCursor),
 }
 
 impl AsyncStatementFrame {
@@ -77,6 +93,7 @@ impl AsyncStatementFrame {
             Self::If => None,
             Self::Try(_) => None,
             Self::Catch(environment) => Some(environment),
+            Self::Loop(_) => None,
         }
     }
 
@@ -90,6 +107,7 @@ impl AsyncStatementFrame {
                 _ => None,
             },
             Self::Catch(_) => None,
+            Self::Loop(cursor) => Some(&cursor.value),
         }
     }
 }

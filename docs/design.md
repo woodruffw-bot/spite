@@ -494,7 +494,7 @@ statement indices. Body-level throw expressions can suspend and resume to a real
 throw completion (14.14, Await); the completed throw value rejects the async
 function's Promise directly, without thenable assimilation. Await rejection keeps
 its reason. Root resource disposal, suppression and host-abort rules are shared
-with other abrupt completions. Loop continuations remain work.
+with other abrupt completions. Further iteration forms remain work.
 
 Nested plain BlockStatements have owned lexical cursors (14.2.3). Typed statement
 locations retain a root index and child-block indices into immutable source;
@@ -508,7 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Loop and labelled statements still use ordinary execution and retain
+them. For and labelled statements still use ordinary execution and retain
 their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
@@ -547,6 +547,18 @@ Optional catches create no parameter scope and do not materialize an unused erro
 object. PromiseResolve getter failures enter the same language completion path.
 Host failures bypass catch, finally and JavaScript disposal; they release pending
 values and all owned resource captures even with no remaining allowance.
+
+While and do-while cursors suspend in conditions and bodies (14.7.2–3). A do-while
+queues its body first; other iterations return to condition evaluation. Conditions
+locate source through the active loop cursor and do not replay earlier tests or
+body operations. Body blocks retain their own iteration scopes and dispose before
+control advances. Normal completion and unlabelled continue update the loop's
+last value; unlabelled break consumes its target and exits. Return, throw and
+rejection propagate through the shared completion frames, so intervening finally
+blocks finish before loop control proceeds. Retained loop values participate in
+tracing, validation and physical Symbol counts across awaited retests. Host abort
+keeps its existing isolation and capture-release rules. Labelled loops and other
+iteration forms retain explicit await boundaries.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

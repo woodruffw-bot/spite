@@ -388,6 +388,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "async loop value across awaited condition",
+            "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{while(step++===0?true:await gate){key}};f();return gate})()",
+        ),
+        (
             "async protected return across awaited finally",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{try{return key}finally{await gate}};f();return gate})()",
         ),

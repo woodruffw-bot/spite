@@ -42,6 +42,10 @@ pub(super) fn active_statement<'a>(
                     ..
                 },
             ) => finalizer,
+            (
+                StatementChild::LoopBody,
+                StatementKind::While { body, .. } | StatementKind::DoWhile { body, .. },
+            ) => body,
             _ => unreachable!("typed statement child path"),
         };
     }

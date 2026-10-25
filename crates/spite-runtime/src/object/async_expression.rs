@@ -10,6 +10,7 @@ pub(crate) enum ExprRoot {
     Arrow,
     Statement,
     IfTest,
+    LoopTest,
     Binding { element: usize },
 }
 

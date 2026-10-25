@@ -1,17 +1,12 @@
 //! Try/Catch/Finally completion transitions across source suspension (14.15.3).
 
-use super::{AsyncExecutionData, Step, active_statement, child_location};
+use super::{AsyncExecutionData, FrameStep, Step, active_statement, child_location};
 use crate::{
     Completion, CompletionKind, Error, Realm, Value,
     object::async_execution::{AsyncStatementFrame, AsyncTryCursor, AsyncTryPhase, StatementChild},
 };
 use spite_core::Span;
 use spite_parser::ast::StatementKind;
-
-pub(super) enum TryStep {
-    Continue,
-    Complete(Result<Completion, Error>),
-}
 
 fn allocation_error(span: Span) -> Error {
     Error::Limit {
@@ -45,7 +40,7 @@ impl Realm {
         &mut self,
         data: &mut AsyncExecutionData,
         result: Result<Completion, Error>,
-    ) -> TryStep {
+    ) -> FrameStep {
         let Some(AsyncStatementFrame::Try(mut cursor)) = data.frames.pop() else {
             unreachable!("try completion frame");
         };
@@ -64,11 +59,11 @@ impl Realm {
             cursor.phase = AsyncTryPhase::Catch;
             let body = match child_location(&cursor.location, StatementChild::CatchBody, span) {
                 Ok(body) => body,
-                Err(error) => return TryStep::Complete(Err(error)),
+                Err(error) => return FrameStep::Complete(Err(error)),
             };
             data.frames.push(AsyncStatementFrame::Try(cursor));
             if handler.parameter.is_some() && data.frames.try_reserve(1).is_err() {
-                return TryStep::Complete(Err(allocation_error(handler.span)));
+                return FrameStep::Complete(Err(allocation_error(handler.span)));
             }
             let Err(error) = result else {
                 unreachable!("caught throw");
@@ -82,14 +77,14 @@ impl Realm {
                         value,
                         &environment,
                     ) {
-                        return TryStep::Complete(Err(error));
+                        return FrameStep::Complete(Err(error));
                     }
                 }
                 Ok(None) => (),
-                Err(error) => return TryStep::Complete(Err(error)),
+                Err(error) => return FrameStep::Complete(Err(error)),
             }
             data.next = Some(body);
-            return TryStep::Continue;
+            return FrameStep::Continue;
         }
         if matches!(cursor.phase, AsyncTryPhase::Finally) {
             let protected = cursor.pending.take().expect("protected completion");
@@ -97,22 +92,22 @@ impl Realm {
                 Ok(completion) if completion.kind == CompletionKind::Normal => protected,
                 result => result,
             };
-            return TryStep::Complete(
+            return FrameStep::Complete(
                 result.map(|completion| completion.update_empty(Some(Value::Undefined))),
             );
         }
         if finalizer.is_some() {
             let body = match child_location(&cursor.location, StatementChild::FinallyBody, span) {
                 Ok(body) => body,
-                Err(error) => return TryStep::Complete(Err(error)),
+                Err(error) => return FrameStep::Complete(Err(error)),
             };
             cursor.phase = AsyncTryPhase::Finally;
             cursor.pending = Some(result);
             data.frames.push(AsyncStatementFrame::Try(cursor));
             data.next = Some(body);
-            TryStep::Continue
+            FrameStep::Continue
         } else {
-            TryStep::Complete(
+            FrameStep::Complete(
                 result.map(|completion| completion.update_empty(Some(Value::Undefined))),
             )
         }

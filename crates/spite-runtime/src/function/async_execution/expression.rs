@@ -68,6 +68,17 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("expression statement root"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::LoopTest) => {
+            let Some(crate::object::async_execution::AsyncStatementFrame::Loop(cursor)) =
+                data.frames.last()
+            else {
+                unreachable!("loop condition frame");
+            };
+            match &active_statement(&data.body, Some(&cursor.location)).kind {
+                StatementKind::While { test, .. } | StatementKind::DoWhile { test, .. } => test,
+                _ => unreachable!("loop condition source"),
+            }
+        }
         (ArrowBody::Block(_), ExprRoot::IfTest) => {
             let StatementKind::If { test, .. } =
                 &active_statement(&data.body, data.statement.as_ref()).kind

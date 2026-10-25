@@ -4,6 +4,7 @@ mod block;
 mod completion;
 mod conditional;
 mod expression;
+mod iteration;
 mod protected;
 mod source;
 
@@ -32,6 +33,11 @@ enum Step {
     Complete(Completion),
     Finish(Completion),
     Await(Value, AsyncAwaitAction, Span),
+}
+
+enum FrameStep {
+    Continue,
+    Complete(Result<Completion, Error>),
 }
 
 impl Realm {
@@ -192,6 +198,14 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_block(data, span);
         }
+        if matches!(
+            statement.kind,
+            StatementKind::While { .. } | StatementKind::DoWhile { .. }
+        ) {
+            let span = statement.span;
+            self.tick(span)?;
+            return self.enter_async_loop(data, span);
+        }
         if matches!(statement.kind, StatementKind::Try { .. }) {
             let span = statement.span;
             self.tick(span)?;
@@ -320,6 +334,7 @@ impl Realm {
             })),
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
+            AsyncAwaitAction::LoopTest => self.finish_async_loop_test(data, value),
             AsyncAwaitAction::Binding { element } => {
                 self.async_binding_step(data, element, Some(value))
             }

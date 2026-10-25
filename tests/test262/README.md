@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Suspended while/do-while review
+
+Eight Runtime groups and a Symbol ownership control cover awaited conditions and
+bodies, iteration scopes, unlabelled control, finalizers, retained values and host
+abort. Complete original reviews remain at 36 passing/8 Unsupported await variants
+and 148 passing/114 Unsupported Array/adapter variants. No additional original
+qualifies for admission. Inventories remain 9,576 fixtures, twenty helpers,
+9,557 reviewed sources and 18,562 variants; helpers and quotas are unchanged.
+
 ## Suspended try/catch/finally fixtures
 
 Three complete unchanged originals add six variants: throwing thenables, rejected
