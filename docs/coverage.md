@@ -54,9 +54,36 @@ not an alternative language specification.
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, receiver/arguments behavior and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17960 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17990 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Dynamic AsyncFunction compilation
+
+Function and AsyncFunction now share string conversion, capacity checks,
+newTarget prototype selection and global allocation. Async parameter/body goals
+remain independent before combined validation. The compiler retains standard
+anonymous source, body-owned strictness and lone UTF-16 code points, while normal
+calls return intrinsic Promises through the implemented async function path.
+Await bodies remain Unsupported.
+
+Four Parser regressions and a new snapshot cover goals, strictness, source and
+diagnostic categories; all eighteen units and 338 integration tests pass. Six
+Runtime regressions cover calls/new, conversion and prototype order, subclasses,
+fallbacks, internal kind, caller-independent scope/strictness, lossless source and
+async-prefix work limits. All 398 units and 1,830 non-RegExp integrations pass,
+along with strict Clippy and Rust 1.88 all-target checks. Product quotas and the
+563-entry intrinsic inventory are unchanged.
+
+Fifteen complete unchanged AsyncFunction originals pass thirty variants. The
+eighteen-source review records thirty passing and six Unsupported variants:
+await compilation, async-generator discovery in the unchanged intrinsic helper,
+and another realm. That helper was reviewed outside the admitted tree and remains
+unadmitted. Git blob hashes and SHA-256 digests were verified. Inventories contain
+9,285 fixtures, nineteen helpers, 9,266 reviewed sources and 17,990 variants, with
+71 Parser and 633 Runtime case files.
+All 17,990 variants and all 40 Test262 package tests pass. Formatting, dependency
+policy, fixture inventories, strict Clippy and Rust 1.88 all-target checks pass.
 
 ## Async function objects and calls
 
@@ -77,8 +104,8 @@ strict Clippy and Rust 1.88 all-target checks.
 
 Sixty-one complete unchanged upstream originals add 111 variants: 29 declarations
 and 32 expressions. The ninety-positive candidate review records 111 passing and
-52 Unsupported variants. Await/async arrows and dynamic AsyncFunction compilation
-remain separate work. Original Git blob hashes and SHA-256 digests were verified.
+52 Unsupported variants. Dynamic compilation is implemented above; await and
+async arrows remain work. Original Git blob hashes and SHA-256 digests were verified.
 Inventories contain 9,270 fixtures, nineteen helpers, 9,251 reviewed sources and
 17,960 variants, with seventy Parser and 632 Runtime case files.
 All 17,960 variants and all 40 Test262 package tests pass. Formatting, dependency

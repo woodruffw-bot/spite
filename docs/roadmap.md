@@ -366,7 +366,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Promise.any with first-fulfillment resolution, guarded ordered rejection reasons and intrinsic AggregateError creation.
 - [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
 - [x] Create non-constructible async function objects with intrinsic metadata and fresh Promise-returning calls, including parameter/body rejection and traced environments.
-- [ ] Compile dynamic AsyncFunction source with independent async parameter/body grammar goals.
+- [x] Compile dynamic AsyncFunction source with independent async grammar goals, ordered conversion/prototype hooks, global scope and lossless source retention.
 - [ ] Add await suspension and continuation execution.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

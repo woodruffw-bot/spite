@@ -2,11 +2,14 @@
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
-use spite_parser::parse_dynamic_function_utf16;
+use spite_parser::{
+    ast::FunctionKind, parse_dynamic_async_function_utf16, parse_dynamic_function_utf16,
+};
 
 impl Realm {
     pub(super) fn dynamic_function(
         &mut self,
+        kind: FunctionKind,
         new_target: Option<ObjectHandle>,
         mut arguments: std::vec::IntoIter<Value>,
         span: Span,
@@ -27,6 +30,7 @@ impl Realm {
             parameters.push(self.string(argument, span)?);
         }
         let body = self.string(body, span)?;
+        let overhead = if kind == FunctionKind::Async { 32 } else { 26 };
         let parameter_units = parameters
             .iter()
             .enumerate()
@@ -41,7 +45,7 @@ impl Realm {
             })?;
         let units = parameter_units
             .checked_add(body.len())
-            .and_then(|n| n.checked_add(26))
+            .and_then(|n| n.checked_add(overhead))
             .ok_or_else(|| Error::Limit {
                 span,
                 message: "dynamic source capacity exceeded".into(),
@@ -79,7 +83,7 @@ impl Realm {
         };
         let bytes = encoded_len(&joined)
             .and_then(|n| n.checked_add(encoded_len(&body)?))
-            .and_then(|n| n.checked_add(26))
+            .and_then(|n| n.checked_add(overhead))
             .ok_or_else(|| Error::Limit {
                 span,
                 message: "dynamic source capacity exceeded".into(),
@@ -95,22 +99,35 @@ impl Realm {
             });
         }
         self.object_work(span, |_, budget| budget.charge(bytes))?;
-        let syntax =
-            parse_dynamic_function_utf16(&joined, &body).map_err(
-                |diagnostic| match diagnostic.kind {
-                    DiagnosticKind::Syntax => {
-                        Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
-                    }
-                    DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
-                    DiagnosticKind::Limit => Error::Limit {
-                        span,
-                        message: diagnostic.message,
-                    },
-                },
-            )?;
+        let syntax = (if kind == FunctionKind::Async {
+            parse_dynamic_async_function_utf16(&joined, &body)
+        } else {
+            parse_dynamic_function_utf16(&joined, &body)
+        })
+        .map_err(|diagnostic| match diagnostic.kind {
+            DiagnosticKind::Syntax => {
+                Self::exception(ExceptionKind::SyntaxError, span, diagnostic.message)
+            }
+            DiagnosticKind::Unsupported => Self::unsupported(span, diagnostic.message),
+            DiagnosticKind::Limit => Error::Limit {
+                span,
+                message: diagnostic.message,
+            },
+        })?;
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
-        let new_target = new_target.unwrap_or_else(|| intrinsic.function_constructor.clone());
-        let fallback = intrinsic.function_prototype.clone();
+        let (constructor, fallback) = if kind == FunctionKind::Async {
+            (
+                &intrinsic.async_function.constructor,
+                &intrinsic.async_function.prototype,
+            )
+        } else {
+            (
+                &intrinsic.function_constructor,
+                &intrinsic.function_prototype,
+            )
+        };
+        let new_target = new_target.unwrap_or_else(|| constructor.clone());
+        let fallback = fallback.clone();
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = if let Value::Object(prototype) = prototype {
             prototype

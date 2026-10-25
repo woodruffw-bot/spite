@@ -348,8 +348,7 @@ methods and arrows restore their own Await context. Cover-cache keys include
 that context. Await suspension, async arrows/methods and async generators remain
 Unsupported. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
-%AsyncFunction% constructor inherits %Function%; its string-compilation body
-remains Unsupported. Constructor/prototype descriptors and the AsyncFunction
+%AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
 tag follow 27.7. Direct async definitions have ordinary name/length/source
 metadata, no own prototype and no construction capability.
 
@@ -362,6 +361,16 @@ Returning an existing Promise still produces a fresh wrapper. Public Promise
 bindings and prototype changes cannot replace internal function kinds or the
 intrinsic capability constructor. Function environments, returned values and the
 hidden constructor/prototype participate in collection.
+
+Dynamic Function and AsyncFunction compilation share conversion, capacity,
+prototype selection and global-environment allocation. Async compilation selects
+independent async parameter/body goals before combined validation, retains the
+standard async function anonymous source and uses its body's own strictness.
+Async source includes the six-character prefix in string/source work limits.
+Default/fallback prototypes use the retained async intrinsics, while explicit
+newTarget prototypes and subclasses remain observable after all conversions and
+validation. UTF-16 literals/comments and source remain lossless. Await bodies
+still report Unsupported during compilation.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

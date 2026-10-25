@@ -40,6 +40,8 @@ mod default_parameters;
 mod delete;
 #[path = "derived_classes.rs"]
 mod derived_classes;
+#[path = "dynamic_async_function.rs"]
+mod dynamic_async_function;
 #[path = "dynamic_function.rs"]
 mod dynamic_function;
 #[path = "dynamic_source_utf16.rs"]

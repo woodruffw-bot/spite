@@ -220,11 +220,18 @@ impl Realm {
                 matches!(builtin, Builtin::EncodeUriComponent),
                 span,
             ),
-            Builtin::Function => self.dynamic_function(None, arguments, span),
-            Builtin::AsyncFunction => Err(Self::unsupported(
+            Builtin::Function => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Ordinary,
+                None,
+                arguments,
                 span,
-                "dynamic async function compilation is not implemented",
-            )),
+            ),
+            Builtin::AsyncFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Async,
+                None,
+                arguments,
+                span,
+            ),
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

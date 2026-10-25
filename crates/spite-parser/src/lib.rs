@@ -21,7 +21,10 @@ mod regexp;
 mod source;
 mod template;
 
-pub use dynamic_function::{parse_dynamic_function, parse_dynamic_function_utf16};
+pub use dynamic_function::{
+    parse_dynamic_async_function, parse_dynamic_async_function_utf16, parse_dynamic_function,
+    parse_dynamic_function_utf16,
+};
 pub use regexp::{
     RegExpNamedCapture, RegExpNamedReference, RegExpPatternMetadata, parse_regexp_pattern,
     validate_regexp_pattern,

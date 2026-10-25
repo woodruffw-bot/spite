@@ -111,7 +111,7 @@ fn closures_results_and_hidden_intrinsics_survive_collection() {
 }
 
 #[test]
-fn host_failures_bypass_rejection_and_dynamic_async_compilation_stays_explicitly_unsupported() {
+fn host_failures_bypass_rejection_and_await_compilation_stays_explicitly_unsupported() {
     let mut realm = Realm::default();
     realm
         .eval("let flag=0;async function f(){return new SharedArrayBuffer(0)}")
@@ -122,8 +122,8 @@ fn host_failures_bypass_rejection_and_dynamic_async_compilation_stays_explicitly
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
-        "(async function(){}).constructor('return 1')",
-        "new (async function(){}).constructor('return 1')",
+        "(async function(){}).constructor('await p')",
+        "new (async function(){}).constructor('await p')",
     ] {
         assert!(
             matches!(

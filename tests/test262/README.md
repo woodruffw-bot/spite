@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9270 unmodified test fixtures and nineteen harness files come from
+These 9285 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,6 +30,22 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Dynamic AsyncFunction fixtures
+
+Fifteen complete unchanged built-ins/AsyncFunction originals pass thirty Script
+variants. They cover constructor/prototype metadata, extensibility, callable and
+constructible capabilities, instance names/lengths and the absent global binding.
+Original Git blob hashes and manifest SHA-256 digests were verified.
+
+The complete eighteen-source review records thirty passing and six Unsupported
+variants: await compilation, async-generator discovery in the unchanged
+wellKnownIntrinsicObjects.js helper, and cross-realm construction. The helper was
+verified and executed only outside the admitted tree; no fixture/helper was
+rewritten or credited for unsupported execution. Four Parser and six Runtime
+regressions add grammar-goal, conversion, prototype, subclass, global scope,
+strictness, lossless UTF-16 and source-limit controls. Inventories contain 9,285
+fixtures, nineteen helpers, 9,266 reviewed sources and 17,990 variants.
+
 ## Async function object and call fixtures
 
 Sixty-one complete unchanged async-function originals add 111 Script variants:
@@ -40,7 +56,7 @@ SHA-256 digests were verified. Existing helpers suffice.
 
 The ninety-positive review records 111 passing and 52 Unsupported variants; the
 62 parse-negative originals require separate diagnostic review. Await and async
-arrows remain unsupported, as does dynamic AsyncFunction compilation. Six native
+arrows remain unsupported; dynamic compilation is implemented above. Six native
 Runtime regressions additionally cover fresh wrappers, thenable ordering,
 prototype changes, intrinsic allocation, collection and host limits. Inventories
 contain 9,270 fixtures, nineteen helpers, 9,251 reviewed sources and 17,960 variants.
@@ -4323,7 +4339,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 17960 variants from 9251 reviewed sources.
+The `spite-test262` command runs 17990 variants from 9266 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

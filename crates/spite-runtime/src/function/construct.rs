@@ -93,13 +93,20 @@ impl Realm {
             }
             match callable.expect("non-Proxy constructor metadata") {
                 Callable::Builtin(Builtin::Function) => {
-                    return self.dynamic_function(Some(new_target), arguments.into_iter(), span);
+                    return self.dynamic_function(
+                        spite_parser::ast::FunctionKind::Ordinary,
+                        Some(new_target),
+                        arguments.into_iter(),
+                        span,
+                    );
                 }
                 Callable::Builtin(Builtin::AsyncFunction) => {
-                    return Err(Self::unsupported(
+                    return self.dynamic_function(
+                        spite_parser::ast::FunctionKind::Async,
+                        Some(new_target),
+                        arguments.into_iter(),
                         span,
-                        "dynamic async function compilation is not implemented",
-                    ));
+                    );
                 }
                 Callable::Bound(bound) => {
                     let count = bound

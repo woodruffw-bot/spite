@@ -14,6 +14,7 @@ pub fn parse_dynamic_function(parameters: &str, body: &str) -> Result<Rc<Functio
     parse_sources(
         source::SourceText::from_str(parameters),
         source::SourceText::from_str(body),
+        FunctionKind::Ordinary,
     )
 }
 
@@ -30,16 +31,51 @@ pub fn parse_dynamic_function_utf16(
     parse_sources(
         source::SourceText::from_utf16(parameters)?,
         source::SourceText::from_utf16(body)?,
+        FunctionKind::Ordinary,
+    )
+}
+
+/// Parses dynamic AsyncFunction source with independent async grammar goals.
+/// Await bindings/parameter expressions are syntax errors; body suspension remains
+/// explicitly unsupported until continuation execution is implemented.
+pub fn parse_dynamic_async_function(
+    parameters: &str,
+    body: &str,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_str(parameters),
+        source::SourceText::from_str(body),
+        FunctionKind::Async,
+    )
+}
+
+/// Parses dynamic AsyncFunction inputs as lossless UTF-16, retaining standard
+/// `async function anonymous` source and the body's independent strictness.
+pub fn parse_dynamic_async_function_utf16(
+    parameters: &JsString,
+    body: &JsString,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_utf16(parameters)?,
+        source::SourceText::from_utf16(body)?,
+        FunctionKind::Async,
     )
 }
 
 fn parse_sources(
     parameters: source::SourceText,
     body: source::SourceText,
+    kind: FunctionKind,
 ) -> Result<Rc<Function>, Diagnostic> {
     let parameters = Rc::new(parameters);
     let mut parser = Parser::from_source(parameters.clone())?;
     parser.allow_new_target = true;
+    parser.allow_await_identifier = kind != FunctionKind::Async;
+    parser.await_context = if kind == FunctionKind::Async {
+        AwaitContext::Parameters
+    } else {
+        AwaitContext::None
+    };
     let result = parser.formal_parameter_list("invalid function parameter identifier", false);
     parser.finish(result)?;
     if parser.current().kind != Kind::Eof {
@@ -51,10 +87,20 @@ fn parse_sources(
     let body = Rc::new(source::SourceText::join(&[&newline, &body, &newline])?);
     let mut parser = Parser::from_source(body.clone())?;
     parser.allow_new_target = true;
+    parser.allow_await_identifier = kind != FunctionKind::Async;
+    parser.await_context = if kind == FunctionKind::Async {
+        AwaitContext::Body
+    } else {
+        AwaitContext::None
+    };
     let result = parser.function_body_contents(false);
     parser.finish(result)?;
 
-    let prefix = source::SourceText::from_str("function anonymous(");
+    let prefix = source::SourceText::from_str(if kind == FunctionKind::Async {
+        "async function anonymous("
+    } else {
+        "function anonymous("
+    });
     let middle = source::SourceText::from_str("\n) {");
     let suffix = source::SourceText::from_str("}");
     let source = source::SourceText::join(&[&prefix, &parameters, &middle, &body, &suffix])?;
