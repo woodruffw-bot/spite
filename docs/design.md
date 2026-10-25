@@ -14710,3 +14710,15 @@ keeps outside ranges empty and operand slots undefined through named indices,
 String consumers, copies and collection. Original q/set syntax, word/line
 context and complete Unicode search remain in Core; user conversions stay
 outside the compiler frame.
+
+
+A separate checked negative-lookbehind entry admits one unquantified v-mode
+class with an empty or longer q member and MayContainStrings false
+(22.2.2.4, 22.2.2.9). The flat negative envelope changes only the proved
+assertion sign before delegating to checked positive character-result
+lookbehind. Optional ^/$ gates inspect original input context; negation applies
+to the complete predecessor conjunction. Outside wrappers remain empty and
+all operand slots undefined. Bounded sticky probes, checked errors, complete
+Unicode advancement, initial-pair rewind, flat storage and actual-work
+cancellation retain their established paths. Earlier entries keep their
+domains and charges. Runtime integration remains separate.
