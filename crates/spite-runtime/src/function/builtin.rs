@@ -435,6 +435,9 @@ impl Realm {
             Builtin::IteratorConcat => self.iterator_concat(arguments, span),
             Builtin::IteratorDispose => self.iterator_dispose(this, span),
             Builtin::AsyncIteratorDispose => self.async_iterator_dispose(this, span),
+            Builtin::AsyncFromSyncMember(member) => {
+                self.async_from_sync_method(member, this, arguments.next(), span)
+            }
             Builtin::IteratorToArray => self.iterator_to_array(this, span),
             Builtin::IteratorForEach => {
                 self.iterator_for_each(this, arguments.next().unwrap_or(Value::Undefined), span)
@@ -687,6 +690,13 @@ impl Realm {
             Builtin::Array => self.array_constructor(None, arguments, span),
             Builtin::ArrayIsArray => self.array_is_array(arguments.next(), span),
             Builtin::ArrayOf => self.array_of(this, arguments, span),
+            Builtin::ArrayFromAsync => self.array_from_async(
+                this,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::ArrayFrom => self.array_from(
                 this,
                 arguments.next().unwrap_or(Value::Undefined),

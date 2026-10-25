@@ -130,11 +130,11 @@ fn metadata_and_retained_intrinsics_survive_public_deletion() {
 }
 
 #[test]
-fn incomplete_intrinsics_and_host_gaps_skip_pending_handlers() {
+fn unsupported_proxy_and_descriptor_operations_skip_pending_handlers() {
     for operation in [
-        "Reflect.ownKeys(Array)",
-        "Reflect.getOwnPropertyDescriptor(Array,'fromAsync')",
-        "Reflect.defineProperty(Array,'fromAsync',{value:7})",
+        "Reflect.ownKeys(new Proxy(Array,{ownKeys(){gap;}}))",
+        "Reflect.getOwnPropertyDescriptor(new Proxy(Array,{getOwnPropertyDescriptor(){gap;}}),'fromAsync')",
+        "Reflect.defineProperty(new Proxy(Array,{defineProperty(){gap;}}),'fromAsync',{value:7})",
         "Reflect.defineProperty({},'x',{get value(){gap;}})",
     ] {
         let mut realm = Realm::default();

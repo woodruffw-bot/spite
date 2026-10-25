@@ -17,7 +17,7 @@ not an alternative language specification.
 | BigInt coercion | Boolean and decimal string conversion, integer-string equality and ordering, exact mixed Number comparisons, TypeError for mixed numeric arithmetic and unary plus, RangeError for zero division and negative exponents |
 | BigInt APIs | Calls with exact integral Number and integer-string conversion, signed/unsigned width reduction, wrappers and boxed receivers, branded valueOf/toString/toLocaleString, and observable prototype tags |
 | Expressions | Primitive, object, and array literals, untagged/tagged templates with substitutions, identifiers, this, parentheses, simple/compound and object/array destructuring assignment, prefix/postfix updates, conditional/comma expressions and optional property/call chains |
-| Arrays | Calls/new, of, from, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
+| Arrays | Calls/new, of, from, fromAsync, isArray, literal holes/spread and trailing commas, sparse indexed properties, ordered length coercion, read-only length, partial truncation, generic at/join/push/pop/shift/unshift/reverse/fill/copyWithin and includes/indexOf/lastIndexOf, forEach/every/some and reduce/reduceRight callbacks, species-aware map/filter/slice/concat/flat/flatMap/splice, find/findIndex/findLast/findLastIndex, sort/toSorted and toReversed/with/toSpliced copies, dynamic toString, and toLocaleString |
 | Object literals | Literal and computed keys, shorthand, ordered data properties and spread, duplicate-key replacement, required prototype initializers, identity equality and truthiness |
 | Object coercion | Realm-level ordered method lookup, TypeError for objects without callable conversion methods, left-to-right operand conversion, Object.prototype toString/valueOf dispatch |
 | Calls | Builtin, arrow, and ordinary calls, standard Function intrinsic graph/metadata/branding, strict/global/boxed receivers, ordered callee/argument evaluation, member receivers, Object.prototype conversion methods |
@@ -56,9 +56,39 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18378 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18396 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Array.fromAsync and Async-from-Sync
+
+Array.fromAsync consumes async iterables, synchronous iterables and array-like
+inputs sequentially. It caches next before generic output construction, awaits
+synchronous and array-like values, preserves raw async iterator values, awaits
+mapper results and defines ordinary own elements. Mapping/definition errors await
+closing; step/final-length errors do not close. Original throw identity survives
+closing failures. Host failures bypass JavaScript rejection and cleanup. Native
+continuation captures are traced and released on completion. Await is shared with
+async disposal and bypasses public then/species hooks and replaced Promise names.
+The Array constructor now supports complete own-key reflection.
+
+Six new adapter unit groups and ten integration groups cover forwarding, omitted
+arguments, getter order, rejected-value closing, metadata, constructor order,
+sequential suspension, custom outputs, error precedence, host failures and GC.
+Symbol ownership checks cover mapper this and closing errors across suspension.
+The retained intrinsic graph increases from 574 to 579 without new globals or
+product quotas. Runtime inventories contain 639 case files, 414 units and 1,878
+non-RegExp integration groups.
+
+All 133 complete originals were byte-verified against the pinned Git blobs.
+Nine Array.fromAsync originals pass eighteen variants and are admitted unchanged;
+86 Array originals and all 38 adapter originals remain Unsupported for await or
+generator syntax. Inventories contain 9,491 fixtures, nineteen helpers, 9,472
+reviewed sources and 18,396 variants. Source-level await and async generators
+remain open; unsupported candidates receive no passing credit. All 18,396
+reviewed variants and forty Test262 package tests pass, along with all 414
+Runtime units and 1,878 non-RegExp integrations. Formatting, strict Clippy,
+Rust 1.88, dependency policy and fixture inventories pass.
 
 ## Async iterator prototype
 
@@ -84,7 +114,8 @@ async generator syntax to discover the hidden prototype. They remain outside the
 admitted corpus. Fixture inventories remain 9,482 fixtures, nineteen helpers,
 9,463 reviewed sources and 18,378 variants. All 18,378 variants and forty Test262
 package tests pass. Formatting, strict Clippy, Rust 1.88, dependency policy and
-inventories pass. Async-from-Sync adaptation and Array.fromAsync remain work.
+inventories pass. Async-from-Sync adaptation and Array.fromAsync are implemented
+in the subsequent increment described above.
 
 ## Lexical using disposal
 
@@ -2101,8 +2132,8 @@ Every UTF-16 unit roundtrips through quoting and the independent strict parser;
 exact assertions verify lowercase escapes and surrogate pairing. Handle hashing
 tests distinguish heap owners and reused generations while deduplicating clones.
 
-Array.fromAsync, for-await-of, generators,
-async functions, promises, modules, standard library objects, agents, shared
+Source-level await, for-await-of, generators,
+modules, remaining standard library behavior, agents, shared
 memory, and automatic garbage collection remain open. See the roadmap for their order.
 The BigInt constructor converts with the number hint, accepts finite integral
 Numbers exactly, and accepts Boolean/BigInt/integer-string values through ToBigInt.

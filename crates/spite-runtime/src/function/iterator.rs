@@ -14,6 +14,7 @@ mod flat_map;
 mod from;
 mod limit;
 mod operations;
+pub(crate) use operations::IteratorRecord;
 mod tag;
 
 #[derive(Debug)]

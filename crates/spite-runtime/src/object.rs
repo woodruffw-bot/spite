@@ -24,6 +24,7 @@ mod data_view;
 pub(crate) use data_view::DataViewData;
 mod typed_array;
 pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArraySetAction};
+pub(crate) mod array_from_async;
 mod async_dispose;
 mod descriptor;
 mod disposable_stack;
@@ -111,6 +112,7 @@ pub struct OrdinaryObject {
     promise_aggregate: Option<Box<promise_aggregate::PromiseAggregateData>>,
     disposable_stack: Option<Box<disposable_stack::DisposableStackData>>,
     async_disposal: Option<Box<async_dispose::AsyncDisposeData>>,
+    array_from_async: Option<Box<array_from_async::AsyncArrayData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
     map: Option<Box<map::MapData>>,
@@ -157,6 +159,7 @@ impl OrdinaryObject {
             promise_aggregate: None,
             disposable_stack: None,
             async_disposal: None,
+            array_from_async: None,
             disposable_resources: None,
             raw_json: false,
             map: None,
@@ -246,6 +249,13 @@ impl OrdinaryObject {
     pub(crate) fn regexp_string_iterator(&self) -> Option<&RegExpStringIterator> {
         match &self.iterator {
             Some(IteratorState::RegExp(state)) => Some(state),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn async_from_sync_iterator(&self) -> Option<&IteratorWrapper> {
+        match &self.iterator {
+            Some(IteratorState::AsyncFromSync(state)) => Some(state),
             _ => None,
         }
     }
@@ -438,7 +448,9 @@ impl Trace for OrdinaryObject {
             | Callable::PromiseResolvingFunction { .. }
             | Callable::PromiseFinally { .. }
             | Callable::PromiseAggregateElement { .. }
-            | Callable::AsyncDisposeResume { .. } => None,
+            | Callable::AsyncResume { .. }
+            | Callable::AsyncFromSyncUnwrap { .. }
+            | Callable::AsyncFromSyncClose(_) => None,
             Callable::Bound(bound) => Some(bound),
         });
         let capture = match self.callable.as_ref() {
@@ -453,8 +465,9 @@ impl Trace for OrdinaryObject {
             Some(Callable::PromiseResolvingFunction { cell, .. })
             | Some(Callable::PromiseFinally { cell, .. }) => Some(cell),
             Some(Callable::PromiseAggregateElement { state, .. })
-            | Some(Callable::AsyncDisposeResume { state, .. }) => Some(state),
-            Some(Callable::Builtin(_)) | None => None,
+            | Some(Callable::AsyncResume { state, .. }) => Some(state),
+            Some(Callable::AsyncFromSyncClose(iterator)) => Some(iterator),
+            Some(Callable::Builtin(_)) | Some(Callable::AsyncFromSyncUnwrap { .. }) | None => None,
         };
         let home_object = match &self.callable {
             Some(Callable::Method(method)) => Some(&method.home_object),
@@ -485,6 +498,7 @@ impl Trace for OrdinaryObject {
             .chain(self.set.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_stack.iter().flat_map(|data| data.trace()))
             .chain(self.async_disposal.iter().flat_map(|data| data.trace()))
+            .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
                 resources
                     .entries

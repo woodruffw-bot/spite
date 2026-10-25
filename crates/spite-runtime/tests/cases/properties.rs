@@ -195,14 +195,17 @@ fn simple_assignment_defers_key_conversion_but_compound_assignment_converts_befo
 }
 
 #[test]
-fn incomplete_intrinsic_methods_report_unsupported() {
+fn unsupported_getters_skip_handlers_and_regular_expression_consumers_execute() {
     {
         let name = "fromAsync";
         let mut realm = Realm::default();
-        realm.eval("let flag = 0").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm
+            .eval("let flag = 0,o={get fromAsync(){gap;}}")
+            .unwrap();
         assert!(matches!(
             realm.eval(&format!(
-                "try {{ Array.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
+                "try {{ o.{name}; }} catch {{ flag = 1; }} finally {{ flag = 2; }}"
             )),
             Err(Error::Unsupported { .. })
         ));

@@ -174,21 +174,12 @@ fn index_growth_readonly_lengths_and_integrity_operations_use_array_rules() {
 }
 
 #[test]
-fn missing_array_intrinsics_remain_explicit_host_gaps() {
-    for source in [
-        "Array.fromAsync",
-        "Object.defineProperty(Array,'fromAsync',{})",
-        "Object.getOwnPropertyDescriptors(Array)",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
-    check("let a=Array();a.join=7;a.join===7 && a.random===undefined");
+fn array_intrinsic_descriptors_and_ordinary_missing_properties_are_observable() {
+    check(
+        "let d=Object.getOwnPropertyDescriptors(Array);d.fromAsync.value===Array.fromAsync&&d.fromAsync.writable&&!d.fromAsync.enumerable&&d.fromAsync.configurable",
+    );
+    check("Object.defineProperty(Array,'fromAsync',{value:7});Array.fromAsync===7");
+    check("let a=Array();a.join=7;a.join===7&&a.random===undefined");
 }
 
 #[test]

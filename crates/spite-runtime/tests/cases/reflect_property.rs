@@ -118,13 +118,13 @@ fn metadata_and_retained_methods_survive_public_deletion() {
 }
 
 #[test]
-fn unsupported_keys_getters_and_intrinsic_mutations_skip_pending_handlers() {
+fn unsupported_keys_getters_and_proxy_mutations_skip_pending_handlers() {
     for operation in [
         "Reflect.get({get x(){gap;}},'x')",
         "Reflect.has({},{toString(){gap;}})",
         "Reflect.deleteProperty({},{toString(){gap;}})",
-        "Reflect.get(Array,'fromAsync')",
-        "Reflect.deleteProperty(Array,'fromAsync')",
+        "Reflect.get(new Proxy(Array,{get(){gap;}}),'fromAsync')",
+        "Reflect.deleteProperty(new Proxy(Array,{deleteProperty(){gap;}}),'fromAsync')",
     ] {
         let mut realm = Realm::default();
         if operation.contains("gap") {

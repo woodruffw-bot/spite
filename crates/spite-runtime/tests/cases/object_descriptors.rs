@@ -210,7 +210,7 @@ fn same_value_does_not_coerce_and_distinguishes_negative_zero() {
 }
 
 #[test]
-fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
+fn method_metadata_roots_and_array_descriptors_remain_correct() {
     check(
         "let saved=Proxy;Object.defineProperty(globalThis,'Proxy',{});let d=Object.getOwnPropertyDescriptor(globalThis,'Proxy');d.value===saved && d.writable && !d.enumerable && d.configurable",
     );
@@ -229,19 +229,10 @@ fn method_metadata_roots_and_missing_intrinsic_descriptors_remain_correct() {
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("let o={};C.defineProperty(o,'x',{value:3});C.is(C.getOwnPropertyDescriptor(o,'x').value,3) && C.hasOwn(o,'x')"),Ok(Value::Boolean(true)));
-    for source in [
-        "Object.getOwnPropertyDescriptor(Array,'fromAsync')",
-        "Object.hasOwn(Array,'fromAsync')",
-        "Object.defineProperty(Array,'fromAsync',{})",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(
+        "Object.getOwnPropertyDescriptor(Array,'fromAsync').value===Array.fromAsync&&Object.hasOwn(Array,'fromAsync')",
+    );
+    check("let f=Array.fromAsync;Object.defineProperty(Array,'fromAsync',{});Array.fromAsync===f");
 }
 
 #[test]

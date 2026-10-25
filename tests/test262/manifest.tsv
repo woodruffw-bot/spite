@@ -9500,3 +9500,12 @@ script-pass	9b3a23111d2192f93cd99a473fbba7c154ba3e52dd11b66ac1ee1453268f7329	tes
 script-pass	60750ed765847ec3f0587aa9cae83471016da4e08b8092e59f1bd7036116a937	test/language/statements/using/syntax/using-invalid-assignment-next-expression-for.js
 script-pass	935891fbc83e32a82a00c4160d36620f97dcd4e6d77635fdd392f19b48389bd8	test/language/statements/using/syntax/using-invalid-assignment-statement-body-for-of.js
 script-pass	587b41073dc3344a7fdbdd558ab9ede10c26b00ac8e4efc547295a972081498f	test/language/statements/using/syntax/using-outer-inner-using-bindings.js
+script-pass	2ff57803ab04a88081bc256c7fd2f7c22dc988538687d29a39effc186313f1e6	test/built-ins/Array/fromAsync/builtin.js
+script-pass	aeba8d53a59289694a866bc836509706b2aa7474d1fc8c45bace508d6b546a46	test/built-ins/Array/fromAsync/length.js
+script-pass	c7179e9e8c135b4dfaf7bce10a3e85b6e7e5ea90e1fe8e9bbcd9eff04d826d0c	test/built-ins/Array/fromAsync/name.js
+script-pass	ffdfbdc03275aef982ede66c03be154136a4231468a6f8e616a0ac3847f8aeea	test/built-ins/Array/fromAsync/non-iterable-input-element-access-err.js
+script-pass	3a01500e2104594dd78882eb1c930000dc36f4333cc705a3d71be952280828b0	test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-async-mapped-callback-err.js
+script-pass	0e6bb5930b89d7964f1aaea16624a22fd714df5587e9cc4078ea82f1a69a6024	test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-sync-mapped-callback-err.js
+script-pass	2f4fd9f443368edbac1e49b3009a603a58ae8f3aff0757f776ab3542996f1e71	test/built-ins/Array/fromAsync/non-iterable-with-thenable-then-method-err.js
+script-pass	3266d7263c345e16cda66d0eec1aa7cda5b572fc7aa67126c5068932b837cf75	test/built-ins/Array/fromAsync/not-a-constructor.js
+script-pass	9a4ed960eeb5d51071b2dcb7f8bc988a25c5d06b176b6255410f8985329fbc72	test/built-ins/Array/fromAsync/prop-desc.js

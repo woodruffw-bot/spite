@@ -388,6 +388,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "Array.fromAsync mapper this across suspension",
+            "(()=>{let gate=new Promise(()=>{});Array.fromAsync({0:gate,length:1},x=>x,key);return gate})()",
+        ),
+        (
+            "Array.fromAsync close error across suspension",
+            "(()=>{let gate=new Promise(()=>{}),source={[Symbol.asyncIterator](){return this},next(){return{value:1,done:false}},return(){return gate}};Array.fromAsync(source,()=>{throw key});return gate})()",
+        ),
+        (
             "async disposal resource across suspension",
             "(()=>{let gate=new Promise(()=>{}),stack=new AsyncDisposableStack;stack.adopt(key,()=>{});stack.defer(()=>gate);stack.disposeAsync();return gate})()",
         ),
@@ -403,6 +411,15 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
                 .eval(&format!("var key=Symbol('census'),holder={expression};key"))
                 .unwrap(),
         );
+        if name == "Array.fromAsync close error across suspension" {
+            loop {
+                match realm.run_next_promise_job().unwrap() {
+                    crate::PromiseJobOutcome::NoJob => break,
+                    crate::PromiseJobOutcome::Completed => (),
+                    crate::PromiseJobOutcome::Reported(error) => panic!("{error}"),
+                }
+            }
+        }
         let weak = key.downgrade();
         let map = object(realm.eval("new WeakMap()").unwrap());
         let _map_root = realm

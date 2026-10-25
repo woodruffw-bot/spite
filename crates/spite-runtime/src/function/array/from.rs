@@ -68,7 +68,7 @@ impl Realm {
         self.finish_array_from(result, length, span)
     }
 
-    fn array_from_result(
+    pub(super) fn array_from_result(
         &mut self,
         receiver: Value,
         length: Option<u64>,
@@ -119,7 +119,7 @@ impl Realm {
         }
     }
 
-    fn finish_array_from(
+    pub(super) fn finish_array_from(
         &mut self,
         result: ObjectHandle,
         length: u64,

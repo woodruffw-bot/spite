@@ -53,6 +53,8 @@ mod array_find;
 mod array_flatten;
 #[path = "cases/array_from.rs"]
 mod array_from;
+#[path = "cases/array_from_async.rs"]
+mod array_from_async;
 #[path = "cases/array_front.rs"]
 mod array_front;
 #[path = "cases/array_index_lookup.rs"]

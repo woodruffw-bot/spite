@@ -70,9 +70,10 @@ fn language_call_failures_are_catchable_but_missing_intrinsics_are_host_gaps() {
         Ok(Value::Number(7.0))
     );
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("gap");
     realm.eval("let flag = 0").unwrap();
     assert!(matches!(
-        realm.eval("try { Array.fromAsync(flag = 1); } catch { flag = 2; } finally { flag = 3; }"),
+        realm.eval("try { gap(flag = 1); } catch { flag = 2; } finally { flag = 3; }"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

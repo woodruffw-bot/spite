@@ -452,25 +452,13 @@ fn global_descriptor_enumerability_checks_run_without_harness_shortcuts() {
 }
 
 #[test]
-fn deferred_array_constructor_keys_remain_an_explicit_separate_gap() {
-    for source in [
-        "Reflect.ownKeys(Array)",
-        "Object.getOwnPropertyNames(Array)",
-        "Object.getOwnPropertySymbols(Array)",
-        "Array.fromAsync",
-        "Object.getOwnPropertyDescriptor(Array,'fromAsync')",
-    ] {
-        let mut realm = Realm::default();
-        realm.eval("let flag=0").unwrap();
-        let result = realm.eval(&format!(
-            "try{{{source};}}catch{{flag=1;}}finally{{flag=2;}}"
-        ));
-        assert!(
-            matches!(result, Err(Error::Unsupported { .. })),
-            "{source}: {result:?}"
-        );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    }
+fn array_constructor_has_complete_reflection_and_deletable_from_async() {
+    check(
+        "let keys=Reflect.ownKeys(Array),names=Object.getOwnPropertyNames(Array),symbols=Object.getOwnPropertySymbols(Array),d=Object.getOwnPropertyDescriptor(Array,'fromAsync');keys.length===8&&names.length===7&&symbols.length===1&&symbols[0]===Symbol.species&&keys.includes('fromAsync')&&d.value===Array.fromAsync&&d.writable&&!d.enumerable&&d.configurable",
+    );
+    check(
+        "delete Array.fromAsync;Array.fromAsync===undefined&&!Object.hasOwn(Array,'fromAsync')&&Object.getOwnPropertyDescriptor(Array,'fromAsync')===undefined",
+    );
 }
 
 #[test]

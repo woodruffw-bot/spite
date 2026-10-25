@@ -10,11 +10,18 @@ pub(crate) struct IteratorRecord {
 }
 
 impl IteratorRecord {
+    pub(crate) fn into_wrapper(self) -> crate::object::IteratorWrapper {
+        crate::object::IteratorWrapper {
+            iterator: self.iterator,
+            next: self.next,
+        }
+    }
+
     pub(crate) fn is_done(&self) -> bool {
         self.done
     }
 
-    pub(super) fn uninitialized(iterator: ObjectHandle) -> Self {
+    pub(crate) fn uninitialized(iterator: ObjectHandle) -> Self {
         Self {
             iterator,
             next: Value::Undefined,

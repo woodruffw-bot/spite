@@ -99,11 +99,16 @@ fn mapped_arguments_freeze_captures_live_values_and_sealing_keeps_aliases() {
 }
 
 #[test]
-fn incomplete_intrinsics_cannot_be_reported_as_frozen_or_sealed() {
+fn array_integrity_and_unsupported_proxy_enumeration_preserve_host_boundaries() {
     check("!Object.isFrozen(Object) && !Object.isSealed(Object) && !Object.isFrozen(globalThis)");
+    check("Object.freeze(Array)===Array&&Object.isFrozen(Array)&&Object.isSealed(Array)");
+    check("Object.seal(Array)===Array&&Object.isSealed(Array)&&!Object.isFrozen(Array)");
     for operation in ["freeze", "seal"] {
         let mut realm = Realm::default();
-        realm.eval("let o=Array,flag=0").unwrap();
+        realm.reserve_unsupported_global("gap");
+        realm
+            .eval("let o=new Proxy(Array,{ownKeys(){gap;}}),flag=0")
+            .unwrap();
         assert!(matches!(
             realm.eval(&format!(
                 "try{{Object.{operation}(o);}}catch{{flag=1;}}finally{{flag=2;}}"

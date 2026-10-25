@@ -73,21 +73,4 @@ impl Objects {
         debug_assert!(data.resources.is_empty());
         Ok((data.capability, data.error))
     }
-
-    pub(crate) fn create_async_dispose_resume(
-        &mut self,
-        prototype: &Handle,
-        state: &Handle,
-        fulfilled: bool,
-    ) -> Result<Handle, Error> {
-        self.inspect(prototype)?;
-        self.inspect(state)?;
-        let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable =
-            Some(crate::function::Callable::AsyncDisposeResume {
-                state: state.clone(),
-                fulfilled,
-            });
-        Ok(function)
-    }
 }

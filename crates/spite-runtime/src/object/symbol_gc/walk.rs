@@ -128,6 +128,7 @@ fn object_symbols(
         promise_aggregate,
         disposable_stack: _,
         async_disposal,
+        array_from_async,
         disposable_resources,
         raw_json: _,
         map,
@@ -202,6 +203,11 @@ fn object_symbols(
             visit(symbol(value))?;
         }
     }
+    if let Some(data) = array_from_async {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
     if let Some(data) = async_disposal {
         for value in data.values() {
             visit(symbol(value))?;
@@ -261,12 +267,16 @@ fn object_symbols(
             | Callable::PromiseResolvingFunction { .. }
             | Callable::PromiseFinally { .. }
             | Callable::PromiseAggregateElement { .. }
-            | Callable::AsyncDisposeResume { .. },
+            | Callable::AsyncResume { .. }
+            | Callable::AsyncFromSyncUnwrap { .. }
+            | Callable::AsyncFromSyncClose(_),
         )
         | None => visit(None)?,
     }
     match iterator {
-        Some(IteratorState::Wrapper(wrapper)) => visit(symbol(&wrapper.next))?,
+        Some(IteratorState::Wrapper(wrapper)) | Some(IteratorState::AsyncFromSync(wrapper)) => {
+            visit(symbol(&wrapper.next))?
+        }
         Some(IteratorState::Helper(helper)) => match &helper.closure {
             Some(HelperClosure::Concat(state)) => {
                 if let Some(inner) = &state.inner {

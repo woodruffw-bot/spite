@@ -20,6 +20,7 @@ pub(super) enum IteratorState {
     String(StringIterator),
     RegExp(RegExpStringIterator),
     Wrapper(Box<IteratorWrapper>),
+    AsyncFromSync(Box<IteratorWrapper>),
     Helper(Box<IteratorHelper>),
 }
 
@@ -31,7 +32,7 @@ impl IteratorState {
             Self::Set(state) => (state.set.as_ref(), None),
             Self::RegExp(state) => (Some(&state.matcher), None),
             Self::String(_) | Self::Helper(_) => (None, None),
-            Self::Wrapper(state) => (
+            Self::Wrapper(state) | Self::AsyncFromSync(state) => (
                 Some(&state.iterator),
                 Some(state.next.trace().next().flatten()),
             ),
@@ -153,6 +154,20 @@ impl Objects {
             state.map = None;
         }
         Ok(())
+    }
+
+    pub(crate) fn create_async_from_sync_iterator(
+        &mut self,
+        prototype: &Handle,
+        state: IteratorWrapper,
+    ) -> Result<Handle, Error> {
+        self.inspect(&state.iterator)?;
+        if let Value::Object(next) = &state.next {
+            self.inspect(next)?;
+        }
+        let wrapper = self.create(Some(prototype))?;
+        self.object_mut(&wrapper)?.iterator = Some(IteratorState::AsyncFromSync(Box::new(state)));
+        Ok(wrapper)
     }
 
     pub(crate) fn create_iterator_wrapper(

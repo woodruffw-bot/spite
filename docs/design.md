@@ -1136,8 +1136,29 @@ capability with undefined. Language failures reject and host failures bypass
 rejection. A missing return resolves without suspension. Pending reactions keep
 the capability, with no capture of a receiver no longer needed by the algorithm.
 Public then/species hooks and replaced Promise bindings are not consulted.
-The prototype and both methods remain independent intrinsic roots. Async-from-Sync
-adaptation, async generator objects and Array.fromAsync remain separate work.
+The prototype and both methods remain independent intrinsic roots.
+
+The Async-from-Sync prototype inherits that prototype and supplies next, return
+and throw (27.1.4.5). Wrappers trace the synchronous iterator and cached next;
+return and throw are looked up live. Continuations read done before value, await
+value even for a completed result, and create fresh iterator results. Rejected
+values close unfinished iterators for next/throw, while return never closes.
+Getter failures skip closing. A missing return embeds its argument without
+awaiting it; a missing throw performs normal synchronous closing before rejection.
+
+Array.fromAsync (23.1.2.2) selects async iteration before synchronous iteration
+and otherwise captures an array-like length. Iterator acquisition precedes generic
+output construction. A traced native cursor advances sequentially through next,
+item, mapping and closing awaits, using the same internal Await helper as async
+resource disposal. Async iterator values pass through without an extra Await;
+synchronous iterator and array-like values are awaited. Mapper results are always
+awaited. Mapping and property-definition failures await iterator closing with the
+original throw taking precedence over closing language failures. Step failures
+and final length failures skip closing. Host failures bypass rejection and closing;
+completion releases cursor captures even after a host allowance is exhausted.
+No public then/species hook or replacement Promise binding participates in native
+Await. Array constructor own-key reflection is now complete. Async generators,
+for-await-of and source-level await remain separate work.
 
 Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
 (27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator

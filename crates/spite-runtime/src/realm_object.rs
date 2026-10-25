@@ -841,13 +841,6 @@ impl Realm {
         object: &ObjectHandle,
         span: Span,
     ) -> Result<Vec<PropertyKey>, Error> {
-        let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        if object == &intrinsics.array.constructor {
-            return Err(Self::unsupported(
-                span,
-                "own keys of this incomplete intrinsic are not implemented",
-            ));
-        }
         let result = self.object_work(span, |objects, budget| {
             if objects.proxy_state(object, budget)?.is_some() {
                 return Ok(None);
@@ -919,15 +912,8 @@ impl Realm {
         if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
             return true;
         }
-        let Some(intrinsics) = &self.intrinsics else {
-            return false;
-        };
-        object == &intrinsics.array.constructor && missing_array_static(key)
+        false
     }
-}
-
-fn missing_array_static(key: &JsString) -> bool {
-    key_is(key, "fromAsync")
 }
 
 fn key_is<'key>(key: impl Into<PropertyKeyRef<'key>>, name: &str) -> bool {

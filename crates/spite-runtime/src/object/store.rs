@@ -733,6 +733,45 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 
+    pub(crate) fn create_async_from_sync_unwrap(
+        &mut self,
+        prototype: &Handle,
+        done: bool,
+    ) -> Result<Handle, Error> {
+        let function = self.create(Some(prototype))?;
+        self.object_mut(&function)?.callable = Some(Callable::AsyncFromSyncUnwrap { done });
+        Ok(function)
+    }
+
+    pub(crate) fn create_async_from_sync_close(
+        &mut self,
+        prototype: &Handle,
+        iterator: &Handle,
+    ) -> Result<Handle, Error> {
+        self.inspect(iterator)?;
+        let function = self.create(Some(prototype))?;
+        self.object_mut(&function)?.callable = Some(Callable::AsyncFromSyncClose(iterator.clone()));
+        Ok(function)
+    }
+
+    pub(crate) fn create_async_resume(
+        &mut self,
+        prototype: &Handle,
+        state: &Handle,
+        kind: crate::function::async_native::AsyncResumeKind,
+        fulfilled: bool,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        self.inspect(state)?;
+        let function = self.create(Some(prototype))?;
+        self.object_mut(&function)?.callable = Some(Callable::AsyncResume {
+            state: state.clone(),
+            kind,
+            fulfilled,
+        });
+        Ok(function)
+    }
+
     /// Borrows a record for host inspection without traversing prototypes.
     pub fn inspect(&self, object: &Handle) -> Result<&OrdinaryObject, Error> {
         match self.heap.get(object)? {

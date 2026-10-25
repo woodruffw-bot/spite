@@ -921,9 +921,10 @@ fn host_gaps_and_real_trap_argument_limits_remain_host_failures_without_key_list
         ("ownKeys", "Reflect.ownKeys(p)", "[]"),
     ] {
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("gap");
         realm
             .eval(&format!(
-                "let marker=0,flag=0,p=new Proxy(Array,{{{name}(){{marker++;return {result};}}}})"
+                "let marker=0,flag=0,target=new Proxy(Array,{{getOwnPropertyDescriptor(){{gap;}},ownKeys(){{gap;}}}}),p=new Proxy(target,{{{name}(){{marker++;return {result};}}}})"
             ))
             .unwrap();
         assert!(matches!(

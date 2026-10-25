@@ -1,10 +1,11 @@
 //! Native asynchronous DisposeResources continuations (sec-disposeresources).
 
+use super::async_native::AsyncResumeKind;
 use crate::{
     Error, ObjectHandle, Realm, Value,
     object::{DisposableResource, DisposableStackKind, DisposalHint},
 };
-use spite_core::{JsString, Span};
+use spite_core::Span;
 
 impl Realm {
     pub(super) fn async_stack_dispose(&mut self, this: Value, span: Span) -> Result<Value, Error> {
@@ -108,45 +109,13 @@ impl Realm {
             objects.async_disposal_mut(state)?.has_awaited = true;
             Ok(())
         })?;
-        let constructor = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .global_metadata
-            .promise
-            .clone();
-        let promise = match self.promise_resolve(Value::Object(constructor), value, span) {
-            Ok(Value::Object(promise)) => promise,
-            Ok(_) => unreachable!("intrinsic PromiseResolve returns a Promise"),
-            Err(error) => {
-                let reason = self.language_exception_value(error)?;
-                self.record_async_disposal_error(state, reason, span)?;
-                return Ok(false);
-            }
-        };
-        let prototype = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .function_prototype
-            .clone();
-        let mut handlers = [Value::Undefined, Value::Undefined];
-        for (slot, fulfilled) in handlers.iter_mut().zip([true, false]) {
-            let handler = self.object_work(span, |objects, _| {
-                objects.create_async_dispose_resume(&prototype, state, fulfilled)
-            })?;
-            self.define_builtin_property(
-                &handler,
-                "name",
-                Value::String(JsString::from("")),
-                false,
-                span,
-            )?;
-            self.define_builtin_property(&handler, "length", Value::Number(1.0), false, span)?;
-            *slot = Value::Object(handler);
+        if let Err(error) =
+            self.await_native_value(state, AsyncResumeKind::DisposeResources, value, span)
+        {
+            let reason = self.language_exception_value(error)?;
+            self.record_async_disposal_error(state, reason, span)?;
+            return Ok(false);
         }
-        let [fulfilled, rejected] = handlers;
-        self.perform_promise_then(&promise, fulfilled, rejected, None, span)?;
         Ok(true)
     }
 

@@ -141,19 +141,13 @@ fn copied_symbol_keys_and_object_values_survive_collection() {
 }
 
 #[test]
-fn incomplete_intrinsic_key_lists_remain_explicit_gaps() {
+fn array_and_global_key_lists_include_only_enumerable_entries() {
     check(
         "let before=Object.getOwnPropertySymbols(globalThis),key=Symbol('global');globalThis[key]=7;let after=Object.getOwnPropertySymbols(globalThis);Array.isArray(before) && before.length===0 && after.length===1 && after[0]===key && globalThis[key]===7",
     );
-    for source in ["Object.keys(Array)", "Object.keys(Array)"] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(
+        "Object.keys(Array).length===0&&Object.values(Array).length===0&&Object.entries(Array).length===0",
+    );
 }
 
 #[test]

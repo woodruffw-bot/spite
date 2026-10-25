@@ -164,13 +164,13 @@ fn metadata_and_saved_intrinsics_survive_deletion_and_collection() {
 }
 
 #[test]
-fn missing_intrinsic_descriptors_and_unsupported_setters_skip_pending_handlers() {
+fn unsupported_proxy_descriptors_and_setters_skip_pending_handlers() {
     for operation in [
-        "Reflect.set(Array,'fromAsync',1)",
-        "Reflect.set({},'fromAsync',1,Array)",
+        "Reflect.set(new Proxy(Array,{set(){gap;}}),'fromAsync',1)",
+        "Reflect.set({},'fromAsync',1,new Proxy(Array,{getOwnPropertyDescriptor(){gap;}}))",
         "Reflect.set({set x(v){gap;}},'x',1)",
         "Reflect.set({},'length',{valueOf(){gap;}},[])",
-        "Array.fromAsync=1",
+        "(new Proxy(Array,{set(){gap;}})).fromAsync=1",
     ] {
         let mut realm = Realm::default();
         if operation.contains("gap") {

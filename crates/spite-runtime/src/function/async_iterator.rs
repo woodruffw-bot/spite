@@ -7,16 +7,28 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 #[cfg(test)]
 mod tests;
 
+mod from_sync;
+pub(crate) use from_sync::Member as AsyncFromSyncMember;
+
 #[derive(Debug)]
 pub(crate) struct AsyncIteratorIntrinsics {
     pub prototype: ObjectHandle,
     identity: ObjectHandle,
     dispose: ObjectHandle,
+    from_sync_prototype: ObjectHandle,
+    from_sync_methods: [ObjectHandle; 3],
 }
 
 impl AsyncIteratorIntrinsics {
     pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        [&self.prototype, &self.identity, &self.dispose].into_iter()
+        [
+            &self.prototype,
+            &self.identity,
+            &self.dispose,
+            &self.from_sync_prototype,
+        ]
+        .into_iter()
+        .chain(&self.from_sync_methods)
     }
 }
 
@@ -49,10 +61,34 @@ impl Realm {
                 span,
             )?;
         }
+        let from_sync_prototype =
+            self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let mut methods = [None, None, None];
+        for (slot, member) in methods.iter_mut().zip([
+            AsyncFromSyncMember::Next,
+            AsyncFromSyncMember::Return,
+            AsyncFromSyncMember::Throw,
+        ]) {
+            let method = self.new_builtin(
+                function_prototype,
+                Builtin::AsyncFromSyncMember(member),
+                span,
+            )?;
+            self.define_builtin_property(
+                &from_sync_prototype,
+                member.name(),
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+            *slot = Some(method);
+        }
         Ok(AsyncIteratorIntrinsics {
             prototype,
             identity,
             dispose,
+            from_sync_prototype,
+            from_sync_methods: methods.map(|method| method.expect("from-sync method")),
         })
     }
 

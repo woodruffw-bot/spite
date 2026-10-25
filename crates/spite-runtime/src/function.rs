@@ -12,6 +12,7 @@ mod array_buffer;
 mod arrow;
 mod async_function;
 mod async_iterator;
+pub(crate) mod async_native;
 mod atomics;
 mod bigint;
 mod boolean;
@@ -199,6 +200,7 @@ pub(crate) enum Builtin {
     ArrayIsArray,
     ArrayOf,
     ArrayFrom,
+    ArrayFromAsync,
     ArraySpecies,
     ArrayBuffer,
     ArrayBufferIsView,
@@ -221,6 +223,7 @@ pub(crate) enum Builtin {
     AsyncIteratorDispose,
     AsyncIteratorIdentity,
     AsyncIteratorDisposeFulfilled,
+    AsyncFromSyncMember(async_iterator::AsyncFromSyncMember),
     IteratorHelperNext,
     IteratorHelperReturn,
     IteratorToArray,
@@ -486,6 +489,7 @@ impl Builtin {
             Self::ArrayIsArray => "isArray",
             Self::ArrayOf => "of",
             Self::ArrayFrom | Self::IteratorFrom => "from",
+            Self::ArrayFromAsync => "fromAsync",
             Self::ArraySpecies => "get [Symbol.species]",
             Self::ArrayBuffer => "ArrayBuffer",
             Self::ArrayBufferIsView => "isView",
@@ -513,6 +517,7 @@ impl Builtin {
             Self::AsyncIteratorDispose => "[Symbol.asyncDispose]",
             Self::AsyncIteratorIdentity => "[Symbol.asyncIterator]",
             Self::AsyncIteratorDisposeFulfilled => "",
+            Self::AsyncFromSyncMember(member) => member.name(),
             Self::IteratorToArray => "toArray",
             Self::IteratorTake => "take",
             Self::IteratorDrop => "drop",
@@ -701,7 +706,7 @@ impl Builtin {
             Self::DateMethod(method) => method.length(),
             Self::DataView => 1.0,
             Self::DataViewMember(member) => member.length(),
-            Self::AsyncIteratorDisposeFulfilled => 1.0,
+            Self::AsyncIteratorDisposeFulfilled | Self::AsyncFromSyncMember(_) => 1.0,
             Self::ArrayBuffer | Self::ArrayBufferIsView => 1.0,
             Self::ArrayBufferMember(member) => member.length(),
             Self::TypedArray(_) => 3.0,
@@ -762,6 +767,7 @@ impl Builtin {
             | Self::Array
             | Self::ArrayIsArray
             | Self::ArrayFrom
+            | Self::ArrayFromAsync
             | Self::ArrayJoin
             | Self::ArrayAt
             | Self::ArrayPush
@@ -943,7 +949,12 @@ pub(crate) enum Callable {
         cell: ObjectHandle,
         kind: PromiseFinallyKind,
     },
-    AsyncDisposeResume {
+    AsyncFromSyncUnwrap {
+        done: bool,
+    },
+    AsyncFromSyncClose(ObjectHandle),
+    AsyncResume {
+        kind: async_native::AsyncResumeKind,
         state: ObjectHandle,
         fulfilled: bool,
     },
@@ -974,7 +985,9 @@ impl Callable {
             | Self::PromiseResolvingFunction { .. }
             | Self::PromiseFinally { .. }
             | Self::PromiseAggregateElement { .. }
-            | Self::AsyncDisposeResume { .. } => FunctionText::Native(""),
+            | Self::AsyncResume { .. }
+            | Self::AsyncFromSyncUnwrap { .. }
+            | Self::AsyncFromSyncClose(_) => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1521,13 +1534,35 @@ impl Realm {
                         span,
                     );
                 }
-                Some(Callable::AsyncDisposeResume { state, fulfilled }) => {
-                    return self.resume_async_disposal(
-                        state,
-                        fulfilled,
+                Some(Callable::AsyncFromSyncUnwrap { done }) => {
+                    return self.iterator_result(
                         arguments.next().unwrap_or(Value::Undefined),
+                        done,
                         span,
                     );
+                }
+                Some(Callable::AsyncFromSyncClose(iterator)) => {
+                    let record = iterator::IteratorRecord::uninitialized(iterator);
+                    return Err(self.iterator_close_error(
+                        &record,
+                        Error::Thrown(arguments.next().unwrap_or(Value::Undefined)),
+                        span,
+                    ));
+                }
+                Some(Callable::AsyncResume {
+                    state,
+                    kind,
+                    fulfilled,
+                }) => {
+                    let value = arguments.next().unwrap_or(Value::Undefined);
+                    return match kind {
+                        async_native::AsyncResumeKind::DisposeResources => {
+                            self.resume_async_disposal(state, fulfilled, value, span)
+                        }
+                        async_native::AsyncResumeKind::ArrayFromAsync => {
+                            self.resume_array_from_async(state, fulfilled, value, span)
+                        }
+                    };
                 }
                 Some(Callable::PromiseAggregateElement { fulfilled, .. }) => {
                     let Value::Object(function) = function else {

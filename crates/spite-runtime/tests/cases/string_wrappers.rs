@@ -171,7 +171,7 @@ fn wrapper_property_capacity_is_a_host_limit_while_primitive_reads_remain_availa
 }
 
 #[test]
-fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
+fn metadata_rooting_and_array_property_controls_remain_correct() {
     check(
         "String.name==='String' && String.length===1 && String.prototype.constructor===String && String.prototype.length===0 && String.prototype.toString.length===0 && String.prototype.valueOf.length===0",
     );
@@ -179,20 +179,12 @@ fn metadata_rooting_and_unimplemented_methods_remain_explicit() {
         "let d=Object.getOwnPropertyDescriptor(String,'prototype');!d.writable && !d.enumerable && !d.configurable",
     );
     type_error("new String.prototype.toString()");
-    for source in [
-        "Array.fromAsync",
-        "Array.fromAsync=1",
-        "delete Array.fromAsync",
-        "Object.getOwnPropertyDescriptors(Array)",
-    ] {
-        assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
-            "{source}"
-        );
-    }
+    check(
+        "typeof Array.fromAsync==='function'&&Object.getOwnPropertyDescriptors(Array).fromAsync.value===Array.fromAsync",
+    );
+    check(
+        "Array.fromAsync=1;Array.fromAsync===1&&delete Array.fromAsync&&Array.fromAsync===undefined",
+    );
     let mut realm = Realm::default();
     realm
         .eval("let C=String;let s=new C('abc');delete globalThis.String")

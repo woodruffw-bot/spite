@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9482 unmodified test fixtures and nineteen harness files come from
+These 9491 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Array.fromAsync and Async-from-Sync review
+
+Ninety-five complete Array.fromAsync originals and 38 AsyncFromSyncIteratorPrototype
+originals were reviewed with verified pinned Git blob hashes. Nine Array originals
+pass eighteen variants for metadata, construction rejection and asynchronous error
+propagation, and enter the corpus without source edits. Existing helpers suffice.
+The remaining 86 Array originals and all 38 adapter originals remain Unsupported
+for source-level await or generator syntax; they stay outside admission.
+
+Six native unit groups and ten runtime integration groups independently check
+adapter forwarding/continuation and Array conversion, awaiting, closing, host
+failures and GC. Intrinsic entries increase from 574 to 579, with no new global
+bindings or quotas. The admitted inventory is 9,491 fixtures, nineteen helpers,
+9,472 reviewed sources and 18,396 variants.
 
 ## Async iterator prototype review
 

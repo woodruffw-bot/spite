@@ -9462,3 +9462,12 @@ test/language/statements/using/syntax/using-for-statement.js	-	-	-
 test/language/statements/using/syntax/using-invalid-assignment-next-expression-for.js	-	-	-
 test/language/statements/using/syntax/using-invalid-assignment-statement-body-for-of.js	-	-	-
 test/language/statements/using/syntax/using-outer-inner-using-bindings.js	-	-	-
+test/built-ins/Array/fromAsync/builtin.js	-	-	-
+test/built-ins/Array/fromAsync/length.js	-	-	-
+test/built-ins/Array/fromAsync/name.js	-	-	-
+test/built-ins/Array/fromAsync/non-iterable-input-element-access-err.js	-	-	-
+test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-async-mapped-callback-err.js	-	-	-
+test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-sync-mapped-callback-err.js	-	-	-
+test/built-ins/Array/fromAsync/non-iterable-with-thenable-then-method-err.js	-	-	-
+test/built-ins/Array/fromAsync/not-a-constructor.js	-	-	-
+test/built-ins/Array/fromAsync/prop-desc.js	-	-	-
