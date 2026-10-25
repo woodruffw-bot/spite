@@ -1,23 +1,20 @@
-//! Resource grammar rejects real early errors; disposal remains a host boundary.
+//! Resource early errors and remaining await-using host boundaries.
 
 use spite_runtime::{Error, Realm, Value};
 
 #[test]
-fn using_disposal_boundaries_abort_handlers_for_statements_and_loops() {
+fn await_using_boundaries_abort_handlers_for_statements_and_loops() {
     for source in [
-        "{using x=null;}",
-        "function f(){using x=null;}f();",
-        "async function f(){using x=null;}f();",
-        "for(using x=null;false;){}",
-        "for(using x of []){}",
-        "class C{static{using x=null;}}",
+        "async function f(){await using x=null;}f();",
+        "async function f(){using x=await p;}f();",
+        "async function f(){for await(using x of []){}}f();",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(
                 realm.eval(&format!(
-                    "try{{{source}}}catch(e){{flag=1}}finally{{flag=2}}"
+                    "try{{eval({source:?})}}catch(e){{flag=1}}finally{{flag=2}}"
                 )),
                 Err(Error::Unsupported { .. })
             ),

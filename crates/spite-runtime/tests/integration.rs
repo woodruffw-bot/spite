@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/using_declarations.rs"]
+mod using_declarations;
+
 #[path = "cases/using_syntax.rs"]
 mod using_syntax;
 

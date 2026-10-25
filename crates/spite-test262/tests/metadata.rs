@@ -223,12 +223,21 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         if fields[0] == "script-runtime-error" {
             assert!(!meta.has_flag("raw"));
+            let error_type = match fields[2] {
+                "test/language/statements/using/global-use-before-initialization-in-declaration-statement.js"
+                | "test/language/statements/using/global-use-before-initialization-in-prior-statement.js" => {
+                    "ReferenceError"
+                }
+                _ => "SyntaxError",
+            };
             assert_eq!(
                 meta.negative,
                 Some(Negative {
                     phase: Phase::Runtime,
-                    error_type: "SyntaxError".into()
-                })
+                    error_type: error_type.into()
+                }),
+                "{}",
+                fields[2]
             );
         }
         if fields[0] == "raw-syntax-error" {
@@ -242,6 +251,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 9439);
+    assert_eq!(count, 9482);
     assert_eq!(harness_count, 19);
 }

@@ -837,6 +837,7 @@ impl Objects {
                 home_object: None,
                 derived_constructor: None,
                 class_field_initializer: false,
+                disposable_resources: None,
             },
         ))?))
     }

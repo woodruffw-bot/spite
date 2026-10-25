@@ -18,6 +18,7 @@ mod iterator_count;
 mod loop_limit_tests;
 mod optional_chain;
 mod private;
+mod resource;
 mod super_property;
 mod time_zone;
 mod with;
@@ -811,10 +812,10 @@ impl Realm {
                 target: None,
             }),
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
-            StatementKind::Using(_) => Err(Self::unsupported(
-                statement.span,
-                "using disposal is not implemented",
-            )),
+            StatementKind::Using(bindings) => {
+                self.initialize_using_bindings(bindings)?;
+                Ok(Completion::normal(None))
+            }
             StatementKind::Lexical { bindings, .. } => {
                 self.initialize_bindings(bindings)?;
                 Ok(Completion::normal(None))
@@ -825,9 +826,12 @@ impl Realm {
             }
             StatementKind::Block(body) => {
                 self.push_scope(BTreeMap::new(), statement.span)?;
+                let environment = self.scopes.last().expect("block environment").clone();
                 let result = self
                     .instantiate(body.iter(), false, true)
                     .and_then(|()| self.statements(body));
+                let result =
+                    self.dispose_environment_resources(&environment, result, statement.span);
                 self.scopes.pop();
                 result
             }
@@ -914,10 +918,25 @@ impl Realm {
                 // ECMA-262 14.7.4.2: all header bindings exist before any
                 // initializer runs, and the outer scope is restored on every exit.
                 match initializer {
-                    Some(ForInitializer::Using(_)) => Err(Self::unsupported(
-                        statement.span,
-                        "using loop disposal is not implemented",
-                    )),
+                    Some(ForInitializer::Using(bindings)) => {
+                        let scope = self.pattern_bindings(
+                            bindings.iter().map(|binding| &binding.pattern),
+                            false,
+                        )?;
+                        self.push_scope(scope, statement.span)?;
+                        let environment =
+                            self.scopes.last().expect("using loop environment").clone();
+                        let result = self.initialize_using_bindings(bindings).and_then(|()| {
+                            self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)
+                        });
+                        let result = self.dispose_environment_resources(
+                            &environment,
+                            result,
+                            statement.span,
+                        );
+                        self.scopes.pop();
+                        result
+                    }
                     Some(ForInitializer::Var(bindings)) => {
                         self.evaluate_var_bindings(bindings)?;
                         self.for_body(test.as_ref(), update.as_ref(), body, &[], labels)

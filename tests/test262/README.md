@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9439 unmodified test fixtures and nineteen harness files come from
+These 9482 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,24 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Lexical using execution fixtures
+
+Thirty-five complete root originals add seventy variants for synchronous
+registration, lexical disposal, TDZ, naming, reverse order, partial initialization
+and error propagation. Six previously deferred syntax originals add twelve
+variants. Two parse-negative originals with reviewed spans/messages add three
+variants for a var conflict and a class static await binding. Git blob hashes
+and manifest SHA-256 digests were verified. Existing helpers suffice.
+
+The root review runs 43 .js originals excluding the fixture helper: 37 pass 73
+variants and six remain Unsupported for generators, await or modules. One
+upstream file lacks a .js suffix and remains outside execution. The syntax review
+now passes 69 variants from 35 originals, with two modules deferred. Twelve
+additional Runtime groups cover completion values, resource lifetimes, iterator
+closing, suppression, host/work aborts and capture release. Inventories contain
+9,482 fixtures, nineteen helpers, 9,463 reviewed sources and 18,378 variants.
+Intrinsic entries remain 571 and quotas are unchanged.
 
 ## Using syntax fixtures
 
@@ -4401,7 +4419,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 18293 variants from 9420 reviewed sources.
+The `spite-test262` command runs 18378 variants from 9463 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

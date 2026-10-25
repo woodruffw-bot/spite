@@ -83,6 +83,8 @@ pub(super) fn symbols(
                 home_object: _,
                 derived_constructor: _,
                 class_field_initializer: _,
+                // Only a handle to the separately scanned resource list.
+                disposable_resources: _,
             } = environment;
             for value in bindings.values() {
                 visit(value.value.as_ref().and_then(symbol))?;

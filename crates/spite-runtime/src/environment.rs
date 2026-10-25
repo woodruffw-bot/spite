@@ -39,6 +39,8 @@ pub(crate) struct Environment {
     // The active derived constructor, needed by GetSuperConstructor through arrows/eval.
     pub derived_constructor: Option<Handle>,
     pub class_field_initializer: bool,
+    // Empty until the first non-null synchronous using resource is registered.
+    pub disposable_resources: Option<Handle>,
 }
 
 #[derive(Default)]
@@ -67,6 +69,7 @@ impl Trace for Environment {
                 _ => None,
             }))
             .chain(self.private_names.values().map(|_| None))
+            .chain(self.disposable_resources.iter().map(Some))
     }
 }
 

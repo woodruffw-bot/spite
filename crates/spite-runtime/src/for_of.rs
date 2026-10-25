@@ -13,12 +13,6 @@ impl Realm {
         labels: &[&str],
         span: Span,
     ) -> Result<Completion, Error> {
-        if matches!(binding, ForBinding::Using(_)) {
-            return Err(Self::unsupported(
-                span,
-                "using iteration disposal is not implemented",
-            ));
-        }
         let source = self.iteration_source(binding, iterable, span)?;
         let method = self
             .get_method(&source, &WellKnownSymbol::Iterator.symbol(), span)?
@@ -58,8 +52,13 @@ impl Realm {
     ) -> Result<Value, Error> {
         // Lexical names shadow outer bindings in the RHS but remain uninitialized.
         // Restore the outer environment before GetIterator, including on failure.
-        if let ForBinding::Lexical { mutable, binding } = binding {
-            let bindings = self.pattern_bindings([binding], *mutable)?;
+        let lexical = match binding {
+            ForBinding::Lexical { mutable, binding } => Some((binding, *mutable)),
+            ForBinding::Using(binding) => Some((binding, false)),
+            _ => None,
+        };
+        if let Some((binding, mutable)) = lexical {
+            let bindings = self.pattern_bindings([binding], mutable)?;
             self.push_scope(bindings, span)?;
             let result = self.expression(iterable);
             self.scopes.pop();
@@ -77,10 +76,21 @@ impl Realm {
         span: Span,
     ) -> Result<Completion, Error> {
         match binding {
-            ForBinding::Using(_) => Err(Self::unsupported(
-                span,
-                "using iteration disposal is not implemented",
-            )),
+            ForBinding::Using(binding) => {
+                let bindings = self.pattern_bindings([binding], false)?;
+                self.push_scope(bindings, span)?;
+                let environment = self
+                    .scopes
+                    .last()
+                    .expect("using iteration environment")
+                    .clone();
+                let result = self
+                    .initialize_using_value(binding, value, &environment)
+                    .and_then(|()| self.statement(body));
+                let result = self.dispose_environment_resources(&environment, result, span);
+                self.scopes.pop();
+                result
+            }
             ForBinding::Lexical { mutable, binding } => {
                 // Both let and const receive a new environment each iteration.
                 let bindings = self.pattern_bindings([binding], *mutable)?;

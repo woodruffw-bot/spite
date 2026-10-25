@@ -147,7 +147,7 @@ impl Realm {
 
     // Convert a language throw without resetting the active Script/job allowance.
     // Host failures retain their handler-bypassing completion.
-    pub(super) fn language_exception_value(&mut self, error: Error) -> Result<Value, Error> {
+    pub(crate) fn language_exception_value(&mut self, error: Error) -> Result<Value, Error> {
         match error {
             Error::Thrown(value) => Ok(value),
             Error::Exception {
@@ -242,7 +242,7 @@ impl Realm {
         self.object_work(span, |objects, _| objects.create_error(&prototype))
     }
 
-    pub(super) fn create_intrinsic_suppressed_error(
+    pub(crate) fn create_intrinsic_suppressed_error(
         &mut self,
         error: Value,
         suppressed: Value,

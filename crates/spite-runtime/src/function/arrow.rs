@@ -265,7 +265,13 @@ impl Realm {
             body.function_declarations().into_iter(),
             Some(&var_environment),
         )?;
-        let completion = self.statements(body.statements())?;
+        let environment = self
+            .scopes
+            .last()
+            .expect("function body environment")
+            .clone();
+        let completion = self.statements(body.statements());
+        let completion = self.dispose_environment_resources(&environment, completion, span)?;
         match completion.kind {
             CompletionKind::Return => Ok(completion.value.expect("return has a value")),
             CompletionKind::Normal => Ok(Value::Undefined),

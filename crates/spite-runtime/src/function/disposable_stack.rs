@@ -1,6 +1,6 @@
 //! Resource stacks (sec-disposablestack-objects, sec-disposeresources).
 
-use super::{Builtin, error::ErrorConstructor};
+use super::Builtin;
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{
@@ -243,63 +243,10 @@ impl Realm {
         let value = arguments.next().unwrap_or(Value::Undefined);
         let (result, resource) = match member {
             Member::Use => {
-                if matches!(value, Value::Undefined | Value::Null) {
-                    if kind == StackKind::Async {
-                        self.object_work(span, |objects, budget| {
-                            objects.push_disposable_resource(
-                                &resources,
-                                DisposableResource {
-                                    hint: DisposalHint::Async,
-                                    value: Value::Undefined,
-                                    method: Value::Undefined,
-                                    argument: None,
-                                },
-                                budget,
-                            )
-                        })?;
-                    }
+                let Some(resource) = self.create_disposable_resource(&value, kind, span)? else {
                     return Ok(value);
-                }
-                if !matches!(value, Value::Object(_)) {
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "disposable resource must be an object",
-                    ));
-                }
-                let (method, hint) = if kind == StackKind::Async {
-                    if let Some(method) =
-                        self.get_method(&value, &WellKnownSymbol::AsyncDispose.symbol(), span)?
-                    {
-                        (Some(method), DisposalHint::Async)
-                    } else {
-                        (
-                            self.get_method(&value, &WellKnownSymbol::Dispose.symbol(), span)?,
-                            DisposalHint::AsyncFromSync,
-                        )
-                    }
-                } else {
-                    (
-                        self.get_method(&value, &WellKnownSymbol::Dispose.symbol(), span)?,
-                        DisposalHint::Sync,
-                    )
                 };
-                let Some(method) = method else {
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "resource has no disposal method",
-                    ));
-                };
-                (
-                    value.clone(),
-                    DisposableResource {
-                        hint,
-                        value,
-                        method,
-                        argument: None,
-                    },
-                )
+                (value, resource)
             }
             Member::Adopt | Member::Defer => {
                 let method = if member == Member::Adopt {
@@ -343,6 +290,59 @@ impl Realm {
         Ok(result)
     }
 
+    pub(crate) fn create_disposable_resource(
+        &mut self,
+        value: &Value,
+        kind: StackKind,
+        span: Span,
+    ) -> Result<Option<DisposableResource>, Error> {
+        if matches!(value, Value::Undefined | Value::Null) {
+            return Ok((kind == StackKind::Async).then_some(DisposableResource {
+                hint: DisposalHint::Async,
+                value: Value::Undefined,
+                method: Value::Undefined,
+                argument: None,
+            }));
+        }
+        if !matches!(value, Value::Object(_)) {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "disposable resource must be an object",
+            ));
+        }
+        let (method, hint) = if kind == StackKind::Async {
+            if let Some(method) =
+                self.get_method(value, &WellKnownSymbol::AsyncDispose.symbol(), span)?
+            {
+                (Some(method), DisposalHint::Async)
+            } else {
+                (
+                    self.get_method(value, &WellKnownSymbol::Dispose.symbol(), span)?,
+                    DisposalHint::AsyncFromSync,
+                )
+            }
+        } else {
+            (
+                self.get_method(value, &WellKnownSymbol::Dispose.symbol(), span)?,
+                DisposalHint::Sync,
+            )
+        };
+        let Some(method) = method else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "resource has no disposal method",
+            ));
+        };
+        Ok(Some(DisposableResource {
+            hint,
+            value: value.clone(),
+            method,
+            argument: None,
+        }))
+    }
+
     fn dispose_stack_resources(
         &mut self,
         stack: &ObjectHandle,
@@ -353,32 +353,8 @@ impl Realm {
         let resources = self.object_work(span, |objects, budget| {
             objects.take_disposable_resources(stack, budget)
         })?;
-        let mut failure = None;
-        for resource in resources.into_iter().rev() {
-            let arguments = resource.argument.into_iter().collect();
-            if let Err(error) = self.call(resource.method, resource.value, arguments, span) {
-                if !error.is_language_exception() {
-                    return Err(error);
-                }
-                failure = Some(if let Some(suppressed) = failure {
-                    let error = self.language_exception_value(error)?;
-                    let suppressed = self.language_exception_value(suppressed)?;
-                    let value = self.error_constructor(
-                        ErrorConstructor::SuppressedError,
-                        None,
-                        vec![error, suppressed].into_iter(),
-                        span,
-                    )?;
-                    Error::Thrown(value)
-                } else {
-                    error
-                });
-            }
-        }
-        match failure {
-            Some(error) => Err(error),
-            None => Ok(Value::Undefined),
-        }
+        self.dispose_resource_list(resources, Ok(crate::Completion::normal(None)), span)?;
+        Ok(Value::Undefined)
     }
 
     fn disposable_stack_intrinsic_prototype(&self, kind: StackKind) -> ObjectHandle {

@@ -53,12 +53,48 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | AsyncDisposableStack | Shared registration/move with distinct brands, async/sync disposal lookup, native suspension and FIFO resumption, nullish Await timing, suppression and traced continuations |
-| Using grammar | Synchronous declarations and loop headers, contextual identifiers, immutable bindings and lexical/Script/switch early errors; execution remains Unsupported |
+| Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18293 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18378 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Lexical using disposal
+
+Using bindings register their cached synchronous disposer before initialization.
+Nullish resources need no record. Resource-bearing environments lazily share the
+stack API's traced private List storage. Blocks, functions, methods and class
+static blocks dispose before restoring outer scope. Three-clause headers retain
+resources for the whole loop; for-of disposes each iteration before iterator
+stepping or closing, with immutable bindings and RHS TDZ behavior.
+
+Lexical scopes and DisposableStack share completion handling. Cleanup preserves
+normal values, returns, break and continue; language failures suppress prior
+throws and continue reverse cleanup. Host failures skip JavaScript cleanup while
+discarding prepaid resource captures, even after work exhaustion. Escaping
+closures retain bindings without retaining obsolete cached disposal methods.
+Await using and general suspension remain Unsupported.
+
+Twelve new Runtime groups cover receivers, lookup caching, readonly bindings,
+scope lifetimes, abrupt completions, suppression, partial initialization, TDZ,
+iterator order/closing, naming, nullish/primitive inputs, static/eval/async bodies,
+finalizers, stack composition and capture release after host/work aborts. All
+402 units and 1,868 non-RegExp integrations pass. The 21 stack regression groups
+also pass after sharing lookup and disposal. Strict Clippy and Rust 1.88 checks
+pass, with no default quota changes and 571 retained intrinsic entries.
+
+Thirty-five complete root originals add seventy variants, six prior syntax
+originals add twelve, and two separately reviewed parse negatives add three.
+The root review selects 43 .js originals excluding the fixture helper; 37 pass
+73 variants while six need generators, await or modules. The one upstream file
+without a .js suffix remains outside execution. The syntax review now passes
+69 variants from 35 originals, with two modules deferred. Git blob hashes and
+manifest SHA-256 digests were verified. Inventories contain 9,482 fixtures,
+nineteen helpers, 9,463 reviewed sources and 18,378 variants, with 74 Parser and
+638 Runtime case files. All 18,378 variants and all forty Test262 package tests
+pass. Formatting, dependency policy, inventories, strict Clippy and Rust 1.88
+all-target checks pass.
 
 ## Using declaration grammar
 

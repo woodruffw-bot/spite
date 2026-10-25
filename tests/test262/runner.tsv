@@ -9419,3 +9419,46 @@ test/language/statements/using/syntax/without-initializer-if-expression-statemen
 test/language/statements/using/syntax/without-initializer-if-expression-statement.js	393	398	using declaration requires a statement list
 test/language/statements/using/syntax/without-initializer-label-statement.js	386	391	using declaration requires a statement list
 test/language/statements/using/syntax/without-initializer-while-expression-statement.js	403	408	using declaration requires a statement list
+test/language/statements/using/Symbol.dispose-getter.js	-	-	-
+test/language/statements/using/Symbol.dispose-method-called-with-correct-this.js	-	-	-
+test/language/statements/using/block-local-closure-get-before-initialization.js	-	-	-
+test/language/statements/using/block-local-use-before-initialization-in-declaration-statement.js	-	-	-
+test/language/statements/using/block-local-use-before-initialization-in-prior-statement.js	-	-	-
+test/language/statements/using/cptn-value.js	-	-	-
+test/language/statements/using/fn-name-arrow.js	-	-	-
+test/language/statements/using/fn-name-class.js	-	-	-
+test/language/statements/using/fn-name-cover.js	-	-	-
+test/language/statements/using/fn-name-fn.js	-	-	-
+test/language/statements/using/function-local-closure-get-before-initialization.js	-	-	-
+test/language/statements/using/function-local-use-before-initialization-in-declaration-statement.js	-	-	-
+test/language/statements/using/function-local-use-before-initialization-in-prior-statement.js	-	-	-
+test/language/statements/using/gets-initializer-Symbol.dispose-property-once.js	-	-	-
+test/language/statements/using/global-closure-get-before-initialization.js	-	-	-
+test/language/statements/using/global-use-before-initialization-in-declaration-statement.js	-	-	-
+test/language/statements/using/global-use-before-initialization-in-prior-statement.js	-	-	-
+test/language/statements/using/initializer-disposed-at-end-of-block.js	-	-	-
+test/language/statements/using/initializer-disposed-at-end-of-forstatement.js	-	-	-
+test/language/statements/using/initializer-disposed-at-end-of-functionbody.js	-	-	-
+test/language/statements/using/initializer-disposed-if-subsequent-initializer-throws-in-forstatement-head.js	-	-	-
+test/language/statements/using/initializer-disposed-if-subsequent-initializer-throws.js	-	-	-
+test/language/statements/using/multiple-resources-disposed-in-reverse-order.js	-	-	-
+test/language/statements/using/puts-initializer-on-top-of-disposableresourcestack-multiple-bindings.js	-	-	-
+test/language/statements/using/puts-initializer-on-top-of-disposableresourcestack-subsequent-usings.js	-	-	-
+test/language/statements/using/static-init-await-binding-valid.js	-	-	-
+test/language/statements/using/throws-error-as-is-if-only-one-error-during-disposal.js	-	-	-
+test/language/statements/using/throws-if-initializer-Symbol.dispose-property-is-null.js	-	-	-
+test/language/statements/using/throws-if-initializer-Symbol.dispose-property-is-undefined.js	-	-	-
+test/language/statements/using/throws-if-initializer-Symbol.dispose-property-not-callable.js	-	-	-
+test/language/statements/using/throws-if-initializer-missing-Symbol.dispose.js	-	-	-
+test/language/statements/using/throws-if-initializer-not-object.js	-	-	-
+test/language/statements/using/throws-suppressederror-if-multiple-errors-during-disposal.js	-	-	-
+test/language/statements/using/using-allows-null-initializer.js	-	-	-
+test/language/statements/using/using-allows-undefined-initializer.js	-	-	-
+test/language/statements/using/redeclaration-error-from-within-strict-mode-function-using.js	468	469	var declaration conflicts with lexical binding
+test/language/statements/using/static-init-await-binding-invalid.js	735	740	invalid binding identifier
+test/language/statements/using/syntax/using-allows-bindingidentifier.js	-	-	-
+test/language/statements/using/syntax/using-allows-multiple-bindings.js	-	-	-
+test/language/statements/using/syntax/using-for-statement.js	-	-	-
+test/language/statements/using/syntax/using-invalid-assignment-next-expression-for.js	-	-	-
+test/language/statements/using/syntax/using-invalid-assignment-statement-body-for-of.js	-	-	-
+test/language/statements/using/syntax/using-outer-inner-using-bindings.js	-	-	-

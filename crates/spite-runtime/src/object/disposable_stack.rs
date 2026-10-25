@@ -63,14 +63,57 @@ impl DisposableStackData {
 }
 
 impl Objects {
+    fn create_disposable_resource_list(&mut self) -> Result<Handle, Error> {
+        let resources = self.create(None)?;
+        self.object_mut(&resources)?.disposable_resources = Some(Box::default());
+        Ok(resources)
+    }
+
+    pub(crate) fn push_environment_disposable_resource(
+        &mut self,
+        environment: &crate::environment::EnvironmentHandle,
+        resource: DisposableResource,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        let resources =
+            if let Some(resources) = &self.environment(environment)?.disposable_resources {
+                resources.clone()
+            } else {
+                let resources = self.create_disposable_resource_list()?;
+                self.environment_mut(environment)?.disposable_resources = Some(resources.clone());
+                resources
+            };
+        self.push_disposable_resource(&resources, resource, budget)
+    }
+
+    pub(crate) fn take_environment_disposable_resources(
+        &mut self,
+        environment: &crate::environment::EnvironmentHandle,
+    ) -> Result<Vec<DisposableResource>, Error> {
+        // Registration prepays release. Scope exit must discard captures even
+        // after a host work abort, without allocating or consuming more work.
+        let Some(resources) = self
+            .environment_mut(environment)?
+            .disposable_resources
+            .take()
+        else {
+            return Ok(Vec::new());
+        };
+        let list = self
+            .object_mut(&resources)?
+            .disposable_resources
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        Ok(std::mem::take(&mut list.entries))
+    }
+
     pub(crate) fn create_disposable_stack(
         &mut self,
         prototype: &Handle,
         kind: DisposableStackKind,
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
-        let resources = self.create(None)?;
-        self.object_mut(&resources)?.disposable_resources = Some(Box::default());
+        let resources = self.create_disposable_resource_list()?;
         let stack = self.create(Some(prototype))?;
         self.object_mut(&stack)?.disposable_stack = Some(Box::new(DisposableStackData {
             kind,

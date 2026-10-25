@@ -1827,8 +1827,27 @@ Lexical uniqueness, strict names, parameter conflicts and loop-body var conflict
 use the existing scope checks. Direct Script/eval and switch-clause declarations
 are syntax errors; nested blocks and function bodies remain permitted.
 Binding environments treat these declarations as immutable lexical names.
-Execution reports Unsupported before initializer or iterable evaluation until
-lexical disposal is implemented. Await-using syntax remains Unsupported.
+Await-using syntax remains Unsupported.
+
+Lexical using execution evaluates a named initializer, obtains and caches its
+synchronous disposer, registers the resource and only then initializes the
+binding (14.3.1). Nullish resources require no record. Resource-bearing
+environments lazily retain the same private traced List representation used by
+DisposableStack. Empty environments add no allocations or collection edges.
+Blocks, function bodies and class static blocks dispose before restoring the
+enclosing environment. Three-clause loop resources live for the whole loop;
+for-of creates and disposes a fresh immutable resource binding each iteration,
+before the next iterator step or closing. RHS bindings retain their TDZ.
+
+Lexical scopes and synchronous stacks share DisposeResources completion handling.
+Reverse cleanup preserves normal values, returns and control transfers, while
+language failures override them and suppress prior throws using intrinsic errors.
+Try/catch/finally and iterator closing receive the resulting completion. Host
+failures bypass JavaScript cleanup; scope exit still discards prepaid captures
+without allocation or additional work, even when the work allowance is exhausted.
+Escaping closures retain their lexical bindings after disposal, with no retained
+resource records or cached disposer methods. General await and generator
+suspension remain separate work.
 
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced
