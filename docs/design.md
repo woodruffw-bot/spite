@@ -14247,3 +14247,14 @@ and flags retain the original class syntax. Shared empty/operand range caching
 preserves named indices, String consumers, copies and collection. User
 conversions remain outside the compiler frame, and existing proof domains and
 work charges remain separate.
+
+A separate checked q-class lookahead entry admits leading/trailing operand word
+predicates with optional ^/$ gates. The flat envelope requires at least one word
+predicate and exactly one class whose q alternatives each decode to a character.
+Its fixed single iteration stays between those predicates, so the existing
+checked class matcher evaluates original-context word/line truth and retains
+the original complete-character capture extent (22.2.2.4, 22.2.2.9). Class data,
+including a backspace member, stays distinct from outside word assertions.
+Outside wrappers remain empty; checked work/capacity errors retain their host
+contracts. The line-only q-class entry keeps its proof domain and callback
+sequence through the shared flat parser. Runtime integration remains separate.

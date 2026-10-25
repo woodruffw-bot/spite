@@ -25973,3 +25973,23 @@ focused and differential evidence above. Broad results record `8f624262`;
 negative assertions and this q-class extension retain separate focused evidence.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+## Core single-character q-class lookahead with word predicates
+
+The actual-source focused harness passes 274 tests (1.76 s), including four
+additional groups for q-class word polarity, independent empty/consuming spans,
+original line and case-fold context, backspace data, astral widths, initial-pair
+rewind, proof exclusions, 200,000 wrappers, clone/drop and every checked
+construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle and independent Unicode advancement.
+The 191 ignoreCase patterns contribute 19,864 equivalent ordinary-q control
+records for the documented Node defect. Twenty-two ASCII iv patterns also use
+the documented equivalent-range control (2,288 overlapping records). The earlier
+line-only q-class record retains the original-q baseline disagreements.
+
+All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
+all-target workspace Clippy, documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.
