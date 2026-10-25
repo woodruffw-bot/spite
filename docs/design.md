@@ -14593,3 +14593,16 @@ Shared empty/operand range caching preserves original q/set syntax, named
 indices, String consumers, copies and collection. The static character-result
 proof, original line context and complete Unicode search remain in Core, while
 user conversions stay outside the compiler frame.
+
+
+A separate checked character-result lookahead entry admits leading/trailing
+operand word predicates with optional ^/$ gates, requiring at least one word
+predicate (22.2.2.4, 22.2.2.9). A class must contain an empty or longer q member
+and have MayContainStrings false. The existing checked character-result
+repetition compiler retains one fixed iteration inside those gates. Original
+line/word/fold context, character-result set algebra and complete input
+characters stay intact; outside wrappers remain empty and operand wrappers
+capture the selected character. Checked errors, complete Unicode advancement,
+initial-pair rewind and actual-work cancellation retain their shared paths.
+Earlier entries keep their domains and charges. Runtime integration remains
+separate.
