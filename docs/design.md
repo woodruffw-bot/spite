@@ -14868,3 +14868,24 @@ caches only the empty assertion range. Named undefined operand slots and empty
 outside captures retain their indices through consumers, copies and collection;
 original-context endpoint conjunctions and complete Unicode candidates remain
 Core's responsibility.
+
+
+### Positive lookahead over adjacent q operands
+
+A separate positive string-class constructor proves complete lookahead over a
+class containing at least two adjacent ClassStringDisjunction operands, with an
+empty or longer member overall. It reuses the checked string-union compiler,
+whose shared trie implements set union and longest-member priority across all
+operands (22.2.2.7, CompileToCharSet and CompileAtom). Source ordering across
+operands does not override longer-member priority; duplicate members retain
+ordinary membership semantics. An earlier empty choice still precedes a later
+search candidate.
+
+Optional ^/$ gates and complete wrappers preserve original context, empty
+assertion spans and independent selected-member captures. Full original v/vi
+validation and normalized capture heads remain prerequisites. The shared wrapper
+compiler uses an explicit class-domain selector; earlier single-q constructors
+retain their domains and work sequences. Scalar operands, nesting, operations,
+word gates, repetition, continuation terms and references require other proofs.
+Checked source copying, decoding/folding, cancellation and capacity errors keep
+the established boundaries.

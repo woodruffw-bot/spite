@@ -355,3 +355,231 @@ fn word_string_classes_keep_deep_scopes_and_recover_from_every_work_abort() {
     );
     assert!(total <= input.len() * 250 + 128, "{total}");
 }
+
+fn union_compile(source: &str, i: bool, m: bool) -> RegExpUnicodePositiveStringClassMatcher {
+    RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+    .unwrap()
+}
+
+#[test]
+fn positive_q_unions_keep_priority_across_operands_empty_choices_and_independent_captures() {
+    for (class, text, root, operand) in [
+        (r"[\q{ab|a}\q{abc|}]", "abc!", 0..0, 0..3),
+        (r"[\q{ab|a}\q{abc|}]", "!abc", 0..0, 0..0),
+        (r"[\q{a|aa}\q{aaa|a}]", "!aaa", 1..1, 1..4),
+        (r"[\q{😀a}\q{😀|a}]", "!😀a", 1..1, 1..4),
+        (r"[\q{}\q{}]", "", 0..0, 0..0),
+    ] {
+        let plan = union_compile(&format!("((?=(({class}))))"), false, false);
+        let found = plan
+            .find_with_work(&JsString::from(text), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            (found.range.clone(), found.operand.clone()),
+            (root.clone(), operand.clone()),
+            "{class}"
+        );
+        assert_eq!(plan.capture_count(), 3);
+        assert_eq!(plan.capture_range(0, &found), Some(root));
+        assert_eq!(plan.capture_range(1, &found), Some(operand.clone()));
+        assert_eq!(plan.capture_range(2, &found), Some(operand));
+        assert_eq!(plan.capture_range(3, &found), None);
+    }
+}
+
+#[test]
+fn positive_q_unions_keep_original_line_fold_escape_and_surrogate_context() {
+    for (source, i, m, text, start, root, operand) in [
+        (r"(?=(^[\q{ab}\q{a}]$))", true, true, "\nA\n", 0, 1..1, 1..2),
+        (
+            r"(?=([\q{a\r\nb}\q{a|}]$))",
+            false,
+            true,
+            "a\r\nbc",
+            0,
+            0..0,
+            0..1,
+        ),
+        (
+            r"(?=([\q{ſa|S}\q{Kk|}]))",
+            true,
+            false,
+            "SA!",
+            0,
+            0..0,
+            0..2,
+        ),
+        (
+            r"(?=([\q{😀a}\q{😀|a}]))",
+            false,
+            false,
+            "!😀a",
+            2,
+            1..1,
+            1..4,
+        ),
+        (
+            r"(?=([\q{a\|b}\q{a|}]))",
+            false,
+            false,
+            "a|b",
+            0,
+            0..0,
+            0..3,
+        ),
+        (
+            r"(?=([\q{\u{D83D}\u{DE00}}\q{}]))",
+            false,
+            false,
+            "😀",
+            0,
+            0..0,
+            0..0,
+        ),
+    ] {
+        let plan = union_compile(source, i, m);
+        let found = plan
+            .find_with_work(&JsString::from(text), start, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!((found.range, found.operand), (root, operand), "{source}");
+    }
+    let plan = union_compile(r"(?=([\q{\uD800x}\q{\uD800|}]))", false, false);
+    assert_eq!(
+        plan.find_with_work(
+            &JsString::from_code_units(vec![0xd800, 0x78]),
+            0,
+            true,
+            |_| Ok::<(), ()>(())
+        )
+        .unwrap()
+        .unwrap()
+        .operand,
+        0..2
+    );
+    assert_eq!(
+        plan.find_with_work(&JsString::from("😀"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap()
+            .operand,
+        0..0
+    );
+}
+
+#[test]
+fn positive_q_union_proof_requires_multiple_operands_and_declines_other_domains_and_bindings() {
+    for source in [
+        r"(?=([\q{ab}]))",
+        r"(?=([\q{a}\q{b}]))",
+        r"(?=([a\q{ab}\q{}]))",
+        r"(?=([\q{ab}&&\q{ab}]))",
+        r"(?=([[\q{ab}]\q{}]))",
+        r"(?=([\q{ab}\q{}]{1}))",
+        r"(?=([\q{ab}\q{}]?))",
+        r"(?=([\q{ab}\q{}]a))",
+        r"(?=([\q{ab}\q{}]|a))",
+        r"(?<=([\q{ab}\q{}]))",
+        r"(?!([\q{ab}\q{}]))",
+        r"(?=(\b[\q{ab}\q{}]))",
+        r"(?=(?i:[\q{ab}\q{}]))",
+        r"(?=([\q{ab}\q{}])\1)",
+        r"(?=([\q{ab}\q{}])$)",
+    ] {
+        assert!(
+            RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+                &JsString::from(source),
+                false,
+                false,
+                |_| Ok::<(), ()>(()),
+            )
+            .unwrap()
+            .is_none(),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn positive_q_unions_keep_deep_scopes_bounded_endpoint_retries_and_work_abort_recovery() {
+    let depth = 100_000;
+    let source = "(".repeat(depth) + r"(?=([\q{ab}\q{abc|}]))" + &")".repeat(depth);
+    let plan = union_compile(&source, false, false);
+    assert_eq!(plan.capture_count(), depth + 1);
+    let found = plan
+        .find_with_work(&JsString::from("abc!"), 0, true, |_| Ok::<(), ()>(()))
+        .unwrap()
+        .unwrap();
+    assert_eq!(plan.capture_range(depth - 1, &found), Some(0..0));
+    assert_eq!(plan.capture_range(depth, &found), Some(0..3));
+    let source = JsString::from(r"((?=(([\q{aa}\q{a}]$))))");
+    let mut construction = Vec::new();
+    let plan =
+        RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+            &source,
+            false,
+            false,
+            |n| {
+                construction.push(n);
+                Ok::<(), usize>(())
+            },
+        )
+        .unwrap()
+        .unwrap();
+    for stop in 0..construction.len() {
+        let mut seen = Vec::new();
+        assert!(
+            matches!(RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+            &source, false, false, |n| { seen.push(n); if seen.len() == stop + 1 { Err(stop) } else { Ok(()) } },
+        ), Err(RegExpUnicodeSetCompileError::Work(n)) if n == stop)
+        );
+        assert_eq!(seen, construction[..=stop]);
+    }
+    let input = JsString::from("!!aaa");
+    let mut work = Vec::new();
+    let expected = plan
+        .find_with_work(&input, 0, false, |n| {
+            work.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap();
+    assert_eq!(expected.as_ref().map(|m| m.operand.clone()), Some(3..5));
+    for stop in 0..work.len() {
+        let mut seen = Vec::new();
+        assert_eq!(
+            plan.find_with_work(&input, 0, false, |n| {
+                seen.push(n);
+                if seen.len() == stop + 1 {
+                    Err(stop)
+                } else {
+                    Ok(())
+                }
+            }),
+            Err(stop)
+        );
+        assert_eq!(seen, work[..=stop]);
+        assert_eq!(
+            plan.clone()
+                .find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
+        );
+    }
+    let input = JsString::from(("a".repeat(20_000) + "!").as_str());
+    let mut total = 0;
+    assert_eq!(
+        plan.find_with_work(&input, 0, false, |n| {
+            total += n;
+            Ok::<(), ()>(())
+        })
+        .unwrap(),
+        None
+    );
+    assert!(total <= input.len() * 250 + 128, "{total}");
+}

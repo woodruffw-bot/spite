@@ -7,9 +7,10 @@ use crate::{
 };
 use std::ops::Range;
 
-/// A complete positive lookahead over one single-q class with variable-length members.
+/// A complete positive lookahead over a variable-length UnicodeSets q class.
 ///
 /// Full original v/vi validation and normalized capture heads are prerequisites.
+/// Separate constructors prove a single q operand or supported q unions.
 /// Complete unquantified ordinary/noncapturing wrappers may surround the
 /// assertion and its whole operand. Outside captures remain empty; operand
 /// wrappers capture the selected longest accepted member, including a defined
@@ -40,7 +41,7 @@ impl RegExpUnicodePositiveStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl::<false, E>(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<false, 0, E>(source, ignore_case, multiline, &mut charge)
     }
 
     /// Compiles one single-q lookahead with operand word predicates and optional ^/$.
@@ -55,11 +56,26 @@ impl RegExpUnicodePositiveStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl::<true, E>(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<true, 0, E>(source, ignore_case, multiline, &mut charge)
+    }
+
+    /// Compiles lookahead over a class containing at least two adjacent q operands.
+    ///
+    /// At least one member must be empty or longer than one character. Shared
+    /// prefix storage and longest-member priority span all operands. Optional
+    /// ^/$ gates and complete wrappers retain their original context and capture
+    /// ranges. Full original v/vi validation and normalized heads are required.
+    pub fn compile_q_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 1, E>(source, ignore_case, multiline, &mut charge)
     }
 
     #[inline(never)]
-    fn compile_with_work_impl<const WORD: bool, E>(
+    fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
@@ -105,12 +121,22 @@ impl RegExpUnicodePositiveStringClassMatcher {
             .try_reserve_exact(body.len())
             .map_err(|_| RegExpUnicodeSetCompileError::Capacity)?;
         projected.extend_from_slice(body);
-        let operand = RegExpUnicodeStringSetMatcher::compile_with_work(
-            &JsString::from_code_units(projected),
-            ignore_case,
-            multiline,
-            &mut charge,
-        )?;
+        let source = JsString::from_code_units(projected);
+        let operand = if CLASS_KIND == 1 {
+            RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        } else {
+            RegExpUnicodeStringSetMatcher::compile_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        };
         Ok(operand.map(|operand| Self {
             operand,
             outside_captures,

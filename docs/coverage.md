@@ -27423,3 +27423,26 @@ predicates alongside all earlier assertion paths. Later negative variable-length
 q-class lookahead and q-union work retain separate focused and differential
 evidence. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
+
+
+## Adjacent-q-union positive lookahead Core proof
+
+The focused compiler/regression harness passes all 382 groups (1.87 s),
+including four new union groups. The production library API also passes all
+12 positive string-class groups (0.07 s). These cover priority across operands,
+duplicates, earliest empty choices, independent captures, original line/fold/
+escape/surrogate context, deep scopes, bounded endpoint retries, proof exclusions
+and every construction/search work abort followed by recovery. Braced-surrogate
+expectations remain an independent specification regression.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first equivalent
+literal-alternative controls and legal Unicode-candidate enumeration. The four
+earlier positive/negative single-q constructors retain byte-identical results,
+captures and work vectors across 512 construction and 53,248 search records
+before/after the class-domain selector change (53,760 total records). None of
+the 2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select the union constructor;
+fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
