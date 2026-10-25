@@ -27639,3 +27639,16 @@ receives original q source. Strict all-target workspace Clippy, documentation
 tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
 checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+
+## Complete adjacent-q-union lookahead Core validation on Rust 1.85
+
+The Core snapshot at `cf815d19` passes all 1,883 library tests on Rust 1.85.0
+with the normal test profile (213.94 s). This covers positive/negative q-union
+lookahead with line and word predicates, alongside complete single-q and earlier
+assertion paths. Total elapsed time was 245.00 s; maximum child RSS was
+2,541,396 KiB in this highly incremental run. No compiler diagnostic flags,
+profile changes, native-stack overrides or default quotas were used. These
+measurements are not a cold-build memory comparison. Later character/string
+union work has separate focused and differential evidence. Fixtures, snapshots
+and dependencies are unchanged.
