@@ -14819,3 +14819,23 @@ capture scope. It retains the same checked work/capacity boundary and cached
 operand representation, including defined empty captures. Named indices, copies,
 String consumers and collection preserve the selected endpoint extent and
 original context, including shorter-member retries.
+
+
+### Negative lookahead over variable-length q classes
+
+A separate checked Core proof accepts complete negative lookahead over one
+variable-length single-q class with optional operand ^/$ gates and complete
+ordinary/noncapturing wrappers. Full original v/vi validation and normalized
+capture heads precede the proof. It charges source work before scans, reserves
+the source projection fallibly, and changes only the proved assertion sign to
+delegate complete operand/scope validation to the positive proof. References,
+other class domains, word gates, repetitions and continuation terms decline.
+The projection is never independently validated or rebound.
+
+At each legal Unicode candidate, a cancellable sticky positive probe tests the
+whole original-context conjunction. Successful negation exports the candidate's
+empty range, empty outside captures and undefined operand captures (22.2.2.4).
+An accepted empty member makes negation fail at that candidate. Failed probes
+do not search a suffix internally; candidate advancement uses complete input
+characters, with only the approved initial low-surrogate rewind. Long prefix
+traversal remains interruptible, and no input-sized capture state is allocated.

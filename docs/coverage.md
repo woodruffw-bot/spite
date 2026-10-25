@@ -27320,3 +27320,23 @@ character-result/property controls. Runtime always receives original q source.
 Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
 checks, formatting, policy, inventories and diff checks pass. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Variable-length single-q negative lookahead Core proof
+
+All 374 actual-source assertion groups pass (1.85 s). Four new groups cover
+accepted-empty-member failure, undefined operand slots and empty outside
+captures, original line/fold context, complete Unicode candidates, lone and
+braced surrogates, deep scopes, every construction/search cancellation with
+recovery, bounded candidate retries, and interruption within a 100,000-character
+nonterminal prefix. The braced-surrogate case is an independent specification
+regression outside the native comparison domain.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. Original q source
+is retained and validated by the native grammar. None of the 2,728 remaining
+directly lexed Unsupported controls enters the proof. Strict all-target workspace
+Clippy, documentation tests, formatting, policy and inventories pass. Runtime
+does not yet select the new matcher; fixtures, snapshots, dependencies, profiles,
+native-stack settings and default quotas are unchanged.
