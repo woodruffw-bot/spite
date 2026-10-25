@@ -60,6 +60,22 @@ not an alternative language specification.
 
 
 
+## Awaited throw and statement preparation
+
+The body cursor retains one active source statement location, shared by expression
+and binding continuations. Root throw expressions suspend and resume to real
+throws. Completed throw values reject directly without thenable assimilation;
+await rejection, resource disposal/suppression and host abort reuse existing paths.
+Nested block and control-flow continuations remain work.
+
+Four Runtime groups cover fulfilled/rejected awaits, suppression chains, raw
+thenables and Symbols, and release of cached disposers after a host failure.
+All 416 units and 1,940 non-RegExp integrations pass across 646 Runtime case files.
+Original reviews remain at 32 passing/12 Unsupported await variants and 146
+passing/116 Unsupported Array/adapter variants, with no new admissions. Counts
+remain 9,573 fixtures, twenty helpers, 9,554 reviewed sources and 18,556 variants.
+Intrinsic entries, Parser checks and quotas are unchanged.
+
 ## Awaited construction
 
 New expressions suspend in constructor values and arguments. A typed invocation

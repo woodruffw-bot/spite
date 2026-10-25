@@ -440,7 +440,7 @@ each suspend independently. Parentheses retain their expression boundaries.
 Unary value operations and Reference deletion are shared with ordinary evaluation;
 unresolved-identifier typeof handling stays in the ordinary evaluator. Expression
 tasks and current results participate in object tracing and the physical Symbol inventory. Their
-root return/discard/binding action runs only after the complete expression value
+root return/throw/discard/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
 including assignments/updates, optional/super calls, object literals,
@@ -487,6 +487,14 @@ after the arguments finish. Awaited member constructor values use ordinary
 GetValue without a call receiver. Optional argument lists, spread, storage limits
 and abrupt completion reuse the established algorithms. Constructor values and
 earlier arguments participate in tracing and the physical Symbol inventory.
+
+The body cursor retains one active statement location. Expression and binding
+continuations locate their source through it instead of carrying duplicate
+statement indices. Body-level throw expressions can suspend and resume to a real
+throw completion (14.14, Await); the completed throw value rejects the async
+function's Promise directly, without thenable assimilation. Await rejection keeps
+its reason. Root resource disposal, suppression and host-abort rules are shared
+with other abrupt completions. Nested block/control-flow suspension remains work.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

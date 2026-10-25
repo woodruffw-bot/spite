@@ -17,8 +17,9 @@ pub(crate) struct AsyncExecutionContext {
 pub(crate) enum AsyncAwaitAction {
     Discard,
     Return,
+    Throw,
     Expression,
-    Binding { statement: usize, element: usize },
+    Binding { element: usize },
 }
 
 #[derive(Debug)]
@@ -27,6 +28,7 @@ pub(crate) struct AsyncExecutionData {
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub index: usize,
+    pub statement: Option<usize>,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
     pub var_target: Option<EnvironmentHandle>,

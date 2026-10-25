@@ -384,6 +384,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume Array literal elements and spread operands with intrinsic construction, holes, synchronous iteration and traced partial arrays.
 - [x] Resume ordinary/private member reads, method calls and deletion with awaited bases/keys, preserved references and deferred key coercion.
 - [x] Resume new constructor expressions and arguments with captured constructors, shared argument accumulation, correct new.target and deferred prototype lookup.
+- [x] Retain active source statement locations and resume awaited throw expressions with exact rejection, resource suppression and host-abort behavior.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

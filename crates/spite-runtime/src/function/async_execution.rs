@@ -13,7 +13,14 @@ use crate::{
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPatternKind, StatementKind};
+use spite_parser::ast::{ArrowBody, BindingPatternKind, Statement, StatementKind};
+
+fn active_statement(body: &ArrowBody, statement: Option<usize>) -> &Statement {
+    let ArrowBody::Block(body) = body else {
+        unreachable!("block statement continuation");
+    };
+    &body.statements()[statement.expect("active source statement")]
+}
 
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
@@ -78,6 +85,7 @@ impl Realm {
             body,
             expression: None,
             index: 0,
+            statement: None,
             pending: AsyncAwaitAction::Discard,
             root_scope,
             var_target: None,
@@ -170,12 +178,13 @@ impl Realm {
                     return Ok(Step::Complete(Completion::normal(None)));
                 };
                 data.index += 1;
+                data.statement = Some(data.index - 1);
                 if matches!(
                     statement.kind,
                     StatementKind::Lexical { .. } | StatementKind::Using(_) | StatementKind::Var(_)
                 ) {
                     self.tick(statement.span)?;
-                    return self.async_binding_step(data, data.index - 1, 0, None);
+                    return self.async_binding_step(data, 0, None);
                 }
                 let action = match &statement.kind {
                     StatementKind::Expression(expression)
@@ -188,15 +197,16 @@ impl Realm {
                     {
                         Some(AsyncAwaitAction::Return)
                     }
+                    StatementKind::Throw(expression)
+                        if expression::has_supported_await(expression) =>
+                    {
+                        Some(AsyncAwaitAction::Throw)
+                    }
                     _ => None,
                 };
                 if let Some(action) = action {
                     self.tick(statement.span)?;
-                    return self.start_async_expression(
-                        data,
-                        ExprRoot::Statement(data.index - 1),
-                        action,
-                    );
+                    return self.start_async_expression(data, ExprRoot::Statement, action);
                 }
                 let completion = self.statement(statement)?;
                 Ok(if completion.kind == CompletionKind::Normal {
@@ -211,14 +221,10 @@ impl Realm {
     fn async_binding_step(
         &mut self,
         data: &mut AsyncExecutionData,
-        statement: usize,
         first: usize,
         mut resumed: Option<Value>,
     ) -> Result<Step, Error> {
-        let ArrowBody::Block(body) = &data.body else {
-            unreachable!("block declaration");
-        };
-        let (bindings, using, var) = match &body.statements()[statement].kind {
+        let (bindings, using, var) = match &active_statement(&data.body, data.statement).kind {
             StatementKind::Lexical { bindings, .. } => (bindings, false, false),
             StatementKind::Using(bindings) => (bindings, true, false),
             StatementKind::Var(bindings) => (bindings, false, true),
@@ -263,8 +269,8 @@ impl Realm {
                 }
                 return self.start_async_expression(
                     data,
-                    ExprRoot::Binding { statement, element },
-                    AsyncAwaitAction::Binding { statement, element },
+                    ExprRoot::Binding { element },
+                    AsyncAwaitAction::Binding { element },
                 );
             } else if var {
                 self.evaluate_var_bindings(std::slice::from_ref(binding))?;
@@ -290,8 +296,9 @@ impl Realm {
                 value: Some(value),
                 target: None,
             })),
-            AsyncAwaitAction::Binding { statement, element } => {
-                self.async_binding_step(data, statement, element, Some(value))
+            AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
+            AsyncAwaitAction::Binding { element } => {
+                self.async_binding_step(data, element, Some(value))
             }
             AsyncAwaitAction::Expression => self.resume_async_expression(data, Some(value)),
         }

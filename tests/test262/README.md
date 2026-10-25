@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited throw review
+
+Four Runtime groups cover awaited throw completion, suppression, raw thenables
+and Symbols, and host abort. Active statement locations prepare nested source
+continuations. The complete original reviews remain at 32 passing/12 Unsupported
+await variants and 146 passing/116 Unsupported Array/adapter variants. No additional
+original qualifies for admission. Inventories remain 9,573 fixtures, twenty helpers,
+9,554 reviewed sources and 18,556 variants; helpers and quotas are unchanged.
+
 ## Awaited constructor review
 
 Eight Runtime groups and a Symbol ownership control cover awaited construction,

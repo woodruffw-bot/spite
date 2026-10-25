@@ -8,8 +8,8 @@ use spite_parser::ast::{BinaryOp, UnaryOp};
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum ExprRoot {
     Arrow,
-    Statement(usize),
-    Binding { statement: usize, element: usize },
+    Statement,
+    Binding { element: usize },
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -2,7 +2,7 @@
 
 mod member;
 
-use super::{AsyncAwaitAction, AsyncExecutionData, Step};
+use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
 use crate::function::CallTarget;
 use crate::{
     Error, Realm, Value,
@@ -57,19 +57,19 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
     }
 }
 
-fn root_expression(body: &ArrowBody, root: ExprRoot) -> &Expr {
-    match (body, root) {
+fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
+    match (&data.body, root) {
         (ArrowBody::Expression(expression), ExprRoot::Arrow) => expression,
-        (ArrowBody::Block(body), ExprRoot::Statement(index)) => {
-            match &body.statements()[index].kind {
-                StatementKind::Expression(expression) | StatementKind::Return(Some(expression)) => {
-                    expression
-                }
+        (ArrowBody::Block(_), ExprRoot::Statement) => {
+            match &active_statement(&data.body, data.statement).kind {
+                StatementKind::Expression(expression)
+                | StatementKind::Return(Some(expression))
+                | StatementKind::Throw(expression) => expression,
                 _ => unreachable!("expression statement root"),
             }
         }
-        (ArrowBody::Block(body), ExprRoot::Binding { statement, element }) => {
-            let bindings = match &body.statements()[statement].kind {
+        (ArrowBody::Block(_), ExprRoot::Binding { element }) => {
+            let bindings = match &active_statement(&data.body, data.statement).kind {
                 StatementKind::Lexical { bindings, .. }
                 | StatementKind::Using(bindings)
                 | StatementKind::Var(bindings) => bindings,
@@ -84,8 +84,8 @@ fn root_expression(body: &ArrowBody, root: ExprRoot) -> &Expr {
     }
 }
 
-fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) -> &'a Expr {
-    let mut expression = root_expression(body, root);
+fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprChild]) -> &'a Expr {
+    let mut expression = root_expression(data, root);
     for child in path {
         expression = match (child, &expression.kind) {
             (
@@ -171,7 +171,7 @@ impl Realm {
         root: ExprRoot,
         action: AsyncAwaitAction,
     ) -> Result<Step, Error> {
-        let span = root_expression(&data.body, root).span;
+        let span = root_expression(data, root).span;
         let mut state = AsyncExpressionData {
             root,
             action,
@@ -195,7 +195,7 @@ impl Realm {
         while let Some(task) = state.tasks.pop() {
             match task {
                 ExprTask::Evaluate(path) => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let span = expression.span;
                     match &expression.kind {
                         ExprKind::Await(_)
@@ -235,7 +235,7 @@ impl Realm {
                                 {
                                     let inner_path = child_path(&path, ExprChild::Inner, span)?;
                                     self.begin_async_member(
-                                        &data.body,
+                                        data,
                                         &mut state,
                                         inner_path,
                                         MemberAction::Delete { span: inner.span },
@@ -304,7 +304,7 @@ impl Realm {
                                             child_path(&path, ExprChild::Callee, span)?;
                                         if reference_expression(callee) {
                                             self.begin_async_member(
-                                                &data.body,
+                                                data,
                                                 &mut state,
                                                 callee_path,
                                                 MemberAction::Call { path, span },
@@ -359,7 +359,7 @@ impl Realm {
                                 }
                                 ExprKind::Member(..) => {
                                     self.begin_async_member(
-                                        &data.body,
+                                        data,
                                         &mut state,
                                         path,
                                         MemberAction::Value,
@@ -394,7 +394,7 @@ impl Realm {
                     state.current = Some(self.binary(op, left, right, span)?);
                 }
                 ExprTask::ChainNext { path, index } => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let ExprKind::BinaryChain { steps, .. } = &expression.kind else {
                         unreachable!("chain");
                     };
@@ -452,7 +452,7 @@ impl Realm {
                 ExprTask::Callee { path, span } => {
                     let function = state.current.take().expect("callee value");
                     let target = if matches!(
-                        expression_at(&data.body, state.root, &path).kind,
+                        expression_at(data, state.root, &path).kind,
                         ExprKind::New { .. }
                     ) {
                         InvocationTarget::Construct(function)
@@ -482,7 +482,7 @@ impl Realm {
                     arguments,
                     span,
                 } => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let syntax = invocation_arguments(expression);
                     if index == syntax.len() {
                         state.current = Some(match target {
@@ -516,7 +516,7 @@ impl Realm {
                     mut arguments,
                     span,
                 } => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let syntax = invocation_arguments(expression);
                     let argument = &syntax[index];
                     let value = state.current.take().expect("argument value");
@@ -545,7 +545,7 @@ impl Realm {
                     array,
                     span,
                 } => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let ExprKind::Array(elements) = &expression.kind else {
                         unreachable!("array accumulation cursor");
                     };
@@ -593,7 +593,7 @@ impl Realm {
                     array,
                     span,
                 } => {
-                    let expression = expression_at(&data.body, state.root, &path);
+                    let expression = expression_at(data, state.root, &path);
                     let ExprKind::Array(elements) = &expression.kind else {
                         unreachable!("array accumulation append");
                     };
@@ -622,7 +622,7 @@ impl Realm {
                     )?;
                 }
                 ExprTask::MemberBase { path, action, span } => {
-                    self.async_member_base(&data.body, &mut state, path, action, span)?;
+                    self.async_member_base(data, &mut state, path, action, span)?;
                 }
                 ExprTask::MemberKey { base, action, span } => {
                     let key = state.current.take().expect("computed member key");

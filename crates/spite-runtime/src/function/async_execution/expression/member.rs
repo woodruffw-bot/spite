@@ -1,6 +1,6 @@
 //! Awaited member Reference evaluation shared by GetValue, calls and deletion.
 
-use super::{child_path, expression_at, push};
+use super::{AsyncExecutionData, child_path, expression_at, push};
 use crate::{
     Error, Realm, Reference, Value,
     object::async_expression::{
@@ -8,25 +8,25 @@ use crate::{
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, ExprKind, PropertyName};
+use spite_parser::ast::{ExprKind, PropertyName};
 
 impl Realm {
     pub(super) fn begin_async_member(
         &mut self,
-        body: &ArrowBody,
+        data: &AsyncExecutionData,
         state: &mut AsyncExpressionData,
         mut path: ExprPath,
         action: MemberAction,
     ) -> Result<(), Error> {
-        let span = expression_at(body, state.root, &path).span;
+        let span = expression_at(data, state.root, &path).span;
         while matches!(
-            expression_at(body, state.root, &path).kind,
+            expression_at(data, state.root, &path).kind,
             ExprKind::Parenthesized(_)
         ) {
             path = child_path(&path, ExprChild::Inner, span)?;
         }
         debug_assert!(matches!(
-            expression_at(body, state.root, &path).kind,
+            expression_at(data, state.root, &path).kind,
             ExprKind::Member(..)
         ));
         let base = child_path(&path, ExprChild::MemberBase, span)?;
@@ -36,14 +36,14 @@ impl Realm {
 
     pub(super) fn async_member_base(
         &mut self,
-        body: &ArrowBody,
+        data: &AsyncExecutionData,
         state: &mut AsyncExpressionData,
         path: ExprPath,
         action: MemberAction,
         span: Span,
     ) -> Result<(), Error> {
         let base = state.current.take().expect("member base");
-        let ExprKind::Member(_, name) = &expression_at(body, state.root, &path).kind else {
+        let ExprKind::Member(_, name) = &expression_at(data, state.root, &path).kind else {
             unreachable!("member reference path");
         };
         match name {
