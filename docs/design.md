@@ -14391,3 +14391,12 @@ class data stays distinct from outside predicates. The bounded sticky probe,
 complete-character search, initial-pair rewind, checked errors and flat storage
 retain their shared paths. Earlier entries keep their domains and charges.
 Runtime integration remains separate.
+
+Runtime selects checked negative word-q lookbehind after the line-only negative
+q-lookbehind entry, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset, and checked construction failures
+keep the existing host mapping. The shared negative capture accessor retains
+empty outside/undefined operand slots through named indices, String consumers,
+copies and collection. Original q source, word/line/predecessor context and
+stateful Unicode execution retain their shared paths; user conversions remain
+outside the compiler frame.

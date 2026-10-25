@@ -26318,3 +26318,30 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Runtime negative q-class lookbehind with word predicates
+
+All seventeen current negative-lookbehind groups pass (0.59 s), including four
+new word-q-predecessor groups. Checks cover original boundary polarity, named
+empty outside/undefined operand slots with own indices properties, original q
+source, line/fold/property/backspace context, String consumers, copies,
+collection and independent complete-character/initial-pair expectations. All
+thirteen constructor regressions pass (0.08 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+The 206 ignoreCase patterns contribute 42,848 equivalent ordinary-q control
+records for the documented Node defect. Twenty-one ASCII iv patterns also use
+the documented equivalent-range control (4,368 overlapping records). Fifteen
+complete JavaScript programs pass with the same documented equivalent controls.
+Actual Runtime expectations retain original q syntax; the earlier positive
+q-lookahead Core record retains the original-q baseline disagreements.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The preceding negative-lookahead snapshot
+records all 437 Runtime units; this constructor-only Runtime increment has the
+focused and differential evidence above. Completed broad results record
+`3c6ca264`; negative q-class assertions retain separate focused evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
