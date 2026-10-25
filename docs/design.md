@@ -14615,3 +14615,16 @@ their host mapping. Shared empty/operand range caching preserves original q/set
 syntax, named indices, String consumers, copies and collection. Original word/
 line context and complete Unicode search remain in Core; user conversions stay
 outside the compiler frame.
+
+
+A separate checked positive-lookbehind entry admits one unquantified v-mode
+class with an empty or longer q member and MayContainStrings false
+(22.2.2.4, 22.2.2.9). The charged flat assertion envelope selects the checked
+character-result compiler for a fixed iteration and retains the backward
+direction. A bounded sticky probe must consume the complete predecessor ending
+at the candidate; optional ^/$ gates inspect original input context. Outside
+wrappers remain empty there, while operand wrappers retain the predecessor.
+An empty class result never matches. Other widths, counts and word predicates
+retain separate proofs. Checked errors, complete Unicode advancement,
+initial-pair rewind and actual-work cancellation keep their shared paths.
+Runtime integration remains separate.
