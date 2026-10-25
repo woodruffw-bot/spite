@@ -26581,3 +26581,27 @@ Strict all-target workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. Runtime integration remains separate.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+
+## Runtime single-character negative scalar v-set lookahead
+
+All twenty-three current negative-lookahead groups pass (1.90 s), including four
+new scalar-set groups. Checks cover original nested source, named empty and
+undefined slots, original line/fold/property/surrogate context, String consumers,
+copies, collection and deep wrappers. All thirteen constructor regressions pass
+(0.23 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+Fifty-six ASCII iv patterns contribute 11,648 equivalent-range controls for the
+documented property-fold discrepancy. Nineteen complete JavaScript programs
+pass with the documented property/q-fold controls where needed; actual Runtime
+expectations retain original source syntax.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+completed q-assertion snapshot records all 437 Runtime units; this
+constructor-only Runtime increment has the focused and differential evidence
+above. Completed broad results record `c9b71cc1`; scalar-set assertions retain
+separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.

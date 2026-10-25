@@ -14495,3 +14495,12 @@ checked errors and actual-work cancellation retain their shared paths. The
 shared checked envelope explicitly selects scalar versus q-class proofs;
 earlier q domains and charges remain unchanged. Runtime integration remains
 separate.
+
+Runtime selects checked negative scalar-set lookahead after the positive
+scalar assertion entries, gated by v mode and using full normalized source.
+Successful selection resets the projected outer offset; checked errors retain
+their host mapping. Shared negative capture caching preserves empty outside
+and undefined operand slots through named indices, String consumers, copies
+and collection. Original source, set algebra, line context and complete Unicode
+execution stay in Core, while user conversions remain outside the compiler
+frame.
