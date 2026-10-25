@@ -31,6 +31,7 @@ impl Realm {
             .clone();
         let method = MethodFunction {
             code: ScriptFunction {
+                kind: spite_parser::ast::FunctionKind::Ordinary,
                 environment: self.scopes.last().expect("active environment").clone(),
                 parameters: syntax.parameters.clone(),
                 body: ArrowBody::Block(syntax.body.clone()),

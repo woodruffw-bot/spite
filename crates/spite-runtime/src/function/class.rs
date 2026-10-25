@@ -167,6 +167,7 @@ impl Realm {
                     })?;
                     static_elements.push(super::class_static::StaticElement::Block {
                         code: super::ScriptFunction {
+                            kind: spite_parser::ast::FunctionKind::Ordinary,
                             environment: environment.clone(),
                             parameters: Rc::from([]),
                             body: spite_parser::ast::ArrowBody::Block(body.clone()),

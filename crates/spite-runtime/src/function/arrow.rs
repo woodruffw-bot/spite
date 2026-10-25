@@ -12,6 +12,7 @@ use std::{
 
 #[derive(Clone, Debug)]
 pub(crate) struct ScriptFunction {
+    pub kind: spite_parser::ast::FunctionKind,
     pub environment: EnvironmentHandle,
     pub parameters: Rc<[Parameter]>,
     pub body: ArrowBody,
@@ -35,6 +36,7 @@ impl Realm {
             .function_prototype
             .clone();
         let arrow = ScriptFunction {
+            kind: spite_parser::ast::FunctionKind::Ordinary,
             environment: self.scopes.last().expect("active environment").clone(),
             parameters: parameters.clone(),
             body: body.clone(),

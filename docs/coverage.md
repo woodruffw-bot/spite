@@ -53,17 +53,44 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17849 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async functions | Non-suspending declarations/expressions, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, receiver/arguments behavior and traced closures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17960 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async function objects and calls
+
+Async definitions create non-constructible functions with the intrinsic hidden
+constructor/prototype graph, standard metadata and retained source. Calls create
+fresh intrinsic Promises before parameter/body execution. Language failures reject;
+host failures bypass rejection. Bodies run synchronously without await, while
+thenable assimilation and observers remain jobs. Public Promise/prototype changes
+cannot alter the internal function kind or select another capability constructor.
+
+Six Runtime regressions cover metadata/branding, fresh Promise identity, thenable
+ordering, parameter and body failures, receivers, mapped arguments, binding,
+prototype changes, collection and host limits. They replace the preceding two
+allocation-boundary controls with implemented behavior. The hidden graph adds two
+intrinsic heap entries; its expected inventory is now 563, with product quotas
+unchanged. All 398 Runtime units and 1,824 non-RegExp integrations pass, along with
+strict Clippy and Rust 1.88 all-target checks.
+
+Sixty-one complete unchanged upstream originals add 111 variants: 29 declarations
+and 32 expressions. The ninety-positive candidate review records 111 passing and
+52 Unsupported variants. Await/async arrows and dynamic AsyncFunction compilation
+remain separate work. Original Git blob hashes and SHA-256 digests were verified.
+Inventories contain 9,270 fixtures, nineteen helpers, 9,251 reviewed sources and
+17,960 variants, with seventy Parser and 632 Runtime case files.
+All 17,960 variants and all 40 Test262 package tests pass. Formatting, dependency
+policy, fixture inventories, strict Clippy and Rust 1.88 all-target checks pass.
 
 ## Async function syntax
 
 The parser retains async declaration/expression kinds and source, enforces Await
 binding and parameter rules, and restores ordinary nested function/method/arrow
 contexts. Await suspension and other suspended forms stay explicitly Unsupported.
-Runtime allocation of parsed async functions also stays Unsupported, so they
-cannot acquire ordinary call/construction behavior before execution is added.
+The initial allocation boundary reported Unsupported until the objects and calls
+above were implemented.
 Dynamic ordinary functions may retain unexecuted async definitions.
 
 Five Parser regressions and a new snapshot cover source/kinds, grammar contexts,

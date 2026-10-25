@@ -221,6 +221,10 @@ impl Realm {
                 span,
             ),
             Builtin::Function => self.dynamic_function(None, arguments, span),
+            Builtin::AsyncFunction => Err(Self::unsupported(
+                span,
+                "dynamic async function compilation is not implemented",
+            )),
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

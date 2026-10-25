@@ -340,14 +340,28 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generators and async function execution remain separate steps. Async declaration
+Generators and await suspension remain separate steps. Async declaration
 and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
 that context. Await suspension, async arrows/methods and async generators remain
-Unsupported. The Runtime rejects async object allocation explicitly until its
-intrinsic prototype and Promise-returning call support are implemented.
+Unsupported. Async objects inherit the retained non-callable
+%AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
+%AsyncFunction% constructor inherits %Function%; its string-compilation body
+remains Unsupported. Constructor/prototype descriptors and the AsyncFunction
+tag follow 27.7. Direct async definitions have ordinary name/length/source
+metadata, no own prototype and no construction capability.
+
+Non-suspending async calls create a fresh intrinsic Promise capability before
+parameter/body instantiation (EvaluateAsyncFunctionBody). Normal returns resolve
+it; parameter, body and then-lookup language failures reject it. Host failures
+bypass rejection, and work allowances are preserved across the calls. Bodies run
+synchronously, while Promise handlers and thenable assimilation remain jobs.
+Returning an existing Promise still produces a fresh wrapper. Public Promise
+bindings and prototype changes cannot replace internal function kinds or the
+intrinsic capability constructor. Function environments, returned values and the
+hidden constructor/prototype participate in collection.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

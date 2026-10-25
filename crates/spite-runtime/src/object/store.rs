@@ -332,6 +332,7 @@ impl Objects {
                 | Builtin::Date
                 | Builtin::RegExp
                 | Builtin::Function
+                | Builtin::AsyncFunction
                 | Builtin::Iterator
                 | Builtin::Number
                 | Builtin::Array
@@ -493,8 +494,8 @@ impl Objects {
         self.environment(&function.environment)?;
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        object.constructible = function.kind == spite_parser::ast::FunctionKind::Ordinary;
         object.callable = Some(Callable::Ordinary(function));
-        object.constructible = true;
         Ok(self.heap.insert(Entry::Object(object))?)
     }
 

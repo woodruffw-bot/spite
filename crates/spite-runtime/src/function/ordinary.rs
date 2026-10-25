@@ -210,7 +210,11 @@ impl Realm {
     ) -> Result<Value, Error> {
         self.ensure_object_intrinsics(span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        let function_prototype = intrinsics.function_prototype.clone();
+        let function_prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {
+            intrinsics.async_function.prototype.clone()
+        } else {
+            intrinsics.function_prototype.clone()
+        };
         let mut environment = self.scopes.last().expect("active environment").clone();
         // 15.2.5: a named expression captures a private immutable self binding.
         let local_name = syntax.name.as_ref().filter(|_| expression);
@@ -258,12 +262,6 @@ impl Realm {
         strict: bool,
         span: Span,
     ) -> Result<Value, Error> {
-        if syntax.kind == spite_parser::ast::FunctionKind::Async {
-            return Err(Error::Unsupported {
-                span,
-                message: "async function objects are not implemented".into(),
-            });
-        }
         let object_prototype = self
             .intrinsics
             .as_ref()
@@ -271,6 +269,7 @@ impl Realm {
             .object_prototype
             .clone();
         let code = ScriptFunction {
+            kind: syntax.kind,
             environment,
             parameters: syntax.parameters.clone(),
             body: ArrowBody::Block(syntax.body.clone()),
@@ -297,6 +296,9 @@ impl Realm {
         let name = Value::String(JsString::from(name));
         self.check_string(&name, span)?;
         self.define_builtin_property(&function, "name", name, false, span)?;
+        if syntax.kind == spite_parser::ast::FunctionKind::Async {
+            return Ok(Value::Object(function));
+        }
         // 10.2.5 MakeConstructor: every ordinary function owns its prototype;
         // the prototype's constructor points back to the same function object.
         let prototype =

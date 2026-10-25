@@ -95,6 +95,12 @@ impl Realm {
                 Callable::Builtin(Builtin::Function) => {
                     return self.dynamic_function(Some(new_target), arguments.into_iter(), span);
                 }
+                Callable::Builtin(Builtin::AsyncFunction) => {
+                    return Err(Self::unsupported(
+                        span,
+                        "dynamic async function compilation is not implemented",
+                    ));
+                }
                 Callable::Bound(bound) => {
                     let count = bound
                         .arguments

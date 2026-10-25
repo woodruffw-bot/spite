@@ -10,6 +10,7 @@ mod arguments;
 mod array;
 mod array_buffer;
 mod arrow;
+mod async_function;
 mod atomics;
 mod bigint;
 mod boolean;
@@ -75,6 +76,7 @@ pub(crate) enum Builtin {
     GlobalMetadataConstructor(global_metadata::Constructor),
     GlobalMetadataMember(global_metadata::Member),
     Function,
+    AsyncFunction,
     Eval,
     EncodeUri,
     EncodeUriComponent,
@@ -389,6 +391,7 @@ impl Builtin {
             Self::GlobalMetadataConstructor(constructor) => constructor.name(),
             Self::GlobalMetadataMember(member) => member.name(),
             Self::Function => "Function",
+            Self::AsyncFunction => "AsyncFunction",
             Self::FunctionPrototype | Self::ThrowTypeError => "",
             Self::FunctionCall => "call",
             Self::FunctionApply => "apply",
@@ -728,6 +731,7 @@ impl Builtin {
             | Self::MapGroupBy => 2.0,
             Self::FunctionCall
             | Self::Function
+            | Self::AsyncFunction
             | Self::IteratorTagSet
             | Self::IteratorConstructorSet
             | Self::IteratorFrom
@@ -980,6 +984,7 @@ pub(super) struct Intrinsics {
     pub object_prototype: ObjectHandle,
     pub function_prototype: ObjectHandle,
     pub function_constructor: ObjectHandle,
+    pub async_function: async_function::AsyncFunctionIntrinsics,
     pub object_to_string: ObjectHandle,
     pub object_value_of: ObjectHandle,
     pub throw_type_error: ObjectHandle,
@@ -1034,6 +1039,7 @@ impl Intrinsics {
             &self.function_to_string,
         ]
         .into_iter()
+        .chain(self.async_function.roots())
         .chain(self.boolean.roots())
         .chain(self.date.roots())
         .chain(self.data_view.roots())
@@ -1231,6 +1237,8 @@ impl Realm {
             self.disposable_stack_intrinsics(&object_prototype, &function_prototype, span)?;
         let global_metadata =
             self.global_metadata_intrinsics(&object_prototype, &function_prototype, span)?;
+        let async_function =
+            self.async_function_intrinsics(&function_constructor, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
         self.intrinsics = Some(Intrinsics {
@@ -1246,6 +1254,7 @@ impl Realm {
             object_prototype: object_prototype.clone(),
             function_prototype,
             function_constructor,
+            async_function,
             object_to_string,
             object_value_of,
             throw_type_error,
@@ -1512,6 +1521,9 @@ impl Realm {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
+                    if code.kind == spite_parser::ast::FunctionKind::Async {
+                        return self.call_async_function(code, callee, this, arguments, span);
+                    }
                     return self.call_ordinary(
                         code,
                         callee,
