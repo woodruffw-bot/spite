@@ -1,6 +1,6 @@
 //! Unquantified noncapturing groups share native literal matching (22.2.2).
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -56,10 +56,7 @@ fn other_group_productions_and_quantified_groups_remain_unsupported() {
         "/(?:\\u{D800}\\u{DC00})/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

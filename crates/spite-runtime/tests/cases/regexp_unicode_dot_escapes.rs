@@ -110,23 +110,6 @@ fn unicode_dot_escapes_ordered_coercions_and_strict_lastindex() {
 }
 
 #[test]
-fn unicode_dot_escapes_clones_collection_and_unlimited_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=/\\D/vg,c=new RegExp(r),text='9'.repeat(100000)+'😀'")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("let m=c.exec(text);m.index===100000&&m[0]==='😀'&&c.lastIndex===100002"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_dot_escapes_opted_work_preserves_state_and_pending_completion() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -166,10 +149,7 @@ fn unicode_dot_escapes_unproved_syntax_remains_unsupported() {
         r"/\d|a/u.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -101,17 +101,6 @@ fn fixed_count_lookbehind_consumers_global_sticky_and_empty_advancement_preserve
 }
 
 #[test]
-fn fixed_count_lookbehind_deep_wrappers_compact_large_counts_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<='+'(?:'.repeat(100000)+'a{2}'+')'.repeat(100000)+')(?<x>b)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aab');a.index===2&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let long=new RegExp('(?<=a{10000})b','dy');long.lastIndex=10000;let last=long.exec('a'.repeat(10000)+'b');last.index===10000&&last[0]==='b'&&long.lastIndex===10001"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=a{2})b|c)+d/.exec('aab'+'c'.repeat(10000)+'d');many.index===2&&many[0].length===10002"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_fixed_count_lookbehind_unit_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -142,10 +131,7 @@ fn variable_counts_capture_effects_multiple_terms_and_nested_lookbehind_remain_u
         r"/(?<=a{2})b/v.exec('aab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

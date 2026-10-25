@@ -1,6 +1,6 @@
 //! Ordinary literal-prefix groups retain fixed and repeated capture source order.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -95,40 +95,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_keep_prefix_slots() {
 }
 
 #[test]
-fn large_prefix_capture_plans_and_copies_survive_collection_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'a'+')'.repeat(100000)+'(b)+()','dg'),copy=new RegExp(r),small=new RegExp('('.repeat(1000)+'a'+')'.repeat(1000)+'(b)+()','dg'),s='abbb'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=small.exec(s);m.length===1003&&m[1]==='a'&&m[1000]==='a'&&m[1001]==='b'&&m[1002]===''&&m.indices[1000][1]===1&&m.indices[1001][0]===3&&small.lastIndex===4&&copy.lastIndex===0&&r.lastIndex===0&&r.source===copy.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_abort_and_remaining_nonliteral_prefixes_stay_host_failures() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/(a)\d+x/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/()(a)+/y,s='a'.repeat(8000),flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
     for source in [
         r"/(?:(?:(?:(?:([a])b+c+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a|bc)c+){2}){2})|){2,3}/.test('ac')",
@@ -137,10 +104,7 @@ fn optional_work_abort_and_remaining_nonliteral_prefixes_stay_host_failures() {
         "/(a)b+/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

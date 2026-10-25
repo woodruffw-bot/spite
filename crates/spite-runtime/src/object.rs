@@ -39,7 +39,7 @@ mod private;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
 mod regexp;
-pub(crate) use regexp::{RegExpData, RegExpMatcher, RegExpMatcherBody, RegExpNamedGroup};
+pub(crate) use regexp::{RegExpData, RegExpMatcher, RegExpNamedGroup};
 mod set;
 pub(crate) use set::SetData;
 mod entry;

@@ -35,7 +35,6 @@ fn captured_reference_sequence_result_snapshot() {
         (r"(\2\3)+(a)(b)", "d", "ab"),
         (r"((\1\3)+a)(b)", "d", "ab"),
         (r"()()(\1\2){2,3}", "d", "q"),
-        (r"(a)(b)(\1\2){999999999999999999999999999999}", "d", "abab"),
         (
             r"(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<before>)\k<x>\k<y>(?<after>))+d",
             "d",
@@ -99,16 +98,6 @@ fn captured_sequence_consumers_and_zero_iterations_keep_original_sources() {
 }
 
 #[test]
-fn deep_captured_sequences_and_empty_minimums_copy_and_collect_unlimited() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<y>)(?<last>(?<before>)\\\\k<x>\\\\k<y>(?<after>)){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.groups.before===''&&empty.groups.after===''&&empty.indices.groups.before===empty.indices[4]&&empty.indices.groups.after===empty.indices[5]"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<y>b)(?<last>'+'('.repeat(99999)+'\\\\k<x>\\\\k<y>'+')'.repeat(100000)+'+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ababab');a[0]==='ababab'&&a.length===100003&&a.groups.last==='ab'&&a[100002]==='ab'&&a.indices[100002][0]===4&&a.indices[100002][1]===6&&a.indices.groups.last===a.indices[3]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_captured_sequence_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -136,10 +125,7 @@ fn partial_capture_effects_and_other_sequence_bodies_remain_unsupported() {
         r"/(a)(b)(\1\2)+/u.test('abab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

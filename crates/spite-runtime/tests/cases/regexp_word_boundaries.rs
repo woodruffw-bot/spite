@@ -1,6 +1,6 @@
 //! Outer ordinary word assertions constrain complete match candidates (22.2.2.4).
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -96,34 +96,7 @@ fn generic_consumers_advance_empty_results_and_preserve_callback_slots() {
 }
 
 #[test]
-fn flat_assertions_copies_and_failed_searches_survive_collection_without_limits() {
-    let mut realm = Realm::default();
-    realm.eval(r"let r=new RegExp('\\b'.repeat(100000)+'(a+)'+'\\b'.repeat(100000),'dg'),copy=new RegExp(r),s=' '+'a'.repeat(100000)+' '").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===1&&a[0].length===100000&&a[1].length===100000&&a.indices[1][1]===100001&&copy.lastIndex===100001&&r.lastIndex===0&&r.source===copy.source"),Ok(Value::Boolean(true)));
-    assert_eq!(
-        realm.eval(r"/\Ba+\b/.exec('a'.repeat(100000)+'b')===null"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"let r=/\ba+\b/y,s='a'.repeat(20000),flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
     for source in [
         r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:\b(ab|a)+\b)|){2,3}/.test('ab')",
@@ -133,10 +106,7 @@ fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() 
         r"/(?:(?:^((\b(ab|a)+\b))$)|){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

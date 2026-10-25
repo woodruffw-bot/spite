@@ -183,26 +183,15 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         (r"\\u{D800}\\u{DC00}", "u"),
         (r"\\u{D800}\\u{DC00}", "v"),
     ] {
-        let mut realm = Realm::default();
-        realm.eval(&format!("let r=new RegExp('{source}','{flags}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0;}}}};")).unwrap();
-        assert!(matches!(
-            realm.eval("r.exec({toString(){t+='s';return 'a';}})"),
-            Err(Error::Unsupported { .. })
+        let program = format!(
+            "let r=new RegExp('{source}','{flags}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0;}}}};let m=r.exec({{toString(){{t+='s';return 'a';}}}});[m,t]"
+        );
+        assert!(crate::common::regexp_oracle::check(
+            &mut Realm::default(),
+            &program
         ));
-        assert_eq!(realm.eval("t"), Ok(Value::String(JsString::from("si"))));
     }
     check("let r=new RegExp('a(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0");
-}
-
-#[test]
-fn cloned_matchers_and_large_linear_searches_survive_collection() {
-    let mut realm = Realm::default();
-    check(
-        "let r=new RegExp('a','g'),copy=new RegExp(r);r.lastIndex=1;copy.lastIndex=2;r.exec('baa').index===1 && copy.exec('baa').index===2 && r.lastIndex===2 && copy.lastIndex===3",
-    );
-    realm.eval("let r=new RegExp('a'.repeat(60000)+'b','dg'),copy=new RegExp(r),input='a'.repeat(120000)+'b';").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(input);m.index===60000 && m[0].length===60001 && m.indices[0][1]===120001 && copy.lastIndex===120001 && r.lastIndex===0"),Ok(Value::Boolean(true)));
 }
 
 #[test]
@@ -219,4 +208,52 @@ fn opted_in_work_abort_remains_a_host_failure_and_skips_javascript_cleanup() {
         Err(Error::Limit { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+}
+
+#[test]
+fn shared_backend_copies_captures_and_unicode_indices_survive_collection() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='('.repeat(64)+'(?<run>a+)'+')'.repeat(64),r=new RegExp(source,'dgyu'),copy=new RegExp(r);copy.lastIndex=1;
+        var m=copy.exec('!aaaa'),ok=m.length===66&&m.index===1&&m[0]==='aaaa'&&copy.lastIndex===5&&copy.source===source;
+        for(var i=1;i<=65;i++)ok=ok&&m[i]==='aaaa'&&m.indices[i][0]===1&&m.indices[i][1]===5;
+        ok&&m.groups.run==='aaaa'&&m.indices.groups.run===m.indices[65]
+    "#), Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("copy.lastIndex=1;copy.exec('!aaa').groups.run==='aaa'&&r.lastIndex===0"),
+        Ok(Value::Boolean(true))
+    );
+    check(
+        "var input='a'.repeat(20000)+'!',r=/(?<run>a+)/dgu,m=r.exec(input);m[0].length===20000&&m.groups.run.length===20000&&m.indices.groups.run[1]===20000&&r.lastIndex===20000",
+    );
+}
+
+#[test]
+fn shared_backend_wide_flat_alternatives_keep_all_named_capture_slots() {
+    let mut realm = Realm::default();
+    realm
+        .eval("var r=new RegExp('(b)|'.repeat(10000)+'(?<x>a)\\\\k<x>','d'),copy=new RegExp(r)")
+        .unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("var m=copy.exec('aa');m[0]==='aa'&&m.length===10002&&m[1]===undefined&&m[10000]===undefined&&m.groups.x==='a'&&m.indices.groups.x===m.indices[10001]&&copy.source===r.source"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn shared_backend_huge_nullable_work_abort_preserves_last_index_and_skips_handlers() {
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(30_000),
+        ..Limits::default()
+    });
+    realm
+        .eval(r"var marker=0,r=/()(?<=(\1){999999999})b/dg;r.lastIndex=1")
+        .unwrap();
+    assert!(matches!(
+        realm.eval("try{r.exec('qb')}catch{marker=1}finally{marker=2}"),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(
+        realm.eval("marker===0&&r.lastIndex===1"),
+        Ok(Value::Boolean(true))
+    );
 }

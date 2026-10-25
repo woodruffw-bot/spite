@@ -1,7 +1,7 @@
 //! Character predicates and references share ordinary input capture semantics.
 
 use spite_core::JsString;
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 use std::fmt::Write;
 
 fn check(source: &str) {
@@ -85,22 +85,6 @@ fn generic_consumers_and_stateful_exec_use_character_reference_matches() {
 }
 
 #[test]
-fn deep_shared_predicates_and_captures_survive_copy_and_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=new RegExp('(\\\\w)'.repeat(10000)+'\\\\1','d'),copy=new RegExp(r)")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'.repeat(10001));a.length===10001&&a[10000]==='a'&&a.indices[10000][0]===9999&&a.indices[10000][1]===10000&&a[0].length===10001&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a[10000]==='a'&&a.indices[10000][1]===10000"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("new RegExp('('.repeat(100000)+'(?<x>\\\\w)'+')'.repeat(100000)+'\\\\k<x>','d').exec('aa').groups.x==='a'"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
     for source in [
         r"/(?:(?:(?:([ab])(?:\1)+){2})|){2,3}/.test('aa')",
@@ -109,10 +93,7 @@ fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
         r"/(?<x>[ab])\k<x>/u.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

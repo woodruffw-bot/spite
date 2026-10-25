@@ -334,25 +334,25 @@ impl Collector<'_> {
             }
             let entry = self.session.entry(index).ok_or(Error::CollectionState)?;
             let mut conditions = Vec::new();
-            if let Entry::Object(object) = entry {
-                if let Some(map) = &object.weak_map {
-                    for (key, value) in &map.entries {
-                        self.work.charge(2)?;
-                        self.work.push(
-                            &mut conditions,
-                            (RawKey::Object(key.clone()), self.universe.edge(value)?),
-                        )?;
-                    }
-                    for (key, value) in &map.symbol_entries {
-                        self.work.charge(2)?;
-                        self.work.push(
-                            &mut conditions,
-                            (
-                                RawKey::Symbol(self.universe.id(key)?),
-                                self.universe.edge(value)?,
-                            ),
-                        )?;
-                    }
+            if let Entry::Object(object) = entry
+                && let Some(map) = &object.weak_map
+            {
+                for (key, value) in &map.entries {
+                    self.work.charge(2)?;
+                    self.work.push(
+                        &mut conditions,
+                        (RawKey::Object(key.clone()), self.universe.edge(value)?),
+                    )?;
+                }
+                for (key, value) in &map.symbol_entries {
+                    self.work.charge(2)?;
+                    self.work.push(
+                        &mut conditions,
+                        (
+                            RawKey::Symbol(self.universe.id(key)?),
+                            self.universe.edge(value)?,
+                        ),
+                    )?;
                 }
             }
             for (key, edge) in conditions {
@@ -575,10 +575,11 @@ fn final_attempt(
             // Separate pass: all roots/faults were found before any irreversible
             // store. Never reset a bit after another thread could observe None.
             for (id, candidate) in collector.universe.candidates.iter().enumerate() {
-                if !candidate.marked && live[id] {
-                    if let Some(pin) = &candidate.pin {
-                        guard.retire(pin);
-                    }
+                if !candidate.marked
+                    && live[id]
+                    && let Some(pin) = &candidate.pin
+                {
+                    guard.retire(pin);
                 }
             }
             true
@@ -698,17 +699,17 @@ pub(super) fn collect(
                 drop(discarded_targets);
             }
             for plan in cleanup {
-                if let Some(Entry::Object(object)) = collector.session.entry_mut(plan.slot) {
-                    if let Some(map) = &mut object.weak_map {
-                        for index in (0..plan.object_keep.len()).rev() {
-                            if !plan.object_keep[index] {
-                                map.remove_at(index);
-                            }
+                if let Some(Entry::Object(object)) = collector.session.entry_mut(plan.slot)
+                    && let Some(map) = &mut object.weak_map
+                {
+                    for index in (0..plan.object_keep.len()).rev() {
+                        if !plan.object_keep[index] {
+                            map.remove_at(index);
                         }
-                        for index in (0..plan.symbol_keep.len()).rev() {
-                            if !plan.symbol_keep[index] || !live[plan.symbol_ids[index]] {
-                                map.remove_symbol_at(index);
-                            }
+                    }
+                    for index in (0..plan.symbol_keep.len()).rev() {
+                        if !plan.symbol_keep[index] || !live[plan.symbol_ids[index]] {
+                            map.remove_symbol_at(index);
                         }
                     }
                 }

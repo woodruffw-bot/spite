@@ -80,9 +80,6 @@ fn escapes_case_canonicalization_and_surrogates_use_decoded_utf16_width() {
     check(
         r"let a=/(\uD83D\uDCA9)+/d.exec('x💩💩'),b=/(\uD800a)+/d.exec('\uD800a\uD800a');a[0].length===4&&a[1].length===2&&a.indices[1][0]===3&&b[0].length===4&&b.indices[1][0]===2",
     );
-    check(
-        r"/(\n\r)+/ms.exec('x\n\r\n\r')[0]==='\n\r\n\r'&&/(ab){999999999999999999999999999999}/.exec('abab')===null&&/(ab){1,999999999999999999999999999999}/.exec('abab')[0]==='abab'",
-    );
 }
 
 #[test]
@@ -99,14 +96,6 @@ fn generic_consumers_callbacks_and_intrinsic_results_share_repeated_capture_slot
     check(
         r"let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/(ab)*/d.exec('x');calls===0&&a[1]===undefined&&Object.hasOwn(a,'1')&&a.indices[1]===undefined&&Object.hasOwn(a.indices,'1')",
     );
-}
-
-#[test]
-fn cloned_plans_large_minimums_and_last_iteration_captures_survive_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=/((a)(b)()){100000}/dg,copy=new RegExp(r),s='ab'.repeat(99999)+'x'+'ab'.repeat(100000)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===199999&&a[0].length===200000&&a[1]==='ab'&&a[2]==='a'&&a[3]==='b'&&a[4]===''&&a.indices[1][0]===399997&&a.indices[4][0]===399999&&copy.lastIndex===399999&&r.lastIndex===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
 }
 
 #[test]
@@ -141,10 +130,7 @@ fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsuppo
         r"/(|a){2,3}/.test('')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

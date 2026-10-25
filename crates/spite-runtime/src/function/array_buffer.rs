@@ -302,10 +302,10 @@ impl Realm {
         receiver: Value,
         span: Span,
     ) -> Result<(ObjectHandle, BufferState), Error> {
-        if let Value::Object(object) = receiver {
-            if let Some(state) = self.array_buffer_state(&object, span)? {
-                return Ok((object, state));
-            }
+        if let Value::Object(object) = receiver
+            && let Some(state) = self.array_buffer_state(&object, span)?
+        {
+            return Ok((object, state));
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

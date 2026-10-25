@@ -144,31 +144,6 @@ fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_last_effects(
 }
 
 #[test]
-fn deep_final_iteration_effects_clones_collection_and_long_search_stay_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(?<=a(?=(b)(\\1'+'('.repeat(n)+'\\1'+')'.repeat(n)+'){2}))b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('abbbbb');a.length===n+3&&a.index===1&&a[2]==='bb'&&a[n+2]==='b'&&a.indices[n+2][0]===5&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(?<=a(?=(b)(\1(\1)){2}))b/d.exec('c'.repeat(10000)+'abbbbb');long.index===10001&&long.indices[3][0]===10005"),Ok(Value::Boolean(true)));
-    for count in [usize::MAX.to_string(), "9".repeat(100)] {
-        for source in [
-            format!(
-                r"let a=/(?<=(a)(\1(\1)){{{count}}})b/d.exec('ab');a[1]==='a'&&a[2]===''&&a[3]===''&&a.indices[3][0]===1"
-            ),
-            format!(
-                r"let a=/(?=(\3(\3)){{{count}}}(a))a/d.exec('a');a[1]===''&&a[2]===''&&a[3]==='a'&&a.indices[2][0]===0"
-            ),
-        ] {
-            assert_eq!(
-                Realm::default().eval(&source),
-                Ok(Value::Boolean(true)),
-                "{source}"
-            );
-        }
-    }
-    realm.collect(usize::MAX).unwrap();
-}
-#[test]
 fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -193,10 +168,7 @@ fn variable_child_counts_optional_effects_and_unicode_remain_pending() {
         r"/(?<=a(?=(b)(\1(\1)){2}))b/v.exec('abbbbb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

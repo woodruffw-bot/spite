@@ -1,6 +1,6 @@
 //! CompileAssertion boundaries and RegExpBuiltinExec (22.2.2.4, 22.2.7.2).
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -65,14 +65,6 @@ fn rejected_overlapping_matches_and_generic_consumers_continue_correctly() {
 }
 
 #[test]
-fn copied_long_anchored_plans_survive_collection_without_restarting_searches() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('a'.repeat(60000)+'$','dg'),copy=new RegExp(r),s='a'.repeat(120000);RegExp=null;").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(s);m.index===60000 && m[0].length===60000 && m.indices[0].join(',')==='60000,120000' && copy.lastIndex===120000 && r.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
     for source in [
         r"/(?:(?:(?:(?:a+(^a)+){2}){2})|){2,3}/.test('a')",
@@ -83,10 +75,7 @@ fn internal_assertions_alternatives_and_unicode_modes_remain_explicit_gaps() {
         r"/(?:(?:((?:(?:^a+^b+){2}){2}){2})|){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

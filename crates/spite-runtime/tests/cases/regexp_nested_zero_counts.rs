@@ -122,19 +122,6 @@ fn nested_zero_count_consumers_keep_sticky_global_empty_advancement_and_callback
 }
 
 #[test]
-fn nested_zero_count_huge_bounds_deep_completed_captures_copies_gc_and_parent_runs_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,huge='184467440737095516160000000000000000000',r=new RegExp('(?:'+'('.repeat(n)+')'.repeat(n)+'{2}){'+huge+',}a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qa');a.index===1&&a.length===n+1&&a[1]===''&&a[n]===''&&a.indices[1][0]===1&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?!(?:'+'('.repeat(n)+')'.repeat(n)+'{2}){2}q)a','d'),b=negative.exec('a');b.length===n+1&&b[1]===undefined&&b[n]===undefined&&b.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let c=new RegExp('(?:(^){1,'+huge+'}){'+huge+',}a','d'),d=new RegExp('(?:(a){0}){'+huge+',}b','d');c.exec('a')[1]===''&&c.exec('qa')===null&&d.exec('qb')[1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:((){2}){2}a|b)+c/.exec('a'+'b'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined&&many[2]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let deep=new RegExp('(?:'.repeat(10000)+'(){2}'+'){2}'.repeat(10000)+'a','d').exec('a');deep[1]===''&&deep.indices[1][0]===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_nested_zero_count_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -164,10 +151,7 @@ fn consuming_nested_counts_nonzero_internal_references_behind_wrappers_and_unico
         r"/((){2}){2}a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

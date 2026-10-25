@@ -115,10 +115,7 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"in
         r"/\b^[\q{ab}\d\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

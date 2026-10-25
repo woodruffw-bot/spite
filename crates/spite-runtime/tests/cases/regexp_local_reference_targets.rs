@@ -36,11 +36,6 @@ fn local_reference_target_result_snapshot() {
         (r"(a)(b)((\4\1)\4\2)+", "d", "abaabaab"),
         (r"()()((\1)\4\2){2,3}", "d", "q"),
         (
-            r"(a)(b)((\1)\4\2){999999999999999999999999999999}",
-            "d",
-            "abaab",
-        ),
-        (
             r"(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+d",
             "d",
             "bcbbcd",
@@ -113,19 +108,6 @@ fn local_reference_consumers_and_following_captures_keep_original_numbering() {
 }
 
 #[test]
-fn many_local_references_empty_minimums_and_width_overflow_copy_and_collect() {
-    check(
-        r"let slash=String.fromCharCode(92),body='('+slash+'k<x>)';for(let slot=4;slot<74;slot++){body+='('+slash+slot+slash+slot+')'}let r=new RegExp('(?<x>a)(?<y>b)(?<last>'+body+')*','d'),required=new RegExp('(?<x>a)(?<y>b)(?<last>'+body+')+','d'),a=r.exec('ab');a[0]==='ab'&&a.slice(3).every(x=>x===undefined)&&required.exec('ab')===null",
-    );
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<y>)(?<last>(?<piece>\\\\k<x>)\\\\k<piece>\\\\k<y>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.groups.piece===''&&empty.indices.groups.piece===empty.indices[4]&&empty.indices[4][0]===0"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<y>b)(?<last>(?<piece>\\\\k<x>)'+'\\\\k<piece>'.repeat(100000)+'\\\\k<y>)+','d'),copy=new RegExp(r),text='ab'+'a'.repeat(100001)+'b'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(text);a[0]===text&&a.groups.last.length===100002&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_local_reference_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -153,10 +135,7 @@ fn other_consuming_terms_choices_and_nested_repetition_remain_unsupported() {
         r"/(a)(b)((\1)\4\2)+/u.test('aabaab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

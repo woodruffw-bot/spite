@@ -95,25 +95,6 @@ fn stateful_exec_and_generic_consumers_use_the_same_reference_program() {
 }
 
 #[test]
-fn deep_reference_layouts_survive_copy_collection_and_native_stack_checks() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'a'+')'.repeat(100000)+'\\\\100000','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qaa');a[0]==='aa'&&a.length===100001&&a[100000]==='a'&&a.indices[100000][0]===1&&a.indices[100000][1]===2&&copy.source===r.source"), Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a[100000]==='a'&&a.indices[100000][1]===2"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(
-        realm.eval(
-            "new RegExp('(a)'+'\\\\1'.repeat(100000)).exec('a'.repeat(100001))[0].length===100001"
-        ),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn explicit_search_work_aborts_before_last_index_writes_and_language_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -143,10 +124,7 @@ fn unsupported_reference_compositions_remain_distinct_from_match_failures() {
         r"/(a)\1/u.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

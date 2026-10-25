@@ -14,14 +14,13 @@ impl Realm {
         Self::require_object_coercible(&receiver, span)?;
         // Edition 17 only looks up Symbol.split on object separators. Primitive
         // prototype hooks are ignored, including for Strings and BigInts.
-        if matches!(separator, Value::Object(_)) {
-            if let Some(method) =
+        if matches!(separator, Value::Object(_))
+            && let Some(method) =
                 self.get_method(&separator, &WellKnownSymbol::Split.symbol(), span)?
-            {
-                // Delegate with the original receiver and limit, before any
-                // string or numeric conversion. Return the hook's value as-is.
-                return self.call(method, separator, vec![receiver, limit], span);
-            }
+        {
+            // Delegate with the original receiver and limit, before any
+            // string or numeric conversion. Return the hook's value as-is.
+            return self.call(method, separator, vec![receiver, limit], span);
         }
         let string = self.string(receiver, span)?;
         let result = self.create_intrinsic_array(0, span)?;

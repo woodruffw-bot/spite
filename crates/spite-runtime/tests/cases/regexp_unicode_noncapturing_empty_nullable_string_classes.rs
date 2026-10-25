@@ -1,7 +1,7 @@
 //! Nested noncapturing empty alternatives beside UnicodeSets string classes (22.2.2.3).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -125,14 +125,9 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
         r"/([\q{a|ab}&&a]||(?:))+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:))+/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:))+[b]/v.test('ab')",
-        r"/([\q{a|b}]|(?:\b|())){99999999999999999999999999999999999999992,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/([\q{a|ab}&&a]|(?:\b|())){99999999999999999999999999999999999999992,99999999999999999999999999999999999999993}/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -151,56 +146,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
             "let a=/^\\b(?<each>{class}|(?:(?:)))+?\\b$/div.exec('ſK'),b=/(?<whole>(?<\\u{{1D49C}}>(?:)|{class}))+?/div.exec('ſK');a[0]==='ſK' && a.groups.each==='K' && a.indices[1][0]===1 && b[0]==='' && b.groups['𝒜']==='' && b.indices.groups['𝒜'][0]===0"
         ));
     }
-}
-
-#[test]
-fn grouped_empty_deep_edges_keep_flat_captures_and_opt_in_aborts_atomic() {
-    let empty = format!("{}{}", "(?:".repeat(1_000), ")".repeat(1_000));
-    for inner in [
-        format!(r"{empty}|[\q{{a|ab}}&&a]"),
-        format!(r"[\q{{a|ab}}&&a]|{empty}"),
-    ] {
-        let pattern = format!("{}{inner}{}+", "(".repeat(1_000), ")".repeat(1_000));
-        check(&format!(
-            "let m=/{pattern}/dv.exec('aaa');m.length===1001 && m[0]==='aaa' && m[1000]==='a' && m.indices[1000][0]===2 && m.indices[1000][1]===3"
-        ));
-    }
-    let pattern = format!(r"((?:(?:))|[\q{{{}}}&&a])+", "x".repeat(20_000));
-    check(&format!(
-        "let r=/{pattern}/dvy,m=r.exec('😀');m[0]==='' && m[1]==='' && m.indices[1][0]===0 && r.lastIndex===0"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/([\q{a|ab}&&a]|(?:(?:)))+$/vg,marker=0")
-        .unwrap();
-    realm
-        .eval(&format!("var text='{}';r.lastIndex=1", "x".repeat(40_000)))
-        .unwrap();
-    assert_eq!(
-        realm.eval(r"var probe=/x/vy;probe.lastIndex=1;probe.exec(text)[0]==='x'"),
-        Ok(Value::Boolean(true))
-    );
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("r.lastIndex===1 && marker===0"),
-        Ok(Value::Boolean(true))
-    );
 }

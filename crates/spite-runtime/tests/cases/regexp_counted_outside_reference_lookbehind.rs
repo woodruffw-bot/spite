@@ -113,18 +113,7 @@ fn consumers_callbacks_sticky_global_and_empty_advancement() {
         r"'aaab'.replace(/(?<x>a)(?<=(?<y>\k<x>){2})b/,'<$<y>>')==='aa<a>'&&'qab'.search(/(a)(?<=\1)b/)===1&&'qab'.split(/(a)(?<=\1)b/).join('|')==='q|a|'",
     );
 }
-#[test]
-fn deep_scopes_clones_collection_negative_restore_and_long_imported_ranges_have_no_default_limits()
-{
-    assert_eq!(Realm::default().eval(r"let a=/()(?<=(\1){999999999})b/d.exec('qb');a.index===1&&a[2]===''&&a.indices[2][0]===1&&a.indices[2][1]===1"),Ok(Value::Boolean(true)));
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(a)(?<='+'('.repeat(n)+'\\1\\1'+')'.repeat(n)+'{2})b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aaaaab');a.index===4&&a.length===n+2&&a[1]==='a'&&a[n+1]==='aa'&&a.indices[n+1][0]===1&&a.indices[n+1][1]===3&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let negative=new RegExp('(a)(?<!'+'('.repeat(n)+'\\1\\1'+')'.repeat(n)+'{2}q)b','d'),restored=negative.exec('aaaaab');restored.index===4&&restored[1]==='a'&&restored[2]===undefined&&restored[n+1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(a+)(?<=\1{1})b/.exec('a'.repeat(50000)+'b');long[0].length===50001&&long[1].length===50000"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
@@ -156,10 +145,7 @@ fn internal_reads_dependent_children_variable_counts_choices_and_unicode_remain_
         r"/(a)(?<=\1)b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

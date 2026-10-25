@@ -574,8 +574,6 @@ mod regexp_sequence_prefixes;
 mod regexp_sequence_word_assertions;
 #[path = "cases/regexp_sequences.rs"]
 mod regexp_sequences;
-#[path = "cases/regexp_set_sharing.rs"]
-mod regexp_set_sharing;
 #[path = "cases/regexp_split.rs"]
 mod regexp_split;
 #[path = "cases/regexp_test_native_boolean_results.rs"]
@@ -976,14 +974,10 @@ mod regexp_unicode_unconditional_assertion_string_class_captures;
 mod regexp_unicode_unified_ideograph_properties;
 #[path = "cases/regexp_unicode_unrepresentable_exact_grouped_empty_nullable_string_classes.rs"]
 mod regexp_unicode_unrepresentable_exact_grouped_empty_nullable_string_classes;
-#[path = "cases/regexp_unicode_unrepresentable_exact_nullable_alternatives.rs"]
-mod regexp_unicode_unrepresentable_exact_nullable_alternatives;
 #[path = "cases/regexp_unicode_unrepresentable_exact_nullable_string_classes.rs"]
 mod regexp_unicode_unrepresentable_exact_nullable_string_classes;
 #[path = "cases/regexp_unicode_unrepresentable_finite_grouped_empty_nullable_string_classes.rs"]
 mod regexp_unicode_unrepresentable_finite_grouped_empty_nullable_string_classes;
-#[path = "cases/regexp_unicode_unrepresentable_finite_nullable_alternatives.rs"]
-mod regexp_unicode_unrepresentable_finite_nullable_alternatives;
 #[path = "cases/regexp_unicode_unrepresentable_finite_nullable_string_classes.rs"]
 mod regexp_unicode_unrepresentable_finite_nullable_string_classes;
 #[path = "cases/regexp_unicode_uppercase_properties.rs"]

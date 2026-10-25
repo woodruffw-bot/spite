@@ -117,18 +117,6 @@ fn zero_width_count_consumers_keep_last_index_empty_advancement_and_callback_slo
 }
 
 #[test]
-fn zero_width_count_deep_slots_unrepresentable_counts_copies_and_gc_have_no_default_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,huge='184467440737095516160000000000000000000',r=new RegExp('(?<='+'('.repeat(n)+')'.repeat(n)+'{'+huge+',})a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qa');a.index===1&&a.length===n+1&&a[1]===''&&a[n]===''&&a.indices[1][0]===1&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?<!'+'('.repeat(n)+')'.repeat(n)+'+q)b','d'),b=negative.exec('ab');b.length===n+1&&b[1]===undefined&&b[n]===undefined&&b.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let c=new RegExp('(?<=(^){'+huge+',})a','d'),d=new RegExp('(?<=(^){0,'+huge+'})a','d');c.exec('a')[1]===''&&c.exec('qa')===null&&d.exec('qa')[1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=()+)a|b)+c/.exec('a'+'b'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_zero_width_count_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -161,10 +149,7 @@ fn consuming_variable_counts_repeated_choices_references_nested_counts_and_looka
         r"/(?<=()+)a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

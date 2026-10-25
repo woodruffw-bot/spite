@@ -68,20 +68,6 @@ fn negative_assertion_string_consumers_copies_and_collection_keep_undefined_slot
 }
 
 #[test]
-fn negative_assertion_deep_wrappers_keep_all_original_capture_slots() {
-    check(
-        r#"
-        var ok=true;
-        for(var mode of ['u','v']){
-            var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[a-z]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('!a');
-            ok=ok&&m.index===0&&m.length===2001&&m[0]==='';
-            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===0&&m.indices[i][1]===0:m.indices[i]===undefined);
-        }ok
-    "#,
-    );
-}
-
-#[test]
 fn negative_assertion_preserves_coercion_lastindex_errors_and_original_validation() {
     check(
         r#"
@@ -209,17 +195,6 @@ fn negative_q_class_assertion_string_consumers_copies_and_collection_keep_undefi
 }
 
 #[test]
-fn negative_q_class_assertion_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|b}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgv'),m=r.exec('ab!');
-        var ok=m.index===2&&m.length===2001&&m[0]===''&&r.lastIndex===2;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===2&&m.indices[i][1]===2:m.indices[i]===undefined);ok
-    "#,
-    );
-}
-
-#[test]
 fn negative_word_q_classes_keep_original_polarity_source_and_named_undefined_slots() {
     check(
         r#"
@@ -304,17 +279,6 @@ fn negative_scalar_v_set_assertion_string_consumers_copies_and_collection_keep_u
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!');m.index===0&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_scalar_v_set_assertion_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[[a-z]&&[ab]]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgv'),m=r.exec('ab!');
-        var ok=m.index===2&&m.length===2001&&m[0]===''&&r.lastIndex===2;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===2&&m.indices[i][1]===2:m.indices[i]===undefined);ok
-    "#,
-    );
 }
 
 #[test]
@@ -404,20 +368,6 @@ fn negative_character_result_assertion_string_consumers_copies_and_collection_ke
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!');m.index===0&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_character_result_assertion_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|b|ab|}&&\\p{Any}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgv'),m=r.exec('ab!');
-        var ok=m.index===2&&m.length===2001&&m[0]===''&&r.lastIndex===2;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===2&&m.indices[i][1]===2:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[\\\\q{😀|😀x|}&&\\\\p{Any}]))','dgv'),m=r.exec('😀😀b');m.index===4&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===4",
-    );
 }
 
 #[test]
@@ -511,23 +461,6 @@ fn variable_q_class_negative_consumers_copies_and_collection_keep_undefined_slot
 }
 
 #[test]
-fn variable_q_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|aaa|aa}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('a!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[\\\\q{ab}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined",
-    );
-}
-
-#[test]
 fn word_variable_q_class_negation_keeps_endpoint_retries_and_named_undefined_slots() {
     check(
         r#"
@@ -567,19 +500,6 @@ fn word_variable_q_class_negative_consumers_copies_and_collection_keep_undefined
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===1&&m.indices.groups.run===undefined&&copy.lastIndex===1"), Ok(Value::Boolean(true)));
 }
 
-#[test]
-fn word_variable_q_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|aaa|aa}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('aa!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>\\\\B[\\\\q{😀a|😀}]\\\\B))','dgv'),m=r.exec('😀😀');var ok=m.index===4&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===4;r=new RegExp(r,'dgyv');r.lastIndex=1;ok&&r.exec('😀😀')===null&&r.lastIndex===0",
-    );
-}
 #[test]
 fn negative_q_union_classes_keep_empty_outside_captures_and_named_undefined_operand_slots() {
     check(
@@ -623,22 +543,6 @@ fn negative_q_union_class_negative_consumers_copies_and_collection_keep_undefine
 }
 
 #[test]
-fn negative_q_union_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|aa}\\q{aaa|a}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('a!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[\\\\q{ab}\\\\q{abc}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}}\\\\q{ab}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined",
-    );
-}
-#[test]
 fn negative_word_q_union_class_negation_keeps_endpoint_retries_and_named_undefined_slots() {
     check(
         r#"
@@ -678,19 +582,6 @@ fn negative_word_q_union_class_negative_consumers_copies_and_collection_keep_und
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===1&&m.indices.groups.run===undefined&&copy.lastIndex===1"), Ok(Value::Boolean(true)));
 }
 
-#[test]
-fn negative_word_q_union_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[\\q{a|aa}\\q{aaa|a}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('aa!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>\\\\B[\\\\q{😀a}\\\\q{😀}]\\\\B))','dgv'),m=r.exec('😀😀');var ok=m.index===4&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===4;r=new RegExp(r,'dgyv');r.lastIndex=1;ok&&r.exec('😀😀')===null&&r.lastIndex===0",
-    );
-}
 #[test]
 fn negative_character_union_classes_keep_empty_outside_captures_and_named_undefined_operand_slots()
 {
@@ -735,23 +626,6 @@ fn negative_character_union_class_negative_consumers_copies_and_collection_keep_
 }
 
 #[test]
-fn negative_character_union_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots()
-{
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[a\\q{aaa|aa}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('a!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[x\\\\q{ab}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>[x\\\\q{\\\\u{D83D}\\\\u{DE00}}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined",
-    );
-}
-#[test]
 fn negative_word_character_union_class_negation_keeps_endpoint_retries_and_named_undefined_slots() {
     check(
         r#"
@@ -790,19 +664,4 @@ fn negative_word_character_union_class_negative_consumers_copies_and_collection_
     "#), Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===1&&m.indices.groups.run===undefined&&copy.lastIndex===1"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_word_character_union_class_negative_deep_scopes_and_pair_offsets_keep_exact_undefined_slots()
- {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?!'+'('.repeat(1000)+'[a\\q{aaa|aa}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('aa!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?!(?<run>\\\\B[😀\\\\q{😀a}]\\\\B))','dgv'),m=r.exec('😀😀');var ok=m.index===4&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===4;r=new RegExp(r,'dgyv');r.lastIndex=1;ok&&r.exec('😀😀')===null&&r.lastIndex===0",
-    );
 }

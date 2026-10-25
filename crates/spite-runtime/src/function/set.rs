@@ -219,10 +219,10 @@ impl Realm {
         receiver: Value,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        if let Value::Object(object) = receiver {
-            if self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_set()))? {
-                return Ok(object);
-            }
+        if let Value::Object(object) = receiver
+            && self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_set()))?
+        {
+            return Ok(object);
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

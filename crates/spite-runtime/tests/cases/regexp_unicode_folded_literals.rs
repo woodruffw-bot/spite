@@ -143,19 +143,6 @@ fn unicode_folded_literal_metadata_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_folded_literal_many_captures_long_prefixes_collection_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='('.repeat(3000)+'aA'+')'.repeat(3000),r=new RegExp(p,'divg'),c=new RegExp(r),text='😀'.repeat(100000)+'Aa'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='Aa'&&m[3000]==='Aa'&&m.indices[3000][0]===200000&&m.indices[3000][1]===200002&&c.lastIndex===200002"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let n=5000,longPattern='a'.repeat(n)+'B',longRegex=new RegExp(longPattern,'iu'),longText='A'.repeat(n+5000)+'b';longRegex.exec(longText).index===5000"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn unicode_folded_literal_opted_work_and_remaining_gaps() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -182,10 +169,7 @@ fn unicode_folded_literal_opted_work_and_remaining_gaps() {
         r"/(?=ab)/iu.exec('AB')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

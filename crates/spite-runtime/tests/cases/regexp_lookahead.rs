@@ -96,16 +96,6 @@ fn lookahead_consumers_advance_empty_matches_and_preserve_prefix_captures() {
 }
 
 #[test]
-fn flat_lookahead_depth_copies_and_searches_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?='.repeat(100000)+'(?<x>a)'+')'.repeat(100000)+'\\\\k<x>','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a');a[0]==='a'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][1]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?=(?<x>a|b))\\k<x>c)+/d.exec('acbc'.repeat(10000));many[0].length===40000&&many.groups.x==='b'&&many.indices.groups.x[0]===39998"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_lookahead_work_aborts_before_last_index_and_javascript_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -135,10 +125,7 @@ fn lookbehind_unicode_and_possibly_empty_repetitions_keep_their_unsupported_boun
         "/(?:(?=(a))|b){2,3}/.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

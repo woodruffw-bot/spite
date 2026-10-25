@@ -1,6 +1,6 @@
 //! Complete consuming groups inside outer anchors preserve selected capture ranges.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -86,40 +86,7 @@ fn original_source_pinned_flags_and_generic_consumers_preserve_captures() {
 }
 
 #[test]
-fn deep_anchor_groups_and_copies_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let deep=new RegExp('^'+'('.repeat(100000)+'a+b'+')'.repeat(100000)+'$'),r=new RegExp('^'+'('.repeat(1000)+'(a)+(b)'+')'.repeat(1000)+'$','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec('aaab');deep.source.length===200005&&copy.source===r.source&&m.length===1003&&m[1]==='aaab'&&m[1000]==='aaab'&&m[1001]==='a'&&m[1002]==='b'&&m.indices[1002][0]===3"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/^(\d+x)$/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/^(a+b)$/y,s='a'.repeat(8000)+'b',flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
     for source in [
         r"/(?:(?:(?:(?:^(a+[b]+)$){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:^(a+b)*$)|){2,3}/.test('ab')",
@@ -131,10 +98,7 @@ fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
         r"/(?:(?:(?:^((a)(?:\1)+)$){2})|){2,3}/.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

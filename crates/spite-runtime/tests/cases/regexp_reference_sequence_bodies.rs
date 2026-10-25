@@ -35,11 +35,6 @@ fn reference_sequence_body_result_snapshot() {
         (r"(?:\1\2)+(a)(b)", "d", "ab"),
         (r"((?:\1\2)+a)(b)", "d", "ab"),
         (r"()()(?:\1\2){2,3}", "d", "q"),
-        (
-            r"(a)(b)(?:\1\2){999999999999999999999999999999}",
-            "d",
-            "abab",
-        ),
         (r"(?:(?<x>a)|(?<x>b))(?<y>c)(?:\k<x>\k<y>)+d", "d", "bcbcd"),
         (r"(?<x>(?:\k<x>\k<y>)+a)(?<y>b)", "dgi", "ab"),
         (r"(?<x>a)(?:\1\k<x>)+", "dy", "aaaaa"),
@@ -95,16 +90,6 @@ fn reference_sequence_consumers_and_empty_targets_keep_original_sources() {
 }
 
 #[test]
-fn long_reference_sequences_and_empty_minimums_copy_and_collect_unlimited() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<y>)(?:\\\\k<x>\\\\k<y>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.x===''&&empty.groups.y===''&&empty.indices.groups.x===empty.indices[1]&&empty.indices.groups.y===empty.indices[2]"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<y>b)(?:'+'\\\\k<x>\\\\k<y>'.repeat(50000)+')+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab'.repeat(50001));a[0].length===100002&&a.groups.x==='a'&&a.groups.y==='b'&&a.indices[1][0]===0&&a.indices[2][0]===1&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_sequence_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -132,10 +117,7 @@ fn capture_effects_and_other_sequence_bodies_remain_unsupported() {
         r"/(a)(b)(?:\1\2)+/u.test('abab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

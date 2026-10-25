@@ -64,12 +64,11 @@ impl Realm {
         }
         let keys = self.own_property_keys(&object, span)?;
         for key in keys {
-            if let Some(property) = self.own_property_descriptor(&object, &key, span)? {
-                if property.configurable()
-                    || (frozen && property.as_data().is_some_and(|data| data.writable))
-                {
-                    return Ok(Value::Boolean(false));
-                }
+            if let Some(property) = self.own_property_descriptor(&object, &key, span)?
+                && (property.configurable()
+                    || (frozen && property.as_data().is_some_and(|data| data.writable)))
+            {
+                return Ok(Value::Boolean(false));
             }
         }
         Ok(Value::Boolean(true))

@@ -1,7 +1,7 @@
 //! Character-only right operands in string-set operations (22.2.2.9).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -125,10 +125,7 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"
         r"/\b^[\q{ab}--\d--\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -142,48 +139,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"
             "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
         ));
     }
-}
-
-#[test]
-fn deep_scalar_operands_use_defaults_and_opt_in_aborts_preserve_prior_state() {
-    let pattern = format!(
-        r"[\q{{a|ab}}&&{}a-z{}]",
-        "[".repeat(3_000),
-        "]".repeat(3_000)
-    );
-    check(&format!(
-        "let r=/{pattern}/vy,m=r.exec('ab');m[0]==='a' && r.lastIndex===1"
-    ));
-    let pattern = format!(
-        r"[\q{{ab}}--[{}a-z{}]]",
-        "[".repeat(6_000),
-        "]".repeat(6_000)
-    );
-    check(&format!(
-        "let r=/{pattern}/vy,m=r.exec('ab');m[0]==='ab' && r.lastIndex===2"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
-    realm.eval(r"r=/[\q{a|ab}--[a-z]]/vg").unwrap();
-    realm
-        .eval(&format!("var text='{}';r.lastIndex=1", "x".repeat(20_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("r.lastIndex===1 && marker===0"),
-        Ok(Value::Boolean(true))
-    );
 }

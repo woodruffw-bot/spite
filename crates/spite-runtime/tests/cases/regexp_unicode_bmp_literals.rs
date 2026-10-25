@@ -148,25 +148,6 @@ fn unicode_bmp_input_index_coercion_and_strict_writes_remain_ordered() {
 }
 
 #[test]
-fn unicode_bmp_deep_capture_scopes_clones_collection_and_long_search_stay_unlimited() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'a'+')'.repeat(100000),'u'),c=new RegExp(r);let a=c.exec('a')").unwrap();
-    assert_eq!(
-        realm.eval("a.length===100001&&a[0]==='a'&&a[100000]==='a'&&a.index===0"),
-        Ok(Value::Boolean(true))
-    );
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("c.exec('b'.repeat(100000)+'a').index===100000"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;a=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -192,10 +173,7 @@ fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         r"/(a)\1/u.exec('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

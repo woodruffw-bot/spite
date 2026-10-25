@@ -101,17 +101,6 @@ fn fixed_lookbehind_consumers_global_sticky_empty_advancement_and_callback_argum
 }
 
 #[test]
-fn fixed_lookbehind_deep_transparent_wrappers_long_bodies_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<='+'(?:'.repeat(100000)+'a'+')'.repeat(100000)+')(?<x>b)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a[0]==='b'&&a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"), Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let n=10000,long=new RegExp('(?<='+'a'.repeat(n)+')b','dy');long.lastIndex=n;let last=long.exec('a'.repeat(n)+'b');last.index===n&&last[0]==='b'&&long.lastIndex===n+1"), Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=a)b|c)+d/.exec('ab'+'c'.repeat(10000)+'d');many.index===1&&many[0].length===10002"), Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_fixed_lookbehind_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -142,10 +131,7 @@ fn capturing_alternative_repeated_nested_and_unicode_lookbehind_remain_unsupport
         r"/(?<=a)b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

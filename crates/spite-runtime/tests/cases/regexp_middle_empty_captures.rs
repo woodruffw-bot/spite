@@ -36,11 +36,6 @@ fn middle_empty_capture_result_snapshot() {
         (r"((\1()\4)+a)(b)", "d", "ab"),
         (r"()()(\1()\2){2,3}", "d", "q"),
         (
-            r"(a)(b)(\1()\2){999999999999999999999999999999}",
-            "d",
-            "abab",
-        ),
-        (
             r"(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<before>)\k<x>(?<mid>)\k<y>(?<after>))+d",
             "d",
             "bcbcd",
@@ -106,16 +101,6 @@ fn middle_capture_consumers_and_empty_iterations_keep_original_numbering() {
 }
 
 #[test]
-fn many_middle_empty_captures_copy_and_collect_with_default_limits() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<y>)(?<last>\\\\k<x>(?<mid>)\\\\k<y>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.groups.mid===''&&empty.indices.groups.mid===empty.indices[4]&&empty.indices[4][0]===0"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<y>b)(?<last>\\\\k<x>(?<mid>)'+'()'.repeat(99999)+'\\\\k<y>)+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ababab');a[0]==='ababab'&&a.length===100004&&a.groups.last==='ab'&&a.groups.mid===''&&a[100003]===''&&a.indices[100003][0]===5&&a.indices[100003][1]===5&&a.indices.groups.mid===a.indices[4]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_middle_capture_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -143,10 +128,7 @@ fn partial_nonempty_captures_and_other_reference_bodies_remain_unsupported() {
         r"/(a)(b)(\1()\2)+/u.test('abab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

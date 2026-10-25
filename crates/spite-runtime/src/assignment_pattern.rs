@@ -173,14 +173,14 @@ impl Realm {
         mut value: Value,
         reference: Option<Reference<'a>>,
     ) -> Result<(), Error> {
-        if matches!(value, Value::Undefined) {
-            if let Some(initializer) = &element.initializer {
-                value = if let AssignmentTarget::Reference(target) = &element.target {
-                    self.assignment_expression(target, initializer)?
-                } else {
-                    self.expression(initializer)?
-                };
-            }
+        if matches!(value, Value::Undefined)
+            && let Some(initializer) = &element.initializer
+        {
+            value = if let AssignmentTarget::Reference(target) = &element.target {
+                self.assignment_expression(target, initializer)?
+            } else {
+                self.expression(initializer)?
+            };
         }
         self.assign_destructured_target(&element.target, value, reference)
     }

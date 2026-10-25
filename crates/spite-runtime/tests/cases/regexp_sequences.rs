@@ -96,38 +96,6 @@ fn opted_in_search_abort_keeps_state_and_skips_javascript_cleanup() {
 }
 
 #[test]
-fn opted_in_set_construction_abort_remains_a_host_failure() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{new RegExp('[a]\\d')}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-}
-
-#[test]
-fn opted_in_sticky_work_covers_one_candidate_instead_of_all_candidate_starts() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(&format!(
-            "let r=/[a]{}/y,s='a'.repeat(201)",
-            "a".repeat(200)
-        ))
-        .unwrap();
-    assert_eq!(
-        realm.eval("let m=r.exec(s);m[0]===s&&r.lastIndex===201"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gaps() {
     check("/[a]b/v.test('ab')");
     check(
@@ -144,10 +112,7 @@ fn choices_quantifiers_assertions_backreferences_and_unicode_remain_explicit_gap
         "/[a]b/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

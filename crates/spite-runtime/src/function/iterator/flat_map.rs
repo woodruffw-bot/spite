@@ -122,16 +122,16 @@ impl Realm {
                     .map(|inner| inner.iterator.clone()),
             ))
         })?;
-        if let Some(inner) = inner {
-            if let Err(error) = self.iterator_close_direct(inner, span) {
-                // A failed inner close becomes the incoming throw for the
-                // outer close. Host failures bypass further JavaScript cleanup.
-                return Err(self.iterator_close_error(
-                    &IteratorRecord::uninitialized(outer.expect("flatMap outer")),
-                    error,
-                    span,
-                ));
-            }
+        if let Some(inner) = inner
+            && let Err(error) = self.iterator_close_direct(inner, span)
+        {
+            // A failed inner close becomes the incoming throw for the
+            // outer close. Host failures bypass further JavaScript cleanup.
+            return Err(self.iterator_close_error(
+                &IteratorRecord::uninitialized(outer.expect("flatMap outer")),
+                error,
+                span,
+            ));
         }
         if let Some(outer) = outer {
             self.iterator_close_direct(outer, span)?;

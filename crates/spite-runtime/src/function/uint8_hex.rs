@@ -52,7 +52,7 @@ fn from_hex(units: &[u16], maximum: u64, budget: &mut Budget) -> Result<DecodedH
     budget.charge(1)?;
     // Whole-input parity precedes capacity, even when maximum is zero. This
     // reads the UTF-16 length, without scanning an intentionally ignored suffix.
-    if units.len() % 2 != 0 {
+    if !units.len().is_multiple_of(2) {
         result.error = Some(HexError::OddLength);
         return Ok(result);
     }

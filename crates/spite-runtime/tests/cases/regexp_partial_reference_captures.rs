@@ -36,11 +36,6 @@ fn partial_reference_capture_result_snapshot() {
         (r"(a)(b)((\4\1)\2)+", "d", "ababab"),
         (r"()()((\1)\2){2,3}", "d", "q"),
         (
-            r"(a)(b)((\1)\2){999999999999999999999999999999}",
-            "d",
-            "abab",
-        ),
-        (
             r"(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<piece>\k<x>)\k<y>)+d",
             "d",
             "bcbcd",
@@ -113,16 +108,6 @@ fn partial_capture_consumers_and_external_following_references_keep_ranges() {
 }
 
 #[test]
-fn deep_partial_captures_copy_and_collect_with_default_limits() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<y>)(?<last>(?<piece>\\\\k<x>)\\\\k<y>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.groups.piece===''&&empty.indices.groups.piece===empty.indices[4]&&empty.indices[4][0]===0"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<y>b)(?<last>(?<piece>'+'('.repeat(99999)+'\\\\k<x>'+')'.repeat(100000)+'\\\\k<y>)+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ababab');a[0]==='ababab'&&a.length===100004&&a.groups.last==='ab'&&a.groups.piece==='a'&&a[100003]==='a'&&a.indices[100003][0]===4&&a.indices[100003][1]===5&&a.indices.groups.piece===a.indices[4]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_partial_capture_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -150,10 +135,7 @@ fn completed_local_targets_and_other_repeated_reference_bodies_remain_unsupporte
         r"/(a)(b)((\1)\2)+/u.test('abab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

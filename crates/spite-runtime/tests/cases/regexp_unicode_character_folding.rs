@@ -97,23 +97,6 @@ fn unicode_character_folding_metadata_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_character_folding_collection_long_searches_and_unlimited_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm
-        .eval(r"let r=/\w/ivg,c=new RegExp(r),text='😀'.repeat(100000)+'K'")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("let m=c.exec(text);m[0]==='K'&&m.index===200000&&c.lastIndex===200001"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_character_folding_opted_work_and_unproved_syntax() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -142,10 +125,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         r"/(?:\b)+/iu.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

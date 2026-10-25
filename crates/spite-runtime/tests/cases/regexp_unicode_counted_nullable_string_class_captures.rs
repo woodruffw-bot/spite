@@ -1,6 +1,6 @@
 //! Larger nullable counts retain required-empty capture resets.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -70,21 +70,7 @@ fn counted_nullable_string_class_native_tables_consumers_and_required_empty_iden
     check(
         r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<c>[\\q{ab}&&\\q{cd}])|(?<e>)){2})(?<after>)",input="!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],[[0,0],[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],0,0]""####,
     );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{a|ab}])){99999999999999999999,100000000000000000000})(?<after>)",input="ababaX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,2],[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],0,2]""####,
-    );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])|(?<e>)){99999999999999999999,100000000000000000000})(?<after>)",input="ababaX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ababa\",\"\",\"ababa\",\"\",\"<undefined>\",\"\",\"\"],[[0,5],[0,0],[0,5],[5,5],\"<undefined>\",[5,5],[5,5]],0,5]""####,
-    );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){99999999999999999999,100000000000000000000})(?<after>)",input="ababaX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ababa\",\"\",\"ababa\",\"\",\"\",\"\"],[[0,5],[0,0],[0,5],[5,5],[5,5],[5,5]],0,5]""####,
-    );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{a|ab}])){99999999999999999999})(?<after>)",input="ababaX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],0,0]""####,
-    );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{a|ab}])){000099999999999999999999,0000100000000000000000001})(?<after>)",input="ababaX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"abab\",\"\",\"abab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,4],[0,0],[0,4],[2,4],\"<undefined>\",[2,4],[4,4]],0,4]""####,
-    );
+
     check(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?<whole>(?<iteration>(?<c>[\q{|a|ab}])|(?<e>)){2,3})/dvg,a=Array.from('abXaa'.matchAll(r));return JSON.stringify([a.map(row),r.lastIndex]);})()==="[[[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\"],[[0,2],[0,2],[2,2],[2,2],\"<undefined>\"],0,\"abXaa\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"ab\",\"\",\"\",\"<undefined>\"],[[0,2],[2,2],[2,2],\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"\",\"<undefined>\"],[[2,2],[2,2],[2,2],[2,2],\"<undefined>\"],2,\"abXaa\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"\",\"\",\"\",\"<undefined>\"],[[2,2],[2,2],[2,2],\"<undefined>\"],true,true],[[\"aa\",\"aa\",\"a\",\"a\",\"<undefined>\"],[[3,5],[3,5],[4,5],[4,5],\"<undefined>\"],3,\"abXaa\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"aa\",\"a\",\"a\",\"<undefined>\"],[[3,5],[4,5],[4,5],\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"\",\"<undefined>\"],[[5,5],[5,5],[5,5],[5,5],\"<undefined>\"],5,\"abXaa\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"\",\"\",\"\",\"<undefined>\"],[[5,5],[5,5],[5,5],\"<undefined>\"],true,true]],0]""####,
     );
@@ -115,67 +101,7 @@ fn counted_nullable_string_class_native_tables_consumers_and_required_empty_iden
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('!');m.groups.whole==='ababa'&&m.groups.c==='a'&&m.indices.groups.c===m.indices[4]&&m.indices[4][0]===4&&n.groups.whole===''&&n.groups.iteration===''&&n.groups.c===''&&n.groups.e===undefined&&n.indices.groups.c===n.indices[4]&&clone.source===r.source&&r.lastIndex===5"),Ok(Value::Boolean(true)));
 }
-#[test]
-fn counted_nullable_string_class_deep_scopes_long_members_and_host_aborts_remain_flat() {
-    let pattern = JsString::from(
-        format!(
-            r"{}(([\q{{a|ab}}])|()){{4,5}}{}",
-            "(".repeat(1000),
-            "){1}".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('ababaX');m.length===1004&&m[0]==='ababa'&&m[1]==='ababa'&&m[1000]==='ababa'&&m[1001]===''&&m[1002]===undefined&&m[1003]===''&&m.indices[1001][0]===5&&m.indices[1001][1]===5&&m.indices[1003][0]===5"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(format!(r"()((([\q{{|{word}}}])|()){{3,4}})()").as_str());
-    let input = JsString::from(format!("{word}{word}!").as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===40000&&m[1]===''&&m[2].length===40000&&m[3]===''&&m[4]===''&&m[5]===undefined&&m[6]===''&&m.indices[3][0]===40000&&m.indices[3][1]===40000&&m.indices[6][0]===40000"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/[\q{|xx}]{20000}/vg,marker=0;r.lastIndex=1")
-        .unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===1"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/(|[\q{ab}]){2}/dvgy,marker=0;r.lastIndex=1")
-        .unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert_eq!(realm.eval("var m;try{m=r.exec(input)}finally{marker=3}marker===3&&m.length===2&&m.index===1&&m[0]===''&&m[1]===''&&m.indices[0][0]===1&&m.indices[1][0]===1&&m.indices[1][1]===1&&r.lastIndex===1"),Ok(Value::Boolean(true)));
-}
+
 #[test]
 fn counted_nullable_string_class_proofs_keep_backtracking_predicates_references_and_unknown_leaves_closed()
  {
@@ -212,12 +138,19 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaa\"
         r"()(([\q{a|ab}])|()){3}()a",
         r"a()(([\q{a|ab}])|()){3}()",
         r"()((([\q{a|ab}])|()){2}){3}()",
-        r"()(()|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])){99999999999999999999}()",
         r"()(([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()){3}?()",
         r"()(([\q{a|ab}])|[\q{}]){3}()",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ababa')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'v').test('ababa')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
 }

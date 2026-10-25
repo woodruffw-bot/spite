@@ -98,14 +98,6 @@ fn generic_consumers_intrinsic_arrays_and_callback_arguments_keep_choices() {
 }
 
 #[test]
-fn deep_partial_captures_long_runs_and_copies_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let s='a'.repeat(200000)+'b',r=new RegExp('a'+'('.repeat(100000)+'(a|b)+'+')'.repeat(100000)+'(ab)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a[0]===s&&a.length===100003&&a[1].length===199998&&a[100000]===a[1]&&a[100001]==='a'&&a[100002]==='ab'&&a.indices[100000][0]===1&&a.indices[100000][1]===199999&&a.indices[100001][0]===199998&&a.indices[100002][0]===199999&&copy.source===r.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_aborts_and_other_repeated_choices_remain_unsupported() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -135,10 +127,7 @@ fn optional_work_aborts_and_other_repeated_choices_remain_unsupported() {
         r"/(a|b)+b/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

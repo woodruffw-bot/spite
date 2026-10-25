@@ -1,4 +1,6 @@
-//! Shared count of entries retained by an initialized realm.
+//! Shared Runtime integration test helpers.
 
-// Intrinsic objects plus the global lexical environment and global object.
-pub const REALM_ENTRIES: usize = 549;
+mod realm_entries;
+pub use realm_entries::REALM_ENTRIES;
+
+pub mod regexp_oracle;

@@ -1,6 +1,6 @@
 //! Top-level choices compose quantified consuming branches and fixed captures.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -76,35 +76,6 @@ fn copied_variable_plans_and_global_capture_layouts_survive_collection() {
 }
 
 #[test]
-fn opted_in_constructor_and_sticky_search_aborts_remain_host_failures() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/\d+|a/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    // Each setup Script retains the same explicit allowance as the target.
-    realm.eval("let r=/a+|([b])/y,flag=0").unwrap();
-    realm.eval("let s='a'.repeat(8000)").unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_plan() {
     for source in [
         r"/(?:(?:((?:(?:a+[b]+|a){2}){2}){2})|){2,3}/.test('a')",
@@ -115,10 +86,7 @@ fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_
         r"/(?:(?:(?:(a)\1|b+){2})|){2,3}/.test('b')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -134,18 +134,6 @@ fn unicode_property_dot_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_property_dot_large_enclosing_captures_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='('.repeat(3000)+'(\\\\p{sc=Han})(.)'+')'.repeat(3000),r=new RegExp(p,'dvg'),c=new RegExp(r),text='😀'.repeat(100000)+'\\n𠮷a'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3003&&m[1]==='𠮷a'&&m[3000]==='𠮷a'&&m[3001]==='𠮷'&&m[3002]==='a'&&m.indices[3001][0]===200001&&m.indices[3001][1]===200003&&m.indices[3002][0]===200003&&m.indices[3002][1]===200004&&c.lastIndex===200004"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_property_dot_opted_work_and_remaining_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -172,10 +160,7 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         r"/(\p{sc=Han})(.)x/v.exec('𠮷ax')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

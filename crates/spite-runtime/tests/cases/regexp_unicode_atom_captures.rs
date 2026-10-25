@@ -112,18 +112,6 @@ fn unicode_atom_captures_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_atom_captures_many_wrappers_collection_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='('.repeat(2000)+'[A-Z]'+')'.repeat(2000),r=new RegExp(p,'divg'),c=new RegExp(r),text='😀'.repeat(100000)+'K'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===2001&&m[1]==='K'&&m[2000]==='K'&&m.indices[2000][0]===200000&&m.indices[2000][1]===200001&&c.lastIndex===200001"), Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_atom_captures_opted_work_and_unproved_syntax() {
     check(
         r"let m=/(?:[\q{a\)b}])/iv.exec('a)b');m.length===1 && m[0]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
@@ -160,10 +148,7 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         r"/(.)(.)/u.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

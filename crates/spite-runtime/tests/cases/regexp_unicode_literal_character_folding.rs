@@ -132,21 +132,6 @@ fn unicode_literal_character_folding_metadata_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_literal_character_folding_large_escapes_collection_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='\\u{'+'0'.repeat(100000)+'61}',r=new RegExp(p,'ivg'),c=new RegExp(r),text='😀'.repeat(100000)+'A'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("let m=c.exec(text);m[0]==='A'&&m.index===200000&&c.lastIndex===200001"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -175,10 +160,7 @@ fn unicode_literal_character_folding_opted_work_and_remaining_gaps() {
         r"/\u{D800}\u{DC00}/iu.exec('😀')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

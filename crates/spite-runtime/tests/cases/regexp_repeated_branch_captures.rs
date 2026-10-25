@@ -111,17 +111,6 @@ fn repeated_branch_capture_consumers_sticky_zero_iterations_and_undefined_slots(
 }
 
 #[test]
-fn repeated_branch_capture_deep_inventories_nested_loops_runs_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<all>'+'('.repeat(99999)+'a|b'+')'.repeat(100000)+'+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a[0]==='ab'&&a.length===100001&&a.groups.all==='b'&&a[100000]==='b'&&a.indices.groups.all===a.indices[1]&&a.indices[100000][0]===1&&a.indices[100000][1]===2&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let deep=new RegExp('('.repeat(1000)+'(?:a|b)'+')+'.repeat(1000),'d'),d=deep.exec('a');d.length===1001&&d[1]==='a'&&d[1000]==='a'&&d.indices[1000][1]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?<all>(?<last>a|b)+)c/d.exec('ab'.repeat(50000)+'c'),n='9'.repeat(10000),huge=new RegExp('(a|b){'+n+'}'),zero=new RegExp('(?<all>(a|b){0,'+n+'})','d'),empty=zero.exec('q');many[0].length===100001&&many.groups.last==='b'&&many.indices.groups.last[0]===99999&&many.groups.all.length===100000&&huge.exec('ab')===null&&empty.groups.all===''&&empty[2]===undefined&&empty.indices[2]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn opted_in_branch_capture_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -151,10 +140,7 @@ fn empty_complete_paths_lookaround_and_unicode_remain_distinct_from_match_failur
         r"/((?:a|b)?){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

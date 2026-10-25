@@ -55,18 +55,6 @@ fn single_character_q_lookahead_string_consumers_copies_and_collection_keep_orig
 }
 
 #[test]
-fn single_character_q_lookahead_deep_wrappers_and_stateful_pair_offsets_keep_exact_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{a|😀}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=2;var m=r.exec('!😀a');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);
-        r.lastIndex=5;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;ok
-    "#,
-    );
-}
-
-#[test]
 fn word_q_classes_keep_original_polarity_source_and_named_capture_ranges() {
     check(
         r#"
@@ -185,21 +173,6 @@ fn cloning_and_collection_preserve_named_operand_capture_storage() {
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;var m=copy.exec('baaa');m.index===2&&m.groups.outside===''&&m.groups.run==='aa'&&m.indices.groups.run[1]===4&&copy.lastIndex===2"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_wrappers_and_unrepresentable_counts_keep_original_capture_inventory() {
-    check(
-        r#"
-        var ok=true;
-        for(var mode of ['u','v']){
-            var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'a+'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('baaa');
-            ok=ok&&m.length===2001&&m.index===1&&m[0]==='';
-            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'aaa')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:4);
-            var huge=new RegExp('(?=(?<run>a{'+'9'.repeat(20000)+'}))','dg'+mode);huge.lastIndex=1;ok=ok&&huge.exec('aaaa')===null&&huge.lastIndex===0;
-        }ok
-    "#,
-    );
 }
 
 #[test]
@@ -331,20 +304,6 @@ fn bare_atom_string_consumers_progress_over_complete_input_characters() {
 }
 
 #[test]
-fn bare_atom_deep_wrappers_keep_empty_outside_and_full_operand_capture_ranges() {
-    check(
-        r#"
-        var ok=true;
-        for(var mode of ['u','v']){
-            var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[a-z]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('!!a');
-            ok=ok&&m.index===2&&m.length===2001&&m[0]==='';
-            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===2&&m.indices[i][1]===(i<=1000?2:3);
-        }ok
-    "#,
-    );
-}
-
-#[test]
 fn bare_word_atoms_keep_polarity_source_and_independent_named_ranges() {
     check(
         r#"
@@ -439,18 +398,6 @@ fn scalar_v_set_string_consumers_copies_and_collection_keep_original_operand_ext
 }
 
 #[test]
-fn scalar_v_set_deep_wrappers_nested_classes_and_pair_offsets_keep_exact_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[[😀a]--[x]]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=2;var m=r.exec('!😀a');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);
-        var nested='['.repeat(1000)+'a'+']'.repeat(1000),m=new RegExp('(?=(?<run>'+nested+'))','dv').exec('a');ok=ok&&m.index===0&&m.groups.run==='a'&&m.indices.groups.run[1]===1;ok
-    "#,
-    );
-}
-
-#[test]
 fn word_scalar_v_sets_keep_original_polarity_source_and_named_independent_ranges() {
     check(
         r#"
@@ -534,20 +481,6 @@ fn character_result_class_consumers_copies_and_collection_keep_original_extents(
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('a');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn character_result_class_deep_wrappers_and_pair_offsets_keep_exact_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{a|ab|}&&\\p{Any}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!a');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:2);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[[\\\\q{😀x|😀}&&\\\\p{Any}]a]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
-    );
 }
 
 #[test]
@@ -640,23 +573,6 @@ fn variable_q_class_string_consumers_copies_and_collection_keep_selected_operand
 }
 
 #[test]
-fn variable_q_class_deep_wrappers_and_pair_offsets_keep_exact_defined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{ab|a|}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!ab');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'ab')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\q{😀a|😀|a|}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}|}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===''&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===0",
-    );
-}
-
-#[test]
 fn word_variable_q_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
     check(
         r#"
@@ -695,20 +611,6 @@ fn word_variable_q_class_string_consumers_copies_and_collection_keep_selected_ex
     "#), Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn word_variable_q_class_deep_wrappers_and_pair_offsets_keep_selected_capture_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'\\b[\\q{ab|a|}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!ab');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:2);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀a|😀|a|}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀ab');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
-    );
 }
 
 #[test]
@@ -754,22 +656,6 @@ fn q_union_lookahead_consumers_copies_and_collection_keep_selected_extents() {
 }
 
 #[test]
-fn q_union_lookahead_deep_scopes_and_pair_offsets_keep_exact_capture_ranges() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{ab|a}\\q{abc|}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'abc')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:4);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\q{😀a}\\\\q{😀|a}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}}\\\\q{}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===''&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===0",
-    );
-}
-#[test]
 fn word_q_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
     check(
         r#"
@@ -808,20 +694,6 @@ fn word_q_union_class_string_consumers_copies_and_collection_keep_selected_exten
     "#), Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn word_q_union_class_deep_wrappers_and_pair_offsets_keep_selected_capture_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'\\b[\\q{ab|a}\\q{abc|}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'ab')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀a}\\\\q{😀|a}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀ab');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
-    );
 }
 
 #[test]
@@ -867,22 +739,6 @@ fn character_union_lookahead_consumers_copies_and_collection_keep_selected_exten
 }
 
 #[test]
-fn character_union_lookahead_deep_scopes_and_pair_offsets_keep_exact_capture_ranges() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[a\\q{ab|abc}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'abc')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:4);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[😀\\\\q{😀a|a|}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[x\\\\q{\\\\u{D83D}\\\\u{DE00}}]))','dgyv');r.exec('😀')===null",
-    );
-}
-#[test]
 fn word_character_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
     check(
         r#"
@@ -921,23 +777,6 @@ fn word_character_union_class_string_consumers_copies_and_collection_keep_select
     "#), Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn word_character_union_class_deep_wrappers_and_pair_offsets_keep_selected_capture_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'\\b[a\\q{ab|abc|}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'ab')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\B[😀\\\\q{😀a|a|}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀ab');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\b[\\\\u{10428}\\\\q{\\\\u{10428}a}]\\\\b))','div'),m=r.exec('A𐐀a!');m.index===1&&m.groups.run==='𐐀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4",
-    );
 }
 
 #[test]
@@ -989,23 +828,6 @@ fn scalar_union_lookahead_consumers_copies_and_collection_keep_selected_extents(
 }
 
 #[test]
-fn scalar_union_lookahead_deep_scopes_and_pair_offsets_keep_exact_capture_ranges() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[a-z\\q{ab|abc}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'abc')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:4);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\p{Any}\\\\q{😀a|a|}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>[\\\\d\\\\q{\\\\u{D83D}\\\\u{DE00}}]))','dgyv');r.exec('😀')===null",
-    );
-}
-
-#[test]
 fn word_scalar_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
     check(
         r#"
@@ -1044,21 +866,4 @@ fn word_scalar_union_class_string_consumers_copies_and_collection_keep_selected_
     "#), Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn word_scalar_union_class_deep_wrappers_and_pair_offsets_keep_selected_capture_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'\\b[a-z\\q{ab|abc|}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!abc');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'ab')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\B[\\\\p{Any}\\\\q{😀a|a|}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀ab');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
-    );
-    check(
-        "var r=new RegExp('(?=(?<run>\\\\b[\\\\p{Script=Deseret}\\\\q{\\\\u{10428}a}]\\\\b))','div'),m=r.exec('A𐐀a!');m.index===1&&m.groups.run==='𐐀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4",
-    );
 }

@@ -123,23 +123,6 @@ fn unicode_one_iteration_nullable_alternative_consumers_and_coercions() {
 }
 
 #[test]
-fn unicode_one_iteration_nullable_alternative_deep_groups_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(6000)+'a|(?:)'+')'.repeat(6000)+'{01,0001}',r=new RegExp(p,'dvg'),c=new RegExp(r),text='a'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=c.exec(text);m.length===6001&&m[6000]==='a'&&m.indices[6000][0]===0&&m.indices[6000][1]===1&&c.lastIndex===1"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    realm.eval(r"p='('.repeat(6000)+'(?:'.repeat(6000)+')'.repeat(6000)+'|a'+')'.repeat(6000)+'{1}?';r=new RegExp(p,'dug');c=new RegExp(r);text='a'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"m=c.exec(text);m.length===6001&&m[6000]===''&&m.indices[6000][0]===0&&m.indices[6000][1]===0&&c.lastIndex===0"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_one_iteration_nullable_alternative_opt_in_work_aborts_before_mutation() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

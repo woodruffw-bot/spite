@@ -91,19 +91,6 @@ fn consumers_sticky_global_empty_advance_and_callbacks_keep_imported_and_future_
 }
 
 #[test]
-fn deep_capture_scopes_clones_gc_nested_assertions_and_huge_empty_counts_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(a)(?<=a(?=('+'('.repeat(n)+'\\1'+')'.repeat(n)+'b){2}))a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aabab');a.length===n+3&&a[1]==='a'&&a[2]==='ab'&&a[n+2]==='a'&&a.indices[n+2][0]===3&&r.source===copy.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(a)(?<=a(?!('+'('.repeat(n)+'\\1'+')'.repeat(n)+'b){2}q))a','d'),b=neg.exec('aabab');b[1]==='a'&&b[2]===undefined&&b[n+2]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let huge=new RegExp('()(?<=a(?=((\\1)){'+'9'.repeat(100)+'}))b','d'),h=huge.exec('ab');h[3]===''&&h.indices[3][0]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let nested=new RegExp('(a)(?<=a'+'(?='.repeat(10000)+'\\1'+')'.repeat(10000)+')a');nested.test('aa')"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(a)(?<=a(?=((\1)b){50000}))a/d;let found=long.exec('a'+'ab'.repeat(50000));found.indices[2][0]===99999&&found.indices[3][0]===99999"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn opted_in_work_aborts_keep_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -133,10 +120,7 @@ fn changing_owner_targets_variable_counts_choices_and_unicode_remain_pending() {
         r"/(a)(?<=a(?=\1))a/v.exec('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

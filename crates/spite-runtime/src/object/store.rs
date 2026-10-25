@@ -962,21 +962,20 @@ impl Objects {
                         ..
                     }
             );
-        if mapping.is_some() {
-            if let DescriptorKind::Data {
+        if mapping.is_some()
+            && let DescriptorKind::Data {
                 value: None,
                 writable: Some(false),
             } = &descriptor.kind
-            {
-                let value = self
-                    .mapped_value(object, &key, budget)?
-                    .expect("existing mapping");
-                budget.value(value)?;
-                descriptor.kind = DescriptorKind::Data {
-                    value: Some(value.clone()),
-                    writable: Some(false),
-                };
-            }
+        {
+            let value = self
+                .mapped_value(object, &key, budget)?
+                .expect("existing mapping");
+            budget.value(value)?;
+            descriptor.kind = DescriptorKind::Data {
+                value: Some(value.clone()),
+                writable: Some(false),
+            };
         }
         match &descriptor.kind {
             DescriptorKind::Data {
@@ -1006,22 +1005,20 @@ impl Objects {
             record.define_own_property(key, descriptor)
         }
         .map_err(|_| Error::PropertyLimit)?;
-        if allowed {
-            if let Some((environment, name, index)) = mapping {
-                if let Some(value) = mapped_value {
-                    self.environment_mut(&environment)?
-                        .bindings
-                        .get_mut(&name)
-                        .ok_or(Error::WrongKind)?
-                        .value = Some(value);
-                }
-                if detach {
-                    let record = self.object_mut(object)?;
-                    let map = record.parameter_map.as_mut().expect("existing map");
-                    map.names.remove(&index);
-                    if map.names.is_empty() {
-                        record.parameter_map = None;
-                    }
+        if allowed && let Some((environment, name, index)) = mapping {
+            if let Some(value) = mapped_value {
+                self.environment_mut(&environment)?
+                    .bindings
+                    .get_mut(&name)
+                    .ok_or(Error::WrongKind)?
+                    .value = Some(value);
+            }
+            if detach {
+                let record = self.object_mut(object)?;
+                let map = record.parameter_map.as_mut().expect("existing map");
+                map.names.remove(&index);
+                if map.names.is_empty() {
+                    record.parameter_map = None;
                 }
             }
         }
@@ -1070,10 +1067,10 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
-        if record.typed_array_data().is_some() {
-            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
-                return self.typed_array_has_index(object, index, budget);
-            }
+        if record.typed_array_data().is_some()
+            && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
+        {
+            return self.typed_array_has_index(object, index, budget);
         }
         budget.lookup(record, key)?;
         Ok(record.own_property(key).is_some())
@@ -1091,10 +1088,10 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
-        if record.typed_array_data().is_some() {
-            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
-                return self.typed_array_get_own_element(object, index, budget);
-            }
+        if record.typed_array_data().is_some()
+            && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
+        {
+            return self.typed_array_get_own_element(object, index, budget);
         }
         budget.lookup(record, key)?;
         match record.own_property(key) {
@@ -1283,12 +1280,12 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
-        if record.typed_array_data().is_some() {
-            if let Some(index) = self.typed_array_numeric_index(object, key, budget)? {
-                return self
-                    .typed_array_has_index(object, index, budget)
-                    .map(|valid| !valid);
-            }
+        if record.typed_array_data().is_some()
+            && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
+        {
+            return self
+                .typed_array_has_index(object, index, budget)
+                .map(|valid| !valid);
         }
         // Deletion may shift the remaining vector entries after the key scan.
         budget.charge(record.property_count())?;
@@ -1296,12 +1293,10 @@ impl Objects {
         let index = super::array_index(key);
         let record = self.object_mut(object)?;
         let deleted = record.delete(key);
-        if deleted {
-            if let (Some(map), Some(index)) = (&mut record.parameter_map, index) {
-                map.names.remove(&index);
-                if map.names.is_empty() {
-                    record.parameter_map = None;
-                }
+        if deleted && let (Some(map), Some(index)) = (&mut record.parameter_map, index) {
+            map.names.remove(&index);
+            if map.names.is_empty() {
+                record.parameter_map = None;
             }
         }
         Ok(deleted)
@@ -1409,10 +1404,10 @@ impl Objects {
             if record.is_proxy() {
                 return Err(Error::RequiresRuntime);
             }
-            if record.typed_array_data().is_some() {
-                if let Some(index) = self.typed_array_numeric_index(handle, key, budget)? {
-                    return Ok(Some(FoundProperty::Element(handle.clone(), index)));
-                }
+            if record.typed_array_data().is_some()
+                && let Some(index) = self.typed_array_numeric_index(handle, key, budget)?
+            {
+                return Ok(Some(FoundProperty::Element(handle.clone(), index)));
             }
             budget.lookup(record, key)?;
             if let Some(property) = record.own_property(key) {

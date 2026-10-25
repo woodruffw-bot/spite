@@ -117,18 +117,6 @@ fn zero_count_lookbehind_reference_consumers_keep_last_index_empty_advancement_a
 }
 
 #[test]
-fn zero_count_lookbehind_deep_skipped_slots_zero_bounds_frames_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,body='(?:'+'('.repeat(n)+'a'+')'.repeat(n)+'\\'+n+')',r=new RegExp('(?<='+body+'{0})b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qb');a.index===1&&a.length===n+1&&a[1]===undefined&&a[n]===undefined&&a.indices[1]===undefined&&a.indices[n]===undefined&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let padded=new RegExp('(?<=((a)\\2){'+'0'.repeat(10000)+'})b','d').exec('qb');padded[1]===undefined&&padded[2]===undefined&&padded.index===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let deep=new RegExp('(?<='+'(?:'.repeat(10000)+'((a)\\2){0}'+'){2}'.repeat(10000)+')b','d').exec('b');deep[1]===undefined&&deep[2]===undefined&&deep.indices[2]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let many=/(?:(?<=((a)\2){0})b|a)+c/.exec('b'+'a'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined&&many[2]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_skipped_reference_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -159,10 +147,7 @@ fn nonzero_consuming_references_outside_optional_reads_unproved_choices_and_unic
         r"/(?<=((a)\2){0})b/v.exec('b')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

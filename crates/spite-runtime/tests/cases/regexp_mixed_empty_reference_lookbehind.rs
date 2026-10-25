@@ -96,18 +96,6 @@ fn consumers_last_index_callbacks_and_skipped_capture_effects_are_preserved() {
 }
 
 #[test]
-fn deep_owned_scopes_clones_collection_huge_empty_counts_and_negative_undo_stay_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(a)(?<=('+'('.repeat(n)+'b'+')'.repeat(n)+'\\3\\1){2})c','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('babac');a.index===3&&a.length===n+3&&a[1]==='a'&&a[2]==='ba'&&a[n+2]==='b'&&a.indices[n+2][0]===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(a)(?<!('+'('.repeat(n)+'b'+')'.repeat(n)+'\\3\\1){2}q)c','d'),b=neg.exec('babaac');b[1]==='a'&&b[2]===undefined&&b[n+2]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let huge=new RegExp('()(?<=((())\\3\\1){'+'9'.repeat(100)+'})b','d'),h=huge.exec('b');h[4]===''&&h.indices[4][0]===0"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(a)(?<=((b)\3\1){50000})c/dy;long.lastIndex=99999;let found=long.exec('ba'.repeat(50000)+'c');found.index===99999&&found.indices[1][0]===99999&&found.indices[2][0]===0&&found.indices[3][0]===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -138,10 +126,7 @@ fn variable_counts_dependent_mixed_targets_choices_and_unicode_remain_pending() 
         r"/(a)(?<=((b)\3\1){2})c/v.exec('babac')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

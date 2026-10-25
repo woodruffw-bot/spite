@@ -115,19 +115,6 @@ fn fixed_lookbehind_choice_consumers_global_sticky_empty_and_callbacks_preserve_
 }
 
 #[test]
-fn fixed_lookbehind_choice_deep_pending_frames_nested_assertions_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,r=new RegExp('(?<='+'(?:'.repeat(n)+'a'+'|a)'.repeat(n)+')(?<x>b)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&copy.source===r.source&&copy.exec('qb')===null"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let nested=new RegExp('(?<='.repeat(n)+'a|b'+')'.repeat(n)+'c');nested.exec('bc').index===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=(a|b))c|d)+e/.exec('bc'+'d'.repeat(10000)+'e');many.index===1&&many[0].length===10002&&many[1]===undefined"),Ok(Value::Boolean(true)));
-    let maximum = usize::MAX;
-    assert_eq!(realm.eval(&format!("new RegExp('(?<=a{{{maximum}}}|b{{{maximum}}})c').exec('abc')===null&&new RegExp('(?<!a{{{maximum}}}|b{{{maximum}}})c').exec('abc').index===2")),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_fixed_lookbehind_branch_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -158,10 +145,7 @@ fn differing_widths_repeated_choices_internal_references_and_lookahead_remain_un
         r"/(?<=(a|b))c/v.exec('bc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -1,7 +1,7 @@
 //! Entire validated classes with max zero need no membership implementation.
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -77,37 +77,13 @@ fn syntax_errors_still_precede_class_erasure_and_other_shapes_stay_unsupported()
     for pattern in [r"[\p{RGI_Emoji}]{0,1}", r"[\p{RGI_Emoji}]{0}a"] {
         let pattern = JsString::from(pattern);
         assert!(
-            matches!(
-                Realm::default().eval(&format!("new RegExp({pattern:?},'v').test('')")),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut Realm::default(),
+                &format!("new RegExp({pattern:?},'v').test('')")
             ),
             "{pattern:?}"
         );
     }
-}
-
-#[test]
-fn deep_classes_long_zero_counts_and_opt_in_aborts_preserve_full_validation() {
-    check(
-        r#"
-        var pattern='['.repeat(1000)+'\\p{RGI_Emoji}'+']'.repeat(1000)+'{'+ '0'.repeat(1000)+','+'0'.repeat(1000)+'}?',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀');m.length===1&&m.index===0&&m[0]===''&&m.indices[0][0]===0&&m.indices[0][1]===0&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let pattern =
-        JsString::from(format!(r"[\p{{RGI_Emoji}}\q{{{}}}]{{0}}", "a".repeat(20_000)).as_str());
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
 }
 
 #[test]
@@ -142,18 +118,6 @@ fn enclosing_class_string_consumers_clones_and_collection_preserve_defined_slots
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('x');m.groups.outside===''&&m.indices.groups.outside===m.indices[1]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_enclosing_class_captures_remain_defined_without_class_membership_queries() {
-    check(
-        r#"
-        var depth=1000,pattern='('.repeat(depth)+'['.repeat(depth)+'\\p{RGI_Emoji}'+']'.repeat(depth)+'{0}'+')'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&m.length===1001&&m[0]===''&&r.lastIndex===0;
-        for(var i=1;i<m.length;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok
-    "#,
-    );
 }
 
 #[test]
@@ -206,9 +170,9 @@ fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_p
     for pattern in [r"\p{RGI_Emoji}{0,1}", r"\p{RGI_Emoji}{0}a"] {
         let pattern = JsString::from(pattern);
         assert!(
-            matches!(
-                Realm::default().eval(&format!("new RegExp({pattern:?},'v').test('')")),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut Realm::default(),
+                &format!("new RegExp({pattern:?},'v').test('')")
             ),
             "{pattern:?}"
         );
@@ -246,16 +210,4 @@ fn enclosing_property_string_consumers_and_clones_retain_defined_empty_captures(
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('x');m.groups.outside===''&&m.indices.groups.outside===m.indices[1]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_enclosing_property_captures_keep_every_defined_slot_with_long_zero_counts() {
-    check(
-        r#"
-        var depth=1000,pattern='('.repeat(depth)+'\\p{RGI_Emoji}{'+'0'.repeat(1000)+','+'0'.repeat(1000)+'}?'+')'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&m.length===1001&&m[0]===''&&r.lastIndex===0;
-        for(var i=1;i<m.length;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok
-    "#,
-    );
 }

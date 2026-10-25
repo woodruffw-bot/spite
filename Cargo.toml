@@ -1,15 +1,17 @@
 [workspace]
 members = ["crates/*"]
 resolver = "3"
+exclude = ["vendor/regress"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 repository = "https://github.com/woodruffw-bot/spite"
 publish = false
 
 [workspace.dependencies]
+regress = { version = "=0.12.0", default-features = false, features = ["std", "utf16", "prohibit-unsafe", "index-positions"] }
 jiff = { version = "0.2.37", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-concatenated", "tzdb-bundle-always"] }
 jiff-tzdb = "=0.1.8"
 spite-bigint = { path = "crates/spite-bigint" }
@@ -37,6 +39,10 @@ overflow-checks = true
 [profile.test.package.spite-core]
 opt-level = 1
 
+# Matching moved from Core to regress; keep its existing test optimization level.
+[profile.test.package.regress]
+opt-level = 1
+
 # Exhaustive Test262 loops need optimized execution without relaxing checks.
 [profile.conformance]
 inherits = "dev"
@@ -45,3 +51,6 @@ debug = 0
 debug-assertions = true
 overflow-checks = true
 incremental = false
+
+[patch.crates-io]
+regress = { path = "vendor/regress" }

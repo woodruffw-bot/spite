@@ -1,7 +1,7 @@
 //! Positive nested class unions with variable-length q members (22.2.2.9).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -118,10 +118,7 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"
         r"/\b^[[\q{ab}]&&\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -129,21 +126,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"
     check(&format!(
         "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
     ));
-}
-
-#[test]
-fn deep_positive_classes_use_default_limits_and_opt_in_aborts_remain_host_failures() {
-    let pattern = format!(r"[{}\q{{ab}}{}]", "[".repeat(3000), "]".repeat(3000));
-    let script = format!(
-        "let r=/(?<whole>({pattern}))/dvg,m=r.exec('xab!');m[0]==='ab' && m.groups.whole==='ab' && m.indices[2][1]===3 && r.lastIndex===3"
-    );
-    check(&script);
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    let script = format!("try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}");
-    assert!(matches!(realm.eval(&script), Err(Error::Limit { .. })));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
 }

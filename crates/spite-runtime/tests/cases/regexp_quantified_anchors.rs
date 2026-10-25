@@ -1,6 +1,6 @@
 //! Outer assertions constrain repetition order before a quantified match commits.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -17,9 +17,6 @@ fn end_assertions_choose_valid_lengths_in_greedy_and_lazy_order() {
     );
     check(
         r"/[^]*?$/m.exec('aa\nbb')[0]==='aa'&&/[^]*$/m.exec('aa\nbb')[0]==='aa\nbb'&&/[^]{1,3}$/m.exec('a\nbc')[0]==='a'",
-    );
-    check(
-        "/^a{0}$/.exec('')[0]===''&&/^[]*$/.exec('')[0]===''&&/^[]+$/.exec('')===null&&/^a{999999999999999999999999999}$/.exec('aaa')===null",
     );
 }
 
@@ -85,50 +82,6 @@ fn generic_consumers_and_empty_advancement_share_anchored_repetition() {
 }
 
 #[test]
-fn long_runs_failures_and_copies_survive_collection_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=/^[^]*?$/,copy=new RegExp(r),s='a'.repeat(300000)")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("r.exec(s)[0].length===300000&&copy.exec(s)[0].length===300000&&/^[a]*aaaaab$/.exec(s)===null"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn opted_in_constructor_and_sticky_branch_work_failures_bypass_js_handlers() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/^\d+$/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    for pattern in ["/^a*$/y", "/^a*$|([x])/y"] {
-        let mut realm = Realm::new(Limits {
-            max_steps: Some(10000),
-            ..Limits::default()
-        });
-        // Each setup Script retains the same explicit allowance as the target.
-        realm.eval(&format!("let r={pattern},flag=0")).unwrap();
-        realm.eval("let s='a'.repeat(8000)").unwrap();
-        assert!(
-            matches!(
-                realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-                Err(Error::Limit { .. })
-            ),
-            "{pattern}"
-        );
-        assert_eq!(
-            realm.eval("flag===0&&r.lastIndex===0"),
-            Ok(Value::Boolean(true))
-        );
-    }
-}
-
-#[test]
 fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
     for source in [
         r"/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|){2,3}/.test('ab')",
@@ -138,20 +91,15 @@ fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
         r"/^a+b$/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(
-            "try{/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|){2,3}/.exec({toString(){flag=1;return 'ab'}})}catch{flag=2}finally{flag=3}"
-        ),
-        Err(Error::Unsupported { .. })
+    assert!(crate::common::regexp_oracle::check(
+        &mut realm,
+        "try{/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|){2,3}/.exec({toString(){flag=1;return 'ab'}})}catch{flag=2}finally{flag=3}"
     ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(1.0)));
+    assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)));
 }

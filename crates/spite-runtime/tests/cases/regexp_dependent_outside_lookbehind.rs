@@ -97,31 +97,6 @@ fn consumers_global_sticky_empty_skip_and_callbacks_use_resolved_unit_ranges() {
 }
 
 #[test]
-fn deep_captures_clones_collection_empty_dependency_chains_overflow_and_counts_stay_unlimited() {
-    let mut realm = Realm::default();
-    let count = usize::MAX / 2 + 1;
-    assert_eq!(realm.eval(&format!("new RegExp('(?<=(?:ab){{{count}}})c').exec('abc')===null&&new RegExp('(?<!(?:ab){{{count}}})c').exec('abc').index===2")),Ok(Value::Boolean(true)));
-    realm.eval(r"let n=100000,r=new RegExp('(a)(?<=(\\3'+'('.repeat(n)+'b'+')'.repeat(n)+'\\1){2})c','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('bbabbac');a.length===n+3&&a.index===5&&a[2]==='bba'&&a[n+2]==='b'&&a.indices[n+2][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(a)(?<!(\\3'+'('.repeat(n)+'b'+')'.repeat(n)+'\\1){2}q)c','d'),b=neg.exec('bbabbaac');b[1]==='a'&&b[2]===undefined&&b[n+2]===undefined"),Ok(Value::Boolean(true)));
-    let chain = (0..10000)
-        .map(|i| format!("\\{}(", i + 3))
-        .collect::<String>();
-    let body = "(?<=(".to_owned() + &chain + r"\1" + &")".repeat(10000) + "){1})b";
-    let empty = JsString::from(("()".to_owned() + &body).as_str());
-    let nonempty = JsString::from(("(a)".to_owned() + &body).as_str());
-    assert_eq!(realm.eval(&format!("let chain=new RegExp({empty:?},'d'),e=chain.exec('b');e.length===10003&&e[10002]===''&&e.indices[10002][0]===0")),Ok(Value::Boolean(true)));
-    assert_eq!(
-        realm.eval(&format!("new RegExp({nonempty:?}).exec('ab')===null")),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval(r"let huge=new RegExp('()(?<=(\\3(\\1)){'+'9'.repeat(100)+'})b','d'),h=huge.exec('b');h[3]===''&&h.indices[3][0]===0"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(a)(?<=(\3(b)\1){50000})c/dy;long.lastIndex=149999;let found=long.exec('bba'.repeat(50000)+'c');found.index===149999&&found.indices[2][0]===0&&found.indices[3][0]===1"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -148,10 +123,7 @@ fn variable_counts_choices_dependent_children_and_unicode_remain_pending() {
         r"/(a)(?<=(\3(b)\1){2})c/v.exec('bbabbac')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

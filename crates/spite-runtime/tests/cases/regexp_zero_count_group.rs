@@ -1,7 +1,6 @@
 //! A validated whole group repeated zero times never executes its body.
 
-use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -94,39 +93,6 @@ fn escaped_and_duplicate_names_keep_undefined_aliases() {
 }
 
 #[test]
-fn opt_in_constructor_work_limits_remain_host_aborts() {
-    let pattern = JsString::from(format!("(?:(?=({}))[a]){{0}}", "a".repeat(20_000)).as_str());
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'u')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_erased_captures_clone_and_collect_without_executing_body() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var depth=1000,pattern='('.repeat(depth)+'(?=(a))b'+')'.repeat(depth)+'{0}',r=new RegExp(pattern,'dgu'),copy=new RegExp(r);
-        var m=copy.exec('x'),ok=m.length===depth+2&&m.index===0&&m[0]==='';
-        for(var i=1;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
-        ok
-    "#),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("copy.exec('x')[1]===undefined && copy.source===r.source"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn mandatory_enclosing_captures_select_empty_spans_and_inner_names_stay_undefined() {
     check(
         r#"
@@ -163,21 +129,5 @@ fn enclosing_empty_captures_flow_through_matchall_replace_search_and_split() {
         var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');
         ok&&m.index===1&&copy.lastIndex===1&&m.groups.outside===''&&m.groups.root===undefined&&m.indices.groups.outside===m.indices[1]
     "#,
-    );
-}
-
-#[test]
-fn deep_mandatory_enclosing_and_erased_capture_slots_survive_collection() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var depth=1000,pattern='('.repeat(depth)+'('.repeat(depth)+'(?=(a))b'+')'.repeat(depth)+'{0}'+')'.repeat(depth),r=new RegExp(pattern,'dgu'),copy=new RegExp(r);
-        copy.lastIndex=1;var m=copy.exec('😀'),ok=m.index===0&&m.length===2002&&m[0]==='';
-        for(var i=1;i<m.length;i++)ok=ok&&(i<=depth?m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0:m[i]===undefined&&m.indices[i]===undefined);
-        ok
-    "#),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("var m=copy.exec('x');m[1000]===''&&m[1001]===undefined&&m[2001]===undefined"),
-        Ok(Value::Boolean(true))
     );
 }

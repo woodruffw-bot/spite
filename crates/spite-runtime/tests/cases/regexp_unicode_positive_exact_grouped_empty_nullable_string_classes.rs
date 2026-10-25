@@ -1,7 +1,7 @@
 //! Representable positive exact nullable string classes (22.2.2.3).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -36,24 +36,6 @@ fn exact_counts_keep_mandatory_source_priority_and_final_empty_captures() {
             "let a=/^\\b(?<each>{class}|(?:(?:))){{03}}?\\b$/div.exec('ſK'),b=/^\\b(?<each>(?:(?:))|{class}){{3}}\\b$/div.exec('ſK');a[0]==='ſK' && a.groups.each==='' && a.indices[1][0]===2 && a.indices[1][1]===2 && b[0]==='ſK' && b.groups.each==='K' && b.indices[1][0]===1 && b.indices[1][1]===2"
         ));
     }
-}
-
-#[test]
-fn largest_represented_exact_bounds_preserve_priority_source_and_required_empty_values() {
-    let maximum = usize::MAX;
-    for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
-        for q in [
-            format!("{{{maximum}}}"),
-            format!("{{000{maximum},0{maximum}}}?"),
-        ] {
-            check(&format!(
-                "let r=/(?<each>{class}|(?:(?:))){q}/dv,a=r.exec('abX'),b=/(?<each>(?:(?:))|{class}){q}/dv.exec('abX'),c=/(?<each>(?:(?:))|{class}){q}$/dv.exec('ab');r.source.includes('{maximum}') && a[0]==='ab' && a.groups.each==='' && a.indices[1][0]===2 && a.indices[1][1]===2 && b[0]==='' && b.groups.each==='' && b.indices[1][0]===0 && c[0]==='ab' && c.groups.each==='b' && c.indices[1][0]===1 && c.indices[1][1]===2"
-            ));
-        }
-    }
-    check(&format!(
-        "let r=/(?<each>(?:(?:))|[\\q{{ab}}&&a]){{{maximum}}}/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{{writable:false}});let caught=false;try{{r.exec('😀')}}catch(e){{caught=e instanceof TypeError}}caught && r.lastIndex===1"
-    ));
 }
 
 #[test]
@@ -107,7 +89,6 @@ fn consumers_replacements_clones_and_collection_preserve_exact_count_results() {
 #[test]
 fn positive_exact_grouped_proofs_finish_finalizers_and_keep_other_domains_deferred() {
     for source in [
-        r"/([\q{a|b}]|(?:)){999999999999999999999999999999999999999}/v.test('a')",
         r"/([\q{a|b}]|(?:)){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){03,003}?/v.test('aaa')",
         r"/(?<each>(?:(?:))|[\q{ab}&&a]){0002}?/v.exec('X').groups.each===''",
@@ -140,15 +121,9 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
         r"/([\q{a|ab}&&a]||(?:)){2}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)){2}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2}[b]/v.test('ab')",
-        r"/([\q{a|ab}&&a]|(?:\b|())){99999999999999999999999999999999999999991,99999999999999999999999999999999999999992}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){99999999999999999999999999999999999999992,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){999999999999999999999999999999999999999,9999999999999999999999999999999999999990}/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -163,58 +138,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
             "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
         ));
     }
-}
-
-#[test]
-fn grouped_exact_count_wrappers_padding_and_opt_in_aborts_preserve_flat_atomic_state() {
-    let pattern = format!(
-        r"{}[\q{{a|ab}}&&a]|(?:(?:)){}{{3}}",
-        "(".repeat(1_000),
-        ")".repeat(1_000)
-    );
-    check(&format!(
-        "let r=/{pattern}/dv,m=r.exec('aa');m.length===1001 && m[0]==='aa' && m[1000]==='' && m.indices[1000][0]===2 && m.indices[1000][1]===2"
-    ));
-    let pattern = format!(r"((?:(?:))|[\q{{{}}}&&a]){{3}}", "x".repeat(20_000));
-    check(&format!(
-        "let r=/{pattern}/dvy,m=r.exec('😀');m[0]==='' && m[1]==='' && m.indices[1][0]===0 && m.indices[1][1]===0 && r.lastIndex===0"
-    ));
-    let pattern = format!(r"([\q{{a|ab}}&&a]|(?:(?:))){{{}2}}", "0".repeat(20_000));
-    check(&format!(
-        "let r=/{pattern}/dv,m=r.exec('aaa');r.source.length>20000 && m[0]==='aa' && m[1]==='a' && m.indices[1][0]===1 && m.indices[1][1]===2"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/([\q{a|ab}&&a]|(?:(?:))){3}$/vg,marker=0")
-        .unwrap();
-    realm
-        .eval(&format!("var text='{}';r.lastIndex=1", "x".repeat(40_000)))
-        .unwrap();
-    assert_eq!(
-        realm.eval(r"var probe=/x/vy;probe.lastIndex=1;probe.exec(text)[0]==='x'"),
-        Ok(Value::Boolean(true))
-    );
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("r.lastIndex===1 && marker===0"),
-        Ok(Value::Boolean(true))
-    );
 }

@@ -333,7 +333,7 @@ def can_collect_runtime_integration_libs(metadata):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--toolchain', choices=['stable', '1.85.0'], required=True)
+    parser.add_argument('--toolchain', choices=['stable', '1.88.0'], required=True)
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--suite', choices=['all', 'core', 'rest'], default='all',
                         help='Select recorded packages after compiling the complete workspace')

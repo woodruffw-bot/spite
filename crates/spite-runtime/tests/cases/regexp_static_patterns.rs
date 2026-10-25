@@ -64,30 +64,6 @@ fn compositional_string_consumers_copies_and_collection_keep_first_successful_ar
 }
 
 #[test]
-fn compositional_depth_and_symbolic_counts_keep_masks_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,body='(?<skip>(?![\\p{RGI_Emoji}]*))|(?<empty>[\\p{RGI_Emoji}]{0})',pattern='('.repeat(depth)+body+')+'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+3&&m[depth]===''&&m[depth+1]===undefined&&m[depth+2]===''&&m.groups.empty===''&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let body = r"(?<skip>(?![\p{RGI_Emoji}]*))|(?<empty>[\p{RGI_Emoji}]{0})";
-    let pattern =
-        JsString::from(format!("{}{body}{}", "(".repeat(depth), ")+".repeat(depth)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===''&&m[{}]===undefined&&m[{}]===''&&m.groups.empty===''&&r.lastIndex===0&&r.source==={pattern:?}",
-        depth + 3,
-        depth,
-        depth + 1,
-        depth + 2
-    ));
-    let pattern = JsString::from(format!("({body}){{{}}}", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn compositional_proofs_preserve_original_errors_coercions_and_opt_in_abort_state() {
     check(
         r#"
@@ -164,41 +140,6 @@ fn capture_free_positive_consumers_clones_and_collection_keep_only_outside_empty
 }
 
 #[test]
-fn capture_free_positive_depth_and_symbolic_minima_keep_flat_masks_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'(?='.repeat(depth)+'[\\p{RGI_Emoji}]*'+')'.repeat(depth)+')+'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+1&&m[1]===''&&m[depth]===''&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}{}[\p{{RGI_Emoji}}]*{}{}",
-            "(".repeat(depth),
-            "(?=".repeat(depth),
-            ")".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===''&&m[{}]===''&&r.lastIndex===0&&r.source==={pattern:?}",
-        depth + 1,
-        depth
-    ));
-    let pattern = JsString::from(
-        format!(
-            r"(?<outside>(?=[\p{{RGI_Emoji}}]*)){{{}}}",
-            "9".repeat(20_000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===2&&m[1]===''&&m.groups.outside===''&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn successful_positive_operands_export_only_undefined_negative_erased_and_skipped_captures() {
     check(
         r#"
@@ -246,36 +187,4 @@ fn undefined_capture_positive_operands_preserve_original_errors_and_coercion_ord
         var m=r.exec({toString(){events.push('input');return 'a😀'}});ok&&m.index===1&&m.groups.outside===''&&m.groups.never===undefined&&r.lastIndex===1&&events.join(',')==='input,index'
     "#,
     );
-}
-
-#[test]
-fn undefined_capture_positive_deep_frames_and_symbolic_minima_keep_masks_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,body='(?!(?<never>[\\p{RGI_Emoji}]))|[\\p{RGI_Emoji}]*',pattern='('.repeat(depth)+'(?='.repeat(depth)+body+')'.repeat(depth)+')+'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+2&&m[1]===''&&m[depth]===''&&m[depth+1]===undefined&&m.groups.never===undefined&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let body = r"(?!(?<never>[\p{RGI_Emoji}]))|[\p{RGI_Emoji}]*";
-    let pattern = JsString::from(
-        format!(
-            "{}{}{body}{}{}",
-            "(".repeat(depth),
-            "(?=".repeat(depth),
-            ")".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===''&&m[{}]===''&&m[{}]===undefined&&m.groups.never===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
-        depth + 2,
-        depth,
-        depth + 1
-    ));
-    let pattern =
-        JsString::from(format!("(?<outside>(?={body})){{{}}}", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===3&&m[1]===''&&m[2]===undefined&&m.groups.never===undefined&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }

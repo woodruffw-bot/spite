@@ -215,10 +215,7 @@ fn incomplete_intrinsic_methods_report_unsupported() {
         r"'abc'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}').next()",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

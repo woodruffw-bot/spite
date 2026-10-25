@@ -154,22 +154,22 @@ impl Realm {
         let prototype = self.ensure_object_intrinsics(span)?;
         let context = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let record = record.filter(|index| values[*index].same_value(&value));
-        if !matches!(value, Value::Object(_)) {
-            if let Some(record) = record {
-                let units = &source.code_units()[document.nodes[record].source.clone()];
-                let mut text = Vec::new();
-                text.try_reserve(units.len())
-                    .map_err(|_| capacity_error(span))?;
-                text.extend_from_slice(units);
-                let text = JsString::from_code_units(text);
-                self.check_json_string(&text, span)?;
-                self.json_create_data(
-                    &context,
-                    JsString::from("source"),
-                    Value::String(text),
-                    span,
-                )?;
-            }
+        if !matches!(value, Value::Object(_))
+            && let Some(record) = record
+        {
+            let units = &source.code_units()[document.nodes[record].source.clone()];
+            let mut text = Vec::new();
+            text.try_reserve(units.len())
+                .map_err(|_| capacity_error(span))?;
+            text.extend_from_slice(units);
+            let text = JsString::from_code_units(text);
+            self.check_json_string(&text, span)?;
+            self.json_create_data(
+                &context,
+                JsString::from("source"),
+                Value::String(text),
+                span,
+            )?;
         }
         let children = if let Value::Object(object) = &value {
             let array = self.is_array(&value, span)?;

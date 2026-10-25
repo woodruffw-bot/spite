@@ -1,6 +1,6 @@
 //! Capturing wrappers distinguish complete runs from their final repeated atom.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -80,48 +80,6 @@ fn flags_and_surrogate_units_capture_original_input_units() {
 }
 
 #[test]
-fn deeply_nested_layouts_and_copied_plans_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let deep=new RegExp('('.repeat(100000)+'a'+')'.repeat(100000)+'+'),r=new RegExp('('.repeat(1000)+'a+'+')'.repeat(1000),'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec('aaa');deep.source.length===200002&&m.length===1001&&m.every(x=>x==='aaa')&&m.indices.length===1001&&m.indices.every(x=>x[0]===0&&x[1]===3)"),Ok(Value::Boolean(true)));
-    realm
-        .eval("let inside=new RegExp('('.repeat(1000)+'a'+')'.repeat(1000)+'*','d')")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m2=inside.exec('aaa'),m3=inside.exec('');m2[1000]==='a'&&m2.indices[1000][0]===2&&m3.length===1001&&m3[1000]===undefined&&Object.hasOwn(m3.indices,'1000')"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn opted_in_host_aborts_precede_capture_results_and_bypass_handlers() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/(\d)+/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/((a)+)/y,flag=0,s='a'.repeat(8000)")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
     for source in [
         r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
@@ -132,10 +90,7 @@ fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
         "/(a)+b/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

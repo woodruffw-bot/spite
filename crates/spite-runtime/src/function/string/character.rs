@@ -91,14 +91,13 @@ impl Realm {
             Builtin::StringCharCodeAt => Ok(Value::Number(f64::from(first))),
             Builtin::StringCodePointAt => {
                 let mut point = u32::from(first);
-                if (0xd800..=0xdbff).contains(&first) {
-                    if let Some(&second) = string.code_units().get(index + 1) {
-                        if (0xdc00..=0xdfff).contains(&second) {
-                            point = 0x10000
-                                + (u32::from(first) - 0xd800) * 0x400
-                                + (u32::from(second) - 0xdc00);
-                        }
-                    }
+                if (0xd800..=0xdbff).contains(&first)
+                    && let Some(&second) = string.code_units().get(index + 1)
+                    && (0xdc00..=0xdfff).contains(&second)
+                {
+                    point = 0x10000
+                        + (u32::from(first) - 0xd800) * 0x400
+                        + (u32::from(second) - 0xdc00);
                 }
                 Ok(Value::Number(f64::from(point)))
             }

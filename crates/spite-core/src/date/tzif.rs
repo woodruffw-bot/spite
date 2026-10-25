@@ -91,7 +91,7 @@ impl TzifTimeZone {
         let standard = fields.take(header.standard)?;
         let universal = fields.take(header.universal)?;
 
-        for (index, record) in types.chunks_exact(6).enumerate() {
+        for (index, record) in types.as_chunks::<6>().0.iter().enumerate() {
             let offset = i32::from_be_bytes(record[..4].try_into().expect("four-byte type offset"));
             let name = names
                 .get(usize::from(record[5])..)
@@ -120,7 +120,7 @@ impl TzifTimeZone {
         offsets
             .try_reserve_exact(header.types)
             .map_err(|_| TzifTimeZoneError::Allocation)?;
-        for record in types.chunks_exact(6) {
+        for record in types.as_chunks::<6>().0 {
             offsets.push(i32::from_be_bytes(
                 record[..4].try_into().expect("four-byte type offset"),
             ));
@@ -159,12 +159,11 @@ impl TzifTimeZone {
                         }
                         RecurringTimeZoneError::Allocation => TzifTimeZoneError::Allocation,
                     })?;
-                if let Some(last) = transitions.last() {
-                    if recurring.offset_at(i128::from(last.seconds) * 1000)
+                if let Some(last) = transitions.last()
+                    && recurring.offset_at(i128::from(last.seconds) * 1000)
                         != offsets[usize::from(last.type_index)]
-                    {
-                        return Err(TzifTimeZoneError::InvalidData);
-                    }
+                {
+                    return Err(TzifTimeZoneError::InvalidData);
                 }
                 Some(recurring)
             }
@@ -213,10 +212,10 @@ impl TzifTimeZone {
         let position = self
             .transitions
             .partition_point(|transition| i128::from(transition.seconds) <= seconds);
-        if position == self.transitions.len() {
-            if let Some(recurring) = &self.recurring {
-                return recurring.offset_at(epoch_milliseconds);
-            }
+        if position == self.transitions.len()
+            && let Some(recurring) = &self.recurring
+        {
+            return recurring.offset_at(epoch_milliseconds);
         }
         let index = if position == 0 {
             0

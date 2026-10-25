@@ -413,12 +413,12 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if let Member::Deferred(index) = member {
-            if let Some(method) = super::typed_array_methods::Method::from_name(
+        if let Member::Deferred(index) = member
+            && let Some(method) = super::typed_array_methods::Method::from_name(
                 DEFERRED_METHODS[usize::from(index)].0,
-            ) {
-                return self.typed_array_method(method, receiver, arguments, span);
-            }
+            )
+        {
+            return self.typed_array_method(method, receiver, arguments, span);
         }
         if let Member::Uint8Encoding(index) = member {
             if let Some(method) =

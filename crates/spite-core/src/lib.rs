@@ -5,52 +5,10 @@ mod case_data;
 pub mod date;
 mod normalization;
 mod normalization_data;
-mod regexp_anchored;
-mod regexp_assertion;
-mod regexp_backreference;
 mod regexp_canonicalize;
-mod regexp_character;
-mod regexp_disjunction;
 mod regexp_escape;
-mod regexp_general_category_data;
-mod regexp_impossible;
-mod regexp_literal;
-mod regexp_outer_noncapturing;
 mod regexp_pattern_source;
-mod regexp_prefixed;
-mod regexp_quantified;
-mod regexp_quantified_continuation;
-mod regexp_repeated_captures;
-mod regexp_repeated_continuation;
-mod regexp_repeated_literal;
-mod regexp_repeated_prefixed;
-mod regexp_repeated_sequence;
-mod regexp_script_data;
-mod regexp_script_extensions_data;
-mod regexp_sequence;
-mod regexp_static;
-mod regexp_unicode_character;
-mod regexp_unicode_class;
-mod regexp_unicode_class_literal;
-mod regexp_unicode_class_literal_class;
-mod regexp_unicode_class_pair;
-mod regexp_unicode_class_pair_literal;
-mod regexp_unicode_class_sequence;
-mod regexp_unicode_class_triple;
-mod regexp_unicode_folded_literal;
-mod regexp_unicode_literal_class_pair;
-mod regexp_unicode_negative_atom;
-mod regexp_unicode_negative_string_class;
-mod regexp_unicode_positive_atom;
-mod regexp_unicode_positive_string_class;
-mod regexp_unicode_property_dot;
-mod regexp_unicode_repeated_atom;
-mod regexp_unicode_string_set;
-mod regexp_zero_count_class;
-mod regexp_zero_count_group;
-mod regexp_zero_count_sequence;
-mod regexp_zero_count_spine;
-mod regexp_zero_count_tree;
+mod regexp_program;
 mod replacement;
 mod symbol;
 mod unicode;
@@ -61,129 +19,10 @@ pub use case::{is_unicode_case_ignorable, is_unicode_cased, unicode_case_mapping
 pub use normalization::{
     canonical_combining_class, canonical_composition, hangul_decomposition, unicode_decomposition,
 };
-pub use regexp_anchored::RegExpAnchoredMatcher;
-pub use regexp_backreference::{
-    RegExpBackreferenceMatch, RegExpBackreferenceMatcher, RegExpBackreferenceNamedBindings,
-    RegExpBackreferenceNamedReference,
-};
 pub use regexp_canonicalize::regexp_canonicalize_character;
-pub use regexp_character::RegExpCharacterMatcher;
-pub use regexp_disjunction::RegExpDisjunctionMatcher;
 pub use regexp_escape::regexp_escape_units;
-pub use regexp_impossible::RegExpImpossibleMatcher;
-pub use regexp_literal::RegExpLiteralMatcher;
-pub use regexp_outer_noncapturing::{
-    RegExpOuterGroupBody, regexp_outer_group_body, regexp_outer_noncapturing_body,
-};
 pub use regexp_pattern_source::regexp_pattern_source_units;
-pub use regexp_prefixed::RegExpPrefixedMatcher;
-pub use regexp_quantified::RegExpQuantifiedMatcher;
-pub use regexp_quantified_continuation::RegExpQuantifiedContinuationMatcher;
-pub use regexp_repeated_captures::RegExpRepeatedCaptureMatcher;
-pub use regexp_repeated_continuation::RegExpRepeatedContinuationMatcher;
-pub use regexp_repeated_literal::RegExpRepeatedLiteralMatcher;
-pub use regexp_repeated_prefixed::RegExpRepeatedPrefixedMatcher;
-pub use regexp_repeated_sequence::RegExpRepeatedSequenceMatcher;
-pub use regexp_sequence::RegExpSequenceMatcher;
-pub use regexp_static::RegExpStaticMatcher;
-pub use regexp_unicode_character::RegExpUnicodeCharacterMatcher;
-pub use regexp_unicode_class::{RegExpUnicodeClassMatcher, RegExpUnicodeSetCompileError};
-pub use regexp_unicode_class_literal::RegExpUnicodeClassLiteralMatcher;
-pub use regexp_unicode_class_literal_class::{
-    RegExpUnicodeClassLiteralClassMatcher, RegExpUnicodeClassLiteralClassWordMatcher,
-};
-pub use regexp_unicode_class_pair::RegExpUnicodeClassPairMatcher;
-pub use regexp_unicode_class_pair_literal::{
-    RegExpUnicodeClassPairLiteralMatcher, RegExpUnicodeClassPairLiteralWordMatcher,
-};
-pub use regexp_unicode_class_sequence::RegExpUnicodeClassSequenceMatcher;
-pub use regexp_unicode_class_triple::{
-    RegExpUnicodeClassTripleMatcher, RegExpUnicodeClassTripleWordMatcher,
-};
-pub use regexp_unicode_folded_literal::{
-    RegExpUnicodeFoldedLiteralMatch, RegExpUnicodeFoldedLiteralMatcher,
-};
-pub use regexp_unicode_literal_class_pair::{
-    RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
-};
-pub use regexp_unicode_negative_atom::RegExpUnicodeNegativeAtomMatcher;
-pub use regexp_unicode_negative_string_class::RegExpUnicodeNegativeStringClassMatcher;
-pub use regexp_unicode_positive_atom::{
-    RegExpUnicodePositiveAtomMatch, RegExpUnicodePositiveAtomMatcher,
-};
-pub use regexp_unicode_positive_string_class::RegExpUnicodePositiveStringClassMatcher;
-pub use regexp_unicode_property_dot::{
-    RegExpUnicodePropertyDotMatch, RegExpUnicodePropertyDotMatcher,
-};
-pub use regexp_unicode_repeated_atom::{
-    RegExpUnicodeAssertedCountedNullableScalarStringClassCaptureMatcher,
-    RegExpUnicodeAssertedCountedNullableStringClassCaptureMatcher,
-    RegExpUnicodeAssertedNullableStringClassCaptureMatcher,
-    RegExpUnicodeAssertedRepeatedStringClassCaptureMatcher,
-    RegExpUnicodeAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeAssertedTwoRequiredNullableStringClassCaptureMatcher,
-    RegExpUnicodeBoundedStringClassCaptureMatcher,
-    RegExpUnicodeConjunctivePredicateChoiceSingleStringClassCaptureMatcher,
-    RegExpUnicodeConjunctivePredicateChoiceStringClassAlternativeMatcher,
-    RegExpUnicodeConjunctivePredicateChoiceStringClassCaptureMatcher,
-    RegExpUnicodeCountedNullableStringClassCaptureMatcher,
-    RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeMatchError,
-    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
-    RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
-    RegExpUnicodePredicateChoiceStringClassMatch, RegExpUnicodePrefixFreeStringClassCaptureMatcher,
-    RegExpUnicodeRepeatedAtomMatch, RegExpUnicodeRepeatedAtomMatcher,
-    RegExpUnicodeRepeatedClassCaptureMatcher, RegExpUnicodeRepeatedStringClassCaptureMatcher,
-    RegExpUnicodeRepeatedStringClassMatch, RegExpUnicodeRequiredStringClassCaptureMatcher,
-    RegExpUnicodeSingleStringClassCaptureMatcher, RegExpUnicodeStringClassBranchMatch,
-    RegExpUnicodeSurroundingAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableCountedNullableStringClassCaptureMatcher,
-    RegExpUnicodeTruthTableExactOneGroupedOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableExactOneGroupedStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableGroupedOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableGroupedStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableNestedOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableNestedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableOptionalSpineStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableQuantifiedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableRootStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedGroupedOptionalSpineStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedGroupedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedNestedOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedNestedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedOptionalSpineStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedQuantifiedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableScopedZeroCountSpineStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableSingleStringClassCaptureMatcher,
-    RegExpUnicodeTruthTableStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableStringClassCaptureMatcher,
-    RegExpUnicodeTruthTableSurroundingOptionalStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableSurroundingStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableZeroCountRootStringClassAlternativeMatcher,
-    RegExpUnicodeTruthTableZeroCountSpineStringClassAlternativeMatcher,
-    RegExpUnicodeTwoRequiredStringClassCaptureMatcher,
-    RegExpUnicodeUnassertedZeroCountSingleStringClassCaptureMatcher,
-    RegExpUnicodeUnassertedZeroCountStringClassAlternativeMatcher,
-    RegExpUnicodeUnassertedZeroCountStringClassCaptureMatcher,
-    RegExpUnicodeUnassertedZeroMinimumSingleStringClassCaptureMatcher,
-    RegExpUnicodeUnassertedZeroMinimumStringClassAlternativeMatcher,
-    RegExpUnicodeUnassertedZeroMinimumStringClassCaptureMatcher,
-    RegExpUnicodeZeroCountAssertedSingleStringClassCaptureMatcher,
-    RegExpUnicodeZeroCountAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeZeroCountAssertedStringClassCaptureMatcher,
-    RegExpUnicodeZeroMinimumAssertedSingleStringClassCaptureMatcher,
-    RegExpUnicodeZeroMinimumAssertedStringClassAlternativeMatcher,
-    RegExpUnicodeZeroMinimumAssertedStringClassCaptureMatcher,
-};
-pub use regexp_unicode_string_set::RegExpUnicodeStringSetMatcher;
-pub use regexp_zero_count_class::RegExpZeroCountClassMatcher;
-pub use regexp_zero_count_group::RegExpZeroCountGroupMatcher;
-pub use regexp_zero_count_sequence::RegExpZeroCountSequenceMatcher;
-pub use regexp_zero_count_spine::RegExpZeroCountSpineMatcher;
+pub use regexp_program::{RegExpProgram, RegExpProgramMatch, RegExpProgramResult};
 pub use replacement::{ReplacementPart, replacement_parts};
 pub use symbol::{JsSymbol, PropertyKey, PropertyKeyRef, WeakJsSymbol};
 #[doc(hidden)]

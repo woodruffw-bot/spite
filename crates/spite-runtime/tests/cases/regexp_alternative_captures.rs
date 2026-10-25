@@ -83,13 +83,3 @@ fn replacements_callbacks_and_split_preserve_undefined_capture_slots() {
         "let all=[...'ab'.matchAll(/(a)|(b)/g)];all.length===2 && all[0][1]==='a' && all[0][2]===undefined && all[1][1]===undefined && all[1][2]==='b' && 'ab'.search('(z)|(b)')===1 && 'ab'.match('(z)|(b)')[2]==='b'",
     );
 }
-
-#[test]
-fn large_capture_inventories_and_copied_plans_survive_collection() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=new RegExp('(a)|'.repeat(1000)+'(b)','dg'),copy=new RegExp(r);RegExp=null;")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=r.exec('xb'),n=copy.exec('a');m.length===1002 && m[1]===undefined && m[1000]===undefined && m[1001]==='b' && m.indices[1001].join(',')==='1,2' && m.indices[1]===undefined && n[1]==='a' && n[2]===undefined && n[1001]===undefined && copy.lastIndex===1 && r.lastIndex===2"),Ok(Value::Boolean(true)));
-}

@@ -165,10 +165,10 @@ impl Realm {
     }
 
     fn weak_map_receiver(&mut self, receiver: Value, span: Span) -> Result<ObjectHandle, Error> {
-        if let Value::Object(object) = receiver {
-            if self.object_work(span, |objects, _| objects.weak_map_has_slot(&object))? {
-                return Ok(object);
-            }
+        if let Value::Object(object) = receiver
+            && self.object_work(span, |objects, _| objects.weak_map_has_slot(&object))?
+        {
+            return Ok(object);
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

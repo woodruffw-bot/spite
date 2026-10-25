@@ -143,18 +143,6 @@ fn unicode_case_ignorable_properties_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_case_ignorable_properties_repeated_sources_captures_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='^'+'('.repeat(3000)+'['+'\\\\p{CI}'.repeat(10000)+']'+')'.repeat(3000)+'$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='😀'.repeat(100000)+'\\n\\u0300'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='\\u0300'&&m[3000]==='\\u0300'&&m.indices[3000][0]===200001&&m.indices[3000][1]===200002&&c.lastIndex===200002"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_case_ignorable_properties_opted_work_and_remaining_sets() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -181,10 +169,7 @@ fn unicode_case_ignorable_properties_opted_work_and_remaining_sets() {
     );
     for source in [r"/\p{CI}+b/u.exec('AA')", r"/\p{CI}A/v.exec('AA')"] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

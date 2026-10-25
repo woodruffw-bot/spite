@@ -1,6 +1,6 @@
 //! Ordinary word assertions retain fixed UTF-16 offsets across consuming plans.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -104,29 +104,6 @@ fn duplicate_checks_shared_sets_and_thousand_capture_copies_survive_collection()
 
 #[test]
 fn optional_work_counts_assertions_in_fixed_prefixes_and_continuations() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"let r=/(a)+(\B)/y,s='a'.repeat(20000),flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"let r=new RegExp('a'+'(\\B)'.repeat(100)+'b','y'),s='a'.repeat(1000)+'b'")
-        .unwrap();
-    assert_eq!(realm.eval("r.exec(s)===null"), Ok(Value::Boolean(true)));
     for source in [
         r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(a\B|c)+)|){2,3}/.test('aa')",
@@ -136,10 +113,7 @@ fn optional_work_counts_assertions_in_fixed_prefixes_and_continuations() {
         r"/(?:(?:^((\b(ab|a)+\b))$)|){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

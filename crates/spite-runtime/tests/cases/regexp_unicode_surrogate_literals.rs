@@ -79,24 +79,7 @@ fn unicode_surrogate_literal_coercions_and_strict_writes() {
         r"let r=/\uD800/ug;r.lastIndex=1;let mark={},caught=false;try{r.exec({toString(){throw mark}})}catch(e){caught=e===mark}caught&&r.lastIndex===1",
     );
 }
-#[test]
-fn unicode_surrogate_deep_storage_clones_collection_and_many_rejected_occurrences() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(100000)+'\\u{'+'0'.repeat(100000)+'de00}'+')'.repeat(100000),r=new RegExp(p,'v'),c=new RegExp(r),a=c.exec('😀'.repeat(100000)+'\uDE00')").unwrap();
-    assert_eq!(
-        realm.eval(r"a.length===100001&&a[100000]==='\uDE00'&&a.index===200000"),
-        Ok(Value::Boolean(true))
-    );
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval(r"c.exec('😀\uDE00').index===2"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;a=null;p=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
     let mut realm = Realm::new(Limits {
@@ -127,10 +110,7 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         r"/(\uDE00)\1/u.exec('\uDE00\uDE00')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

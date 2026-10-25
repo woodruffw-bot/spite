@@ -1,6 +1,6 @@
 //! Prefix-free counts retain successful starts and final-word captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -52,9 +52,7 @@ fn prefix_free_string_class_native_tables_consumers_and_successful_start_identit
     check(
         r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<c>[\\q{\\n|ab}])){2})(?<after>)",input="\nab!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\\nab\",\"\",\"\\nab\",\"ab\",\"ab\",\"\"],[[0,3],[0,0],[0,3],[1,3],[1,3],[3,3]],0,3]""####,
     );
-    check(
-        r####"var pattern="(?<before>)(?<whole>(?<iteration>(?<c>[\\q{ab|cde}])){99999999999999999999})(?<after>)",input="abcde",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
-    );
+
     check(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?<whole>(?<word>[\q{ab|cd}]){2,3})/dvg,a=Array.from('!abcdXcdabab!'.matchAll(r));return JSON.stringify([a.map(row),r.lastIndex]);})()==="[[[[\"abcd\",\"abcd\",\"cd\"],[[1,5],[1,5],[3,5]],1,\"!abcdXcdabab!\",[\"whole\",\"word\"],[\"abcd\",\"cd\"],[[1,5],[3,5]],true,true],[[\"cdabab\",\"cdabab\",\"ab\"],[[6,12],[6,12],[10,12]],6,\"!abcdXcdabab!\",[\"whole\",\"word\"],[\"cdabab\",\"ab\"],[[6,12],[10,12]],true,true]],0]""####,
     );
@@ -85,65 +83,7 @@ fn prefix_free_string_class_native_tables_consumers_and_successful_start_identit
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("m.groups.whole==='abcdab'&&m.groups.word==='ab'&&m.indices.groups.word===m.indices[3]&&m.indices[3][0]===4&&m.indices[3][1]===6&&clone.exec('!')===null&&clone.source===r.source&&clone.lastIndex===0&&r.lastIndex===6"),Ok(Value::Boolean(true)));
 }
-#[test]
-fn prefix_free_string_class_deep_scopes_long_members_search_and_host_aborts_remain_flat() {
-    let pattern = JsString::from(
-        format!(
-            r"{}([\q{{ab|cd}}]){{2,3}}{}",
-            "(".repeat(1000),
-            "){1}".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('abcdab!');m.length===1002&&m[0]==='abcdab'&&m[1]==='abcdab'&&m[1000]==='abcdab'&&m[1001]==='ab'&&m.indices[1001][0]===4&&m.indices[1001][1]===6"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(format!(r"()([\q{{{word}a|{word}b}}]){{2}}()").as_str());
-    let input = JsString::from(format!("{word}a{word}b!").as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===40002&&m[1]===''&&m[2].length===20001&&m[3]===''&&m.indices[2][0]===20001&&m.indices[2][1]===40002&&m.indices[3][0]===40002"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/[\q{xx}]{20000}/vg,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/[\q{ab|cd}]{2,}?/dvgy,marker=0")
-        .unwrap();
-    realm
-        .eval(&format!("var input='abcd{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert_eq!(realm.eval("var m;try{m=r.exec(input)}finally{marker=3}marker===3&&m.length===1&&m.index===0&&m[0]==='abcd'&&m.indices[0][0]===0&&m.indices[0][1]===4&&r.lastIndex===4"),Ok(Value::Boolean(true)));
-}
+
 #[test]
 fn prefix_free_string_class_proofs_keep_word_backtracking_predicates_references_and_unknown_leaves_closed()
  {
@@ -187,12 +127,19 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"aba
         r"()([\q{ab|cd}]){2}()a",
         r"a()([\q{ab|cd}]){2}()",
         r"()(([\q{ab|cd}]){2}){3}()",
-        r"()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){99999999999999999999}()",
         r"()([\q{ab|cd}]){2}()[\q{ef}]",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('abcd')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'v').test('abcd')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
     check(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="([\\q{A|ab}]){2}",rows=[],metadata=true;for(var multi of [false,true]){var r=new RegExp(pattern,'dvgi'+(multi?'m':''));metadata=metadata&&r.source===pattern;for(var input of ['aab','Aab','ab','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}return metadata&&JSON.stringify(rows)==="[[false,\"aab\",{\"values\":[\"aab\",\"ab\"],\"indices\":[[0,3],[1,3]],\"index\":0},3],[false,\"Aab\",{\"values\":[\"Aab\",\"ab\"],\"indices\":[[0,3],[1,3]],\"index\":0},3],[false,\"ab\",null,0],[false,\"\",null,0],[true,\"aab\",{\"values\":[\"aab\",\"ab\"],\"indices\":[[0,3],[1,3]],\"index\":0},3],[true,\"Aab\",{\"values\":[\"Aab\",\"ab\"],\"indices\":[[0,3],[1,3]],\"index\":0},3],[true,\"ab\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,

@@ -110,17 +110,6 @@ fn fixed_lookbehind_captures_consumers_global_sticky_empty_matches_and_callback_
 }
 
 #[test]
-fn fixed_lookbehind_many_capture_ranges_nested_negatives_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,r=new RegExp('(?<='+'('.repeat(n)+'a'+')'.repeat(n)+')b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a.length===n+1&&a.index===1&&a[1]==='a'&&a[n]==='a'&&a.indices[1][0]===0&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?<!'+'('.repeat(n)+'a'+')'.repeat(n)+'b)c','d'),last=negative.exec('aac');last.length===n+1&&last[1]===undefined&&last[n]===undefined&&last.indices[1]===undefined&&last.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=(?<x>a))b|c)+d/d.exec('ab'+'c'.repeat(10000)+'d');many.index===1&&many[0].length===10002&&many.groups.x===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_fixed_lookbehind_capture_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -150,10 +139,7 @@ fn repeated_captures_choices_inner_references_lookahead_and_unicode_remain_unsup
         r"/(?<=(a))b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

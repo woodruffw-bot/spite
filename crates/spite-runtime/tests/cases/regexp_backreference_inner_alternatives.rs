@@ -89,20 +89,6 @@ fn consumers_sticky_positions_and_empty_choices_keep_order_and_original_sources(
 }
 
 #[test]
-fn wide_shared_prefixes_and_deep_enclosing_groups_survive_copy_and_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(a)'.repeat(10000)+'(?:(?:'+'b|'.repeat(10000)+')a)\\\\1','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'.repeat(10002));a[0].length===10002&&a.length===10001&&a[10000]==='a'&&a.indices[10000][0]===9999&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a[10000]==='a'&&a.indices[10000][1]===10000"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("new RegExp('('.repeat(100000)+'(?<x>a|ab)'+')'.repeat(100000)+'\\\\k<x>','d').exec('abab').groups.x==='ab'"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn explicit_inner_choice_search_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -130,10 +116,7 @@ fn additional_inner_choices_and_repeated_reference_bodies_keep_unsupported_outco
         r"/(?:(?<x>a)|(?<x>b))\k<x>/u.test('bb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

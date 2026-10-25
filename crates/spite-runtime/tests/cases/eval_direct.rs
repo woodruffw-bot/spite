@@ -36,11 +36,8 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
     }
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
-    assert!(matches!(
-        realm.eval("try{eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|){2,3}/g.test(0);');}catch{marker=2;}finally{marker=3;}"),
-        Err(Error::Unsupported { .. })
-    ));
-    assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+    realm.eval("try{eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2}){2})|){2,3}/g.test(0);');}catch{marker=2;}finally{marker=3;}").unwrap();
+    assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
 }
 
 #[test]
@@ -69,18 +66,13 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
-        assert!(matches!(
-            realm.eval(&format!(
-                "try{{eval('marker=1; /{pattern}/.test(0);');}}catch{{marker=2;}}finally{{marker=3;}}"
-            )),
-            Err(Error::Unsupported { .. })
-        ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+        realm.eval(&format!("try{{eval('marker=1; /{pattern}/.test(0);');}}catch{{marker=2;}}finally{{marker=3;}}")).unwrap();
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
 }
 
 #[test]
-fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching_gaps() {
+fn unicode_class_errors_precede_eval_effects_and_valid_unions_execute() {
     for pattern in ["[z-a]", r"[^\q{}]", r"[a-\d]", "[!!]", "[a&&]", "[a&&b--c]"] {
         let code = format!("effects=1; /{pattern}/v;");
         check(&format!(
@@ -106,18 +98,18 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_keep_host_matching
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         let code = format!("marker=1; /{pattern}/v.test('a');");
-        assert!(matches!(
+        assert_eq!(
             realm.eval(&format!(
                 "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
-            Err(Error::Unsupported { .. })
-        ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+            Ok(Value::Boolean(false))
+        );
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
 }
 
 #[test]
-fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap() {
+fn unicode_property_errors_precede_eval_effects_and_valid_patterns_execute() {
     for (pattern, flags) in [
         (r"\p{Invalid}", "u"),
         (r"\p{WSpace}", "v"),
@@ -141,20 +133,20 @@ fn unicode_property_errors_precede_eval_effects_and_matching_remains_a_host_gap(
             "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
         ));
     }
-    for (pattern, flags) in [
-        (r"\p{RGI_Emoji}", "v"),
-        (r"[^\p{Basic_Emoji}&&\p{Letter}]", "v"),
+    for (pattern, flags, expected) in [
+        (r"\p{RGI_Emoji}", "v", false),
+        (r"[^\p{Basic_Emoji}&&\p{Letter}]", "v", true),
     ] {
         let mut realm = Realm::default();
         realm.eval("var marker=0;").unwrap();
         let code = format!("marker=1; /{pattern}/{flags}.test('a');");
-        assert!(matches!(
+        assert_eq!(
             realm.eval(&format!(
                 "try{{eval({code:?});}}catch{{marker=2;}}finally{{marker=3;}}"
             )),
-            Err(Error::Unsupported { .. })
-        ));
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+            Ok(Value::Boolean(expected))
+        );
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
 }
 

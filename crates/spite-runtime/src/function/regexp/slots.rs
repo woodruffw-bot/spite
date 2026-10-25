@@ -134,28 +134,8 @@ impl Realm {
                 Self::unsupported(span, "native regular expression matching for this Pattern")
             })?;
             let index = index as usize;
-            let work = matcher.search_work(sticky, data.source.len(), string.len() - index);
             self.object_work(span, |_, budget| {
-                if budget.remaining_work().is_some() {
-                    // Matcher dispatch still consumes work for an empty suffix.
-                    let passes = matcher.search_passes(sticky);
-                    budget.charge(passes)?;
-                    for _ in 0..passes {
-                        budget.charge(work)?;
-                        budget.charge(work)?;
-                    }
-                }
-                Ok(())
-            })?;
-            self.object_work(span, |_, budget| {
-                matcher
-                    .find_with_work(string, index, sticky, |work| budget.charge(work))
-                    .map_err(|error| match error {
-                        spite_core::RegExpUnicodeMatchError::Work(error) => error,
-                        spite_core::RegExpUnicodeMatchError::Capacity => {
-                            crate::object::Error::Heap(spite_heap::Error::Capacity)
-                        }
-                    })
+                matcher.find_with_budget(string, index, sticky, budget)
             })?
         };
         let Some(found) = found else {

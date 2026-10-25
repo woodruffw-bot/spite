@@ -96,17 +96,17 @@ impl Realm {
     ) -> Result<Value, Error> {
         // GetValue permits omitting an unobservable fresh primitive wrapper
         // (6.2.5.5). Such a wrapper cannot contain a private element.
-        if let Value::Object(object) = base {
-            if let Some(action) = self.object_work(span, |objects, budget| {
+        if let Value::Object(object) = base
+            && let Some(action) = self.object_work(span, |objects, budget| {
                 objects.private_get(object, name, budget)
-            })? {
-                return match action {
-                    GetAction::Value(value) => Ok(value),
-                    GetAction::Call(getter) => {
-                        self.call(Value::Object(getter), base.clone(), Vec::new(), span)
-                    }
-                };
-            }
+            })?
+        {
+            return match action {
+                GetAction::Value(value) => Ok(value),
+                GetAction::Call(getter) => {
+                    self.call(Value::Object(getter), base.clone(), Vec::new(), span)
+                }
+            };
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

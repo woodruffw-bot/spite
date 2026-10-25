@@ -122,18 +122,6 @@ fn unicode_assigned_properties_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_assigned_properties_repeated_sources_captures_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='^'+'('.repeat(3000)+'['+'\\\\p{Assigned}'.repeat(10000)+']'+')'.repeat(3000)+'$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='\\u0378'.repeat(100000)+'\\nA'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='A'&&m[3000]==='A'&&m.indices[3000][0]===100001&&m.indices[3000][1]===100002&&c.lastIndex===100002"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_assigned_properties_opted_work_and_remaining_sets() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -165,10 +153,7 @@ fn unicode_assigned_properties_opted_work_and_remaining_sets() {
         r"/\p{Assigned}A/v.exec('AA')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

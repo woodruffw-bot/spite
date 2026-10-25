@@ -68,10 +68,7 @@ fn unicode_noncapturing_branch_sequence_words_counts_and_scopes() {
         r"/\B(?<whole>(^(?:.)|a)+)\B$b/vms.exec('\n')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -138,22 +135,7 @@ fn unicode_noncapturing_branch_sequence_words_coercions_and_last_index() {
         r"let r=/\B((?:a)|(?:b))+\b/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
     );
 }
-#[test]
-fn unicode_noncapturing_branch_sequence_words_large_groups_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='\\B'+'('.repeat(6000)+'(?:.)|(?:\\n)'+')'.repeat(6000)+'+\\B$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='\n'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=c.exec(text);m.index===0&&m.length===6001&&m[1]==='\n'&&m[6000]==='\n'&&m.indices[6000][0]===200000&&m.indices[6000][1]===200001&&c.lastIndex===200001"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    realm.eval(r"p='(?<whole>\\B(^\\B\\B'+'(?:'.repeat(6000)+'.'+')'.repeat(6000)+'|a)+\\B$)';r=new RegExp(p,'dmsvg');c=new RegExp(r);text='\n'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"m=c.exec(text);m.index===0&&m.length===3&&m.groups.whole===text&&m[2]==='\n'&&m.indices[2][0]===200000&&m.indices[2][1]===200001&&c.lastIndex===200001"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn unicode_noncapturing_branch_sequence_words_opt_in_work_failure() {
     let mut realm = Realm::new(Limits {

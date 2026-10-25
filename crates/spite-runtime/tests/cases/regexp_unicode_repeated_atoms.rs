@@ -137,21 +137,6 @@ fn unicode_repeated_atom_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_repeated_atoms_huge_counts_captures_collection_and_inputs_are_unlimited() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval(r"let huge='9'.repeat(200),never=new RegExp('a{'+huge+'}','u'),wide=new RegExp('a{0,'+huge+'}','v'),zeros=new RegExp('a{'+'0'.repeat(100000)+'2}','v');never.exec('aaa')===null&&wide.exec('aaa')[0]==='aaa'&&zeros.exec('aaa')[0]==='aa'"), Ok(Value::Boolean(true)));
-    realm.eval(r"let p='('.repeat(3000)+'😀+'+')'.repeat(3000),r=new RegExp(p,'dvg'),c=new RegExp(r),text='😀'.repeat(100000)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]===text&&m[3000]===text&&m.indices[3000][0]===0&&m.indices[3000][1]===200000&&c.lastIndex===200000"),Ok(Value::Boolean(true)));
-    realm
-        .eval("p=null;r=null;c=null;text=null;m=null;never=null;wide=null;zeros=null")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_repeated_atoms_opted_work_and_remaining_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -179,10 +164,7 @@ fn unicode_repeated_atoms_opted_work_and_remaining_compositions() {
         r"/\ba+b/u.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

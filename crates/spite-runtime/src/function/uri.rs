@@ -37,7 +37,7 @@ impl Realm {
                 .ok_or_else(|| malformed_uri(span))?;
             let mut octets = [0; 4];
             octets[0] = first;
-            for (offset, escape) in escapes.chunks_exact(3).enumerate().skip(1) {
+            for (offset, escape) in escapes.as_chunks::<3>().0.iter().enumerate().skip(1) {
                 octets[offset] = parse_octet(escape, span)?;
             }
             // RFC 3629 validation rejects overlong encodings, bad continuation

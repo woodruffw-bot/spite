@@ -75,10 +75,7 @@ fn valid_unimplemented_matchers_fail_only_when_execution_reaches_matching() {
         "/\\u{D800}\\u{DC00}/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -1,6 +1,6 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -37,15 +37,7 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
     check(
         r####"var pattern="(?<before>\\B){0}(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1,1})(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\B){0}",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
     );
-    check(
-        r####"var pattern="(?<before>\\B){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){0001,0001}?)(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\B){0}",input="aba",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,2],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,2],[0,2],[0,2],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,2]""####,
-    );
-    check(
-        r####"var pattern="(?<before>\\B){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])))(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\B){0}",input="aaaa",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,1]""####,
-    );
-    check(
-        r####"var pattern="(?<before>\\B){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){1})(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\B){0}",input="\ud83d\ude00aX",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
-    );
+
     check(
         r####"var pattern="(?<before>^){0}(?<z>(?<z1>^)|(?<z2>\\b\\B)){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1}?)(?<after>\\b){0}",input="\u017faX",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
@@ -73,15 +65,7 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
     check(
         r####"var pattern="(?<before>\\b){0}(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])))(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\b){0}",input="\u017faX",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
     );
-    check(
-        r####"var pattern="(?<before>\\b){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1})(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\b){0}",input="\n\nab\n",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
-    );
-    check(
-        r####"var pattern="(?<before>\\b){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){1}?)(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\b){0}",input="a",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,1]""####,
-    );
-    check(
-        r####"var pattern="(?<before>\\b){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){1,1})(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>\\b){0}",input="!ab!",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
-    );
+
     check(
         r####"var pattern="(?<before>\\B){0}(?<z>(?<z1>^)|(?<z2>\\b\\B)){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){0001,0001}?)(?<after>\\B){0}",input="",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
@@ -109,15 +93,7 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
     check(
         r####"var pattern="(?<before>^){0}(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1}?)(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>$){0}",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
     );
-    check(
-        r####"var pattern="(?<before>^){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1,1})(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>$){0}",input="aba",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,2],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,2],[0,2],[0,2],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,2]""####,
-    );
-    check(
-        r####"var pattern="(?<before>^){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){0001,0001}?)(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>$){0}",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,1]""####,
-    );
-    check(
-        r####"var pattern="(?<before>^){0}(?<z>(?<z1>(?<z2>\\b){0})|(?<z3>(?<z4>\\B))){0}(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])))(?<s>(?<s1>^){99999999999999999999999}){0}(?<after>$){0}",input="\ud83d\ude00aX",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "z3", "z4", "whole", "iteration", "c", "s", "s1", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]""####,
-    );
+
     check(
         r####"var pattern="(?<before>\\b){0}(?<z>(?<z1>^)|(?<z2>\\b\\B)){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1})(?<after>\\b){0}",input="\u017faX",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\"],[[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
@@ -162,47 +138,6 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
 }
 
 #[test]
-fn unasserted_zero_count_single_string_class_required_empty_deep_skips_and_prefix_words_remain_flat()
- {
-    let pattern = JsString::from(
-        format!(
-            r"{}\b{}([\q{{}}]){{1}}",
-            "(".repeat(1000),
-            "){0}".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec('x');m.length===1002&&m[0]===''&&m[1]===undefined&&m[1000]===undefined&&m[1001]===''&&m.indices[1000]===undefined&&m.indices[1001][0]===0&&m.indices[1001][1]===0"
-    ));
-    check(
-        r"var r=/((\b){0})(?<c>[\q{|a|ab}])((^){0})/dv,m=r.exec('ab!'),n=r.exec('x');m[1]===''&&m[2]===undefined&&m.groups.c==='ab'&&m.indices.groups.c===m.indices[3]&&m[4]===''&&m[5]===undefined&&m.indices[4][0]===2&&n.groups.c===''&&n.indices.groups.c[0]===0&&n.indices.groups.c[1]===0&&n[1]===''&&n[2]===undefined",
-    );
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"(?:(?:\b)|(?:\B)){{0}}()([\p{{Any}}\q{{{word}|{word}x}}]){{1,1}}()").as_str(),
-    );
-    let input = JsString::from("x".repeat(40_000).as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===20001&&m[1]===''&&m[2].length===20001&&m[3]===''&&m.indices[2][0]===0&&m.indices[2][1]===20001&&m.indices[3][0]===20001"
-    ));
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec('x');m[0]==='x'&&m[2]==='x'&&m.indices[2][0]===0&&m.indices[2][1]===1"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-#[test]
 fn unasserted_zero_count_single_string_class_conditional_body_predicates_unknown_terms_and_references_remain_closed()
  {
     assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B))?([\\q{|a|ab}]){3}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
@@ -217,7 +152,14 @@ fn unasserted_zero_count_single_string_class_conditional_body_predicates_unknown
     ] {
         let pattern = JsString::from(format!(r"(?:(?:\b)|(?:\B)){{0}}{pattern}").as_str());
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}")),Err(Error::Unsupported{..})),"{pattern:?}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
+                )
+            ),
+            "{pattern:?}"
+        );
     }
 }

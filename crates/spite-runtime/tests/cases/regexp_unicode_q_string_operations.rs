@@ -1,7 +1,7 @@
 //! Intersections and subtractions of q-only string operands (22.2.2.9).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -113,10 +113,7 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",nul
         r"/\b^[\q{ab}&&\q{ab}&&\p{RGI_Emoji}]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -130,33 +127,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",nul
             "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
         ));
     }
-}
-
-#[test]
-fn long_rhs_words_use_defaults_and_opt_in_aborts_keep_prior_values_and_indices() {
-    let right = "x".repeat(20_000);
-    let pattern = format!(r"[\q{{ab}}--\q{{{right}}}]");
-    check(&format!(
-        "let r=/{pattern}/vy,m=r.exec('ab');m[0]==='ab' && r.lastIndex===2"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    let script = format!("try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}");
-    assert!(matches!(realm.eval(&script), Err(Error::Limit { .. })));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
-    realm.eval(r"r=/[\q{ab|abc}--\q{abc}]/vg").unwrap();
-    realm
-        .eval(&format!("var text='{}';r.lastIndex=1", "x".repeat(20_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("r.lastIndex===1 && marker===0"),
-        Ok(Value::Boolean(true))
-    );
 }

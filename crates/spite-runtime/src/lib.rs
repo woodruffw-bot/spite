@@ -1,7 +1,7 @@
 //! A tree-walking interpreter for the implemented ECMAScript subset.
 
 #[cfg(test)]
-#[path = "../tests/common/mod.rs"]
+#[path = "../tests/common/realm_entries.rs"]
 mod test_support;
 
 mod assignment_pattern;
@@ -488,17 +488,16 @@ impl Realm {
         Ok(left.strictly_equal(right))
     }
     fn check_string(&self, value: &Value, span: Span) -> Result<(), Error> {
-        if let Value::String(s) = value {
-            if self
+        if let Value::String(s) = value
+            && self
                 .limits
                 .max_string_units
                 .is_some_and(|limit| s.len() > limit)
-            {
-                return Err(Error::Limit {
-                    span,
-                    message: "string length limit exceeded".into(),
-                });
-            }
+        {
+            return Err(Error::Limit {
+                span,
+                message: "string length limit exceeded".into(),
+            });
         }
         Ok(())
     }
@@ -1019,10 +1018,10 @@ impl Realm {
         let mut value = Value::Undefined;
         self.create_per_iteration_environment(per_iteration)?;
         loop {
-            if let Some(test) = test {
-                if !self.expression(test)?.to_boolean() {
-                    return Ok(Completion::normal(Some(value)));
-                }
+            if let Some(test) = test
+                && !self.expression(test)?.to_boolean()
+            {
+                return Ok(Completion::normal(Some(value)));
             }
             // Statement evaluation consumes host budget even for `for (;;) ;`.
             let result = self.statement(body)?.update_empty(Some(value));
@@ -1273,10 +1272,10 @@ impl Realm {
             // Release the heap borrow before observable unscopables getters.
             let object = scope.binding_object.clone();
             next = scope.outer.clone();
-            if let Some(object) = object {
-                if self.with_has_binding(&object, name, span)? {
-                    return Ok(Reference::ObjectBinding { object, name });
-                }
+            if let Some(object) = object
+                && self.with_has_binding(&object, name, span)?
+            {
+                return Ok(Reference::ObjectBinding { object, name });
             }
         }
         if self.unsupported_host_globals.contains(name) && self.global_own(name, span)?.is_none() {

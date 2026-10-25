@@ -56,14 +56,14 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         if prevent {
-            if let Value::Object(object) = &target {
-                if !self.prevent_extensions(object, span)? {
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "preventExtensions was rejected",
-                    ));
-                }
+            if let Value::Object(object) = &target
+                && !self.prevent_extensions(object, span)?
+            {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "preventExtensions was rejected",
+                ));
             }
             return Ok(target);
         }

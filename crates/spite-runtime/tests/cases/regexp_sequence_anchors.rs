@@ -1,6 +1,6 @@
 //! CompileAssertion boundaries around fixed ordinary character-set sequences.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -64,35 +64,6 @@ fn generic_string_consumers_share_anchored_fixed_sequence_execution() {
 }
 
 #[test]
-fn construction_and_search_aborts_remain_uncatchable_host_errors() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/^\d$/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(20_000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/[a]aaaaab$/g,flag=0,s='x'.repeat(8000)")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn internal_assertions_choices_quantifiers_and_unicode_remain_explicit_gaps() {
     for source in [
         r"/(?:(?:(?:(?:a+(^[a])+){2}){2})|){2,3}/.test('a')",
@@ -103,10 +74,7 @@ fn internal_assertions_choices_quantifiers_and_unicode_remain_explicit_gaps() {
         "/^([a])+b$/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

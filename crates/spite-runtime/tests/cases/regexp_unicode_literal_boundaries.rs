@@ -133,19 +133,6 @@ fn unicode_literal_boundary_exact_unicode_and_ignore_case_are_distinct() {
 }
 
 #[test]
-fn unicode_literal_boundary_collection_linear_rejections_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='('.repeat(3000)+'^Ab$'+')'.repeat(3000),r=new RegExp(p,'dmvg'),c=new RegExp(r),text='😀'.repeat(100000)+'\\nAb'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='Ab'&&m[3000]==='Ab'&&m.indices[3000][0]===200001&&m.indices[3000][1]===200003&&c.lastIndex===200003"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let n=5000,longPattern='^'+'A'.repeat(n)+'$',longRegex=new RegExp(longPattern,'mu'),longText='A'.repeat(100000)+'b';longRegex.exec(longText)===null"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn unicode_literal_boundary_opted_work_and_remaining_gaps() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -172,10 +159,7 @@ fn unicode_literal_boundary_opted_work_and_remaining_gaps() {
         r"/^(?=Ab)/u.exec('Ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

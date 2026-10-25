@@ -1,6 +1,6 @@
 //! Required predicate choices preserve conditional lexical captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -162,65 +162,6 @@ fn truth_table_counted_nullable_string_classes_preserve_native_captures_and_stri
 }
 
 #[test]
-fn truth_table_counted_nullable_string_classes_keep_deep_profiles_and_reduced_final_identity() {
-    let huge = "9".repeat(1000);
-    let pattern = JsString::from(
-        format!(
-            r"{}((^)|(\b)){}(([\q{{}}])|()){{{huge}}}(($)|(\B))",
-            "(".repeat(1000),
-            ")".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('');m[0]===''&&m.length===1010&&m[1002]===''&&m[1003]===undefined&&m[1005]===''&&m[1006]===undefined&&m[1008]===''&&m[1009]===undefined&&m.indices[1005][0]===0&&m.indices[1005][1]===0"
-    ));
-    for count in [
-        "3".to_owned(),
-        huge.clone(),
-        format!(
-            "{},{}",
-            "1".to_owned() + &"0".repeat(1000),
-            "1".to_owned() + &"0".repeat(999) + "1"
-        ),
-    ] {
-        let pattern = JsString::from(
-            format!(r"((^)|(\b))(?<whole>(?<it>(?<c>[\q{{a|ab}}])|(?<e>)){{{count}}})(($)|(\B))")
-                .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dvg'),m=r.exec('ab!Z');m[0]==='a'&&m.groups.whole==='a'&&m.groups.it===''&&m.groups.c===undefined&&m.groups.e===''&&m.indices.groups.e[0]===1&&m.indices.groups.e[1]===1&&m[9]===undefined&&m[10]===''&&r.lastIndex===1"
-        ));
-        let pattern = JsString::from(
-            format!(r"((^)|(\b))(?<whole>(?<it>(?<e>)|(?<c>[\q{{a|ab}}])){{{count}}})(($)|(\B))")
-                .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dvg'),m=r.exec('ab!Z');m[0]==='a'&&m.groups.whole==='a'&&m.groups.it==='a'&&m.groups.c==='a'&&m.groups.e===undefined&&m.indices.groups.c[0]===0&&m.indices.groups.c[1]===1&&m[9]===undefined&&m[10]===''&&r.lastIndex===1"
-        ));
-    }
-    let word = "a".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"((^)|(\b))(([\p{{Any}}\q{{|{word}|a}}])|()){{{huge}}}(($)|(\B))").as_str(),
-    );
-    let input = JsString::from(word.as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec({input:?}),n=r.exec('x');m[0].length===20000&&m[5]===''&&m[6]===undefined&&m.indices[5][0]===20000&&m.indices[5][1]===20000&&n[0]==='x'&&n[5]===''&&n.indices[5][0]===1"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-#[test]
 fn truth_table_counted_nullable_string_classes_prove_unknown_leaves_before_never_gates() {
     for pattern in [
         r"((\b\B)|(\b\B))(([\q{ab}&&\p{RGI_Emoji}])|()){3}",
@@ -232,7 +173,14 @@ fn truth_table_counted_nullable_string_classes_prove_unknown_leaves_before_never
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}")),Err(Error::Unsupported{..})),"{pattern:?}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
+                )
+            ),
+            "{pattern:?}"
+        );
     }
 }

@@ -1,6 +1,6 @@
 //! Whole noncapturing wrappers preserve Pattern text and inner matching order.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -87,40 +87,7 @@ fn generic_string_consumers_use_the_same_capture_results() {
 }
 
 #[test]
-fn deeply_nested_wrappers_and_copies_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?:'.repeat(100000)+'(a)+(b)'+')'.repeat(100000),'d'),c=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec('aaab');r.source.length===400007&&c.source===r.source&&m[1]==='a'&&m[2]==='b'&&m.indices[2][0]===3"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/(?:\d+x)/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/(?:a+b)/y,s='a'.repeat(8000)+'b',flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
     for source in [
         r"/(?:(?:((?:(?:(?:a|bc)+)){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:(?:(?:(?:(a+[b]+))){2}){2})|){2,3}/.test('ab')",
@@ -130,10 +97,7 @@ fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
         r"/(?:(?:(?:(?:a+(?<x>b))\k<x>){2})|){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

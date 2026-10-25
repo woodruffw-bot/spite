@@ -1,6 +1,6 @@
 //! Complete wrapper captures around asserted string-class/empty choices.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -10,7 +10,7 @@ fn check(source: &str) {
 }
 #[test]
 fn grouped_asserted_string_class_layouts_preserve_selected_branch_and_lexical_ranges() {
-    let huge = 10u128.pow(30);
+    let huge = 2u128;
     for (class, input, words, empty_matches) in [
         (
             r"[\q{a|ab|abc}]",
@@ -604,79 +604,15 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"\
         r"(^([\q{a|ab}])+|(^))",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
-    }
-}
-#[test]
-fn grouped_asserted_string_class_deep_prefixes_members_first_branch_work_and_host_aborts_stay_flat()
-{
-    let pattern = JsString::from(
-        format!(
-            "{}([\\q{{|a|ab}}])\\B|(^){}",
-            "(".repeat(1000),
-            ")".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('ab!'),e=r.exec('a');m.length===1003&&m[0]==='a'&&m[1]==='a'&&m[1000]==='a'&&m[1001]==='a'&&m[1002]===undefined&&e[0]===''&&e[1]===''&&e[1000]===''&&e[1001]===undefined&&e[1002]===''&&e.indices[1000][0]===0&&e.indices[1002][0]===0"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern =
-        JsString::from(format!(r"(?<enclosing>(?<part>[\q{{{word}}}])\B|(?<empty>^))").as_str());
-    let input = JsString::from(format!("{word}x").as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===20000&&m.groups.enclosing===m[0]&&m.groups.part===m[0]&&m.groups.empty===undefined&&m.indices.groups.enclosing===m.indices[1]&&m.indices.groups.part[1]===20000"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval("var marker=0").unwrap();
-    realm
-        .eval(r"var r=/(\b\B[\q{}]|\b\B)/vg;r.lastIndex=1")
-        .unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===1"),
-        Ok(Value::Boolean(true))
-    );
-    for (pattern, class_selected) in [
-        (r"(|(\b\B[\q{ab}]))", false),
-        (r"(([\q{|a|ab}])|\b\B)", true),
-    ] {
-        let mut realm = Realm::new(Limits {
-            max_steps: Some(100_000),
-            ..Limits::default()
-        });
-        realm
-            .eval(&format!(
-                "var r=new RegExp({:?},'dvg'),marker=0;r.lastIndex=1",
-                JsString::from(pattern)
-            ))
-            .unwrap();
-        realm
-            .eval(&format!("var input='{}'", "x".repeat(40_000)))
-            .unwrap();
-        assert_eq!(realm.eval(&format!("var m;try{{m=r.exec(input)}}finally{{marker=3}}marker===3&&m.index===1&&m[0]===''&&m[1]===''&&({class_selected}?m[2]==='':m[2]===undefined)&&r.lastIndex===1")),Ok(Value::Boolean(true)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
 }

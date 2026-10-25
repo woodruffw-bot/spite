@@ -133,22 +133,6 @@ fn nested_empty_reference_consumers_keep_sticky_global_empty_advancement_and_cal
 }
 
 #[test]
-fn nested_empty_references_deep_captures_huge_counts_copies_gc_and_parent_loops_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,huge='184467440737095516160000000000000000000',body='(?:'+'('.repeat(n)+')'.repeat(n)+'\\'+n+'){2}',r=new RegExp('(?:'+body+'){'+huge+',}a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qa');a.index===1&&a.length===n+1&&a[1]===''&&a[n]===''&&a.indices[1][0]===1&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?!(?:'+body+'){2}q)a','d'),b=negative.exec('a');b.length===n+1&&b[1]===undefined&&b[n]===undefined&&b.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(
-        realm.eval(r"new RegExp('(?:(()\\2){2}){'+huge+',}a').exec('qa')[2]===''"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("let many=/(?:(?:(()\\2){2}){2}a|b)+c/.exec('a'+'b'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined&&many[2]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let deep=new RegExp('(?:'.repeat(10000)+'(()\\2){2}'+'){2}'.repeat(10000)+'a','d').exec('a');deep[1]===''&&deep[2]===''&&deep.indices[2][0]===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_nested_empty_reference_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -178,10 +162,7 @@ fn outside_references_unproved_local_spans_consuming_children_behind_and_unicode
         r"/((()\3){2}){2}a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

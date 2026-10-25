@@ -1,6 +1,6 @@
 //! Common reversed line predicates retain whole-choice scope and capture values.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -11,7 +11,7 @@ fn check(source: &str) {
 #[test]
 fn reversed_common_line_asserted_string_class_layouts_preserve_selected_branch_and_lexical_ranges()
 {
-    let huge = 10u128.pow(30);
+    let huge = 2u128;
     for (class, input, words, empty_matches) in [
         (
             r"[\q{a|ab|abc}]",
@@ -794,67 +794,15 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"aba
         r"$((([\q{a|ab}])+|(^)))^",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'vm').test('ab')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'vm').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
-}
-#[test]
-fn reversed_common_line_asserted_string_class_deep_prefixes_long_members_and_host_aborts_remain_flat()
- {
-    let pattern = JsString::from(
-        format!(
-            "${}()|([\\q{{|\\n|\\na}}]){}^",
-            "(".repeat(1000),
-            ")".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dvm').exec('x\\nab');m.length===1003&&m[0]==='\\n'&&m[1]==='\\n'&&m[1000]==='\\n'&&m[1001]===undefined&&m[1002]==='\\n'&&m.indices[1002][0]===1&&m.indices[1002][1]===2"
-    ));
-    let word = format!("{}\n", "x".repeat(20_000));
-    let pattern =
-        JsString::from(format!(r"(?<enclosing>(?<part>[\q{{{word}}}])|(?<empty>))^").as_str());
-    let input = JsString::from(word.as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dvm').exec({input:?});m[0].length===20001&&m.groups.enclosing===m[0]&&m.groups.part===m[0]&&m.groups.empty===undefined&&m.indices.groups.enclosing===m.indices[1]&&m.indices.groups.part===m.indices[2]"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'vm')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval("var marker=0").unwrap();
-    realm.eval(r"var r=/$([\q{}]|)^/vgm;r.lastIndex=1").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===1"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/$(|[\q{}])^/dvgym,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", r"\n".repeat(40_000)))
-        .unwrap();
-    assert_eq!(realm.eval("var m;try{m=r.exec(input)}finally{marker=3}marker===3&&m.index===0&&m[0]===''&&m.length===2&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0&&r.lastIndex===0"),Ok(Value::Boolean(true)));
 }

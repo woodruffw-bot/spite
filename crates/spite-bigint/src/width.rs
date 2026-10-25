@@ -54,7 +54,7 @@ impl BigInt {
             budget.charge(count)?;
             Self::negate_words(&mut words);
         }
-        let mask = if bits % 32 == 0 {
+        let mask = if bits.is_multiple_of(32) {
             u32::MAX
         } else {
             (1u32 << (bits % 32)) - 1

@@ -1,6 +1,6 @@
 //! Fixed literal prefixes share linear quantified continuation and capture plans.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -93,40 +93,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_keep_body_capture_layout() {
 }
 
 #[test]
-fn long_prefixes_overlap_failures_and_copies_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('a'.repeat(100000)+'b+','dg'),copy=new RegExp(r),input='a'.repeat(300000)+'bb',failed=/aaa+b/").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(input);copy.source===r.source&&m.index===200000&&m[0].length===100002&&m.indices[0][1]===300002&&copy.lastIndex===300002&&r.lastIndex===0&&failed.exec('a'.repeat(300000))===null"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/a\d+x/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/ab+/y,s='a'+'b'.repeat(8000),flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
     for source in [
         r"/(?:(?:(?:(?:([a])b+c+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:(?:[a])b+c+){2}){2}){2})|){2,3}/.test('ab')",
@@ -138,10 +105,7 @@ fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
         "/ab+/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

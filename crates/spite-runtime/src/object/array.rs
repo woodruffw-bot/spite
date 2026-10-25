@@ -15,32 +15,30 @@ impl OrdinaryObject {
     // arrays fall back to the ordinary complete lookup. No derived cache or
     // insertion-order assumption affects the returned descriptor.
     pub(super) fn property_index(&self, key: PropertyKeyRef<'_>) -> Option<usize> {
-        if self.array {
-            if let Some(index) = array_index(key) {
-                if let Some(slot) = usize::try_from(index).ok().and_then(|n| n.checked_add(1)) {
-                    if self
-                        .properties
-                        .get(slot)
-                        .is_some_and(|(stored, _)| PropertyKeyRef::from(stored) == key)
-                    {
-                        return Some(slot);
-                    }
-                }
-                if let Some((_, Property::Data(length))) =
-                    self.properties.iter().find(|(key, _)| is_length(key))
+        if self.array
+            && let Some(index) = array_index(key)
+        {
+            if let Some(slot) = usize::try_from(index).ok().and_then(|n| n.checked_add(1))
+                && self
+                    .properties
+                    .get(slot)
+                    .is_some_and(|(stored, _)| PropertyKeyRef::from(stored) == key)
+            {
+                return Some(slot);
+            }
+            if let Some((_, Property::Data(length))) =
+                self.properties.iter().find(|(key, _)| is_length(key))
+                && let Value::Number(length) = length.value
+            {
+                // Construction can temporarily precede the complete
+                // length descriptor. Use the invariant only once its
+                // stored integral Number is valid; otherwise fall back.
+                if length.is_finite()
+                    && length.fract() == 0.0
+                    && (0.0..=f64::from(u32::MAX)).contains(&length)
+                    && f64::from(index) >= length
                 {
-                    if let Value::Number(length) = length.value {
-                        // Construction can temporarily precede the complete
-                        // length descriptor. Use the invariant only once its
-                        // stored integral Number is valid; otherwise fall back.
-                        if length.is_finite()
-                            && length.fract() == 0.0
-                            && (0.0..=f64::from(u32::MAX)).contains(&length)
-                            && f64::from(index) >= length
-                        {
-                            return None;
-                        }
-                    }
+                    return None;
                 }
             }
         }

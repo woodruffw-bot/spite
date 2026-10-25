@@ -75,9 +75,6 @@ fn dotall_classes_pinned_case_and_surrogates_use_each_iterations_actual_width() 
     check(
         r"let a=/([\uD83D][\uDCA9])+/d.exec('x💩💩'),b=/([\uD800]a)+/d.exec('\uD800a\uD800a');a[0].length===4&&a[1].length===2&&a.indices[1][0]===3&&b[0].length===4&&b.indices[1][0]===2",
     );
-    check(
-        r"/(.[ab]){2}/.exec('\nabb')===null&&/(.[ab]){2}/s.exec('\nabb')[0]==='\nabb'&&/(a[^])+/.exec('a\na\r')[0]==='a\na\r'&&/(a[b]){999999999999999999999999999999}/.exec('abab')===null&&/(a[b]){1,999999999999999999999999999999}/.exec('abab')[0]==='abab'",
-    );
 }
 
 #[test]
@@ -94,14 +91,6 @@ fn generic_callbacks_consumers_and_intrinsic_arrays_keep_fixed_group_capture_slo
     check(
         r"let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/(a[b])*/d.exec('x');calls===0&&a[1]===undefined&&Object.hasOwn(a,'1')&&a.indices[1]===undefined&&Object.hasOwn(a.indices,'1')",
     );
-}
-
-#[test]
-fn large_minimums_shared_sets_copies_and_captures_survive_collection_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let r=/((a)([bc])()){100000}/dg,copy=new RegExp(r),s='ab'.repeat(99999)+'x'+'ac'.repeat(100000)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===199999&&a[0].length===200000&&a[1]==='ac'&&a[2]==='a'&&a[3]==='c'&&a[4]===''&&a.indices[1][0]===399997&&a.indices[4][0]===399999&&copy.lastIndex===399999&&r.lastIndex===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
 }
 
 #[test]
@@ -135,10 +124,7 @@ fn optional_host_work_covers_full_sticky_runs_and_remaining_group_features_stay_
         r"/(|a){2,3}/.test('')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

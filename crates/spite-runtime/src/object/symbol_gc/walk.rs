@@ -193,14 +193,14 @@ fn object_symbols(
             visit(symbol(&cell.held))?;
         }
     }
-    if matches!(mode, Mode::Physical) {
-        if let Some(map) = weak_map {
-            for (_, value) in &map.entries {
-                visit(symbol(value))?;
-            }
-            for (_, value) in &map.symbol_entries {
-                visit(symbol(value))?;
-            }
+    if matches!(mode, Mode::Physical)
+        && let Some(map) = weak_map
+    {
+        for (_, value) in &map.entries {
+            visit(symbol(value))?;
+        }
+        for (_, value) in &map.symbol_entries {
+            visit(symbol(value))?;
         }
     }
     match callable {

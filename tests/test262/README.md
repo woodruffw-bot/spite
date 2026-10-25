@@ -4058,10 +4058,9 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 15997 variants from 8260 reviewed sources:
-14464 harness positives, 1525 reviewed parse negatives, four raw positives, and
-four runtime negatives. The cohort sections above describe the admitted whole
-originals and deferred prerequisites; `runner.tsv` enumerates every source and
+The `spite-test262` command runs 16343 variants from 8433 reviewed sources.
+The cohort sections above describe the admitted whole originals and deferred
+prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
 this execution inventory.
 
@@ -4093,14 +4092,10 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-25 Runtime snapshot with positive literal-character/string-union
-lookahead at `5c8fabb6` passes all 16,343 corpus variants and 35 runner tests
-with the conformance profile (392.99 s for the corpus). It covers Unicode
-positive/negative single-character, q-class, scalar and character-result
-lookahead/lookbehind, complete variable-length single-q and adjacent-q-union
-lookahead families, and positive character/string-union lookahead with line and
-word predicates. Later negative character/string-union work has separate focused
-and differential evidence.
+The 2026-10-25 regress backend passes all 16,343 corpus variants with the
+conformance profile (294.94 s), plus the runner, metadata, harness and CLI tests.
+The original Pattern validator remains independent of matching. Backend native
+representation limits are host failures and cannot satisfy a negative fixture.
 Fixture, harness and reviewed-entry inventories are unchanged.
 
 These results do not measure whole-suite conformance. Other tests require grammar,

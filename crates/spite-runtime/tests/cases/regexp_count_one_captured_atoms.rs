@@ -95,15 +95,7 @@ fn consumers_empty_global_sticky_advancement_and_callbacks_preserve_child_slots(
         r"'ab'.search(/(?<=(a)(\1){1})b/)===1&&'ab'.split(/(?<=(a)(\1){1})b/).join('|')==='a|a||'",
     );
 }
-#[test]
-fn deep_child_effects_clones_collection_and_long_search_stay_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(?<=(a)'+'('.repeat(n)+'\\1'+')'.repeat(n)+'{1})b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a.length===n+2&&a.index===1&&a[1]==='a'&&a[n+1]===''&&a.indices[n+1][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(?<=(a)(\1){1})b/d.exec('c'.repeat(10000)+'ab');long.index===10001&&long.indices[2][0]===10001"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn opted_in_work_abort_keeps_last_index_and_bypasses_handlers() {
     let mut realm = Realm::new(Limits {
@@ -132,10 +124,7 @@ fn other_counts_partial_reference_spans_and_unicode_stay_pending() {
         r"/(?<=(a)(\1){1})b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

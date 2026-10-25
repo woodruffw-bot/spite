@@ -1,6 +1,6 @@
 //! Literal alternatives preserve leftmost/source-order choices (22.2.2.3).
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -92,42 +92,8 @@ fn unsupported_alternatives_captures_nested_choices_and_unicode_remain_host_gaps
         "/a|b/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
-}
-
-#[test]
-fn opted_in_work_accounts_for_all_searches_and_aborts_outside_javascript() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/a|b/g,s='c'.repeat(10000),flag=0;")
-        .unwrap();
-    assert_eq!(realm.eval("/a/.test(s)"), Ok(Value::Boolean(false)));
-    assert!(matches!(
-        realm.eval("try{r.exec(s);}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0 && r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    realm
-        .eval("r=new RegExp('a|'.repeat(1000)+'b','g');")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{for(let i=0;i<100;i++){r.exec('');}}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0 && r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
 }

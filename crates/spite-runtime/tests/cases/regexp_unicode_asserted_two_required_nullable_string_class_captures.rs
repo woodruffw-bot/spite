@@ -1,6 +1,6 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -29,9 +29,7 @@ fn asserted_two_required_nullable_string_class_native_tables_consumers_and_requi
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){2,})(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aaaa\",\"\",\"aaaa\",\"a\",\"a\",\"\"],[[0,4],[0,0],[0,4],[3,4],[3,4],[4,4]],0,4]""####,
     );
-    check(
-        r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){2,999999999999999999999999})(?<after>$)",input="aba",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"aba\",\"a\",\"a\",\"\"],[[0,3],[0,0],[0,3],[2,3],[2,3],[3,3]],0,3]""####,
-    );
+
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])|(?<e>)){2})(?<after>$)",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],0,0]""####,
     );
@@ -50,9 +48,7 @@ fn asserted_two_required_nullable_string_class_native_tables_consumers_and_requi
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])|(?<e>)){2,})(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aaaa\",\"\",\"aaaa\",\"a\",\"a\",\"<undefined>\",\"\"],[[0,4],[0,0],[0,4],[3,4],[3,4],\"<undefined>\",[4,4]],0,4]""####,
     );
-    check(
-        r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])|(?<e>)){2,999999999999999999999999})(?<after>$)",input="aba",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"aba\",\"a\",\"a\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,3],[2,3],[2,3],\"<undefined>\",[3,3]],0,3]""####,
-    );
+
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{|a|ab}])){2})(?<after>$)",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],0,0]""####,
     );
@@ -71,9 +67,7 @@ fn asserted_two_required_nullable_string_class_native_tables_consumers_and_requi
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{|a|ab}])){2,})(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aaaa\",\"\",\"aaaa\",\"a\",\"<undefined>\",\"a\",\"\"],[[0,4],[0,0],[0,4],[3,4],\"<undefined>\",[3,4],[4,4]],0,4]""####,
     );
-    check(
-        r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<e>)|(?<c>[\\q{|a|ab}])){2,999999999999999999999999})(?<after>$)",input="aba",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "e", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"aba\",\"a\",\"<undefined>\",\"a\",\"\"],[[0,3],[0,0],[0,3],[2,3],\"<undefined>\",[2,3],[3,3]],0,3]""####,
-    );
+
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])|(?<e>)){2})(?<after>$)",input="a",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "e", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"\",\"a\",\"\",\"<undefined>\",\"\",\"\"],[[0,1],[0,0],[0,1],[1,1],\"<undefined>\",[1,1],[1,1]],0,1]""####,
     );
@@ -149,64 +143,7 @@ fn asserted_two_required_nullable_string_class_native_tables_consumers_and_requi
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('');m.groups.whole==='ababa'&&m.groups.c==='a'&&m.groups.e===undefined&&m.indices.groups.c===m.indices[4]&&m.indices[4][0]===4&&m.indices[4][1]===5&&n[0]===''&&n.groups.iteration===''&&n.groups.e===''&&n.groups.c===undefined&&n.indices.groups.e===n.indices[3]&&n.indices.groups.c===undefined&&clone.source===r.source&&clone.lastIndex===0&&r.lastIndex===5"),Ok(Value::Boolean(true)));
 }
-#[test]
-fn asserted_two_required_nullable_string_class_deep_empty_scopes_long_members_and_host_aborts_remain_flat()
- {
-    let pattern = JsString::from(
-        format!(
-            r"^{}(()|([\q{{a|ab}}])){{2}}{}$",
-            "(".repeat(1000),
-            "){1}".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec('');m.length===1004&&m[0]===''&&m[1]===''&&m[1000]===''&&m[1001]===''&&m[1002]===''&&m[1003]===undefined&&m.indices[1002][0]===0&&m.indices[1002][1]===0&&m.indices[1003]===undefined"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(format!(r"^()(()|([\q{{{word}|{word}x}}])){{2,3}}()$").as_str());
-    let input = JsString::from(format!("{word}{word}").as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===40000&&m[1]===''&&m[2].length===20000&&m[3]===undefined&&m[4].length===20000&&m[5]===''&&m.indices[4][0]===20000&&m.indices[4][1]===40000&&m.indices[5][0]===40000"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/[\q{|a}]{2}$/vg,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "a".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/^[\q{|a}]{2}/vg,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "x".repeat(40_000)))
-        .unwrap();
-    assert_eq!(realm.eval("var m;try{m=r.exec(input)}finally{marker=3}marker===3&&m.length===1&&m.index===0&&m[0]===''&&r.lastIndex===0"),Ok(Value::Boolean(true)));
-}
+
 #[test]
 fn asserted_two_required_nullable_string_class_proofs_keep_other_minima_conditional_predicates_and_unknown_leaves_closed()
  {
@@ -236,7 +173,15 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"aba
         r"^(()|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])){2}$",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
 }

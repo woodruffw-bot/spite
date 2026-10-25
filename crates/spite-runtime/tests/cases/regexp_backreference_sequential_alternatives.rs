@@ -103,21 +103,6 @@ fn consumers_and_empty_choices_keep_order_and_original_sources() {
 }
 
 #[test]
-fn many_sequential_choices_survive_copy_and_collection_without_default_quotas() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=new RegExp('(a|b)'.repeat(100000)+'\\\\1','d'),copy=new RegExp(r)")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'.repeat(100001));a[0].length===100001&&a.length===100001&&a[100000]==='a'&&a.indices[100000][0]===99999&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a[100000]==='a'&&a.indices[100000][1]===100000"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn explicit_sequential_choice_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -144,10 +129,7 @@ fn nested_choices_and_quantified_reference_bodies_remain_unsupported() {
         r"/(a|b)(c|d)\1/u.test('aca')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

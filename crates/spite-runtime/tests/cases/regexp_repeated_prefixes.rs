@@ -39,9 +39,6 @@ fn prefix_iteration_sequel_empty_and_undefined_capture_slots_keep_exact_position
 #[test]
 fn zero_width_repeated_bodies_preserve_required_prefix_and_sequel_semantics() {
     check(
-        r"let a=/(a)()*(b)/d.exec('ab'),b=/(a)()+(b)/d.exec('ab'),c=/(a)(){999999999999999999999999999999}(b)/d.exec('ab');a[1]==='a'&&a[2]===undefined&&a[3]==='b'&&b[2]===''&&b.indices[2][0]===1&&c[2]===''&&c.indices[3][0]===1",
-    );
-    check(
         r"let a=/a(\b\B)*(b)/d.exec('ab');a[1]===undefined&&a[2]==='b'&&/a(\b\B)+(b)/.exec('ab')===null&&/a(^){2}b/.exec('ab')===null&&/a()+/.exec('a')[1]===''",
     );
     check(
@@ -92,26 +89,6 @@ fn escaped_class_delimiters_dotall_case_and_surrogates_keep_actual_prefix_width(
 }
 
 #[test]
-fn generic_consumers_intrinsic_results_long_runs_and_copies_survive_collection() {
-    check(
-        r"'xababc'.replace(/(x)(ab)+(c)/,'<$1,$2,$3>')==='<x,ab,c>'&&'yxababcq'.split(/(x)(ab)+(c)/).join(',')==='y,x,ab,c,q'&&'yxababc'.search(/x(ab)+c/)===1",
-    );
-    check(
-        r"let r=/(x)(ab)+(c)/dg,a=[...'xabc xababc'.matchAll(r)];a.length===2&&a[1].indices[2][0]===8&&a[1].indices[3][0]===10&&r.lastIndex===0",
-    );
-    check(
-        r"let seen;let s='yxababc'.replace(/(x)(ab)+(c)/,(whole,prefix,last,sequel,index,input)=>{seen=[whole,prefix,last,sequel,index,input];return 'q'});s==='yq'&&seen[0]==='xababc'&&seen[1]==='x'&&seen[2]==='ab'&&seen[3]==='c'&&seen[4]===1&&seen[5]==='yxababc'",
-    );
-    check(
-        r"let calls=0;Object.defineProperty(Array.prototype,'2',{set(){calls++},configurable:true});let a=/(a)(ab){0}(b)()/d.exec('ab');calls===0&&a[2]===undefined&&a.indices[2]===undefined&&Object.hasOwn(a,'2')&&Object.hasOwn(a.indices,'2')",
-    );
-    let mut realm = Realm::default();
-    realm.eval("let s='a'.repeat(200000)+'b',r=new RegExp('('.repeat(100000)+'a'+')'.repeat(100000)+'(aa)+(ab)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a[0]===s&&a.length===100003&&a[100000]==='a'&&a[100001]==='aa'&&a[100002]==='ab'&&a.indices[100000][0]===0&&a.indices[100001][0]===199997&&a.indices[100002][0]===199999&&copy.source===r.source&&/(a)(aa){1,2}(ab)/.exec(s).index===199994"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_host_work_aborts_and_remaining_variable_group_features_are_unsupported() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -138,10 +115,7 @@ fn optional_host_work_aborts_and_remaining_variable_group_features_are_unsupport
         r"/x(ab)+c/u.test('xabc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

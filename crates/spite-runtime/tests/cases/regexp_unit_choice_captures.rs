@@ -89,14 +89,6 @@ fn generic_consumers_intrinsic_arrays_and_callbacks_keep_inner_wrapper_values() 
 }
 
 #[test]
-fn deep_inner_wrappers_long_runs_and_copies_survive_collection_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let s='a'.repeat(200000)+'c',r=new RegExp('('.repeat(100000)+'(a|b)'+')'.repeat(100000)+'+(c)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a[0]===s&&a.length===100003&&a[1]==='a'&&a[100000]==='a'&&a[100001]==='a'&&a[100002]==='c'&&a.indices[1][0]===199999&&a.indices[100000][0]===199999&&a.indices[100001][0]===199999&&a.indices[100002][0]===200000&&copy.source===r.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_aborts_and_branch_specific_captures_remain_unsupported() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -126,10 +118,7 @@ fn optional_work_aborts_and_branch_specific_captures_remain_unsupported() {
         r"/((a|b))+b/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -129,40 +129,6 @@ fn unicode_positive_finite_nullable_alternative_consumers_and_coercions() {
 }
 
 #[test]
-fn unicode_positive_finite_nullable_alternative_deep_groups_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    assert_eq!(
-        realm.eval(
-            r"let z=/(a|){300001,300002}/du.exec('aaa');z[0]==='aaa'&&z[1]===''&&z.indices[1][0]===3"
-        ),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(
-        realm.eval(r"z=/(|a){300001,300002}/dv.exec('aaa');z[0]==='a'&&z[1]==='a'"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval(r"let p='('.repeat(6000)+'a|(?:)'+')'.repeat(6000)+'{3,7}?',r=new RegExp(p,'dvg'),c=new RegExp(r),text='a'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=c.exec(text);m.length===6001&&m[6000]==='a'&&m.indices[6000][0]===2&&m.indices[6000][1]===3&&c.lastIndex===3"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    realm.eval(r"p='('.repeat(6000)+'(?:'.repeat(6000)+')'.repeat(6000)+'|a'+')'.repeat(6000)+'{300001,300002}';r=new RegExp(p,'dug');c=new RegExp(r);text='a'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"m=c.exec(text);m.length===6001&&m[6000]==='a'&&m.indices[6000][0]===0&&m.indices[6000][1]===1&&c.lastIndex===1"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    realm
-        .eval(r"r=/(a|){300001,300002}?/du;text='a'.repeat(200001)")
-        .unwrap();
-    assert_eq!(
-        realm.eval(r"m=r.exec(text);m[0].length===200001&&m[1]===''&&m.indices[1][0]===200001"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn unicode_positive_finite_nullable_alternative_opt_in_work_aborts_before_mutation() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

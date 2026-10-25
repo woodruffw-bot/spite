@@ -310,7 +310,8 @@ impl Objects {
             .pages
             .partition_point(|page| page.index < new_length.div_ceil(PAGE_SIZE_U64));
         let has_partial_page = retained.checked_sub(1).is_some_and(|last| {
-            new_length % PAGE_SIZE_U64 != 0 && block.pages[last].index == new_length / PAGE_SIZE_U64
+            !new_length.is_multiple_of(PAGE_SIZE_U64)
+                && block.pages[last].index == new_length / PAGE_SIZE_U64
         });
         budget.charge(block.pages.len() - retained)?;
         if has_partial_page {
@@ -494,17 +495,16 @@ impl Objects {
             if let Err(position) = block
                 .pages
                 .binary_search_by_key(&page_index, |page| page.index)
+                && fragment.iter().any(|byte| *byte != 0)
             {
-                if fragment.iter().any(|byte| *byte != 0) {
-                    budget.charge(PAGE_SIZE)?;
-                    budget.charge(
-                        (block.pages.len() - position)
-                            .checked_add(additional)
-                            .ok_or(Error::WorkLimit)?,
-                    )?;
-                    *staged_page = Some(Page::new(page_index)?);
-                    additional += 1;
-                }
+                budget.charge(PAGE_SIZE)?;
+                budget.charge(
+                    (block.pages.len() - position)
+                        .checked_add(additional)
+                        .ok_or(Error::WorkLimit)?,
+                )?;
+                *staged_page = Some(Page::new(page_index)?);
+                additional += 1;
             }
             current = current
                 .checked_add(u64::try_from(count).map_err(|_| ArrayBufferError::OutOfBounds)?)

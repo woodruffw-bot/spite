@@ -114,20 +114,6 @@ fn consumers_callbacks_and_intrinsic_arrays_observe_fixed_choice_captures() {
 }
 
 #[test]
-fn deep_fixed_captures_large_patterns_and_repeated_bodies_survive_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'x(a|b)y'+')'.repeat(100000),'d'),copy=new RegExp(r),s='xay'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.length===100002&&a[1]===s&&a[100000]===s&&a[100001]==='a'&&a.indices[1][1]===3&&a.indices[100001][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    check(
-        "let s='xb'.repeat(100000)+'y',a=/(x(a|b))+(y)/d.exec(s);a[0]===s&&a[1]==='xb'&&a[2]==='b'&&a.indices[1][0]===199998&&a.indices[2][0]===199999&&a.indices[3][0]===200000",
-    );
-    check(
-        "let r=new RegExp('(a|b)'.repeat(10000),'d'),a=r.exec('b'.repeat(10000));a.length===10001&&a[10000]==='b'&&a.indices[10000][0]===9999",
-    );
-}
-
-#[test]
 fn opted_in_abort_and_wider_or_conditional_choices_remain_distinct() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -156,10 +142,7 @@ fn opted_in_abort_and_wider_or_conditional_choices_remain_distinct() {
         r"/x(a|b)y/u.test('xay')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

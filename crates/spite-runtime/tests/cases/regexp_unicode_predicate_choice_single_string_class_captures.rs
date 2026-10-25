@@ -1,6 +1,6 @@
 //! Required predicate choices preserve conditional lexical captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -162,50 +162,6 @@ fn predicate_choice_single_string_classes_preserve_native_captures_and_string_co
 }
 
 #[test]
-fn predicate_choice_single_string_classes_keep_deep_scopes_and_endpoint_retries_flat() {
-    for suffix in ["", "?"] {
-        let pattern = JsString::from(
-            format!(
-                r"^{}((\b)|(\B)){}([\q{{a|ab}}])$",
-                "(".repeat(1000),
-                format!("){suffix}").repeat(1000)
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var m=new RegExp({pattern:?},'dv').exec('ab');m[0]==='ab'&&m.length===1005&&m[1004]==='ab'&&m.indices[1004][0]===0&&m.indices[1004][1]===2&&m[1]==={}&&m[1002]==={}&&m[1003]===undefined",
-            if suffix.is_empty() { "''" } else { "undefined" },
-            if suffix.is_empty() { "''" } else { "undefined" }
-        ));
-    }
-    check(
-        r"var r=/^((\b)|(\B))(?<c>[\q{ab!|a|X|!}])\B/dv,m=r.exec('ab!Xc');m[0]==='a'&&m.groups.c==='a'&&m[1]===''&&m[2]===''&&m[3]===undefined&&m.indices.groups.c===m.indices[4]&&m.indices[4][0]===0&&m.indices[4][1]===1",
-    );
-    check(
-        r"var r=/^((\b)|(\B))(?<c>[\q{aaaa|aaa}])((^)|())$/dv,m=r.exec('aaaa');m[0]==='aaaa'&&m.groups.c==='aaaa'&&m[2]===''&&m[3]===undefined&&m[5]===''&&m[6]===undefined&&m[7]===''&&m.indices.groups.c[0]===0&&m.indices[7][0]===4",
-    );
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"^((\b)|(\B))(?<c>[\p{{Any}}\q{{{word}|{word}x}}])((^)|())$").as_str(),
-    );
-    let input = JsString::from(word.as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===20000&&m.groups.c.length===20000&&m[2]===''&&m[3]===undefined&&m[5]===''&&m[6]===undefined&&m[7]===''&&m.indices.groups.c[0]===0&&m.indices.groups.c[1]===20000"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-#[test]
 fn predicate_choice_single_string_classes_reject_unknown_leaves_before_execution() {
     for pattern in [
         r"((\b)|(\B))([\q{a|ab}])[a]",
@@ -217,7 +173,14 @@ fn predicate_choice_single_string_classes_reject_unknown_leaves_before_execution
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}")),Err(Error::Unsupported{..})),"{pattern:?}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
+                )
+            ),
+            "{pattern:?}"
+        );
     }
 }

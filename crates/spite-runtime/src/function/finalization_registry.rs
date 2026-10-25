@@ -111,12 +111,12 @@ impl Realm {
         receiver: Value,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        if let Value::Object(registry) = receiver {
-            if self.object_work(span, |objects, _| {
+        if let Value::Object(registry) = receiver
+            && self.object_work(span, |objects, _| {
                 objects.finalization_registry_has_slot(&registry)
-            })? {
-                return Ok(registry);
-            }
+            })?
+        {
+            return Ok(registry);
         }
         // RequireInternalSlot never unwraps Proxy receivers or reads public
         // properties, including when that Proxy has already been revoked.

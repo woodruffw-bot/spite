@@ -27,12 +27,11 @@ impl Realm {
     ) -> Result<Value, Error> {
         Self::require_object_coercible(&receiver, span)?;
         // Edition 17 ignores primitive prototype Symbol.replace hooks.
-        if matches!(search, Value::Object(_)) {
-            if let Some(method) =
+        if matches!(search, Value::Object(_))
+            && let Some(method) =
                 self.get_method(&search, &WellKnownSymbol::Replace.symbol(), span)?
-            {
-                return self.call(method, search, vec![receiver, replace], span);
-            }
+        {
+            return self.call(method, search, vec![receiver, replace], span);
         }
         let string = self.string(receiver, span)?;
         let search = self.string(search, span)?;

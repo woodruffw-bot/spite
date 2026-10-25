@@ -197,14 +197,13 @@ impl Realm {
         for read in 0..points.len() {
             self.tick(span)?;
             let point = points[read];
-            if let Some(index) = starter {
-                if last_class == 0 || last_class < point.class {
-                    if let Some(composite) = canonical_composition(points[index].code, point.code) {
-                        points[index].code = composite;
-                        // A consumed point does not block the next composition.
-                        continue;
-                    }
-                }
+            if let Some(index) = starter
+                && (last_class == 0 || last_class < point.class)
+                && let Some(composite) = canonical_composition(points[index].code, point.code)
+            {
+                points[index].code = composite;
+                // A consumed point does not block the next composition.
+                continue;
             }
             if point.class == 0 {
                 starter = Some(write);

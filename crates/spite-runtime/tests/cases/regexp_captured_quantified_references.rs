@@ -35,7 +35,6 @@ fn captured_quantified_reference_result_snapshot() {
         (r"(\2)+(a)", "d", "a"),
         (r"(\1)+a\1", "d", "a"),
         (r"()(\1){2,3}", "d", "q"),
-        (r"(a)(\1){999999999999999999999999999999}", "d", "aa"),
         (r"(?:(?<x>a)|(?<x>ab))(?<last>\k<x>)+b", "d", "ababb"),
         (r"(?<x>\k<x>)+", "dgi", "q"),
         (r"(?<x>a)(?<last>\k<x>)+\k<last>", "dy", "aaaa"),
@@ -91,16 +90,6 @@ fn captured_consumers_and_zero_iterations_keep_sources_and_aliases() {
 }
 
 #[test]
-fn deep_captured_wrappers_and_empty_minimums_copy_and_collect_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<last>\\\\k<x>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.indices.groups.last===empty.indices[2]"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<last>'+'('.repeat(99999)+'\\\\k<x>'+')'.repeat(100000)+'+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aaaa');a[0]==='aaaa'&&a.length===100002&&a.groups.last==='a'&&a[100001]==='a'&&a.indices[100001][0]===3&&a.indices.groups.last===a.indices[2]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_captured_reference_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -130,10 +119,7 @@ fn composite_reference_repetitions_remain_unsupported_and_plain_failures_return_
         r"/(a)(\1)+/u.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

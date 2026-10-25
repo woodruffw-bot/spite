@@ -24,10 +24,10 @@ impl Realm {
             let key = JsString::from(index.to_string().as_str());
             let literal = self.get_property(&literals, &key, span)?;
             self.append_raw_value(&mut result, literal, span)?;
-            if index + 1 < count {
-                if let Some(substitution) = substitutions.next() {
-                    self.append_raw_value(&mut result, substitution, span)?;
-                }
+            if index + 1 < count
+                && let Some(substitution) = substitutions.next()
+            {
+                self.append_raw_value(&mut result, substitution, span)?;
             }
         }
         Ok(Value::String(JsString::from_code_units(result)))

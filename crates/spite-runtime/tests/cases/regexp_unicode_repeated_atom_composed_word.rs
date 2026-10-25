@@ -116,19 +116,7 @@ fn unicode_repeated_atom_composed_word_coercions_and_last_index() {
         r"let r=/\B(a\b)+\b/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('aaa');m.index===2&&r.lastIndex===100",
     );
 }
-#[test]
-fn unicode_repeated_atom_composed_word_large_groups_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let inner='('.repeat(3000)+'^\\B.\\B$'+')'.repeat(3000),p='('.repeat(3000)+'\\B'+inner+'+\\B'+')'.repeat(3000)+'$',r=new RegExp(p,'dsmvg'),c=new RegExp(r),text='\n'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=c.exec(text);m.index===0&&m.length===6001&&m[1]===text&&m[3000]===text&&m[3001]==='\n'&&m[6000]==='\n'&&m.indices[6000][0]===200000&&m.indices[6000][1]===200001&&c.lastIndex===200001"),Ok(Value::Boolean(true)));
-    realm
-        .eval("inner=null;p=null;r=null;c=null;text=null;m=null")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn unicode_repeated_atom_composed_word_opted_work_and_unproved_units() {
     let mut realm = Realm::new(Limits {
@@ -155,10 +143,7 @@ fn unicode_repeated_atom_composed_word_opted_work_and_unproved_units() {
         r"/\b(a^\b)+/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

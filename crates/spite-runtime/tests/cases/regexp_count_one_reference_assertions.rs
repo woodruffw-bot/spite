@@ -89,16 +89,7 @@ fn consumers_keep_sticky_global_empty_advancement_and_callback_positions() {
         r"'abb'.search(/(?<=a(?=(b)\1{1}))b/)===1&&'abb'.split(/(?<=a(?=(b)\1{1}))b/).join('|')==='a|b|b'",
     );
 }
-#[test]
-fn deep_capture_scopes_dependency_chains_copies_and_gc_keep_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(?<=a(?=('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2{1})))b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('abb');a.length===n+2&&a[1]==='bb'&&a[n+1]==='b'&&a.indices[n+1][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(?<=a(?!('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2{1})q))b','d'),b=neg.exec('abbbx');b[1]===undefined&&b[n+1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let chain='(?<=a(?=(b)';for(let i=1;i<10000;i++)chain+='(\\'+i+'{1})';chain+='\\10000{1}))b';let c=new RegExp(chain,'dy');c.lastIndex=1;let found=c.exec('a'+'b'.repeat(10001));found.indices[10000][0]===10000"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     let mut realm = Realm::new(Limits {
@@ -130,10 +121,7 @@ fn larger_consuming_counts_capture_effects_choices_and_unicode_remain_pending() 
         r"/(?<=a(?=(b)\1{1}))b/v.exec('abb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

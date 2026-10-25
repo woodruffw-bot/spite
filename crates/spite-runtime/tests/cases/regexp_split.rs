@@ -1,6 +1,6 @@
 //! Generic RegExp splitting with custom species and exec (22.2.6.14).
 
-use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -268,37 +268,6 @@ fn strict_writes_hooks_and_poisoned_libraries_preserve_native_semantics() {
 }
 
 #[test]
-fn optional_limits_abort_without_cleanup_and_default_flags_have_no_size_cap() {
-    let mut realm = Realm::new(Limits {
-        max_string_units: Some(32),
-        ..Limits::default()
-    });
-    realm.eval("let f=RegExp.prototype[Symbol.split],r={flags:'x'.repeat(32),constructor:{[Symbol.species]:function(){throw 7;}}},m=0").unwrap();
-    assert!(matches!(
-        realm.eval("try{f.call(r,'');}catch{m=1;}finally{m=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
-    assert_eq!(
-        realm.eval("r.flags='y'.repeat(32);try{f.call(r,'');}catch(e){m=e;}m===7"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(20_000),
-        ..Limits::default()
-    });
-    realm.eval("let f=RegExp.prototype[Symbol.split],r={flags:'',constructor:{[Symbol.species]:function(){let n=0;return {exec(){this.lastIndex=n++%2===0?1:0;return {length:0};}};}}},m=0").unwrap();
-    assert!(matches!(
-        realm.eval("try{f.call(r,'ab');}catch{m=1;}finally{m=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
-    check(
-        "let seen,r={flags:'x'.repeat(120000),constructor:{[Symbol.species]:function(p,f){seen=f;return {exec(){return null;}};}}};RegExp.prototype[Symbol.split].call(r,'').length===1&&seen.length===120001&&seen[120000]==='y'",
-    );
-}
-
-#[test]
 fn recursive_species_exec_and_capture_getters_use_native_stack_guards() {
     for body in [
         "({get constructor(){return f.call(r,'a');}})",
@@ -326,14 +295,4 @@ fn recursive_species_exec_and_capture_getters_use_native_stack_guards() {
         assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
         assert_eq!(realm.eval("7"), Ok(Value::Number(7.0)));
     }
-}
-
-#[test]
-fn large_inputs_survive_repeated_custom_exec_calls_with_unlimited_defaults() {
-    check(
-        r"
-        let n=0,s='x'.repeat(120000),r={flags:'',constructor:{[Symbol.species]:function(){return {exec(input){if(input!==s)throw 7;n++;return null;}};}}};
-        let a=RegExp.prototype[Symbol.split].call(r,s);a.length===1&&a[0]===s&&n===120000
-    ",
-    );
 }

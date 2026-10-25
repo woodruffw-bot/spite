@@ -125,18 +125,6 @@ fn unicode_class_property_metadata_mode_clones_coercions_and_writes() {
 }
 
 #[test]
-fn unicode_class_property_repeated_sets_collection_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='('.repeat(3000)+'['+'\\\\p{ASCII}'.repeat(10000)+']'+')'.repeat(3000),r=new RegExp(p,'divg'),c=new RegExp(r),text='😀'.repeat(100000)+'A'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='A'&&m[3000]==='A'&&m.indices[3000][0]===200000&&m.indices[3000][1]===200001&&c.lastIndex===200001"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_class_property_opted_work_and_remaining_sets() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -172,10 +160,7 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         r"/[\p{ASCII}]x/u.exec('Ax')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

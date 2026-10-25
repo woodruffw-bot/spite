@@ -13,6 +13,7 @@ SOURCES = {
     "CaseFolding.txt": "a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d",
 }
 OUTPUT = Path(__file__).resolve().parent.parent / "crates/spite-core/src/case_data.rs"
+LEGACY_OUTPUT = OUTPUT.parents[3] / "vendor/regress/src/legacy_case_expansions.rs"
 
 
 def scalar(value):
@@ -131,6 +132,22 @@ def generate(sources):
     return ("\n".join(lines) + "\n").encode()
 
 
+def generate_legacy_expansions(sources):
+    """Retain full-uppercase expansion exclusions for legacy RegExp matching."""
+    points = []
+    for line in sources["SpecialCasing.txt"].decode().splitlines():
+        fields = [field.strip() for field in line.split("#", 1)[0].split(";")]
+        if len(fields) >= 5 and not fields[4] and len(fields[3].split()) > 1:
+            points.append(scalar(fields[0]))
+    return (
+        f"// Unicode {VERSION.split('.')[0]} unconditional full-uppercase expansions.\n"
+        "// Generated from SpecialCasing.txt; see UNICODE-SOURCES.json.\n"
+        "const LEGACY_EXPANDING_UPPERCASE: &[u32] = &["
+        + ",".join(f"0x{point:x}" for point in sorted(points))
+        + "];\n"
+    ).encode()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", nargs="?", type=Path, help="directory containing pinned UCD files")
@@ -144,12 +161,15 @@ def main():
             with urllib.request.urlopen(f"https://www.unicode.org/Public/{VERSION}/ucd/{name}", timeout=60) as response:
                 sources[name] = response.read(4 * 1024 * 1024)
     generated = generate(sources)
+    outputs = [(OUTPUT, generated), (LEGACY_OUTPUT, generate_legacy_expansions(sources))]
     if args.check:
-        if OUTPUT.read_bytes() != generated:
-            raise SystemExit("Case tables differ from the pinned data. Regenerate and review them.")
+        for path, contents in outputs:
+            if path.read_bytes() != contents:
+                raise SystemExit(f"{path.name} differs from the pinned data. Regenerate and review it.")
         print(f"Verified Unicode {VERSION} case tables.")
     else:
-        OUTPUT.write_bytes(generated)
+        for path, contents in outputs:
+            path.write_bytes(contents)
         print(f"Generated Unicode {VERSION} case tables.")
 
 

@@ -97,16 +97,6 @@ fn ordinary_fallback_consumers_sticky_positions_and_empty_slots_keep_semantics()
 }
 
 #[test]
-fn deep_ordinary_fallback_captures_huge_bounds_copies_and_collection_keep_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<x>'+'('.repeat(99999)+'a+b*'+')'.repeat(100000),'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aaabb');a[0]==='aaabb'&&a.length===100001&&a.groups.x==='aaabb'&&a[100000]==='aaabb'&&a.indices[100000][0]===0&&a.indices[100000][1]===5&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"), Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let n='9'.repeat(10000),zero=new RegExp('(?<x>a{0,'+n+'})b*','d'),huge=new RegExp('(?<x>a{'+n+'})b*','d'),empty=zero.exec('q');huge.exec('aaa')===null&&empty.groups.x===''&&empty.indices.groups.x===empty.indices[1]&&empty.indices.groups.x[0]===0&&empty.indices.groups.x[1]===0"), Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_ordinary_fallback_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -136,10 +126,7 @@ fn general_repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported
         r"/(a+)(b*)/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

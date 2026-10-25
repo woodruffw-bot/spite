@@ -622,10 +622,11 @@ impl Parser {
             self.semicolon()?;
             StatementKind::Throw(expr)
         } else {
-            if let Kind::Word(word) = &self.current().kind {
-                if !self.current().escaped && matches!(word.as_str(), "import" | "export") {
-                    return Err(self.unsupported("statement is not implemented"));
-                }
+            if let Kind::Word(word) = &self.current().kind
+                && !self.current().escaped
+                && matches!(word.as_str(), "import" | "export")
+            {
+                return Err(self.unsupported("statement is not implemented"));
             }
             let expr = self.expression(1)?;
             self.semicolon()?;
@@ -1366,10 +1367,10 @@ impl Parser {
             self.lookahead_error = None;
             self.scan_error = None;
         }
-        if !matches!(self.current().kind, Kind::RegExp { .. }) {
-            if let Err(error) = self.rescan_regexp() {
-                return Some(error);
-            }
+        if !matches!(self.current().kind, Kind::RegExp { .. })
+            && let Err(error) = self.rescan_regexp()
+        {
+            return Some(error);
         }
         let Token {
             kind: Kind::RegExp { body, flags },

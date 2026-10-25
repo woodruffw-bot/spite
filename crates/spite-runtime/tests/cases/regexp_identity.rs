@@ -1,6 +1,6 @@
 //! Ordinary IdentityEscape uses the pinned Unicode ID_Continue boundary.
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -59,10 +59,7 @@ fn class_quantifiers_assertions_and_backreferences_remain_distinct_from_identity
         r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

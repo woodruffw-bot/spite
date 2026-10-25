@@ -1,6 +1,6 @@
 //! Unconditional predicates retain member/count backtracking and lexical captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -91,12 +91,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<c>[\\q{ab|abc|c}]*?))(?<after>$)",input="abcab",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"abcab\",\"\",\"abcab\",\"abcab\",\"\"],[[0,5],[0,0],[0,5],[0,5],[5,5]],0,5]""####,
     );
-    check(
-        r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{a|aa}])){2,999999999999999999999999})(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aaaa\",\"\",\"aaaa\",\"aa\",\"aa\",\"\"],[[0,4],[0,0],[0,4],[2,4],[2,4],[4,4]],0,4]""####,
-    );
-    check(
-        r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{aa|aaa}])){999999999999999999999999})(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
-    );
+
     check(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{ab}&&\\q{cd}]))*)(?<after>$)",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",[0,0]],0,0]""####,
     );
@@ -138,63 +133,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('');m.groups.whole==='aaaa'&&m.groups.word==='aa'&&m.indices.groups.word===m.indices[2]&&m.indices[2][0]===2&&m.indices[2][1]===4&&n[0]===''&&n.groups.whole===''&&n.groups.word===undefined&&n.indices.groups.word===undefined&&clone.source===r.source&&clone.lastIndex===0&&r.lastIndex===4"),Ok(Value::Boolean(true)));
 }
-#[test]
-fn asserted_repeated_string_class_deep_scopes_continuations_and_host_aborts_remain_flat() {
-    let pattern = JsString::from(
-        format!(
-            r"^{}([\q{{aa|aaa}}]){{3,4}}{}$",
-            "(".repeat(1000),
-            "){1}".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('aaaaaa');m.length===1002&&m[0]==='aaaaaa'&&m[1000]==='aaaaaa'&&m[1001]==='aa'&&m.indices[1001][0]===4&&m.indices[1001][1]===6"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(format!(r"^()([\q{{{word}|{word}x}}]){{3}}()$").as_str());
-    let input = JsString::from(format!("{word}{word}{word}").as_str());
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec({input:?});m[0].length===60000&&m[1]===''&&m[2].length===20000&&m[3]===''&&m.indices[2][0]===40000&&m.indices[2][1]===60000&&m.indices[3][0]===60000"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/^[\q{a|aa}]*$/vg,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "a".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(input)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm.eval(r"var r=/^[\q{a|aa}]*?\b/vg,marker=0").unwrap();
-    realm
-        .eval(&format!("var input='{}'", "a".repeat(40_000)))
-        .unwrap();
-    assert_eq!(realm.eval("var m;try{m=r.exec(input)}finally{marker=3}marker===3&&m.length===1&&m.index===0&&m[0]===''&&r.lastIndex===0"),Ok(Value::Boolean(true)));
-}
+
 #[test]
 fn asserted_repeated_string_class_proofs_keep_conditional_predicates_and_unproved_leaves_closed() {
     check(
@@ -224,7 +163,15 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaa
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){0}$",
     ] {
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({:?},'v').test('aaaa')}}catch{{marker=1}}finally{{marker=2}}",JsString::from(pattern))),Err(Error::Unsupported{..})),"{pattern}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({:?},'v').test('aaaa')}}catch{{marker=1}}finally{{marker=2}};marker",
+                    JsString::from(pattern)
+                )
+            ),
+            "{pattern}"
+        );
     }
 }

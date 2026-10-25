@@ -138,7 +138,7 @@ impl Objects {
             byte_offset,
             array_length,
         };
-        if byte_offset % element_type.size() as u64 != 0
+        if !byte_offset.is_multiple_of(element_type.size() as u64)
             || (array_length.is_none() && !buffer_data.is_resizable())
             || data.in_bounds_array_length(buffer_data).is_none()
         {

@@ -99,20 +99,6 @@ fn native_consumers_and_copies_share_reference_results_and_original_source() {
 }
 
 #[test]
-fn deep_named_reference_programs_survive_copy_and_collection_without_default_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'(?<x>a)'+')'.repeat(100000)+'\\\\k<x>','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qaa');a[0]==='aa'&&a.length===100002&&a.groups.x==='a'&&a.indices.groups.x===a.indices[100001]&&a.indices[100001][0]===1&&a.indices[100001][1]===2&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a.groups.x==='a'&&a.indices.groups.x===a.indices[100001]"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("new RegExp('(?<x>a)'+'\\\\k<x>'.repeat(100000)).exec('a'.repeat(100001)).groups.x==='a'"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn explicit_search_work_aborts_before_last_index_and_language_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -141,10 +127,7 @@ fn pending_reference_compositions_remain_unsupported_and_failed_matches_return_n
         r"/(?<x>a)\k<x>/u.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

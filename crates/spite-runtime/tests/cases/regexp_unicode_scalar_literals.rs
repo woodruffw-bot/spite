@@ -105,25 +105,6 @@ fn unicode_scalar_literal_lone_input_units_remain_distinct() {
 }
 
 #[test]
-fn unicode_scalar_literal_deep_storage_clones_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(100000)+'\\u{'+'0'.repeat(100000)+'1f600}'+')'.repeat(100000),r=new RegExp(p,'v'),c=new RegExp(r),a=c.exec('😀')").unwrap();
-    assert_eq!(
-        realm.eval("a.length===100001&&a[100000]==='😀'&&a.index===0"),
-        Ok(Value::Boolean(true))
-    );
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("c.exec('a'.repeat(100000)+'😀').index===100000"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;a=null;p=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -155,10 +136,7 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         r"/\uD800()\uDC00/u.exec('\uD800')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

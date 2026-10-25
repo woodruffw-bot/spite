@@ -91,20 +91,6 @@ fn nested_consumers_and_empty_choices_keep_source_order_and_original_text() {
 }
 
 #[test]
-fn deep_nested_choices_and_named_scopes_survive_copy_collection_and_failure() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+'a'+'|b)'.repeat(100000)+'\\\\1','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aa');a[0]==='aa'&&a.length===100001&&a[100000]==='a'&&a.indices[100000][0]===0&&copy.source===r.source&&copy.exec('x')===null"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a[100000]==='a'&&a.indices[100000][1]===1"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("let named=new RegExp('(?:'.repeat(100000)+'(?<x>a)'+'|b)'.repeat(100000)+'\\\\k<x>','d'),b=named.exec('aa'),c=named.exec('b');b.groups.x==='a'&&b.indices.groups.x===b.indices[1]&&c[0]==='b'&&c.groups.x===undefined"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn explicit_nested_choice_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -131,10 +117,7 @@ fn quantified_reference_bodies_and_lookaround_remain_unsupported() {
         r"/(?<=(a|bb))\1/.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

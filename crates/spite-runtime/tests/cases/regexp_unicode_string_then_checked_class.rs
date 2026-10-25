@@ -126,15 +126,13 @@ fn unsupported_syntax_and_parser_early_errors_remain_distinct() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2;}}finally{{marker=3;}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2;}}finally{{marker=3;}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for pattern in [
         r"[^\q{ab}][[b]]",

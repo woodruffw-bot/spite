@@ -67,30 +67,10 @@ second uses a local copy. CI verifies the checked-in output against the pinned
 source. Updating Unicode requires an explicit version, source digest, generated
 table, and test update.
 
-The Script and Script_Extensions matcher registries are generated offline by
-`tools/generate-regexp-scripts.py` from unchanged local Unicode 18
-PropertyValueAliases, Scripts, ScriptExtensions and CaseFolding references under
-`crates/spite-core/src/testdata/`. The alias reference has SHA-256
-`06c4c8eaf7b0bf34abe73b113da1215bd784ac254d4c223600b90267caa4bbbd`.
-The unchanged new reference is
-https://www.unicode.org/Public/18.0.0/ucd/ScriptExtensions.txt, SHA-256
-`5c9d34a922f687726f2a8bcf57d49f905987e51f1b21b58c95a00fbe255cec23`,
-covered by the included Unicode License v3.
-
-The generator verifies all four pins and all 1,533 common/simple fold records.
-It preserves the earlier Script output and specialized fold plans. Each namespace
-accepts 179 canonical values and 351 exact value spellings. Explicit extension
-sets replace singleton Script fallback; unlisted points retain that fallback,
-including Unknown's default. Both namespaces retain the valid empty
-Katakana_Or_Hiragana/Hrkt value. Extension memberships overlap, and generated
-negative v+i class lists exclude complete canonical preimages where required.
-The generator emits both static modules in one invocation; no network access or
-build-time dependency is needed for the local check:
-
-```sh
-python3 tools/generate-regexp-scripts.py --check
-python3 tools/generate-regexp-scripts.py /path/to/versioned-reference-directory --check
-```
-
-When reproducing into scratch files, select both `--output` and
-`--extensions-output`; otherwise each omitted output uses its checked-in path.
+RegExp matching now uses the pinned regress backend under `vendor/regress`.
+Its Unicode data provenance and local integration changes are recorded in
+`vendor/regress/SPITE-PATCHES.md`. The former specialized Script matcher tables
+and their generator were removed with the custom matching engine. Unchanged
+Unicode 18 reference files under `crates/spite-core/src/testdata/` remain available
+for backend data verification; parser property-alias generation above remains
+independent of the matching backend.

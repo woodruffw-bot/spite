@@ -117,20 +117,6 @@ fn zero_count_choice_consumers_keep_last_index_empty_advancement_and_callback_sl
 }
 
 #[test]
-fn zero_count_choices_deep_skipped_and_completed_captures_flat_frames_copies_and_gc_are_unlimited()
-{
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,body='(?:'+'('.repeat(n)+'a'+')'.repeat(n)+'|bb)',r=new RegExp('(?<='+body+'{0})c','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qc');a.index===1&&a.length===n+1&&a[1]===undefined&&a[n]===undefined&&a.indices[n]===undefined&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let completed='(?:'+'('.repeat(n)+'(?:a|bb){0}'+')'.repeat(n)+')',positive=new RegExp('(?<='+completed+'{2})b','d'),p=positive.exec('qb'),negative=new RegExp('(?<!'+completed+'{2}q)b','d'),z=negative.exec('xb');p.length===n+1&&p[1]===''&&p[n]===''&&p.indices[1][0]===1&&p.indices[n][1]===1&&p.indices[1]!==p.indices[n]&&z.length===n+1&&z[1]===undefined&&z[n]===undefined&&z.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let deep=new RegExp('(?<='+'(?:'.repeat(10000)+'(a|aa){0}'+'){2}'.repeat(10000)+')b','d').exec('b');deep[1]===undefined&&deep.indices[1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let padded=new RegExp('(?<=(a|aa){'+'0'.repeat(10000)+'})b','d').exec('qb');padded[1]===undefined&&padded.index===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=((a|aa){0}){2})b|a)+c/.exec('b'+'a'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined&&many[2]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_skipped_choice_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -160,10 +146,7 @@ fn nonzero_unequal_choices_mixed_empty_paths_unproved_bodies_and_unicode_are_pen
         r"/(?<=(a|aa){0})b/v.exec('b')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

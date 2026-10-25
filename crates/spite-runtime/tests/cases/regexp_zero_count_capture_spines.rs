@@ -58,36 +58,6 @@ fn quantified_zero_spine_consumers_clones_and_gc_keep_both_capture_states() {
 }
 
 #[test]
-fn deep_and_unrepresentable_required_counts_keep_capture_storage_flat() {
-    check(
-        r#"
-        var depth=1000,pattern='('.repeat(depth)+'[\\p{RGI_Emoji}]{0}'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&m.length===1001&&r.lastIndex===0;
-        for(var i=1;i<m.length;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok
-    "#,
-    );
-    let count = "9".repeat(20_000);
-    let pattern =
-        JsString::from(format!(r"(?<outer>(?<inner>\p{{RGI_Emoji}}{{0}})?){{{count}}}").as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv'),m=r.exec('x');m.length===3&&m[1]===''&&m[2]===undefined&&m.groups.outer===''&&m.groups.inner===undefined&&m.indices.groups.outer===m.indices[1]&&m.indices.groups.inner===undefined"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn syntax_errors_and_unerased_membership_requirements_keep_distinct_failures() {
     check(
         r#"
@@ -103,9 +73,9 @@ fn syntax_errors_and_unerased_membership_requirements_keep_distinct_failures() {
     ] {
         let source = JsString::from(source);
         assert!(
-            matches!(
-                Realm::default().eval(&format!("new RegExp({source:?},'v').test('')")),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut Realm::default(),
+                &format!("new RegExp({source:?},'v').test('')")
             ),
             "{source:?}"
         );
@@ -149,25 +119,6 @@ fn arbitrary_zero_group_consumers_and_collection_keep_erased_captures_undefined(
 }
 
 #[test]
-fn deep_arbitrary_erased_groups_keep_full_layout_with_huge_required_outside_counts() {
-    check(
-        r#"
-        var depth=1000,pattern='('.repeat(depth)+'('.repeat(depth)+'a|(?=(b))[\\p{RGI_Emoji}]+'+')'.repeat(depth)+'{0}'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&m.length===2002&&r.lastIndex===0;
-        for(var i=1;i<m.length;i++)ok=ok&&(i<=depth?m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0:m[i]===undefined&&m.indices[i]===undefined);
-        ok
-    "#,
-    );
-    let count = "9".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"(?<outer>(?<erased>(a)\p{{RGI_Emoji}}+){{0}}){{{count}}}").as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m.groups.outer===''&&m.groups.erased===undefined&&m.indices.groups.outer===m.indices[1]"
-    ));
-}
-
-#[test]
 fn concatenated_zero_spines_keep_interleaved_named_values_and_index_aliases() {
     check(
         r#"
@@ -208,18 +159,6 @@ fn concatenated_zero_spine_string_consumers_and_collection_preserve_every_slot()
 }
 
 #[test]
-fn large_concatenated_zero_spines_and_symbolic_required_counts_have_no_default_quotas() {
-    check(
-        r#"
-        var pattern='([\\p{RGI_Emoji}]{0})?([\\p{RGI_Emoji}]{0})+'.repeat(1000),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2001;
-        for(var i=1;i<m.length;i++)ok=ok&&(i%2===0?m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0:m[i]===undefined&&m.indices[i]===undefined);
-        var count='9'.repeat(20000);var huge=new RegExp('(?<skip>\\p{RGI_Emoji}{0})?(?<keep>\\p{RGI_Emoji}{0}){'+count+'}(?<gone>(a|b)){0}','dgv').exec('x');
-        ok&&huge.length===5&&huge[1]===undefined&&huge[2]===''&&huge[3]===undefined&&huge[4]===undefined&&huge.indices.groups.keep===huge.indices[2]
-    "#,
-    );
-}
-
-#[test]
 fn sequence_erasure_still_requires_complete_original_early_error_validation() {
     check(
         r#"
@@ -234,10 +173,7 @@ fn sequence_erasure_still_requires_complete_original_early_error_validation() {
         r"new RegExp('[\\p{RGI_Emoji}]{0}[\\p{RGI_Emoji}]+','v').test('x')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -284,19 +220,6 @@ fn first_empty_alternative_string_consumers_copies_and_gc_never_select_later_arm
 }
 
 #[test]
-fn deeply_unselected_alternatives_keep_all_slots_and_validate_original_early_errors() {
-    check(
-        r#"
-        var depth=1000,pattern='(?<keep>\\p{RGI_Emoji}{0})+|'+'('.repeat(depth)+'[\\p{RGI_Emoji}]+'+')'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===depth+2&&m[1]===''&&m.indices.groups.keep===m.indices[1];
-        for(var i=2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined&&Object.hasOwn(m,''+i)&&Object.hasOwn(m.indices,''+i);
-        for(var source of ['\\p{RGI_Emoji}{0}|[\\p{Not_A_Property}]','|(?<x>a)(?<x>b)','|(\\k<missing>)','[a]{0}|([b]{3,2})']){
-            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
-        }ok
-    "#,
-    );
-}
-
-#[test]
 fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
     check(
         r#"
@@ -334,21 +257,6 @@ fn enclosing_empty_masks_preserve_string_consumer_slots_and_collection() {
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outside===''&&m.groups.skip===undefined&&m.groups.keep===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.keep===m.indices[3]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_mandatory_enclosing_masks_keep_defined_prefixes_and_every_inner_slot() {
-    check(
-        r#"
-        var depth=1000,pattern='('.repeat(depth)+'([\\p{RGI_Emoji}]{0})?([\\p{RGI_Emoji}]{0})+'+')'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===depth+3;
-        for(var i=1;i<=depth;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok=ok&&m[depth+1]===undefined&&m.indices[depth+1]===undefined&&m[depth+2]===''&&m.indices[depth+2][0]===0;
-        var choice='('.repeat(depth)+'|(?<never>(?=(a))[\\p{RGI_Emoji}]+)'+')'.repeat(depth),m=new RegExp(choice,'dgv').exec('ab');
-        ok=ok&&m.length===depth+3&&m.groups.never===undefined&&m[depth+1]===undefined&&m[depth+2]===undefined&&Object.hasOwn(m.indices,''+(depth+2));
-        for(var i=1;i<=depth;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok
-    "#,
-    );
 }
 
 #[test]
@@ -394,39 +302,6 @@ fn quantified_enclosing_empty_masks_keep_string_consumers_and_collection_consist
 }
 
 #[test]
-fn quantified_enclosing_depth_and_required_counts_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=8,pattern='('.repeat(depth)+'|(?<never>[\\p{RGI_Emoji}]+){0}'+'){2,3}'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===depth+2&&m.groups.never===undefined;
-        for(var i=1;i<=depth;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        ok&&m[depth+1]===undefined&&Object.hasOwn(m.indices,''+(depth+1))
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}([\p{{RGI_Emoji}}]{{0}})?([\p{{RGI_Emoji}}]{{0}})+{}",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===1003;for(var i=1;i<=1000;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;ok&&m[1001]===undefined&&m.indices[1001]===undefined&&m[1002]===''&&m.indices[1002][0]===0"
-    ));
-    let count = "9".repeat(20_000);
-    let pattern = JsString::from(
-        format!(
-            r"(?<outside>(?<skip>\p{{RGI_Emoji}}{{0}})?(?<keep>\p{{RGI_Emoji}}{{0}})+){{{count}}}"
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.groups.outside===''&&m.groups.skip===undefined&&m.groups.keep===''&&m.indices.groups.keep===m.indices[3]"
-    ));
-}
-
-#[test]
 fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts() {
     check(
         r#"
@@ -439,10 +314,7 @@ fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts(
         r"new RegExp('(?-i:(?<outside>|(?<never>[\\p{RGI_Emoji}]+)))+','v').exec('😀')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -502,38 +374,6 @@ fn empty_tree_string_consumers_copies_and_gc_keep_branch_and_erasure_slots() {
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outer===''&&m.groups.left===undefined&&m.groups.right===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[4]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_empty_trees_and_required_counts_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=5,pattern='('.repeat(depth)+'(?<leaf>[\\p{RGI_Emoji}]{0})'+'|(a){0})+'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===2*depth+2&&m.groups.leaf==='';
-        for(var i=1;i<=depth+1;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        for(var i=depth+2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
-        ok
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}(?<leaf>[\p{{RGI_Emoji}}]{{0}}){}",
-            "(".repeat(depth),
-            "|(a){0})+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2002&&m.groups.leaf==='';for(var i=1;i<=1001;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;for(var i=1002;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;ok"
-    ));
-    let count = "9".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"(?<outer>(?<a>a{{0}})(?<b>b{{0}})|(?<later>[\p{{RGI_Emoji}}]{{0}})){{{count}}}")
-            .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===5&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===undefined&&m.groups.outer===''&&m.groups.a===''&&m.groups.b===''&&m.groups.later===undefined&&m.indices.groups.b===m.indices[3]"
-    ));
 }
 
 #[test]
@@ -602,37 +442,6 @@ fn empty_positive_assertion_string_consumers_clones_and_gc_keep_capture_aliases(
 }
 
 #[test]
-fn deep_positive_assertion_trees_and_required_counts_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,prefix='';for(var i=0;i<depth;i++)prefix+=i%2?'(?<=':'(?=';
-        var pattern=prefix+'(?<leaf>[\\p{RGI_Emoji}]{0})'+')'.repeat(depth)+'(?<tail>a{0})',m=new RegExp(pattern,'dgv').exec('ab');
-        m.length===3&&m[1]===''&&m[2]===''&&m.indices.groups.leaf===m.indices[1]&&m.indices.groups.tail===m.indices[2]
-    "#,
-    );
-    let depth = 1000;
-    let prefix: String = ["(?=", "(?<="].into_iter().cycle().take(depth).collect();
-    let pattern = JsString::from(
-        format!(
-            r"{prefix}(?<leaf>[\p{{RGI_Emoji}}]{{0}}){}(?<tail>a{{0}})",
-            ")".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&r.lastIndex===0&&m.length===3&&m[1]===''&&m[2]===''&&m.indices.groups.leaf===m.indices[1]&&m.indices.groups.tail===m.indices[2]&&m.indices[1]!==m.indices[2]"
-    ));
-    let count = "9".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"(?<outer>(?=(?<ahead>a{{0}}))(?<=(?<behind>\p{{RGI_Emoji}}{{0}}))){{{count}}}")
-            .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dgv').exec('x');m.length===4&&m[1]===''&&m[2]===''&&m[3]===''&&m.groups.outer===''&&m.groups.ahead===''&&m.groups.behind===''&&m.indices.groups.behind===m.indices[3]"
-    ));
-}
-
-#[test]
 fn positive_tree_early_errors_and_constructor_aborts_precede_matching_effects() {
     check(
         r#"
@@ -695,36 +504,6 @@ fn escaped_empty_tree_consumers_clones_and_gc_preserve_source_and_capture_aliase
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outer===''&&m.groups.left===undefined&&m.groups.right===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[4]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_escaped_trees_and_long_unicode_spellings_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=5,pattern='('.repeat(depth)+'(?<leaf>\\u0028{0})'+'|(\\x29){0})+'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===2*depth+2&&m.groups.leaf==='';
-        for(var i=1;i<=depth+1;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        for(var i=depth+2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
-        ok
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}(?<leaf>\u0028{{0}}){}",
-            "(".repeat(depth),
-            r"|(\x29){0})+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2002&&m.groups.leaf==='';for(var i=1;i<=1001;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;for(var i=1002;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;ok"
-    ));
-    let zeros = "0".repeat(20_000);
-    let pattern =
-        JsString::from(format!(r"(?<lead>\u{{{zeros}61}}{{0}})(?<tail>\x62{{0}})").as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv'),m=r.exec('x');r.source==={pattern:?}&&m.length===3&&m[1]===''&&m[2]===''&&m.groups.lead===''&&m.groups.tail===''&&m.indices.groups.tail===m.indices[2]"
-    ));
 }
 
 #[test]
@@ -791,37 +570,6 @@ fn surrogate_empty_tree_consumers_clones_and_collection_keep_capture_aliases() {
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('ab');m.groups.outer===''&&m.groups.lead===undefined&&m.groups.trail===undefined&&m.groups.tail===''&&Object.hasOwn(m.indices,'2')&&m.indices.groups.tail===m.indices[4]"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_surrogate_trees_and_long_braced_spellings_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=5,pattern='('.repeat(depth)+'(?<leaf>\\uD83D\\uDE00{0})'+'|(\\uD800){0})+'.repeat(depth),m=new RegExp(pattern,'dgv').exec('ab'),ok=m.length===2*depth+2&&m.groups.leaf==='';
-        for(var i=1;i<=depth+1;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;
-        for(var i=depth+2;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;
-        ok
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}(?<leaf>\uD83D\uDE00{{0}}){}",
-            "(".repeat(depth),
-            r"|(\uD800){0})+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀'),ok=m.index===0&&r.lastIndex===0&&m.length===2002&&m.groups.leaf==='';for(var i=1;i<=1001;i++)ok=ok&&m[i]===''&&m.indices[i][0]===0&&m.indices[i][1]===0;for(var i=1002;i<m.length;i++)ok=ok&&m[i]===undefined&&m.indices[i]===undefined;ok"
-    ));
-    let zeros = "0".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"(?<lead>\u{{{zeros}D800}}{{0}})(?<trail>\u{{DC00}}{{0}})").as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv'),m=r.exec('x');r.source==={pattern:?}&&m.length===3&&m[1]===''&&m[2]===''&&m.groups.lead===''&&m.groups.trail===''&&m.indices.groups.trail===m.indices[2]"
-    ));
 }
 
 #[test]

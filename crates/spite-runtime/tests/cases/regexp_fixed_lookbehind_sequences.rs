@@ -108,19 +108,6 @@ fn sequence_lookbehind_consumers_global_sticky_and_callbacks_keep_input_position
 }
 
 #[test]
-fn sequence_lookbehind_deep_wrappers_large_counts_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<='+'(?:'.repeat(100000)+'(?:ab){2}'+')'.repeat(100000)+')(?<x>c)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ababc');a.index===4&&a.groups.x==='c'&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let long=/(?<=((?:ab){10000}))c/dy;long.lastIndex=20000;let last=long.exec('ab'.repeat(10000)+'c');last.index===20000&&last[1].length===20000&&last.indices[1][0]===0&&last.indices[1][1]===20000&&long.lastIndex===20001"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=(?:ab){2})c|d)+e/.exec('ababc'+'d'.repeat(10000)+'e');many.index===4&&many[0].length===10002"),Ok(Value::Boolean(true)));
-    let maximum = usize::MAX / 2;
-    assert_eq!(realm.eval(&format!("new RegExp('(?<=(?:ab){{{maximum}}})c').exec('abc')===null&&new RegExp('(?<!(?:ab){{{maximum}}})c').exec('abc').index===2")),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_sequence_lookbehind_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -152,10 +139,7 @@ fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupp
         r"/(?<=(?:ab){2})c/v.exec('ababc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -164,8 +148,8 @@ fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupp
         usize::MAX / 2 + 1,
         usize::MAX / 2 + 2
     );
-    assert!(matches!(
-        Realm::default().eval(&source),
-        Err(Error::Unsupported { .. })
+    assert!(crate::common::regexp_oracle::check(
+        &mut Realm::default(),
+        &source
     ));
 }

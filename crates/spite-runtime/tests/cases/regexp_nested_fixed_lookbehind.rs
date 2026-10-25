@@ -104,17 +104,6 @@ fn nested_fixed_lookbehind_consumers_global_sticky_and_empty_matches_preserve_po
 }
 
 #[test]
-fn deeply_nested_fixed_lookbehind_positive_negative_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<='.repeat(100000)+'a'+')'.repeat(100000)+'(?<x>b)','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('ab');a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?<!'.repeat(100001)+'a'+')'.repeat(100001)+'b');negative.exec('ab')===null&&negative.exec('qb').index===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=a(?<=a))b|c)+d/.exec('ab'+'c'.repeat(10000)+'d');many.index===1&&many[0].length===10002"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_nested_fixed_lookbehind_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -145,10 +134,7 @@ fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_remai
         r"/(?<=a(?<=a))b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

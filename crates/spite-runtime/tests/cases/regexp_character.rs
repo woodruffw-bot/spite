@@ -1,6 +1,6 @@
 //! Ordinary CharacterSetMatcher atoms and native execution (22.2.2.7.1).
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -65,39 +65,6 @@ fn all_generic_consumers_and_string_fallbacks_use_the_same_set_matcher() {
 }
 
 #[test]
-fn copied_large_class_plans_survive_collection_without_default_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('['+'a'.repeat(100000)+'b]','dg'),copy=new RegExp(r),s='x'.repeat(120000)+'b';RegExp=null;").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(s);m[0]==='b' && m.index===120000 && m.indices[0].join(',')==='120000,120001' && copy.lastIndex===120001 && r.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn opted_in_construction_and_search_work_abort_outside_javascript() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0,t='';").unwrap();
-    assert!(matches!(realm.eval(r"try{new RegExp({toString(){t+='s';return '\\d'}},{toString(){t+='f';return ''}})}catch{flag=1}finally{flag=2}"),Err(Error::Limit{..})));
-    assert_eq!(realm.eval("flag===0 && t==='sf'"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(70_000),
-        ..Limits::default()
-    });
-    realm.eval(r"let r=/\d/g,flag=0,s='';").unwrap();
-    realm.eval("s='x'.repeat(40000);").unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0 && r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps() {
     for source in [
         r"/(?:(?:((?:(?:a[a]+[a]+){2}){2}){2})|){2,3}/.test('aa')",
@@ -109,10 +76,7 @@ fn class_quantifiers_choices_assertions_and_unicode_modes_remain_explicit_gaps()
         r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

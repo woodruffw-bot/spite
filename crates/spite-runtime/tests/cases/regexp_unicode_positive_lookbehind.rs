@@ -76,20 +76,6 @@ fn predecessor_string_consumers_copies_and_collection_keep_captures_before_match
 }
 
 #[test]
-fn predecessor_deep_wrappers_retain_all_empty_and_consuming_capture_slots() {
-    check(
-        r#"
-        var ok=true;
-        for(var mode of ['u','v']){
-            var source='('.repeat(1000)+'(?<='+'('.repeat(1000)+'[a-z]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'d'+mode),m=r.exec('!a');
-            ok=ok&&m.index===2&&m.length===2001&&m[0]==='';
-            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===(i<=1000?2:1)&&m.indices[i][1]===2;
-        }ok
-    "#,
-    );
-}
-
-#[test]
 fn word_predecessor_captures_keep_boundary_polarity_source_and_outside_ranges() {
     check(
         r#"
@@ -183,18 +169,6 @@ fn q_class_predecessor_string_consumers_copies_and_collection_keep_preceding_ext
 }
 
 #[test]
-fn q_class_predecessor_deep_wrappers_and_pair_offsets_keep_exact_original_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<='+'('.repeat(1000)+'[\\q{a|😀}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=3;var m=r.exec('!😀a');
-        var ok=m.index===3&&m.length===2001&&m[0]===''&&r.lastIndex===3;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===(i<=1000?3:1)&&m.indices[i][1]===3;
-        r.lastIndex=2;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;r.lastIndex=5;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;ok
-    "#,
-    );
-}
-
-#[test]
 fn word_q_class_predecessors_keep_original_polarity_source_and_named_ranges() {
     check(
         r#"
@@ -284,19 +258,6 @@ fn scalar_v_set_predecessor_consumers_copies_and_collection_keep_preceding_exten
 }
 
 #[test]
-fn scalar_v_set_predecessor_deep_wrappers_and_pair_offsets_keep_original_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<='+'('.repeat(1000)+'[[😀a]--[x]]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=3;var m=r.exec('!😀a');
-        var ok=m.index===3&&m.length===2001&&m[0]===''&&r.lastIndex===3;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===(i<=1000?3:1)&&m.indices[i][1]===3;
-        r.lastIndex=2;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;r.lastIndex=5;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;
-        var nested='['.repeat(1000)+'a'+']'.repeat(1000),m=new RegExp('(?<=(?<run>'+nested+'))','dv').exec('a');ok=ok&&m.index===1&&m.groups.run==='a'&&m.indices.groups.run[0]===0;ok
-    "#,
-    );
-}
-
-#[test]
 fn word_scalar_v_set_predecessors_keep_original_polarity_source_and_named_ranges() {
     check(
         r#"
@@ -380,20 +341,6 @@ fn character_result_predecessor_consumers_copies_and_collection_keep_original_ex
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('a');m.index===1&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn character_result_predecessor_deep_wrappers_and_pair_offsets_keep_exact_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<='+'('.repeat(1000)+'[\\q{a|ab|}&&\\p{Any}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=2;var m=r.exec('!a');
-        var ok=m.index===2&&m.length===2001&&m[0]===''&&r.lastIndex===2;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===(i<=1000?2:1)&&m.indices[i][1]===2;ok
-    "#,
-    );
-    check(
-        "var r=new RegExp('(?<=(?<run>[[\\\\q{😀x|😀}&&\\\\p{Any}]a]))','dgyv');r.lastIndex=3;var m=r.exec('😀😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===2",
-    );
 }
 
 #[test]

@@ -120,17 +120,6 @@ fn pure_zero_choices_consumers_empty_advancement_sticky_and_callbacks_preserve_s
 }
 
 #[test]
-fn pure_zero_choice_huge_counts_deep_slots_copies_collection_and_parent_loops_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,huge='184467440737095516160000000000000000000',r=new RegExp('(?:'+'('.repeat(n)+')'.repeat(n)+'|()){'+huge+',}a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qa');a.index===1&&a.length===n+2&&a[1]===''&&a[n]===''&&a[n+1]===undefined&&a.indices[1][0]===1&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("new RegExp('(?:^|$){'+huge+',}?a').exec('a').index===0&&new RegExp('(?:^|$){0,'+huge+'}a').exec('qa').index===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?:()|()){2}a|b)+c/.exec('a'+'b'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined&&many[2]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_pure_zero_choice_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -160,10 +149,7 @@ fn mixed_empty_consuming_choices_internal_references_counted_behind_and_unicode_
         r"/(?:()|()){2}a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

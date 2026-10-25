@@ -274,11 +274,11 @@ impl Realm {
         if offset < 0.0 {
             return Err(Self::typed_array_set_range_error(span));
         }
-        if let Value::Object(object) = &source {
-            if let Some(source) = self.typed_array_mutation_view(object, span)? {
-                self.typed_array_set_from_typed_array(target, &source, offset, span)?;
-                return Ok(Value::Undefined);
-            }
+        if let Value::Object(object) = &source
+            && let Some(source) = self.typed_array_mutation_view(object, span)?
+        {
+            self.typed_array_set_from_typed_array(target, &source, offset, span)?;
+            return Ok(Value::Undefined);
         }
         // Target validation precedes ToObject/LengthOfArrayLike. The length
         // getter precedes positive-infinite or excessive offset rejection.

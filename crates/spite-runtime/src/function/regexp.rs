@@ -535,17 +535,15 @@ impl Realm {
 // AdvanceStringIndex, 22.2.7.3. ToLength bounds index at 2^53-1, so even its
 // terminal +1 fits u64 and is exactly representable as a Number.
 fn advance_string_index(string: &JsString, index: u64, unicode: bool) -> u64 {
-    if unicode {
-        if let Ok(index_usize) = usize::try_from(index) {
-            let units = string.code_units();
-            if let Some((&first, &second)) = units
-                .get(index_usize)
-                .zip(index_usize.checked_add(1).and_then(|i| units.get(i)))
-            {
-                if (0xd800..=0xdbff).contains(&first) && (0xdc00..=0xdfff).contains(&second) {
-                    return index + 2;
-                }
-            }
+    if unicode && let Ok(index_usize) = usize::try_from(index) {
+        let units = string.code_units();
+        if let Some((&first, &second)) = units
+            .get(index_usize)
+            .zip(index_usize.checked_add(1).and_then(|i| units.get(i)))
+            && (0xd800..=0xdbff).contains(&first)
+            && (0xdc00..=0xdfff).contains(&second)
+        {
+            return index + 2;
         }
     }
     index + 1

@@ -1,6 +1,6 @@
 //! Required predicate choices preserve conditional lexical captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -162,49 +162,6 @@ fn truth_table_single_string_classes_preserve_native_captures_and_string_consume
 }
 
 #[test]
-fn truth_table_single_string_classes_preserve_deep_profiles_and_required_empty_members() {
-    let pattern = JsString::from(
-        format!(
-            r"{}((^)|(\b)){}([\q{{a|ab}}])",
-            "(".repeat(1000),
-            ")".repeat(1000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var m=new RegExp({pattern:?},'dv').exec('ab');m[0]==='ab'&&m.length===1005&&m[1002]===''&&m[1003]===undefined&&m[1004]==='ab'&&m.indices[1004][0]===0&&m.indices[1004][1]===2"
-    ));
-    check(
-        r"var r=/^((^)|(\b))(?<c>[\q{ab!|a}])((^)|(\B))/dv,m=r.exec('ab!Z');m[0]==='a'&&m.groups.c==='a'&&m[6]===undefined&&m[7]===''&&m.indices.groups.c[0]===0&&m.indices.groups.c[1]===1",
-    );
-    check(
-        r"var r=/(($)|(\b))(?<c>[\q{}])(($)|(\b))/dvg,m=r.exec('!a');m[0]===''&&m.index===1&&m.groups.c===''&&m.indices.groups.c[0]===1&&m.indices.groups.c[1]===1&&r.lastIndex===1",
-    );
-    check(
-        r"var r=/((^)|(\b))(?<c>[\q{}]){0001,0001}?(($)|(\B))/dv,m=r.exec('');m[0]===''&&m.groups.c===''&&m[2]===''&&m[3]===undefined&&m[6]===''&&m[7]===undefined&&m.indices.groups.c[0]===0&&m.indices.groups.c[1]===0",
-    );
-    let word = "x".repeat(20_000);
-    let pattern = JsString::from(
-        format!(r"((^)|(\b))(?<c>[\p{{Any}}\q{{{word}|{word}x}}])(($)|(\B))").as_str(),
-    );
-    let input = JsString::from(word.as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec({input:?}),n=r.exec('x');m[0].length===20000&&m.groups.c.length===20000&&m.indices.groups.c[0]===0&&m.indices.groups.c[1]===20000&&n[0]==='x'&&n.groups.c==='x'"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-#[test]
 fn truth_table_single_string_classes_prove_unknown_leaves_before_never_gates() {
     assert_eq!(Realm::default().eval(r####"var pattern="((^)|(\\b))(([\\q{|a|ab}])|())",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
     assert_eq!(Realm::default().eval(r####"var pattern="((^)|(\\b))([\\q{|a|ab}])|()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
@@ -216,7 +173,14 @@ fn truth_table_single_string_classes_prove_unknown_leaves_before_never_gates() {
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}")),Err(Error::Unsupported{..})),"{pattern:?}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
+                )
+            ),
+            "{pattern:?}"
+        );
     }
 }

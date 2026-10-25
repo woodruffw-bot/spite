@@ -40,13 +40,12 @@ impl Realm {
         }
         let unscopables =
             self.get_property(object, &WellKnownSymbol::Unscopables.symbol(), span)?;
-        if let Value::Object(unscopables) = unscopables {
-            if self
+        if let Value::Object(unscopables) = unscopables
+            && self
                 .get_property(&unscopables, &JsString::from(name), span)?
                 .to_boolean()
-            {
-                return Ok(false);
-            }
+        {
+            return Ok(false);
         }
         Ok(true)
     }

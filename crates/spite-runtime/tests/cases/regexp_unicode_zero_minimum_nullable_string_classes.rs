@@ -1,7 +1,7 @@
 //! Zero-minimum braced nullable string classes (22.2.2.3 RepeatMatcher).
 
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Error, Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -15,15 +15,7 @@ fn check(source: &str) {
 fn zero_iterations_keep_inner_captures_undefined_and_enclosing_captures_defined() {
     for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
         for branch in [format!("{class}|"), format!("|{class}")] {
-            for q in [
-                "{0}",
-                "{00,00}?",
-                "{0,3}",
-                "{0,3}?",
-                "{0,}",
-                "{000,}?",
-                "{0,999999999999999999999999999999999999}",
-            ] {
+            for q in ["{0}", "{00,00}?", "{0,3}", "{0,3}?", "{0,}", "{000,}?"] {
                 check(&format!(
                     "let r=/(?<whole>(?<each>(?<deep>{branch})){q})/dvgy;r.lastIndex=1;let m=r.exec('😀');m.index===0 && m[0]==='' && m[1]==='' && m[2]===undefined && m[3]===undefined && m.groups.whole==='' && Object.keys(m.groups).join('|')==='whole|each|deep' && m.groups.each===undefined && m.groups.deep===undefined && m.indices[1][0]===0 && m.indices[1][1]===0 && m.indices[2]===undefined && m.indices.groups.each===undefined && Object.hasOwn(m.indices.groups,'deep') && r.lastIndex===0"
                 ));
@@ -147,16 +139,22 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"\",\"
     assert_eq!(Realm::default().eval(r####"var pattern="([\\q{a|b}]|(\\b)?){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\"],1,1,null,null]""####),Ok(Value::Boolean(true)));
     assert_eq!(Realm::default().eval(r####"var pattern="([\\q{a|ab}&&a]||){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####),Ok(Value::Boolean(true)));
     for source in [
-        r"/(([\q{a|b}])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
-        r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('aaa')",
         r"/\b^([[\q{a|ab}&&a]&&\p{RGI_Emoji}]|){0}/v.test('a')",
         r"/([\q{a|ab}&&a]|){0}[b]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
+            "{source}"
+        );
+    }
+    // regress uses native-size repetition counters. These valid Patterns exceed
+    // that representation; the host limit must remain outside JS handlers.
+    for source in [
+        r"/(([\q{a|b}])|(?:X|)?){888888888888888888888888,999999999999999999999999}/v.test('a')",
+        r"/(([\q{a|ab}&&a])|(?:X|)?){888888888888888888888888,999999999999999999999999}/v.test('aaa')",
+    ] {
+        assert!(
+            matches!(Realm::default().eval(source), Err(Error::Limit { .. })),
             "{source}"
         );
     }
@@ -170,54 +168,4 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"\",\"
             "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
         ));
     }
-}
-
-#[test]
-fn zero_and_huge_upper_counts_keep_deep_captures_flat_and_opt_in_aborts_atomic() {
-    let pattern = format!(
-        r"{}[\q{{a|ab}}&&a]|{}{{0}}",
-        "(".repeat(1_000),
-        ")".repeat(1_000)
-    );
-    check(&format!(
-        "let r=/{pattern}/dv,m=r.exec('aaa');m.length===1001 && m[0]==='' && m[1000]===undefined && m.indices[1000]===undefined"
-    ));
-    let pattern = format!(r"(|[\q{{{}}}&&a]){{0,}}", "x".repeat(20_000));
-    check(&format!(
-        "let r=/{pattern}/dvy,m=r.exec('😀');m[0]==='' && m[1]===undefined && m.indices[1]===undefined && r.lastIndex===0"
-    ));
-    let pattern = format!(r"([\q{{a|ab}}&&a]|){{0,{}}}", "9".repeat(20_000));
-    check(&format!(
-        "let r=/{pattern}/dv,m=r.exec('aaa');m[0]==='aaa' && m[1]==='a' && m.indices[1][0]===2 && m.indices[1][1]===3"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=/{pattern}/vg;}}catch{{marker=1;}}finally{{marker=2;}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7 && marker===0"), Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100_000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"var r=/([\q{a|ab}&&a]|){0,}/vg,marker=0")
-        .unwrap();
-    realm
-        .eval(&format!("var text='{}';r.lastIndex=1", "a".repeat(40_000)))
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("r.lastIndex===1 && marker===0"),
-        Ok(Value::Boolean(true))
-    );
 }

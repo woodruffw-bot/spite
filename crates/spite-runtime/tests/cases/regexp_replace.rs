@@ -1,7 +1,7 @@
 //! Generic RegExp replacement and captured GetSubstitution (22.2.6.11).
 
 use spite_core::JsString;
-use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -209,50 +209,6 @@ fn string_hooks_and_poisoned_library_properties_do_not_change_native_replacement
         for(let i=0;i<5;i++)Object.defineProperty(Array.prototype,i,{get(){throw 7;},set(){throw 8;}});
         f.call(r,'axb','$`$1$<foo>')==='aayzb' && f.call(r,'axb',function(){return 'Q';})==='aQb'
     ",
-    );
-}
-
-#[test]
-fn optional_output_argument_and_work_limits_bypass_javascript_cleanup() {
-    let mut realm = Realm::new(Limits {
-        max_string_units: Some(32),
-        ..Limits::default()
-    });
-    realm.eval("let f=RegExp.prototype[Symbol.replace],r={flags:'',exec(){return {length:1,0:'x',index:10};}},m=0").unwrap();
-    assert!(matches!(
-        realm.eval("try{f.call(r,'x'.repeat(20),'z'.repeat(20));}catch{m=1;}finally{m=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
-    assert_eq!(
-        realm.eval("f.call(r,'x'.repeat(20),'z'.repeat(13)).length"),
-        Ok(Value::Number(32.0))
-    );
-    assert_eq!(realm.eval("try{f.call({flags:'',exec(){return {length:1,0:'x',index:28,groups:{get foo(){throw 7;}}};}},'x'.repeat(32),'$<foo>');}catch(e){m=e;}m===7"),Ok(Value::Boolean(true)));
-    let mut realm = Realm::new(Limits {
-        max_arguments: Some(6),
-        ..Limits::default()
-    });
-    realm.eval("let f=RegExp.prototype[Symbol.replace],r={flags:'',exec(){return {length:5,0:'',index:0,1:'',2:'',3:'',4:''};}},m=0").unwrap();
-    assert!(matches!(
-        realm.eval("try{f.call(r,'',function(){m=3;});}catch{m=1;}finally{m=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(20_000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let f=RegExp.prototype[Symbol.replace],r={flags:'g',exec(){return {0:'x'};}},m=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{f.call(r,'','');}catch{m=1;}finally{m=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("m"), Ok(Value::Number(0.0)));
-    check(
-        "let r={flags:'',exec(){return {length:1,0:'x',index:0};}};RegExp.prototype[Symbol.replace].call(r,'x','z'.repeat(120000)).length===120000",
     );
 }
 

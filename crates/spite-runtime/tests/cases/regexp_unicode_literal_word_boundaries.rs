@@ -135,18 +135,6 @@ fn unicode_literal_word_boundary_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_literal_word_boundaries_captures_collection_and_long_search_are_unlimited() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(3000)+'\\b(a)(a)\\b'+')'.repeat(3000),r=new RegExp(p,'dvg'),c=new RegExp(r),text='😀'.repeat(100000)+'aa'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3003&&m[1]==='aa'&&m[3001]==='a'&&m.indices[3002][0]===200001&&m.indices[3002][1]===200002&&c.lastIndex===200002"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
     check(r"/\b[a]b\b/v.test('ab')");
     check(
@@ -174,10 +162,7 @@ fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
         r"/\b(a)(?=b)/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

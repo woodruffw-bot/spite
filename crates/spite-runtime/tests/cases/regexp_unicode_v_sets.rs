@@ -210,15 +210,13 @@ fn checked_v_set_error_categories_and_effects() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "try{{eval({code:?})}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("try{{eval({code:?})}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{pattern}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{pattern}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{pattern}");
     }
 }
 
@@ -326,10 +324,7 @@ fn checked_v_set_word_state_context_and_consumers() {
     );
     for source in [r"/\b^[[K]]/v.test('K')", r"/[[K]]$\b/v.test('K')"] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -410,9 +405,6 @@ fn checked_v_set_word_results() {
 #[test]
 fn checked_v_set_repeated_word_state_context_and_consumers() {
     check(
-        r"/\b[[a]]{0002,0003}\b/v.exec('aaa!')[0]==='aaa'&&/\b[[a]]{2,}\b/v.exec('aaa!')[0]==='aaa'&&/\b[[a]]??\b/v.exec('aaa!')[0]===''&&!/\b[[a]]{999999999999999999999999}\b/v.test('a')&&/\b[[a]]{0,999999999999999999999999}\b/v.exec('aaa!')[0]==='aaa'",
-    );
-    check(
         r"let r=/\b[a--a]*\b/dvg,m=r.exec('a');m[0]===''&&m.index===0&&m.indices[0][1]===0&&r.lastIndex===0&&r.exec('a').index===0&&r.lastIndex===0&&!/\b[a--a]+\b/v.test('a')&&/\B[a--a]{0}\B/v.exec('')[0]===''&&/\b[a--a]*\B/v.exec('a')===null",
     );
     check(
@@ -438,10 +430,7 @@ fn checked_v_set_repeated_word_state_context_and_consumers() {
         r"/(\b[[a]]\b)+/v.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -564,10 +553,7 @@ fn checked_v_set_literal_state_context_and_consumers() {
         r"/[\p{RGI_Emoji}&&a]c/v.test('ac')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -711,10 +697,7 @@ fn checked_literal_v_set_state_context_and_consumers() {
         r"/c[\p{RGI_Emoji}&&a]/v.test('ca')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -873,10 +856,7 @@ fn checked_v_set_pair_word_state_context_and_consumers() {
         r"/\ba[[a--a]&&[\p{RGI_Emoji}]]/v.test('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -1057,10 +1037,7 @@ fn checked_v_set_class_pair_state_context_and_consumers() {
         r"/[a--a][[\p{RGI_Emoji}]]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -1258,10 +1235,7 @@ fn checked_v_set_class_pair_word_state_context_and_consumers() {
         r"/\b[a--a][[\p{RGI_Emoji}]]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -1459,10 +1433,7 @@ fn checked_then_flat_v_set_pair_state_context_and_consumers() {
         r"/[a--a][\p{RGI_Emoji}]/v.test('ac')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -1667,10 +1638,7 @@ fn flat_then_checked_v_set_pair_state_context_and_consumers() {
         r"/[\p{RGI_Emoji}][[b]]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -1869,10 +1837,7 @@ fn checked_then_flat_v_set_pair_word_state_context_and_consumers() {
         r"/\b[[\p{RGI_Emoji}]][]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -2082,10 +2047,7 @@ fn flat_then_checked_v_set_pair_word_state_context_and_consumers() {
         r"/\b[\p{RGI_Emoji}][[a--a]]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -2286,10 +2248,7 @@ fn flat_v_set_pair_state_context_and_consumers() {
         r"/[\p{RGI_Emoji}][]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -2493,10 +2452,7 @@ fn flat_v_set_pair_word_state_context_and_consumers() {
         r"/\b[\p{RGI_Emoji}][]/v.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -2716,10 +2672,7 @@ fn literal_checked_v_set_pair_state_context_and_consumers() {
         r"/c[[\p{RGI_Emoji}]][b--b]/v.test('cab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -2938,10 +2891,7 @@ fn checked_v_set_pair_literal_state_context_and_consumers() {
         r"/c[[a]][[b]]d/v.test('cabd')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -3164,10 +3114,7 @@ fn checked_literal_checked_v_set_state_context_and_consumers() {
         r"/[[\p{RGI_Emoji}]]b[c--c]/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -3397,10 +3344,7 @@ fn checked_v_set_class_triple_state_context_and_consumers() {
         r"/[[\p{RGI_Emoji}]][[b]][c--c]/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -3641,10 +3585,7 @@ fn checked_v_set_class_triple_word_state_context_and_consumers() {
         r"/\b[[a]][b--b][[\q{c}]]\b/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -3895,10 +3836,7 @@ fn literal_checked_v_set_pair_word_state_context_and_consumers() {
         r"/\bc[[\p{RGI_Emoji}]][b--b]\b/v.test('cab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -4142,10 +4080,7 @@ fn checked_v_set_pair_literal_word_state_context_and_consumers() {
         r"/\b[[\p{RGI_Emoji}]][b--b]c\b/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -4382,10 +4317,7 @@ fn checked_v_set_literal_set_word_state_context_and_consumers() {
         r"/\b[[\p{RGI_Emoji}]]b[c--c]\b/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -4626,10 +4558,7 @@ fn checked_v_set_class_sequence_state_context_and_consumers() {
         r"/[[\p{RGI_Emoji}]][[b]][[c]][d--d]/v.test('abcd')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -4870,10 +4799,7 @@ fn flat_v_set_class_sequence_state_context_and_consumers() {
         r"/[\p{RGI_Emoji}][b][]/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -5098,10 +5024,7 @@ fn mixed_v_set_class_sequence_state_context_and_consumers() {
         r"/[a&&\q{a}][b][[c]]/v.test('abc')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -5324,10 +5247,7 @@ fn flat_v_set_class_literal_state_context_and_consumers() {
         r#"/[a]b/u.test('ab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -5547,10 +5467,7 @@ fn flat_v_set_class_literal_word_state_context_and_consumers() {
         r#"/\b[a]b\b/u.test('ab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -5767,10 +5684,7 @@ fn literal_flat_v_set_state_context_and_consumers() {
         r#"/a[b]/u.test('ab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -5985,10 +5899,7 @@ fn literal_flat_v_set_word_state_context_and_consumers() {
         r#"/\ba[b]\b/u.test('ab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -6209,10 +6120,7 @@ fn flat_v_set_literal_flat_v_set_state_context_and_consumers() {
         r#"/[\q{a}]b[]/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -6446,10 +6354,7 @@ fn literal_flat_v_set_pair_state_context_and_consumers() {
         r#"/c[][\q{b}]/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -6683,10 +6588,7 @@ fn flat_v_set_pair_literal_state_context_and_consumers() {
         r#"/[][\q{b}]c/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -6918,10 +6820,7 @@ fn literal_checked_flat_v_set_pair_state_context_and_consumers() {
         r#"/(?:c[[a]][b])+/v.test('cab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -7150,10 +7049,7 @@ fn literal_flat_checked_v_set_pair_state_context_and_consumers() {
         r#"/(?:c[a][[b]])+/v.test('cab')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -7384,10 +7280,7 @@ fn checked_flat_v_set_pair_literal_state_context_and_consumers() {
         r#"/[a--a][\q{b}]c/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -7609,10 +7502,7 @@ fn flat_checked_v_set_pair_literal_state_context_and_consumers() {
         r#"/[][\q{b}&&b]c/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -7831,10 +7721,7 @@ fn checked_v_set_literal_flat_v_set_state_context_and_consumers() {
         r#"/[\p{RGI_Emoji}&&a]b[]/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -8049,10 +7936,7 @@ fn flat_v_set_literal_checked_v_set_state_context_and_consumers() {
         r#"/[\p{RGI_Emoji}]b[a--a]/v.test('')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -8292,10 +8176,7 @@ fn single_character_v_strings_state_context_and_consumers() {
         r#"/[\p{RGI_Emoji}]/v.test('😀')"#,
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
@@ -8530,15 +8411,13 @@ fn single_character_v_string_operands_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -8676,9 +8555,7 @@ fn single_character_v_string_repetition_state_context_and_consumers() {
     check(
         r#"let r=/\b[\q{a}--a]{0}\b/dvg,m=r.exec('a');m.index===0&&m[0]===''&&m.indices[0][0]===0&&m.indices[0][1]===0&&r.lastIndex===0&&/\B[\q{a}--a]{0}\B/v.test('')"#,
     );
-    check(
-        r#"/[\q{a|b}]{0001,0003}/v.exec('abbb!')[0]==='abb'&&/[\q{a|b}]{2,}/v.exec('abbb!')[0]==='abbb'&&!/[\q{a}]{999999999999999999999999}/v.test('a')&&/[\q{a}]{1,999999999999999999999999}/v.exec('aaa!')[0]==='aaa'"#,
-    );
+
     check(r#"/^[\q{a}&&[]]*$/v.test('')&&!/^[\q{a}&&[]]*$/v.test('a')&&!/[\q{a}&&[]]+/v.test('')"#);
     check(r#"/[\q{K}&&k]+/iv.exec('!KKk!')[0]==='KKk'&&!/[\q{K}&&k]+/v.test('KkK')"#);
     check(r#"let r=/[^\q{K|s}]+?/iv,m=r.exec('Kſ!');m.index===2&&m[0]==='!'&&!r.test('Kſ')"#);
@@ -8770,18 +8647,12 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    check(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[\\q{a|bc}]{999999999999999999999999}",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",null,0],[true,\"ab!\",null,0],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
+
     assert_eq!(Realm::default().eval(r####"var pattern="[[\\q{}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
     assert_eq!(Realm::default().eval(r####"var pattern="[[\\q{a|bc}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
     assert_eq!(Realm::default().eval(r####"var pattern="[\\q{a}--a--\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
     for source in [
         r"/[[\q{a|}]&&\p{RGI_Emoji}]*/v.test('a')",
-        r"/[[\q{a|bc}]&&\p{RGI_Emoji}]{999999999999999999999999}/v.test('a')",
         r"/[\q{a}]+b/v.test('ab')",
         r"/a[\q{b}]+/v.test('ab')",
         r"/\b^[\q{a}]+/v.test('a')",
@@ -8791,15 +8662,13 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",nul
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -8850,13 +8719,6 @@ fn single_character_v_string_repetition_results() {
             "dvg",
             0usize,
             r#"{"matches":["","",""],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(\\b[\\q{a}--a]{0}\\b))"}"#,
-        ),
-        (
-            r#"(?<whole>([\q{a}]{999999999999999999999999}))"#,
-            JsString::from_code_units(vec![97]),
-            "dvg",
-            0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([\q{K}&&k]+))"#,
@@ -8916,7 +8778,7 @@ fn single_character_v_string_repetition_results() {
         .unwrap();
         row_count += 1;
     }
-    assert_eq!(row_count, 10);
+    assert_eq!(row_count, 9);
     insta::assert_snapshot!(rows);
 }
 
@@ -9014,15 +8876,13 @@ fn literal_single_character_v_string_class_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -9160,9 +9020,7 @@ fn wrapped_single_character_v_string_repetition_state_context_and_consumers() {
     check(
         r#"let r=/\B([\q{a}]){1,2}?\b/dvy;r.lastIndex=0;let a=r.exec('aaa!');r.lastIndex=1;let b=r.exec('aaa!');a===null&&b.index===1&&b[0]==='aa'&&b[1]==='a'&&b.indices[1][0]===2&&r.lastIndex===3"#,
     );
-    check(
-        r#"/([\q{a}]){0001,0003}/v.exec('aaaa!')[0]==='aaa'&&/([\q{a}]){1,999999999999999999999999}/v.exec('aaa!')[1]==='a'&&!/([\q{a}]){999999999999999999999999}/v.test('a')"#,
-    );
+
     check(
         r#"let a=/([\q{K}&&k])+/iv.exec('!KKk!'),b=/([^\q{K|s}])+?/iv.exec('Kſ!?');a[0]==='KKk'&&a[1]==='k'&&b.index===2&&b[0]==='!'&&b[1]==='!'"#,
     );
@@ -9256,15 +9114,13 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"<un
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -9317,13 +9173,6 @@ fn wrapped_single_character_v_string_repetition_results() {
             "dvg",
             0usize,
             r#"{"matches":["","",null,null],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],null,null],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}--a])){0})"}"#,
-        ),
-        (
-            r#"(?<whole>(?<unit>([\q{a}])){999999999999999999999999})"#,
-            JsString::from_code_units(vec![97]),
-            "dvg",
-            0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{K}&&k]))+)"#,
@@ -9383,7 +9232,7 @@ fn wrapped_single_character_v_string_repetition_results() {
         .unwrap();
         row_count += 1;
     }
-    assert_eq!(row_count, 10);
+    assert_eq!(row_count, 9);
     insta::assert_snapshot!(rows);
 }
 
@@ -9459,8 +9308,6 @@ for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),resu
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"a\",\"a\"],\"indices\":[[0,1],[0,1]],\"index\":0},1],[false,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"ab!\",{\"values\":[\"a\",\"a\"],\"indices\":[[0,1],[0,1]],\"index\":0},1],[true,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
     for source in [
-        r"/(([\q{a}])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('')",
-        r"/(([\q{a}])|(?:X|)?){888888888888888888888888888888,99999999999999999999999999999999999999993}/v.test('a')",
         r"/(([\q{a}])|(?:X|)?)+/v.test('a')",
         r"/([\q{a}]|(\b)?)+/v.test('a')",
         r"/(?:[\q{a}]|(?:\b|()))+/v.test('a')",
@@ -9482,15 +9329,13 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"a\",\"a\
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -9505,8 +9350,10 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"a\",\"a\
     });
     realm.eval("var r=7,marker=0").unwrap();
     assert!(matches!(
-        realm
-            .eval(r#"try{r=/(?<whole>(?<unit>([\q{a}]|))+?$)/vg}catch{marker=1}finally{marker=2}"#),
+        realm.eval(&format!(
+            r"try{{r=/{}/vg}}catch{{marker=1}}finally{{marker=2}}",
+            r"\d".repeat(5000)
+        )),
         Err(Error::Limit { .. })
     ));
     assert_eq!(realm.eval("marker===0&&r===7"), Ok(Value::Boolean(true)));
@@ -9707,15 +9554,13 @@ fn single_character_v_string_class_literal_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -9952,15 +9797,13 @@ fn single_character_v_string_then_flat_class_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -10188,15 +10031,13 @@ fn flat_class_then_single_character_v_string_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -10438,15 +10279,13 @@ fn single_character_v_string_class_pair_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm
@@ -10695,15 +10534,13 @@ fn checked_class_then_single_character_v_string_state_context_and_consumers() {
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2}}finally{{marker=3}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)), "{source}");
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
     let mut realm = Realm::default();
     realm

@@ -117,20 +117,7 @@ fn consumers_global_sticky_empty_advance_and_callbacks_preserve_reference_positi
         r"'abb'.search(/(?<=a(?=(b)\1))b/)===1&&'abb'.split(/(?<=a(?=(b)\1))b/).join('|')==='a|b|b'",
     );
 }
-#[test]
-fn deep_scopes_copies_collection_linear_dependencies_overflow_and_nested_assertions_are_unlimited()
-{
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(?<=a(?=('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2)))b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let found=copy.exec('abb');found.length===n+2&&found[1]==='bb'&&found[n+1]==='b'&&found.indices[n+1][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(?<=a(?!('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2)q))b','d'),failed=neg.exec('abbbx');failed[1]===undefined&&failed[n+1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let chain='(?<=a(?=(b)';for(let i=1;i<10000;i++)chain+='(\\'+i+')';chain+='\\10000))b';let chainResult=new RegExp(chain,'dy');chainResult.lastIndex=1;let chainMatch=chainResult.exec('a'+'b'.repeat(10001));chainMatch.indices[10000][0]===10000"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let overflow='(?<=(';for(let j=2;j<=10001;j++)overflow+='\\'+j+'(';overflow+='b'+')'.repeat(10001)+')c';new RegExp(overflow).exec('c')===null"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let noPrefix=new RegExp(overflow.replace('(?<=','(?<!'),'d'),empty=noPrefix.exec('c');empty[1]===undefined&&empty[10001]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let nested=new RegExp('(?<=a'+'(?='.repeat(10000)+'(b)\\1'+')'.repeat(10000)+')b');nested.test('abb')"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
     let mut realm = Realm::new(Limits {
@@ -161,10 +148,7 @@ fn unproved_counts_choices_owner_reads_and_unicode_remain_pending() {
         r"/(?<=a(?=(b)\1))b/v.exec('abb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

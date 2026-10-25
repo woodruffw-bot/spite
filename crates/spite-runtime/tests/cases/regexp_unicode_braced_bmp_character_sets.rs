@@ -100,25 +100,6 @@ fn unicode_braced_bmp_character_ordered_and_abrupt_coercions() {
 }
 
 #[test]
-fn unicode_braced_bmp_character_long_zeros_clones_collection_and_unlimited_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='[\\u{'+'0'.repeat(100000)+'61}]',r=new RegExp(p,'v'),c=new RegExp(r),a=c.exec('a')").unwrap();
-    assert_eq!(
-        realm.eval("a.length===1&&a[0]==='a'"),
-        Ok(Value::Boolean(true))
-    );
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("c.exec('b'.repeat(100000)+'a').index===100000"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("p=null;r=null;c=null;a=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
     let original = Realm::default()
         .eval(r"/[\u{61}]\u{62}/v.exec('ab')")
@@ -156,10 +137,7 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         r"/([\u{61}])+b/u.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

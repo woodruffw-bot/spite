@@ -54,10 +54,10 @@ impl Realm {
         pattern: &'a BindingPattern,
         environment: Option<&EnvironmentHandle>,
     ) -> Result<Option<Reference<'a>>, Error> {
-        if environment.is_none() {
-            if let BindingPatternKind::Identifier(name) = &pattern.kind {
-                return self.resolve(name, pattern.span).map(Some);
-            }
+        if environment.is_none()
+            && let BindingPatternKind::Identifier(name) = &pattern.kind
+        {
+            return self.resolve(name, pattern.span).map(Some);
         }
         Ok(None)
     }
@@ -265,14 +265,14 @@ impl Realm {
         environment: Option<&EnvironmentHandle>,
         reference: Option<Reference<'a>>,
     ) -> Result<(), Error> {
-        if matches!(value, Value::Undefined) {
-            if let Some(initializer) = &element.initializer {
-                value = if let BindingPatternKind::Identifier(name) = &element.pattern.kind {
-                    self.named_expression(initializer, JsString::from(name.as_str()))?
-                } else {
-                    self.expression(initializer)?
-                };
-            }
+        if matches!(value, Value::Undefined)
+            && let Some(initializer) = &element.initializer
+        {
+            value = if let BindingPatternKind::Identifier(name) = &element.pattern.kind {
+                self.named_expression(initializer, JsString::from(name.as_str()))?
+            } else {
+                self.expression(initializer)?
+            };
         }
         self.binding_initialization(&element.pattern, value, environment, reference)
     }

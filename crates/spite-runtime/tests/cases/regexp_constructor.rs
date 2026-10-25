@@ -160,16 +160,12 @@ fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() 
     check(
         "let r=new RegExp('a'),t='';try{r.exec({toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'",
     );
-    let mut realm = Realm::default();
-    for source in [
-        r"new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}').exec('a')",
-        r"let r=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}');r.exec=undefined;RegExp.prototype.test.call(r,'a')",
-    ] {
-        assert!(
-            matches!(realm.eval(source), Err(Error::Unsupported { .. })),
-            "{source}"
-        );
-    }
+    check(
+        "let m=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}').exec('a');m.index===0&&m[0]===''&&m[1]===undefined",
+    );
+    check(
+        "let r=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}');r.exec=undefined;RegExp.prototype.test.call(r,'a')===true",
+    );
     check(
         "let r=new RegExp('a');r.exec=function(s){return {0:s,index:3,length:1};};r.test('x') && r[Symbol.search]('x')===3 && r[Symbol.match]('x')[0]==='x'",
     );
@@ -239,4 +235,25 @@ fn construction_and_source_have_no_default_size_limit_and_opted_in_output_limits
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("big.source.length"), Ok(Value::Number(120000.0)));
+}
+
+#[test]
+fn shared_backend_native_depth_and_counter_limits_are_host_failures() {
+    for program in [
+        "new RegExp('('.repeat(512)+'a'+')'.repeat(512))",
+        "new RegExp('(a?){888888888888888888888888888888}')",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("var marker=0").unwrap();
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{{program}}}catch{{marker=1}}finally{{marker=2}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+    }
+    check(
+        "var caught=false;try{new RegExp('(a?){999999999999999999999999999999,1}')}catch(error){caught=error instanceof SyntaxError}caught",
+    );
 }

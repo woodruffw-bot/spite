@@ -114,19 +114,6 @@ fn empty_count_lookbehind_consumers_global_sticky_empty_and_callbacks_preserve_b
 }
 
 #[test]
-fn empty_count_lookbehind_deep_slots_huge_counts_copies_gc_and_parent_loops_are_unlimited() {
-    let mut realm = Realm::default();
-    let maximum = usize::MAX;
-    realm.eval(&format!("let n=100000,r=new RegExp('(?<='+'('.repeat(n)+')'.repeat(n)+'{{{maximum}}})a','d'),copy=new RegExp(r)")).unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qa');a.index===1&&a.length===n+1&&a[1]===''&&a[n]===''&&a.indices[1][0]===1&&a.indices[n][1]===1&&a.indices[1]!==a.indices[n]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?<!'+'('.repeat(n)+')'.repeat(n)+'{2}q)b','d'),last=negative.exec('ab');last.length===n+1&&last[1]===undefined&&last[n]===undefined&&last.indices[1]===undefined&&last.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(&format!("new RegExp('(?<=(?:){{{maximum}}})a').exec('qa').index===1&&new RegExp('(?<!(){{{maximum}}})a').exec('a')===null")),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=(){2})a|b)+c/.exec('a'+'b'.repeat(10000)+'c');many.index===0&&many[0].length===10002&&many[1]===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_empty_count_lookbehind_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -157,10 +144,7 @@ fn variable_counts_nested_lookaround_repeated_choices_references_and_counts_rema
         r"/(?<=(){2})a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

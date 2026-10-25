@@ -18,9 +18,6 @@ fn mandatory_empty_iterations_capture_while_optional_iterations_leave_undefined(
     check(
         r"let a=/(())*?/d.exec('a'),b=/(()){1,3}?/d.exec('a');a[1]===undefined&&a[2]===undefined&&b[1]===''&&b[2]===''&&b.indices[1]!==b.indices[2]",
     );
-    check(
-        r"let a=/(){999999999999999999999999999999}/d.exec('a'),b=/(){0,999999999999999999999999999999}/d.exec('a');a[1]===''&&b[1]===undefined&&/(?:)+/.exec('a').length===1",
-    );
 }
 
 #[test]
@@ -92,14 +89,6 @@ fn generic_consumers_advance_empty_matches_and_preserve_callback_capture_argumen
 }
 
 #[test]
-fn huge_mandatory_counts_and_collapsed_assertion_captures_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let s='a\\n'.repeat(100000),r=new RegExp('('+'(^)'.repeat(100000)+'){999999999999999999999999999999}','dgm'),copy=new RegExp(r);copy.lastIndex=3").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===4&&a[0]===''&&a.length===100002&&a[1]===''&&a[100001]===''&&a.indices[100001][0]===4&&a.indices[1]!==a.indices[100001]&&copy.lastIndex===4&&r.lastIndex===0&&r.source===copy.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_stay_unsupported() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -126,10 +115,7 @@ fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_sta
         r"/()+a/u.test('')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

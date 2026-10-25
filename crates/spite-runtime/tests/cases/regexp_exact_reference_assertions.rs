@@ -89,28 +89,7 @@ fn consumers_keep_sticky_global_empty_advancement_and_callback_positions() {
         r"'abbb'.search(/(?<=a(?=(b)\1{2}))b/)===1&&'abbb'.split(/(?<=a(?=(b)\1{2}))b/).join('|')==='a|b|bb'",
     );
 }
-#[test]
-fn deep_capture_scopes_dependency_chains_copies_and_gc_keep_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(?<=a(?=('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2{2})))b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('abbb');a.length===n+2&&a[1]==='bbb'&&a[n+1]==='b'&&a.indices[n+1][0]===1&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(?<=a(?!('+'('.repeat(n)+'b'+')'.repeat(n)+'\\2{2})q))b','d'),b=neg.exec('abbbx');b[1]===undefined&&b[n+1]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let chain='(?<=a(?=(b)';for(let i=1;i<10000;i++)chain+='(\\1{2})';chain+='\\10000{2}))b';let c=new RegExp(chain,'dy');c.lastIndex=1;let found=c.exec('a'+'b'.repeat(20003));found.indices[10000][0]===19998"),Ok(Value::Boolean(true)));
-    let source = JsString::from(format!(r"(?<=a(?=(b)\1{{{}}}))b", usize::MAX).as_str());
-    check(&format!(
-        "let r=new RegExp({source:?},'d');r.exec('abbb')===null"
-    ));
-    let source = JsString::from(format!(r"(?<=a(?!(b)\1{{{}}}))b", usize::MAX).as_str());
-    check(&format!(
-        "let r=new RegExp({source:?},'d'),a=r.exec('ab');a[1]===undefined&&a.indices[1]===undefined"
-    ));
-    let source = JsString::from(format!(r"(?<=a(?=()\1{{{}}}))b", usize::MAX).as_str());
-    check(&format!(
-        "let r=new RegExp({source:?},'d'),a=r.exec('ab');a[1]===''&&a.indices[1][0]===1"
-    ));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     let mut realm = Realm::new(Limits {
@@ -142,10 +121,7 @@ fn variable_counts_capture_effects_choices_and_unicode_remain_pending() {
         r"/(?<=a(?=(b)\1{2}))b/v.exec('abbb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

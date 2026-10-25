@@ -552,10 +552,7 @@ fn script_extensions_exact_names_and_unadmitted_compositions() {
         r"/\p{scx=Latin}+b/u.exec('AA')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

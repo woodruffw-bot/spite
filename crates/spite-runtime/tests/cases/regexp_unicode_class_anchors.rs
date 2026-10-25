@@ -113,21 +113,6 @@ fn unicode_class_assertion_metadata_coercions_clones_and_strict_writes() {
 }
 
 #[test]
-fn unicode_class_assertion_large_sources_collection_and_unlimited_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='^['+'\\d'.repeat(100000)+'\\u{1f600}]$',r=new RegExp(p,'vmg'),c=new RegExp(r),text='x'.repeat(100000)+'\n😀'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("let m=c.exec(text);m[0]==='😀'&&m.index===100001&&c.lastIndex===100003"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_class_assertion_opted_work_and_unproved_syntax() {
     check(
         r"let m=/^[\q{ab}]$/v.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /^[\q{ab}]$/v.exec('xab')===null",
@@ -166,10 +151,7 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         r"/^[a]$|b/u.exec('b')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

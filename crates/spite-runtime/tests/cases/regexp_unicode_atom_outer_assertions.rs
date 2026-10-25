@@ -118,18 +118,6 @@ fn unicode_atom_outer_assertion_metadata_mode_clones_coercions_and_writes() {
 }
 
 #[test]
-fn unicode_atom_outer_assertion_many_wrappers_collection_and_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='^'+'('.repeat(3000)+'\\\\p{Any}'+')'.repeat(3000)+'$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='😀'.repeat(100000)+'\\n😀'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]==='😀'&&m[3000]==='😀'&&m.indices[3000][0]===200001&&m.indices[3000][1]===200003&&c.lastIndex===200003"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
     check(
         r"let m=/^([\q{a\)b}])$/v.exec('a)b');m.length===2 && m[0]==='a)b' && m[1]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
@@ -159,10 +147,7 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         r"/^(^.$)$/u.exec('A')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

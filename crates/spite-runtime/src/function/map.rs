@@ -228,10 +228,10 @@ impl Realm {
     }
 
     pub(super) fn map_receiver(&mut self, value: Value, span: Span) -> Result<ObjectHandle, Error> {
-        if let Value::Object(object) = value {
-            if self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_map()))? {
-                return Ok(object);
-            }
+        if let Value::Object(object) = value
+            && self.object_work(span, |objects, _| Ok(objects.inspect(&object)?.is_map()))?
+        {
+            return Ok(object);
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

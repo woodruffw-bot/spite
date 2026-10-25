@@ -318,12 +318,12 @@ impl Realm {
     }
 
     fn data_view_receiver(&mut self, receiver: Value, span: Span) -> Result<ObjectHandle, Error> {
-        if let Value::Object(view) = receiver {
-            if self.object_work(span, |objects, _| {
+        if let Value::Object(view) = receiver
+            && self.object_work(span, |objects, _| {
                 Ok(objects.inspect(&view)?.data_view_data().is_some())
-            })? {
-                return Ok(view);
-            }
+            })?
+        {
+            return Ok(view);
         }
         Err(Self::exception(
             ExceptionKind::TypeError,

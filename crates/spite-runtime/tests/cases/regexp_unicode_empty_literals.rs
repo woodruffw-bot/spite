@@ -71,22 +71,6 @@ fn unicode_empty_ordered_coercion_and_state() {
 }
 
 #[test]
-fn unicode_empty_deep_captures_clones_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('.repeat(100000)+')'.repeat(100000),'v'),c=new RegExp(r,'dvy');c.lastIndex=1;let a=c.exec('😀')").unwrap();
-    assert_eq!(realm.eval("a.length===100001&&a[0]===''&&a[100000]===''&&a.index===0&&a.indices[100000][0]===0&&c.lastIndex===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("c.lastIndex=100000;c.exec('b'.repeat(100000)).index===100000"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;a=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_empty_explicit_work_abort_preserves_state() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

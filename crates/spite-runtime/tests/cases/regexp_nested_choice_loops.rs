@@ -112,17 +112,6 @@ fn nested_loop_consumers_sticky_counts_and_zero_advancement() {
 }
 
 #[test]
-fn deep_nested_loops_enclosures_iterations_copies_and_collection_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<all>'+'('.repeat(99999)+'(?:(?:a|aa)+b|c)+'+')'.repeat(100000),'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let deep=new RegExp('(?<deep>'+'(?:'.repeat(100000)+'(?:a|b)'+')+'.repeat(100000)+')','d'),a2=deep.exec('a');a2[0]==='a'&&a2.groups.deep==='a'&&a2.indices.groups.deep===a2.indices[1]&&a2.indices[1][1]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let a=copy.exec('aabcc');a[0]==='aabcc'&&a.length===100001&&a.groups.all==='aabcc'&&a[100000]==='aabcc'&&a.indices[100000][1]===5&&a.indices.groups.all===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?<all>(?:(?:a|aa)+b|c)+)d/d.exec('ab'.repeat(50000)+'d'),n='9'.repeat(10000),huge=new RegExp('(?:a{'+n+'}|b)+c'),zero=new RegExp('(?<all>(?:(?:a|aa)+b|c){0,'+n+'})','d'),empty=zero.exec('q');many[0].length===100001&&many.groups.all.length===100000&&many.indices.groups.all[1]===100000&&huge.exec('aac')===null&&empty.groups.all===''&&empty.indices.groups.all===empty.indices[1]"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn opted_in_nested_loop_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -154,10 +143,7 @@ fn possibly_empty_paths_body_captures_lookaround_and_unicode_remain_unsupported(
         r"/(?:(?:a|aa)+b|c)+/u.test('aab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

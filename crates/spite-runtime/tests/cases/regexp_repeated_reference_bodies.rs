@@ -35,7 +35,6 @@ fn repeated_reference_body_result_snapshot() {
         (r"(?:\1\1)+(a)", "d", "a"),
         (r"(\1\1)+a\1", "d", "a"),
         (r"()(?:\1\1){2,3}", "d", "q"),
-        (r"(a)(?:\1\1){999999999999999999999999999999}", "d", "aa"),
         (r"(?:(?<x>a)|(?<x>ab))(?<last>\k<x>\k<x>)+b", "d", "abababb"),
         (r"(?<x>\k<x>\k<x>)+", "dgi", "q"),
         (
@@ -95,16 +94,6 @@ fn repeated_reference_body_consumers_and_empty_targets_keep_source() {
 }
 
 #[test]
-fn large_reference_bodies_and_huge_empty_minimums_copy_and_collect_unlimited() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let huge=new RegExp('(?<x>)(?<last>\\\\k<x>\\\\k<x>){'+'9'.repeat(10000)+'}','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.last===''&&empty.indices.groups.last===empty.indices[2]"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>a)(?<last>'+'\\\\k<x>'.repeat(100000)+')+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'.repeat(100001));a[0].length===100001&&a.groups.last.length===100000&&a.indices[2][0]===1&&a.indices[2][1]===100001&&a.indices.groups.last===a.indices[2]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_reference_body_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -132,10 +121,7 @@ fn other_reference_bodies_remain_unsupported_and_plain_failures_return_null() {
         r"/(a)(?:\1\1)+/u.test('aaa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

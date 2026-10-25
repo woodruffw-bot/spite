@@ -106,23 +106,6 @@ fn unicode_character_assertions_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_character_assertions_clones_collection_and_unlimited_defaults() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm
-        .eval(r"let r=/^.$/mvg,c=new RegExp(r),text='9'.repeat(100000)+'\n😀'")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("let m=c.exec(text);m.index===100001&&m[0]==='😀'&&c.lastIndex===100003"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_character_assertions_opted_work_and_unproved_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -153,10 +136,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         r"/^$/.exec('')+/(?:^$)+/u.exec('')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

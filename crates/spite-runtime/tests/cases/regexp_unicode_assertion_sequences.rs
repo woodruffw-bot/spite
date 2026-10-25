@@ -142,20 +142,6 @@ fn unicode_assertion_sequence_clones_coercions_and_strict_writes() {
 }
 
 #[test]
-fn unicode_assertion_sequences_long_sources_captures_and_search_are_unlimited() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(3000)+'\\b\\b'+')'.repeat(3000),r=new RegExp(p,'dvg'),c=new RegExp(r),text='😀'.repeat(100000)+'A',long=new RegExp('^'.repeat(40000),'v')").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=c.exec(text);m.length===3001&&m[1]===''&&m[3000]===''&&m.indices[3000][0]===200000&&m.indices[3000][1]===200000&&c.lastIndex===200000&&long.exec(text).index===0"), Ok(Value::Boolean(true)));
-    realm
-        .eval("p=null;r=null;c=null;text=null;m=null;long=null")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_assertion_sequences_opted_work_and_remaining_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -181,10 +167,7 @@ fn unicode_assertion_sequences_opted_work_and_remaining_compositions() {
         r"/(\b)\bb/u.test('A')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

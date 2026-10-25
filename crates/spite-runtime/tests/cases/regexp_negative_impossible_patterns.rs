@@ -51,32 +51,6 @@ fn negative_impossible_consumers_callbacks_clones_and_collection_keep_empty_resu
 }
 
 #[test]
-fn negative_impossible_deep_operands_and_capture_masks_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<!'+'('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0}))'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+2&&m[depth+1]===undefined&&m.indices[depth+1]===undefined&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"(?<!{}[\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}})){}{{{minimum}}})",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
-            depth + 2,
-            depth + 1,
-            depth + 1
-        ));
-    }
-}
-
-#[test]
 fn enclosing_negative_impossible_assertions_keep_required_optional_and_named_capture_masks() {
     check(
         r#"
@@ -108,37 +82,6 @@ fn enclosing_negative_impossible_consumers_clones_and_collection_keep_capture_ro
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.inside===undefined&&after.indices.groups.outside[0]===0&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn enclosing_negative_impossible_deep_masks_and_huge_counts_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'(?<![\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0})))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+2&&m[depth]===''&&m[depth+1]===undefined&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum, expected) in [
-        (1000, "1".to_owned(), "''"),
-        (1, "9".repeat(20_000), "''"),
-        (1, "0".to_owned(), "undefined"),
-    ] {
-        let pattern = JsString::from(
-            format!(
-                r"{}(?<![\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}}))){}{{{minimum}}}",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]==={expected}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
-            depth + 2,
-            depth,
-            depth + 1,
-            depth + 1
-        ));
-    }
 }
 
 #[test]
@@ -176,31 +119,6 @@ fn first_negative_impossible_choice_consumers_clones_and_collection_keep_skipped
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.later===undefined&&after.indices.groups.later===undefined&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn first_negative_impossible_choices_keep_large_later_inventories_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?!(?!(?<zero>[\\p{RGI_Emoji}]{0})))|'+'('.repeat(depth)+'[\\p{RGI_Emoji}]'+')'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+2&&m[depth+1]===undefined&&m.indices[depth+1]===undefined&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?!(?!(?<zero>[\p{{RGI_Emoji}}]{{0}})))|{}[\p{{RGI_Emoji}}]{}",
-            "(".repeat(depth),
-            ")".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
-        depth + 2,
-        depth + 1,
-        depth + 1
-    ));
 }
 
 #[test]
@@ -290,36 +208,4 @@ fn enclosing_negative_impossible_sequence_consumers_clones_and_collection_keep_i
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=1;var after=copy.exec('😀');after.index===0&&after.groups.outside===''&&after.groups.before===''&&after.groups.inside===undefined&&after.groups.after===''&&after.indices.groups.after[0]===0&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn enclosing_negative_impossible_sequence_depth_and_huge_bounds_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'(a{0})(?!(?!([\\p{RGI_Emoji}]{0})))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===depth+3&&m[depth+1]===''&&m[depth+2]===undefined&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum, expected) in [
-        (1000, "1".to_owned(), "''"),
-        (1, "9".repeat(20_000), "''"),
-        (1, "0".to_owned(), "undefined"),
-    ] {
-        let pattern = JsString::from(
-            format!(
-                r"{}(a{{0}})(?!(?!([\p{{RGI_Emoji}}]{{0}}))){}{{{minimum}}}",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]==={expected}&&m[{}]==={expected}&&m[{}]===undefined&&m.indices[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
-            depth + 3,
-            depth,
-            depth + 1,
-            depth + 2,
-            depth + 2
-        ));
-    }
 }

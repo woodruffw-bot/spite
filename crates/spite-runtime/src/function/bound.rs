@@ -67,14 +67,13 @@ impl Realm {
             })?
         };
         let mut length = 0.0;
-        if has_length {
-            if let Value::Number(number) =
+        if has_length
+            && let Value::Number(number) =
                 self.get_property(&target, &JsString::from("length"), span)?
-            {
-                if !number.is_nan() && number.trunc() > count as f64 {
-                    length = number.trunc() - count as f64;
-                }
-            }
+            && !number.is_nan()
+            && number.trunc() > count as f64
+        {
+            length = number.trunc() - count as f64;
         }
         self.define_builtin_property(&function, "length", Value::Number(length), false, span)?;
         let name = self.get_property(&target, &JsString::from("name"), span)?;

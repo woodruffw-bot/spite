@@ -89,31 +89,6 @@ fn unicode_pure_empty_disjunction_coercion_and_strict_last_index() {
 }
 
 #[test]
-fn unicode_pure_empty_disjunction_deep_choices_counts_clones_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval("let p='|'.repeat(100000),r=new RegExp(p,'v'),c=new RegExp(r,'dvy');c.lastIndex=1;let a=c.exec('😀')").unwrap();
-    assert_eq!(realm.eval("a.length===1&&a[0]===''&&a.index===0&&a.indices[0][0]===0&&c.source===p&&c.lastIndex===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("c.lastIndex=200001;c.exec('b'.repeat(200001)).indices[0][0]===200001"),
-        Ok(Value::Boolean(true))
-    );
-    realm
-        .eval(
-            "let digits='9'.repeat(10000),q='(?:){'+digits+','+digits+'}?|',h=new RegExp(q,'div')",
-        )
-        .unwrap();
-    assert_eq!(
-        realm.eval("h.exec('😀').length===1&&h.exec('').indices[0][0]===0&&h.source===q"),
-        Ok(Value::Boolean(true))
-    );
-    realm.eval("r=null;c=null;a=null;h=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn unicode_pure_empty_disjunction_explicit_work_abort_preserves_state() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

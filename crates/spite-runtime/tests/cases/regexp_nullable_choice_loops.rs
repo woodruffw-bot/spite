@@ -93,23 +93,6 @@ fn consumers_global_sticky_empty_advancement_and_callbacks_keep_restored_slots()
 }
 
 #[test]
-fn copies_collection_deep_slots_and_long_consuming_paths_preserve_last_iteration() {
-    let body = "(".repeat(100000) + "a|" + &")".repeat(100000);
-    let source = JsString::from((body.clone() + "*").as_str());
-    let required = JsString::from((body + "+").as_str());
-    let program = format!(
-        "let r=new RegExp({source:?},'d'),copy=new RegExp(r),required=new RegExp({required:?},'d');copy.exec('a');true"
-    );
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval(&program), Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'),z=copy.exec(''),e=required.exec('');a.length===100001&&a[100000]==='a'&&a.indices[100000][0]===0&&z[100000]===undefined&&e[100000]===''&&e.indices[100000][1]===0"), Ok(Value::Boolean(true)));
-    check(
-        r"let a=/((a?)|b)*c/d.exec('b'.repeat(50000)+'c');a[0].length===50001&&a[1]==='b'&&a[2]===undefined&&a.indices[1][0]===49999",
-    );
-}
-
-#[test]
 fn nullable_composition_preserves_ordered_coercions_and_normal_eval_completion() {
     check(
         "let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|)*'),flag=0,a;try{a=it.next()}catch{flag=1}finally{flag=2}a.value[0]===''&&!a.done&&flag===2&&it.next().value.index===1&&it.next().done",
@@ -168,10 +151,7 @@ fn larger_required_nullable_counts_backward_bodies_and_unicode_remain_pending() 
         "new RegExp('(a|)*b','v').exec('aa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

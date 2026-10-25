@@ -63,7 +63,7 @@ pub fn canonical_composition(first: u32, second: u32) -> Option<u32> {
         return Some(S_BASE + ((first - L_BASE) * V_COUNT + second - V_BASE) * T_COUNT);
     }
     if (S_BASE..S_BASE + S_COUNT).contains(&first)
-        && (first - S_BASE) % T_COUNT == 0
+        && (first - S_BASE).is_multiple_of(T_COUNT)
         && (T_BASE + 1..T_BASE + T_COUNT).contains(&second)
     {
         return Some(first + second - T_BASE);

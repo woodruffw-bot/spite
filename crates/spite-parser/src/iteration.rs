@@ -53,30 +53,30 @@ impl Parser {
             return Err(self.unsupported("for-await-of is not implemented"));
         }
         self.expect("(")?;
-        if let Some(cover) = self.pattern_cover()? {
-            if self.tokens.get(cover.end).is_some_and(|token| {
+        if let Some(cover) = self.pattern_cover()?
+            && self.tokens.get(cover.end).is_some_and(|token| {
                 !token.escaped
                     && matches!(&token.kind, Kind::Word(name) if name == "in" || name == "of")
-            }) {
-                let binding = ForBinding::Pattern(self.consume_pattern_cover(&cover)?);
-                let is_of = self.eat("of");
-                if !is_of {
-                    self.expect("in")?;
-                }
-                let expression = self.expression_with_in(if is_of { 2 } else { 1 }, true)?;
-                self.expect(")")?;
-                return Ok(Box::new(if is_of {
-                    ForHeader::Of {
-                        binding,
-                        iterable: expression,
-                    }
-                } else {
-                    ForHeader::In {
-                        binding,
-                        object: expression,
-                    }
-                }));
+            })
+        {
+            let binding = ForBinding::Pattern(self.consume_pattern_cover(&cover)?);
+            let is_of = self.eat("of");
+            if !is_of {
+                self.expect("in")?;
             }
+            let expression = self.expression_with_in(if is_of { 2 } else { 1 }, true)?;
+            self.expect(")")?;
+            return Ok(Box::new(if is_of {
+                ForHeader::Of {
+                    binding,
+                    iterable: expression,
+                }
+            } else {
+                ForHeader::In {
+                    binding,
+                    object: expression,
+                }
+            }));
         }
         let header_start = self.current().clone();
         let initializer = if self.at(";") {
@@ -172,12 +172,11 @@ impl Parser {
                 if bindings.len() != 1 {
                     return Err(early(bindings[1].pattern.span, invalid_binding));
                 }
-                if let Some(initializer) = &bindings[0].initializer {
-                    if is_of
-                        || !matches!(bindings[0].pattern.kind, BindingPatternKind::Identifier(_))
-                    {
-                        return Err(early(initializer.span, invalid_binding));
-                    }
+                if let Some(initializer) = &bindings[0].initializer
+                    && (is_of
+                        || !matches!(bindings[0].pattern.kind, BindingPatternKind::Identifier(_)))
+                {
+                    return Err(early(initializer.span, invalid_binding));
                 }
                 let binding = bindings.pop().expect("one binding");
                 Ok(ForBinding::Var(binding))

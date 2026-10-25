@@ -99,24 +99,25 @@ impl Parser {
             }
             let method_start = token.span.start;
             let mut kind = PropertyKind::Method;
-            if !token.escaped && !self.at("(") {
-                if let Kind::Word(prefix) = &token.kind {
-                    if matches!(prefix.as_str(), "get" | "set") && self.class_method_name_ahead() {
-                        kind = if prefix == "get" {
-                            PropertyKind::Getter
-                        } else {
-                            PropertyKind::Setter
-                        };
-                        token = self.bump();
-                    } else if prefix == "async"
-                        && !self.current().newline
-                        && (self.at("*") || self.class_method_name_ahead())
-                    {
-                        return Err(early_unsupported(
-                            token.span,
-                            "async methods are not implemented",
-                        ));
-                    }
+            if !token.escaped
+                && !self.at("(")
+                && let Kind::Word(prefix) = &token.kind
+            {
+                if matches!(prefix.as_str(), "get" | "set") && self.class_method_name_ahead() {
+                    kind = if prefix == "get" {
+                        PropertyKind::Getter
+                    } else {
+                        PropertyKind::Setter
+                    };
+                    token = self.bump();
+                } else if prefix == "async"
+                    && !self.current().newline
+                    && (self.at("*") || self.class_method_name_ahead())
+                {
+                    return Err(early_unsupported(
+                        token.span,
+                        "async methods are not implemented",
+                    ));
                 }
             }
             let mut name_span = token.span;

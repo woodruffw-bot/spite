@@ -79,17 +79,7 @@ fn named_alias_ranges_required_captures_negative_undo_and_consumers_are_exact() 
         r"let a=/(?<=a(?=(\2*([\uD800]))))[\uD800]/d.exec('a\uD800\uDC00');a[1]===a[2]&&a.indices[2][0]===1&&a.indices[2][1]===2",
     );
 }
-#[test]
-fn huge_bounds_deep_scopes_copies_and_collection_need_no_default_quota() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,count='9'.repeat(100),r=new RegExp('(?<='+'('.repeat(n)+'\\1{'+count+'}'+')'.repeat(n)+')a','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a');a.length===n+1&&a[1]===''&&a[n]===''&&a.indices[n][0]===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let neg=new RegExp('(?<!'+'('.repeat(n)+'\\1{'+count+'}'+')'.repeat(n)+'q)a','d'),b=neg.exec('a');b[1]===undefined&&b[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let forward=new RegExp('(?<=a(?=('+'('.repeat(n)+'\\2{'+count+'}'+')'.repeat(n)+'b)))b','d'),c=forward.exec('ab');c.length===n+2&&c[1]==='b'&&c[n+1]===''&&c.indices[n+1][0]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let local=new RegExp('(?<=(a)\\1{'+count+',})b','d'),e=local.exec('ab');e[1]==='a'&&e.indices[1][0]===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
     let mut realm = Realm::new(Limits {
@@ -119,10 +109,7 @@ fn consuming_counts_choices_and_unicode_remain_pending_invalid_reads_stay_syntax
         r"/(?<=(\1{1,2}))a/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

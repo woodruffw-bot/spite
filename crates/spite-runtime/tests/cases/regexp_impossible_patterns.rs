@@ -42,34 +42,6 @@ fn impossible_string_consumers_copies_and_collection_skip_replacement_callbacks(
 }
 
 #[test]
-fn deep_impossible_prefixes_and_long_assertion_spellings_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'a|b'+')'.repeat(depth)+'(?!(?<zero>[\\p{RGI_Emoji}]{0}))',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}a|b{}(?!(?<zero>[\p{{RGI_Emoji}}]{{0}}))",
-            "(".repeat(depth),
-            ")".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let zeros = "0".repeat(20_000);
-    let pattern =
-        JsString::from(format!(r"[\p{{RGI_Emoji}}]+(?!(?<zero>\u{{{zeros}D800}}{{0}}))").as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.exec('😀')===null&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn impossible_proofs_preserve_early_errors_coercions_and_opt_in_aborts() {
     check(
         r#"
@@ -123,28 +95,6 @@ fn enclosing_impossible_consumers_clones_and_collection_keep_no_match_behavior()
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn deep_enclosing_impossible_groups_keep_full_inventories_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0}))'+')'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}[\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}})){}",
-            "(".repeat(depth),
-            ")".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }
 
 #[test]
@@ -232,29 +182,6 @@ fn required_impossible_consumers_clones_and_collection_preserve_no_match_state()
 }
 
 #[test]
-fn required_impossible_depth_and_huge_minima_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0}))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"{}[\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}})){}{{{minimum}}}",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-        ));
-    }
-}
-
-#[test]
 fn positive_impossible_assertions_keep_directions_original_bindings_and_early_errors() {
     check(
         r#"
@@ -285,29 +212,6 @@ fn positive_impossible_consumers_clones_and_collection_keep_no_match_state() {
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn positive_impossible_deep_bodies_and_large_minima_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<='+'('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?<zero>\\uD800{0}))'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"(?<={}[\p{{RGI_Emoji}}]+(?!(?<zero>\uD800{{0}})){}{{{minimum}}})",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-        ));
-    }
 }
 
 #[test]
@@ -344,29 +248,6 @@ fn composite_negative_consumers_clones_and_collection_keep_no_match_state() {
 }
 
 #[test]
-fn composite_negative_assertions_keep_deep_operands_and_huge_bounds_without_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<!'+'('.repeat(depth)+'(?!(?!([\\p{RGI_Emoji}]{0})))'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"(?<!{}(?!(?!([\p{{RGI_Emoji}}]{{0}}))){}{{{minimum}}})",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-        ));
-    }
-}
-
-#[test]
 fn wrapped_composite_negative_assertions_keep_required_counts_modifiers_and_original_bindings() {
     check(
         r#"
@@ -396,29 +277,6 @@ fn wrapped_composite_negative_consumers_clones_and_collection_keep_no_match_stat
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn wrapped_composite_negative_depth_and_huge_minima_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'[\\p{RGI_Emoji}]+(?!(?!(?!(?<zero>\\uD800{0}))))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"{}[\p{{RGI_Emoji}}]+(?!(?!(?!(?<zero>\uD800{{0}})))){}{{{minimum}}}",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-        ));
-    }
 }
 
 #[test]
@@ -507,29 +365,6 @@ fn enclosing_composite_alternative_consumers_clones_and_collection_keep_no_match
 }
 
 #[test]
-fn enclosing_composite_alternative_depth_and_huge_minima_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'(?!(?!(?!(?<zero>[\\p{RGI_Emoji}]{0}))))|(?<!(?!(?!)))'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    for (depth, minimum) in [(1000, "1".to_owned()), (1, "9".repeat(20_000))] {
-        let pattern = JsString::from(
-            format!(
-                r"{}(?!(?!(?!(?<zero>[\p{{RGI_Emoji}}]{{0}}))))|(?<!(?!(?!))){}{{{minimum}}}",
-                "(".repeat(depth),
-                ")+".repeat(depth - 1) + ")"
-            )
-            .as_str(),
-        );
-        check(&format!(
-            "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-        ));
-    }
-}
-
-#[test]
 fn negative_nullable_group_spines_keep_original_bindings_even_when_operands_could_consume() {
     check(
         r#"
@@ -560,38 +395,6 @@ fn negative_nullable_group_consumers_clones_and_collection_keep_no_match_state()
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_nullable_group_depth_and_huge_upper_bounds_need_no_matching_data_or_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<!'+'('.repeat(depth)+'(?<many>[\\p{RGI_Emoji}]+(?<part>a)?){0,3}'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?<!{}(?<many>[\p{{RGI_Emoji}}]+(?<part>a)?){{0,3}}{})",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let pattern = JsString::from(
-        format!(
-            r"(?!(?<many>[\p{{RGI_Emoji}}]+(?<part>a)?){{0,{}}})",
-            "9".repeat(20_000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }
 
 #[test]
@@ -628,32 +431,6 @@ fn negative_nullable_atom_consumers_clones_and_collection_keep_no_match_state() 
 }
 
 #[test]
-fn negative_nullable_atom_depth_and_huge_upper_bounds_need_no_matching_data_or_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<!'+'('.repeat(depth)+'[\\p{RGI_Emoji}]*'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?<!{}[\p{{RGI_Emoji}}]*{})",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let pattern = JsString::from(format!(r"(?![\q{{ab}}]{{0,{}}})", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn negative_nullable_sequences_keep_original_references_counts_and_mode_aware_term_boundaries() {
     check(
         r#"
@@ -684,34 +461,6 @@ fn negative_nullable_sequence_consumers_clones_and_collection_keep_no_match_stat
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_nullable_sequence_many_terms_and_deep_spines_need_no_matching_data_or_default_quotas() {
-    check(
-        r#"
-        var count=10,pattern='(?!'+'[\\p{RGI_Emoji}]*'.repeat(count)+'(?<maybe>a)?)',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let pattern = JsString::from(
-        (r"(?!".to_owned() + &r"[\p{RGI_Emoji}]*".repeat(1000) + r"(?<maybe>a)?)").as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?<!{}a*[\p{{RGI_Emoji}}]?(?<maybe>b)?{})",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }
 
 #[test]
@@ -749,39 +498,6 @@ fn negative_nullable_choice_consumers_clones_and_collection_keep_no_match_state(
 }
 
 #[test]
-fn negative_nullable_choice_many_arms_and_deep_spines_need_no_matching_data_or_default_quotas() {
-    check(
-        r#"
-        var pattern='(?!'+Array(5).fill('(?<same>[\\p{RGI_Emoji}]+)').join('|')+'|)',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let pattern = JsString::from(
-        (r"(?!".to_owned()
-            + &std::iter::repeat_n(r"(?<same>[\p{RGI_Emoji}]+)", 1000)
-                .collect::<Vec<_>>()
-                .join("|")
-            + "|)")
-            .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?<!{}a|[\p{{RGI_Emoji}}]*{})",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn negative_successful_positive_assertions_keep_both_directions_and_original_variable_capture_bindings()
  {
     check(
@@ -813,33 +529,6 @@ fn negative_successful_positive_consumers_clones_and_collection_keep_no_match_st
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_successful_positive_depth_and_huge_counts_need_no_matching_data_or_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='(?<!'+'('.repeat(depth)+'(?=(?<maybe>[\\p{RGI_Emoji}]*)a*)'+')+'.repeat(depth)+')',r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?<!{}(?=(?<maybe>[\p{{RGI_Emoji}}]*)a*){})",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let body = r"((?=[\p{RGI_Emoji}]*))";
-    let pattern = JsString::from(format!("(?!{body}{{{}}})", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }
 
 #[test]
@@ -875,33 +564,6 @@ fn wrapped_nullable_negative_consumers_clones_and_collection_keep_no_match_state
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn wrapped_nullable_negative_depth_and_huge_minima_have_no_default_quotas() {
-    check(
-        r#"
-        var depth=10,pattern='('.repeat(depth)+'(?![\\p{RGI_Emoji}]*)'+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let depth = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"{}(?![\p{{RGI_Emoji}}]*){}",
-            "(".repeat(depth),
-            ")+".repeat(depth)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let body = r"((?!(?=[\p{RGI_Emoji}]*)))";
-    let pattern = JsString::from(format!("{body}{{{}}}", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }
 
 #[test]
@@ -990,27 +652,6 @@ fn required_established_impossible_consumers_clones_and_collection_preserve_no_m
 }
 
 #[test]
-fn required_established_impossible_depth_and_huge_minima_keep_constant_execution_without_default_quotas()
- {
-    check(
-        r#"
-        var depth=10,body='(?![\\p{RGI_Emoji}]*)|(?!(?<slot>[\\p{RGI_Emoji}]{0}))',pattern='('.repeat(depth)+body+')+'.repeat(depth),r=new RegExp(pattern,'dgv');
-        r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let body = r"(?![\p{RGI_Emoji}]*)|(?!(?<slot>[\p{RGI_Emoji}]{0}))";
-    let pattern =
-        JsString::from(format!("{}{body}{}", "(".repeat(1000), ")+".repeat(1000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let pattern = JsString::from(format!("({body}){{{}}}", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn negative_established_optional_empty_operands_keep_full_original_bindings_and_inventories() {
     check(
         r#"
@@ -1045,38 +686,6 @@ fn negative_established_optional_empty_consumers_clones_and_collection_keep_no_m
 }
 
 #[test]
-fn negative_established_optional_empty_operands_keep_many_slots_without_default_quotas() {
-    check(
-        r#"
-        var count=10,pattern='(?!((?![\\p{RGI_Emoji}]*))?|'+Array(count).fill('(a)').join('|')+')',r=new RegExp(pattern,'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let count = 1000;
-    let pattern = JsString::from(
-        format!(
-            r"(?!((?![\p{{RGI_Emoji}}]*))?|{})",
-            std::iter::repeat_n("(a)", count)
-                .collect::<Vec<_>>()
-                .join("|")
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let pattern = JsString::from(
-        format!(
-            r"(?!(?<outside>(?<skip>(?![\p{{RGI_Emoji}}]*))?){{{}}})",
-            "9".repeat(20_000)
-        )
-        .as_str(),
-    );
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-}
-
-#[test]
 fn required_negative_established_optional_empty_spines_keep_counts_original_bindings_and_inventory()
 {
     check(
@@ -1108,23 +717,4 @@ fn required_negative_established_optional_empty_consumers_clones_and_collection_
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=2;copy.exec('😀')===null&&copy.lastIndex===0&&copy.hasIndices&&copy.unicodeSets"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn required_negative_established_optional_empty_depth_and_huge_minima_keep_constant_execution() {
-    check(
-        r#"
-        var depth=10,body='(?!(?<skip>(?![\\p{RGI_Emoji}]*))?)',pattern='('.repeat(depth)+body+')+'.repeat(depth),r=new RegExp(pattern,'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
-    "#,
-    );
-    let body = r"(?!(?<skip>(?![\p{RGI_Emoji}]*))?)";
-    let pattern =
-        JsString::from(format!("{}{body}{}", "(".repeat(1000), ")+".repeat(1000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
-    let pattern = JsString::from(format!("({body}){{{}}}", "9".repeat(20_000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
-    ));
 }

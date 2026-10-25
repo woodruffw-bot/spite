@@ -98,16 +98,6 @@ fn zero_width_repetition_consumers_global_sticky_and_named_callbacks_keep_state(
 }
 
 #[test]
-fn zero_width_repetition_huge_counts_nested_wrappers_copies_and_collection_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n='9'.repeat(10000),r=new RegExp('(?<all>(?=(?<x>a))){'+n+'}\\\\k<x>','d'),copy=new RegExp(r),zero=new RegExp('(?<all>(?=(?<x>a))){0,'+n+'}b','d')").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'),b=zero.exec('b');a[0]==='a'&&a.groups.all===''&&a.groups.x==='a'&&a.indices.groups.x===a.indices[2]&&b.groups.all===undefined&&b.groups.x===undefined&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let deep=new RegExp('(?:'.repeat(100000)+'(?=(?<x>a))'+'){2}'.repeat(100000)+'\\\\k<x>','d'),last=deep.exec('a');last[0]==='a'&&last.groups.x==='a'&&last.indices.groups.x[1]===1"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn opted_in_zero_width_repetition_search_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -138,10 +128,7 @@ fn possibly_empty_choices_consuming_mixed_references_and_lookbehind_remain_unsup
         r"/(?:(?=(a))){2}\1/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

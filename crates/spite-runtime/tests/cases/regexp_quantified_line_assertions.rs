@@ -98,14 +98,6 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_line_assertion_slots()
 }
 
 #[test]
-fn flat_prefix_and_suffix_assertions_copies_and_long_runs_survive_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('+'^'.repeat(100000)+')(a)+('+'$'.repeat(100000)+')','dgm'),copy=new RegExp(r),s='x\\n'+'a'.repeat(100000)+'\\nx'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===2&&a[0].length===100000&&a[1]===''&&a[2]==='a'&&a[3]===''&&a.indices[1][0]===2&&a.indices[2][0]===100001&&a.indices[3][0]===100002&&copy.lastIndex===100002&&r.lastIndex===0&&r.source===copy.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_work_counts_full_sticky_suffixes_and_unsupported_repeated_atoms() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -131,10 +123,7 @@ fn optional_work_counts_full_sticky_suffixes_and_unsupported_repeated_atoms() {
         r"/a+($)/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

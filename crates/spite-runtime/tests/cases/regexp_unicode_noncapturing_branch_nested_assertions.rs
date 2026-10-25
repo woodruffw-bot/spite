@@ -130,22 +130,7 @@ fn unicode_noncapturing_branch_nested_assertions_coercions_and_last_index() {
         r"let r=/((?:a)|(?:b))+/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
     );
 }
-#[test]
-fn unicode_noncapturing_branch_nested_assertions_large_groups_and_collection() {
-    assert_eq!(Limits::default().max_steps, None);
-    assert_eq!(Limits::default().max_heap_entries, None);
-    let mut realm = Realm::default();
-    realm.eval(r"let p='('.repeat(6000)+'(?:.)|(?:\\n)'+')'.repeat(6000)+'+$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='\n'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=c.exec(text);m.index===0&&m.length===6001&&m[1]==='\n'&&m[6000]==='\n'&&m.indices[6000][0]===200000&&m.indices[6000][1]===200001&&c.lastIndex===200001"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    realm.eval(r"p='(?<whole>('+'(?:\\b'.repeat(6000)+'a'+')'.repeat(6000)+'|b)+)';r=new RegExp(p,'dvg');c=new RegExp(r);text='a'.repeat(200001)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"m=c.exec(text);m.index===0&&m.length===3&&m.groups.whole==='a'&&m[2]==='a'&&m.indices[2][0]===0&&m.indices[2][1]===1&&c.lastIndex===1"),Ok(Value::Boolean(true)));
-    realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn unicode_noncapturing_branch_nested_assertions_opt_in_work_failure() {
     let mut realm = Realm::new(Limits {

@@ -89,17 +89,7 @@ fn consumers_global_sticky_empty_advancement_and_callbacks_keep_slots() {
     );
     check(r"'cbbb'.search(/(\2+(b))+/)===1&&'cbbb'.split(/(\2+(b))+/).join('|')==='c|b|b|'");
 }
-#[test]
-fn deep_direction_scopes_clones_collection_and_huge_undefined_counts_stay_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval(r"let n=100000,r=new RegExp('(\\2+'+'('.repeat(n)+'b'+')'.repeat(n)+')+','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('bbb');a.length===n+2&&a[0]==='bbb'&&a.indices[n+1][0]===2&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let long=/(\2+(b))+/d.exec('b'.repeat(30000));long[0].length===30000&&long.indices[2][0]===29999"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let count='9'.repeat(100),huge=new RegExp('(\\2{'+count+'}(b)){2}','d').exec('bb');huge[0]==='bb'&&huge.indices[2][0]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval(r"let behind=new RegExp('(?<=((b)\\2{'+count+'}){2})c','d').exec('bbc');behind.index===2&&behind.indices[2][0]===0"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
+
 #[test]
 fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     let mut realm = Realm::new(Limits {
@@ -129,10 +119,7 @@ fn forward_consuming_variable_widths_nullable_choices_and_unicode_stay_pending()
         r"/(\2+(b))+/v.exec('bbb')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

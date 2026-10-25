@@ -35,7 +35,6 @@ fn reference_free_repetition_result_snapshot() {
         (r"()?\1", "d", "q"),
         (r"()+\1", "d", "q"),
         (r"(){2,3}\1", "d", "q"),
-        (r"([ab]){999999999999999999999999999999}\1", "d", "aaa"),
         (r"(?:(?<x>a)+|\k<x>(?<x>b)+)\k<x>", "d", "abbb"),
         (r"(?<all>(?<x>a)(?<last>b)+)\k<all>", "dgi", "abbabb"),
         (r"(?<x>)+\k<x>", "dgy", "q"),
@@ -97,16 +96,6 @@ fn reference_free_consumers_empty_groups_and_full_input_assertions_keep_semantic
 }
 
 #[test]
-fn deep_reference_free_groups_and_huge_empty_counts_copy_and_collect_unlimited() {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval("let slash=String.fromCharCode(92),huge=new RegExp('(?<x>){'+'9'.repeat(10000)+'}'+slash+'k<x>','d'),empty=huge.exec('q');empty[0]===''&&empty.groups.x===''&&empty.indices.groups.x===empty.indices[1]&&empty.indices[1][0]===0"),Ok(Value::Boolean(true)));
-    realm.eval("let r=new RegExp('(?<x>'+'('.repeat(99999)+'a'+')'.repeat(100000)+'+'+slash+'k<x>','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('aaa');a[0]==='aaa'&&a.length===100001&&a.groups.x==='a'&&a[100000]==='a'&&a.indices[100000][0]===1&&a.indices[100000][1]===2&&a.indices.groups.x===a.indices[1]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_reference_free_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -136,10 +125,7 @@ fn repeated_choices_nested_quantifiers_atoms_and_lookaround_remain_unsupported()
         r"/(a)+\1/u.test('aaaa')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

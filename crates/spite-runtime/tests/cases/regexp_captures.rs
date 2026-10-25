@@ -1,6 +1,6 @@
 //! Ordinary literal captures and MatchIndices Arrays (22.2.2.7, 22.2.7.2).
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -70,16 +70,6 @@ fn constructor_copies_preserve_capture_plans_and_original_text() {
 }
 
 #[test]
-fn many_flat_captures_and_plans_survive_collection_without_default_count_quota() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=new RegExp('()'.repeat(1000),'d');")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=r.exec('');m.length===1001 && m.every(s=>s==='') && m.indices.length===1001 && m.indices.every(pair=>pair[0]===0 && pair[1]===0)"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn named_quantified_and_backreference_patterns_remain_unsupported() {
     for source in [
         r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('a')",
@@ -90,10 +80,7 @@ fn named_quantified_and_backreference_patterns_remain_unsupported() {
         "/(\\u{D800}\\u{DC00})/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

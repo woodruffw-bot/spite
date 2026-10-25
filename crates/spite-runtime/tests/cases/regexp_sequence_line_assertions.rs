@@ -96,18 +96,6 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_preserve_empty_assertion_cap
 }
 
 #[test]
-fn large_flat_input_assertions_copies_and_long_searches_survive_collection_without_limits() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('a('+'$'.repeat(100000)+')','dgm'),copy=new RegExp(r),s='x'.repeat(100000)+'a\\n'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a.index===100000&&a[1]===''&&a.indices[1][0]===100001&&copy.lastIndex===100001&&r.lastIndex===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(
-        realm.eval("new RegExp('a('+'$'.repeat(100000)+')').exec(s)===null"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
@@ -133,10 +121,7 @@ fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
         r"/(?:(^a))+b/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

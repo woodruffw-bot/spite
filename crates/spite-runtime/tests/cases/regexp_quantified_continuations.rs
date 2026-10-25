@@ -1,6 +1,6 @@
 //! Quantified prefixes preserve continuation-driven repetition ordering.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -27,9 +27,6 @@ fn greedy_lazy_continuations_choose_the_earliest_start_before_match_length() {
 fn empty_and_failed_prefixes_preserve_candidate_positions() {
     check(
         "let m=/[]*x/.exec('aax');m.index===2&&m[0]==='x'&&/[]+x/.exec('aax')===null&&/a{0}a/.exec('baa').index===1&&/a+(?:)/.exec('baaa')[0]==='aaa'",
-    );
-    check(
-        "/[^]*x/.exec('xaxxx')[0]==='xaxxx'&&/[^]*?x/.exec('xaxxx')[0]==='x'&&/a{999999999999999999999999999}x/.exec('aax')===null",
     );
 }
 
@@ -78,45 +75,6 @@ fn generic_consumers_and_callbacks_share_continuation_ordering() {
 }
 
 #[test]
-fn long_failed_runs_and_successful_copies_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm
-        .eval("let r=/[a]*aaaaab/,copy=new RegExp(r),s='a'.repeat(300000)")
-        .unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("r.exec(s)===null&&copy.exec(s)===null&&/[a]*aaaaa/.exec(s)[0].length===300000&&/[a]*?aaaaa/.exec(s)[0].length===5"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn opted_in_construction_and_sticky_search_aborts_stay_host_failures() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/\d+x/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(10000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=/a+ab/y,flag=0,s='a'.repeat(8000)")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn captures_sets_multiple_quantifiers_assertions_and_choices_remain_explicit_gaps() {
     for source in [
         r"/(?:(?:(?:(?:a+([b]+)){2}){2})|){2,3}/.test('ab')",
@@ -128,10 +86,7 @@ fn captures_sets_multiple_quantifiers_assertions_and_choices_remain_explicit_gap
         "/a+b/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

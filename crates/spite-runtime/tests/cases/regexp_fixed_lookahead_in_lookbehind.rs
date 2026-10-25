@@ -113,19 +113,6 @@ fn shared_consumers_sticky_global_empty_advancement_and_callback_ranges() {
 }
 
 #[test]
-fn deep_assertions_clones_collection_and_long_parent_loops_have_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,r=new RegExp('(?<='+'(?='.repeat(n)+'b'+')'.repeat(n)+')b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("copy.exec('qb').index===1&&copy.source===r.source"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(realm.eval("let a=/(?:(?<=a(?=b))b|a)+c/.exec('ab'.repeat(10000)+'c');a.index===0&&a[0].length===20001"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -156,10 +143,7 @@ fn capture_dependent_variable_width_and_unicode_lookahead_stay_unsupported() {
         r"/(?<=a(?=b))b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

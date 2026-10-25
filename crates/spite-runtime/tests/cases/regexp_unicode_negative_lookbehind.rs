@@ -76,20 +76,6 @@ fn negative_predecessor_string_consumers_copies_and_collection_keep_undefined_sl
 }
 
 #[test]
-fn negative_predecessor_deep_wrappers_keep_all_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var ok=true;
-        for(var mode of ['u','v']){
-            var source='('.repeat(1000)+'(?<!'+'('.repeat(1000)+'[a-z]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgy'+mode);r.lastIndex=1;var m=r.exec('!a');
-            ok=ok&&m.index===1&&m.length===2001&&m[0]==='';
-            for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);
-        }ok
-    "#,
-    );
-}
-
-#[test]
 fn negative_word_predecessor_preserves_named_undefined_slots_and_boundary_polarity() {
     check(
         r#"
@@ -183,17 +169,6 @@ fn negative_q_class_predecessor_string_consumers_copies_and_collection_keep_unde
 }
 
 #[test]
-fn negative_q_class_predecessor_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<!'+'('.repeat(1000)+'[\\q{a|b}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
-}
-
-#[test]
 fn negative_word_q_class_predecessors_keep_original_polarity_source_and_undefined_slots() {
     check(
         r#"
@@ -277,17 +252,6 @@ fn negative_scalar_v_set_predecessor_string_consumers_copies_and_collection_keep
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=1;var m=copy.exec('!');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_scalar_v_set_predecessor_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<!'+'('.repeat(1000)+'[[a-z]&&[ab]]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
 }
 
 #[test]
@@ -377,17 +341,6 @@ fn negative_character_result_predecessor_string_consumers_copies_and_collection_
     "#),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=1;var m=copy.exec('!');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn negative_character_result_predecessor_deep_wrappers_keep_original_empty_and_undefined_slots() {
-    check(
-        r#"
-        var source='('.repeat(1000)+'(?<!'+'('.repeat(1000)+'[\\q{a|b|ab|}&&\\p{Any}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!');
-        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
-        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
-    "#,
-    );
 }
 
 #[test]

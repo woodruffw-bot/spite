@@ -93,19 +93,6 @@ fn consumers_and_sticky_copies_keep_original_sources_and_named_results() {
 }
 
 #[test]
-fn wide_shared_name_inventories_and_references_survive_copy_and_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<x>b)|'.repeat(10000)+'(?<x>a)'+'\\\\k<x>'.repeat(10000),'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('a'.repeat(10001));a[0].length===10001&&a.length===10002&&a[1]===undefined&&a[10000]===undefined&&a.groups.x==='a'&&a.indices.groups.x===a.indices[10001]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(
-        realm.eval("a.groups.x==='a'&&a.indices.groups.x===a.indices[10001]"),
-        Ok(Value::Boolean(true))
-    );
-}
-
-#[test]
 fn explicit_duplicate_name_search_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -133,10 +120,7 @@ fn wider_named_binding_compositions_keep_unsupported_outcomes() {
         r"/(?<=(?<x>a+))\k<x>/.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

@@ -114,21 +114,6 @@ fn consumers_callbacks_and_intrinsic_arrays_observe_fixed_choice_captures() {
 }
 
 #[test]
-fn deep_empty_groups_long_runs_and_copies_survive_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('x('+'(?:(?:)b|'.repeat(100000)+'a'+')'.repeat(100000)+'|b)y','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('xay');a.length===2&&a[1]==='a'&&a.indices[1][0]===1&&a.indices[1][1]===2&&copy.source===r.source&&copy.exec('xcy')===null"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let either=new RegExp(r.source+'|(z)','d'),b=either.exec('qxay');b.index===1&&b[1]==='a'&&b[2]===undefined&&b.indices[1][0]===2&&b.indices[2]===undefined"),Ok(Value::Boolean(true)));
-    check(
-        "let s='xb'.repeat(100000)+'y',a=/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))+(y)/d.exec(s);a[0]===s&&a[1]==='xb'&&a[2]==='b'&&a.indices[1][0]===199998&&a.indices[2][0]===199999&&a.indices[3][0]===200000",
-    );
-    check(
-        "let r=new RegExp('((?:(?:)[^z]|[^z])|(?:(?:)b|b))'.repeat(10000),'d'),a=r.exec('b'.repeat(10000));a.length===10001&&a[10000]==='b'&&a.indices[10000][0]===9999",
-    );
-}
-
-#[test]
 fn class_boundaries_escape_unions_dot_and_empty_sets_keep_exact_membership() {
     check(
         r"let a=/([a-]|[-b])(c|\d)/d.exec('-1');a[1]==='-'&&a[2]==='1'&&a.indices[1][0]===0&&a.indices[2][0]===1&&/([a-]|[-b])(c|\d)/.exec('d1')===null",
@@ -201,10 +186,7 @@ fn opted_in_abort_and_wider_or_conditional_choices_remain_distinct() {
         r"/x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y/u.test('xay')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

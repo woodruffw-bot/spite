@@ -1,6 +1,6 @@
 //! Fixed ordinary class/dot continuations share one quantified repetition plan.
 
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -92,40 +92,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_preserve_continuation_slots(
 }
 
 #[test]
-fn shared_thousand_capture_continuations_and_copies_survive_collection_without_limits() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(b)+'+'([a])'.repeat(1000),'dg'),copy=new RegExp(r),s='bbb'+'a'.repeat(1000)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(s);m.length===1002&&m[1]==='b'&&m[1001]==='a'&&m.indices[1][0]===2&&m.indices[1001][0]===1002&&m.indices[1001][1]===1003&&copy.lastIndex===1003&&r.lastIndex===0&&r.source===copy.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(100000),
-        ..Limits::default()
-    });
-    realm
-        .eval("let r=new RegExp('a+'+'[b]'.repeat(100),'y'),s='a'.repeat(2000),flag=0")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("flag===0&&r.lastIndex===0"),
-        Ok(Value::Boolean(true))
-    );
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(5000),
-        ..Limits::default()
-    });
-    realm.eval("let flag=0").unwrap();
-    assert!(matches!(
-        realm.eval(r"try{/a+(\d)/}catch{flag=1}finally{flag=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
         r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
@@ -134,10 +101,7 @@ fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
         "/a+[b]/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

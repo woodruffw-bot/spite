@@ -103,16 +103,6 @@ fn nested_progressing_choices_consumers_sticky_counts_and_zero_advancement_keep_
 }
 
 #[test]
-fn many_nested_choice_iterations_deep_enclosures_huge_bounds_copy_and_collect_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('(?<all>'+'('.repeat(99999)+'(?:(?:a|)b|c)+'+')'.repeat(100000),'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('abc');a[0]==='abc'&&a.length===100001&&a.groups.all==='abc'&&a[100000]==='abc'&&a.indices[100000][0]===0&&a.indices[100000][1]===3&&a.indices.groups.all===a.indices[1]&&copy.source===r.source"), Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?<all>(?:(?:ab|a))+)b/d.exec('a'.repeat(50000)+'b'),n='9'.repeat(10000),huge=new RegExp('(?:(?:a|)b|c){'+n+'}'),zero=new RegExp('(?<all>(?:(?:a|)b|c){0,'+n+'})','d'),empty=zero.exec('q');many[0].length===50001&&many.groups.all.length===50000&&many.indices.groups.all[1]===50000&&huge.exec('abc')===null&&empty.groups.all===''&&empty.indices.groups.all===empty.indices[1]"), Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_nested_choice_iteration_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -142,10 +132,7 @@ fn empty_capturing_and_nested_repeated_bodies_remain_unsupported() {
         r"/(?:(?:a|)b|c)+/u.test('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

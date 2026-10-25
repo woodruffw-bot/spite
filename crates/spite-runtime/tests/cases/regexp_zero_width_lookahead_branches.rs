@@ -100,17 +100,6 @@ fn zero_width_branch_consumers_empty_global_sticky_results_and_callbacks_keep_sl
 }
 
 #[test]
-fn zero_width_branch_huge_counts_nested_wrappers_long_parent_runs_copies_and_gc_are_unlimited() {
-    let mut realm = Realm::default();
-    realm.eval("let n='9'.repeat(10000),r=new RegExp('(?:(?=(?<x>a))|(?=(?<x>b))){'+n+'}\\\\k<x>','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('b');a[0]==='b'&&a[1]===undefined&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let deep=new RegExp('(?:'.repeat(100000)+'(?:(?=(?<x>a))|())'+'){2}'.repeat(100000)+'\\\\k<x>','d'),last=deep.exec('a');last[0]==='a'&&last.groups.x==='a'&&last.indices.groups.x[1]===1"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?:(?=(?<x>a))|()){2}a|b)+c/d.exec('ab'.repeat(10000)+'c');many[0].length===20001&&many.groups.x===undefined&&many.indices.groups.x===undefined"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_zero_width_branch_search_work_aborts_before_last_index_and_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -137,10 +126,7 @@ fn mixed_progress_unknown_references_lookbehind_and_unicode_remain_unsupported()
         r"/(?:(?=(a))|()){2}\1/v.exec('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

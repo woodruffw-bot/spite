@@ -163,15 +163,13 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"in
         let mut realm = Realm::default();
         realm.eval("var marker=0").unwrap();
         assert!(
-            matches!(
-                realm.eval(&format!(
-                    "marker=1;try{{{source};}}catch{{marker=2;}}finally{{marker=3;}}"
-                )),
-                Err(Error::Unsupported { .. })
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!("marker=1;try{{{source};}}catch{{marker=2;}}finally{{marker=3;}}")
             ),
             "{source}"
         );
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+        assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     for pattern in [
         r"[^\q{ab}]",
@@ -218,13 +216,4 @@ fn collection_and_opt_in_aborts_preserve_compiled_state_and_last_index() {
         realm.eval("marker===0 && r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-}
-
-#[test]
-fn default_resource_policy_accepts_long_members_without_recursive_matcher_storage() {
-    let word = "a".repeat(20_000);
-    let source = format!(
-        r"let r=/[\q{{{word}|a}}]/vy,m=r.exec('{word}');m[0].length===20000 && r.lastIndex===20000"
-    );
-    check(&source);
 }

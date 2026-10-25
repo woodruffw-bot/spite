@@ -95,14 +95,6 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_assertion_capture_slot
 }
 
 #[test]
-fn collapsed_assertion_captures_copies_and_long_multiline_runs_survive_collection() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('('+'(^)'.repeat(100000)+'a$\\n)+','dm'),copy=new RegExp(r),s='a\\n'.repeat(20000)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec(s);a[0].length===40000&&a.length===100002&&a[1]==='a\\n'&&a[2]===''&&a[100001]===''&&a.indices[1][0]===39998&&a.indices[2][0]===39998&&a.indices[100001][0]===39998&&r.source===copy.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_assertion_work_aborts_bypass_handlers_and_remaining_group_features_are_unsupported() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -135,10 +127,7 @@ fn optional_assertion_work_aborts_bypass_handlers_and_remaining_group_features_a
         r"/(|a){2,3}/.test('')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

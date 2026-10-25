@@ -191,15 +191,14 @@ fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
     realm
         .eval("let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}'),flag=0")
         .unwrap();
-    assert!(matches!(
-        realm.eval("try{it.next();}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Unsupported { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-    assert!(matches!(
-        realm.eval("it.next()"),
-        Err(Error::Unsupported { .. })
-    ));
+    assert_eq!(
+        realm.eval("let first;try{first=it.next();}catch{flag=1;}finally{flag=2;}!first.done&&first.value[0]===''&&first.value[1]===undefined&&first.value.index===0&&first.value.input==='x'&&flag===2"),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        realm.eval("let second=it.next(),end=it.next();!second.done&&second.value[0]===''&&second.value.index===1&&end.done&&it.next().done"),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

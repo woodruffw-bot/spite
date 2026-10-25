@@ -309,7 +309,7 @@ class CargoRunnerTests(unittest.TestCase):
                 json.loads(observation.read_text(encoding='utf-8')))
 
     def test_runtime_target_only_preserves_library_context_binary_and_environment(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
                     prefix='spite-ci-integration-only-') as temporary:
                 root = Path(temporary) / 'workspace'
@@ -359,7 +359,7 @@ class CargoRunnerTests(unittest.TestCase):
                 self.assertEqual(sorted(executed), RUNTIME_SHARD_NAMES)
 
     def test_runtime_target_only_falls_back_for_unproved_workspace_contexts(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             for shape in ['default-feature', 'custom-build', 'build-dependency',
                           'renamed-dev-binding']:
                 with self.subTest(toolchain=toolchain, shape=shape), tempfile.TemporaryDirectory(
@@ -605,7 +605,7 @@ fn sibling_dev_feature_and_primary_package_remain_active() {
             subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
                            cwd=root, env={**self.environment, **environment}, check=True)
             fields = ['command', 'cwd', 'package', 'status', 'summaries']
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 with self.subTest(toolchain=toolchain):
                     reference, original = self.run_suite(
                         suite='core', root=root, toolchain=toolchain,
@@ -746,7 +746,7 @@ fn sibling_dev_context_is_selected() {
                            'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
             subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
                            cwd=root, env={**self.environment, **environment}, check=True)
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 with self.subTest(toolchain=toolchain):
                     reference, complete = self.run_suite(
                         suite='all', root=root, toolchain=toolchain,
@@ -809,7 +809,7 @@ fn sibling_dev_context_is_selected() {
                                'SPITE_RUNNER_PROBE_FAIL_CASE': ''}
                 subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
                                cwd=root, env={**self.environment, **environment}, check=True)
-                for toolchain in ['stable', '1.85.0']:
+                for toolchain in ['stable', '1.88.0']:
                     with self.subTest(toolchain=toolchain):
                         reference, complete = self.run_suite(
                             suite='rest', root=root, toolchain=toolchain,
@@ -929,7 +929,7 @@ fn sibling_dev_context_is_selected() {
             subprocess.run(['cargo', '+stable', 'generate-lockfile', '--offline'],
                            cwd=root, env=lock_environment, check=True)
             reports = {}
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 for optimize in [False, True]:
                     arguments = ['--optimize-runtime'] if optimize else []
                     environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '1' if optimize else '0'
@@ -1046,7 +1046,7 @@ fn new_pinned_corpus_runs_all_reviewed_variants_case() { check(); }
             project = lambda rows: sorted(
                 [{key: row[key] for key in fields} for row in rows],
                 key=lambda row: (row['command'], row['cwd']))
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 with self.subTest(toolchain=toolchain):
                     reference, complete = self.run_suite(
                         suite='rest', root=root, toolchain=toolchain,
@@ -1132,7 +1132,7 @@ fn new_pinned_corpus_runs_all_reviewed_variants_case() { check(); }
 
 
     def test_full_runtime_and_nonruntime_replay_preserve_context_union_and_failures(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
                     prefix='spite-ci-runtime-replay-') as temporary:
                 root = Path(temporary) / 'workspace'
@@ -1238,7 +1238,7 @@ fn sibling_context_and_failure() {
                 self.assertTrue(all(observed == original for observed in observations))
 
     def test_full_runtime_replay_discovers_names_and_rejects_ignored_or_globally_skipped_cases(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
                     prefix='spite-ci-runtime-full-inventory-') as temporary:
                 root = Path(temporary) / 'workspace'
@@ -1369,7 +1369,7 @@ fn sibling_context_and_failure() {
             project = lambda rows: sorted(
                 [{key: row[key] for key in fields} for row in rows],
                 key=lambda row: (row['command'], row['cwd']))
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 for optimize in [False, True]:
                     arguments = ['--optimize-runtime'] if optimize else []
                     environment['SPITE_RUNNER_PROBE_RUNTIME_OPT'] = '1' if optimize else '0'
@@ -1463,7 +1463,7 @@ fn zzz_ignored_third_shard_case() { panic!("must not be credited as executed"); 
             self.assertEqual(rejected, [2])
 
     def test_three_runtime_shards_preserve_cold_library_roots_and_private_environment(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
                     prefix='spite-ci-three-shard-roots-') as temporary:
                 root = Path(temporary) / 'workspace'
@@ -1603,7 +1603,7 @@ mod unicode_properties {
             project = lambda rows: sorted(
                 [{key: row[key] for key in fields} for row in rows],
                 key=lambda row: (row['command'], row['cwd']))
-            for toolchain in ['stable', '1.85.0']:
+            for toolchain in ['stable', '1.88.0']:
                 for count in [2, 3]:
                     # Existing profile modes are orthogonal to the policy;
                     # exercise both without duplicating every fixture matrix.
@@ -1723,7 +1723,7 @@ mod outer_unicode_properties {
                 self.assertEqual(len(rejected), 1)
 
     def test_refined_runtime_shards_preserve_cold_library_roots_and_private_environment(self):
-        for toolchain in ['stable', '1.85.0']:
+        for toolchain in ['stable', '1.88.0']:
             with self.subTest(toolchain=toolchain), tempfile.TemporaryDirectory(
                     prefix='spite-ci-refined-roots-') as temporary:
                 root = Path(temporary) / 'workspace'

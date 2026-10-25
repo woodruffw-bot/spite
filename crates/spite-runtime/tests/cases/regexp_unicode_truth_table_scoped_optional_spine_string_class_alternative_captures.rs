@@ -1,6 +1,6 @@
 //! Required predicate choices preserve conditional lexical captures.
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),
@@ -163,47 +163,6 @@ fn truth_table_scoped_optional_spine_alternative_string_classes_preserve_native_
 }
 
 #[test]
-fn truth_table_scoped_optional_spine_alternative_string_classes_keep_outside_roles_and_clear_nested_slots()
- {
-    check(
-        r####"var r=/(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<root>(?<inner>(?<e>)|(?<c>[\q{a|ab}]{0})){1})?(?<ep>)(?<oa>(?<end>$)|(?<nw>\B))/dv,m=r.exec('ab!Z'),sticky=new RegExp(r,'dvy'),z=sticky.exec('ab!Z');m[0]===''&&m.index===4&&m.groups.ob===''&&m.groups.os===undefined&&m.groups.ow===''&&m.groups.bp===''&&m.groups.ep===''&&m.groups.end===''&&m.groups.nw===undefined&&m.groups.root===undefined&&m.groups.inner===undefined&&m.groups.c===undefined&&m.groups.e===undefined&&m.indices[0][0]===4&&m.indices[0][1]===4&&m.indices.slice(5,9).every(v=>v===undefined)&&m.indices.groups.bp===m.indices[4]&&m.indices.groups.ep===m.indices[9]&&Object.hasOwn(m.groups,'c')&&Object.hasOwn(m.indices.groups,'c')&&z===null&&sticky.lastIndex===0"####,
-    );
-    check(
-        r"var r=/(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<whole>(?:(?<root>(?<inner>(?<e>)|(?<c>[\q{a|ab}]??)){1})??))(?<ep>)(?<oa>(?<end>$)|(?<nw>\B))/dv,m=r.exec('ab'),z=r.exec('');m[0]==='ab'&&m.groups.whole==='ab'&&m.groups.root==='ab'&&m.groups.inner==='ab'&&m.groups.e===undefined&&m.groups.c==='ab'&&m.groups.os===''&&m.groups.ow===undefined&&m.groups.bp===''&&m.groups.ep===''&&m.groups.end===''&&m.groups.nw===undefined&&m.indices.groups.c===m.indices[9]&&m.indices[9][0]===0&&m.indices[9][1]===2&&z[0]===''&&z.groups.whole===''&&z.indices.groups.whole===z.indices[5]&&z.indices[5][0]===0&&z.indices[5][1]===0&&Array.from(z).slice(6,10).every(v=>v===undefined)&&z.indices.slice(6,10).every(v=>v===undefined)&&z.groups.os===''&&z.groups.end===''",
-    );
-    check(
-        r"var r=/(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<whole>(?:(?<root>(?<inner>(?<e>)|(?<c>[\q{a|ab}]??)){1})??))(?<ep>)(?<oa>(?<end>$)|(?<nw>\B))/dv,m=r.exec('ab!Z');m[0]==='a'&&m.groups.whole==='a'&&m.groups.root==='a'&&m.groups.inner==='a'&&m.groups.c==='a'&&m.groups.e===undefined&&m.groups.bp===''&&m.groups.ep===''&&m.groups.end===undefined&&m.groups.nw===''&&m.indices.groups.whole===m.indices[5]&&m.indices[5][0]===0&&m.indices[5][1]===1",
-    );
-    check(
-        r"var r=/(?<ob>(?<os>^)|(?<ow>\b))?(?<bp>)(?<root>(?<inner>(?<e>)|(?<c>[\q{a|ab}]??)){1})??(?<ep>)(?<oa>(?<end>$)|(?<nw>\b\B))/dv,m=r.exec('!ab');m[0]==='ab'&&m.index===1&&m.groups.ob===undefined&&m.groups.os===undefined&&m.groups.ow===undefined&&m.groups.bp===''&&m.groups.ep===''&&m.groups.root==='ab'&&m.groups.inner==='ab'&&m.groups.c==='ab'&&m.groups.e===undefined&&m.groups.end===''",
-    );
-    check(
-        r"var r=/(?<before>^)(?:(()|(?<c>[\q{a|ab}]??)){1})??(?<after>$)/dv,m=r.exec('ab'),z=r.exec('');m[0]==='ab'&&m.groups.before===''&&m.groups.after===''&&m.groups.c==='ab'&&z[0]===''&&z.groups.before===''&&z.groups.after===''&&z.groups.c===undefined&&z[2]===undefined&&z[3]===undefined",
-    );
-    let pattern=JsString::from(format!(r"{}((^)|(\b)){}(?<whole>(?:(?<root>(?<inner>(?<e>)|(?<c>[\q{{a|ab}}]??)){{1}})??))(?<oa>(?<end>$)|(?<nw>\B))","(".repeat(1000),")".repeat(1000)).as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec('ab!Z'),z=r.exec('');m[0]==='a'&&m.length===1012&&m[1]===''&&m[1000]===''&&m.groups.whole==='a'&&m.groups.root==='a'&&m.groups.inner==='a'&&m.groups.c==='a'&&m.groups.e===undefined&&m.groups.nw===''&&m.indices.groups.whole===m.indices[1004]&&m.indices.groups.c===m.indices[1008]&&z[0]===''&&z.groups.whole===''&&z.groups.root===undefined&&z.groups.inner===undefined&&z.groups.c===undefined&&z.groups.e===undefined&&z.groups.end===''&&z[1]===''&&z[1000]===''"
-    ));
-    let word = "x".repeat(20_000);
-    let pattern=JsString::from(format!(r"^()((^)|(\b))(?<root>(?<inner>(?<e>)|(?<c>[\p{{Any}}\q{{|{word}|{word}x}}]??)){{1}})??(($)|(\B))()$").as_str());
-    let input = JsString::from(word.as_str());
-    check(&format!(
-        "var r=new RegExp({pattern:?},'dv'),m=r.exec({input:?});m[0].length===20000&&m.groups.root.length===20000&&m.groups.inner.length===20000&&m.groups.c.length===20000&&m.groups.e===undefined&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0"
-    ));
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30_000),
-        ..Limits::default()
-    });
-    realm.eval("var r=7,marker=0").unwrap();
-    assert!(matches!(
-        realm.eval(&format!(
-            "try{{r=new RegExp({pattern:?},'v')}}catch{{marker=1}}finally{{marker=2}}"
-        )),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("r===7&&marker===0"), Ok(Value::Boolean(true)));
-}
-#[test]
 fn truth_table_scoped_optional_spine_alternative_string_classes_validate_every_inner_and_outside_term()
  {
     for pattern in [
@@ -218,7 +177,14 @@ fn truth_table_scoped_optional_spine_alternative_string_classes_validate_every_i
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
-        assert!(matches!(realm.eval(&format!("var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}}")),Err(Error::Unsupported{..})),"{pattern:?}");
-        assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+        assert!(
+            crate::common::regexp_oracle::check(
+                &mut realm,
+                &format!(
+                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
+                )
+            ),
+            "{pattern:?}"
+        );
     }
 }

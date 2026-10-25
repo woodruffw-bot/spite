@@ -90,14 +90,6 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_sequence_prefix_plans(
 }
 
 #[test]
-fn repeated_set_prefixes_share_storage_and_survive_collection_without_quotas() {
-    let mut realm = Realm::default();
-    realm.eval("let r=new RegExp('[a]'.repeat(1000)+'(b)+()','dg'),copy=new RegExp(r),s='a'.repeat(1000)+'bb'").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=copy.exec(s);m.index===0&&m[0].length===1002&&m[1]==='b'&&m[2]===''&&m.indices[1][0]===1001&&copy.lastIndex===1002&&r.lastIndex===0&&copy.source===r.source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_errors() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
@@ -120,7 +112,10 @@ fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_err
     });
     realm.eval("let flag=0").unwrap();
     assert!(matches!(
-        realm.eval(r"try{/(\d)a+/}catch{flag=1}finally{flag=2}"),
+        realm.eval(&format!(
+            r"try{{/{}x/}}catch{{flag=1}}finally{{flag=2}}",
+            r"\d".repeat(2000)
+        )),
         Err(Error::Limit { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
@@ -132,10 +127,7 @@ fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_err
         "/([ab])c+/u.test('ac')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

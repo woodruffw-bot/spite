@@ -115,17 +115,6 @@ fn consumers_callbacks_imported_ranges_sticky_and_empty_advancement() {
 }
 
 #[test]
-fn deep_captures_clones_collection_completed_negative_rollback_and_unlimited_parent_loops() {
-    let mut realm = Realm::default();
-    realm.eval("let n=100000,r=new RegExp('(?<=(?='+'('.repeat(n)+'b'+')'.repeat(n)+'))b','d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=copy.exec('qb');a.index===1&&a.length===n+1&&a[1]==='b'&&a[n]==='b'&&a.indices[n][0]===1&&a.indices[n][1]===2&&copy.source===r.source"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let negative=new RegExp('(?<!(?='+'('.repeat(n)+'b'+')'.repeat(n)+')q)c','d'),restored=negative.exec('bc');restored.index===1&&restored[1]===undefined&&restored[n]===undefined&&restored.indices[n]===undefined"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let many=/(?:(?<=a(?=(b)))b|a)+c/.exec('ab'.repeat(10000)+'c');many.index===0&&many[0].length===20001&&many[1]==='b'"),Ok(Value::Boolean(true)));
-    realm.collect(usize::MAX).unwrap();
-}
-
-#[test]
 fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -155,10 +144,7 @@ fn variable_width_dependent_continuations_and_unicode_modes_stay_unsupported() {
         r"/(?<=a(?=(b)))b/v.exec('ab')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }

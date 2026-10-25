@@ -440,14 +440,14 @@ impl Pattern {
                 // RegExpIdentifierStart/Part explicitly use +UnicodeMode for
                 // escapes even when the enclosing Pattern has no u/v flag.
                 point = self.unicode_escape(true)?;
-            } else if !self.mode.unicode && (0xd800..=0xdbff).contains(&point) {
-                if let Some(trail) = self
+            } else if !self.mode.unicode
+                && (0xd800..=0xdbff).contains(&point)
+                && let Some(trail) = self
                     .peek()
                     .filter(|point| (0xdc00..=0xdfff).contains(point))
-                {
-                    self.pos += 1;
-                    point = 0x10000 + (point - 0xd800) * 0x400 + trail - 0xdc00;
-                }
+            {
+                self.pos += 1;
+                point = 0x10000 + (point - 0xd800) * 0x400 + trail - 0xdc00;
             }
             let Some(character) = char::from_u32(point).filter(|character| {
                 if name.is_empty() {

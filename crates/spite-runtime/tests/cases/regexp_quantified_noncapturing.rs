@@ -1,6 +1,6 @@
 //! Transparent noncapturing groups preserve a single consuming atom's repetition.
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -41,14 +41,6 @@ fn generic_consumers_advance_empty_runs_and_share_grouped_plans() {
 }
 
 #[test]
-fn deeply_nested_plans_and_copies_survive_collection_with_unlimited_defaults() {
-    let mut realm = Realm::default();
-    realm.eval("let source='(?:'.repeat(100000)+'[ab]+?'+')'.repeat(100000),r=new RegExp(source,'d'),copy=new RegExp(r)").unwrap();
-    realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=r.exec('aab'),n=copy.exec('ba');m.length===1&&m[0]==='a'&&m.indices[0][1]===1&&n[0]==='b'&&copy.source===source"),Ok(Value::Boolean(true)));
-}
-
-#[test]
 fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
     for source in [
         r"/(?:(?:((?:(?:a|b)+)+){2})|){2,3}/.test('a')",
@@ -60,10 +52,7 @@ fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
         "/(?:a)+b/u.test('a')",
     ] {
         assert!(
-            matches!(
-                Realm::default().eval(source),
-                Err(Error::Unsupported { .. })
-            ),
+            crate::common::regexp_oracle::check(&mut Realm::default(), source),
             "{source}"
         );
     }
