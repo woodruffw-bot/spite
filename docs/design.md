@@ -14564,3 +14564,23 @@ empty and operand slots undefined through named indices, String consumers,
 copies and collection. Original set syntax, word/line/predecessor context and
 stateful Unicode execution remain in Core; user conversions stay outside the
 compiler frame.
+
+
+A separate checked positive-lookahead entry admits one unquantified v-mode
+class with an empty or longer q member and MayContainStrings false
+(22.2.2.4, 22.2.2.9). It shares the charged flat assertion envelope, but selects
+the existing static character-result compiler for its fixed iteration. Every
+successful class match consumes one complete character; an empty set result
+never matches. Optional ^/$ gates inspect original input context, outside
+wrappers remain empty and operand wrappers retain the complete selected
+character. Conservative string results, counts, word predicates and additional
+terms retain separate proofs. Full original v/vi validation and normalized
+capture heads remain prerequisites; projected source is never independently
+validated or rebound.
+
+The shared assertion parser selects q-member, scalar-set and character-result
+proofs explicitly. Earlier q/scalar domains, work sequences and checked error
+contracts remain unchanged. Character-result set projection, folded algebra,
+complete Unicode advancement, initial-pair rewind, flat capture storage and
+actual-work cancellation reuse their established paths. Runtime integration
+remains separate.
