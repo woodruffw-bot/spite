@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8814 unmodified test fixtures and nineteen harness files come from
+These 8904 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,20 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Promise.race fixtures
+
+Ninety complete unchanged originals in Promise/race pass 180 Script variants.
+They cover generic construction/capabilities, cached resolve lookup and invocation,
+iteration and cleanup failures, callback identity, first settlement, thenable
+assimilation, job ordering and empty input. Pinned Git blob hashes and manifest
+SHA-256 digests were verified. Existing helpers suffice.
+
+The separate 94-source review records 180 passing and eight Unsupported variants.
+Four sequencing originals also need Promise.all; they remain excluded unchanged
+without credit. Four native Runtime regressions add explicit protocol, cleanup
+precedence and host-failure controls. Inventories contain 8,904 fixtures, nineteen
+helpers, 8,885 reviewed sources and 17,241 variants.
 
 ## Promise.finally fixtures
 
@@ -4239,7 +4253,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 17061 variants from 8795 reviewed sources.
+The `spite-test262` command runs 17241 variants from 8885 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

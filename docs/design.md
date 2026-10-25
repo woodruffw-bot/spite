@@ -3316,8 +3316,18 @@ bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
 preflight rollback moves rather than clones arbitrary argument values.
-Combinators remain separate implementation work. Async Test262 execution
+The remaining aggregation combinators are separate work. Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
+
+Promise.race constructs the supplied capability before reading its resolve
+method once and acquiring the synchronous iterator (sec-promise.race). Every
+yielded value calls that cached method with the constructor receiver, then
+invokes the result's live then with the same resolve/reject pair. The entire
+iterator is consumed even if a custom callback settles synchronously. Language
+failures reject the capability; body failures close the iterator while stepping,
+done and value failures do not. Incoming throws take precedence over language
+cleanup failures. Host failures bypass rejection and iterator cleanup. Empty
+input leaves native Promises pending, with no automatic job execution.
 
 Promise.prototype.finally accepts object receivers without Promise branding
 (27.2.5.3). SpeciesConstructor precedes then lookup even for non-callable cleanup
