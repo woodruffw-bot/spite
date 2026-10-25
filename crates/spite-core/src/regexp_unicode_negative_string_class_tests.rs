@@ -1135,3 +1135,204 @@ fn negative_character_unions_keep_deep_scopes_bounded_retries_and_work_abort_rec
         None
     );
 }
+
+fn negative_word_character_union_compile(
+    source: &str,
+    i: bool,
+    m: bool,
+) -> RegExpUnicodeNegativeStringClassMatcher {
+    RegExpUnicodeNegativeStringClassMatcher::compile_character_union_lookahead_with_word_boundaries_validated_with_work(
+        &JsString::from(source), i, m, |_| Ok::<(), ()>(()),
+    ).unwrap().unwrap()
+}
+#[test]
+fn negative_word_character_union_classes_negate_the_whole_endpoint_conjunction_and_keep_undefined_slots()
+ {
+    for (body, text, expected) in [
+        (r"\b[a\q{ab|abc|}]\b", "ab!", Some(1..1)),
+        (r"\b[a\q{ab|abc|}]\B", "ab!", Some(1..1)),
+        (r"\B[a\q{ab|abc|}]\b", "ab!", Some(0..0)),
+        (r"\B[a\q{ab|abc|}]\B", "ab!", Some(0..0)),
+        (r"[x\q{}]\b", "aa!", Some(1..1)),
+        (r"[x\q{}]\b", "a", None),
+        (r"\b[a\q{ab|abc|}]\b", "", Some(0..0)),
+        (r"\B[x\q{}]\B", "", None),
+    ] {
+        let plan =
+            negative_word_character_union_compile(&format!("((?!(({body}))))"), false, false);
+        let found = plan
+            .find_with_work(&JsString::from(text), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap();
+        assert_eq!(found, expected, "{body}");
+        assert_eq!(plan.capture_count(), 3);
+        if let Some(range) = found {
+            assert_eq!(plan.capture_range(0, &range), Some(range.clone()));
+            for index in 1..=3 {
+                assert_eq!(plan.capture_range(index, &range), None);
+            }
+        }
+    }
+}
+#[test]
+fn negative_word_character_union_classes_keep_original_line_fold_backspace_and_pair_context() {
+    for (source, i, m, text, start, sticky, expected) in [
+        (
+            r"(?!(^\b[a\q{ab|abc|}]\b$))",
+            true,
+            true,
+            "\nA\n",
+            1,
+            true,
+            None,
+        ),
+        (
+            r"(?!(^\b[a\q{ab|abc|}]\b$))",
+            true,
+            true,
+            "!A!",
+            1,
+            true,
+            Some(1..1),
+        ),
+        (
+            r"(?!(\b[ſ\q{Sa|Kk|}]\B))",
+            true,
+            false,
+            "sa!",
+            0,
+            false,
+            Some(1..1),
+        ),
+        (
+            r"(?!(\b[a\q{ab|abc|}]\b))",
+            false,
+            false,
+            "\u{8}",
+            0,
+            true,
+            Some(0..0),
+        ),
+        (
+            r"(?!(\B[😀\q{😀a}]\B))",
+            false,
+            false,
+            "😀😀",
+            0,
+            false,
+            Some(4..4),
+        ),
+        (
+            r"(?!(\B[😀\q{😀a}]\B))",
+            false,
+            false,
+            "😀😀",
+            1,
+            true,
+            None,
+        ),
+        (r"(?!(\b[x\q{ab}]\b))", false, false, "", 1, false, None),
+    ] {
+        assert_eq!(
+            negative_word_character_union_compile(source, i, m)
+                .find_with_work(&JsString::from(text), start, sticky, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            expected,
+            "{source}"
+        );
+    }
+}
+#[test]
+fn negative_word_character_union_class_proof_requires_predicates_and_excludes_other_binding_roles()
+{
+    for source in [
+        r"(?!(\b[\q{ab}]))",
+        r"(?!([x\q{ab}]))",
+        r"(?!(^[x\q{ab}]$))",
+        r"(?!(\b[\q{a}\q{b}]))",
+        r"(?!(\b[a-z]))",
+        r"(?!(\b[\q{ab}&&a]))",
+        r"(?!(\b[\d\q{ab}]))",
+        r"(?!(\b[x\q{ab}]{1}))",
+        r"(?!(\b[x\q{ab}]a))",
+        r"(?!(\b[x\q{ab}]|a))",
+        r"(?<!(\b[x\q{ab}]))",
+        r"(?=(\b[x\q{ab}]))",
+        r"(?!(?i:\b[x\q{ab}]))",
+        r"(?!(\b[x\q{ab}])\1)",
+        r"(?!(\b[x\q{ab}])$)",
+        r"(?!(\b[\p{RGI_Emoji}]))",
+    ] {
+        assert!(RegExpUnicodeNegativeStringClassMatcher::compile_character_union_lookahead_with_word_boundaries_validated_with_work(
+            &JsString::from(source), false, false, |_| Ok::<(), ()>(()),
+        ).unwrap().is_none(), "{source}");
+    }
+}
+#[test]
+fn negative_word_character_union_classes_keep_deep_scopes_and_recover_from_every_work_abort() {
+    let depth = 100_000;
+    let source = "(".repeat(depth) + r"(?!(\b[a\q{ab|abc|}]\B))" + &")".repeat(depth);
+    let plan = negative_word_character_union_compile(&source, false, false);
+    let found = plan
+        .find_with_work(&JsString::from("ab!"), 0, false, |_| Ok::<(), ()>(()))
+        .unwrap()
+        .unwrap();
+    assert_eq!(found, 1..1);
+    assert_eq!(plan.capture_count(), depth + 1);
+    assert_eq!(plan.capture_range(depth - 1, &found), Some(1..1));
+    assert_eq!(plan.capture_range(depth, &found), None);
+    let source = JsString::from(r"((?!(([a\q{aaa|aa}]\B))))");
+    let mut construction = Vec::new();
+    let plan = RegExpUnicodeNegativeStringClassMatcher::compile_character_union_lookahead_with_word_boundaries_validated_with_work(
+        &source, false, false, |n| { construction.push(n); Ok::<(), usize>(()) },
+    ).unwrap().unwrap();
+    for stop in 0..construction.len() {
+        let mut seen = Vec::new();
+        assert!(
+            matches!(RegExpUnicodeNegativeStringClassMatcher::compile_character_union_lookahead_with_word_boundaries_validated_with_work(
+            &source, false, false, |n| { seen.push(n); if seen.len() == stop + 1 { Err(stop) } else { Ok(()) } },
+        ), Err(RegExpUnicodeSetCompileError::Work(n)) if n == stop)
+        );
+        assert_eq!(seen, construction[..=stop]);
+    }
+    let input = JsString::from("aaaa!");
+    let mut work = Vec::new();
+    let expected = plan
+        .find_with_work(&input, 0, false, |n| {
+            work.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap();
+    assert_eq!(expected, Some(3..3));
+    for stop in 0..work.len() {
+        let mut seen = Vec::new();
+        assert_eq!(
+            plan.find_with_work(&input, 0, false, |n| {
+                seen.push(n);
+                if seen.len() == stop + 1 {
+                    Err(stop)
+                } else {
+                    Ok(())
+                }
+            }),
+            Err(stop)
+        );
+        assert_eq!(seen, work[..=stop]);
+        assert_eq!(
+            plan.clone()
+                .find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
+        );
+    }
+    let input = JsString::from(("a".repeat(20_000) + "!").as_str());
+    let mut total = 0;
+    assert_eq!(
+        plan.find_with_work(&input, 0, false, |n| {
+            total += n;
+            Ok::<(), ()>(())
+        })
+        .unwrap(),
+        Some(19_999..19_999)
+    );
+    assert!(total <= input.len() * 500 + 128, "{total}");
+}

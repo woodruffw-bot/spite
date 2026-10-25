@@ -15037,3 +15037,14 @@ success use the existing boundaries. The negative string-class matcher and
 cache retain only the empty assertion range, outside empty spans and named
 undefined operand slots through indices, consumers, copies and collection.
 Literal and string membership both participate in the original-context probe.
+
+
+A separate negative character/string-union constructor admits operand word
+predicates with optional ^/$ gates, requiring at least one predicate, a literal
+character and an empty or longer q member. Sign-only projection delegates to
+the checked positive proof. Successful negation means every literal and string
+member fails the complete original-context conjunction, including shorter
+endpoint retries. Empty membership does not guarantee failure when predicates
+reject. Outside captures remain empty, operand slots remain undefined, and
+candidate/work behavior is shared with earlier negative modes (22.2.2.4,
+22.2.2.7).
