@@ -26533,3 +26533,28 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Runtime scalar v-set lookbehind with word predicates
+
+All twenty-five current positive-lookbehind groups pass (0.92 s), including four
+new scalar word-predecessor groups. Checks cover original boundary polarity,
+named empty/predecessor indices, original set source, line/property/fold/backspace
+context, String consumers, copies, collection and independent complete-pair/
+initial-rewind expectations. All thirteen constructor regressions pass (0.08 s),
+including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+Fifty ASCII iv patterns contribute 10,400 equivalent-range controls for the
+documented property-fold discrepancy. Twenty-two complete JavaScript programs
+pass with the documented property/q-fold controls where needed; actual Runtime
+expectations retain original source syntax.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The completed q-assertion snapshot records
+all 437 Runtime units; this constructor-only Runtime increment has the focused
+and differential evidence above. Completed broad results record `c9b71cc1`;
+scalar-set assertions retain separate focused evidence. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

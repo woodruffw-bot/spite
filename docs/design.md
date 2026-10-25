@@ -14455,6 +14455,14 @@ algebra, checked errors, complete Unicode advancement, initial-pair rewind and
 actual-work cancellation keep their shared paths. Other domains retain their
 existing proofs. Runtime integration remains separate.
 
+Runtime selects checked word-scalar-set lookbehind after its line-only
+lookbehind entry, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset; checked errors keep their host
+mapping. Shared empty/predecessor range caching preserves original set syntax,
+named indices, String consumers, copies and collection. Word/line/predecessor
+context and stateful Unicode execution remain in Core, while user conversions
+stay outside the compiler frame.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
