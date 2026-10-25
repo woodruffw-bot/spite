@@ -14628,3 +14628,12 @@ An empty class result never matches. Other widths, counts and word predicates
 retain separate proofs. Checked errors, complete Unicode advancement,
 initial-pair rewind and actual-work cancellation keep their shared paths.
 Runtime integration remains separate.
+
+
+Runtime selects checked character-result lookbehind after its character-result
+lookahead entries, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset; checked errors retain their host
+mapping. Shared empty/predecessor range caching preserves original q/set
+syntax, named indices, String consumers, copies and collection. The static
+character-result proof, original line context and complete Unicode search
+remain in Core; user conversions stay outside the compiler frame.
