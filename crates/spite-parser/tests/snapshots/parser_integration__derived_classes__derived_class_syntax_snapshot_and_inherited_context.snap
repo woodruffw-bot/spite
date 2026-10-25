@@ -48,6 +48,7 @@ Script {
                                         Expr {
                                             depth: 3,
                                             kind: Arrow {
+                                                kind: Ordinary,
                                                 parameters: [],
                                                 body: Expression(
                                                     Expr {

@@ -91,6 +91,7 @@ Function {
                                         Expr {
                                             depth: 2,
                                             kind: Arrow {
+                                                kind: Ordinary,
                                                 parameters: [],
                                                 body: Expression(
                                                     Expr {

@@ -1,0 +1,159 @@
+---
+source: crates/spite-parser/tests/async_arrows.rs
+expression: "parse_script(\"let f=async /*keep*/ (x=1,...rest)=>({x,rest});\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "f",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 4,
+                                kind: Arrow {
+                                    kind: Async,
+                                    parameters: [
+                                        Ordinary(
+                                            BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Identifier(
+                                                        "x",
+                                                    ),
+                                                    span: Span {
+                                                        start: 22,
+                                                        end: 23,
+                                                    },
+                                                },
+                                                initializer: Some(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            Number(
+                                                                1.0,
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 24,
+                                                            end: 25,
+                                                        },
+                                                    },
+                                                ),
+                                            },
+                                        ),
+                                        Rest(
+                                            BindingElement {
+                                                pattern: BindingPattern {
+                                                    kind: Identifier(
+                                                        "rest",
+                                                    ),
+                                                    span: Span {
+                                                        start: 29,
+                                                        end: 33,
+                                                    },
+                                                },
+                                                initializer: None,
+                                            },
+                                        ),
+                                    ],
+                                    body: Expression(
+                                        Expr {
+                                            depth: 3,
+                                            kind: Parenthesized(
+                                                Expr {
+                                                    depth: 2,
+                                                    kind: Object(
+                                                        [
+                                                            Property(
+                                                                ObjectProperty {
+                                                                    name: Literal(
+                                                                        String(
+                                                                            "x",
+                                                                        ),
+                                                                    ),
+                                                                    value: Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "x",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 38,
+                                                                            end: 39,
+                                                                        },
+                                                                    },
+                                                                    kind: Shorthand,
+                                                                    span: Span {
+                                                                        start: 38,
+                                                                        end: 39,
+                                                                    },
+                                                                },
+                                                            ),
+                                                            Property(
+                                                                ObjectProperty {
+                                                                    name: Literal(
+                                                                        String(
+                                                                            "rest",
+                                                                        ),
+                                                                    ),
+                                                                    value: Expr {
+                                                                        depth: 1,
+                                                                        kind: Identifier(
+                                                                            "rest",
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 40,
+                                                                            end: 44,
+                                                                        },
+                                                                    },
+                                                                    kind: Shorthand,
+                                                                    span: Span {
+                                                                        start: 40,
+                                                                        end: 44,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    span: Span {
+                                                        start: 37,
+                                                        end: 45,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 36,
+                                                end: 46,
+                                            },
+                                        },
+                                    ),
+                                    source: FunctionSource(
+                                        "async /*keep*/ (x=1,...rest)=>({x,rest})",
+                                    ),
+                                },
+                                span: Span {
+                                    start: 6,
+                                    end: 46,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 47,
+            },
+        },
+    ],
+    strict: false,
+}

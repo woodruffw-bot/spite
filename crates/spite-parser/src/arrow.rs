@@ -50,18 +50,31 @@ impl Parser {
     }
 
     pub(super) fn arrow_expression(&mut self) -> Result<Option<Expr>, Diagnostic> {
-        if self.at("async")
+        let start = self.current().span.start;
+        let async_head = if self.at("async")
             && self
                 .token_at(self.index + 1)
                 .is_some_and(|token| !token.newline)
-            && self.arrow_head(self.index + 1)?.is_some()
         {
-            return Err(self.unsupported("async arrow functions are not implemented"));
-        }
-        let Some(head) = self.arrow_head(self.index)? else {
-            return Ok(None);
+            let previous_await = self.allow_await_identifier;
+            let previous_context = self.await_context;
+            self.allow_await_identifier = false;
+            self.await_context = AwaitContext::Parameters;
+            let result = self.arrow_head(self.index + 1);
+            self.allow_await_identifier = previous_await;
+            self.await_context = previous_context;
+            result?
+        } else {
+            None
         };
-        let start = self.current().span.start;
+        let (head, kind) = if let Some(head) = async_head {
+            (head, FunctionKind::Async)
+        } else {
+            let Some(head) = self.arrow_head(self.index)? else {
+                return Ok(None);
+            };
+            (head, FunctionKind::Ordinary)
+        };
         if self.tokens[head.end].newline {
             return Err(early(
                 self.tokens[head.end].span,
@@ -71,12 +84,16 @@ impl Parser {
         self.consume_cover(&head)?;
         let parameters = head.value.clone();
         self.expect("=>")?;
-        // Arrow parameters inherit Await, but concise/block bodies use ~Await
-        // even within static initialization (15.3 grammar).
+        // Ordinary arrows use ~Await bodies; async arrows use +Await in
+        // both parameters and bodies (15.3, 15.9). Other lexical context stays.
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
-        self.allow_await_identifier = true;
-        self.await_context = AwaitContext::None;
+        self.allow_await_identifier = kind == FunctionKind::Ordinary;
+        self.await_context = if kind == FunctionKind::Async {
+            AwaitContext::Body
+        } else {
+            AwaitContext::None
+        };
         let result = (|| {
             Ok(if self.at("{") {
                 let body = self.function_body()?;
@@ -97,6 +114,7 @@ impl Parser {
         };
         self.make_expr(
             ExprKind::Arrow {
+                kind,
                 parameters,
                 body,
                 source,

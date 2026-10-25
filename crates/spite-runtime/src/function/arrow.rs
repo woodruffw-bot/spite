@@ -23,20 +23,21 @@ pub(crate) struct ScriptFunction {
 impl Realm {
     pub(crate) fn arrow_function(
         &mut self,
+        kind: spite_parser::ast::FunctionKind,
         parameters: &Rc<[Parameter]>,
         body: &ArrowBody,
         source: &FunctionSource,
         span: Span,
     ) -> Result<Value, Error> {
         self.ensure_object_intrinsics(span)?;
-        let prototype = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .function_prototype
-            .clone();
+        let intrinsic = self.intrinsics.as_ref().expect("initialized");
+        let prototype = if kind == spite_parser::ast::FunctionKind::Async {
+            intrinsic.async_function.prototype.clone()
+        } else {
+            intrinsic.function_prototype.clone()
+        };
         let arrow = ScriptFunction {
-            kind: spite_parser::ast::FunctionKind::Ordinary,
+            kind,
             environment: self.scopes.last().expect("active environment").clone(),
             parameters: parameters.clone(),
             body: body.clone(),

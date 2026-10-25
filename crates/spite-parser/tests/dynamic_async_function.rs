@@ -73,7 +73,7 @@ fn unsupported_suspension_and_native_depth_limits_remain_distinct() {
     for body in [
         "await p",
         "return await p",
-        "return async()=>1",
+        "return async()=>await p",
         "async function* g(){}",
     ] {
         assert_eq!(

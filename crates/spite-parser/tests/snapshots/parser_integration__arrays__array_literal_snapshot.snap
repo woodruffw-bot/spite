@@ -110,6 +110,7 @@ Script {
                                 Expr {
                                     depth: 2,
                                     kind: Arrow {
+                                        kind: Ordinary,
                                         parameters: [
                                             Ordinary(
                                                 BindingElement {

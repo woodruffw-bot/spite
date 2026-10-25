@@ -1516,13 +1516,29 @@ impl Realm {
                         "class constructor requires new",
                     ));
                 }
-                Some(Callable::Arrow(arrow)) => return self.call_arrow(arrow, arguments, span),
+                Some(Callable::Arrow(arrow)) => {
+                    if arrow.kind == spite_parser::ast::FunctionKind::Async {
+                        return self.call_async_body(span, |realm| {
+                            realm.call_arrow(arrow, arguments, span)
+                        });
+                    }
+                    return self.call_arrow(arrow, arguments, span);
+                }
                 Some(Callable::Ordinary(code)) => {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
                     if code.kind == spite_parser::ast::FunctionKind::Async {
-                        return self.call_async_function(code, callee, this, arguments, span);
+                        return self.call_async_body(span, |realm| {
+                            realm.call_ordinary(
+                                code,
+                                callee,
+                                this,
+                                Default::default(),
+                                arguments,
+                                span,
+                            )
+                        });
                     }
                     return self.call_ordinary(
                         code,

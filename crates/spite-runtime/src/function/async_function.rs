@@ -1,6 +1,6 @@
 //! Async function intrinsics and non-suspending bodies (27.7, 15.8).
 
-use super::{Builtin, ScriptFunction};
+use super::Builtin;
 use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
@@ -63,15 +63,12 @@ impl Realm {
         })
     }
 
-    pub(super) fn call_async_function(
+    pub(super) fn call_async_body(
         &mut self,
-        code: ScriptFunction,
-        callee: ObjectHandle,
-        this: Value,
-        arguments: std::vec::IntoIter<Value>,
         span: Span,
+        execute: impl FnOnce(&mut Self) -> Result<Value, Error>,
     ) -> Result<Value, Error> {
-        // EvaluateAsyncFunctionBody creates a fresh intrinsic Promise before
+        // Async function/concise-body evaluation creates a fresh Promise before
         // declaration instantiation. Public Promise bindings/methods are unused.
         let constructor = self
             .intrinsics
@@ -81,7 +78,7 @@ impl Realm {
             .promise
             .clone();
         let capability = self.new_promise_capability(Value::Object(constructor), span)?;
-        match self.call_ordinary(code, callee, this, Default::default(), arguments, span) {
+        match execute(self) {
             Ok(value) => {
                 self.call(capability.resolve, Value::Undefined, vec![value], span)?;
             }

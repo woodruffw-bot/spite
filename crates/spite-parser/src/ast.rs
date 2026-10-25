@@ -122,7 +122,7 @@ impl ClassElement {
 pub enum FunctionKind {
     /// An ordinary function, method or accessor.
     Ordinary,
-    /// An async function declaration or expression.
+    /// An async function or arrow.
     Async,
 }
 
@@ -171,7 +171,7 @@ impl FunctionBody {
     }
 }
 
-/// The two concise-body forms of a non-async arrow.
+/// The two concise-body forms of an arrow.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ArrowBody {
     /// An assignment expression whose value is returned.
@@ -916,8 +916,10 @@ pub enum ExprKind {
         /// Evaluated before any target reference, key, or default.
         value: Box<Expr>,
     },
-    /// A non-async arrow with binding parameters and optional defaults.
+    /// An ordinary or async arrow with binding parameters and optional defaults.
     Arrow {
+        /// Ordinary or asynchronous evaluation, with lexical this/arguments.
+        kind: FunctionKind,
         /// Parameters in source order, with optional default-value initializers.
         parameters: Rc<[Parameter]>,
         /// Shared body syntax, evaluated when the function is called.

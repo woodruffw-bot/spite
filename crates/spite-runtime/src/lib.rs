@@ -1556,10 +1556,11 @@ impl Realm {
             ExprKind::Function(function) => self.ordinary_function(function, true, expr.span)?,
             ExprKind::Class(class) => self.class_definition(class, None)?,
             ExprKind::Arrow {
+                kind,
                 parameters,
                 body,
                 source,
-            } => self.arrow_function(parameters, body, source, expr.span)?,
+            } => self.arrow_function(*kind, parameters, body, source, expr.span)?,
             ExprKind::Object(properties) => self.object_literal(properties, expr.span)?,
             ExprKind::Array(elements) => self.array_literal(elements, expr.span)?,
             ExprKind::New { callee, arguments } => {

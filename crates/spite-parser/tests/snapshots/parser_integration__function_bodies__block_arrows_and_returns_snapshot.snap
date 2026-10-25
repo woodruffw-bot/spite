@@ -9,6 +9,7 @@ Script {
                 Expr {
                     depth: 1,
                     kind: Arrow {
+                        kind: Ordinary,
                         parameters: [
                             Ordinary(
                                 BindingElement {

@@ -1302,6 +1302,8 @@ mod promise_all_settled;
 #[path = "cases/promise_race.rs"]
 mod promise_race;
 
+#[path = "cases/async_arrows.rs"]
+mod async_arrows;
 #[path = "cases/async_functions.rs"]
 mod async_functions;
 #[path = "cases/dynamic_async_function.rs"]

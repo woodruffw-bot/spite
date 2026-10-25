@@ -75,7 +75,7 @@ fn await_and_other_suspended_forms_remain_explicitly_unsupported() {
         "async function f(){await p}",
         "let f=async function(){return await p}",
         "async function* f(){}",
-        "async()=>1",
+        "async()=>await p",
         "({async m(){}})",
         "async function f(){await p; '\\u{110000}'",
     ] {

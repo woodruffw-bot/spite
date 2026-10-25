@@ -53,10 +53,34 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Async functions | Non-suspending declarations/expressions, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, receiver/arguments behavior and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17990 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async functions | Non-suspending declarations/expressions/arrows, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18033 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async arrows
+
+Async arrow heads select +Await without changing ordinary calls named async.
+Expression/block bodies preserve lexical this, arguments, super and new.target,
+with async intrinsic metadata and fresh Promise completion through the common
+function path. Binding/body language failures reject; host failures bypass
+rejection. Await bodies stay Unsupported.
+
+Four Parser regressions and a new snapshot cover heads, grammar contexts,
+line breaks and source. Ten prior snapshots add only Ordinary arrow kind markers.
+All eighteen Parser units and 342 integration tests pass. Five Runtime regressions
+cover metadata/non-constructibility, completion/errors, lexical context, bound
+calls, dynamic source, object/Symbol collection and host failures. All 398 units
+and 1,835 non-RegExp integrations pass, with strict Clippy and Rust 1.88 checks.
+
+Seventeen complete arrow originals add 31 variants; six earlier function originals
+add twelve more. Their Git blob hashes and SHA-256 digests were verified. The
+26-positive arrow review records 31 passing and eighteen Unsupported variants;
+the function review now passes 123 variants. Inventories contain 9,308 fixtures,
+nineteen helpers, 9,289 reviewed sources and 18,033 variants, with 72 Parser and
+634 Runtime case files. Intrinsic entries remain 563 and product quotas are unchanged.
+All 18,033 variants and all 40 Test262 package tests pass. Formatting, dependency
+policy, fixture inventories, strict Clippy and Rust 1.88 all-target checks pass.
 
 ## Dynamic AsyncFunction compilation
 

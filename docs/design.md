@@ -332,7 +332,7 @@ text for Function.prototype.toString. Arrow instantiation captures the current e
 
 Ordinary function expressions and declarations share the binding parameter and
 function-body parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
-Only simple lists in non-strict ordinary functions permit duplicate parameters;
+Only simple lists in non-strict ordinary or async function definitions permit duplicate parameters;
 strict or non-simple lists require unique names. A function's own strict directive
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
@@ -345,7 +345,7 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. Await suspension, async arrows/methods and async generators remain
+that context. Await suspension, async methods and async generators remain
 Unsupported. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
@@ -371,6 +371,14 @@ Default/fallback prototypes use the retained async intrinsics, while explicit
 newTarget prototypes and subclasses remain observable after all conversions and
 validation. UTF-16 literals/comments and source remain lossless. Await bodies
 still report Unsupported during compilation.
+
+Async arrows (15.9) retain an explicit kind and their complete source prefix.
+Their heads use +Await independently of ordinary calls named async; their bodies
+use the async Await context while retaining lexical this, arguments, super and
+new.target. They inherit %AsyncFunction.prototype%, remain non-constructible and
+share the function body's fresh-Promise completion path. Expression and block
+bodies keep ordinary arrow scope and strictness rules. Native collection traces
+captured environments and results, and host failures bypass Promise rejection.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

@@ -367,6 +367,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
 - [x] Create non-constructible async function objects with intrinsic metadata and fresh Promise-returning calls, including parameter/body rejection and traced environments.
 - [x] Compile dynamic AsyncFunction source with independent async grammar goals, ordered conversion/prototype hooks, global scope and lossless source retention.
+- [x] Parse and execute non-suspending async arrows with lexical context, async intrinsic metadata and fresh Promise completion.
 - [ ] Add await suspension and continuation execution.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

@@ -22,6 +22,7 @@ Script {
                             Expr {
                                 depth: 3,
                                 kind: Arrow {
+                                    kind: Ordinary,
                                     parameters: [
                                         Ordinary(
                                             BindingElement {
@@ -120,6 +121,7 @@ Script {
                             Expr {
                                 depth: 5,
                                 kind: Arrow {
+                                    kind: Ordinary,
                                     parameters: [
                                         Ordinary(
                                             BindingElement {
@@ -140,6 +142,7 @@ Script {
                                         Expr {
                                             depth: 4,
                                             kind: Arrow {
+                                                kind: Ordinary,
                                                 parameters: [
                                                     Ordinary(
                                                         BindingElement {
