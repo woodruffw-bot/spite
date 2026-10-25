@@ -200,7 +200,7 @@ impl RegExpUnicodePositiveAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<false, false, E>(
+        Self::compile_single_character_class_assertion_with_work::<false, false, false, E>(
             source,
             ignore_case,
             multiline,
@@ -223,7 +223,7 @@ impl RegExpUnicodePositiveAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<true, false, E>(
+        Self::compile_single_character_class_assertion_with_work::<true, false, false, E>(
             source,
             ignore_case,
             multiline,
@@ -244,7 +244,7 @@ impl RegExpUnicodePositiveAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<false, true, E>(
+        Self::compile_single_character_class_assertion_with_work::<false, true, false, E>(
             source,
             ignore_case,
             multiline,
@@ -267,7 +267,28 @@ impl RegExpUnicodePositiveAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<true, true, E>(
+        Self::compile_single_character_class_assertion_with_work::<true, true, false, E>(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+    }
+
+    /// Compiles lookahead over one unquantified checked scalar v-mode set class.
+    ///
+    /// Full original v/vi validation and normalized capture heads are required.
+    /// At least one nested class or set operator is required; every leaf must be
+    /// character-valued. Complete wrappers retain independent empty outside and
+    /// consuming operand spans. Optional ^/$ gates keep original input context
+    /// (22.2.2.4, 22.2.2.9). Strings, counts and word gates need other proofs.
+    pub fn compile_single_v_set_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single_character_class_assertion_with_work::<false, false, true, E>(
             source,
             ignore_case,
             multiline,
@@ -276,9 +297,10 @@ impl RegExpUnicodePositiveAtomMatcher {
     }
 
     #[inline(never)]
-    fn compile_single_character_string_class_assertion_with_work<
+    fn compile_single_character_class_assertion_with_work<
         const WORD: bool,
         const BACKWARD: bool,
+        const SCALAR_SET: bool,
         E,
     >(
         source: &JsString,
@@ -329,13 +351,31 @@ impl RegExpUnicodePositiveAtomMatcher {
         projected.extend_from_slice(&body[..end]);
         projected.extend_from_slice(&[0x7b, 0x31, 0x7d]);
         projected.extend_from_slice(&body[end..]);
-        let operand =
+        let source = JsString::from_code_units(projected);
+        let operand = if SCALAR_SET {
+            if WORD {
+                RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_word_boundaries_and_work(
+                    &source,
+                    ignore_case,
+                    multiline,
+                    &mut charge,
+                )?
+            } else {
+                RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_line_anchors_and_work(
+                    &source,
+                    ignore_case,
+                    multiline,
+                    &mut charge,
+                )?
+            }
+        } else {
             RegExpUnicodeRepeatedAtomMatcher::compile_v_set_with_single_character_strings_and_work(
-                &JsString::from_code_units(projected),
+                &source,
                 ignore_case,
                 multiline,
                 &mut charge,
-            )?;
+            )?
+        };
         Ok(operand
             .filter(|operand| operand.capture_count() == 0)
             .map(|operand| Self {
@@ -2191,6 +2231,198 @@ mod tests {
             assert_eq!(seen, work[..=stop]);
         }
         let input = JsString::from("!!a!");
+        work.clear();
+        let expected = p
+            .find_with_work(&input, 0, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap();
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(p.find_with_work(&input,0,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(n)if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        assert_eq!(
+            p.find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
+        );
+    }
+    fn scalar_set_plan(source: &str, i: bool, m: bool) -> RegExpUnicodePositiveAtomMatcher {
+        RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_validated_with_work(
+            &JsString::from(source),
+            i,
+            m,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn scalar_v_set_lookahead_keeps_original_character_and_independent_capture_ranges() {
+        for (class, text, start, end) in [
+            (r"[[a-z]--[aeiou]]", "!ab", 2, 3),
+            (r"[[a-z]&&[ab]]", "!ab", 1, 2),
+            (r"[[a][b]]", "!ab", 1, 2),
+            (r"[[😀a]--[a]]", "!😀a", 1, 3),
+            (r"[^[a-z]]", "😀abc", 0, 2),
+        ] {
+            let p = scalar_set_plan(&format!("((?=(({class}))))"), false, false);
+            let input = JsString::from(text);
+            let m = p
+                .find_with_work(&input, 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap();
+            assert_eq!(m.range, start..start);
+            assert_eq!(m.operand, start..end);
+            assert_eq!(p.capture_count(), 3);
+            assert_eq!(p.capture_range(0, &m), Some(start..start));
+            assert_eq!(p.capture_range(1, &m), Some(start..end));
+            assert_eq!(p.capture_range(2, &m), Some(start..end));
+            assert_eq!(p.capture_range(3, &m), None);
+        }
+    }
+
+    #[test]
+    fn scalar_v_set_lookahead_keeps_original_lines_folds_empty_sets_and_surrogate_boundaries() {
+        let p = scalar_set_plan(r"(?=(^[[a-z]--[aeiou]]$))", true, true);
+        assert_eq!(
+            p.find_with_work(&JsString::from("\nB\n"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            1..2
+        );
+        let p = scalar_set_plan(r"(?=([[\p{ASCII}]--[x]]))", true, false);
+        assert_eq!(
+            p.find_with_work(&JsString::from("ſK"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            0..1
+        );
+        let p = scalar_set_plan(r"(?=([^[\p{ASCII}]]))", true, false);
+        assert_eq!(
+            p.find_with_work(&JsString::from("ſK😀"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            2..4
+        );
+        let p = scalar_set_plan(r"(?=([\p{Script=Greek}&&[Α-Ωα-ω]]))", true, false);
+        assert_eq!(
+            p.find_with_work(&JsString::from("!Σ"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            1..2
+        );
+        let p = scalar_set_plan(r"(?=([[a-z]--[a-z]]))", false, false);
+        assert!(
+            p.find_with_work(&JsString::from("abc"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+        let p = scalar_set_plan(r"(?=([[\uD800]--[x]]))", false, false);
+        assert!(
+            p.find_with_work(&JsString::from("😀"), 0, false, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+        let input = JsString::from_code_units(vec![0xd800, 0x78]);
+        assert_eq!(
+            p.find_with_work(&input, 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            0..1
+        );
+        let p = scalar_set_plan(r"(?=([[😀a]--[a]]))", false, false);
+        let m = p
+            .find_with_work(&JsString::from("!😀a"), 2, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(m.range, 1..1);
+        assert_eq!(m.operand, 1..3);
+    }
+
+    #[test]
+    fn scalar_v_set_lookahead_declines_flat_classes_strings_counts_and_other_scopes() {
+        for source in [
+            r"(?=([a]))",
+            r"(?=([\q{a|b}]))",
+            r"(?=([[\q{a|b}]--[x]]))",
+            r"(?=([[\q{ab|a}]--[x]]))",
+            r"(?=([[a-z]--[x]]+))",
+            r"(?=([[a-z]--[x]]{1}))",
+            r"(?=([[a-z]--[x]]a))",
+            r"(?=([[a-z]--[x]]))a",
+            r"(?=([[a-z]--[x]]))|b",
+            r"((?=([[a-z]--[x]])))*",
+            r"(?<=([[a-z]--[x]]))",
+            r"(?!([[a-z]--[x]]))",
+            r"(?=(\b[[a-z]--[x]]\b))",
+            r"(?i:(?=([[a-z]--[x]])))",
+            r"((?=(\1)))",
+        ] {
+            assert!(RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_validated_with_work(&JsString::from(source),false,false, |_| Ok::<(), ()>(())).unwrap().is_none(),"{source}");
+        }
+    }
+
+    #[test]
+    fn scalar_v_set_lookahead_deep_scopes_classes_and_every_work_abort_remain_flat() {
+        let source = format!(
+            "{}(?={}[[a-z]--[aeiou]]{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let p = scalar_set_plan(&source, false, false);
+        assert_eq!(p.capture_count(), 200_000);
+        let m = p
+            .clone()
+            .find_with_work(&JsString::from("b!"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(p.capture_range(99_999, &m), Some(0..0));
+        assert_eq!(p.capture_range(100_000, &m), Some(0..1));
+        let source = format!("(?=({}a{}))", "[".repeat(20_000), "]".repeat(20_000));
+        let p = scalar_set_plan(&source, false, false);
+        assert_eq!(
+            p.find_with_work(&JsString::from("a"), 0, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .unwrap()
+                .operand,
+            0..1
+        );
+        let source = JsString::from(r"((?=([[a-z]--[aeiou]])))");
+        let mut work = Vec::new();
+        let p =
+            RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_validated_with_work(
+                &source,
+                false,
+                false,
+                |n| {
+                    work.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_validated_with_work(&source,false,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(crate::RegExpUnicodeSetCompileError::Work(n))if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let input = JsString::from("!ab");
         work.clear();
         let expected = p
             .find_with_work(&input, 0, false, |n| {

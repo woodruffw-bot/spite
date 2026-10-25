@@ -26345,3 +26345,25 @@ focused and differential evidence above. Completed broad results record
 `3c6ca264`; negative q-class assertions retain separate focused evidence.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+## Core single-character scalar v-set lookahead
+
+The actual-source focused harness passes 302 tests (2.31 s), including four new
+scalar-set groups. Checks cover nested union/intersection/subtraction/complement,
+empty sets, independent empty/consuming capture spans, original line/property/
+fold context, Greek letters, astral/lone-surrogate boundaries, initial-pair
+rewind, proof exclusions, 200,000 wrappers, 20,000 nested classes, clone/drop
+and every checked construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle and independent Unicode advancement.
+Fifty-eight ASCII iv patterns contribute 6,032 equivalent-range controls for
+the documented property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. A separate before/after comparison preserves
+all 4,096 q-class construction-work traces and 65,536 match/capture/work records
+byte-for-byte across the eight earlier positive/negative q assertion entries.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime integration remains separate.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.

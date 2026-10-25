@@ -14381,6 +14381,24 @@ consumers, copies and collection. Original q source/flags, predecessor context
 and stateful execution retain their shared paths; user conversions remain
 outside the compiler frame.
 
+A separate checked positive-lookahead entry admits one unquantified scalar
+v-mode class containing a nested class or set operator (22.2.2.4, 22.2.2.9).
+The charged flat assertion parser retains complete outside/operand wrapper
+inventories, optional original-context ^/$ gates and one fixed class iteration.
+Checked scalar-set compilation proves every leaf is character-valued; q strings,
+other string leaves, counts, word predicates and additional terms retain
+separate proof domains. Full original v/vi validation and normalized capture
+heads remain prerequisites; projected source is never independently validated
+or rebound.
+
+The shared character matcher retains intersection, subtraction, complement,
+folding, empty-set and surrogate semantics without expanding ranges. Outside
+captures stay empty and operand wrappers retain the original complete character.
+Checked construction errors and actual-work search keep their existing paths.
+The shared assertion parser selects scalar-set versus one-character-q backends
+explicitly; earlier q-class domains and work sequences remain separate. Runtime
+integration remains separate.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
