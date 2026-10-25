@@ -4093,13 +4093,12 @@ Main-branch CI runs are allowed to finish when later commits arrive, so incremen
 pushes cannot repeatedly cancel every complete result. Superseded branch runs
 still cancel.
 
-The 2026-10-25 Runtime snapshot with complete positive character-result assertions at `f32bcefb`
+The 2026-10-25 Runtime snapshot with complete character-result assertions at `243fc913`
 passes all 16,343 corpus variants and 35 runner tests with the conformance
-profile (416.12 s for the corpus). It covers Unicode positive/negative
-single-character, q-class and scalar assertions, plus positive lookahead/
-lookbehind over character-result classes with word predicates and independent
-predecessor captures. Later negative character-result assertion extensions
-have separate focused and differential evidence.
+profile (469.58 s for the corpus). It covers Unicode positive/negative
+single-character, q-class, scalar and character-result lookahead/lookbehind,
+including word predicates and independent predecessor captures. Later
+variable-length string-class work has separate focused and differential evidence.
 Fixture, harness and reviewed-entry inventories are unchanged.
 
 These results do not measure whole-suite conformance. Other tests require grammar,

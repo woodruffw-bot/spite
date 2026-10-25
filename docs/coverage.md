@@ -27227,3 +27227,15 @@ Strict all-target workspace Clippy, documentation tests, formatting, policy,
 inventories and diff checks pass. No Runtime matcher selects the new traversal
 yet. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
+
+
+## Complete character-result assertion Runtime validation
+
+The Runtime snapshot at `243fc913` passes all 3,083 RegExp integration tests
+(925.76 s), all 437 Runtime library tests (3.20 s), and all 16,343 reviewed
+Test262 variants plus 35 runner tests with the conformance profile (469.58 s
+for the corpus). This covers all positive/negative character-result
+lookahead/lookbehind modes with word predicates, alongside earlier primitive,
+q-class and scalar-set assertions. Later variable-length string-class work has
+separate focused and differential evidence. No fixtures, snapshots, dependencies,
+profiles, native-stack settings or default quotas changed.
