@@ -1,6 +1,6 @@
 //! Nested source BlockStatement cursors and lexical disposal (14.2.3).
 
-use super::{AsyncExecutionData, Step, active_statement};
+use super::{AsyncExecutionData, Step, active_statement, child_location};
 use crate::{
     Completion, Error, Realm,
     object::async_execution::{
@@ -10,23 +10,6 @@ use crate::{
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, StatementKind};
 use std::collections::BTreeMap;
-
-fn child_location(
-    parent: &StatementLocation,
-    index: usize,
-    span: Span,
-) -> Result<StatementLocation, Error> {
-    let mut children = Vec::new();
-    children
-        .try_reserve(parent.children.len() + 1)
-        .map_err(|_| allocation_error(span))?;
-    children.extend_from_slice(&parent.children);
-    children.push(StatementChild::Block(index));
-    Ok(StatementLocation {
-        root: parent.root,
-        children,
-    })
-}
 
 fn allocation_error(span: Span) -> Error {
     Error::Limit {
@@ -58,7 +41,11 @@ impl Realm {
                 let completion = self.finish_async_block(block, Ok(Completion::normal(None)))?;
                 return Ok(Step::Complete(completion));
             }
-            let location = child_location(&block.location, block.index, block.span)?;
+            let location = child_location(
+                &block.location,
+                StatementChild::Block(block.index),
+                block.span,
+            )?;
             let Some(AsyncStatementFrame::Block(block)) = data.frames.last_mut() else {
                 unreachable!("active block");
             };

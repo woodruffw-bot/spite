@@ -56,9 +56,33 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18556 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18562 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspended try/catch/finally
+
+Try cursors preserve normal, return and throw completions while finally awaits.
+Normal finalizers restore the protected result; abrupt finalizers replace it.
+Catch bindings share ordinary setup, with parameter scopes recorded before pattern
+initialization. Optional catches add no parameter environment or error object.
+Body resources dispose before catch/finally; outer resources dispose afterward.
+Host failures bypass handlers/finalizers/disposal and release all pending captures.
+
+Ten Runtime groups cover rejection and PromiseResolve errors, finalizer timing and
+overrides, suppression, catch patterns/aliases/private context, initialization
+failure, pending-value collection, host abort and completion values. Four Symbol
+controls cover protected normal/return/throw values and repeated ownership.
+All 416 units and 1,969 non-RegExp integrations pass across 650 Runtime case files.
+The remaining authored unsupported-await control now uses an object literal
+initializer; the Annex B catch-var relaxation remains outside this change.
+
+Three byte-verified unchanged originals add six variants for throwing thenables,
+rejected awaits and Array.fromAsync prototype restoration through finally. The
+await review passes 36 variants from eighteen originals; four generator originals
+remain Unsupported. Array/adapter passes 148 variants and defers 114. Inventories
+contain 9,576 fixtures, twenty helpers, 9,557 reviewed sources and 18,562 variants.
+No helpers, intrinsic entries, Parser implementation or quotas change.
 
 ## Statement completion values
 

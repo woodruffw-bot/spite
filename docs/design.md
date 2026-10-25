@@ -494,7 +494,7 @@ statement indices. Body-level throw expressions can suspend and resume to a real
 throw completion (14.14, Await); the completed throw value rejects the async
 function's Promise directly, without thenable assimilation. Await rejection keeps
 its reason. Root resource disposal, suppression and host-abort rules are shared
-with other abrupt completions. Loop and try continuations remain work.
+with other abrupt completions. Loop continuations remain work.
 
 Nested plain BlockStatements have owned lexical cursors (14.2.3). Typed statement
 locations retain a root index and child-block indices into immutable source;
@@ -508,7 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Loop, labelled and try statements still use ordinary execution and retain
+them. Loop and labelled statements still use ordinary execution and retain
 their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
@@ -531,6 +531,22 @@ multiple copies of one Symbol in different lists. Abrupt completion clears
 abandoned expression operands and saved var references before scope unwinding.
 PromiseResolve failures during Await registration re-enter the same completion
 path; the private source state is restored and reused without losing context.
+
+Try/catch/finally cursors retain a real protected completion across suspension
+(14.15.3). Body and catch scopes dispose before advancing to handlers/finalizers;
+a normal finally restores the protected result and an abrupt finally replaces it.
+UpdateEmpty runs when the try statement completes. Pending normal/return values
+and thrown values participate in tracing, validation and physical Symbol counts,
+including repeated references to one Symbol. Return thenables resolve only after
+finally and caller restoration; thrown thenables reject as raw values.
+
+Catch preparation shares ordinary error materialization, binding creation and
+pattern initialization. Parameter catches record their scope before initialization,
+so a parameter failure bypasses its body and advances to finally exactly once.
+Optional catches create no parameter scope and do not materialize an unused error
+object. PromiseResolve getter failures enter the same language completion path.
+Host failures bypass catch, finally and JavaScript disposal; they release pending
+values and all owned resource captures even with no remaining allowance.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

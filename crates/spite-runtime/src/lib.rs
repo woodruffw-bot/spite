@@ -229,6 +229,7 @@ enum CompletionKind {
     Return,
 }
 
+#[derive(Debug)]
 struct Completion {
     kind: CompletionKind,
     // None is empty, distinct from Some(Value::Undefined).
@@ -1483,8 +1484,24 @@ impl Realm {
     // ECMA-262 14.15.2: the parameter environment encloses the block environment
     // and is restored before any pending finally or outer handler executes.
     fn catch_clause(&mut self, handler: &CatchClause, error: Error) -> Result<Completion, Error> {
-        let Some(parameter) = &handler.parameter else {
+        let Some((environment, value)) = self.prepare_catch_clause(handler, error)? else {
             return self.statement(&handler.body);
+        };
+        let parameter = handler.parameter.as_ref().expect("catch parameter");
+        let result = self
+            .initialize_pattern(parameter, value, &environment)
+            .and_then(|()| self.statement(&handler.body));
+        self.scopes.pop();
+        result
+    }
+
+    pub(crate) fn prepare_catch_clause(
+        &mut self,
+        handler: &CatchClause,
+        error: Error,
+    ) -> Result<Option<(EnvironmentHandle, Value)>, Error> {
+        let Some(parameter) = &handler.parameter else {
+            return Ok(None);
         };
         let value = match error {
             Error::Thrown(value) => value,
@@ -1510,11 +1527,7 @@ impl Realm {
         }
         self.push_scope(bindings, handler.span)?;
         let environment = self.scopes.last().expect("catch environment").clone();
-        let result = self
-            .initialize_pattern(parameter, value, &environment)
-            .and_then(|()| self.statement(&handler.body));
-        self.scopes.pop();
-        result
+        Ok(Some((environment, value)))
     }
 
     fn enter_evaluation(&mut self, span: Span) -> Result<(), Error> {

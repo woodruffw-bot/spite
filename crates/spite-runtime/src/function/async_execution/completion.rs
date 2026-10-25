@@ -1,6 +1,6 @@
 //! StatementList completion values and lexical/conditional frame unwinding.
 
-use super::AsyncExecutionData;
+use super::{AsyncExecutionData, protected::TryStep};
 use crate::{
     Completion, CompletionKind, Error, Realm, Value, object::async_execution::AsyncStatementFrame,
 };
@@ -44,6 +44,17 @@ impl Realm {
                     data.frames.pop();
                     result =
                         result.map(|completion| completion.update_empty(Some(Value::Undefined)));
+                }
+                Some(AsyncStatementFrame::Try(_)) => match self.advance_async_try(data, result) {
+                    TryStep::Continue => return Ok(None),
+                    TryStep::Complete(completion) => result = completion,
+                },
+                Some(AsyncStatementFrame::Catch(_)) => {
+                    let Some(AsyncStatementFrame::Catch(environment)) = data.frames.pop() else {
+                        unreachable!("catch scope frame");
+                    };
+                    let scope = self.scopes.pop().expect("active catch scope");
+                    debug_assert_eq!(scope, environment);
                 }
                 None => {
                     return match result {

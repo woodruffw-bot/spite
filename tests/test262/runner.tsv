@@ -9553,3 +9553,6 @@ test/language/expressions/await/syntax-await-in-ConditionalExpression.js	-	-	-
 test/language/expressions/await/await-awaits-thenables.js	-	-	-
 test/language/expressions/await/await-monkey-patched-promise.js	-	-	-
 test/language/expressions/await/await-non-promise-thenable.js	-	-	-
+test/language/expressions/await/await-awaits-thenables-that-throw.js	-	-	-
+test/language/expressions/await/await-throws-rejections.js	-	-	-
+test/built-ins/Array/fromAsync/non-iterable-input-does-not-use-array-prototype.js	-	-	-

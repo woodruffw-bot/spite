@@ -161,9 +161,9 @@ fn unexecuted_await_bodies_and_dynamic_async_compilation_preserve_source_and_met
 }
 
 #[test]
-fn unsupported_await_execution_skips_operand_rejection_and_pending_finalizers() {
+fn unsupported_object_literal_await_skips_operand_rejection_and_pending_finalizers() {
     let mut realm = Realm::default();
-    realm.eval("let before=0,operand=0,handled=0;async function f(){before++;try{return await (operand++)}catch(e){handled=1}finally{handled=2}}").unwrap();
+    realm.eval("let before=0,operand=0,handled=0;async function f(){before++;try{return {x:await (operand++)}}catch(e){handled=1}finally{handled=2}}").unwrap();
     assert!(matches!(
         realm.eval("try{f().catch(()=>{handled=3})}catch(e){handled=4}finally{handled=5}"),
         Err(Error::Unsupported { .. })

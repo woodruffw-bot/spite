@@ -9592,3 +9592,6 @@ script-pass	5901412f06943f9898fa65ae6fc2f65f3e4357eb137502bae8d332cf321678f7	tes
 script-pass	fb33e8941badd5ddec2448a635d58a47170667b7fee585573d8b67ba3fa675af	test/language/expressions/await/await-awaits-thenables.js
 script-pass	7a31b5ce99755a36d7fc7cd132ee929ab31d6f7ec5b3871aecad9e995e5925c4	test/language/expressions/await/await-monkey-patched-promise.js
 script-pass	b3f6151b884e95f5fe38bf000a3dcb668ef5db562df73ee09e47c54dcb76df7c	test/language/expressions/await/await-non-promise-thenable.js
+script-pass	cac50765ba3051210a58fd361944c0f90bc7e398d3e40cd523af81b1b3f7ee52	test/language/expressions/await/await-awaits-thenables-that-throw.js
+script-pass	b3a9508f74ef11284cbe5a47ee73f6d6d91ffe2b6764f628ed8e4cfbb827b542	test/language/expressions/await/await-throws-rejections.js
+script-pass	1f4324ec4c9a20a5a84f7821d4b0da7520758bad5e437f714645869092decdde	test/built-ins/Array/fromAsync/non-iterable-input-does-not-use-array-prototype.js

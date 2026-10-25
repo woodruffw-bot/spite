@@ -1,7 +1,7 @@
 //! Traced source async-function state between Await jobs (27.7.5.3).
 
 use super::{Budget, Error, Objects};
-use crate::{Value, environment::EnvironmentHandle, function::PromiseCapability};
+use crate::{Completion, Value, environment::EnvironmentHandle, function::PromiseCapability};
 use spite_core::Span;
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::ArrowBody;
@@ -28,6 +28,9 @@ pub(crate) enum StatementChild {
     Block(usize),
     IfConsequent,
     IfAlternate,
+    TryBody,
+    CatchBody,
+    FinallyBody,
 }
 
 #[derive(Debug)]
@@ -46,9 +49,25 @@ pub(crate) struct AsyncBlockCursor {
 }
 
 #[derive(Debug)]
+pub(crate) struct AsyncTryCursor {
+    pub location: StatementLocation,
+    pub phase: AsyncTryPhase,
+    pub pending: Option<Result<Completion, crate::Error>>,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum AsyncTryPhase {
+    Body,
+    Catch,
+    Finally,
+}
+
+#[derive(Debug)]
 pub(crate) enum AsyncStatementFrame {
     Block(AsyncBlockCursor),
     If,
+    Try(AsyncTryCursor),
+    Catch(EnvironmentHandle),
 }
 
 impl AsyncStatementFrame {
@@ -56,6 +75,8 @@ impl AsyncStatementFrame {
         match self {
             Self::Block(block) => Some(&block.environment),
             Self::If => None,
+            Self::Try(_) => None,
+            Self::Catch(environment) => Some(environment),
         }
     }
 
@@ -63,6 +84,12 @@ impl AsyncStatementFrame {
         match self {
             Self::Block(block) => block.normal.as_ref(),
             Self::If => None,
+            Self::Try(cursor) => match cursor.pending.as_ref() {
+                Some(Ok(completion)) => completion.value.as_ref(),
+                Some(Err(crate::Error::Thrown(value))) => Some(value),
+                _ => None,
+            },
+            Self::Catch(_) => None,
         }
     }
 }

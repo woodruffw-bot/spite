@@ -388,6 +388,22 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "async protected return across awaited finally",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{try{return key}finally{await gate}};f();return gate})()",
+        ),
+        (
+            "async protected throw across awaited finally",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{try{throw key}finally{await gate}};f();return gate})()",
+        ),
+        (
+            "async protected normal completion across awaited finally",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{try{key}finally{await gate}};f();return gate})()",
+        ),
+        (
+            "async root and protected return completion copies",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{key;try{return key}finally{await gate}};f();return gate})()",
+        ),
+        (
             "async root statement completion across suspension",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{key;const ignored=await gate};f();return gate})()",
         ),

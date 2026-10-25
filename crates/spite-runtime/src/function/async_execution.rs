@@ -4,6 +4,10 @@ mod block;
 mod completion;
 mod conditional;
 mod expression;
+mod protected;
+mod source;
+
+use source::{active_statement, child_location};
 
 use super::{
     PromiseCapability, ScriptFunction, async_native::AsyncResumeKind, ordinary::OrdinaryInvocation,
@@ -11,41 +15,12 @@ use super::{
 use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
     object::{
-        async_execution::{
-            AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData, StatementChild,
-            StatementLocation,
-        },
+        async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
         async_expression::ExprRoot,
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPatternKind, Statement, StatementKind};
-
-fn active_statement<'a>(
-    body: &'a ArrowBody,
-    location: Option<&StatementLocation>,
-) -> &'a Statement {
-    let ArrowBody::Block(body) = body else {
-        unreachable!("block statement continuation");
-    };
-    let location = location.expect("active source statement");
-    let mut statement = &body.statements()[location.root];
-    for child in &location.children {
-        statement = match (child, &statement.kind) {
-            (StatementChild::Block(index), StatementKind::Block(body)) => &body[*index],
-            (StatementChild::IfConsequent, StatementKind::If { consequent, .. }) => consequent,
-            (
-                StatementChild::IfAlternate,
-                StatementKind::If {
-                    alternate: Some(alternate),
-                    ..
-                },
-            ) => alternate,
-            _ => unreachable!("typed statement child path"),
-        };
-    }
-    statement
-}
+use spite_parser::ast::{ArrowBody, BindingPatternKind, StatementKind};
 
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
@@ -216,6 +191,11 @@ impl Realm {
             let span = statement.span;
             self.tick(span)?;
             return self.enter_async_block(data, span);
+        }
+        if matches!(statement.kind, StatementKind::Try { .. }) {
+            let span = statement.span;
+            self.tick(span)?;
+            return self.enter_async_try(data, span);
         }
         if let StatementKind::If { test, .. } = &statement.kind {
             self.tick(statement.span)?;
