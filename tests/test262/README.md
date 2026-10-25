@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9576 unmodified test fixtures and twenty harness files come from
+These 9578 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,19 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Suspended synchronous for-of fixtures
+
+Two complete unchanged Array.fromAsync originals add four variants for noncallable
+async/sync iterator methods. Pinned Git blob hashes and manifest SHA-256 digests
+were verified; existing helpers suffice. Complete reviews retain 36 passing/8
+Unsupported await variants; Array/adapter now passes 152 and defers 110, with no
+other non-passing categories.
+
+Ten Runtime groups and two Symbol ownership controls cover RHS/body suspension,
+bindings/scopes, iterator caching/closing, resources, collection and host abort.
+Inventories contain 9,578 fixtures, twenty helpers, 9,559 reviewed sources and
+18,566 variants. No original bytes, helpers, intrinsic entries or quotas change.
 
 ## Suspended while/do-while review
 

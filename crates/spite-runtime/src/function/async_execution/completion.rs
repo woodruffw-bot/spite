@@ -53,11 +53,34 @@ impl Realm {
                     FrameStep::Continue => return Ok(None),
                     FrameStep::Complete(completion) => result = completion,
                 },
-                Some(AsyncStatementFrame::Catch(_)) => {
-                    let Some(AsyncStatementFrame::Catch(environment)) = data.frames.pop() else {
-                        unreachable!("catch scope frame");
+                Some(AsyncStatementFrame::ForOfHead(_)) => {
+                    let Some(AsyncStatementFrame::ForOfHead(head)) = data.frames.pop() else {
+                        unreachable!("iteration head frame");
                     };
-                    let scope = self.scopes.pop().expect("active catch scope");
+                    if let Some(environment) = head.environment {
+                        let scope = self.scopes.pop().expect("iteration head scope");
+                        debug_assert_eq!(scope, environment);
+                    }
+                }
+                Some(AsyncStatementFrame::ForOf(_)) => {
+                    match self.advance_async_for_of(data, result) {
+                        FrameStep::Continue => return Ok(None),
+                        FrameStep::Complete(completion) => result = completion,
+                    }
+                }
+                Some(AsyncStatementFrame::Scope { .. }) => {
+                    let Some(AsyncStatementFrame::Scope {
+                        environment,
+                        span,
+                        disposable,
+                    }) = data.frames.pop()
+                    else {
+                        unreachable!("lexical scope frame");
+                    };
+                    if disposable {
+                        result = self.dispose_environment_resources(&environment, result, span);
+                    }
+                    let scope = self.scopes.pop().expect("active lexical scope");
                     debug_assert_eq!(scope, environment);
                 }
                 None => {

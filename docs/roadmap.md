@@ -390,6 +390,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve StatementList completion values through suspension and propagate block/if results with UpdateEmpty and traced value ownership.
 - [x] Suspend try/catch/finally with protected completions, catch binding initialization, finalizer override rules, resource ordering and host-abort isolation.
 - [x] Suspend while/do-while conditions and bodies with per-iteration scopes, last values, unlabelled break/continue and intervening finalizers.
+- [x] Suspend synchronous for-of RHS/body execution with lexical TDZ, shared binding initialization, using iterations, cached iterator state and correct closing.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

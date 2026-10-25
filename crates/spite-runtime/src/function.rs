@@ -38,6 +38,7 @@ mod finalization_registry;
 mod global_metadata;
 mod instance;
 mod iterator;
+pub(crate) use iterator::IteratorRecord;
 mod json;
 mod map;
 mod math;

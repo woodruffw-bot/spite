@@ -46,6 +46,7 @@ pub(super) fn active_statement<'a>(
                 StatementChild::LoopBody,
                 StatementKind::While { body, .. } | StatementKind::DoWhile { body, .. },
             ) => body,
+            (StatementChild::ForOfBody, StatementKind::ForOf { body, .. }) => body,
             _ => unreachable!("typed statement child path"),
         };
     }

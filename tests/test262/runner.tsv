@@ -9556,3 +9556,5 @@ test/language/expressions/await/await-non-promise-thenable.js	-	-	-
 test/language/expressions/await/await-awaits-thenables-that-throw.js	-	-	-
 test/language/expressions/await/await-throws-rejections.js	-	-	-
 test/built-ins/Array/fromAsync/non-iterable-input-does-not-use-array-prototype.js	-	-	-
+test/built-ins/Array/fromAsync/asyncitems-asynciterator-not-callable.js	-	-	-
+test/built-ins/Array/fromAsync/asyncitems-iterator-not-callable.js	-	-	-

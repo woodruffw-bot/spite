@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_await_for_of.rs"]
+mod async_await_for_of;
+
 #[path = "cases/async_await_loops.rs"]
 mod async_await_loops;
 

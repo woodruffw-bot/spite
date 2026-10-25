@@ -56,9 +56,31 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18562 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18566 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspended synchronous for-of
+
+Iterable expressions and bodies can await while iteration remains synchronous.
+Shared head and binding setup preserves lexical TDZ, outer-scope restoration,
+var/assignment/pattern bindings and distinct iteration scopes. Using resources
+dispose after finalizers and before advancing or closing. IteratorRecords retain
+the iterator and cached next method; step failures/exhaustion skip close, while
+body abrupt completions reuse IteratorClose and its error precedence. Yielded
+Promises and synchronous return objects receive no implicit Await.
+
+Ten Runtime groups cover these rules, method replacement, all binding forms,
+collection and host abort. Two Symbol controls cover loop values and cached-next
+environments. All 416 units and 1,987 non-RegExp integrations pass across 652
+Runtime case files. Raw iterator handles and cached values participate in tracing,
+factory validation and Symbol ownership counts. Product quotas are unchanged.
+
+Two byte-verified unchanged Array.fromAsync originals add four variants for
+noncallable async/sync iterator methods. The complete await review remains at
+36 passing/8 Unsupported variants; Array/adapter passes 152 and defers 110.
+Inventories contain 9,578 fixtures, twenty helpers, 9,559 reviewed sources and
+18,566 variants. No helpers, intrinsic entries or Parser implementation change.
 
 ## Suspended while and do-while
 

@@ -388,6 +388,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "async for-of loop value across suspension",
+            "(()=>{let gate=new Promise(()=>{}),n=0,source={[Symbol.iterator](){return this},next(){return{done:++n>2,value:n}}},f=async()=>{for(const x of source){if(x===1){key}else await gate}};f();return gate})()",
+        ),
+        (
+            "async cached for-of next callable environment",
+            "(()=>{let gate=new Promise(()=>{}),cached=(()=>{let value=key;return function(){return{done:false,value}}})(),iterator={next:cached},source={[Symbol.iterator](){return iterator}},f=async()=>{for(const value of source){await gate;break}};f();iterator.next=null;cached=null;return gate})()",
+        ),
+        (
             "async loop value across awaited condition",
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{while(step++===0?true:await gate){key}};f();return gate})()",
         ),

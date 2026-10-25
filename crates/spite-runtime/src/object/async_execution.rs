@@ -1,7 +1,11 @@
 //! Traced source async-function state between Await jobs (27.7.5.3).
 
 use super::{Budget, Error, Objects};
-use crate::{Completion, Value, environment::EnvironmentHandle, function::PromiseCapability};
+use crate::{
+    Completion, Value,
+    environment::EnvironmentHandle,
+    function::{IteratorRecord, PromiseCapability},
+};
 use spite_core::Span;
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::ArrowBody;
@@ -21,6 +25,7 @@ pub(crate) enum AsyncAwaitAction {
     Expression,
     IfTest,
     LoopTest,
+    ForOfSource,
     Binding { element: usize },
 }
 
@@ -33,6 +38,7 @@ pub(crate) enum StatementChild {
     CatchBody,
     FinallyBody,
     LoopBody,
+    ForOfBody,
 }
 
 #[derive(Debug)]
@@ -78,12 +84,31 @@ pub(crate) enum AsyncLoopPhase {
 }
 
 #[derive(Debug)]
+pub(crate) struct AsyncForOfHead {
+    pub location: StatementLocation,
+    pub environment: Option<EnvironmentHandle>,
+}
+
+#[derive(Debug)]
+pub(crate) struct AsyncForOfCursor {
+    pub location: StatementLocation,
+    pub iterator: IteratorRecord,
+    pub value: Value,
+}
+
+#[derive(Debug)]
 pub(crate) enum AsyncStatementFrame {
     Block(AsyncBlockCursor),
     If,
     Try(AsyncTryCursor),
-    Catch(EnvironmentHandle),
+    Scope {
+        environment: EnvironmentHandle,
+        span: Span,
+        disposable: bool,
+    },
     Loop(AsyncLoopCursor),
+    ForOfHead(AsyncForOfHead),
+    ForOf(AsyncForOfCursor),
 }
 
 impl AsyncStatementFrame {
@@ -92,13 +117,15 @@ impl AsyncStatementFrame {
             Self::Block(block) => Some(&block.environment),
             Self::If => None,
             Self::Try(_) => None,
-            Self::Catch(environment) => Some(environment),
+            Self::Scope { environment, .. } => Some(environment),
             Self::Loop(_) => None,
+            Self::ForOfHead(head) => head.environment.as_ref(),
+            Self::ForOf(_) => None,
         }
     }
 
-    fn value(&self) -> Option<&Value> {
-        match self {
+    fn values(&self) -> impl Iterator<Item = &Value> {
+        let value = match self {
             Self::Block(block) => block.normal.as_ref(),
             Self::If => None,
             Self::Try(cursor) => match cursor.pending.as_ref() {
@@ -106,8 +133,27 @@ impl AsyncStatementFrame {
                 Some(Err(crate::Error::Thrown(value))) => Some(value),
                 _ => None,
             },
-            Self::Catch(_) => None,
+            Self::Scope { .. } => None,
             Self::Loop(cursor) => Some(&cursor.value),
+            Self::ForOfHead(_) => None,
+            Self::ForOf(cursor) => Some(&cursor.value),
+        };
+        let next = match self {
+            Self::ForOf(cursor) => Some(cursor.iterator.next_value()),
+            _ => None,
+        };
+        value.into_iter().chain(next)
+    }
+
+    fn iterator(&self) -> Option<&Handle> {
+        match self {
+            Self::ForOf(cursor) => Some(cursor.iterator.iterator_handle()),
+            Self::Block(_)
+            | Self::If
+            | Self::Try(_)
+            | Self::Scope { .. }
+            | Self::Loop(_)
+            | Self::ForOfHead(_) => None,
         }
     }
 }
@@ -134,12 +180,16 @@ impl AsyncExecutionData {
         self.capability
             .values()
             .chain(&self.normal)
-            .chain(self.frames.iter().filter_map(AsyncStatementFrame::value))
+            .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(
                 self.expression
                     .iter()
                     .flat_map(|expression| expression.values()),
             )
+    }
+
+    fn iterators(&self) -> impl Iterator<Item = &Handle> {
+        self.frames.iter().filter_map(AsyncStatementFrame::iterator)
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
@@ -162,6 +212,7 @@ impl AsyncExecutionData {
         self.values()
             .flat_map(Trace::trace)
             .chain(self.environments().map(|environment| Some(&environment.0)))
+            .chain(self.iterators().map(Some))
     }
 }
 
@@ -181,6 +232,9 @@ impl Objects {
         }
         for environment in data.environments() {
             self.environment(environment)?;
+        }
+        for iterator in data.iterators() {
+            self.inspect(iterator)?;
         }
         let state = if let Some(state) = state {
             if self.inspect(state)?.async_execution.is_some() {

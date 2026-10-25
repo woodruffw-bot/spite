@@ -68,6 +68,19 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("expression statement root"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::ForOfSource) => {
+            let Some(crate::object::async_execution::AsyncStatementFrame::ForOfHead(head)) =
+                data.frames.last()
+            else {
+                unreachable!("for-of source frame");
+            };
+            let StatementKind::ForOf { iterable, .. } =
+                &active_statement(&data.body, Some(&head.location)).kind
+            else {
+                unreachable!("for-of iterable source");
+            };
+            iterable
+        }
         (ArrowBody::Block(_), ExprRoot::LoopTest) => {
             let Some(crate::object::async_execution::AsyncStatementFrame::Loop(cursor)) =
                 data.frames.last()

@@ -70,8 +70,11 @@ impl Realm {
             };
             match self.prepare_catch_clause(handler, error) {
                 Ok(Some((environment, value))) => {
-                    data.frames
-                        .push(AsyncStatementFrame::Catch(environment.clone()));
+                    data.frames.push(AsyncStatementFrame::Scope {
+                        environment: environment.clone(),
+                        span: handler.span,
+                        disposable: false,
+                    });
                     if let Err(error) = self.initialize_pattern(
                         handler.parameter.as_ref().expect("catch parameter"),
                         value,

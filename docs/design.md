@@ -508,7 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. For and labelled statements still use ordinary execution and retain
+them. Remaining for and labelled statements still use ordinary execution and retain
 their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
@@ -557,8 +557,26 @@ last value; unlabelled break consumes its target and exits. Return, throw and
 rejection propagate through the shared completion frames, so intervening finally
 blocks finish before loop control proceeds. Retained loop values participate in
 tracing, validation and physical Symbol counts across awaited retests. Host abort
-keeps its existing isolation and capture-release rules. Labelled loops and other
+keeps its existing isolation and capture-release rules. Labelled loops and further
 iteration forms retain explicit await boundaries.
+
+Synchronous for-of loops support awaited iterable expressions and bodies
+(14.7.5.6–7). Shared head setup retains lexical TDZ bindings during RHS evaluation
+and restores the outer scope before iterator acquisition. Shared iteration setup
+initializes var, assignment, pattern, lexical and using bindings; lexical/resource
+scopes are recorded before initialization. Each iteration receives its own lexical
+environment. Using resources dispose after body finalizers and before the next
+step or iterator closing.
+
+Owned IteratorRecords cache next and retain the iterator object. Their done flag
+prevents closing after next/done/value errors. Natural exhaustion and unlabelled
+continue do not close; other body abrupt completions reuse IteratorClose, including
+throw-reason precedence and host-failure isolation. Iterator return lookup remains
+live, and synchronous yield/return values receive no implicit Await. Iterator
+handles, cached methods and loop values are traced and validated, with every
+stored Symbol counted. Parameter-catch and iteration scopes share a lexical scope
+frame, with disposal enabled only for resource iterations. For-await-of remains
+Unsupported; this is synchronous iteration with suspended source execution.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

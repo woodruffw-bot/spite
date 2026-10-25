@@ -3,6 +3,7 @@
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKeyRef, Span, WellKnownSymbol};
 
+#[derive(Debug)]
 pub(crate) struct IteratorRecord {
     pub(super) iterator: ObjectHandle,
     pub(super) next: Value,
@@ -10,6 +11,14 @@ pub(crate) struct IteratorRecord {
 }
 
 impl IteratorRecord {
+    pub(crate) fn iterator_handle(&self) -> &ObjectHandle {
+        &self.iterator
+    }
+
+    pub(crate) fn next_value(&self) -> &Value {
+        &self.next
+    }
+
     pub(crate) fn into_wrapper(self) -> crate::object::IteratorWrapper {
         crate::object::IteratorWrapper {
             iterator: self.iterator,
