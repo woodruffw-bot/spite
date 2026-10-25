@@ -14889,3 +14889,12 @@ retain their domains and work sequences. Scalar operands, nesting, operations,
 word gates, repetition, continuation terms and references require other proofs.
 Checked source copying, decoding/folding, cancellation and capacity errors keep
 the established boundaries.
+
+
+Runtime selects adjacent-q-union lookahead as a separate checked v-mode fallback
+after full original Pattern/flags validation and earlier proofs. The complete
+normalized capture scope retains original bindings; checked errors use the
+existing host boundary and enclosing offsets reset only on proof success. The
+existing positive string-class cache retains independent selected-member spans,
+including defined empty ranges, through named indices, consumers, copies and
+collection. Reentrant conversions remain outside compilation.

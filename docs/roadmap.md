@@ -1044,7 +1044,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile negative variable-length q-class lookahead with operand word predicates and line gates, preserving checked conjunction semantics and undefined operand slots.
 - [x] Execute negative variable-length q-class lookahead with word predicates through Runtime and String consumers, preserving original context and named undefined captures.
 - [x] Compile positive lookahead over adjacent q operands with line gates, preserving union-wide longest-member priority, checked errors and independent capture extents.
-- [ ] Execute positive q-union lookahead through Runtime and String consumers with original source, bindings and selected-member extents.
+- [x] Execute positive q-union lookahead through Runtime and String consumers with original source, bindings and selected-member extents.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.

@@ -27458,3 +27458,23 @@ negative slots, alongside all earlier assertion paths. Later adjacent-q-union
 work has separate focused and differential evidence. Fixtures, harness files,
 reviewed entries, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
+
+
+## Adjacent-q-union positive lookahead Runtime execution
+
+All 56 positive-lookahead integration groups (5.46 s) and 13 constructor groups
+(0.37 s) pass. Four new groups cover priority across operands, earliest empty
+choices, original line/fold/escape/surrogate context, named independent capture
+ranges, lastIndex, String consumers, copies, collection and deep lexical scopes.
+Initial-pair rewind and braced-surrogate behavior retain independent specification
+checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 50 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete union classes and legal Unicode-candidate enumeration.
+Complete programs retain earlier documented equivalent controls; Runtime always
+receives original q source. Strict all-target workspace Clippy, documentation
+tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
+checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.
