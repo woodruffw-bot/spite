@@ -26367,3 +26367,19 @@ Strict all-target workspace Clippy, documentation tests, formatting, dependency
 policy, inventories and diff checks pass. Runtime integration remains separate.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+## Full MSRV Core and Runtime-unit validation of q-class assertions
+
+The completed q-assertion snapshot at `c9b71cc1` passes all 1,785 Core library
+tests on Rust 1.85.0 (483.93 s for tests) with the normal workspace test profile.
+The incremental build finishes in 2m 56s; total build/test elapsed time is
+660.44 s and measured maximum child RSS is 5,413,000 KiB (about 5.2 GiB).
+No compiler diagnostic flags, profile changes, native-stack overrides or default
+quotas are used. The later scalar-set lookahead extension retains its separate
+focused and differential evidence.
+
+All 437 Runtime unit tests also pass on the q-assertion snapshot (5.21 s),
+including actual-work cancellation and cached positive/negative capture access.
+The broad RegExp and Test262 runs for negative q assertions are recorded
+separately when completed. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.
