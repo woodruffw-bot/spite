@@ -14533,3 +14533,12 @@ slots undefined. Bounded sticky predecessor probes, folded set algebra, checked
 errors, complete Unicode advancement, initial-pair rewind and actual-work
 cancellation retain their shared paths. Earlier entries keep their domains
 and charges. Runtime integration remains separate.
+
+Runtime selects checked negative scalar-set lookbehind after the negative
+scalar-lookahead entries, gated by v mode and using full normalized source.
+Successful selection resets the projected outer offset; checked errors retain
+their host mapping. Shared negative capture caching keeps outside ranges empty
+and all operand slots undefined through named indices, String consumers, copies
+and collection. Original set syntax, predecessor/line context and stateful
+Unicode execution remain in Core; user conversions stay outside the compiler
+frame.
