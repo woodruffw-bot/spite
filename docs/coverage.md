@@ -27535,3 +27535,25 @@ PATH, causing snapshot workspace discovery to fall back to the wrong root.
 That run was stopped and is not counted as validation. The reported inner-word
 snapshot passes through Cargo with the normal environment (5.85 s), without
 code or snapshot edits. The expanded full run is restarted through Cargo.
+
+
+## Adjacent-q-union negative lookahead Core proof
+
+The focused compiler/regression harness passes all 390 groups (1.82 s),
+including four new negative-union groups. The production library API passes
+all 12 negative string-class groups (0.27 s). These cover member existence
+across operands, empty-member failure, undefined operand slots and empty outside
+spans, original line/fold/surrogate context, deep scopes, bounded retries, every
+construction/search work abort and interruption within a long nonterminal
+prefix. Braced-surrogate behavior remains an independent specification check.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. The six earlier
+single-q and positive-union constructors retain byte-identical results, captures
+and work vectors across 768 construction and 79,872 search records before/after
+the negative class-domain selector change (80,640 total records). None of the
+2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select the new constructor; fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

@@ -14917,3 +14917,21 @@ string cache keeps original selected-member extents, including shorter retries
 across operands and defined-empty spans, through named indices, consumers,
 copies and collection. Original source and reentrant conversion frames retain
 their existing boundaries.
+
+
+### Negative lookahead over adjacent q operands
+
+A separate checked negative constructor accepts complete lookahead over at least
+two adjacent q operands, with an empty or longer member overall and optional
+operand ^/$ gates. Full original v/vi validation and normalized capture heads
+precede sign-only projection. The checked positive union proof validates the
+complete class and wrapper scope without independently validating or rebinding
+the projection. Successful negation means no member satisfies the original-
+context conjunction at that candidate (22.2.2.4, 22.2.2.7).
+
+The existing cancellable sticky-probe search retains complete Unicode candidates,
+empty outside captures and undefined operand slots, including when union members
+share prefixes or the class contains an empty string. An explicit private class-
+domain selector keeps earlier single-q constructor domains and work sequences
+unchanged. Other class domains, word gates, repetition, continuation terms and
+references require separate proofs.

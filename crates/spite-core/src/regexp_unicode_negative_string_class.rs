@@ -6,7 +6,7 @@ use crate::{
 };
 use std::ops::Range;
 
-/// Complete negative lookahead over one variable-length single-q class.
+/// Complete negative lookahead over a variable-length UnicodeSets q class.
 ///
 /// Full original v/vi validation and normalized capture heads are required.
 /// Complete wrappers preserve the lexical inventory. Outside captures select
@@ -29,7 +29,7 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl::<false, E>(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<false, 0, E>(source, ignore_case, multiline, &mut charge)
     }
 
     /// Compiles negative single-q lookahead with operand word predicates and line gates.
@@ -44,11 +44,26 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl::<true, E>(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<true, 0, E>(source, ignore_case, multiline, &mut charge)
+    }
+
+    /// Compiles negative lookahead over at least two adjacent q operands.
+    ///
+    /// An empty or longer member is required overall. Sign-only projection
+    /// delegates checked union/scope validation without rebinding; optional ^/$
+    /// gates retain original context and all operand slots stay undefined on
+    /// success. Full original v/vi validation and normalized heads are required.
+    pub fn compile_q_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 1, E>(source, ignore_case, multiline, &mut charge)
     }
 
     #[inline(never)]
-    fn compile_with_work_impl<const WORD: bool, E>(
+    fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
@@ -72,7 +87,17 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         projected.extend_from_slice(units);
         projected[assertion.start + 2] = 0x3d;
         let source = JsString::from_code_units(projected);
-        let positive = if WORD {
+        let positive = if CLASS_KIND == 1 {
+            if WORD {
+                RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_with_word_boundaries_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            } else {
+                RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            }
+        } else if WORD {
             RegExpUnicodePositiveStringClassMatcher::compile_single_q_lookahead_with_word_boundaries_validated_with_work(
                 &source, ignore_case, multiline, charge,
             )?
