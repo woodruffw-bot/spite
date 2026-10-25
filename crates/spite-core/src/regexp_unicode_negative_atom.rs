@@ -128,7 +128,7 @@ impl RegExpUnicodeNegativeAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<false, false, E>(
+        Self::compile_single_character_class_assertion_with_work::<false, false, false, E>(
             source,
             ignore_case,
             multiline,
@@ -151,7 +151,7 @@ impl RegExpUnicodeNegativeAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<true, false, E>(
+        Self::compile_single_character_class_assertion_with_work::<true, false, false, E>(
             source,
             ignore_case,
             multiline,
@@ -172,7 +172,7 @@ impl RegExpUnicodeNegativeAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<false, true, E>(
+        Self::compile_single_character_class_assertion_with_work::<false, true, false, E>(
             source,
             ignore_case,
             multiline,
@@ -195,7 +195,28 @@ impl RegExpUnicodeNegativeAtomMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
-        Self::compile_single_character_string_class_assertion_with_work::<true, true, E>(
+        Self::compile_single_character_class_assertion_with_work::<true, true, false, E>(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+    }
+
+    /// Compiles negative lookahead over one checked scalar v-mode set class.
+    ///
+    /// Full original v/vi validation and normalized capture heads are required.
+    /// A nested/operator class must prove character-valued leaves. Optional
+    /// operand ^/$ gates retain original input context. Successful negation
+    /// leaves outside wrappers empty and every operand slot undefined
+    /// (22.2.2.4, 22.2.2.9). Other widths and word gates need separate proofs.
+    pub fn compile_single_v_set_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single_character_class_assertion_with_work::<false, false, true, E>(
             source,
             ignore_case,
             multiline,
@@ -204,9 +225,10 @@ impl RegExpUnicodeNegativeAtomMatcher {
     }
 
     #[inline(never)]
-    fn compile_single_character_string_class_assertion_with_work<
+    fn compile_single_character_class_assertion_with_work<
         const WORD: bool,
         const BACKWARD: bool,
+        const SCALAR_SET: bool,
         E,
     >(
         source: &JsString,
@@ -233,7 +255,27 @@ impl RegExpUnicodeNegativeAtomMatcher {
         let mut positive = units.to_vec();
         positive[assertion.start + prefix.len() - 1] = 0x3d;
         let source = JsString::from_code_units(positive);
-        let positive = if BACKWARD {
+        let positive = if SCALAR_SET {
+            if BACKWARD {
+                if WORD {
+                    RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookbehind_with_word_boundaries_validated_with_work(
+                        &source, ignore_case, multiline, charge,
+                    )?
+                } else {
+                    RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookbehind_validated_with_work(
+                        &source, ignore_case, multiline, charge,
+                    )?
+                }
+            } else if WORD {
+                RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_with_word_boundaries_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            } else {
+                RegExpUnicodePositiveAtomMatcher::compile_single_v_set_lookahead_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            }
+        } else if BACKWARD {
             if WORD {
                 RegExpUnicodePositiveAtomMatcher::compile_single_character_string_class_lookbehind_with_word_boundaries_validated_with_work(
                     &source,
@@ -1549,6 +1591,168 @@ mod tests {
             let mut seen = Vec::new();
             assert!(
                 matches!(RegExpUnicodeNegativeAtomMatcher::compile_single_character_string_class_lookahead_validated_with_work(&source,false,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(crate::RegExpUnicodeSetCompileError::Work(n))if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let input = JsString::from("aaa");
+        work.clear();
+        assert_eq!(
+            p.find_with_work(&input, 0, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap(),
+            Some(3..3)
+        );
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert_eq!(
+                p.find_with_work(&input, 0, false, |n| {
+                    seen.push(n);
+                    if seen.len() == stop + 1 {
+                        Err(stop)
+                    } else {
+                        Ok(())
+                    }
+                }),
+                Err(stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+            assert_eq!(find(&p, "aaa", 0, false), Some(3..3));
+        }
+    }
+    fn scalar_set_plan(source: &str, i: bool, m: bool) -> RegExpUnicodeNegativeAtomMatcher {
+        RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookahead_validated_with_work(
+            &JsString::from(source),
+            i,
+            m,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookahead_keeps_empty_outside_and_undefined_operand_slots() {
+        for class in [
+            r"[[a-z]&&[ab]]",
+            r"[[a-z]--[c-z]]",
+            r"[[a][b]]",
+            r"[[^x]&&[ab]]",
+        ] {
+            let p = scalar_set_plan(&format!("((?!(({class}))))"), false, false);
+            assert_eq!(p.capture_count(), 3);
+            let matched = find(&p, "ab!", 0, false).unwrap();
+            assert_eq!(matched, 2..2);
+            assert_eq!(p.capture_range(0, &matched), Some(2..2));
+            for index in 1..=3 {
+                assert_eq!(p.capture_range(index, &matched), None);
+            }
+            assert_eq!(find(&p, "ab!", 0, true), None);
+            assert_eq!(find(&p, "ab!", 3, true), Some(3..3));
+            assert_eq!(find(&p, "ab!", 4, false), None);
+            assert_eq!(find(&p, "", 0, true), Some(0..0));
+        }
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookahead_keeps_original_line_fold_and_pair_context() {
+        let p = scalar_set_plan(r"(?!(^[[a-z]--[aeiou]]$))", true, true);
+        assert_eq!(find(&p, "\nB\n", 1, true), None);
+        assert_eq!(find(&p, "!B!", 1, true), Some(1..1));
+        let p = scalar_set_plan(r"(?!([[ſk]--[x]]))", true, false);
+        for text in ["S", "ſ", "K", "K"] {
+            assert_eq!(find(&p, text, 0, true), None);
+        }
+        let p = scalar_set_plan(r"(?!([[\p{ASCII}]--[x]]))", true, false);
+        assert_eq!(find(&p, "ſK", 0, false), Some(2..2));
+        let p = scalar_set_plan(r"(?!([^[\p{ASCII}]]))", true, false);
+        assert_eq!(find(&p, "ſK😀", 0, true), Some(0..0));
+        assert_eq!(find(&p, "ſK😀", 2, true), None);
+        let p = scalar_set_plan(r"(?!([[a-z]--[a-z]]))", false, false);
+        assert_eq!(find(&p, "a", 0, true), Some(0..0));
+        let p = scalar_set_plan(r"(?!([[😀a]--[a]]))", false, false);
+        assert_eq!(find(&p, "😀😀b", 0, false), Some(4..4));
+        assert_eq!(find(&p, "😀😀b", 1, true), None);
+        let p = scalar_set_plan(r"(?!([[\uD800x]--[q]]))", false, false);
+        assert_eq!(find(&p, "😀", 0, true), Some(0..0));
+        let input = JsString::from_code_units(vec![0xd800, 0x78]);
+        assert_eq!(
+            p.find_with_work(&input, 0, false, |_| Ok::<(), ()>(()))
+                .unwrap(),
+            Some(2..2)
+        );
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookahead_declines_other_domains_widths_and_scopes() {
+        for source in [
+            r"(?!([a]))",
+            r"(?!([\q{a|b}]))",
+            r"(?!([[\q{a|b}]--[x]]))",
+            r"(?!([\q{ab|a}]))",
+            r"(?!([\q{|a}]))",
+            r"(?!([[a-z]&&[ab]]+))",
+            r"(?!([[a-z]&&[ab]]{1}))",
+            r"(?!([[a-z]&&[ab]]a))",
+            r"(?!([[a-z]&&[ab]]))a",
+            r"(?!([[a-z]&&[ab]]))|b",
+            r"((?!([[a-z]&&[ab]])))*",
+            r"(?=([[a-z]&&[ab]]))",
+            r"(?<!([[a-z]&&[ab]]))",
+            r"(?!(\b[[a-z]&&[ab]]\b))",
+            r"(?i:(?!([[a-z]&&[ab]])))",
+            r"((?!(\1)))",
+        ] {
+            assert!(RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookahead_validated_with_work(&JsString::from(source),false,false, |_| Ok::<(), ()>(())).unwrap().is_none(),"{source}");
+        }
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookahead_deep_scopes_linear_work_and_abort_recovery_stay_flat() {
+        let source = format!(
+            "{}(?!{}[[a-z]&&[ab]]{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let p = scalar_set_plan(&source, false, false);
+        assert_eq!(p.capture_count(), 200_000);
+        let matched = find(&p.clone(), "!", 0, true).unwrap();
+        assert_eq!(p.capture_range(99_999, &matched), Some(0..0));
+        assert_eq!(p.capture_range(100_000, &matched), None);
+        let p = scalar_set_plan(r"(?!([[a-z]&&[ab]]))", false, false);
+        let input = JsString::from("a".repeat(20_000).as_str());
+        let mut total = 0usize;
+        assert_eq!(
+            p.find_with_work(&input, 0, false, |n| {
+                total += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap(),
+            Some(20_000..20_000)
+        );
+        assert!(total < 250 * input.len() + 128, "{total}");
+        let source = JsString::from(r"((?!([[a-z]&&[ab]])))");
+        let mut work = Vec::new();
+        let p =
+            RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookahead_validated_with_work(
+                &source,
+                false,
+                false,
+                |n| {
+                    work.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookahead_validated_with_work(&source,false,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(crate::RegExpUnicodeSetCompileError::Work(n))if n==stop)
             );
             assert_eq!(seen, work[..=stop]);
         }

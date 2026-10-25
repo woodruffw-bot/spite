@@ -14482,3 +14482,16 @@ empty outside/undefined operand slots through named indices, String consumers,
 copies and collection. Original q source, word/line/predecessor context and
 stateful Unicode execution retain their shared paths; user conversions remain
 outside the compiler frame.
+
+A separate checked negative scalar-set lookahead entry proves one nested/
+operator class with character-valued leaves and optional original-context ^/$
+gates (22.2.2.4, 22.2.2.9). The charged flat negative envelope changes only the
+proved assertion sign before delegating to the checked positive scalar proof;
+full original v/vi validation and normalized bindings remain prerequisites.
+Negation applies to the complete original-context conjunction. Outside wrappers
+capture the empty assertion position, while every operand slot stays undefined.
+Bounded sticky probes, complete-character advancement, initial-pair rewind,
+checked errors and actual-work cancellation retain their shared paths. The
+shared checked envelope explicitly selects scalar versus q-class proofs;
+earlier q domains and charges remain unchanged. Runtime integration remains
+separate.

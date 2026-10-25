@@ -26558,3 +26558,26 @@ all 437 Runtime units; this constructor-only Runtime increment has the focused
 and differential evidence above. Completed broad results record `c9b71cc1`;
 scalar-set assertions retain separate focused evidence. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Core single-character negative scalar v-set lookahead
+
+The actual-source focused harness passes 318 tests (2.69 s), including four new
+negative scalar-set groups. Checks cover nested set operations, empty outside
+and undefined operand slots, original line/fold/property context, complement
+and empty-set negation, complete-pair boundaries, initial-pair rewind, unpaired
+surrogates, proof exclusions, 200,000 wrappers, bounded linear retry and every
+checked construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle and independent Unicode advancement.
+Fifty-six ASCII iv patterns contribute 5,824 equivalent-range controls for the
+documented property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. Refactoring the checked negative envelope
+preserves all 69,632 earlier q-class construction, matching, capture and work
+trace records byte for byte across its eight positive/negative assertion APIs.
+
+Strict all-target workspace Clippy, documentation tests, formatting, policy,
+inventories and diff checks pass. Runtime integration remains separate.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
