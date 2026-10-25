@@ -42,6 +42,29 @@ pub(crate) struct AsyncBlockCursor {
     pub index: usize,
     pub environment: EnvironmentHandle,
     pub span: Span,
+    pub normal: Option<Value>,
+}
+
+#[derive(Debug)]
+pub(crate) enum AsyncStatementFrame {
+    Block(AsyncBlockCursor),
+    If,
+}
+
+impl AsyncStatementFrame {
+    fn environment(&self) -> Option<&EnvironmentHandle> {
+        match self {
+            Self::Block(block) => Some(&block.environment),
+            Self::If => None,
+        }
+    }
+
+    fn value(&self) -> Option<&Value> {
+        match self {
+            Self::Block(block) => block.normal.as_ref(),
+            Self::If => None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -52,7 +75,8 @@ pub(crate) struct AsyncExecutionData {
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
-    pub blocks: Vec<AsyncBlockCursor>,
+    pub frames: Vec<AsyncStatementFrame>,
+    pub normal: Option<Value>,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
     pub var_target: Option<EnvironmentHandle>,
@@ -62,18 +86,26 @@ pub(crate) struct AsyncExecutionData {
 
 impl AsyncExecutionData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.capability.values().chain(
-            self.expression
-                .iter()
-                .flat_map(|expression| expression.values()),
-        )
+        self.capability
+            .values()
+            .chain(&self.normal)
+            .chain(self.frames.iter().filter_map(AsyncStatementFrame::value))
+            .chain(
+                self.expression
+                    .iter()
+                    .flat_map(|expression| expression.values()),
+            )
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
         self.root_scope
             .iter()
             .chain(&self.var_target)
-            .chain(self.blocks.iter().map(|block| &block.environment))
+            .chain(
+                self.frames
+                    .iter()
+                    .filter_map(AsyncStatementFrame::environment),
+            )
             .chain(
                 self.context
                     .iter()

@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Statement completion review
+
+Four Runtime groups and three Symbol ownership controls cover statement-list
+values retained across await, parent forwarding and UpdateEmpty replacement.
+The complete original reviews remain 32 passing/12 Unsupported await variants
+and 146 passing/116 Unsupported Array/adapter variants, with no new admissions.
+Inventories remain 9,573 fixtures, twenty helpers, 9,554 reviewed sources and
+18,556 variants; helpers and quotas are unchanged.
+
 ## Conditional suspension review
 
 Eight Runtime groups and a Symbol ownership control cover awaited if conditions

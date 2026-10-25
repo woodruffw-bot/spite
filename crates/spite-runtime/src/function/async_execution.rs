@@ -1,6 +1,7 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
 mod block;
+mod completion;
 mod conditional;
 mod expression;
 
@@ -54,6 +55,7 @@ pub(super) enum AsyncBodyOutcome {
 enum Step {
     Continue,
     Complete(Completion),
+    Finish(Completion),
     Await(Value, AsyncAwaitAction, Span),
 }
 
@@ -111,7 +113,8 @@ impl Realm {
             index: 0,
             statement: None,
             next: None,
-            blocks: Vec::new(),
+            frames: Vec::new(),
+            normal: None,
             pending: AsyncAwaitAction::Discard,
             root_scope,
             var_target: None,
@@ -124,60 +127,64 @@ impl Realm {
     fn drive_async_execution(
         &mut self,
         mut data: AsyncExecutionData,
-        state: Option<ObjectHandle>,
+        mut state: Option<ObjectHandle>,
         resumed: Option<Result<Value, Error>>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
-        let mut next_step = None;
-        if let Some(completion) = resumed {
-            match completion {
-                Err(error) => return self.finish_async_execution(data, Err(error), base),
-                Ok(value) => {
-                    let action = data.pending;
-                    next_step = Some(self.complete_async_value(&mut data, action, value));
-                }
+        let mut next_step = resumed.map(|completion| match completion {
+            Err(error) => Err(error),
+            Ok(value) => {
+                let action = data.pending;
+                self.complete_async_value(&mut data, action, value)
             }
-        }
+        });
         loop {
             let step = next_step
                 .take()
                 .unwrap_or_else(|| self.async_execution_step(&mut data));
-            match step {
-                Ok(Step::Continue) => (),
-                Ok(Step::Complete(completion)) => {
+            let completion = match step {
+                Ok(Step::Continue) => continue,
+                Ok(Step::Finish(completion)) => {
                     return self.finish_async_execution(data, Ok(completion), base);
                 }
-                Err(error) => return self.finish_async_execution(data, Err(error), base),
+                Ok(Step::Complete(completion)) => Ok(completion),
+                Err(error) => Err(error),
                 Ok(Step::Await(value, action, span)) => {
                     data.pending = action;
                     data.context = match self.capture_async_execution_context(base, span) {
                         Ok(context) => Some(context),
                         Err(error) => return self.finish_async_execution(data, Err(error), base),
                     };
-                    let state = match self.object_work(span, |objects, budget| {
+                    let handle = match self.object_work(span, |objects, budget| {
                         objects.store_async_execution(state.as_ref(), Box::new(data), budget)
                     }) {
-                        Ok(state) => state,
+                        Ok(handle) => handle,
                         Err(error) => return Err(self.abort_async_execution(base, error)),
                     };
-                    return match self.await_native_value(
-                        &state,
-                        AsyncResumeKind::Execution,
-                        value,
-                        span,
-                    ) {
-                        Ok(()) => Ok(AsyncBodyOutcome::Suspended),
+                    match self.await_native_value(&handle, AsyncResumeKind::Execution, value, span)
+                    {
+                        Ok(()) => return Ok(AsyncBodyOutcome::Suspended),
                         Err(error) => {
-                            let mut data = self
+                            let mut restored = self
                                 .objects
-                                .take_async_execution(&state)
+                                .take_async_execution(&handle)
                                 .map_err(Error::InvalidObject)?
                                 .expect("active source await");
-                            data.context = None;
-                            self.finish_async_execution(*data, Err(error), base)
+                            restored.context = None;
+                            data = *restored;
+                            state = Some(handle);
+                            next_step = Some(Err(error));
+                            continue;
                         }
-                    };
+                    }
                 }
+            };
+            match self.handle_async_completion(&mut data, completion) {
+                Ok(None) => (),
+                Ok(Some(completion)) => {
+                    return self.finish_async_execution(data, Ok(completion), base);
+                }
+                Err(error) => return self.finish_async_execution(data, Err(error), base),
             }
         }
     }
@@ -249,12 +256,7 @@ impl Realm {
             self.tick(statement.span)?;
             return self.start_async_expression(data, ExprRoot::Statement, action);
         }
-        let completion = self.statement(statement)?;
-        Ok(if completion.kind == CompletionKind::Normal {
-            Step::Continue
-        } else {
-            Step::Complete(completion)
-        })
+        self.statement(statement).map(Step::Complete)
     }
 
     fn async_binding_step(
@@ -320,7 +322,7 @@ impl Realm {
                 self.initialize_bindings(std::slice::from_ref(binding))?;
             }
         }
-        Ok(Step::Continue)
+        Ok(Step::Complete(Completion::normal(None)))
     }
 
     fn complete_async_value(
@@ -330,7 +332,7 @@ impl Realm {
         value: Value,
     ) -> Result<Step, Error> {
         match action {
-            AsyncAwaitAction::Discard => Ok(Step::Continue),
+            AsyncAwaitAction::Discard => Ok(Step::Complete(Completion::normal(Some(value)))),
             AsyncAwaitAction::Return => Ok(Step::Complete(Completion {
                 kind: CompletionKind::Return,
                 value: Some(value),
@@ -379,22 +381,17 @@ impl Realm {
 
     fn finish_async_execution(
         &mut self,
-        mut data: AsyncExecutionData,
-        mut completion: Result<Completion, Error>,
+        data: AsyncExecutionData,
+        completion: Result<Completion, Error>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
-        let completion = loop {
-            let result = match completion {
-                Err(error) if !error.is_language_exception() => {
-                    return Err(self.abort_async_execution(base, error));
-                }
-                result => result,
-            };
-            let Some(block) = data.blocks.pop() else {
-                break result;
-            };
-            completion = self.finish_async_block(block, result);
+        let completion = match completion {
+            Err(error) if !error.is_language_exception() => {
+                return Err(self.abort_async_execution(base, error));
+            }
+            completion => completion,
         };
+        debug_assert!(data.frames.is_empty());
         let completion = if let Some(environment) = &data.root_scope {
             self.dispose_environment_resources(environment, completion, data.span)?
         } else {

@@ -60,6 +60,24 @@ not an alternative language specification.
 
 
 
+## Statement completion values
+
+Root and block StatementLists retain their last non-empty completion value across
+await. Declarations and empty statements preserve it; later values replace it.
+Typed block/if frames propagate completions and If applies UpdateEmpty(undefined).
+Normal async function completion still fulfills with undefined. Retained values
+participate in tracing, validation and the physical Symbol inventory. Abrupt
+completion releases abandoned operands and var references before unwinding.
+
+Four Runtime groups verify retained values, forwarding and replacement through
+collection between jobs. Symbol controls cover root values, block values and two
+copies of the same Symbol in different lists. All 416 units and 1,959 non-RegExp
+integrations pass across 649 Runtime case files. Original reviews remain at 32
+passing/12 Unsupported await variants and 146 passing/116 Unsupported Array/adapter
+variants, with no new admissions. Inventories remain 9,573 fixtures, twenty helpers,
+9,554 reviewed sources and 18,556 variants; intrinsics, Parser checks and quotas
+are unchanged.
+
 ## Conditional suspension
 
 If conditions and selected branches can await. Completed conditions use Boolean

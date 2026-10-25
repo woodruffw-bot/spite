@@ -387,6 +387,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain active source statement locations and resume awaited throw expressions with exact rejection, resource suppression and host-abort behavior.
 - [x] Suspend nested plain blocks with lexical instantiation, current-scope initialization, ordered resource unwinding and release of exited scopes.
 - [x] Suspend if conditions and selected branches with Boolean conversion, typed source paths, lexical scope and abrupt completion.
+- [x] Preserve StatementList completion values through suspension and propagate block/if results with UpdateEmpty and traced value ownership.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

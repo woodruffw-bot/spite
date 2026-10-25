@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_await_completions.rs"]
+mod async_await_completions;
+
 #[path = "cases/async_await_if.rs"]
 mod async_await_if;
 

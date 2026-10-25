@@ -440,7 +440,7 @@ each suspend independently. Parentheses retain their expression boundaries.
 Unary value operations and Reference deletion are shared with ordinary evaluation;
 unresolved-identifier typeof handling stays in the ordinary evaluator. Expression
 tasks and current results participate in object tracing and the physical Symbol inventory. Their
-root return/throw/discard/binding action runs only after the complete expression value
+root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
 including assignments/updates, optional/super calls, object literals,
@@ -519,6 +519,18 @@ queue, and nested block branches use existing lexical cursors. If adds no lexica
 environment. Return/throw/rejection use existing scope unwinding, including
 condition rejection before either branch starts. No further condition evaluation
 or branch replay occurs after suspension.
+
+StatementList completion values remain owned through suspension (14.2.2).
+Root and block cursors preserve the previous value when a declaration or empty
+statement completes without one; a later non-empty completion replaces it.
+Typed block and if completion frames propagate normal and abrupt results, with
+If applying UpdateEmpty(undefined). Nested block values feed their parent list;
+normal function completion still fulfills with undefined. Retained values are
+traced, validated and included in the physical Symbol inventory, including
+multiple copies of one Symbol in different lists. Abrupt completion clears
+abandoned expression operands and saved var references before scope unwinding.
+PromiseResolve failures during Await registration re-enter the same completion
+path; the private source state is restored and reused without losing context.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer
