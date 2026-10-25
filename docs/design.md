@@ -14220,3 +14220,21 @@ offset reset, then shares empty outside/undefined operand capture access with
 the other negative assertions. Original-context predicates, named indices,
 String consumers, copies, collection and complete-character stateful search
 retain the shared paths. User conversions remain outside the compiler frame.
+
+A separate checked positive-lookahead constructor admits one unquantified
+v-mode class containing ClassStringDisjunction operands whose alternatives all
+decode to one character (22.2.2.4, 22.2.2.9). Charged flat scans retain complete
+ordinary outside/operand wrappers, prove exactly one class between optional
+^/$ gates and insert one fixed iteration immediately after that class. The
+existing checked single-character string-class compiler proves every member
+and supported nested operation. Empty/long members, other counts, word gates,
+references, continuations and other assertion directions remain separate domains.
+
+The projection is internal and never independently validated or rebound. Full
+original v/vi validation and normalized capture heads remain prerequisites.
+Outside captures retain the empty assertion position, while operand wrappers
+capture the complete original character, including an astral pair. Line gates,
+folding, lone surrogates and candidate advancement use the shared operand matcher.
+Checked work and capacity errors retain their existing contracts. Construction,
+clone/drop and cancellation stay flat; earlier entry points retain their domains
+and charges. Runtime integration remains separate.

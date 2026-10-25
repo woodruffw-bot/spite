@@ -25924,3 +25924,25 @@ constructor-only Runtime extension has the focused and differential evidence
 above. The completed broad RegExp and Test262 runs record `8f624262`; negative
 assertions retain their separate focused evidence. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Core lookahead over one single-character q class
+
+The actual-source focused harness passes 270 tests (1.35 s), including four new
+groups for checked q classes and nested intersection/subtraction, empty outside
+and complete operand ranges, astral widths, original line/fold context, lone
+surrogates, initial-pair rewind, proof exclusions, 200,000 wrappers, clone/drop
+and every checked construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle using independent Unicode advancement
+and documented equivalent controls. The 220 ignoreCase patterns contribute
+22,880 records with equivalent ordinary classes for Node's documented singleton-q
+folding defect. The retained baseline with original q operands disagrees on 949
+records. Twenty-one ASCII iv patterns additionally use the documented property
+range control (2,184 records, overlapping those q controls). Independent Core
+expectations require uppercase A and Kelvin/long-s folding through the q class.
+
+All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
+all-target workspace Clippy, documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.
