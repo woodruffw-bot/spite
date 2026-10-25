@@ -388,6 +388,18 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "async call earlier argument across suspension",
+            "(()=>{let gate=new Promise(()=>{}),target=()=>{},f=async()=>target(key,await gate);f();return gate})()",
+        ),
+        (
+            "async call receiver across suspension",
+            "(()=>{let gate=new Promise(()=>{});Symbol.prototype.pendingMethod=function(){};let f=async()=>key.pendingMethod(await gate);f();delete Symbol.prototype.pendingMethod;return gate})()",
+        ),
+        (
+            "async noncallable target across suspension",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>key(await gate);f();return gate})()",
+        ),
+        (
             "async binary left operand across suspension",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{return key+await gate};f();return gate})()",
         ),

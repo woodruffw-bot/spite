@@ -1551,27 +1551,9 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.tick(span)?;
-        let (function, this, direct_eval) = if reference_expression(callee) {
-            let mut reference = self.reference(callee)?;
-            let function = self.get(&mut reference, callee.span)?;
-            // 13.3.6.1: with/local eval references are direct for %eval%.
-            let direct_eval = reference.is_eval_environment_reference()
-                && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
-            let this = reference.call_receiver();
-            (function, this, direct_eval)
-        } else {
-            (self.expression(callee)?, Value::Undefined, false)
-        };
+        let target = self.prepare_call(callee)?;
         let values = self.argument_list(arguments)?;
-        let result = if direct_eval {
-            self.perform_eval(
-                values.into_iter().next().unwrap_or(Value::Undefined),
-                true,
-                span,
-            )?
-        } else {
-            self.call(function, this, values, span)?
-        };
+        let result = self.invoke_call(target, values, span)?;
         self.check_string(&result, span)?;
         Ok(result)
     }

@@ -443,11 +443,19 @@ results participate in object tracing and the physical Symbol inventory. Their
 root return/discard/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including calls/references, literal elements, pattern defaults and control flow.
-Pattern defaults, call/reference expressions, literal elements and control-flow
-continuations retain their explicit gap. Await-using is distinct from a synchronous
-using declaration with an awaited initializer and remains Unsupported. Unreachable
-awaits remain unevaluated.
+including member references, construction, optional/super calls, literal elements,
+pattern defaults and control flow. Ordinary calls support awaited arguments and
+value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
+reference, captures its receiver and checks intrinsic eval identity before any
+argument. A later suspension retains that target and every preceding argument;
+replacing a method or eval binding cannot change the selected call. Callability
+is checked after all arguments. Awaited value callees use an undefined receiver
+and indirect eval. Parenthesized member references keep their ordinary receiver.
+Shared argument accumulation handles synchronous spread and checked storage;
+spread iteration does not implicitly await yielded values. Call targets and
+arguments participate in tracing and the physical Symbol inventory. Await-using
+is distinct from a synchronous using declaration with an awaited initializer and
+remains Unsupported. Unreachable awaits remain unevaluated.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

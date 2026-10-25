@@ -55,10 +55,33 @@ not an alternative language specification.
 | AsyncDisposableStack | Shared registration/move with distinct brands, async/sync disposal lookup, native suspension and FIFO resumption, nullish Await timing, suppression and traced continuations |
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18550 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts and suspension in supported value expressions, initializers and calls |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18556 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Awaited calls
+
+Ordinary calls suspend in arguments and supported value callees. Callee lookup,
+receiver capture and intrinsic eval identity precede argument evaluation. The
+selected function and earlier arguments survive later awaits without replay;
+callability is checked after the final argument. Direct eval retains its lexical
+and private context, while an awaited eval value is indirect. Spread reuses
+ordinary synchronous accumulation without awaiting yielded values.
+
+Eight Runtime groups cover ordering, receiver/eval behavior, spread, errors,
+collection and opt-in argument limits. Symbol lifetime controls include earlier
+arguments, primitive receivers and noncallable targets in suspended calls.
+All 416 units and 1,914 non-RegExp integrations pass across 642 Runtime case files;
+Parser checks and 579 intrinsic entries are unchanged. Member-reference awaits,
+construction, optional/super calls and suspended control flow remain work.
+
+Three unchanged originals add six variants for thenables and native Promise
+await timing. Their pinned Git blobs and SHA-256 digests were verified. The await
+review passes 32 variants from sixteen originals and defers six; Array/adapter
+remains at 146 passing and 116 Unsupported variants. Inventories contain 9,573
+fixtures, twenty helpers, 9,554 reviewed sources and 18,556 variants. No helpers,
+upstream bytes or quotas change.
 
 ## Awaited value expressions
 

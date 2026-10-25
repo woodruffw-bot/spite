@@ -1,7 +1,7 @@
 //! Owned value-expression continuations with safe paths into retained source AST.
 
 use super::async_execution::AsyncAwaitAction;
-use crate::Value;
+use crate::{Value, function::CallTarget};
 use spite_core::Span;
 use spite_parser::ast::{BinaryOp, UnaryOp};
 
@@ -22,6 +22,8 @@ pub(crate) enum ExprChild {
     Test,
     Yes,
     No,
+    CallCallee,
+    CallArgument(usize),
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
@@ -60,15 +62,45 @@ pub(crate) enum ExprTask {
         no: ExprPath,
         span: Span,
     },
+    CallCallee {
+        path: ExprPath,
+        span: Span,
+    },
+    CallNext {
+        path: ExprPath,
+        index: usize,
+        target: CallTarget,
+        arguments: Vec<Value>,
+        span: Span,
+    },
+    CallAppend {
+        path: ExprPath,
+        index: usize,
+        target: CallTarget,
+        arguments: Vec<Value>,
+        span: Span,
+    },
     CheckString(Span),
 }
 
 impl ExprTask {
-    fn value(&self) -> Option<&Value> {
-        match self {
-            Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => Some(left),
-            _ => None,
-        }
+    fn values(&self) -> impl Iterator<Item = &Value> {
+        let (left, target, arguments): (Option<&Value>, Option<&CallTarget>, &[Value]) = match self
+        {
+            Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
+                (Some(left), None, &[])
+            }
+            Self::CallNext {
+                target, arguments, ..
+            }
+            | Self::CallAppend {
+                target, arguments, ..
+            } => (None, Some(target), arguments),
+            _ => (None, None, &[]),
+        };
+        left.into_iter()
+            .chain(target.into_iter().flat_map(CallTarget::values))
+            .chain(arguments)
     }
 }
 
@@ -84,6 +116,6 @@ impl AsyncExpressionData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
         self.current
             .iter()
-            .chain(self.tasks.iter().filter_map(ExprTask::value))
+            .chain(self.tasks.iter().flat_map(ExprTask::values))
     }
 }

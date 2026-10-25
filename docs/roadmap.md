@@ -380,6 +380,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume body-level let/const and synchronous using declaration lists with direct awaited initializers, pattern initialization, TDZ and naming rules.
 - [x] Resume body-level var await initializers with saved pre-RHS declarative references, parameter aliases and pattern initialization.
 - [x] Resume nested await in unary, binary, flat-chain and conditional value expressions with preserved operands, coercion order and short circuits.
+- [x] Resume ordinary call arguments and awaited value callees while preserving selected targets, receivers, direct eval, spread and argument order.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

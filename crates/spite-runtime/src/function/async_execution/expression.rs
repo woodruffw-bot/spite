@@ -1,12 +1,13 @@
 //! Value expression continuations; source nodes stay in the retained function AST.
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step};
+use crate::function::CallTarget;
 use crate::{
     Error, Realm, Value,
     object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask},
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BinaryOp, Expr, ExprKind, StatementKind};
+use spite_parser::ast::{Argument, ArrowBody, BinaryOp, Expr, ExprKind, StatementKind};
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
@@ -18,6 +19,12 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         }
         ExprKind::Conditional(test, yes, no) => {
             has_supported_await(test) || has_supported_await(yes) || has_supported_await(no)
+        }
+        ExprKind::Call { callee, arguments } => {
+            has_supported_await(callee)
+                || arguments
+                    .iter()
+                    .any(|argument| has_supported_await(argument.expression()))
         }
         // Unsupported parents retain the ordinary evaluator's explicit boundary.
         // Defining a nested async function does not execute its awaited body.
@@ -69,6 +76,10 @@ fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) ->
             (ExprChild::Test, ExprKind::Conditional(test, _, _)) => test,
             (ExprChild::Yes, ExprKind::Conditional(_, yes, _)) => yes,
             (ExprChild::No, ExprKind::Conditional(_, _, no)) => no,
+            (ExprChild::CallCallee, ExprKind::Call { callee, .. }) => callee,
+            (ExprChild::CallArgument(index), ExprKind::Call { arguments, .. }) => {
+                arguments[*index].expression()
+            }
             _ => unreachable!("typed expression path"),
         };
     }
@@ -150,6 +161,7 @@ impl Realm {
                         | ExprKind::Binary(..)
                         | ExprKind::BinaryChain { .. }
                         | ExprKind::Conditional(..)
+                        | ExprKind::Call { .. }
                             if has_supported_await(expression) =>
                         {
                             self.tick(span)?;
@@ -228,6 +240,31 @@ impl Realm {
                                         )?),
                                         span,
                                     )?;
+                                }
+                                ExprKind::Call { callee, .. } => {
+                                    if has_supported_await(callee) {
+                                        let callee_path =
+                                            child_path(&path, ExprChild::CallCallee, span)?;
+                                        push(
+                                            &mut state,
+                                            ExprTask::CallCallee { path, span },
+                                            span,
+                                        )?;
+                                        push(&mut state, ExprTask::Evaluate(callee_path), span)?;
+                                    } else {
+                                        let target = self.prepare_call(callee)?;
+                                        push(
+                                            &mut state,
+                                            ExprTask::CallNext {
+                                                path,
+                                                index: 0,
+                                                target,
+                                                arguments: Vec::new(),
+                                                span,
+                                            },
+                                            span,
+                                        )?;
+                                    }
                                 }
                                 _ => unreachable!("supported value node"),
                             }
@@ -310,6 +347,91 @@ impl Realm {
                     push(
                         &mut state,
                         ExprTask::Evaluate(if test.to_boolean() { yes } else { no }),
+                        span,
+                    )?;
+                }
+                ExprTask::CallCallee { path, span } => {
+                    let function = state.current.take().expect("awaited callee");
+                    let target = CallTarget {
+                        function,
+                        this: Value::Undefined,
+                        direct_eval: false,
+                    };
+                    push(
+                        &mut state,
+                        ExprTask::CallNext {
+                            path,
+                            index: 0,
+                            target,
+                            arguments: Vec::new(),
+                            span,
+                        },
+                        span,
+                    )?;
+                }
+                ExprTask::CallNext {
+                    path,
+                    index,
+                    target,
+                    arguments,
+                    span,
+                } => {
+                    let expression = expression_at(&data.body, state.root, &path);
+                    let ExprKind::Call {
+                        arguments: syntax, ..
+                    } = &expression.kind
+                    else {
+                        unreachable!("call argument cursor");
+                    };
+                    if index == syntax.len() {
+                        state.current = Some(self.invoke_call(target, arguments, span)?);
+                    } else {
+                        let argument = child_path(&path, ExprChild::CallArgument(index), span)?;
+                        push(
+                            &mut state,
+                            ExprTask::CallAppend {
+                                path,
+                                index,
+                                target,
+                                arguments,
+                                span,
+                            },
+                            span,
+                        )?;
+                        push(&mut state, ExprTask::Evaluate(argument), span)?;
+                    }
+                }
+                ExprTask::CallAppend {
+                    path,
+                    index,
+                    target,
+                    mut arguments,
+                    span,
+                } => {
+                    let expression = expression_at(&data.body, state.root, &path);
+                    let ExprKind::Call {
+                        arguments: syntax, ..
+                    } = &expression.kind
+                    else {
+                        unreachable!("call argument append");
+                    };
+                    let argument = &syntax[index];
+                    let value = state.current.take().expect("argument value");
+                    self.append_evaluated_argument(
+                        &mut arguments,
+                        value,
+                        matches!(argument, Argument::Spread(_)),
+                        argument.expression().span,
+                    )?;
+                    push(
+                        &mut state,
+                        ExprTask::CallNext {
+                            path,
+                            index: index + 1,
+                            target,
+                            arguments,
+                            span,
+                        },
                         span,
                     )?;
                 }

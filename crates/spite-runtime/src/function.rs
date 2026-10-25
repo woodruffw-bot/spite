@@ -19,6 +19,8 @@ mod bigint;
 mod boolean;
 mod bound;
 mod builtin;
+mod call;
+pub(crate) use call::CallTarget;
 mod class;
 pub(crate) use class::ClassConstructor;
 mod class_field;
