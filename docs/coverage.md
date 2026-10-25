@@ -27968,3 +27968,21 @@ directly lexed Unsupported controls enters the new proof. Strict all-target
 workspace Clippy, documentation tests, formatting, policy and inventories pass.
 Runtime does not yet select the negative word constructor; fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Scalar/string-union positive lookahead with word predicates: Runtime
+
+All 76 positive-lookahead integration groups (5.47 s) and 13 constructor
+groups (0.29 s) pass. Four new groups cover shorter scalar endpoint retries,
+accepted and rejected empty members, named outside/operand indices, original
+line/fold/backspace/pair context, lastIndex, String consumers, copies, collection
+and deep wrappers. Pair-start and astral-fold cases retain independent
+specification expectations.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 70 complete raw JavaScript programs. Native
+metadata uses twelve independently specified scalar/literal-alternative controls
+and legal Unicode-candidate enumeration. Runtime receives original class
+source. Strict all-target workspace Clippy, documentation tests, Rust 1.85
+all-target checks, formatting, policy, inventories and diff checks pass. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

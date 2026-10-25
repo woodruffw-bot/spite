@@ -1062,7 +1062,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile positive lookahead over scalar escapes, properties and ranges beside variable-length q members, preserving folded membership, endpoint retries and independent captures.
 - [x] Execute scalar/string-union lookahead through Runtime and String consumers with original bindings and named selected-member spans.
 - [x] Compile scalar/string-union lookahead with word predicates and line gates, preserving folded scalar membership, endpoint retries and independent captures.
-- [ ] Execute scalar/string-union lookahead with word predicates through Runtime and String consumers with original context and named selected-member spans.
+- [x] Execute scalar/string-union lookahead with word predicates through Runtime and String consumers with original context and named selected-member spans.
 - [x] Compile negative lookahead over scalar escapes, properties and ranges beside variable-length q members, preserving folded membership, complete candidates and undefined operand slots.
 - [ ] Execute negative scalar/string-union lookahead through Runtime and String consumers with original bindings and named undefined captures.
 - [x] Compile negative scalar/string-union lookahead with word predicates and line gates, preserving folded membership, complete conjunction semantics and undefined operand slots.

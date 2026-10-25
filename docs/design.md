@@ -15098,6 +15098,15 @@ independent whole-operand captures and original UTF-16 spans (22.2.2.4, 22.2.2.7
 Earlier constructor domains and work sequences remain unchanged.
 
 
+Runtime selects scalar/string-union lookahead with word predicates as a checked
+v-mode fallback after full original validation. Complete normalized capture
+scopes retain original bindings; checked errors and enclosing-offset reset on
+proof success use established boundaries. The positive string cache retains
+selected scalar/string extents and defined-empty members through named indices,
+String consumers, copies and collection. Original endpoint context and reentrant
+conversion behavior remain shared with established paths.
+
+
 ### Negative lookahead over scalar operands and q strings
 
 A separate checked negative constructor accepts scalar class escapes, properties
