@@ -14515,3 +14515,11 @@ data, folded set algebra, checked errors, complete Unicode advancement,
 initial-pair rewind and actual-work cancellation retain their shared paths.
 Earlier entries keep their domains and charges. Runtime integration remains
 separate.
+
+Runtime selects checked negative word-scalar-set lookahead after its line-only
+negative scalar entry, gated by v mode and using full normalized source.
+Successful selection resets the projected outer offset; checked errors keep
+their host mapping. Shared negative capture caching retains empty outside and
+undefined operand slots through named indices, String consumers, copies and
+collection. Original set syntax, word/line context and complete Unicode search
+remain in Core; user conversions stay outside the compiler frame.
