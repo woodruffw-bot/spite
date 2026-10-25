@@ -15048,3 +15048,13 @@ endpoint retries. Empty membership does not guarantee failure when predicates
 reject. Outside captures remain empty, operand slots remain undefined, and
 candidate/work behavior is shared with earlier negative modes (22.2.2.4,
 22.2.2.7).
+
+
+Runtime selects negative character/string-union lookahead with word predicates
+as a checked v-mode fallback after full original validation. Complete normalized
+capture scopes retain original bindings; checked errors and enclosing-offset
+reset on proof success keep the established boundaries. The negative string
+cache retains only the empty assertion range, with outside empty captures and
+named undefined operand slots through indices, consumers, copies and collection.
+Original-context literal/string conjunctions and Unicode candidates remain
+Core's responsibility.

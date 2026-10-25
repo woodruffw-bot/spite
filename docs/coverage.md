@@ -27832,3 +27832,23 @@ predicates, complete single-q and q-union families and earlier assertion paths.
 Later negative character/string-union work has separate focused and differential
 evidence. Fixtures, harness files, reviewed entries, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Literal-character/string-union negative lookahead with word predicates: Runtime
+
+All 59 negative-lookahead integration groups (3.23 s), 13 constructor groups
+(0.35 s) and 439 Runtime unit tests (8.49 s) pass. The four new integration
+groups cover conjunction negation at original word endpoints, shorter-member
+retries, accepted and rejected empty members, undefined operand captures,
+named indices, lastIndex, String consumers, copies, collection and deep scopes.
+Pair-start and braced-surrogate expectations remain independent specification
+checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 53 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls and legal Unicode-candidate enumeration. Runtime receives original
+class source. Strict all-target workspace Clippy, documentation tests, Rust
+1.85 all-target checks, formatting, policy, inventories and diff checks pass.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
