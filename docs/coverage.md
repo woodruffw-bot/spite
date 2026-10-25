@@ -27491,3 +27491,21 @@ was 5,322,320 KiB in this incremental run. No compiler diagnostic flags, profile
 changes, native-stack overrides or default quotas were used. Later adjacent-q-
 union work has separate focused and differential evidence. Fixtures, snapshots
 and dependencies are unchanged.
+
+
+## Adjacent-q-union lookahead with word predicates: Core
+
+The focused compiler/regression harness passes all 386 groups (2.95 s),
+including four new word-union groups. The production library API passes all
+16 positive string-class groups (0.04 s). These cover longest-to-shorter endpoint
+retries across operands, defined-empty members, independent captures, original
+line/fold/backspace/pair context, deep scopes, bounded failed endpoints, proof
+exclusions and every construction/search work abort followed by recovery.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first equivalent
+literal-alternative controls and legal Unicode-candidate enumeration. None of
+the 2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select this constructor; fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

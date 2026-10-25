@@ -14898,3 +14898,13 @@ existing host boundary and enclosing offsets reset only on proof success. The
 existing positive string-class cache retains independent selected-member spans,
 including defined empty ranges, through named indices, consumers, copies and
 collection. Reentrant conversions remain outside compilation.
+
+
+A separate q-union lookahead constructor admits operand word predicates with
+optional ^/$ gates, requiring at least one predicate and at least two q operands
+with an empty or longer member overall. It reuses the same checked union trie
+and complete-wrapper proof. Endpoint predicates inspect original input, so a
+longer member in a later operand can fail while a shorter member in another
+operand succeeds. The selected whole-member capture extent remains independent
+of the empty assertion span; empty alternatives retain ordinary candidate
+priority (22.2.2.4, 22.2.2.7). Earlier constructor domains and work are unchanged.
