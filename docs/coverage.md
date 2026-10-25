@@ -25946,3 +25946,30 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Runtime lookahead over one single-character q class
+
+All twenty-four current positive-lookahead groups pass (2.30 s), including four
+new q-class groups. Checks cover original class source/flags, named empty outside
+and consuming operand indices, nested operations, original line context,
+uppercase/long-s/Kelvin folding, astral widths, lone surrogates, String consumers,
+copies, collection, 2,000 wrapper slots and stateful initial-pair rewind. All
+thirteen constructor regressions pass (0.34 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle using independent Unicode advancement and state
+bookkeeping. The 220 ignoreCase patterns contribute 45,760 equivalent ordinary-q
+control records for the documented Node defect. Twenty-one ASCII iv patterns
+additionally use the documented equivalent-range control (4,368 overlapping
+records). Twenty-one complete JavaScript programs pass with the same documented
+equivalent-class controls. Actual Runtime cases retain the original q syntax;
+the preceding Core record preserves the original-q baseline disagreements.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The preceding negative-lookahead snapshot
+records all 437 Runtime units; this constructor-only Runtime extension has the
+focused and differential evidence above. Broad results record `8f624262`;
+negative assertions and this q-class extension retain separate focused evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.

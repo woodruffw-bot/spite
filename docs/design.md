@@ -14238,3 +14238,12 @@ folding, lone surrogates and candidate advancement use the shared operand matche
 Checked work and capacity errors retain their existing contracts. Construction,
 clone/drop and cancellation stay flat; earlier entry points retain their domains
 and charges. Runtime integration remains separate.
+
+Runtime selects the single-character q-class lookahead proof only in v mode,
+after the earlier assertion entries. It uses full normalized source, resets the
+projected outer offset on successful selection and maps checked construction
+work/capacity failures through the existing host error path. The public source
+and flags retain the original class syntax. Shared empty/operand range caching
+preserves named indices, String consumers, copies and collection. User
+conversions remain outside the compiler frame, and existing proof domains and
+work charges remain separate.

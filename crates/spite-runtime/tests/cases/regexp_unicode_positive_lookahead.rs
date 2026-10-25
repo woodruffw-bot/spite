@@ -12,6 +12,61 @@ fn check(source: &str) {
 }
 
 #[test]
+fn single_character_q_classes_keep_original_source_names_and_independent_capture_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var atom of ['[\\q{a|😀}]','[[\\q{a|😀}]--[b]]','[[\\q{a|😀}]&&[a😀]]','[x\\q{a|😀}]']){
+            var source='(?<outside>(?=(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v'),m=r.exec('😀a');
+            ok=ok&&m.index===0&&m[0]===''&&m.groups.outside===''&&m.groups.run==='😀'&&m.indices.groups.outside[0]===0&&m.indices.groups.outside[1]===0&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===0&&r.source===source;
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('a').groups.run==='a';
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn single_character_q_lookahead_retains_original_line_fold_and_surrogate_context() {
+    check(
+        r#"
+        var ok=true;
+        var m=/(?=(?<run>^[\q{a|😀}]$))/dimv.exec('\nA\n');ok=ok&&m.index===1&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
+        for(var text of ['S','ſ','K','K']){var m=/(?=(?<run>[\q{ſ|k}]))/div.exec(text);ok=ok&&m.index===0&&m.groups.run===text&&m.indices.groups.run[1]===1}
+        var m=/(?=(?<run>[\p{ASCII}\q{😀}]))/div.exec('ſ');ok=ok&&m.index===0&&m.groups.run==='ſ';
+        var r=/(?=(?<run>[\q{\uD800|x}]))/dgv;ok=ok&&r.exec('😀')===null&&r.lastIndex===0;var m=r.exec('\ud800x');ok=ok&&m.index===0&&m.groups.run==='\ud800'&&m.indices.groups.run[1]===1;
+        ok
+    "#,
+    );
+}
+
+#[test]
+fn single_character_q_lookahead_string_consumers_copies_and_collection_keep_original_captures() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?=(?<run>[\\q{a|😀}])))',r=new RegExp(source,'dgv'),all=Array.from('😀a'.matchAll(r));
+        var ok=all.length===2&&all[0].index===0&&all[0].groups.run==='😀'&&all[1].index===2&&all[1].groups.run==='a'&&r.lastIndex===0;
+        ok=ok&&'😀a'.replace(r,'<$<run>>')==='<😀>😀<a>a'&&'😀a'.replaceAll(r,'<$<run>>')==='<😀>😀<a>a'&&JSON.stringify('😀a'.split(new RegExp('(?=([\\q{a|😀}]))','v')))==='["😀","a","a"]';
+        var offsets=[];ok=ok&&'😀a'.replace(r,function(match,outside,run,offset,input,groups){offsets.push(offset);ok=ok&&outside===''&&run===groups.run;return '!';})==='!😀!a'&&JSON.stringify(offsets)==='[0,2]';
+        r.lastIndex=1;ok=ok&&'😀a'.search(r)===0&&r.lastIndex===1;
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('😀').groups.run==='😀';ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('a');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn single_character_q_lookahead_deep_wrappers_and_stateful_pair_offsets_keep_exact_slots() {
+    check(
+        r#"
+        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{a|😀}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=2;var m=r.exec('!😀a');
+        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
+        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);
+        r.lastIndex=5;ok=ok&&r.exec('!😀a')===null&&r.lastIndex===0;ok
+    "#,
+    );
+}
+
+#[test]
 fn named_operand_and_outside_captures_keep_independent_indices_and_greediness() {
     check(
         r#"
