@@ -26383,3 +26383,28 @@ including actual-work cancellation and cached positive/negative capture access.
 The broad RegExp and Test262 runs for negative q assertions are recorded
 separately when completed. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+## Runtime single-character scalar v-set lookahead
+
+All thirty-two current positive-lookahead groups pass (1.88 s), including four
+new scalar-set groups. Checks cover original nested set source and names,
+independent empty/consuming indices, union/intersection/subtraction/complement,
+empty sets, original line/property/fold context, Greek and surrogate data,
+String consumers, copies, collection, 2,000 wrapper slots, 1,000 nested classes
+and stateful pair rewind. All thirteen constructor regressions pass (0.21 s),
+including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 scalar-set patterns
+with the native sticky-candidate oracle and independent Unicode search/state
+bookkeeping. Fifty-eight ASCII iv patterns contribute 12,064 equivalent-range
+control records for the documented property-fold discrepancy. Twenty-eight
+complete JavaScript programs pass with the documented property/q-fold controls
+where needed; actual Runtime expectations retain original source syntax.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. Runtime inventory remains 622. The completed q-assertion snapshot records
+all 437 Runtime units; this constructor-only Runtime extension has the focused
+and differential evidence above. Completed broad results record `3c6ca264`;
+later assertions retain separate focused evidence. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

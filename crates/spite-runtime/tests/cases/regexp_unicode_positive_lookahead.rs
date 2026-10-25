@@ -395,3 +395,57 @@ fn bare_word_atom_dot_search_excludes_interior_surrogates_and_rewinds_initial_pa
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dg'+mode),m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run==='b'&&m.indices.groups.run[0]===4&&m.indices.groups.run[1]===5&&r.lastIndex===4;r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=2;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0}ok",
     );
 }
+
+#[test]
+fn scalar_v_sets_keep_original_source_and_named_independent_capture_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var row of [['[[a-z]--[aeiou]]','!ab',2,'b'],['[[a-z]&&[ab]]','!ab',1,'a'],['[[a][b]]','!ab',1,'a'],['[[😀a]--[a]]','!😀a',1,'😀'],['[^[a-z]]','😀abc',0,'😀']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
+            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn scalar_v_set_lines_folds_properties_empty_sets_and_surrogates_keep_original_context() {
+    check(
+        r#"
+        var m=/(?=(?<run>^[[a-z]--[aeiou]]$))/dimv.exec('\nB\n'),ok=m.index===1&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
+        var m=/(?=(?<run>[[\p{ASCII}]--[x]]))/div.exec('ſK');ok=ok&&m.index===0&&m.groups.run==='ſ';
+        var m=/(?=(?<run>[^[\p{ASCII}]]))/div.exec('ſK😀');ok=ok&&m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[1]===4;
+        var m=/(?=(?<run>[\p{Script=Greek}&&[Α-Ωα-ω]]))/div.exec('!Σ');ok=ok&&m.index===1&&m.groups.run==='Σ';
+        ok=ok&&/(?=(?<run>[[a-z]--[a-z]]))/dv.exec('abc')===null;
+        var r=/(?=(?<run>[[\uD800]--[x]]))/dgv;ok=ok&&r.exec('😀')===null&&r.lastIndex===0;var m=r.exec('\ud800x');ok=ok&&m.index===0&&m.groups.run==='\ud800';ok
+    "#,
+    );
+}
+
+#[test]
+fn scalar_v_set_string_consumers_copies_and_collection_keep_original_operand_extents() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?=(?<run>[[😀a]--[x]])))',r=new RegExp(source,'dgv'),all=Array.from('😀a'.matchAll(r));
+        var ok=all.length===2&&all[0].index===0&&all[0].groups.run==='😀'&&all[1].index===2&&all[1].groups.run==='a'&&r.lastIndex===0;
+        ok=ok&&'😀a'.replace(r,'<$<run>>')==='<😀>😀<a>a'&&'😀a'.replaceAll(r,'<$<run>>')==='<😀>😀<a>a'&&JSON.stringify('😀a'.split(new RegExp('(?=([[😀a]--[x]]))','v')))==='["😀","a","a"]';
+        var offsets=[];ok=ok&&'😀a'.replace(r,function(match,outside,run,offset,input,groups){offsets.push(offset);ok=ok&&outside===''&&run===groups.run;return '!';})==='!😀!a'&&JSON.stringify(offsets)==='[0,2]';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('😀').groups.run==='😀';ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('a');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn scalar_v_set_deep_wrappers_nested_classes_and_pair_offsets_keep_exact_slots() {
+    check(
+        r#"
+        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[[😀a]--[x]]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=2;var m=r.exec('!😀a');
+        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
+        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'😀')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);
+        var nested='['.repeat(1000)+'a'+']'.repeat(1000),m=new RegExp('(?=(?<run>'+nested+'))','dv').exec('a');ok=ok&&m.index===0&&m.groups.run==='a'&&m.indices.groups.run[1]===1;ok
+    "#,
+    );
+}

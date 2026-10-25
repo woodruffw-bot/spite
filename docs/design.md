@@ -14399,6 +14399,14 @@ The shared assertion parser selects scalar-set versus one-character-q backends
 explicitly; earlier q-class domains and work sequences remain separate. Runtime
 integration remains separate.
 
+Runtime selects the checked scalar-set lookahead proof after the q-class
+assertion entries, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset; checked construction failures keep
+the existing host mapping. Shared empty/operand range caching preserves names,
+original set syntax, indices, String consumers, copies and collection. Nested
+set algebra, original line/fold context and complete-character search stay in
+Core. User conversions remain outside the compiler frame.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
