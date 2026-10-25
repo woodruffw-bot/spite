@@ -14859,3 +14859,12 @@ empty endpoint retries. Failure of a boundary can make negation succeed even
 when the class has an empty member. Successful negative matches retain empty
 outside spans and undefined operand slots; candidate traversal and cancellation
 remain shared with the earlier negative string proof (22.2.2.4).
+
+
+Runtime selects negative variable-length single-q lookahead with word predicates
+as a separate checked v-mode fallback after original validation. It uses the
+complete normalized capture scope, retains the earlier checked host errors and
+caches only the empty assertion range. Named undefined operand slots and empty
+outside captures retain their indices through consumers, copies and collection;
+original-context endpoint conjunctions and complete Unicode candidates remain
+Core's responsibility.

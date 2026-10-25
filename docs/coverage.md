@@ -27392,3 +27392,23 @@ and character-result assertions. Later negative variable-length q-class
 lookahead has separate focused and differential evidence. Fixtures, harness
 files, reviewed entries, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+
+## Variable-length single-q negative lookahead with word predicates: Runtime
+
+All 43 negative-lookahead integration groups (2.11 s) and 13 constructor groups
+(0.16 s) pass. Four new groups cover whole-conjunction negation, shorter
+endpoint retries, empty members, named undefined operand slots and outside
+indices, original line/fold/backspace context, lastIndex, String consumers,
+copies, collection and deep lexical scopes. Complete pair-search and initial
+pair-rewind expectations remain independent specification checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 37 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls and legal Unicode-candidate enumeration. Complete programs retain
+earlier documented character-result/property controls; Runtime always receives
+original q source. Strict all-target workspace Clippy, documentation tests,
+Rust 1.85 all-target checks, formatting, policy, inventories and diff checks
+pass. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.
