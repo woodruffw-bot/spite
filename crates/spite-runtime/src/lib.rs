@@ -1699,62 +1699,7 @@ impl Realm {
                     // ECMA-262 13.5.1.2: deleting an environment reference
                     // does not GetValue, even for an uninitialized binding.
                     let reference = self.reference(inner)?;
-                    let deleted = match reference {
-                        Reference::Value(_) => true,
-                        Reference::Private { .. } => {
-                            unreachable!("parser rejects private deletion")
-                        }
-                        Reference::SuperProperty { .. } => {
-                            // 13.5.1.2: fail before ToObject or ToPropertyKey.
-                            return Err(Self::exception(
-                                ExceptionKind::ReferenceError,
-                                inner.span,
-                                "cannot delete a super property",
-                            ));
-                        }
-                        Reference::Property { base, mut key } => {
-                            Self::require_object_coercible(&base, inner.span)?;
-                            let key = self.reference_key(&mut key, inner.span)?;
-                            let deleted = self.delete_property_value(&base, &key, inner.span)?;
-                            if !deleted && self.strict {
-                                return Err(Self::exception(
-                                    ExceptionKind::TypeError,
-                                    inner.span,
-                                    "property is not configurable",
-                                ));
-                            }
-                            deleted
-                        }
-                        Reference::Lexical(environment, name) => {
-                            let bindings = &mut self
-                                .objects
-                                .environment_mut(&environment)
-                                .expect("resolved environment")
-                                .bindings;
-                            if bindings.get(name).is_none_or(|binding| binding.deletable) {
-                                bindings.remove(name);
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        Reference::ObjectBinding { object, name } => self.delete_property_value(
-                            &Value::Object(object),
-                            &JsString::from(name),
-                            inner.span,
-                        )?,
-                        Reference::Global { key, .. } => {
-                            let object = Value::Object(self.global_object());
-                            self.delete_property_value(&object, &key, inner.span)?
-                        }
-                        Reference::Unresolvable(_) => true,
-                        Reference::UnsupportedGlobal(name) => {
-                            return Err(Self::unsupported(
-                                inner.span,
-                                format!("{name} is not implemented"),
-                            ));
-                        }
-                    };
+                    let deleted = self.delete_reference(reference, inner.span)?;
                     return Ok(Value::Boolean(deleted));
                 }
                 let value = if *op == UnaryOp::Typeof && identifier(inner).is_some() {

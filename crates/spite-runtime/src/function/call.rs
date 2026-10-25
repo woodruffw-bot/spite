@@ -1,6 +1,6 @@
 //! Shared call target preparation and invocation (13.3.6.1).
 
-use crate::{Error, Realm, Value, reference_expression};
+use crate::{Error, Realm, Reference, Value, reference_expression};
 use spite_core::Span;
 use spite_parser::ast::Expr;
 
@@ -19,19 +19,29 @@ impl CallTarget {
 
 impl Realm {
     pub(crate) fn prepare_call(&mut self, callee: &Expr) -> Result<CallTarget, Error> {
-        let (function, this, direct_eval) = if reference_expression(callee) {
-            let mut reference = self.reference(callee)?;
-            let function = self.get(&mut reference, callee.span)?;
-            // With/local eval references are direct only for the intrinsic eval.
-            let direct_eval = reference.is_eval_environment_reference()
-                && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
-            (function, reference.call_receiver(), direct_eval)
-        } else {
-            (self.expression(callee)?, Value::Undefined, false)
-        };
+        if reference_expression(callee) {
+            let reference = self.reference(callee)?;
+            return self.prepare_reference_call(reference, callee.span);
+        }
+        Ok(CallTarget {
+            function: self.expression(callee)?,
+            this: Value::Undefined,
+            direct_eval: false,
+        })
+    }
+
+    pub(crate) fn prepare_reference_call(
+        &mut self,
+        mut reference: Reference<'_>,
+        span: Span,
+    ) -> Result<CallTarget, Error> {
+        let function = self.get(&mut reference, span)?;
+        // With/local eval references are direct only for the intrinsic eval.
+        let direct_eval = reference.is_eval_environment_reference()
+            && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
         Ok(CallTarget {
             function,
-            this,
+            this: reference.call_receiver(),
             direct_eval,
         })
     }

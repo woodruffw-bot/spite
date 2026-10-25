@@ -1,14 +1,20 @@
 //! Value expression continuations; source nodes stay in the retained function AST.
 
+mod member;
+
 use super::{AsyncAwaitAction, AsyncExecutionData, Step};
 use crate::function::CallTarget;
 use crate::{
     Error, Realm, Value,
-    object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask},
+    object::async_expression::{
+        AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask, MemberAction,
+    },
+    reference_expression,
 };
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
-    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, StatementKind,
+    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, PropertyName, StatementKind,
+    UnaryOp,
 };
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
@@ -32,6 +38,10 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
             .iter()
             .filter_map(ArrayElement::expression)
             .any(has_supported_await),
+        ExprKind::Member(base, name) => {
+            has_supported_await(base)
+                || matches!(name, PropertyName::Computed(key) if has_supported_await(key))
+        }
         // Unsupported parents retain the ordinary evaluator's explicit boundary.
         // Defining a nested async function does not execute its awaited body.
         _ => false,
@@ -89,6 +99,8 @@ fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) ->
             (ExprChild::ArrayElement(index), ExprKind::Array(elements)) => elements[*index]
                 .expression()
                 .expect("array element expression"),
+            (ExprChild::MemberBase, ExprKind::Member(base, _)) => base,
+            (ExprChild::MemberKey, ExprKind::Member(_, PropertyName::Computed(key))) => key,
             _ => unreachable!("typed expression path"),
         };
     }
@@ -172,6 +184,7 @@ impl Realm {
                         | ExprKind::Conditional(..)
                         | ExprKind::Call { .. }
                         | ExprKind::Array(_)
+                        | ExprKind::Member(..)
                             if has_supported_await(expression) =>
                         {
                             self.tick(span)?;
@@ -194,6 +207,17 @@ impl Realm {
                                     ExprTask::Evaluate(child_path(&path, ExprChild::Inner, span)?),
                                     span,
                                 )?,
+                                ExprKind::Unary(op, inner)
+                                    if *op == UnaryOp::Delete && reference_expression(inner) =>
+                                {
+                                    let inner_path = child_path(&path, ExprChild::Inner, span)?;
+                                    self.begin_async_member(
+                                        &data.body,
+                                        &mut state,
+                                        inner_path,
+                                        MemberAction::Delete { span: inner.span },
+                                    )?;
+                                }
                                 ExprKind::Unary(op, _) => {
                                     push(&mut state, ExprTask::Unary { op: *op, span }, span)?;
                                     push(
@@ -255,12 +279,25 @@ impl Realm {
                                     if has_supported_await(callee) {
                                         let callee_path =
                                             child_path(&path, ExprChild::CallCallee, span)?;
-                                        push(
-                                            &mut state,
-                                            ExprTask::CallCallee { path, span },
-                                            span,
-                                        )?;
-                                        push(&mut state, ExprTask::Evaluate(callee_path), span)?;
+                                        if reference_expression(callee) {
+                                            self.begin_async_member(
+                                                &data.body,
+                                                &mut state,
+                                                callee_path,
+                                                MemberAction::Call { path, span },
+                                            )?;
+                                        } else {
+                                            push(
+                                                &mut state,
+                                                ExprTask::CallCallee { path, span },
+                                                span,
+                                            )?;
+                                            push(
+                                                &mut state,
+                                                ExprTask::Evaluate(callee_path),
+                                                span,
+                                            )?;
+                                        }
                                     } else {
                                         let target = self.prepare_call(callee)?;
                                         push(
@@ -289,6 +326,14 @@ impl Realm {
                                             span,
                                         },
                                         span,
+                                    )?;
+                                }
+                                ExprKind::Member(..) => {
+                                    self.begin_async_member(
+                                        &data.body,
+                                        &mut state,
+                                        path,
+                                        MemberAction::Value,
                                     )?;
                                 }
                                 _ => unreachable!("supported value node"),
@@ -540,6 +585,18 @@ impl Realm {
                             array,
                             span,
                         },
+                        span,
+                    )?;
+                }
+                ExprTask::MemberBase { path, action, span } => {
+                    self.async_member_base(&data.body, &mut state, path, action, span)?;
+                }
+                ExprTask::MemberKey { base, action, span } => {
+                    let key = state.current.take().expect("computed member key");
+                    self.finish_async_member(
+                        &mut state,
+                        crate::Reference::Property { base, key },
+                        action,
                         span,
                     )?;
                 }

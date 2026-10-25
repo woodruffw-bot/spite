@@ -25,9 +25,18 @@ pub(crate) enum ExprChild {
     CallCallee,
     CallArgument(usize),
     ArrayElement(usize),
+    MemberBase,
+    MemberKey,
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
+
+#[derive(Debug)]
+pub(crate) enum MemberAction {
+    Value,
+    Call { path: ExprPath, span: Span },
+    Delete { span: Span },
+}
 
 #[derive(Debug)]
 pub(crate) enum ExprTask {
@@ -95,6 +104,16 @@ pub(crate) enum ExprTask {
         array: Value,
         span: Span,
     },
+    MemberBase {
+        path: ExprPath,
+        action: MemberAction,
+        span: Span,
+    },
+    MemberKey {
+        base: Value,
+        action: MemberAction,
+        span: Span,
+    },
     CheckString(Span),
 }
 
@@ -108,6 +127,7 @@ impl ExprTask {
             Self::ArrayNext { array, .. } | Self::ArrayAppend { array, .. } => {
                 (Some(array), None, &[])
             }
+            Self::MemberKey { base, .. } => (Some(base), None, &[]),
             Self::CallNext {
                 target, arguments, ..
             }

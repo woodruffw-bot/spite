@@ -60,6 +60,23 @@ not an alternative language specification.
 
 
 
+## Awaited member references
+
+Ordinary/private member reads, method calls and deletion suspend in bases and
+computed keys. The base is retained while the key awaits; core reference
+operations preserve conversion order, getter receivers, private brands, Proxy
+traps and strict deletion. Parenthesized method references keep their receiver,
+and method selection precedes arguments. Deletion does not read the property's
+value. Ordinary evaluation shares the extracted call-target and deletion helpers.
+
+Eight Runtime groups cover these rules and base-value collection. Symbol lifetime
+controls include a primitive base retained only through an awaited key. All 416
+units and 1,928 non-RegExp integrations pass across 644 Runtime case files.
+The upstream reviews retain 32 passing/12 Unsupported await variants and 146
+passing/116 Unsupported Array/adapter variants, with no new admissions. Counts
+remain 9,573 fixtures, twenty helpers, 9,554 reviewed sources and 18,556 variants.
+Intrinsics, Parser coverage and product quotas are unchanged.
+
 ## Awaited Array literals
 
 Array elements and spread operands can suspend while an intrinsic partial Array

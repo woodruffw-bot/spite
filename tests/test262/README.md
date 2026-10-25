@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited member reference review
+
+Eight Runtime groups and a Symbol ownership control cover awaited member bases
+and keys, method receivers, private access, deletion and collection. Complete
+upstream review results remain 32 passing/12 Unsupported await variants and
+146 passing/116 Unsupported Array/adapter variants. No additional original
+qualifies for admission. Inventories remain 9,573 fixtures, twenty helpers,
+9,554 reviewed sources and 18,556 variants; helpers and quotas are unchanged.
+
 ## Awaited Array literal review
 
 Awaited elements and spread operands add six Runtime groups and partial-array

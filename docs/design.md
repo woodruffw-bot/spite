@@ -437,13 +437,13 @@ binary operation after RHS fulfillment. Logical steps skip their own RHS and
 continue later chain operations; conditionals evaluate one branch. Nested awaits
 each suspend independently. Parentheses retain their expression boundaries.
 
-Unary value operations are shared with ordinary evaluation; delete and typeof
-reference handling stays in the ordinary evaluator. Expression tasks and current
-results participate in object tracing and the physical Symbol inventory. Their
+Unary value operations and Reference deletion are shared with ordinary evaluation;
+unresolved-identifier typeof handling stays in the ordinary evaluator. Expression
+tasks and current results participate in object tracing and the physical Symbol inventory. Their
 root return/discard/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including member references, construction, optional/super calls, object literals,
+including assignments/updates, construction, optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -465,6 +465,18 @@ element definition, synchronous spread and checked index accumulation; yielded
 Promises remain values. Rejection skips later elements and releases the partial
 Array through the existing abrupt-completion path. Partial Arrays participate in
 tracing and the physical Symbol inventory through their retained object values.
+
+Ordinary and private member references support awaited bases and computed keys
+for reads, method calls and deletion (sec-evaluate-property-access-with-expression-key,
+13.5.1.2). Base evaluation precedes key evaluation; the saved raw base survives
+key suspension. Shared GetValue and deletion perform RequireObjectCoercible and
+ToPropertyKey after the key completes, so key rejection precedes a nullish-base
+error and a nullish base skips key coercion. Calls capture the reference receiver
+and selected function before arguments; parentheses preserve that receiver, while
+value-producing await/comma forms do not. Private resolution and brands use the
+restored private context. Deletion evaluates the reference without reading its
+value and preserves strict failures. Retained bases participate in tracing and
+the physical Symbol inventory. Assignments and updates remain separate work.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer
