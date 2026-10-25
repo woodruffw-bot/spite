@@ -25848,3 +25848,27 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime single-character Unicode negative lookbehind
+
+Five new Runtime groups pass (0.59 s), covering named empty outside/undefined
+operand properties and indices, source and clones, ordinary/global/sticky/end
+execution, absent predecessors, complete astral and lone-surrogate characters,
+initial-pair rewind, original line/dot/fold/property context, String consumers,
+copies, collection and 2,000 wrapper slots. All thirteen constructor
+regressions pass (0.19 s), including native reentry. Runtime inventory is 622.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns against
+the native sticky-candidate oracle with independent complete-character search
+and state bookkeeping. Five ASCII iv patterns contribute 1,040 equivalent-range
+controls for the documented property-fold discrepancy. Five complete JavaScript
+programs agree separately; independent pair expectations stay outside direct
+V8 search comparison.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+workspace checking, formatting, dependency policy, inventories and diff checks
+pass. The preceding negative-lookahead result records all 437 Runtime units;
+this constructor-only Runtime extension has the focused and differential
+evidence above. Broad Test262 results record `8f624262`; negative assertions
+retain separate focused evidence. Fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.

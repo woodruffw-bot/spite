@@ -14194,3 +14194,11 @@ predecessor makes negative lookbehind succeed; at EOF the preceding character
 can still make it fail. Outside wrappers capture the empty assertion position;
 all operand captures remain undefined. Construction, clone and drop stay flat,
 and cancellation precedes source/input work. Runtime integration remains separate.
+
+Runtime selects the negative single-character lookbehind constructor after the
+existing negative-lookahead proofs. Full normalized source preserves original
+capture slots, and successful selection resets the projected offset. The
+existing negative result path retains empty outside ranges and undefined
+operand slots through named indices, String consumers, copies and collection.
+Original predecessor/line context and complete-character candidates stay in
+Core, while input conversion and stateful execution retain their shared paths.

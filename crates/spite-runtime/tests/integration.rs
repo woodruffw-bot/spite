@@ -1216,6 +1216,8 @@ mod regexp_unicode_conjunctive_predicate_choice_string_class_alternative_capture
 mod regexp_unicode_conjunctive_predicate_choice_string_class_captures;
 #[path = "cases/regexp_unicode_negative_lookahead.rs"]
 mod regexp_unicode_negative_lookahead;
+#[path = "cases/regexp_unicode_negative_lookbehind.rs"]
+mod regexp_unicode_negative_lookbehind;
 #[path = "cases/regexp_unicode_positive_lookahead.rs"]
 mod regexp_unicode_positive_lookahead;
 #[path = "cases/regexp_unicode_positive_lookbehind.rs"]
