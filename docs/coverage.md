@@ -27608,3 +27608,34 @@ predicates, alongside the complete positive/negative variable-length single-q
 family and earlier assertion paths. Later negative q-union work has separate
 focused and differential evidence. Fixtures, harness files, reviewed entries,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete RegExp validation of positive q-union lookahead
+
+The Runtime snapshot at `ad4fded7` passes all 3,107 RegExp integration tests
+through Cargo with the normal environment (777.35 s). This covers positive
+q-union lookahead with line and word predicates, all positive/negative
+variable-length single-q modes and earlier assertion paths. Together with
+the recorded full Test262 result, this replaces the invalid direct-executable
+attempt as complete regression evidence. Later negative q-union extensions
+have separate focused and differential evidence. No code or snapshot edits
+were needed to correct workspace discovery.
+
+## Adjacent-q-union negative lookahead with word predicates: Runtime
+
+All 51 negative-lookahead integration groups (2.44 s), 13 constructor groups
+(0.08 s) and 439 Runtime library tests (6.82 s) pass. Four new groups cover
+whole-conjunction negation, shorter endpoint retries across operands, empty
+members, named undefined operand slots and outside indices, original line/fold/
+backspace context, lastIndex, String consumers, copies, collection and deep
+scopes. Pair-search expectations remain independent specification checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 45 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete union classes and legal Unicode-candidate enumeration.
+Complete programs retain earlier documented equivalent controls; Runtime always
+receives original q source. Strict all-target workspace Clippy, documentation
+tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
+checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.

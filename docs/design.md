@@ -14955,3 +14955,13 @@ retries across operands. Empty members alone do not guarantee failure when
 predicates reject their endpoints. Outside spans remain empty and every operand
 slot remains undefined; candidate search and work cancellation retain the
 earlier behavior (22.2.2.4, 22.2.2.7).
+
+
+Runtime selects negative q-union lookahead with word predicates as a checked
+v-mode fallback after full original validation. Complete normalized capture
+scopes retain original bindings; checked errors and enclosing-offset reset on
+proof success use the established boundaries. The existing negative string
+cache retains only the empty assertion range, with outside empty spans and
+named undefined operand slots through indices, consumers, copies and collection.
+Original-context conjunctions and complete Unicode candidates remain Core's
+responsibility.
