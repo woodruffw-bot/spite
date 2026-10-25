@@ -27758,3 +27758,26 @@ Runtime always receives original q source. Strict all-target workspace Clippy,
 documentation tests, Rust 1.85 all-target checks, formatting, policy, inventories
 and diff checks pass. Fixtures, snapshots, dependencies, profiles, native stacks
 and default quotas are unchanged.
+
+
+## Literal-character/string-union negative lookahead Core proof
+
+The focused compiler/regression harness passes all 406 groups (0.65 s),
+including four new negative character-union groups. The production library API
+passes all 20 negative string-class groups (0.27 s). These cover literal-member
+participation in negation, accepted-empty-member failure, undefined operand slots
+and outside spans, original line/fold/surrogate context, deep scopes, bounded
+retries, every construction/search work abort and interruption within a long
+nonterminal prefix. Braced-surrogate behavior remains an independent specification
+check.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. All ten earlier
+constructors retain byte-identical results, captures and work vectors across
+1,280 construction and 133,120 search records before/after the negative domain
+branch (134,400 total records). None of the 2,728 remaining directly lexed
+Unsupported controls enters the new proof. Strict all-target workspace Clippy,
+documentation tests, formatting, policy and inventories pass. Runtime does not
+yet select this constructor; fixtures, snapshots, dependencies, profiles,
+native stacks and default quotas are unchanged.

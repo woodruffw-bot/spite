@@ -1055,6 +1055,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute character/string-union lookahead through Runtime and String consumers with original source, bindings and selected-member extents.
 - [x] Compile character/string-union lookahead with word predicates and line gates, preserving literal endpoint fallback, checked errors and independent capture extents.
 - [x] Execute character/string-union lookahead with word predicates through Runtime and String consumers, preserving original context and named selected-member spans.
+- [x] Compile negative lookahead over literal characters beside variable-length q members, preserving checked membership semantics, complete candidates and undefined operand slots.
+- [ ] Execute negative character/string-union lookahead through Runtime and String consumers with original bindings and named undefined captures.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.

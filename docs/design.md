@@ -15011,3 +15011,20 @@ enclosing-offset reset on proof success use the established boundaries. The
 positive string cache retains selected literal/string extents and defined-empty
 members through named indices, consumers, copies and collection, with original
 source and reentrant conversion behavior preserved.
+
+
+### Negative lookahead over literal characters and q strings
+
+A separate checked negative constructor accepts a literal-character/string
+union with an empty or longer q member and optional operand ^/$ gates. Full
+original v/vi validation and normalized capture heads precede sign-only
+projection. The positive character-union proof validates complete membership
+and wrapper scope without independently validating or rebinding projected source.
+Successful negation means neither a literal nor a string member satisfies the
+original-context conjunction at that candidate (22.2.2.4, 22.2.2.7).
+
+The existing cancellable sticky-probe search retains complete Unicode candidates,
+empty outside captures and undefined operand slots. The private domain selector
+keeps earlier single-q and q-union constructors and their work unchanged. Word
+gates, scalar escapes/properties/ranges, nesting, operations, repetition,
+continuations and references retain separate proof requirements.

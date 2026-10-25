@@ -77,6 +77,21 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         Self::compile_with_work_impl::<true, 1, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles negative lookahead over literal characters beside q strings.
+    ///
+    /// A literal character and an empty or longer q member are required.
+    /// Sign-only projection delegates checked union/scope validation, retaining
+    /// original ^/$ context and undefined operand captures. Full original v/vi
+    /// validation and normalized capture heads are required.
+    pub fn compile_character_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 2, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
@@ -109,6 +124,16 @@ impl RegExpUnicodeNegativeStringClassMatcher {
                 )?
             } else {
                 RegExpUnicodePositiveStringClassMatcher::compile_q_union_lookahead_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            }
+        } else if CLASS_KIND == 2 {
+            if WORD {
+                RegExpUnicodePositiveStringClassMatcher::compile_character_union_lookahead_with_word_boundaries_validated_with_work(
+                    &source, ignore_case, multiline, charge,
+                )?
+            } else {
+                RegExpUnicodePositiveStringClassMatcher::compile_character_union_lookahead_validated_with_work(
                     &source, ignore_case, multiline, charge,
                 )?
             }
