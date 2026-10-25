@@ -27948,3 +27948,23 @@ constructors retain byte-identical results, captures and work vectors across
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Scalar/string-union negative lookahead with word predicates: Core
+
+The focused compiler/regression harness passes all 426 groups (4.42 s),
+including four new negative word-scalar-union groups. The production library
+API passes all 32 negative string-class groups (0.99 s). These cover folded
+scalar participation in conjunction negation, shorter endpoint retries, accepted
+and rejected empty members, undefined operand slots, original line/fold/
+backspace/pair context, deep scopes, bounded retries and every construction/
+search work abort followed by recovery. Folded ASCII/complement and pair
+expectations retain independent specification checks.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified scalar/literal-alternative
+controls and legal Unicode-candidate enumeration. None of the 2,728 remaining
+directly lexed Unsupported controls enters the new proof. Strict all-target
+workspace Clippy, documentation tests, formatting, policy and inventories pass.
+Runtime does not yet select the negative word constructor; fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

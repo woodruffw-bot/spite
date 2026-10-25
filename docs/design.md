@@ -15114,3 +15114,14 @@ candidates, empty outside spans and undefined operand captures. The private
 domain selector preserves earlier constructors and their work sequences. Word
 gates, nesting, operations, repetition, continuations and reference roles
 retain separate proof requirements.
+
+
+A separate negative scalar/string-union constructor admits operand word
+predicates and optional ^/$ gates, requiring at least one predicate, a scalar
+operand and an empty or longer q member. Sign-only projection delegates to
+the checked positive proof. Successful negation means every scalar and string
+member fails the complete original-context conjunction, including shorter
+endpoint retries. Empty membership does not guarantee failure when predicates
+reject. Outside captures remain empty and operand slots remain undefined;
+candidate and work behavior are shared with earlier negative modes
+(22.2.2.4, 22.2.2.7).

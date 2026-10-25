@@ -122,6 +122,21 @@ impl RegExpUnicodeNegativeStringClassMatcher {
         Self::compile_with_work_impl::<false, 3, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles negative scalar/string-union lookahead with word predicates.
+    ///
+    /// At least one predicate, a scalar operand and an empty or longer q member
+    /// are required; optional ^/$ gates retain original context. Negation tests
+    /// the complete folded-membership conjunction, leaving operand captures
+    /// undefined. Full original v/vi validation and normalized heads are required.
+    pub fn compile_scalar_union_lookahead_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<true, 3, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
