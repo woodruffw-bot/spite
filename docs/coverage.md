@@ -27380,3 +27380,15 @@ remaining directly lexed Unsupported controls enters the new proof. Strict
 all-target workspace Clippy, documentation tests, formatting, policy and
 inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete Test262 validation of positive variable-length q-class lookahead
+
+The Runtime snapshot at `37070660` passes all 16,343 reviewed Test262 variants
+and all 35 runner tests with the conformance profile (456.32 s for the corpus).
+This includes positive variable-length single-q lookahead with line and word
+predicates, alongside all earlier positive/negative primitive, q-class, scalar
+and character-result assertions. Later negative variable-length q-class
+lookahead has separate focused and differential evidence. Fixtures, harness
+files, reviewed entries, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.
