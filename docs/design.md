@@ -15028,3 +15028,12 @@ empty outside captures and undefined operand slots. The private domain selector
 keeps earlier single-q and q-union constructors and their work unchanged. Word
 gates, scalar escapes/properties/ranges, nesting, operations, repetition,
 continuations and references retain separate proof requirements.
+
+
+Runtime selects negative character/string-union lookahead as a checked v-mode
+fallback after full original validation. Complete normalized capture scopes
+retain original bindings; checked errors and enclosing-offset reset on proof
+success use the existing boundaries. The negative string-class matcher and
+cache retain only the empty assertion range, outside empty spans and named
+undefined operand slots through indices, consumers, copies and collection.
+Literal and string membership both participate in the original-context probe.

@@ -27781,3 +27781,23 @@ Unsupported controls enters the new proof. Strict all-target workspace Clippy,
 documentation tests, formatting, policy and inventories pass. Runtime does not
 yet select this constructor; fixtures, snapshots, dependencies, profiles,
 native stacks and default quotas are unchanged.
+
+
+## Literal-character/string-union negative lookahead Runtime execution
+
+All 55 negative-lookahead integration groups (3.77 s) and 13 constructor groups
+(0.21 s) pass. Four new groups cover literal participation in negation, accepted-
+empty-member failure, named undefined operand slots and outside indices,
+original line/fold/surrogate context, lastIndex, String consumers, copies,
+collection and deep scopes. Pair-start and braced-surrogate expectations remain
+independent specification checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 49 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete character/string classes and legal Unicode-candidate
+enumeration. Complete programs retain earlier documented equivalent controls;
+Runtime always receives original q source. Strict all-target workspace Clippy,
+documentation tests, Rust 1.85 all-target checks, formatting, policy, inventories
+and diff checks pass. Fixtures, snapshots, dependencies, profiles, native stacks
+and default quotas are unchanged.
