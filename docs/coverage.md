@@ -26436,3 +26436,14 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Complete broad validation of all single-character q assertions
+
+The Runtime snapshot at `c9b71cc1` passes all 3,019 RegExp integration tests
+(888.79 s), completing its broad validation alongside 35 Test262 package tests
+and 16,343 reviewed corpus variants (497.37 s). The same snapshot passes all
+1,785 Core library tests on Rust 1.85.0 and all 437 Runtime units, as recorded
+above. It includes positive/negative q-class lookahead/lookbehind with word
+predicates and exact original capture semantics. Later scalar v-set assertion
+extensions retain their focused and differential evidence. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.
