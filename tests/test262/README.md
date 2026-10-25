@@ -30,6 +30,16 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Suspended for-in review
+
+Nine Runtime groups and a Symbol ownership control cover suspended enumeration,
+binding scopes, live descriptors/prototypes, labelled control and abrupt exits.
+Collection controls retain the current object and release previous/finished
+enumeration state. Complete original reviews remain at 36 passing/8 Unsupported
+await variants and 152 passing/110 Unsupported Array/adapter variants. No additional
+unchanged original qualifies; inventories remain 9,578 fixtures, twenty helpers,
+9,559 reviewed sources and 18,566 variants. Helpers and quotas are unchanged.
+
 ## Suspended labelled control-flow review
 
 Six Runtime groups and a Symbol ownership control cover label chains, matching

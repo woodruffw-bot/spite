@@ -72,13 +72,19 @@ impl Realm {
                         completion
                     });
                 }
-                Some(AsyncStatementFrame::ForOfHead(_)) => {
-                    let Some(AsyncStatementFrame::ForOfHead(head)) = data.frames.pop() else {
+                Some(AsyncStatementFrame::IterationHead(_)) => {
+                    let Some(AsyncStatementFrame::IterationHead(head)) = data.frames.pop() else {
                         unreachable!("iteration head frame");
                     };
                     if let Some(environment) = head.environment {
                         let scope = self.scopes.pop().expect("iteration head scope");
                         debug_assert_eq!(scope, environment);
+                    }
+                }
+                Some(AsyncStatementFrame::ForIn(_)) => {
+                    match self.advance_async_for_in(data, result) {
+                        FrameStep::Continue => return Ok(None),
+                        FrameStep::Complete(completion) => result = completion,
                     }
                 }
                 Some(AsyncStatementFrame::ForOf(_)) => {

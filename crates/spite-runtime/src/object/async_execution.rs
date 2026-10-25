@@ -25,7 +25,7 @@ pub(crate) enum AsyncAwaitAction {
     Expression,
     IfTest,
     LoopTest,
-    ForOfSource,
+    IterationSource,
     Binding { element: usize },
 }
 
@@ -39,6 +39,7 @@ pub(crate) enum StatementChild {
     FinallyBody,
     LoopBody,
     ForOfBody,
+    ForInBody,
     LabelBody,
 }
 
@@ -85,7 +86,7 @@ pub(crate) enum AsyncLoopPhase {
 }
 
 #[derive(Debug)]
-pub(crate) struct AsyncForOfHead {
+pub(crate) struct AsyncIterationHead {
     pub location: StatementLocation,
     pub environment: Option<EnvironmentHandle>,
 }
@@ -94,6 +95,13 @@ pub(crate) struct AsyncForOfHead {
 pub(crate) struct AsyncForOfCursor {
     pub location: StatementLocation,
     pub iterator: IteratorRecord,
+    pub value: Value,
+}
+
+#[derive(Debug)]
+pub(crate) struct AsyncForInCursor {
+    pub location: StatementLocation,
+    pub iterator: crate::for_in::ForInIterator,
     pub value: Value,
 }
 
@@ -108,8 +116,9 @@ pub(crate) enum AsyncStatementFrame {
         disposable: bool,
     },
     Loop(AsyncLoopCursor),
-    ForOfHead(AsyncForOfHead),
+    IterationHead(AsyncIterationHead),
     ForOf(AsyncForOfCursor),
+    ForIn(AsyncForInCursor),
     Label(StatementLocation),
 }
 
@@ -121,8 +130,8 @@ impl AsyncStatementFrame {
             Self::Try(_) => None,
             Self::Scope { environment, .. } => Some(environment),
             Self::Loop(_) => None,
-            Self::ForOfHead(head) => head.environment.as_ref(),
-            Self::ForOf(_) => None,
+            Self::IterationHead(head) => head.environment.as_ref(),
+            Self::ForOf(_) | Self::ForIn(_) => None,
             Self::Label(_) => None,
         }
     }
@@ -138,8 +147,9 @@ impl AsyncStatementFrame {
             },
             Self::Scope { .. } => None,
             Self::Loop(cursor) => Some(&cursor.value),
-            Self::ForOfHead(_) => None,
+            Self::IterationHead(_) => None,
             Self::ForOf(cursor) => Some(&cursor.value),
+            Self::ForIn(cursor) => Some(&cursor.value),
             Self::Label(_) => None,
         };
         let next = match self {
@@ -149,15 +159,16 @@ impl AsyncStatementFrame {
         value.into_iter().chain(next)
     }
 
-    fn iterator(&self) -> Option<&Handle> {
+    fn object(&self) -> Option<&Handle> {
         match self {
             Self::ForOf(cursor) => Some(cursor.iterator.iterator_handle()),
+            Self::ForIn(cursor) => cursor.iterator.object_handle(),
             Self::Block(_)
             | Self::If
             | Self::Try(_)
             | Self::Scope { .. }
             | Self::Loop(_)
-            | Self::ForOfHead(_)
+            | Self::IterationHead(_)
             | Self::Label(_) => None,
         }
     }
@@ -193,8 +204,8 @@ impl AsyncExecutionData {
             )
     }
 
-    fn iterators(&self) -> impl Iterator<Item = &Handle> {
-        self.frames.iter().filter_map(AsyncStatementFrame::iterator)
+    fn objects(&self) -> impl Iterator<Item = &Handle> {
+        self.frames.iter().filter_map(AsyncStatementFrame::object)
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
@@ -217,7 +228,7 @@ impl AsyncExecutionData {
         self.values()
             .flat_map(Trace::trace)
             .chain(self.environments().map(|environment| Some(&environment.0)))
-            .chain(self.iterators().map(Some))
+            .chain(self.objects().map(Some))
     }
 }
 
@@ -238,8 +249,8 @@ impl Objects {
         for environment in data.environments() {
             self.environment(environment)?;
         }
-        for iterator in data.iterators() {
-            self.inspect(iterator)?;
+        for object in data.objects() {
+            self.inspect(object)?;
         }
         let state = if let Some(state) = state {
             if self.inspect(state)?.async_execution.is_some() {

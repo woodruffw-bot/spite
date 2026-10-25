@@ -508,7 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Remaining for statements still use ordinary execution and retain
+them. Three-clause for statements still use ordinary execution and retain
 their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
@@ -577,6 +577,23 @@ handles, cached methods and loop values are traced and validated, with every
 stored Symbol counted. Parameter-catch and iteration scopes share a lexical scope
 frame, with disposal enabled only for resource iterations. For-await-of remains
 Unsupported; this is synchronous iteration with suspended source execution.
+
+For-in loops support awaited RHS expressions and bodies (14.7.5.6–10). Ordinary
+and suspended execution share one internal enumeration state: the current object,
+its snapshotted own string keys and the visited names. Descriptors remain live
+between iterations; deleted names do not suppress inherited names, while present
+non-enumerable names do. Accessors are never invoked and Symbol keys are skipped.
+Prototype lookup happens after each object's keys finish, so body mutations are
+observed by the existing enumeration rules. Nullish input exits before binding
+initialization; other primitives box through the ordinary operation.
+
+For-in and for-of share suspended head TDZ restoration and iteration binding/scope
+setup. Each for-in cursor retains its last completion value and traces its current
+object, releasing the previous object as enumeration moves along the prototype
+chain. Normal and matching continue completions resume enumeration after scopes
+and finalizers finish; other abrupt completions propagate without an observable
+iterator return hook. Retained loop values participate in the physical Symbol
+inventory, and host abort keeps its shared cleanup isolation.
 
 Labelled statements retain typed source locations without adding environments
 (14.13). A matching labelled break becomes normal completion without UpdateEmpty.

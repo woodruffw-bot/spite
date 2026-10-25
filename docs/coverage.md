@@ -60,6 +60,20 @@ not an alternative language specification.
 
 
 
+## Suspended for-in enumeration
+
+Nine Runtime groups and a Symbol ownership control cover awaited RHS/body
+execution, nullish/primitive inputs, lexical TDZ and iteration bindings, property
+and prototype mutations, labelled control, abrupt completion and host abort.
+Collection controls check current-object retention, release along the prototype
+chain and release after enumeration. Ordinary and suspended for-in share the same
+enumerator. All 416 units and 2,002 non-RegExp integrations pass across 654 Runtime
+case files; strict Clippy and Rust 1.88 checks pass. Complete original reviews remain
+at 36 passing/8 Unsupported await variants and 152 passing/110 Unsupported Array/adapter variants.
+No additional original qualifies; inventories remain 9,578 fixtures, twenty
+helpers, 9,559 reviewed sources, 18,566 variants and 579 intrinsic entries. Helpers
+and quotas are unchanged.
+
 ## Suspended labelled control flow
 
 Six Runtime groups and a Symbol ownership control cover labelled blocks, direct

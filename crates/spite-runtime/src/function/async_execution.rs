@@ -4,8 +4,10 @@ mod block;
 mod completion;
 mod conditional;
 mod expression;
+mod for_in;
 mod for_of;
 mod iteration;
+mod iteration_head;
 mod labelled;
 mod protected;
 mod source;
@@ -205,10 +207,13 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_label(data, span);
         }
-        if matches!(statement.kind, StatementKind::ForOf { .. }) {
+        if matches!(
+            statement.kind,
+            StatementKind::ForOf { .. } | StatementKind::ForIn { .. }
+        ) {
             let span = statement.span;
             self.tick(span)?;
-            return self.enter_async_for_of(data, span);
+            return self.enter_async_iteration(data, span);
         }
         if matches!(
             statement.kind,
@@ -347,7 +352,7 @@ impl Realm {
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
             AsyncAwaitAction::LoopTest => self.finish_async_loop_test(data, value),
-            AsyncAwaitAction::ForOfSource => self.finish_async_for_of_source(data, value),
+            AsyncAwaitAction::IterationSource => self.finish_async_iteration_source(data, value),
             AsyncAwaitAction::Binding { element } => {
                 self.async_binding_step(data, element, Some(value))
             }
