@@ -14371,3 +14371,12 @@ captures remain empty and all operand slots undefined. Linear actual work,
 checked work/capacity errors and flat construction/clone/drop keep their shared
 paths. Earlier q-class entries retain their domains and charges. Runtime
 integration remains separate.
+
+Runtime selects checked negative q-class lookbehind after its negative
+q-lookahead entries, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset, and checked construction failures
+keep the existing host mapping. Empty outside and undefined operand ranges use
+the shared capture accessor, preserving own named indices properties, String
+consumers, copies and collection. Original q source/flags, predecessor context
+and stateful execution retain their shared paths; user conversions remain
+outside the compiler frame.

@@ -141,3 +141,54 @@ fn negative_word_predecessor_search_retains_complete_characters_and_initial_pair
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?<!(?<run>\\\\B😀\\\\B))','dg'+mode);r.lastIndex=2;ok=ok&&r.exec('😀😀')===null&&r.lastIndex===0;r.lastIndex=1;var m=r.exec('😀😀');ok=ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=5;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===1&&m.groups.run===undefined&&r.lastIndex===1}ok",
     );
 }
+
+#[test]
+fn negative_q_class_predecessors_keep_original_source_and_named_undefined_slots() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var atom of ['[\\q{a|b}]','[[\\q{a|b}]--[x]]','[[\\q{a|b}]&&[ab]]','[x\\q{a|b}]']){
+            var source='(?<outside>(?<!(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec('!'),point=state===''?0:1;
+            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!').groups.run===undefined;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_q_class_predecessors_keep_original_line_fold_property_and_surrogate_context() {
+    check(
+        r#"
+        var r=/(?<!(?<run>^[\q{a|😀}]$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
+        for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>[\q{ſ|k}]))/diyv;r.lastIndex=1;ok=ok&&r.exec(text)===null&&r.lastIndex===0}
+        var r=/(?<!(?<run>[\p{ASCII}\q{😀}]))/diyv;r.lastIndex=1;ok=ok&&r.exec('ſ')===null&&r.lastIndex===0;
+        var r=/(?<!(?<run>[\q{\uD800|x}]))/dyv;r.lastIndex=2;var m=r.exec('😀');ok=ok&&m.index===2&&m.groups.run===undefined;r.lastIndex=1;ok=ok&&r.exec('\ud800x')===null&&r.lastIndex===0;ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_q_class_predecessor_string_consumers_copies_and_collection_keep_undefined_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?<!(?<run>[\\q{a|b}])))',r=new RegExp(source,'dgv'),all=Array.from('ab!a'.matchAll(r));
+        var ok=all.length===2&&all[0].index===0&&all[1].index===3&&all[0].groups.outside===''&&all[0].groups.run===undefined&&all[0].indices.groups.run===undefined&&r.lastIndex===0;
+        ok=ok&&'ab!a'.replace(r,'<$<run>>')==='<>ab!<>a'&&'ab!a'.replaceAll(r,'<$<run>>')==='<>ab!<>a'&&JSON.stringify('ab!a'.split(new RegExp('(?<!([\\q{a|b}]))','v')))==='["ab!",null,"a"]';
+        var offsets=[];ok=ok&&'ab!a'.replace(r,function(match,outside,run,offset,input,groups){offsets.push(offset);ok=ok&&outside===''&&run===undefined&&groups.run===undefined;return '!';})==='!ab!!a'&&JSON.stringify(offsets)==='[0,3]';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!').groups.run===undefined;ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var m=copy.exec('!');m.index===1&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn negative_q_class_predecessor_deep_wrappers_keep_original_empty_and_undefined_slots() {
+    check(
+        r#"
+        var source='('.repeat(1000)+'(?<!'+'('.repeat(1000)+'[\\q{a|b}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!');
+        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
+        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':undefined)&&(i<=1000?m.indices[i][0]===1&&m.indices[i][1]===1:m.indices[i]===undefined);ok
+    "#,
+    );
+}
