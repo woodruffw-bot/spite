@@ -14678,3 +14678,12 @@ and checked error contracts remain unchanged. Bounded sticky probes, complete
 Unicode advancement, initial-pair rewind, flat capture storage and actual-work
 cancellation retain their established paths. Runtime integration remains
 separate.
+
+
+Runtime selects checked negative character-result lookahead after its positive
+character-result assertion entries, gated by v mode and using full normalized
+source. Successful selection resets the projected outer offset; checked errors
+retain their host mapping. Shared negative capture caching preserves empty
+outside and undefined operand slots through named indices, String consumers,
+copies and collection. Original q/set syntax, line context and complete Unicode
+search remain in Core; user conversions stay outside the compiler frame.
