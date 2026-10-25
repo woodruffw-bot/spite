@@ -3,6 +3,7 @@ source: crates/spite-parser/tests/dynamic_source_utf16.rs
 expression: function
 ---
 Function {
+    kind: Ordinary,
     name: Some(
         FunctionName {
             name: "anonymous",

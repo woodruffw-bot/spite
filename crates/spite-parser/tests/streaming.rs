@@ -58,7 +58,7 @@ fn lexical_diagnostics_survive_cover_and_computed_name_lookahead() {
 fn unrequested_lexical_failure_cannot_mask_recognized_unsupported_syntax() {
     for source in [
         "function* g() { /*",
-        "async function f() { '\\u{110000}'",
+        "async function f() { await p; '\\u{110000}'",
         "class C { *g() { /*",
     ] {
         assert_eq!(

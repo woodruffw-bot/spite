@@ -74,7 +74,9 @@ impl Parser {
         // Arrow parameters inherit Await, but concise/block bodies use ~Await
         // even within static initialization (15.3 grammar).
         let previous_await = self.allow_await_identifier;
+        let previous_context = self.await_context;
         self.allow_await_identifier = true;
+        self.await_context = AwaitContext::None;
         let result = (|| {
             Ok(if self.at("{") {
                 let body = self.function_body()?;
@@ -86,6 +88,7 @@ impl Parser {
             })
         })();
         self.allow_await_identifier = previous_await;
+        self.await_context = previous_context;
         let (body, end) = result?;
         let span = Span::new(start, end);
         let source = FunctionSource {

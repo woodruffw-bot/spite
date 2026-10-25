@@ -105,8 +105,8 @@ fn unsupported_syntax_and_native_stack_guards_keep_their_categories() {
     assert!(parse_dynamic_function("", "class C{#field;}").is_ok());
     for (parameters, body) in [
         ("", "function* f(){}"),
-        ("", "async function f(){}"),
-        ("x = (async function(){})", "return x;"),
+        ("", "async function f(){await p}"),
+        ("x = (async function(){await p})", "return x;"),
     ] {
         assert_eq!(
             parse_dynamic_function(parameters, body).unwrap_err().kind,

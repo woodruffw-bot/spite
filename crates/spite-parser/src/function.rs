@@ -14,14 +14,21 @@ impl Parser {
         &mut self,
         require_name: bool,
     ) -> Result<Rc<Function>, Diagnostic> {
+        let asynchronous = self.at_async_function();
+        let name_index = self.index + if asynchronous { 2 } else { 1 };
+        let name_await_allowed = if require_name {
+            self.allow_await_identifier
+        } else {
+            !asynchronous
+        };
         if require_name
             && !self.allow_await_identifier
             && self
-                .token_at(self.index + 1)
+                .token_at(name_index)
                 .is_some_and(|token| matches!(&token.kind, Kind::Word(name) if name == "await"))
         {
             return Err(early(
-                self.tokens[self.index + 1].span,
+                self.tokens[name_index].span,
                 "invalid function binding identifier",
             ));
         }
@@ -31,26 +38,45 @@ impl Parser {
         let previous_super_call = self.allow_super_call;
         let previous_arguments = self.allow_arguments;
         let previous_await = self.allow_await_identifier;
+        let previous_context = self.await_context;
         self.allow_new_target = true;
         self.allow_super_property = false;
         self.allow_super_call = false;
         self.allow_arguments = true;
-        self.allow_await_identifier = true;
-        let result = self.ordinary_function_inner(require_name);
+        self.allow_await_identifier = !asynchronous;
+        self.await_context = if asynchronous {
+            AwaitContext::Parameters
+        } else {
+            AwaitContext::None
+        };
+        let result = self.ordinary_function_inner(require_name, asynchronous, name_await_allowed);
         self.allow_new_target = previous;
         self.allow_super_property = previous_super;
         self.allow_super_call = previous_super_call;
         self.allow_arguments = previous_arguments;
         self.allow_await_identifier = previous_await;
+        self.await_context = previous_context;
         self.depth -= 1;
         result
     }
 
-    fn ordinary_function_inner(&mut self, require_name: bool) -> Result<Rc<Function>, Diagnostic> {
+    fn ordinary_function_inner(
+        &mut self,
+        require_name: bool,
+        asynchronous: bool,
+        name_await_allowed: bool,
+    ) -> Result<Rc<Function>, Diagnostic> {
         let start = self.current().span.start;
+        if asynchronous {
+            self.expect("async")?;
+        }
         self.expect("function")?;
         if self.at("*") {
-            return Err(self.unsupported("generator functions are not implemented"));
+            return Err(self.unsupported(if asynchronous {
+                "async generator functions are not implemented"
+            } else {
+                "generator functions are not implemented"
+            }));
         }
         let name = if self.at("(") {
             if require_name {
@@ -62,7 +88,7 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "expected a function binding identifier"));
             };
-            if reserved(&name) {
+            if reserved(&name) || (name == "await" && !name_await_allowed) {
                 return Err(early(token.span, "invalid function binding identifier"));
             }
             Some(FunctionName {
@@ -71,6 +97,11 @@ impl Parser {
             })
         };
         let parameters = self.formal_parameters("invalid function parameter identifier")?;
+        self.await_context = if asynchronous {
+            AwaitContext::Body
+        } else {
+            AwaitContext::None
+        };
         let body = self.function_body()?;
         let span = Span::new(start, self.tokens[self.index - 1].span.end);
         let source = FunctionSource {
@@ -78,6 +109,11 @@ impl Parser {
             span,
         };
         Ok(Rc::new(Function {
+            kind: if asynchronous {
+                FunctionKind::Async
+            } else {
+                FunctionKind::Ordinary
+            },
             name,
             parameters,
             body,

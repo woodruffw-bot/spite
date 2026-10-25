@@ -117,9 +117,20 @@ impl ClassElement {
     }
 }
 
-/// Shared syntax for an ordinary function, method, or accessor body.
+/// The supported ordinary and asynchronous function grammar forms.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FunctionKind {
+    /// An ordinary function, method or accessor.
+    Ordinary,
+    /// An async function declaration or expression.
+    Async,
+}
+
+/// Shared syntax for an ordinary or async function, method, or accessor body.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
+    /// Function grammar and evaluation kind.
+    pub kind: FunctionKind,
     /// Binding name, absent for anonymous expressions, methods, and accessors.
     pub name: Option<FunctionName>,
     /// Binding parameters, including defaults and an optional final rest pattern.

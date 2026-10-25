@@ -10,6 +10,8 @@ mod arrows;
 mod assignment;
 #[path = "assignment_patterns.rs"]
 mod assignment_patterns;
+#[path = "async_function_syntax.rs"]
+mod async_function_syntax;
 #[path = "bigint.rs"]
 mod bigint;
 #[path = "binary_chains.rs"]

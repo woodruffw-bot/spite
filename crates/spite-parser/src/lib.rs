@@ -181,6 +181,13 @@ fn reject_legacy_tokens(tokens: &[Token]) -> Result<(), Diagnostic> {
     Ok(())
 }
 
+#[derive(Clone, Copy)]
+enum AwaitContext {
+    None,
+    Parameters,
+    Body,
+}
+
 struct Parser {
     source: std::rc::Rc<source::SourceText>,
     lexer: Lexer,
@@ -203,6 +210,7 @@ struct Parser {
     allow_super_call: bool,
     allow_arguments: bool,
     allow_await_identifier: bool,
+    await_context: AwaitContext,
     private_scopes: Vec<private::PrivateScope>,
 }
 
@@ -243,6 +251,7 @@ impl Parser {
             allow_super_call: false,
             allow_arguments: true,
             allow_await_identifier: true,
+            await_context: AwaitContext::None,
             private_scopes: Vec::new(),
         })
     }
@@ -441,7 +450,7 @@ impl Parser {
             }
             self.expect("}")?;
             StatementKind::Block(body)
-        } else if self.at("function") {
+        } else if self.at("function") || self.at_async_function() {
             if !allow_declaration {
                 return Err(self.error("function declaration requires a statement list"));
             }
@@ -726,7 +735,11 @@ impl Parser {
         {
             return Err(early(
                 span,
-                "await is not allowed in a static initialization block",
+                match self.await_context {
+                    AwaitContext::None => "await is not allowed in a static initialization block",
+                    AwaitContext::Parameters => "await is not allowed in async function parameters",
+                    AwaitContext::Body => "await cannot be an identifier in an async function",
+                },
             ));
         }
         let depth = 1 + match &kind {
@@ -1225,10 +1238,10 @@ impl Parser {
             let span = class.source.span;
             return self.make_expr(ExprKind::Class(class), span);
         }
-        if self.at_async_function() {
-            return Err(self.unsupported("async functions are not implemented"));
+        if self.at("await") && matches!(self.await_context, AwaitContext::Body) {
+            return Err(self.unsupported("await suspension is not implemented"));
         }
-        if self.at("function") {
+        if self.at("function") || self.at_async_function() {
             return self.function_expression();
         }
         if self.at("new") {

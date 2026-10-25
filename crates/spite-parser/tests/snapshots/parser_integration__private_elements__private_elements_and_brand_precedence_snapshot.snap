@@ -19,6 +19,7 @@ Script {
                     heritage: None,
                     default_constructor: true,
                     constructor: Function {
+                        kind: Ordinary,
                         name: None,
                         parameters: [],
                         body: FunctionBody {
@@ -93,6 +94,7 @@ Script {
                                     depth: 1,
                                     kind: Function(
                                         Function {
+                                            kind: Ordinary,
                                             name: None,
                                             parameters: [],
                                             body: FunctionBody {
@@ -169,6 +171,7 @@ Script {
                                     depth: 1,
                                     kind: Function(
                                         Function {
+                                            kind: Ordinary,
                                             name: None,
                                             parameters: [
                                                 Ordinary(
@@ -273,6 +276,7 @@ Script {
                                     depth: 1,
                                     kind: Function(
                                         Function {
+                                            kind: Ordinary,
                                             name: None,
                                             parameters: [
                                                 Ordinary(
@@ -404,6 +408,7 @@ Script {
                                     depth: 1,
                                     kind: Function(
                                         Function {
+                                            kind: Ordinary,
                                             name: None,
                                             parameters: [
                                                 Ordinary(

@@ -162,11 +162,13 @@ impl Parser {
         let previous_super_call = self.allow_super_call;
         let previous_arguments = self.allow_arguments;
         let previous_await = self.allow_await_identifier;
+        let previous_context = self.await_context;
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
         self.allow_arguments = true;
         self.allow_await_identifier = true;
+        self.await_context = AwaitContext::None;
         let result = (|| {
             let parameters = match kind {
                 PropertyKind::Getter => {
@@ -199,6 +201,7 @@ impl Parser {
             };
             self.make_expr(
                 ExprKind::Function(Rc::new(Function {
+                    kind: FunctionKind::Ordinary,
                     name: None,
                     parameters,
                     body,
@@ -212,6 +215,7 @@ impl Parser {
         self.allow_super_call = previous_super_call;
         self.allow_arguments = previous_arguments;
         self.allow_await_identifier = previous_await;
+        self.await_context = previous_context;
         self.depth -= 1;
         result
     }

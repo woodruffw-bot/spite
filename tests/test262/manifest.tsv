@@ -9222,3 +9222,8 @@ script-pass	6bdbfbe31a0bb35744806afa5e221ea1513c8611f99f362a7e3d6a6e157894e5	tes
 script-pass	1f1614b561296eaeca80cda978fd83e8045891efd2ef302f43edb77d1c151512	test/built-ins/Promise/any/resolved-sequence.js
 script-pass	76581cc1f5680cc1acd05abc96784df1efe8a8f61c58d9e5b8351f7e02589803	test/built-ins/Promise/any/returns-promise.js
 script-pass	2c4df046db631a3723b2c6dc4340bd1e9e56f09a6eaf590c4079a1cfc6801534	test/built-ins/Promise/any/species-get-error.js
+parse-syntax-error	ab1cc89157190ba5aea31fd033e20ec2352755b4d593568fc9939fe1f72f42b6	test/language/statements/async-function/await-as-binding-identifier-escaped.js
+parse-syntax-error	ad3cdfe1d0c51ebe4f4690b23dd3d839144a3c40906a4e441dfc33a2d888cfaa	test/language/statements/async-function/await-as-binding-identifier.js
+parse-syntax-error	af2045b2e9b0b0ea8a1c92f6c4d358596987e08b82cd0a6571fe92b3eb511ff2	test/language/statements/async-function/dflt-params-duplicates.js
+parse-syntax-error	d228ea7dbf388350178118efdea4fdbc3fbc9552d7caf785ad6b22bc1eff583e	test/language/statements/async-function/early-errors-declaration-duplicate-parameters.js
+parse-syntax-error	769cbc85c1c7b588d7702e6f41f9fd8a280a5e797d1e284afb0062975c989164	test/language/statements/async-function/early-errors-declaration-eval-in-formal-parameters.js

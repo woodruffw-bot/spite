@@ -53,9 +53,35 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17841 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17849 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async function syntax
+
+The parser retains async declaration/expression kinds and source, enforces Await
+binding and parameter rules, and restores ordinary nested function/method/arrow
+contexts. Await suspension and other suspended forms stay explicitly Unsupported.
+Runtime allocation of parsed async functions also stays Unsupported, so they
+cannot acquire ordinary call/construction behavior before execution is added.
+Dynamic ordinary functions may retain unexecuted async definitions.
+
+Five Parser regressions and a new snapshot cover source/kinds, grammar contexts,
+strictness, line breaks, unsupported forms and dynamic source. All eighteen Parser
+units and 334 integration tests pass. Fifteen existing snapshots add only explicit
+Ordinary kind fields; prior bytes were verified unchanged after removing those
+markers. Two Runtime regressions enforce the allocation boundary and latent
+dynamic definitions. All 398 Runtime units and 1,820 non-RegExp integrations pass.
+
+Five unchanged upstream parse-negative originals add eight reviewed variants:
+unescaped/escaped await bindings, default/strict duplicate parameters and strict eval
+parameters. Exact rejected tokens, original spans and messages were reviewed;
+strict-prefix offsets are handled separately. Git blob hashes and SHA-256 digests
+were verified. Inventories contain 9,209 fixtures, nineteen helpers, 9,190 reviewed
+sources and 17,849 variants, with seventy Parser and 632 Runtime case files.
+All 17,849 variants and all 40 Test262 package tests pass. Formatting, strict
+Clippy, Rust 1.88 all-target checks, dependency policy and fixture inventories
+also pass.
 
 ## Promise.any
 

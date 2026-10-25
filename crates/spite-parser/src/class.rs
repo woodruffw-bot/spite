@@ -201,6 +201,7 @@ impl Parser {
         let default_constructor = constructor.is_none();
         let mut constructor = constructor.unwrap_or_else(|| {
             Rc::new(Function {
+                kind: FunctionKind::Ordinary,
                 name: None,
                 parameters: Rc::from([]),
                 body: FunctionBody {
@@ -254,6 +255,7 @@ impl Parser {
             self.allow_super_call,
             self.allow_arguments,
             self.allow_await_identifier,
+            self.await_context,
         );
         self.allow_return = false;
         self.allow_in = true;
@@ -262,6 +264,7 @@ impl Parser {
         self.allow_super_call = false;
         self.allow_arguments = false;
         self.allow_await_identifier = false;
+        self.await_context = AwaitContext::None;
         let result = (|| {
             self.expect("{")?;
             let mut statements = Vec::new();
@@ -286,6 +289,7 @@ impl Parser {
             self.allow_super_call,
             self.allow_arguments,
             self.allow_await_identifier,
+            self.await_context,
         ) = previous;
         self.depth -= 1;
         result

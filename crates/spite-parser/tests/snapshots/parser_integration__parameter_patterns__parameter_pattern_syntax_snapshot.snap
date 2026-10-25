@@ -7,6 +7,7 @@ Script {
         Statement {
             kind: Function(
                 Function {
+                    kind: Ordinary,
                     name: Some(
                         FunctionName {
                             name: "f",

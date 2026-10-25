@@ -6,7 +6,7 @@ use super::*;
 pub(super) struct Key {
     index: usize,
     depth: usize,
-    context: u8,
+    context: u16,
     private_depth: usize,
 }
 
@@ -34,7 +34,8 @@ impl Parser {
             context: flags
                 .iter()
                 .enumerate()
-                .fold(0, |bits, (i, set)| bits | (u8::from(*set) << i)),
+                .fold(0, |bits, (i, set)| bits | (u16::from(*set) << i))
+                | ((self.await_context as u16) << flags.len()),
             private_depth: self.private_scopes.len(),
         }
     }

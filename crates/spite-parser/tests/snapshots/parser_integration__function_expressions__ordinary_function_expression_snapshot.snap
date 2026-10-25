@@ -23,6 +23,7 @@ Script {
                                 depth: 2,
                                 kind: Function(
                                     Function {
+                                        kind: Ordinary,
                                         name: Some(
                                             FunctionName {
                                                 name: "named",

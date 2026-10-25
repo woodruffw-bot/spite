@@ -364,6 +364,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Promise.all with ordered traced result lists, guarded native resolve elements, synchronous-callback reentry handling and intrinsic result Arrays.
 - [x] Implement Promise.allSettled with shared fulfill/reject guards, ordered intrinsic settlement snapshots and the common aggregation path.
 - [x] Implement Promise.any with first-fulfillment resolution, guarded ordered rejection reasons and intrinsic AggregateError creation.
+- [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
+- [ ] Create async function objects and Promise-returning calls, then add await suspension.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

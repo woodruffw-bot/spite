@@ -1302,5 +1302,7 @@ mod promise_all_settled;
 #[path = "cases/promise_race.rs"]
 mod promise_race;
 
+#[path = "cases/async_function_syntax.rs"]
+mod async_function_syntax;
 #[path = "cases/promise_any.rs"]
 mod promise_any;

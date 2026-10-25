@@ -19,6 +19,7 @@ Script {
                     heritage: None,
                     default_constructor: true,
                     constructor: Function {
+                        kind: Ordinary,
                         name: None,
                         parameters: [],
                         body: FunctionBody {

@@ -9184,3 +9184,8 @@ test/built-ins/Promise/any/resolved-sequence-with-rejections.js	-	-	-
 test/built-ins/Promise/any/resolved-sequence.js	-	-	-
 test/built-ins/Promise/any/returns-promise.js	-	-	-
 test/built-ins/Promise/any/species-get-error.js	-	-	-
+test/language/statements/async-function/await-as-binding-identifier-escaped.js	864	874	invalid binding identifier
+test/language/statements/async-function/await-as-binding-identifier.js	856	861	invalid binding identifier
+test/language/statements/async-function/dflt-params-duplicates.js	1074	1075	duplicate lexical binding
+test/language/statements/async-function/early-errors-declaration-duplicate-parameters.js	402	403	duplicate lexical binding
+test/language/statements/async-function/early-errors-declaration-eval-in-formal-parameters.js	392	396	invalid binding in strict mode

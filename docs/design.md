@@ -340,7 +340,14 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generators and async functions remain separate steps.
+Generators and async function execution remain separate steps. Async declaration
+and expression syntax is retained with an explicit FunctionKind, exact source
+ranges and separate parameter/body Await contexts. Bindings follow the grammar's
+declaration versus expression name rules, while ordinary nested functions,
+methods and arrows restore their own Await context. Cover-cache keys include
+that context. Await suspension, async arrows/methods and async generators remain
+Unsupported. The Runtime rejects async object allocation explicitly until its
+intrinsic prototype and Promise-returning call support are implemented.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

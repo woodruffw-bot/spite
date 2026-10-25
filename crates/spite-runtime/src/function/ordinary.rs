@@ -258,6 +258,12 @@ impl Realm {
         strict: bool,
         span: Span,
     ) -> Result<Value, Error> {
+        if syntax.kind == spite_parser::ast::FunctionKind::Async {
+            return Err(Error::Unsupported {
+                span,
+                message: "async function objects are not implemented".into(),
+            });
+        }
         let object_prototype = self
             .intrinsics
             .as_ref()
