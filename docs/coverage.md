@@ -27032,3 +27032,23 @@ constructor-only increment has the focused and differential evidence above.
 Completed broad RegExp and Test262 results record `3c1dd9f1`; character-result
 assertions retain separate focused evidence. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Core negative character-result lookahead with word predicates
+
+The actual-source focused harness passes 354 tests (2.29 s), including four new
+negative word character-result groups. Checks cover boundary polarity, empty
+outside and undefined operand slots, original line/fold/backspace context,
+complete-pair and initial-rewind boundaries, proof exclusions, 200,000 wrappers,
+bounded linear retry and every checked construction/search cancellation
+followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with a native sticky-candidate oracle using fifteen independently specified
+equivalent character-class controls and independent Unicode advancement.
+Original classes and flags remain in actual Core checks; the controls also
+avoid the documented Node property/q-fold discrepancies. All 2,728 remaining
+lexed direct Unsupported controls stay excluded. Strict all-target workspace
+Clippy, documentation tests, formatting, policy, inventories and diff checks
+pass. Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.

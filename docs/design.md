@@ -14687,3 +14687,16 @@ retain their host mapping. Shared negative capture caching preserves empty
 outside and undefined operand slots through named indices, String consumers,
 copies and collection. Original q/set syntax, line context and complete Unicode
 search remain in Core; user conversions stay outside the compiler frame.
+
+
+A separate checked negative character-result lookahead entry admits leading/
+trailing operand word predicates with optional ^/$ gates, requiring at least
+one word predicate (22.2.2.4, 22.2.2.9). A class contains an empty or longer q
+member and has MayContainStrings false. The flat negative envelope changes
+only the assertion sign before delegating to checked positive word
+character-result lookahead. Negation applies to the original-context class
+and predicate conjunction; outside wrappers remain empty and all operand
+slots undefined. Checked errors, complete Unicode advancement, initial-pair
+rewind, flat storage and actual-work cancellation retain their shared paths.
+Earlier entries keep their domains and charges. Runtime integration remains
+separate.
