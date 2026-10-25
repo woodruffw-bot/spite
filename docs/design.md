@@ -421,7 +421,12 @@ inference. Await-produced anonymous functions do not acquire a binding name, whi
 pattern defaults retain their inference rules.
 
 The cursor advances once before suspending; ordinary statements and operands use
-existing evaluation. Var initializers still require saved pre-RHS references.
+existing evaluation. Body-level var declarations resolve Identifier targets before
+RHS evaluation and retain the declarative environment across suspension. The
+fulfilled value is stored through that saved reference, preserving parameter and
+mapped-arguments aliases. Pattern var bindings initialize after the awaited RHS;
+non-awaited and absent initializers keep existing var evaluation and naming.
+Saved target environments participate in tracing and capture validation.
 Nested await operands, pattern defaults, general expressions and control-flow
 continuations retain their explicit gap. Await-using is distinct from a synchronous
 using declaration with an awaited initializer and remains Unsupported. Unreachable

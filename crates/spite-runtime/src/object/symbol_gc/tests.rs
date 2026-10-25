@@ -388,6 +388,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "source awaited var across suspension",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{var value=await key;await gate;return value};f();return gate})()",
+        ),
+        (
             "source awaited lexical across suspension",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{const value=await key;await gate;return value};f();return gate})()",
         ),
@@ -423,6 +427,7 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             name,
             "Array.fromAsync close error across suspension"
                 | "source awaited lexical across suspension"
+                | "source awaited var across suspension"
         ) {
             loop {
                 match realm.run_next_promise_job().unwrap() {

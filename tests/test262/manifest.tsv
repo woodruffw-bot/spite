@@ -9586,3 +9586,4 @@ script-pass	5d0cc743fbf0745ef648582c4f0c738c501faa88c6b8fbb95c74c0d149a3995b	tes
 script-pass	ba10a5d663bcdb08076f968e1d187e91cbd0a5a95c336423b4cf9b704cfbde38	test/built-ins/Array/fromAsync/sync-iterable-input-with-thenable.js
 script-pass	679423352dcd8a5d70cd6ed5b7366b97b3a612b4a3706e6e9143400d537d593c	test/built-ins/Array/fromAsync/sync-iterable-input.js
 harness	4585c97b969b4a29cec0387a4981de7d0d210375c2a8a9a8360d6c18d3a9f359	harness/temporalHelpers.js
+script-pass	c9aa1f5be8853b8ff44ca41de7bd9471ad99816a7892e7b891bc7e80321eac05	test/language/expressions/await/await-awaits-thenable-not-callable.js

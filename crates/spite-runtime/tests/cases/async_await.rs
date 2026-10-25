@@ -341,3 +341,62 @@ fn lexical_and_using_initializers_preserve_rejection_and_suppression_identity() 
         "reason instanceof SuppressedError&&reason.error===cleanup&&reason.suppressed===original",
     );
 }
+
+#[test]
+fn var_initializers_preserve_hoisting_declarator_order_and_absent_initializer_values() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let state={},read,result,events=[];state.gate=new Promise(resolve=>{state.release=resolve});
+        async function f(){read=()=>value;var value=await (events.push('operand'),state.gate),value,other=await value;var value;return[value,other]}
+        f().then(output=>{result=output});
+    "#).unwrap();
+    check(
+        &mut realm,
+        "read()===undefined&&result===undefined&&events.join(',')==='operand'",
+    );
+    realm.eval("state.release(7)").unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "read()===7&&result.join(',')==='7,7'&&events.join(',')==='operand'",
+    );
+}
+
+#[test]
+fn awaited_var_assignment_updates_the_original_sloppy_parameter_and_arguments_mapping() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let state={},write,result;state.gate=new Promise(resolve=>{state.release=resolve});
+        async function f(value){write=x=>{arguments[0]=x};var value=await state.gate;return[value,arguments[0]]}
+        f(2).then(output=>{result=output});write(11);
+    "#).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    realm.eval("state.release(9)").unwrap();
+    drain(&mut realm);
+    check(&mut realm, "result.join(',')==='9,9'");
+}
+
+#[test]
+fn awaited_var_patterns_initialize_after_the_rhs_and_preserve_function_naming_rules() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let result,closed=0,source={[Symbol.iterator](){return this},next(){return{value:5,done:false}},return(){closed++;return{}}};
+        async function f(){var[first]=await source,{value=first+1}=await{},ordinary=()=>0,anonymous=await(()=>1);return[first,value,ordinary.name,anonymous.name]}
+        f().then(output=>{result=output});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "closed===1&&result.join(',')==='5,6,ordinary,'");
+}
+
+#[test]
+fn awaited_var_rejection_disposes_previously_registered_resources() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let marker={},reason,disposed=0;
+        async function f(){using resource={[Symbol.dispose](){disposed++}};var value=await Promise.reject(marker);return value}
+        f().catch(error=>{reason=error});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "reason===marker&&disposed===1");
+}

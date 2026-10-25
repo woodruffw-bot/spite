@@ -56,9 +56,34 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18544 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18546 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Awaited var initializers
+
+Body-level var declarations support direct awaited initializers. Identifier
+targets resolve before their RHS, and the saved declarative environment is traced
+across suspension. Fulfillment writes through the original reference, including
+mapped parameter/arguments aliases. Pattern initialization follows the awaited
+RHS. Declaration lists preserve hoisting, partial assignment and no-initializer
+behavior, with existing naming for ordinary initializers and no new name inference
+for awaited anonymous values. Nested expressions and suspended control flow remain
+Unsupported.
+
+Four new Runtime groups cover declaration order, hoisting, parameter aliases,
+patterns/names and rejection cleanup. Symbol ownership controls exercise awaited
+var values across another suspension. All 416 units and 1,899 non-RegExp
+integrations pass. Parser checks, 640 Runtime/75 Parser case files, 579 intrinsic
+entries and product quotas remain unchanged.
+
+The complete original await review passes 22 variants from eleven originals and
+defers eleven; Array/adapter remains at 146 passing and 116 Unsupported variants.
+The new original await-awaits-thenable-not-callable.js adds two variants with
+verified Git blob and SHA-256 digests. Inventories contain 9,568 fixtures, twenty
+helpers, 9,549 reviewed sources and 18,546 variants. No original or helper changes.
+All reviewed variants and forty Test262 package tests pass, along with formatting,
+strict Clippy, Rust 1.88, dependency policy and fixture inventories.
 
 ## Awaited lexical and using initializers
 

@@ -9547,3 +9547,4 @@ test/built-ins/Array/fromAsync/returned-promise-resolves-to-array.js	-	-	-
 test/built-ins/Array/fromAsync/sync-iterable-input-with-non-promise-thenable.js	-	-	-
 test/built-ins/Array/fromAsync/sync-iterable-input-with-thenable.js	-	-	-
 test/built-ins/Array/fromAsync/sync-iterable-input.js	-	-	-
+test/language/expressions/await/await-awaits-thenable-not-callable.js	-	-	-

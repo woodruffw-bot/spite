@@ -27,6 +27,7 @@ pub(crate) struct AsyncExecutionData {
     pub index: usize,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
+    pub var_target: Option<EnvironmentHandle>,
     pub context: Option<AsyncExecutionContext>,
     pub span: Span,
 }
@@ -37,7 +38,7 @@ impl AsyncExecutionData {
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
-        self.root_scope.iter().chain(
+        self.root_scope.iter().chain(&self.var_target).chain(
             self.context
                 .iter()
                 .flat_map(|context| context.scopes.iter().chain(&context.variable)),

@@ -4,11 +4,11 @@ use super::{
     PromiseCapability, ScriptFunction, async_native::AsyncResumeKind, ordinary::OrdinaryInvocation,
 };
 use crate::{
-    Completion, CompletionKind, Error, ObjectHandle, Realm, Value,
+    Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
     object::async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, Expr, ExprKind, StatementKind};
+use spite_parser::ast::{ArrowBody, BindingPatternKind, Expr, ExprKind, StatementKind};
 
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
@@ -74,6 +74,7 @@ impl Realm {
             index: 0,
             pending: AsyncAwaitAction::Discard,
             root_scope,
+            var_target: None,
             context: None,
             span,
         };
@@ -104,8 +105,12 @@ impl Realm {
                 }
                 Ok(value) => {
                     if let AsyncAwaitAction::Binding { statement, element } = data.pending {
-                        next_step =
-                            Some(self.async_binding_step(&data, statement, element, Some(value)));
+                        next_step = Some(self.async_binding_step(
+                            &mut data,
+                            statement,
+                            element,
+                            Some(value),
+                        ));
                     }
                 }
             }
@@ -180,7 +185,7 @@ impl Realm {
                 data.index += 1;
                 if matches!(
                     statement.kind,
-                    StatementKind::Lexical { .. } | StatementKind::Using(_)
+                    StatementKind::Lexical { .. } | StatementKind::Using(_) | StatementKind::Var(_)
                 ) {
                     self.tick(statement.span)?;
                     return self.async_binding_step(data, data.index - 1, 0, None);
@@ -213,7 +218,7 @@ impl Realm {
 
     fn async_binding_step(
         &mut self,
-        data: &AsyncExecutionData,
+        data: &mut AsyncExecutionData,
         statement: usize,
         first: usize,
         mut resumed: Option<Value>,
@@ -221,15 +226,27 @@ impl Realm {
         let ArrowBody::Block(body) = &data.body else {
             unreachable!("block declaration");
         };
-        let (bindings, using) = match &body.statements()[statement].kind {
-            StatementKind::Lexical { bindings, .. } => (bindings, false),
-            StatementKind::Using(bindings) => (bindings, true),
+        let (bindings, using, var) = match &body.statements()[statement].kind {
+            StatementKind::Lexical { bindings, .. } => (bindings, false, false),
+            StatementKind::Using(bindings) => (bindings, true, false),
+            StatementKind::Var(bindings) => (bindings, false, true),
             _ => unreachable!("declaration continuation"),
         };
         let environment = data.root_scope.as_ref().expect("body lexical scope");
         for (element, binding) in bindings.iter().enumerate().skip(first) {
             if let Some(value) = resumed.take() {
-                if using {
+                if var {
+                    if let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
+                        let target = data.var_target.take().expect("resolved var target");
+                        self.put(
+                            Reference::Lexical(target, name),
+                            value,
+                            binding.pattern.span,
+                        )?;
+                    } else {
+                        self.assign_pattern(&binding.pattern, value)?;
+                    }
+                } else if using {
                     // AddDisposableResource still precedes binding initialization.
                     self.initialize_using_value(&binding.pattern, value, environment)?;
                 } else {
@@ -239,6 +256,19 @@ impl Realm {
                 binding.initializer.as_ref().and_then(direct_await)
             {
                 self.tick(binding.pattern.span)?;
+                if var && let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
+                    // VariableDeclaration resolves before evaluating its RHS
+                    // (14.3.2.1). Root function vars own declarative bindings.
+                    let Reference::Lexical(environment, _) =
+                        self.resolve(name, binding.pattern.span)?
+                    else {
+                        return Err(Self::unsupported(
+                            binding.pattern.span,
+                            "awaited var target requires a declarative reference",
+                        ));
+                    };
+                    data.var_target = Some(environment);
+                }
                 self.tick(span)?;
                 // AwaitExpression is not an anonymous function definition: its
                 // fulfilled function values do not receive binding-name inference.
@@ -248,6 +278,8 @@ impl Realm {
                     AsyncAwaitAction::Binding { statement, element },
                     span,
                 ));
+            } else if var {
+                self.evaluate_var_bindings(std::slice::from_ref(binding))?;
             } else if using {
                 self.initialize_using_bindings(std::slice::from_ref(binding))?;
             } else {
