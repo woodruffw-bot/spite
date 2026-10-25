@@ -14380,3 +14380,14 @@ the shared capture accessor, preserving own named indices properties, String
 consumers, copies and collection. Original q source/flags, predecessor context
 and stateful execution retain their shared paths; user conversions remain
 outside the compiler frame.
+
+A separate checked negative q-class lookbehind entry accepts leading/trailing
+operand word predicates with optional ^/$ gates. It projects only the proved
+assertion sign and delegates to checked positive word-q lookbehind, requiring
+at least one word predicate and one character per q alternative (22.2.2.4,
+22.2.2.9). Negation applies to the original-context predecessor conjunction;
+outside wrappers remain empty and all operand captures undefined. Backspace
+class data stays distinct from outside predicates. The bounded sticky probe,
+complete-character search, initial-pair rewind, checked errors and flat storage
+retain their shared paths. Earlier entries keep their domains and charges.
+Runtime integration remains separate.
