@@ -24,6 +24,7 @@ mod class_static;
 mod construct;
 mod data_view;
 mod date;
+mod disposable_stack;
 mod dynamic;
 mod error;
 mod finalization_registry;
@@ -66,6 +67,8 @@ pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
+    DisposableStack,
+    DisposableStackMember(disposable_stack::Member),
     GlobalMetadataConstructor(global_metadata::Constructor),
     GlobalMetadataMember(global_metadata::Member),
     Function,
@@ -493,6 +496,8 @@ impl Builtin {
             | Self::IteratorHelperNext => "next",
             Self::IteratorWrapperReturn | Self::IteratorHelperReturn => "return",
             Self::Iterator => "Iterator",
+            Self::DisposableStack => "DisposableStack",
+            Self::DisposableStackMember(member) => member.name(),
             Self::IteratorDispose => "[Symbol.dispose]",
             Self::IteratorToArray => "toArray",
             Self::IteratorTake => "take",
@@ -692,6 +697,7 @@ impl Builtin {
             Self::RegExpMember(member) => member.length(),
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::Error(error::ErrorConstructor::SuppressedError) => 3.0,
+            Self::DisposableStackMember(member) => member.length(),
             Self::SetAdd
             | Self::WeakSetAdd
             | Self::WeakSetDelete
@@ -979,6 +985,7 @@ pub(super) struct Intrinsics {
     pub set: set::SetIntrinsics,
     pub weak_set: weak_set::WeakSetIntrinsics,
     pub weak_map: weak_map::WeakMapIntrinsics,
+    pub disposable_stack: disposable_stack::DisposableStackIntrinsics,
     pub global_metadata: global_metadata::GlobalMetadataIntrinsics,
 }
 
@@ -1026,6 +1033,7 @@ impl Intrinsics {
         .chain(self.set.roots())
         .chain(self.weak_set.roots())
         .chain(self.weak_map.roots())
+        .chain(self.disposable_stack.roots())
         .chain(self.global_metadata.roots())
     }
 }
@@ -1197,6 +1205,8 @@ impl Realm {
         )?;
         let weak_set = self.weak_set_intrinsics(&object_prototype, &function_prototype, span)?;
         let weak_map = self.weak_map_intrinsics(&object_prototype, &function_prototype, span)?;
+        let disposable_stack =
+            self.disposable_stack_intrinsics(&object_prototype, &function_prototype, span)?;
         let global_metadata =
             self.global_metadata_intrinsics(&object_prototype, &function_prototype, span)?;
         // Publish only after the graph is fully initialized. A failed attempt
@@ -1241,6 +1251,7 @@ impl Realm {
             set,
             weak_set,
             weak_map,
+            disposable_stack,
             global_metadata,
         });
         Ok(object_prototype)

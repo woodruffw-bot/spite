@@ -1,0 +1,358 @@
+//! Synchronous resource stacks (sec-disposablestack-objects, sec-disposeresources).
+
+use super::{Builtin, error::ErrorConstructor};
+use crate::{
+    Error, ExceptionKind, ObjectHandle, Realm, Value,
+    object::{DataDescriptor, DescriptorKind, DisposableResource, PropertyDescriptor},
+};
+use spite_core::{JsString, Span, WellKnownSymbol};
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum Member {
+    Adopt,
+    Defer,
+    Dispose,
+    Disposed,
+    Move,
+    Use,
+}
+
+impl Member {
+    pub(super) fn name(self) -> &'static str {
+        match self {
+            Self::Adopt => "adopt",
+            Self::Defer => "defer",
+            Self::Dispose => "dispose",
+            Self::Disposed => "get disposed",
+            Self::Move => "move",
+            Self::Use => "use",
+        }
+    }
+
+    pub(super) fn length(self) -> f64 {
+        match self {
+            Self::Adopt => 2.0,
+            Self::Defer | Self::Use => 1.0,
+            Self::Dispose | Self::Disposed | Self::Move => 0.0,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct DisposableStackIntrinsics {
+    pub constructor: ObjectHandle,
+    prototype: ObjectHandle,
+    methods: Vec<ObjectHandle>,
+}
+
+impl DisposableStackIntrinsics {
+    pub(super) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
+        [&self.constructor, &self.prototype]
+            .into_iter()
+            .chain(&self.methods)
+    }
+}
+
+impl Realm {
+    pub(super) fn disposable_stack_intrinsics(
+        &mut self,
+        object_prototype: &ObjectHandle,
+        function_prototype: &ObjectHandle,
+        span: Span,
+    ) -> Result<DisposableStackIntrinsics, Error> {
+        let constructor = self.new_builtin(function_prototype, Builtin::DisposableStack, span)?;
+        let prototype =
+            self.object_work(span, |objects, _| objects.create(Some(object_prototype)))?;
+        self.define_property_or_throw(
+            &constructor,
+            JsString::from("prototype"),
+            DataDescriptor {
+                value: Some(Value::Object(prototype.clone())),
+                writable: Some(false),
+                enumerable: Some(false),
+                configurable: Some(false),
+            }
+            .into(),
+            span,
+        )?;
+        self.define_builtin_property(
+            &prototype,
+            "constructor",
+            Value::Object(constructor.clone()),
+            true,
+            span,
+        )?;
+        let mut methods = Vec::new();
+        let mut dispose = None;
+        for member in [
+            Member::Adopt,
+            Member::Defer,
+            Member::Dispose,
+            Member::Disposed,
+            Member::Move,
+            Member::Use,
+        ] {
+            let method = self.new_builtin(
+                function_prototype,
+                Builtin::DisposableStackMember(member),
+                span,
+            )?;
+            if member == Member::Disposed {
+                self.define_property_or_throw(
+                    &prototype,
+                    JsString::from("disposed"),
+                    PropertyDescriptor {
+                        kind: DescriptorKind::Accessor {
+                            get: Some(Some(method.clone())),
+                            set: Some(None),
+                        },
+                        enumerable: Some(false),
+                        configurable: Some(true),
+                    },
+                    span,
+                )?;
+            } else {
+                self.define_builtin_property(
+                    &prototype,
+                    member.name(),
+                    Value::Object(method.clone()),
+                    true,
+                    span,
+                )?;
+            }
+            if member == Member::Dispose {
+                dispose = Some(method.clone());
+            }
+            methods.push(method);
+        }
+        for (symbol, value, writable) in [
+            (
+                WellKnownSymbol::Dispose,
+                Value::Object(dispose.expect("dispose method")),
+                true,
+            ),
+            (
+                WellKnownSymbol::ToStringTag,
+                Value::String(JsString::from("DisposableStack")),
+                false,
+            ),
+        ] {
+            self.define_property_or_throw(
+                &prototype,
+                symbol.symbol(),
+                DataDescriptor {
+                    value: Some(value),
+                    writable: Some(writable),
+                    enumerable: Some(false),
+                    configurable: Some(true),
+                }
+                .into(),
+                span,
+            )?;
+        }
+        Ok(DisposableStackIntrinsics {
+            constructor,
+            prototype,
+            methods,
+        })
+    }
+
+    pub(super) fn disposable_stack_constructor(
+        &mut self,
+        new_target: ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
+        let prototype = if let Value::Object(prototype) = prototype {
+            prototype
+        } else {
+            self.check_function_realm(&new_target, span)?;
+            self.intrinsics
+                .as_ref()
+                .expect("initialized")
+                .disposable_stack
+                .prototype
+                .clone()
+        };
+        self.object_work(span, |objects, _| {
+            objects.create_disposable_stack(&prototype)
+        })
+        .map(Value::Object)
+    }
+
+    pub(super) fn disposable_stack_member(
+        &mut self,
+        member: Member,
+        this: Value,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // RequireInternalSlot never unwraps proxies or observes receiver properties.
+        let Value::Object(stack) = this else {
+            return Err(Self::disposable_stack_brand_error(span));
+        };
+        let Some(disposed) =
+            self.object_work(span, |objects, _| objects.disposable_stack_state(&stack))?
+        else {
+            return Err(Self::disposable_stack_brand_error(span));
+        };
+        if member == Member::Disposed {
+            return Ok(Value::Boolean(disposed));
+        }
+        if member == Member::Dispose {
+            if disposed {
+                return Ok(Value::Undefined);
+            }
+            return self.dispose_stack_resources(&stack, span);
+        }
+        if disposed {
+            return Err(Self::exception(
+                ExceptionKind::ReferenceError,
+                span,
+                "DisposableStack has been disposed",
+            ));
+        }
+        if member == Member::Move {
+            let prototype = self
+                .intrinsics
+                .as_ref()
+                .expect("initialized")
+                .disposable_stack
+                .prototype
+                .clone();
+            let target = self.object_work(span, |objects, _| {
+                objects.create_disposable_stack(&prototype)
+            })?;
+            self.object_work(span, |objects, budget| {
+                objects.move_disposable_resources(&stack, &target, budget)
+            })?;
+            return Ok(Value::Object(target));
+        }
+        let resources =
+            self.object_work(span, |objects, _| objects.disposable_resource_list(&stack))?;
+        let value = arguments.next().unwrap_or(Value::Undefined);
+        let (result, resource) = match member {
+            Member::Use => {
+                if matches!(value, Value::Undefined | Value::Null) {
+                    return Ok(value);
+                }
+                if !matches!(value, Value::Object(_)) {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "disposable resource must be an object",
+                    ));
+                }
+                let Some(method) =
+                    self.get_method(&value, &WellKnownSymbol::Dispose.symbol(), span)?
+                else {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "resource has no disposal method",
+                    ));
+                };
+                (
+                    value.clone(),
+                    DisposableResource {
+                        value,
+                        method,
+                        argument: None,
+                    },
+                )
+            }
+            Member::Adopt | Member::Defer => {
+                let method = if member == Member::Adopt {
+                    arguments.next().unwrap_or(Value::Undefined)
+                } else {
+                    value.clone()
+                };
+                if !self.is_callable(&method, span)? {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "disposal callback is not callable",
+                    ));
+                }
+                let (result, argument) = if member == Member::Adopt {
+                    (value.clone(), Some(value))
+                } else {
+                    (Value::Undefined, None)
+                };
+                (
+                    result,
+                    DisposableResource {
+                        value: Value::Undefined,
+                        method,
+                        argument,
+                    },
+                )
+            }
+            Member::Dispose | Member::Disposed | Member::Move => unreachable!("handled above"),
+        };
+        // Lookup may have reentered and disposed/moved the stack. The spec does
+        // not repeat the state check after GetDisposeMethod returns.
+        self.object_work(span, |objects, budget| {
+            objects.push_disposable_resource(&resources, resource, budget)
+        })?;
+        Ok(result)
+    }
+
+    fn dispose_stack_resources(
+        &mut self,
+        stack: &ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // Set disposed before invoking user code. Taking the list also releases
+        // all captures on completion or host failure; no default quota applies.
+        let resources = self.object_work(span, |objects, budget| {
+            objects.take_disposable_resources(stack, budget)
+        })?;
+        let mut failure = None;
+        for resource in resources.into_iter().rev() {
+            let arguments = resource.argument.into_iter().collect();
+            if let Err(error) = self.call(resource.method, resource.value, arguments, span) {
+                if !error.is_language_exception() {
+                    return Err(error);
+                }
+                failure = Some(if let Some(suppressed) = failure {
+                    let error = self.disposal_error_value(error)?;
+                    let suppressed = self.disposal_error_value(suppressed)?;
+                    let value = self.error_constructor(
+                        ErrorConstructor::SuppressedError,
+                        None,
+                        vec![error, suppressed].into_iter(),
+                        span,
+                    )?;
+                    Error::Thrown(value)
+                } else {
+                    error
+                });
+            }
+        }
+        match failure {
+            Some(error) => Err(error),
+            None => Ok(Value::Undefined),
+        }
+    }
+
+    fn disposal_error_value(&mut self, error: Error) -> Result<Value, Error> {
+        match error {
+            Error::Thrown(value) => Ok(value),
+            Error::Exception {
+                kind,
+                message,
+                span,
+            } => self.materialize_exception(kind, message, span),
+            _ => unreachable!("only language exceptions are suppressed"),
+        }
+    }
+
+    fn disposable_stack_brand_error(span: Span) -> Error {
+        Self::exception(
+            ExceptionKind::TypeError,
+            span,
+            "receiver has no DisposableState internal slot",
+        )
+    }
+}

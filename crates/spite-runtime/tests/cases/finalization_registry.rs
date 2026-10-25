@@ -835,7 +835,9 @@ fn callbacks_share_one_opted_in_job_allowance_instead_of_resetting_it_each_call(
             max_steps: Some(5_000),
             ..Limits::default()
         });
-        realm.eval("let finished=0,registry=new FinalizationRegistry(()=>{let total=0;for(let i=0;i<128;i++)total+=i;if(total!==8128)throw 7;finished++;})").unwrap();
+        // Use the member lookup during setup so the fixed job allowance does not
+        // depend on repeated global binding searches as the intrinsic graph grows.
+        realm.eval("let finished=0,registry=new globalThis.FinalizationRegistry(()=>{let total=0;for(let i=0;i<128;i++)total+=i;if(total!==8128)throw 7;finished++;})").unwrap();
         // Small ordinary evaluations prepare the fixture under the same limit.
         // They do not reset the allowance inside the cleanup job under test.
         for offset in (0..cells).step_by(8) {

@@ -67,6 +67,20 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "RegExp", Value::Object(regexp), true, span)?;
+        let disposable_stack = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .disposable_stack
+            .constructor
+            .clone();
+        self.define_builtin_property(
+            &object,
+            "DisposableStack",
+            Value::Object(disposable_stack),
+            true,
+            span,
+        )?;
         let bigint = self
             .intrinsics
             .as_ref()

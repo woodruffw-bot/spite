@@ -51,9 +51,32 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16403 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16577 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## DisposableStack
+
+The complete synchronous DisposableStack API implements branded state checks,
+cached disposal methods, exact receivers/arguments, intrinsic resource transfer,
+reverse cleanup and intrinsic SuppressedError chains. Nine Runtime regressions
+cover reentry during method lookup and disposal, replaced globals, subclasses,
+collection of object/Symbol captures and weak cycles, and default/opt-in limits.
+The standard global inventory snapshot adds DisposableStack.
+
+Eighty-seven unchanged Test262 originals pass all 174 Script variants. The
+unchanged pinned deepEqual.js helper is newly admitted for move's resource-list
+check. Five other brand-check originals also construct AsyncDisposableStack and
+remain deferred; the cross-realm original requires $262.createRealm. None is
+rewritten or credited as passing. Current inventories are 8,569 fixtures,
+seventeen harness files, 8,550 reviewed sources and 622 Runtime case files.
+All 16,577 corpus variants and all 35 Test262 package tests pass, including the
+metadata inventory check. The 392 Runtime units, strict workspace Clippy,
+Rust 1.88 all-target checks, formatting, dependency policy and inventories pass.
+All 1,773 Runtime integration tests outside the RegExp groups also pass. The
+cleanup-job regression retains its original 5,000-step allowance; setup uses a
+member lookup as the standard global inventory grows.
 
 ## SuppressedError
 

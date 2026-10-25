@@ -1713,6 +1713,40 @@ Inherited setters are bypassed. Extra arguments are ignored; no cause option is
 read. Constructor/prototype roots and ordinary property tracing retain the graph
 across collection, including subclass and bound-constructor instances.
 
+DisposableStack implements the synchronous resource-management API
+([DisposableStack Objects](https://tc39.es/ecma262/#sec-disposablestack-objects)).
+Construction requires new and selects the newTarget prototype before creating
+pending state and an empty resource list. The ordinary prototype has the five
+methods adopt/defer/dispose/move/use, the branded disposed getter, the dispose
+alias at Symbol.dispose, and the fixed DisposableStack tag.
+
+Use checks state before looking up Symbol.dispose once; nullish inputs are
+ignored, while other primitives or missing/non-callable methods throw TypeError.
+Adopt accepts any value and a callable disposer; defer accepts a callable.
+Disposed stacks reject registrations and move with ReferenceError. Resource
+records retain receivers, cached methods and adopt arguments through object and
+Symbol collection. Adopt's unobservable closure is represented by its captures.
+A private traced heap record preserves the resource List identity if a disposal
+getter reentrantly moves the stack before registration finishes.
+
+Move creates an intrinsic pending stack and transfers the original list without
+calling disposers, then leaves the source disposed with an empty list. It ignores
+public constructors, species and subclass prototypes. Dispose marks state before
+calling user code, removes the resource list, and calls records in reverse order:
+use passes the original receiver and no arguments; adopt/defer pass undefined as
+receiver, with one/no arguments respectively. Results are ignored. Recursive or
+repeated disposal returns undefined. Language failures do not stop later cleanup;
+multiple failures form intrinsic SuppressedError chains with the newest failure
+in error and the prior completion in suppressed
+([DisposeResources](https://tc39.es/ecma262/#sec-disposeresources)).
+
+Native list growth is fallible. Registration prepays capture release; transfer
+is constant work. Host failures bypass remaining JavaScript cleanup and handlers,
+and release the removed captures. Existing opt-in work and heap quotas apply;
+no default resource count is imposed. Each stack also retains one private heap
+record for its list. AsyncDisposableStack and using/await using syntax remain
+separate implementation work.
+
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced
 global bindings. Preserve the host-facing exception category, message, and source

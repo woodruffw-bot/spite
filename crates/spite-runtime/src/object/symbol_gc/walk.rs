@@ -122,6 +122,8 @@ fn object_symbols(
         typed_array: _,
         regexp: _,
         error_data: _,
+        disposable_stack: _,
+        disposable_resources,
         raw_json: _,
         map,
         set,
@@ -184,6 +186,15 @@ fn object_symbols(
             for key in set.index.keys() {
                 visit(collection_symbol(key))?;
             }
+        }
+    }
+    if let Some(resources) = disposable_resources {
+        for value in resources
+            .entries
+            .iter()
+            .flat_map(|resource| resource.values())
+        {
+            visit(symbol(value))?;
         }
     }
     // Cells' held values are unconditional strong fields of a reached

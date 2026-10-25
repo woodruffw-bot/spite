@@ -25,6 +25,8 @@ pub(crate) use data_view::DataViewData;
 mod typed_array;
 pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArraySetAction};
 mod descriptor;
+mod disposable_stack;
+pub(crate) use disposable_stack::DisposableResource;
 mod iterator;
 mod map;
 use iterator::IteratorState;
@@ -101,6 +103,8 @@ pub struct OrdinaryObject {
     typed_array: Option<TypedArrayData>,
     regexp: Option<Box<RegExpData>>,
     error_data: bool,
+    disposable_stack: Option<Box<disposable_stack::DisposableStackData>>,
+    disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
     map: Option<Box<map::MapData>>,
     set: Option<Box<SetData>>,
@@ -142,6 +146,8 @@ impl OrdinaryObject {
             typed_array: None,
             regexp: None,
             error_data: false,
+            disposable_stack: None,
+            disposable_resources: None,
             raw_json: false,
             map: None,
             set: None,
@@ -455,6 +461,14 @@ impl Trace for OrdinaryObject {
             )
             .chain(self.map.iter().flat_map(|data| data.trace()))
             .chain(self.set.iter().flat_map(|data| data.trace()))
+            .chain(self.disposable_stack.iter().flat_map(|data| data.trace()))
+            .chain(self.disposable_resources.iter().flat_map(|resources| {
+                resources
+                    .entries
+                    .iter()
+                    .flat_map(DisposableResource::values)
+                    .flat_map(Trace::trace)
+            }))
             .chain(self.weak_map.iter().map(|_| None))
             // WeakRef targets are weak; only account for visiting the slot.
             .chain(self.weak_ref.iter().map(|_| None))

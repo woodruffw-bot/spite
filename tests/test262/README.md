@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8482 unmodified test fixtures and sixteen harness files come from
+These 8569 unmodified test fixtures and seventeen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,26 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## DisposableStack fixtures
+
+Eighty-seven complete unchanged originals in `built-ins/DisposableStack/` cover
+construction, newTarget prototypes, all synchronous methods, the disposed getter,
+symbol aliases, reflection, registration, resource transfer, reverse cleanup and
+suppressed failures. All 174 Script variants pass in ordinary default realms.
+The complete pinned deepEqual.js helper supports move's transferred-list check.
+Every new fixture/helper Git blob hash and manifest SHA-256 digest was verified.
+
+Five brand-check originals also instantiate AsyncDisposableStack and remain
+deferred until that constructor is implemented. The cross-realm prototype
+original requires $262.createRealm and is likewise deferred. Native Runtime tests
+cover synchronous brand rejection, including revoked proxies, plus reentrant
+move during getter lookup, precise callback receivers/arguments, intrinsic
+suppression despite replaced globals, and collection/host-limit behavior.
+
+The inventory now contains 8,569 fixtures, seventeen harness files, 8,550 reviewed
+sources and 16,577 variants. Existing fixture/helper bytes, revision and license
+are unchanged. Both package metadata and execution inventories track admissions.
 
 ## SuppressedError fixtures
 
@@ -4100,7 +4120,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16403 variants from 8463 reviewed sources.
+The `spite-test262` command runs 16577 variants from 8550 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

@@ -172,7 +172,7 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 #[test]
 fn global_keys_support_iterator_prototypes_and_reserved_host_gaps_abort_handlers() {
     check(
-        "let result,flag=0;try{result=Reflect.ownKeys(globalThis);flag=3;}catch{flag=1;}finally{flag+=4;}Array.isArray(result) && result.length===60 && result.includes('Iterator') && result.includes('Promise') && result.includes('Atomics') && flag===7",
+        "let result,flag=0;try{result=Reflect.ownKeys(globalThis);flag=3;}catch{flag=1;}finally{flag+=4;}Array.isArray(result) && result.length===61 && result.includes('Iterator') && result.includes('Promise') && result.includes('Atomics') && flag===7",
     );
     check(
         "let prototype,calls=0,result,flag=0;function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get(){calls++;prototype=Reflect.ownKeys(globalThis);return prototype;}});try{result=Reflect.construct(Iterator,[],B);flag=3;}catch{flag=1;}finally{flag+=4;}calls===1 && flag===7 && Array.isArray(prototype) && prototype.includes('F') && prototype.includes('Iterator') && Object.getPrototypeOf(result)===prototype && Object.getOwnPropertyNames(result).length===0",

@@ -154,6 +154,8 @@ mod default_parameters;
 mod delete;
 #[path = "cases/derived_classes.rs"]
 mod derived_classes;
+#[path = "cases/disposable_stack.rs"]
+mod disposable_stack;
 #[path = "cases/dynamic_function.rs"]
 mod dynamic_function;
 #[path = "cases/dynamic_source_utf16.rs"]
