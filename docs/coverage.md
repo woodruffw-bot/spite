@@ -25797,3 +25797,12 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Positive Unicode lookbehind Test262 snapshot
+
+The completed Runtime snapshot at `8f624262` passes all 35 Test262 package tests
+and all 16,343 reviewed corpus variants with the existing conformance profile
+(468.01 s for the corpus). It covers the positive lookahead and single-character
+lookbehind constructors, including word predicates and predecessor captures.
+Later negative-lookahead increments retain separate focused and differential
+evidence. Fixture, harness and reviewed-entry inventories are unchanged.
