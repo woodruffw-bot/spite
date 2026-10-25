@@ -26808,3 +26808,15 @@ records all 437 Runtime units; this constructor-only increment has the focused
 and differential evidence above. Completed broad RegExp and Test262 results
 record `7da9655b`; later assertions retain separate focused evidence. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete scalar assertion Core validation on Rust 1.85
+
+The Core sources at `c599177f` pass all 1,817 library tests on Rust 1.85.0 with
+the normal test profile (500.98 s). This includes positive/negative scalar-set
+lookahead/lookbehind with word predicates, alongside all earlier q-class paths.
+Compilation completed in 2m57s; total elapsed time was 678.25 s. The measured
+maximum child RSS was 4,766,040 KiB in this incremental run. No diagnostic
+compiler flags, profile changes, native-stack overrides or default quotas were
+used. Later character-result assertion extensions retain their separate focused
+and differential evidence. Fixtures, snapshots and dependencies are unchanged.
