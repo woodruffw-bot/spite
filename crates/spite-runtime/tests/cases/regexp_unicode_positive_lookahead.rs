@@ -655,3 +655,58 @@ fn variable_q_class_deep_wrappers_and_pair_offsets_keep_exact_defined_slots() {
         "var r=new RegExp('(?=(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}|}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===''&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===0",
     );
 }
+
+#[test]
+fn word_variable_q_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{ab|a|}]\\b','ac!',0,''],['\\b[\\q{ab|a|}]\\B','ab!',0,'a'],['\\B[\\q{ab|a|}]\\b','xab!',1,'ab'],['\\B[\\q{ab|a|}]\\B','ab!',1,'']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
+            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_variable_q_classes_keep_line_fold_backspace_and_original_surrogate_context() {
+    check(
+        r#"
+        var m=/(?=(?<run>^\b[\q{ab|a|}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
+        var m=/(?=(?<run>\b[\q{ſa|S|Kk|}]\B))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='S'&&m.indices.groups.run[1]===1;
+        var m=/(?=(?<run>\B[\q{ab|a|}]\B))/dv.exec('\b');ok=ok&&m.index===0&&m.groups.run===''&&m.indices.groups.run[1]===0;
+        var m=/(?=(?<run>\B[\q{\uD800x|\uD800|}]\B))/dv.exec('😀a');ok=ok&&m.index===0&&m.groups.run==='';ok
+    "#,
+    );
+}
+
+#[test]
+fn word_variable_q_class_string_consumers_copies_and_collection_keep_selected_extents() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?=(?<run>[\\q{a|aaa|aa}]\\B)))',r=new RegExp(source,'dgv'),all=Array.from('aaa!'.matchAll(r));
+        var ok=all.length===2&&all[0].index===0&&all[0].groups.run==='aa'&&all[1].index===1&&all[1].groups.run==='a'&&r.lastIndex===0;
+        ok=ok&&'aaa!'.replace(r,'<$<run>>')==='<aa>a<a>aa!'&&'aaa!'.replaceAll(r,'<$<run>>')==='<aa>a<a>aa!'&&JSON.stringify('aaa!'.split(new RegExp('(?=([\\q{a|aaa|aa}]\\B))','v')))==='["a","a","aa!"]';
+        var offsets=[];ok=ok&&'aaa!'.replace(r,function(match,outside,run,offset,input,groups){offsets.push(offset);ok=ok&&outside===''&&run===groups.run;return '!';})==='!a!aa!'&&JSON.stringify(offsets)==='[0,1]';
+        var empty=Array.from('😀!'.matchAll(/(?=(?<run>\B[\q{|abc}]\B))/dgv));ok=ok&&empty.length===3&&empty[0].index===0&&empty[1].index===2&&empty[2].index===3&&empty[2].groups.run==='';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('aaa!').groups.run==='aa';ok
+    "#), Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.run[1]===1&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn word_variable_q_class_deep_wrappers_and_pair_offsets_keep_selected_capture_slots() {
+    check(
+        r#"
+        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'\\b[\\q{ab|a|}]\\B'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!ab');
+        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
+        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'a')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:2);ok
+    "#,
+    );
+    check(
+        "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀a|😀|a|}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀ab');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
+    );
+}

@@ -27302,3 +27302,21 @@ None of the 2,728 remaining directly lexed Unsupported controls is newly admitte
 Strict all-target workspace Clippy and documentation tests pass. Runtime does
 not yet select the new constructor; fixtures, snapshots, dependencies, profiles,
 native-stack settings and default quotas are unchanged.
+
+
+## Variable-length single-q positive lookahead with word predicates: Runtime
+
+All 52 positive-lookahead integration groups (2.24 s) and 13 constructor groups
+(0.12 s) pass. Four new groups cover shorter endpoint retries, defined-empty
+members, original line/fold/backspace/surrogate context, named independent
+indices, lastIndex, consumers, copies, collection and deep lexical scopes.
+The approved initial-pair rewind remains an independent ordinary-string check.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 46 complete raw JavaScript programs. The
+reference uses independently specified longest-first literal-alternative controls
+and legal Unicode candidates; complete programs retain earlier documented
+character-result/property controls. Runtime always receives original q source.
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+checks, formatting, policy, inventories and diff checks pass. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

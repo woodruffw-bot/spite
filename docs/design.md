@@ -14811,3 +14811,11 @@ member can fail a boundary while a shorter or empty member succeeds. The
 selected whole-member range remains independent of the empty assertion range.
 Checked decoding/folding, legal Unicode candidates, cancellation and lexical
 capture accounting reuse the established string-set plan (22.2.2.4, 22.2.2.7).
+
+
+Runtime selects the word-predicate single-q lookahead constructor as a separate
+v-mode fallback after full original validation, using the complete normalized
+capture scope. It retains the same checked work/capacity boundary and cached
+operand representation, including defined empty captures. Named indices, copies,
+String consumers and collection preserve the selected endpoint extent and
+original context, including shorter-member retries.
