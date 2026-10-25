@@ -60,6 +60,32 @@ not an alternative language specification.
 
 
 
+## Async iterator prototype
+
+The hidden AsyncIterator prototype inherits Object.prototype and supplies generic
+Symbol.asyncIterator identity and Symbol.asyncDispose. Disposal creates a fresh
+intrinsic Promise, looks up return once, calls it with the original receiver and
+no arguments, awaits its result and fulfills with undefined. Lookup/call/resolve
+language failures reject; host failures bypass rejection. Internal reactions
+bypass visible then/species hooks. Intrinsic Promise capability creation is now
+shared by async function bodies, async stacks and this protocol.
+
+Six new Runtime unit groups cover descriptors, every identity receiver kind,
+fresh promises, primitive receivers, missing/non-callable return methods, cached
+lookup, pending results, original errors, poisoned hooks, host failures and
+collection. Pending disposal retains its capability without retaining an unused
+receiver. All three new intrinsic objects survive removal of public edges.
+All 408 units and 1,868 non-RegExp integrations pass. Retained realm entries
+increase from 571 to 574, with no new global binding or product quota changes.
+
+Thirteen complete original AsyncIteratorPrototype tests were reviewed, with
+verified Git blob hashes. All 26 variants remain Unsupported because they use
+async generator syntax to discover the hidden prototype. They remain outside the
+admitted corpus. Fixture inventories remain 9,482 fixtures, nineteen helpers,
+9,463 reviewed sources and 18,378 variants. All 18,378 variants and forty Test262
+package tests pass. Formatting, strict Clippy, Rust 1.88, dependency policy and
+inventories pass. Async-from-Sync adaptation and Array.fromAsync remain work.
+
 ## Lexical using disposal
 
 Using bindings register their cached synchronous disposer before initialization.

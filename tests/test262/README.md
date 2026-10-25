@@ -30,6 +30,19 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Async iterator prototype review
+
+All thirteen complete unchanged AsyncIteratorPrototype originals were reviewed
+and their Git blob hashes verified. All 26 variants remain Unsupported because
+the originals discover the hidden prototype through async generator syntax.
+They remain outside the admitted execution inventory.
+
+Six native Runtime unit groups independently exercise the prototype's identity,
+descriptors, awaited disposal, Promise hook behavior, errors and collection.
+Intrinsic entries increase by three to 574, with no new global binding or quota
+changes. The admitted inventory remains 9,482 fixtures, nineteen helpers,
+9,463 reviewed sources and 18,378 variants.
+
 ## Lexical using execution fixtures
 
 Thirty-five complete root originals add seventy variants for synchronous

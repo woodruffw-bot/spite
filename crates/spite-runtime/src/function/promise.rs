@@ -86,6 +86,20 @@ pub(crate) enum PromiseFinallyKind {
 }
 
 impl Realm {
+    pub(super) fn intrinsic_promise_capability(
+        &mut self,
+        span: Span,
+    ) -> Result<PromiseCapability, Error> {
+        let constructor = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .global_metadata
+            .promise
+            .clone();
+        self.new_promise_capability(Value::Object(constructor), span)
+    }
+
     fn promise_species_constructor(
         &mut self,
         promise: &ObjectHandle,

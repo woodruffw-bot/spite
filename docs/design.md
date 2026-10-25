@@ -1126,6 +1126,19 @@ The return result is ignored, including primitive results; no iterator-result
 validation or thenable assimilation occurs. Primitive receivers retain their
 original identity through inherited getters and strict calls.
 
+The hidden %AsyncIteratorPrototype% inherits %Object.prototype% and supplies
+generic Symbol.asyncIterator identity plus Symbol.asyncDispose (27.1.4). There
+is no global AsyncIterator binding. Disposal creates an intrinsic Promise before
+reading return, calls a present method with the original receiver and no
+arguments, and uses intrinsic PromiseResolve and internal reactions to await the
+result. A native fulfillment handler discards that result and resolves the
+capability with undefined. Language failures reject and host failures bypass
+rejection. A missing return resolves without suspension. Pending reactions keep
+the capability, with no capture of a receiver no longer needed by the algorithm.
+Public then/species hooks and replaced Promise bindings are not consulted.
+The prototype and both methods remain independent intrinsic roots. Async-from-Sync
+adaptation, async generator objects and Array.fromAsync remain separate work.
+
 Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
 (27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator
 with the original receiver when present, otherwise use the input object directly.

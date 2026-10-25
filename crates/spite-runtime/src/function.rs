@@ -11,6 +11,7 @@ mod array;
 mod array_buffer;
 mod arrow;
 mod async_function;
+mod async_iterator;
 mod atomics;
 mod bigint;
 mod boolean;
@@ -217,6 +218,9 @@ pub(crate) enum Builtin {
     IteratorFrom,
     IteratorConcat,
     IteratorDispose,
+    AsyncIteratorDispose,
+    AsyncIteratorIdentity,
+    AsyncIteratorDisposeFulfilled,
     IteratorHelperNext,
     IteratorHelperReturn,
     IteratorToArray,
@@ -506,6 +510,9 @@ impl Builtin {
             Self::DisposableStack(kind) => kind.name(),
             Self::DisposableStackMember(kind, member) => member.name(kind),
             Self::IteratorDispose => "[Symbol.dispose]",
+            Self::AsyncIteratorDispose => "[Symbol.asyncDispose]",
+            Self::AsyncIteratorIdentity => "[Symbol.asyncIterator]",
+            Self::AsyncIteratorDisposeFulfilled => "",
             Self::IteratorToArray => "toArray",
             Self::IteratorTake => "take",
             Self::IteratorDrop => "drop",
@@ -694,6 +701,7 @@ impl Builtin {
             Self::DateMethod(method) => method.length(),
             Self::DataView => 1.0,
             Self::DataViewMember(member) => member.length(),
+            Self::AsyncIteratorDisposeFulfilled => 1.0,
             Self::ArrayBuffer | Self::ArrayBufferIsView => 1.0,
             Self::ArrayBufferMember(member) => member.length(),
             Self::TypedArray(_) => 3.0,
@@ -1011,6 +1019,7 @@ pub(super) struct Intrinsics {
     pub array_buffer: array_buffer::ArrayBufferIntrinsics,
     pub typed_array: typed_array_intrinsics::TypedArrayIntrinsics,
     pub iterator: iterator::IteratorIntrinsics,
+    pub async_iterator: async_iterator::AsyncIteratorIntrinsics,
     pub reflect: reflect::ReflectIntrinsics,
     pub math: math::MathIntrinsics,
     pub json: json::JsonIntrinsics,
@@ -1061,6 +1070,7 @@ impl Intrinsics {
         .chain(self.array_buffer.roots())
         .chain(self.typed_array.roots())
         .chain(self.iterator.roots())
+        .chain(self.async_iterator.roots())
         .chain(self.reflect.roots())
         .chain(self.math.roots())
         .chain(self.json.roots())
@@ -1215,6 +1225,8 @@ impl Realm {
         let string = self.string_intrinsics(&object_prototype, &function_prototype, span)?;
         let symbol = self.symbol_intrinsics(&object_prototype, &function_prototype, span)?;
         let iterator = self.iterator_intrinsics(&object_prototype, &function_prototype, span)?;
+        let async_iterator =
+            self.async_iterator_intrinsics(&object_prototype, &function_prototype, span)?;
         let array = self.array_intrinsics(&object_prototype, &function_prototype, span)?;
         let typed_array = self.typed_array_intrinsics(
             &object_prototype,
@@ -1293,6 +1305,7 @@ impl Realm {
             array_buffer,
             typed_array,
             iterator,
+            async_iterator,
             reflect,
             math,
             json,

@@ -1,6 +1,5 @@
 //! Native asynchronous DisposeResources continuations (sec-disposeresources).
 
-use super::PromiseCapability;
 use crate::{
     Error, ObjectHandle, Realm, Value,
     object::{DisposableResource, DisposableStackKind, DisposalHint},
@@ -8,17 +7,6 @@ use crate::{
 use spite_core::{JsString, Span};
 
 impl Realm {
-    fn intrinsic_promise_capability(&mut self, span: Span) -> Result<PromiseCapability, Error> {
-        let constructor = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .global_metadata
-            .promise
-            .clone();
-        self.new_promise_capability(Value::Object(constructor), span)
-    }
-
     pub(super) fn async_stack_dispose(&mut self, this: Value, span: Span) -> Result<Value, Error> {
         // This built-in is async: even receiver validation rejects a fresh
         // intrinsic Promise, whereas host failures bypass JavaScript rejection.

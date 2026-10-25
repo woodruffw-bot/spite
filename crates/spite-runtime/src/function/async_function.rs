@@ -70,14 +70,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         // Async function/concise-body evaluation creates a fresh Promise before
         // declaration instantiation. Public Promise bindings/methods are unused.
-        let constructor = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .global_metadata
-            .promise
-            .clone();
-        let capability = self.new_promise_capability(Value::Object(constructor), span)?;
+        let capability = self.intrinsic_promise_capability(span)?;
         match execute(self) {
             Ok(value) => {
                 self.call(capability.resolve, Value::Undefined, vec![value], span)?;

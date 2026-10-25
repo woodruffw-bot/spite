@@ -387,7 +387,10 @@ impl Realm {
                     Self::reflect_object(arguments.next().unwrap_or(Value::Undefined), span)?;
                 self.prevent_extensions(&target, span).map(Value::Boolean)
             }
-            Builtin::ArraySpecies | Builtin::IteratorIdentity => Ok(this),
+            Builtin::ArraySpecies | Builtin::IteratorIdentity | Builtin::AsyncIteratorIdentity => {
+                Ok(this)
+            }
+            Builtin::AsyncIteratorDisposeFulfilled => Ok(Value::Undefined),
             Builtin::ArrayBuffer => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
@@ -431,6 +434,7 @@ impl Realm {
             }
             Builtin::IteratorConcat => self.iterator_concat(arguments, span),
             Builtin::IteratorDispose => self.iterator_dispose(this, span),
+            Builtin::AsyncIteratorDispose => self.async_iterator_dispose(this, span),
             Builtin::IteratorToArray => self.iterator_to_array(this, span),
             Builtin::IteratorForEach => {
                 self.iterator_for_each(this, arguments.next().unwrap_or(Value::Undefined), span)
