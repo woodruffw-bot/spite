@@ -26134,3 +26134,24 @@ records all 437 Runtime units; this constructor-only Runtime increment has the
 focused and differential evidence above. Completed broad results record
 `427133a0`; later q-class assertions retain separate focused evidence. Fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Core negative lookahead over one single-character q class
+
+The actual-source focused harness passes 286 tests (1.97 s), including four new
+negative q-class groups. Checks cover empty outside and undefined operand slots,
+nested checked operations, original line/fold/property context, astral and lone
+surrogate candidates, initial-pair rewind, proof exclusions, 200,000 wrappers,
+clone/drop, linear retries over 20,000 characters and every checked
+construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle and independent Unicode advancement.
+The 206 ignoreCase patterns contribute 21,424 equivalent ordinary-q control
+records for the documented Node defect. Twenty-five ASCII iv patterns also use
+the documented equivalent-range control (2,600 overlapping records). The earlier
+positive q-lookahead record retains the original-q baseline disagreements.
+
+All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
+all-target workspace Clippy, documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

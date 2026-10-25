@@ -14312,3 +14312,18 @@ and preceding operand ranges through named indices and String consumers.
 Original q source/flags, word/line context, copies, collection and stateful
 Unicode candidates retain the shared paths. User conversions remain outside
 the compiler frame.
+
+A separate checked negative-lookahead constructor admits one unquantified
+v-mode class whose q alternatives each decode to a character, with optional
+^/$ gates (22.2.2.4, 22.2.2.9). Charged flat scans retain the complete outside
+wrapper inventory and change only the proved assertion sign before delegating
+to the checked positive q-class proof. Projected source is never independently
+validated or rebound. Other widths, counts, word predicates, directions and
+binding roles remain separate compiler domains.
+
+The shared negative loop succeeds exactly when its bounded sticky class probe
+fails at a legal complete-character candidate. Outside wrappers capture that
+empty position and all operand slots remain undefined, including through deep
+scopes. Original line/fold/surrogate context, initial-pair rewind, linear actual
+work and checked work/capacity errors retain their existing paths. Earlier
+constructors keep their domains and charges. Runtime integration remains separate.
