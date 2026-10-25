@@ -25831,6 +25831,17 @@ above. Broad Test262 results record `8f624262`; negative assertions retain
 separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
 
+## Complete RegExp validation of negative Unicode assertions
+
+The Runtime snapshot at `427133a0` passes all 2,987 RegExp integration tests
+(814.25 s), completing its broad validation alongside the recorded 35 Test262
+package tests and 16,343 reviewed corpus variants (430.56 s). It includes all
+single-character positive/negative Unicode lookaround and word-predicate
+constructors, predecessor extents and undefined negative operand captures.
+Later q-class assertion extensions retain their separate focused and
+differential evidence. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.
+
 ## Core negative Unicode lookbehind over one character
 
 The actual-source focused harness passes 262 tests (1.68 s), including five new
