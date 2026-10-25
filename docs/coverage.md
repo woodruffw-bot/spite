@@ -60,6 +60,17 @@ not an alternative language specification.
 
 
 
+## Suspended labelled control flow
+
+Six Runtime groups and a Symbol ownership control cover labelled blocks, direct
+iteration label chains, nested iterator closing, finalizers, resources, completion
+values and preserved call contexts. All 416 units and 1,993 non-RegExp integrations
+pass across 653 Runtime case files. Strict Clippy and Rust 1.88 checks pass. Complete
+original reviews remain at 36 passing/8 Unsupported await variants and 152
+passing/110 Unsupported Array/adapter variants. No additional original qualifies
+for admission; inventories remain 9,578 fixtures, twenty helpers, 9,559 reviewed
+sources, 18,566 variants and 579 intrinsic entries. Helpers and quotas are unchanged.
+
 ## Suspended synchronous for-of
 
 Iterable expressions and bodies can await while iteration remains synchronous.

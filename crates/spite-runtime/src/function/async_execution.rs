@@ -6,6 +6,7 @@ mod conditional;
 mod expression;
 mod for_of;
 mod iteration;
+mod labelled;
 mod protected;
 mod source;
 
@@ -198,6 +199,11 @@ impl Realm {
             let span = statement.span;
             self.tick(span)?;
             return self.enter_async_block(data, span);
+        }
+        if matches!(statement.kind, StatementKind::Labelled { .. }) {
+            let span = statement.span;
+            self.tick(span)?;
+            return self.enter_async_label(data, span);
         }
         if matches!(statement.kind, StatementKind::ForOf { .. }) {
             let span = statement.span;

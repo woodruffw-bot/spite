@@ -101,9 +101,7 @@ impl Realm {
             Err(error) => return FrameStep::Complete(Err(error)),
         };
         debug_assert!(matches!(cursor.phase, AsyncLoopPhase::Body));
-        if completion.kind == CompletionKind::Normal
-            || (completion.kind == CompletionKind::Continue && completion.target.is_none())
-        {
+        if super::labelled::loop_continues(data, &completion) {
             cursor.value = completion.value.take().expect("nonempty loop value");
             cursor.phase = AsyncLoopPhase::Test;
             data.frames.push(AsyncStatementFrame::Loop(cursor));

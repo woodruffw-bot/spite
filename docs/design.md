@@ -508,7 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Remaining for and labelled statements still use ordinary execution and retain
+them. Remaining for statements still use ordinary execution and retain
 their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
@@ -557,7 +557,7 @@ last value; unlabelled break consumes its target and exits. Return, throw and
 rejection propagate through the shared completion frames, so intervening finally
 blocks finish before loop control proceeds. Retained loop values participate in
 tracing, validation and physical Symbol counts across awaited retests. Host abort
-keeps its existing isolation and capture-release rules. Labelled loops and further
+keeps its existing isolation and capture-release rules. Further
 iteration forms retain explicit await boundaries.
 
 Synchronous for-of loops support awaited iterable expressions and bodies
@@ -577,6 +577,14 @@ handles, cached methods and loop values are traced and validated, with every
 stored Symbol counted. Parameter-catch and iteration scopes share a lexical scope
 frame, with disposal enabled only for resource iterations. For-await-of remains
 Unsupported; this is synchronous iteration with suspended source execution.
+
+Labelled statements retain typed source locations without adding environments
+(14.13). A matching labelled break becomes normal completion without UpdateEmpty.
+Iteration cursors recognize only the contiguous labels directly enclosing their
+statement, so a labelled continue keeps its own iterator open while closing
+intervening inner iterators. Resource disposal and awaited finally blocks finish
+before the target resumes. Label frames retain source paths rather than duplicate
+values or syntax; the existing loop and statement-list owners preserve values.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

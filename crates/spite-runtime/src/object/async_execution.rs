@@ -39,6 +39,7 @@ pub(crate) enum StatementChild {
     FinallyBody,
     LoopBody,
     ForOfBody,
+    LabelBody,
 }
 
 #[derive(Debug)]
@@ -109,6 +110,7 @@ pub(crate) enum AsyncStatementFrame {
     Loop(AsyncLoopCursor),
     ForOfHead(AsyncForOfHead),
     ForOf(AsyncForOfCursor),
+    Label(StatementLocation),
 }
 
 impl AsyncStatementFrame {
@@ -121,6 +123,7 @@ impl AsyncStatementFrame {
             Self::Loop(_) => None,
             Self::ForOfHead(head) => head.environment.as_ref(),
             Self::ForOf(_) => None,
+            Self::Label(_) => None,
         }
     }
 
@@ -137,6 +140,7 @@ impl AsyncStatementFrame {
             Self::Loop(cursor) => Some(&cursor.value),
             Self::ForOfHead(_) => None,
             Self::ForOf(cursor) => Some(&cursor.value),
+            Self::Label(_) => None,
         };
         let next = match self {
             Self::ForOf(cursor) => Some(cursor.iterator.next_value()),
@@ -153,7 +157,8 @@ impl AsyncStatementFrame {
             | Self::Try(_)
             | Self::Scope { .. }
             | Self::Loop(_)
-            | Self::ForOfHead(_) => None,
+            | Self::ForOfHead(_)
+            | Self::Label(_) => None,
         }
     }
 }

@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Suspended labelled control-flow review
+
+Six Runtime groups and a Symbol ownership control cover label chains, matching
+break/continue, inner iterator closing, finalizers, resources and retained values.
+Complete original reviews remain at 36 passing/8 Unsupported await variants and
+152 passing/110 Unsupported Array/adapter variants. No additional unchanged
+original qualifies. Inventories remain 9,578 fixtures, twenty helpers, 9,559
+reviewed sources and 18,566 variants; no helper, quota or intrinsic entry changes.
+
 ## Suspended synchronous for-of fixtures
 
 Two complete unchanged Array.fromAsync originals add four variants for noncallable

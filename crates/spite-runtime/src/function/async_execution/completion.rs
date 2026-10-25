@@ -53,6 +53,25 @@ impl Realm {
                     FrameStep::Continue => return Ok(None),
                     FrameStep::Complete(completion) => result = completion,
                 },
+                Some(AsyncStatementFrame::Label(_)) => {
+                    let Some(AsyncStatementFrame::Label(location)) = data.frames.pop() else {
+                        unreachable!("label completion frame");
+                    };
+                    let spite_parser::ast::StatementKind::Labelled { label, .. } =
+                        &super::active_statement(&data.body, Some(&location)).kind
+                    else {
+                        unreachable!("label source path");
+                    };
+                    result = result.map(|mut completion| {
+                        if completion.kind == CompletionKind::Break
+                            && completion.target.as_deref() == Some(label.name.as_str())
+                        {
+                            completion.kind = CompletionKind::Normal;
+                            completion.target = None;
+                        }
+                        completion
+                    });
+                }
                 Some(AsyncStatementFrame::ForOfHead(_)) => {
                     let Some(AsyncStatementFrame::ForOfHead(head)) = data.frames.pop() else {
                         unreachable!("iteration head frame");

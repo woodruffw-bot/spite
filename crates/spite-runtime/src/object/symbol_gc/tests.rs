@@ -388,6 +388,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
         (
+            "async labelled loop value across suspension",
+            "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
+        ),
+        (
             "async for-of loop value across suspension",
             "(()=>{let gate=new Promise(()=>{}),n=0,source={[Symbol.iterator](){return this},next(){return{done:++n>2,value:n}}},f=async()=>{for(const x of source){if(x===1){key}else await gate}};f();return gate})()",
         ),
