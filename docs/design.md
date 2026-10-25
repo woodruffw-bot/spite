@@ -14542,3 +14542,15 @@ and all operand slots undefined through named indices, String consumers, copies
 and collection. Original set syntax, predecessor/line context and stateful
 Unicode execution remain in Core; user conversions stay outside the compiler
 frame.
+
+
+A separate checked negative scalar-set lookbehind entry accepts leading/trailing
+operand word predicates with optional ^/$ gates, requiring at least one word
+predicate (22.2.2.4, 22.2.2.9). The charged flat envelope changes only the
+assertion sign and delegates to checked positive word-scalar lookbehind.
+Negation applies to the complete original-context predecessor conjunction;
+outside wrappers remain empty and all operand slots undefined. Backspace class
+data, folded set algebra, bounded sticky probes, checked errors, complete Unicode
+advancement, initial-pair rewind and actual-work cancellation retain their
+shared paths. Earlier entries keep their domains and charges. Runtime
+integration remains separate.
