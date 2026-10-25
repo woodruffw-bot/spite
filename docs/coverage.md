@@ -25872,3 +25872,13 @@ this constructor-only Runtime extension has the focused and differential
 evidence above. Broad Test262 results record `8f624262`; negative assertions
 retain separate focused evidence. Fixtures, snapshots, dependencies, profiles,
 native stacks and default quotas are unchanged.
+
+## Complete RegExp validation of positive Unicode lookbehind
+
+The Runtime snapshot at `8f624262` passes all 2,967 RegExp integration tests
+(871.04 s), completing its broad validation alongside the recorded 35 Test262
+package tests and 16,343 reviewed corpus variants (468.01 s). It includes bare
+and quantified positive lookahead, operand word predicates and single-character
+positive lookbehind with predecessor capture extents. Later negative assertions
+retain their focused and differential evidence. Fixtures, snapshots, dependency
+policy, profiles, native stacks and default quotas are unchanged.
