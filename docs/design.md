@@ -3315,9 +3315,20 @@ Normal handler returns call resolve; language throws call reject; host failures
 bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
-preflight rollback moves rather than clones arbitrary argument values. Finally
-and combinators remain separate implementation work. Async Test262 execution
+preflight rollback moves rather than clones arbitrary argument values.
+Combinators remain separate implementation work. Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
+
+Promise.prototype.finally accepts object receivers without Promise branding
+(27.2.5.3). SpeciesConstructor precedes then lookup even for non-callable cleanup
+values, which are forwarded twice unchanged. Callable cleanup creates native
+wrappers capturing that species and callback in a private traced record. Each
+wrapper calls cleanup with undefined and zero arguments, performs PromiseResolve
+through the captured species, and invokes the result's live then with one native
+continuation. Zero-arity continuations preserve the original value or throw the
+original reason. Cleanup throws or rejections replace the original settlement;
+normal cleanup waits before propagating it. All captures participate in object
+and Symbol collection. These wrappers are anonymous non-constructors.
 
 Promise.prototype.catch implements Invoke(this, "then", [undefined, onRejected])
 (27.2.5.1). It reads then once and calls it with the original receiver and exactly

@@ -244,7 +244,8 @@ fn object_symbols(
             | Callable::Method(_)
             | Callable::ProxyRevoker(_)
             | Callable::PromiseCapabilityExecutor(_)
-            | Callable::PromiseResolvingFunction { .. },
+            | Callable::PromiseResolvingFunction { .. }
+            | Callable::PromiseFinally { .. },
         )
         | None => visit(None)?,
     }

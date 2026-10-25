@@ -429,7 +429,8 @@ impl Trace for OrdinaryObject {
             | Callable::ClassConstructor(_)
             | Callable::ProxyRevoker(_)
             | Callable::PromiseCapabilityExecutor(_)
-            | Callable::PromiseResolvingFunction { .. } => None,
+            | Callable::PromiseResolvingFunction { .. }
+            | Callable::PromiseFinally { .. } => None,
             Callable::Bound(bound) => Some(bound),
         });
         let capture = match self.callable.as_ref() {
@@ -441,7 +442,8 @@ impl Trace for OrdinaryObject {
             Some(Callable::ClassConstructor(class)) => Some(&class.method.code.environment.0),
             Some(Callable::ProxyRevoker(proxy)) => proxy.as_ref(),
             Some(Callable::PromiseCapabilityExecutor(capability)) => Some(capability),
-            Some(Callable::PromiseResolvingFunction { cell, .. }) => Some(cell),
+            Some(Callable::PromiseResolvingFunction { cell, .. })
+            | Some(Callable::PromiseFinally { cell, .. }) => Some(cell),
             Some(Callable::Builtin(_)) | None => None,
         };
         let home_object = match &self.callable {

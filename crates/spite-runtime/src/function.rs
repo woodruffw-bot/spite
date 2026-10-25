@@ -42,7 +42,7 @@ mod object;
 mod ordinary;
 mod promise;
 pub use promise::PromiseJobOutcome;
-pub(crate) use promise::{PromiseCapability, PromiseJob};
+pub(crate) use promise::{PromiseCapability, PromiseFinallyKind, PromiseJob};
 mod proxy;
 mod reflect;
 mod regexp;
@@ -922,7 +922,14 @@ pub(crate) enum Callable {
     Builtin(Builtin),
     ProxyRevoker(Option<ObjectHandle>),
     PromiseCapabilityExecutor(ObjectHandle),
-    PromiseResolvingFunction { cell: ObjectHandle, resolve: bool },
+    PromiseResolvingFunction {
+        cell: ObjectHandle,
+        resolve: bool,
+    },
+    PromiseFinally {
+        cell: ObjectHandle,
+        kind: PromiseFinallyKind,
+    },
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
@@ -942,7 +949,8 @@ impl Callable {
             Self::Bound(_)
             | Self::ProxyRevoker(_)
             | Self::PromiseCapabilityExecutor(_)
-            | Self::PromiseResolvingFunction { .. } => FunctionText::Native(""),
+            | Self::PromiseResolvingFunction { .. }
+            | Self::PromiseFinally { .. } => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1454,6 +1462,14 @@ impl Realm {
                     return self.promise_resolving_function(
                         cell,
                         resolve,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
+                Some(Callable::PromiseFinally { cell, kind }) => {
+                    return self.promise_finally_callback(
+                        cell,
+                        kind,
                         arguments.next().unwrap_or(Value::Undefined),
                         span,
                     );

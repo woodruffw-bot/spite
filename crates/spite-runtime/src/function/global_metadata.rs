@@ -508,6 +508,9 @@ impl Realm {
             Member::PromiseCatch => {
                 self.promise_catch(receiver, arguments.next().unwrap_or(Value::Undefined), span)
             }
+            Member::PromiseFinally => {
+                self.promise_finally(receiver, arguments.next().unwrap_or(Value::Undefined), span)
+            }
             Member::PromiseReject => {
                 self.promise_reject(receiver, arguments.next().unwrap_or(Value::Undefined), span)
             }

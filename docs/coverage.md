@@ -52,10 +52,28 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch, species-aware then, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17003 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17061 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise.finally
+
+Generic object receivers use species lookup before live then invocation. Callable
+cleanup runs with undefined and no arguments, awaits its result through the
+captured species and preserves the original value or rejection reason. Throws
+and rejected cleanup replace the original settlement. Anonymous native wrappers
+and continuations have standard metadata and traced object/Symbol captures.
+
+Four Runtime regressions cover lookup order, non-callable forwarding, primitive
+rejection, deferred cleanup, replacement reasons, captured species and collection.
+All 29 unchanged upstream finally originals pass 58 variants, including observable
+then calls and subclass constructor counts. Inventories contain 8,814 fixtures,
+nineteen helpers, 8,795 reviewed sources and 17,061 variants. There are 627 Runtime
+case files, 398 Runtime units and 1,798 integration tests outside RegExp groups.
+All 17,061 variants and all 40 Test262 package tests pass. Formatting, strict
+Clippy, Rust 1.88 all-target checks, dependency policy and fixture inventories
+also pass.
 
 ## Async Test262 completion
 
@@ -91,7 +109,7 @@ The initial sixteen unchanged Test262 originals added 32 Script variants before
 async completion enabled the remaining 59 originals above. There are 626 Runtime
 case files. All 398 Runtime units, 1,794
 integration tests outside RegExp groups, strict Clippy and Rust 1.88 all-target
-checks pass. Finally and combinators remain work.
+checks pass. Finally is implemented above; combinators remain work.
 The preceding gate passed 16,797 variants and all 35 Test262 package tests. Formatting, dependency
 policy, fixture inventories and diff checks also pass.
 
@@ -105,7 +123,7 @@ Resolve/try preserve branded identity through constructor checks. The public
 run_next_promise_job host API runs one FIFO job, preserves queues on preflight
 failure, reports started-job failures and shares one opt-in allowance per job.
 Native then/reactions and async conformance completion are implemented above;
-finally and combinators remain deferred.
+finally is implemented above; combinators remain deferred.
 
 Six new state/job unit regressions and three Runtime integration groups cover
 settlement/error ordering, metadata, subclasses/fallbacks, branded identity,

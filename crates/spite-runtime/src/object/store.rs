@@ -709,6 +709,23 @@ impl Objects {
         Ok(self.heap.insert(Entry::Object(record))?)
     }
 
+    pub(crate) fn create_promise_finally_function(
+        &mut self,
+        prototype: &Handle,
+        cell: &Handle,
+        kind: crate::function::PromiseFinallyKind,
+    ) -> Result<Handle, Error> {
+        self.inspect(prototype)?;
+        self.inspect(cell)?;
+        let mut record =
+            OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        record.callable = Some(Callable::PromiseFinally {
+            cell: cell.clone(),
+            kind,
+        });
+        Ok(self.heap.insert(Entry::Object(record))?)
+    }
+
     pub(crate) fn create_object_prototype(&mut self) -> Result<Handle, Error> {
         let mut object = OrdinaryObject::with_property_limit(None, self.max_properties);
         object.immutable_prototype = true;

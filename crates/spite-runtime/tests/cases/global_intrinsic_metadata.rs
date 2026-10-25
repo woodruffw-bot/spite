@@ -156,7 +156,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Promise.allSettled([])",
         "Promise.any([])",
         "Promise.race([])",
-        "Promise.prototype.finally.call({},()=>{hits++})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'byteLength').get.call({})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'growable').get.call({})",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get.call({})",

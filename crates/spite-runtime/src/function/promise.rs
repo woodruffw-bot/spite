@@ -70,7 +70,148 @@ impl PromiseCapability {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum PromiseFinallyKind {
+    Then,
+    Catch,
+    ValueThunk,
+    Thrower,
+}
+
 impl Realm {
+    fn promise_species_constructor(
+        &mut self,
+        promise: &ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let default = Value::Object(
+            self.intrinsics
+                .as_ref()
+                .expect("initialized")
+                .global_metadata
+                .promise
+                .clone(),
+        );
+        let constructor = self.get_property(promise, &JsString::from("constructor"), span)?;
+        Ok(if matches!(constructor, Value::Undefined) {
+            default
+        } else {
+            let Value::Object(object) = constructor else {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Promise constructor property is not an object",
+                ));
+            };
+            let species = self.get_property(&object, &WellKnownSymbol::Species.symbol(), span)?;
+            if matches!(species, Value::Undefined | Value::Null) {
+                default
+            } else {
+                if !self.is_constructor(&species, span)? {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "Promise species is not a constructor",
+                    ));
+                }
+                species
+            }
+        })
+    }
+
+    // Promise.prototype.finally (27.2.5.3) is generic over object receivers.
+    // Its wrappers capture the species now and invoke the receiver's live then.
+    pub(super) fn promise_finally(
+        &mut self,
+        this: Value,
+        on_finally: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(object) = &this else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise.finally requires an object receiver",
+            ));
+        };
+        let constructor = self.promise_species_constructor(object, span)?;
+        let (fulfill, reject) = if self.is_callable(&on_finally, span)? {
+            let cell = self.object_work(span, |objects, _| objects.create(None))?;
+            self.define_builtin_property(&cell, "constructor", constructor, true, span)?;
+            self.define_builtin_property(&cell, "callback", on_finally, true, span)?;
+            (
+                self.create_finally_callback(&cell, PromiseFinallyKind::Then, span)?,
+                self.create_finally_callback(&cell, PromiseFinallyKind::Catch, span)?,
+            )
+        } else {
+            (on_finally.clone(), on_finally)
+        };
+        let then = self.get_property_value(&this, &JsString::from("then"), span)?;
+        self.call(then, this, vec![fulfill, reject], span)
+    }
+
+    fn create_finally_callback(
+        &mut self,
+        cell: &ObjectHandle,
+        kind: PromiseFinallyKind,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .function_prototype
+            .clone();
+        let function = self.object_work(span, |objects, _| {
+            objects.create_promise_finally_function(&prototype, cell, kind)
+        })?;
+        let length = match kind {
+            PromiseFinallyKind::Then | PromiseFinallyKind::Catch => 1.0,
+            PromiseFinallyKind::ValueThunk | PromiseFinallyKind::Thrower => 0.0,
+        };
+        self.define_builtin_property(&function, "length", Value::Number(length), false, span)?;
+        self.define_builtin_property(
+            &function,
+            "name",
+            Value::String(JsString::from("")),
+            false,
+            span,
+        )?;
+        Ok(Value::Object(function))
+    }
+
+    pub(super) fn promise_finally_callback(
+        &mut self,
+        cell: ObjectHandle,
+        kind: PromiseFinallyKind,
+        value: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let continuation = match kind {
+            PromiseFinallyKind::ValueThunk => {
+                return self.get_property(&cell, &JsString::from("value"), span);
+            }
+            PromiseFinallyKind::Thrower => {
+                return Err(Error::Thrown(self.get_property(
+                    &cell,
+                    &JsString::from("value"),
+                    span,
+                )?));
+            }
+            PromiseFinallyKind::Then => PromiseFinallyKind::ValueThunk,
+            PromiseFinallyKind::Catch => PromiseFinallyKind::Thrower,
+        };
+        let callback = self.get_property(&cell, &JsString::from("callback"), span)?;
+        let constructor = self.get_property(&cell, &JsString::from("constructor"), span)?;
+        let result = self.call(callback, Value::Undefined, Vec::new(), span)?;
+        let promise = self.promise_resolve(constructor, result, span)?;
+        let capture = self.object_work(span, |objects, _| objects.create(None))?;
+        self.define_builtin_property(&capture, "value", value, true, span)?;
+        let continuation = self.create_finally_callback(&capture, continuation, span)?;
+        let then = self.get_property_value(&promise, &JsString::from("then"), span)?;
+        self.call(then, promise, vec![continuation], span)
+    }
+
     pub(super) fn promise_then(
         &mut self,
         this: Value,
@@ -94,41 +235,8 @@ impl Realm {
                 "Promise.then requires a Promise",
             ));
         }
-        // SpeciesConstructor observes constructor/species before capability
-        // construction. Those hooks may settle the parent before registration.
-        let default = Value::Object(
-            self.intrinsics
-                .as_ref()
-                .expect("initialized")
-                .global_metadata
-                .promise
-                .clone(),
-        );
-        let constructor = self.get_property(&promise, &JsString::from("constructor"), span)?;
-        let constructor = if matches!(constructor, Value::Undefined) {
-            default
-        } else {
-            let Value::Object(object) = constructor else {
-                return Err(Self::exception(
-                    ExceptionKind::TypeError,
-                    span,
-                    "Promise constructor property is not an object",
-                ));
-            };
-            let species = self.get_property(&object, &WellKnownSymbol::Species.symbol(), span)?;
-            if matches!(species, Value::Undefined | Value::Null) {
-                default
-            } else {
-                if !self.is_constructor(&species, span)? {
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        "Promise species is not a constructor",
-                    ));
-                }
-                species
-            }
-        };
+        // Species hooks may settle the parent before reaction registration.
+        let constructor = self.promise_species_constructor(&promise, span)?;
         let capability = self.new_promise_capability(constructor, span)?;
         let result = capability.promise.clone();
         let fulfill = if self.is_callable(&on_fulfilled, span)? {

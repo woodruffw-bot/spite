@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8785 unmodified test fixtures and nineteen harness files come from
+These 8814 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,6 +30,18 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Promise.finally fixtures
+
+All 29 complete originals in Promise/prototype/finally pass 58 Script variants.
+They cover generic receivers, ordered species access, non-callable forwarding,
+native wrapper metadata, cleanup settlement, observable then calls, PromiseResolve
+identity and subclass constructor counts. Pinned Git blob hashes and manifest
+SHA-256 digests were verified; the existing nineteen helpers suffice.
+
+Four Runtime regressions additionally cover deferred cleanup, species capture,
+callback receivers/arguments and collection of native captures. Current inventories
+contain 8,814 fixtures, nineteen helpers, 8,795 reviewed sources and 17,061 variants.
+
 ## Async Promise completion fixtures
 
 105 additional complete unchanged Promise originals add 206 variants: 26
@@ -48,7 +60,7 @@ modules, agents and async function syntax remain unsupported.
 
 All 75 then originals pass 146 variants. The construction candidate review passes
 210 variants; its one cross-realm source remains Unsupported. Catch and generic
-candidate sets pass all 28 and 72 variants respectively. Current inventories
+candidate sets pass all 28 and 72 variants respectively. That increment's inventories
 contain 8,785 fixtures, nineteen helpers, 8,766 reviewed sources and 17,003 variants.
 
 ## Promise.then reaction fixtures
@@ -63,7 +75,7 @@ the 59 async originals are now admitted above. Native Runtime tests manually
 schedule jobs and additionally cover
 FIFO/chained reactions, normalized handlers, catch recovery, reentrant species,
 self-resolution, reported resolver errors, collection and 5,000 reactions without
-automatic execution. Finally and combinators remain implementation work.
+automatic execution. Finally is implemented above; combinators remain work.
 
 That increment contained 8,680 fixtures, seventeen helpers, 8,661 reviewed
 sources and 16,797 variants. The pin, license and earlier source/helper bytes are
@@ -84,7 +96,7 @@ $262.createRealm original remains deferred.
 No source is rewritten or credited for Unsupported. Six state/job units
 and three native integration groups also cover explicit FIFO thenable jobs,
 cached lookup, first settlement, self-resolution, collection and host failures.
-Promise.then/reactions are implemented above; finally and combinators remain work.
+Promise.then/reactions and finally are implemented above; combinators remain work.
 
 The inventory contains 8,664 fixtures, seventeen unchanged helpers, 8,645 reviewed
 sources and 16,765 variants. Revision, license and previous fixture bytes remain
@@ -4227,7 +4239,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 17003 variants from 8766 reviewed sources.
+The `spite-test262` command runs 17061 variants from 8795 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
