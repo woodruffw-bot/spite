@@ -25900,3 +25900,27 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+## Runtime single-character negative lookbehind with word predicates
+
+All nine current negative-lookbehind groups pass (0.65 s), including four new
+groups for negated word polarity, named undefined slots and own indices
+properties, original line/fold/property/backspace context, String consumers,
+copies and collection. Independent expectations preserve complete-character
+predecessors and initial-pair rewind where native search can select an interior
+pair. All thirteen constructor regressions pass (0.07 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns against
+the native sticky-candidate oracle with independent Unicode search and state
+bookkeeping. Twelve ASCII iv patterns contribute 2,496 equivalent-range controls
+for the documented property-fold discrepancy. Eight complete JavaScript programs
+agree separately; independent pair expectations stay outside direct V8 search
+comparison.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+preceding negative-lookahead snapshot records all 437 Runtime units; this
+constructor-only Runtime extension has the focused and differential evidence
+above. The completed broad RegExp and Test262 runs record `8f624262`; negative
+assertions retain their separate focused evidence. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

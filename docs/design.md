@@ -14213,3 +14213,10 @@ candidate loop and bounded sticky predecessor probe retain linear actual work,
 initial-pair rewind, empty outside captures and undefined operand slots. Earlier
 line-only and forward entries keep their domains and charges. Construction,
 cloning and dropping remain flat. Runtime integration remains separate.
+
+Runtime selects the negative word-predecessor constructor after the line-only
+lookbehind entry. It retains full normalized source and the existing successful
+offset reset, then shares empty outside/undefined operand capture access with
+the other negative assertions. Original-context predicates, named indices,
+String consumers, copies, collection and complete-character stateful search
+retain the shared paths. User conversions remain outside the compiler frame.

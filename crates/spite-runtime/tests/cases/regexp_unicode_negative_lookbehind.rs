@@ -88,3 +88,56 @@ fn negative_predecessor_deep_wrappers_keep_all_original_empty_and_undefined_slot
     "#,
     );
 }
+
+#[test]
+fn negative_word_predecessor_preserves_named_undefined_slots_and_boundary_polarity() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\b','aa'],['\\ba\\B','a!'],['\\Ba\\B','a!'],['\\Ba\\b','aa']]){
+            var source='(?<outside>(?<!(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode);r.lastIndex=1;var m=r.exec(row[1]),point=state===''?0:1;
+            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('').groups.run===undefined;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_word_predecessor_line_fold_property_and_backspace_context_stay_original() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var r=new RegExp('(?<!(?<run>^\\ba\\b$))','dimy'+mode);r.lastIndex=2;ok=ok&&r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
+            var r=new RegExp('(?<!(\\bſ\\b))','diy'+mode);r.lastIndex=2;ok=ok&&r.exec('!ſ!')===null&&r.lastIndex===0;
+            var r=new RegExp('(?<!(\\b\\p{ASCII}\\b))','diy'+mode);r.lastIndex=2;ok=ok&&r.exec('!ſ!')===null&&r.lastIndex===0;
+            var r=new RegExp('(?<!(\\B[\\b]\\B))','dy'+mode);r.lastIndex=1;ok=ok&&r.exec('\b')===null;r.lastIndex=2;var m=r.exec('a\bb');ok=ok&&m.index===2&&m[1]===undefined;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn negative_word_predecessor_string_consumers_copies_and_collection_keep_undefined_slots() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var source='(?<outside>(?<!(?<run>\\ba\\b)))',r=new RegExp(source,'dg'+mode),all=Array.from('a!'.matchAll(r));
+            ok=ok&&all.length===2&&all[0].index===0&&all[1].index===2&&all[0].groups.outside===''&&all[0].groups.run===undefined&&all[0].indices.groups.run===undefined&&r.lastIndex===0;
+            ok=ok&&'a!'.replace(r,'<$<run>>')==='<>a!<>'&&JSON.stringify('a!'.split(new RegExp('(?<!(\\ba\\b))',mode)))==='["a!"]';
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('a!').index===0;
+        }ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=1;var m=copy.exec('a!');m.index===2&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.run===undefined&&copy.lastIndex===2"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn negative_word_predecessor_search_retains_complete_characters_and_initial_pair_rewind() {
+    // Independent expectations exclude native interior-pair search candidates.
+    check(
+        "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?<!(?<run>\\\\B😀\\\\B))','dg'+mode);r.lastIndex=2;ok=ok&&r.exec('😀😀')===null&&r.lastIndex===0;r.lastIndex=1;var m=r.exec('😀😀');ok=ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=5;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===1&&m.groups.run===undefined&&r.lastIndex===1}ok",
+    );
+}
