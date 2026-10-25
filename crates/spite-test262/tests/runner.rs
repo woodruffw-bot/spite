@@ -367,6 +367,7 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
 fn unsupported_host_helpers_never_appear_missing_or_undefined() {
     for body in [
         "print",
+        "$DONE",
         "$262",
         "typeof print",
         "typeof $262",
@@ -413,7 +414,7 @@ fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
     for flags in [
         "[module]",
         "[module, raw]",
-        "[async]",
+        "[async, raw]",
         "[CanBlockIsTrue]",
         "[CanBlockIsFalse]",
     ] {

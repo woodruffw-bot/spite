@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8680 unmodified test fixtures and seventeen harness files come from
+These 8785 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,6 +30,27 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Async Promise completion fixtures
+
+105 additional complete unchanged Promise originals add 206 variants: 26
+construction, 59 then, two catch, thirteen resolve, one reject and four try tests.
+Their Git blob hashes and manifest SHA-256 digests were verified. The original
+doneprintHandle.js and asyncHelpers.js are admitted unchanged as helpers eighteen
+and nineteen. Tests execute their actual assertion and completion paths.
+
+The async Script host captures print output privately, drains Promise jobs and
+requires exactly one successful completion. Failure, missing or duplicate
+completion cannot pass. Actual reported job exceptions retain phase/type
+matching; printed failure names cannot satisfy runtime negatives. Host failures
+remain Unsupported or Limit. Five runner regressions exercise these cases and
+ordinary-host isolation, with no default work or job quota. Raw async setup,
+modules, agents and async function syntax remain unsupported.
+
+All 75 then originals pass 146 variants. The construction candidate review passes
+210 variants; its one cross-realm source remains Unsupported. Catch and generic
+candidate sets pass all 28 and 72 variants respectively. Current inventories
+contain 8,785 fixtures, nineteen helpers, 8,766 reviewed sources and 17,003 variants.
+
 ## Promise.then reaction fixtures
 
 Sixteen unchanged complete originals in `Promise/prototype/then/` cover metadata,
@@ -37,14 +58,14 @@ branded receivers, constructor/species access and validation, capability errors,
 and mutation of settled Promises. Their 32 Script variants pass. Every Git blob
 hash and manifest SHA-256 digest was verified; no helpers were added.
 
-The full 75-source review records 32 passing and 114 Unsupported variants. Its
-59 async originals remain deferred until asynchronous Test262 completion is
-implemented. Native Runtime tests manually schedule jobs and additionally cover
+The initial 75-source review recorded 32 passing and 114 Unsupported variants;
+the 59 async originals are now admitted above. Native Runtime tests manually
+schedule jobs and additionally cover
 FIFO/chained reactions, normalized handlers, catch recovery, reentrant species,
 self-resolution, reported resolver errors, collection and 5,000 reactions without
 automatic execution. Finally and combinators remain implementation work.
 
-Current inventories contain 8,680 fixtures, seventeen helpers, 8,661 reviewed
+That increment contained 8,680 fixtures, seventeen helpers, 8,661 reviewed
 sources and 16,797 variants. The pin, license and earlier source/helper bytes are
 unchanged; metadata and execution assertions both track the admission.
 
@@ -58,11 +79,12 @@ Script variants pass; two originals each select one Script mode. Every pinned
 Git blob hash and manifest SHA-256 digest was verified before admission.
 
 The broader 107-source candidate review records 118 passing and 94 Unsupported
-variants. Its 47 deferred originals need async completion or $262.createRealm.
+variants. Its previously deferred async originals are admitted above; the
+$262.createRealm original remains deferred.
 No source is rewritten or credited for Unsupported. Six state/job units
 and three native integration groups also cover explicit FIFO thenable jobs,
 cached lookup, first settlement, self-resolution, collection and host failures.
-Promise.then/reactions, finally and combinators remain implementation work.
+Promise.then/reactions are implemented above; finally and combinators remain work.
 
 The inventory contains 8,664 fixtures, seventeen unchanged helpers, 8,645 reviewed
 sources and 16,765 variants. Revision, license and previous fixture bytes remain
@@ -75,10 +97,9 @@ generic then invocation, coercible primitive receivers, non-callable methods and
 getter/call failures. All twenty Script variants pass. Pinned Git blob hashes and
 manifest SHA-256 digests were verified; no harness additions were needed.
 
-The four other originals remain deferred: two use async completion, one requires
-Promise.resolve, and the constructor check first creates an intrinsic Promise.
-The separate fourteen-source review records twenty passing and eight Unsupported
-variants. No source is rewritten or credited for Unsupported. Four native
+The four other originals were initially deferred for async completion or native
+Promise construction. All fourteen originals are now admitted, and the separate
+review passes twenty-eight variants. No source is rewritten or credited for Unsupported. Four native
 Runtime regressions additionally verify exact receivers/arguments/results and
 Proxy get/apply order; existing reflection tests retain non-constructibility.
 
@@ -95,7 +116,7 @@ existing helpers suffice. Seven Runtime regressions additionally exercise comple
 positive custom-constructor paths, callback-first try ordering, exact receivers
 and arguments, returned descriptors, thrown identities and capture collection.
 
-The separate 36-original candidate review records forty passing variants and
+The initial separate 36-original candidate review recorded forty passing variants and
 32 Unsupported variants. The latter sixteen sources require intrinsic Promise
 construction or async support and are not admitted or rewritten. Intrinsic
 Promise construction, branded resolution and reaction jobs remain deferred.
@@ -4206,7 +4227,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16797 variants from 8661 reviewed sources.
+The `spite-test262` command runs 17003 variants from 8766 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside
@@ -4251,8 +4272,8 @@ objects, functions, or harness facilities that have not been implemented yet.
 The `spite-test262` crate now reads a documented subset of frontmatter and plans
 execution modes and harness include order. Its Script runner now separates parse,
 harness, and runtime outcomes, requiring a reviewed diagnostic for parse-negative
-passes. Harness support is limited to the executed paths above; modules, async
-completion, and agent configuration remain unsupported.
+passes. Harness support is limited to the executed paths above; modules, raw
+async setup and agent configuration remain unsupported.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to

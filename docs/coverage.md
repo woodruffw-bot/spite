@@ -53,9 +53,30 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch, species-aware then, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16797 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17003 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async Test262 completion
+
+Async Scripts execute the original doneprintHandle.js and asyncHelpers.js where
+selected. The runner drains FIFO Promise jobs and requires exactly one successful
+completion. Missing, duplicate and failed completions fail; actual reported job
+throws use runtime-negative matching, while printed error names cannot satisfy it.
+Five runner regressions cover queued fulfillment/rejection, nested thenables,
+helper assertions, completion failures, host failures and ordinary-host isolation.
+There are no default execution or job quotas. Raw async setup, modules and agents
+remain unsupported; async function syntax remains separate implementation work.
+
+105 additional unchanged Promise originals add 206 variants: 26 construction,
+59 then, two catch, thirteen resolve, one reject and four try sources. Git blob
+hashes and SHA-256 digests were verified. All 75 then candidates pass 146 variants;
+the construction review passes 210 variants and explicitly excludes the one
+cross-realm source. Inventories contain 8,785 fixtures, nineteen helpers, 8,766
+reviewed sources and 17,003 variants.
+All 40 Test262 package tests pass, including the full corpus gate (199.57 s).
+Formatting, strict Clippy, Rust 1.88 all-target checks, dependency policy and
+fixture inventories and documentation checks pass.
 
 ## Promise reactions
 
@@ -66,13 +87,12 @@ Six Runtime regressions cover pending/chained scheduling, catch recovery,
 reentrant species, self-resolution, reported resolver errors, capture collection
 and 5,000 default-limit reactions. All six earlier state/job units remain green.
 
-Sixteen unchanged Test262 originals add 32 Script variants. The 75-source review
-records 32 passing and 114 Unsupported variants; 59 async originals remain
-deferred. Current inventories have 8,680 fixtures, seventeen helpers, 8,661
-reviewed sources and 626 Runtime case files. All 398 Runtime units, 1,794
+The initial sixteen unchanged Test262 originals added 32 Script variants before
+async completion enabled the remaining 59 originals above. There are 626 Runtime
+case files. All 398 Runtime units, 1,794
 integration tests outside RegExp groups, strict Clippy and Rust 1.88 all-target
-checks pass. Finally, combinators and async Test262 completion remain work.
-All 16,797 variants and all 35 Test262 package tests pass. Formatting, dependency
+checks pass. Finally and combinators remain work.
+The preceding gate passed 16,797 variants and all 35 Test262 package tests. Formatting, dependency
 policy, fixture inventories and diff checks also pass.
 
 ## Promise construction and thenable jobs
@@ -84,8 +104,8 @@ handles self-reference, synchronous then lookup and queued thenable invocation.
 Resolve/try preserve branded identity through constructor checks. The public
 run_next_promise_job host API runs one FIFO job, preserves queues on preflight
 failure, reports started-job failures and shares one opt-in allowance per job.
-Native then/reactions, finally, combinators and async conformance completion
-remain deferred.
+Native then/reactions and async conformance completion are implemented above;
+finally and combinators remain deferred.
 
 Six new state/job unit regressions and three Runtime integration groups cover
 settlement/error ordering, metadata, subclasses/fallbacks, branded identity,
@@ -129,12 +149,12 @@ receivers/arguments, error ordering, retained captures and host-failure bypass.
 DisposableStack shares the language-exception conversion helper without resetting
 the active work allowance.
 
-Twenty unchanged Test262 originals pass forty Script variants. Sixteen other
-candidate originals still require intrinsic Promise construction or async support
-and remain deferred; no Unsupported result receives passing credit. The inventory
-now has 8,594 fixtures, seventeen helpers, 8,575 reviewed sources and 623 Runtime
-case files. Intrinsic Promise construction, branded resolution and reaction jobs
-remain implementation work.
+Twenty unchanged Test262 originals initially passed forty Script variants; the
+sixteen deferred candidates are now admitted through construction and async
+completion above. No Unsupported result receives passing credit. That inventory
+had 8,594 fixtures, seventeen helpers, 8,575 reviewed sources and 623 Runtime
+case files. Intrinsic construction, branded resolution and reaction jobs are now
+implemented above.
 All 16,627 variants and all 35 Test262 package tests pass. The 392 Runtime units,
 1,781 integration tests outside RegExp groups, strict Clippy, Rust 1.88 all-target
 checks, formatting, dependency policy and fixture inventories also pass.

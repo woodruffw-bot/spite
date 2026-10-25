@@ -1,7 +1,10 @@
 use crate::{Metadata, MetadataError, Mode, Negative, Phase};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use spite_parser::{parse_script, parse_script_with_source_limit};
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+
+mod async_completion;
+use async_completion::AsyncCompletion;
 
 /// A runner stage, distinguishing harness setup from language phases.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -67,7 +70,7 @@ pub struct CaseResult {
     pub outcome: Outcome,
 }
 
-/// A synchronous Script runner with explicit unsupported-capability reporting.
+/// A Script runner with Promise-job completion and explicit unsupported capabilities.
 #[derive(Clone, Debug, Default)]
 pub struct Runner {
     /// Limits used for each Script evaluation in a fresh test realm.
@@ -79,9 +82,11 @@ impl Runner {
     /// Runs all metadata-selected variants in independent realms.
     ///
     /// `load_harness` provides unchanged UTF-8 harness files by safe relative name.
-    /// Parse-negative tests never evaluate harness code or test bodies. Modules,
-    /// async completion, and agent settings are explicitly unsupported. Host helper
-    /// names are reserved so missing helpers cannot masquerade as ReferenceError
+    /// Parse-negative tests never evaluate harness code or test bodies. Async
+    /// variants use the unchanged doneprintHandle.js completion protocol and drain
+    /// Promise jobs. Modules, raw async harness setup, and agent settings remain
+    /// explicitly unsupported. Host helper names are reserved so missing helpers
+    /// cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.
     pub fn run(
         &self,
@@ -140,10 +145,11 @@ impl Runner {
                 "expected a parse exception, but parsing succeeded",
             );
         }
-        if metadata.has_flag("async") {
+        let asynchronous = metadata.has_flag("async");
+        if asynchronous && metadata.has_flag("raw") {
             return unsupported(
                 Stage::Harness,
-                "asynchronous Test262 completion is not implemented",
+                "raw asynchronous Test262 harness setup is not implemented",
             );
         }
         if metadata.has_flag("CanBlockIsTrue") || metadata.has_flag("CanBlockIsFalse") {
@@ -153,9 +159,22 @@ impl Runner {
             );
         }
         let mut realm = Realm::new(self.limits);
-        for name in ["print", "$262"] {
-            realm.reserve_unsupported_global(name);
-        }
+        realm.reserve_unsupported_global("$262");
+        let completion = if asynchronous {
+            match AsyncCompletion::install(&mut realm) {
+                Ok(completion) => Some(completion),
+                Err(error) => {
+                    return host_failure(&error, Stage::Harness).unwrap_or_else(|| {
+                        Outcome::SetupFailure(format!("async print host: {error}"))
+                    });
+                }
+            }
+        } else {
+            for name in ["print", "$DONE"] {
+                realm.reserve_unsupported_global(name);
+            }
+            None
+        };
         let files = metadata.harness_files();
         for name in &files {
             if name.starts_with('/')
@@ -175,7 +194,26 @@ impl Runner {
                     .unwrap_or_else(|| Outcome::SetupFailure(format!("{name}: {error}")));
             }
         }
-        match realm.evaluate(&script) {
+        let mut result = realm.evaluate(&script).map(|_| ());
+        if result.is_ok() && asynchronous {
+            loop {
+                match realm.run_next_promise_job() {
+                    Ok(PromiseJobOutcome::NoJob) => break,
+                    Ok(PromiseJobOutcome::Completed) => {}
+                    Ok(PromiseJobOutcome::Reported(error)) | Err(error) => {
+                        result = Err(error);
+                        break;
+                    }
+                }
+            }
+        }
+        if result.is_ok()
+            && let Some(completion) = completion
+            && let Err(outcome) = completion.finish(&mut realm)
+        {
+            return outcome;
+        }
+        match result {
             Ok(_) if metadata.negative.is_none() => Outcome::Passed,
             Ok(_) => failed(
                 Stage::Runtime,

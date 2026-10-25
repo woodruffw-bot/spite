@@ -2206,8 +2206,13 @@ without adding a YAML dependency, rejecting unsupported metadata forms explicitl
 Plan strict, non-strict, module, and raw execution without rewriting test bodies;
 raw sources retain their exact bytes. Preserve harness include order. Then match
 results by phase and error type, keeping harness/setup failures separate from the
-test result. Modules, async execution, and host helpers remain explicitly unsupported
-until implemented. While the grammar is partial, parse-negative passes additionally
+test result. Modules, raw async setup and agent configuration remain unsupported.
+Async Script variants execute the original doneprintHandle.js and selected
+includes, then drain the explicit Promise queue. A private print capture requires
+exactly one completion, rejects failure or duplicate messages, and keeps reported
+job exceptions separate from printed failure names. Host failures retain their
+own categories. The runner adds no default execution or job quotas. While the
+grammar is partial, parse-negative passes additionally
 require a reviewed expected diagnostic span and message; an arbitrary syntax error
 is an unverified result, not a conformance pass. Conformance realms reserve missing
 host helper globals, so reading or testing their type reports Unsupported rather
@@ -3310,8 +3315,9 @@ Normal handler returns call resolve; language throws call reject; host failures
 bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
-preflight rollback moves rather than clones arbitrary argument values. Finally,
-combinators and async Test262 completion remain separate implementation work.
+preflight rollback moves rather than clones arbitrary argument values. Finally
+and combinators remain separate implementation work. Async Test262 execution
+drives this host API without changing ordinary realm scheduling.
 
 Promise.prototype.catch implements Invoke(this, "then", [undefined, onRejected])
 (27.2.5.1). It reads then once and calls it with the original receiver and exactly
