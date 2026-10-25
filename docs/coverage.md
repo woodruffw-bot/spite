@@ -27675,3 +27675,14 @@ directly lexed Unsupported controls enters the new proof. Strict all-target
 workspace Clippy, documentation tests, formatting, policy and inventories pass.
 Runtime does not yet select this constructor; fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete Test262 validation of adjacent-q-union lookahead
+
+The Runtime snapshot at `cfc85314` passes all 16,343 reviewed Test262 variants
+and all 35 runner tests with the conformance profile (382.75 s for the corpus).
+This covers positive/negative q-union lookahead with line and word predicates,
+alongside complete single-q and earlier assertion paths. Later literal-character/
+string-union work has separate focused and differential evidence. Fixtures,
+harness files, reviewed entries, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.
