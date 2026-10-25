@@ -14177,3 +14177,20 @@ result and undefined operand slots use the shared accessor, preserving own
 named indices properties, original source and flags, String consumers, copies
 and collection. Original-context word/line gates and complete-character search
 remain in Core; reentrant conversions remain outside the compiler frame.
+
+A separate negative Unicode lookbehind entry proves one unquantified
+non-reference predecessor atom with optional ^/$ gates (22.2.2.4). Its charged
+flat scanner identifies complete outside wrappers and changes only the proved
+assertion sign before delegating to the positive single-character lookbehind
+proof. No projected Pattern is independently validated or rebound. Other
+counts, word predicates, continuations, alternatives and references retain
+separate compiler domains.
+
+The shared negative candidate loop invokes that positive assertion stickily and
+succeeds exactly when its one complete predecessor fails. This keeps direction,
+original line/dot/fold context and complete-character advancement, with linear
+actual work and the approved initial-pair rewind. At input start, the absent
+predecessor makes negative lookbehind succeed; at EOF the preceding character
+can still make it fail. Outside wrappers capture the empty assertion position;
+all operand captures remain undefined. Construction, clone and drop stay flat,
+and cancellation precedes source/input work. Runtime integration remains separate.

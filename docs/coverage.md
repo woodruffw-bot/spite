@@ -25830,3 +25830,21 @@ constructor-only Runtime extension has the focused and differential evidence
 above. Broad Test262 results record `8f624262`; negative assertions retain
 separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+## Core negative Unicode lookbehind over one character
+
+The actual-source focused harness passes 262 tests (1.68 s), including five new
+negative-lookbehind groups. Checks cover empty outside/undefined operand slots,
+absent predecessors, sticky/ordinary/end candidates, original line/dot/fold/
+property context, complete astral predecessors, lone surrogates, initial-pair
+rewind, proof exclusions, 200,000 wrappers, clone/drop, linear retries over
+20,000 characters and every construction/search cancellation followed by recovery.
+
+The native sticky-candidate oracle with independent complete-character search
+agrees on all 53,248 input/start/sticky/range/capture records across 512 patterns.
+Five ASCII iv patterns contribute 520 equivalent-range controls for the
+documented property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. Strict all-target workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.
