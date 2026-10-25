@@ -27412,3 +27412,14 @@ original q source. Strict all-target workspace Clippy, documentation tests,
 Rust 1.85 all-target checks, formatting, policy, inventories and diff checks
 pass. Fixtures, snapshots, dependencies, profiles, native stacks and default
 quotas are unchanged.
+
+
+## Complete RegExp validation of positive variable-length q-class lookahead
+
+The Runtime snapshot at `37070660` passes all 3,091 RegExp integration tests
+(1,018.63 s). Together with its already recorded full Test262 result, this
+validates positive variable-length single-q lookahead with line and word
+predicates alongside all earlier assertion paths. Later negative variable-length
+q-class lookahead and q-union work retain separate focused and differential
+evidence. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.
