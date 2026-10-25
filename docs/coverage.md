@@ -27597,3 +27597,14 @@ alternative controls and legal Unicode-candidate enumeration. None of the
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete Test262 validation of positive q-union lookahead
+
+The Runtime snapshot at `ad4fded7` passes all 16,343 reviewed Test262 variants
+and all 35 runner tests with the conformance profile (380.64 s for the corpus).
+This includes positive lookahead over adjacent q operands with line and word
+predicates, alongside the complete positive/negative variable-length single-q
+family and earlier assertion paths. Later negative q-union work has separate
+focused and differential evidence. Fixtures, harness files, reviewed entries,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
