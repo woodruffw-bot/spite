@@ -357,6 +357,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.
 - [x] Add branded Promise construction/resolution, shared first-settlement functions, identity-preserving resolve/try, and explicitly scheduled FIFO thenable jobs with traced captures.
+- [x] Add species-aware Promise.prototype.then, traced pending reactions, FIFO handler jobs, value/error propagation and child resolution.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

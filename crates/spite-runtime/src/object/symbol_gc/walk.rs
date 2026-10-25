@@ -199,7 +199,9 @@ fn object_symbols(
         }
     }
     if let Some(promise) = promise {
-        visit(promise.result().and_then(symbol))?;
+        for value in promise.values() {
+            visit(symbol(value))?;
+        }
     }
     // Cells' held values are unconditional strong fields of a reached
     // registry, and physical owners even in an unreachable registry record.

@@ -52,10 +52,28 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch, and explicit FIFO thenable jobs; reactions/then remain deferred |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16765 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers, generic catch, species-aware then, and explicit FIFO thenable/reaction jobs |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16797 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise reactions
+
+Native then performs branded receiver validation, species/capability creation,
+live-state registration and FIFO handler scheduling. Missing handlers propagate
+values/reasons; ordinary returns and language failures resolve/reject children.
+Six Runtime regressions cover pending/chained scheduling, catch recovery,
+reentrant species, self-resolution, reported resolver errors, capture collection
+and 5,000 default-limit reactions. All six earlier state/job units remain green.
+
+Sixteen unchanged Test262 originals add 32 Script variants. The 75-source review
+records 32 passing and 114 Unsupported variants; 59 async originals remain
+deferred. Current inventories have 8,680 fixtures, seventeen helpers, 8,661
+reviewed sources and 626 Runtime case files. All 398 Runtime units, 1,794
+integration tests outside RegExp groups, strict Clippy and Rust 1.88 all-target
+checks pass. Finally, combinators and async Test262 completion remain work.
+All 16,797 variants and all 35 Test262 package tests pass. Formatting, dependency
+policy, fixture inventories and diff checks also pass.
 
 ## Promise construction and thenable jobs
 

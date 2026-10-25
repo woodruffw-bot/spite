@@ -324,6 +324,8 @@ mod promise_capability;
 mod promise_catch;
 #[path = "cases/promise_construction.rs"]
 mod promise_construction;
+#[path = "cases/promise_reactions.rs"]
+mod promise_reactions;
 #[path = "cases/properties.rs"]
 mod properties;
 #[path = "cases/prototypes.rs"]

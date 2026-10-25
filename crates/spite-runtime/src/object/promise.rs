@@ -1,7 +1,7 @@
 //! Branded Promise state and retained settlement values (27.2.1).
 
 use super::{Budget, Error, Objects, OrdinaryObject};
-use crate::Value;
+use crate::{Value, function::PromiseCapability};
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]
@@ -11,9 +11,26 @@ pub(crate) enum PromiseState {
     Rejected(Value),
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct PromiseReaction {
+    pub capability: PromiseCapability,
+    pub handler: Value,
+    pub fulfill: bool,
+}
+
+impl PromiseReaction {
+    pub(crate) fn values(&self) -> impl Iterator<Item = &Value> {
+        self.capability
+            .values()
+            .chain(std::iter::once(&self.handler))
+    }
+}
+
 #[derive(Debug)]
 pub(super) struct PromiseData {
     state: PromiseState,
+    fulfill_reactions: Vec<PromiseReaction>,
+    reject_reactions: Vec<PromiseReaction>,
 }
 
 impl PromiseData {
@@ -25,10 +42,22 @@ impl PromiseData {
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        std::iter::once(
-            self.result()
-                .and_then(|value| value.trace().next().flatten()),
-        )
+        std::iter::once(None).chain(self.values().flat_map(Trace::trace))
+    }
+
+    pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
+        self.result()
+            .into_iter()
+            .chain(
+                self.fulfill_reactions
+                    .iter()
+                    .flat_map(PromiseReaction::values),
+            )
+            .chain(
+                self.reject_reactions
+                    .iter()
+                    .flat_map(PromiseReaction::values),
+            )
     }
 }
 
@@ -43,6 +72,8 @@ impl Objects {
         let promise = self.create(Some(prototype))?;
         self.object_mut(&promise)?.promise = Some(Box::new(PromiseData {
             state: PromiseState::Pending,
+            fulfill_reactions: Vec::new(),
+            reject_reactions: Vec::new(),
         }));
         Ok(promise)
     }
@@ -53,7 +84,7 @@ impl Objects {
         fulfilled: bool,
         result: Value,
         budget: &mut Budget,
-    ) -> Result<(), Error> {
+    ) -> Result<Vec<PromiseReaction>, Error> {
         if let Value::Object(value) = &result {
             self.inspect(value)?;
         }
@@ -63,14 +94,78 @@ impl Objects {
             .promise
             .as_mut()
             .ok_or(Error::WrongKind)?;
-        if matches!(data.state, PromiseState::Pending) {
-            data.state = if fulfilled {
-                PromiseState::Fulfilled(result)
-            } else {
-                PromiseState::Rejected(result)
-            };
+        if !matches!(data.state, PromiseState::Pending) {
+            return Ok(Vec::new());
         }
-        Ok(())
+        data.state = if fulfilled {
+            PromiseState::Fulfilled(result)
+        } else {
+            PromiseState::Rejected(result)
+        };
+        // Registration prepays capture release. No user code or allocation
+        // intervenes while the settled state discards the unused reaction list.
+        let fulfill = std::mem::take(&mut data.fulfill_reactions);
+        let reject = std::mem::take(&mut data.reject_reactions);
+        Ok(if fulfilled { fulfill } else { reject })
+    }
+
+    pub(crate) fn promise_result(
+        &self,
+        promise: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Value, Error> {
+        let value = self
+            .inspect(promise)?
+            .promise
+            .as_ref()
+            .and_then(|data| data.result())
+            .ok_or(Error::WrongKind)?;
+        budget.value(value)?;
+        Ok(value.clone())
+    }
+
+    pub(crate) fn add_promise_reactions(
+        &mut self,
+        promise: &Handle,
+        fulfill: PromiseReaction,
+        reject: PromiseReaction,
+        budget: &mut Budget,
+    ) -> Result<Option<(PromiseReaction, Value)>, Error> {
+        budget.charge(2)?;
+        for value in fulfill.values().chain(reject.values()) {
+            if let Value::Object(value) = value {
+                self.inspect(value)?;
+            }
+            budget.value(value)?;
+        }
+        let data = self
+            .object_mut(promise)?
+            .promise
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        match &data.state {
+            PromiseState::Pending => {
+                for reactions in [&mut data.fulfill_reactions, &mut data.reject_reactions] {
+                    if reactions.len() == reactions.capacity() {
+                        budget.charge(reactions.len())?;
+                    }
+                    reactions
+                        .try_reserve(1)
+                        .map_err(|_| spite_heap::Error::Capacity)?;
+                }
+                data.fulfill_reactions.push(fulfill);
+                data.reject_reactions.push(reject);
+                Ok(None)
+            }
+            PromiseState::Fulfilled(value) => {
+                budget.value(value)?;
+                Ok(Some((fulfill, value.clone())))
+            }
+            PromiseState::Rejected(value) => {
+                budget.value(value)?;
+                Ok(Some((reject, value.clone())))
+            }
+        }
     }
 }
 

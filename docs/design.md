@@ -3294,8 +3294,24 @@ a started job returns Completed or Reported and restores caller execution state.
 Queued Promise/object/method handles and settled object/Symbol values participate
 in collection. Jobs share one opt-in work allowance across their calls; the host
 controls subsequent jobs and WeakRef/collection checkpoints. Native capacity
-failures remain host failures, with no default job or work quota. Promise.then,
-reaction jobs, finally and combinators remain separate implementation work.
+failures remain host failures, with no default job or work quota.
+
+Promise.prototype.then requires the real Promise brand before constructor hooks,
+performs SpeciesConstructor and NewPromiseCapability, then registers normalized
+fulfill/reject handlers against the parent's current state (27.2.5.4). Species or
+constructor hooks can settle it before registration. Pending reactions retain
+both capabilities and handlers; settlement schedules the selected list in order
+and releases the other list. A settled parent schedules its reaction immediately,
+without invoking it synchronously.
+
+Reaction jobs share the FIFO queue with thenable jobs. Handlers receive undefined
+and exactly one value/reason. Missing handlers provide identity/thrower behavior.
+Normal handler returns call resolve; language throws call reject; host failures
+bypass rejection. Abrupt supplied resolve/reject functions are reported to the
+host. Child resolution uses the same self-reference and thenable rules. Queued
+arguments, handlers/capabilities and pending reactions participate in collection;
+preflight rollback moves rather than clones arbitrary argument values. Finally,
+combinators and async Test262 completion remain separate implementation work.
 
 Promise.prototype.catch implements Invoke(this, "then", [undefined, onRejected])
 (27.2.5.1). It reads then once and calls it with the original receiver and exactly

@@ -39,6 +39,7 @@ pub(crate) use iterator::{
 pub(crate) use map::CollectionKey;
 mod private;
 mod promise;
+pub(crate) use promise::PromiseReaction;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
 mod regexp;

@@ -555,9 +555,8 @@ impl Realm {
             .and_then(|count| count.checked_add(self.template_map.len()))
             .and_then(|count| {
                 self.promise_jobs
-                    .len()
-                    .checked_mul(3)
-                    .and_then(|jobs| count.checked_add(jobs))
+                    .iter()
+                    .try_fold(count, |count, job| count.checked_add(job.roots().count()))
             })
             .ok_or(spite_heap::Error::Limit)?;
         let remaining = max_work

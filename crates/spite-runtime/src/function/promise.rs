@@ -1,7 +1,7 @@
 //! Promise construction, resolution, capabilities and protocol dispatch (27.2).
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{JsString, Span};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::PromiseReaction};
+use spite_core::{JsString, Span, WellKnownSymbol};
 
 /// The outcome of one explicitly scheduled Promise job.
 #[derive(Debug)]
@@ -22,27 +22,183 @@ pub(crate) enum PromiseJob {
         thenable: ObjectHandle,
         then: ObjectHandle,
     },
+    Reaction {
+        reaction: PromiseReaction,
+        argument: Value,
+    },
 }
 
 impl PromiseJob {
     pub(crate) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        match self {
+        let roots = match self {
             Self::Thenable {
                 promise,
                 thenable,
                 then,
-            } => [promise, thenable, then].into_iter(),
-        }
+            } => [Some(promise), Some(thenable), Some(then), None, None],
+            Self::Reaction { reaction, argument } => {
+                fn object(value: &Value) -> Option<&ObjectHandle> {
+                    if let Value::Object(value) = value {
+                        Some(value)
+                    } else {
+                        None
+                    }
+                }
+                [
+                    object(&reaction.capability.promise),
+                    object(&reaction.capability.resolve),
+                    object(&reaction.capability.reject),
+                    object(&reaction.handler),
+                    object(argument),
+                ]
+            }
+        };
+        roots.into_iter().flatten()
     }
 }
 
-pub(super) struct PromiseCapability {
+#[derive(Clone, Debug)]
+pub(crate) struct PromiseCapability {
     pub promise: Value,
     pub resolve: Value,
     pub reject: Value,
 }
 
+impl PromiseCapability {
+    pub(crate) fn values(&self) -> impl Iterator<Item = &Value> {
+        [&self.promise, &self.resolve, &self.reject].into_iter()
+    }
+}
+
 impl Realm {
+    pub(super) fn promise_then(
+        &mut self,
+        this: Value,
+        on_fulfilled: Value,
+        on_rejected: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(promise) = this else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise.then requires a Promise",
+            ));
+        };
+        if !self.object_work(span, |objects, _| {
+            Ok(objects.inspect(&promise)?.promise_state().is_some())
+        })? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "Promise.then requires a Promise",
+            ));
+        }
+        // SpeciesConstructor observes constructor/species before capability
+        // construction. Those hooks may settle the parent before registration.
+        let default = Value::Object(
+            self.intrinsics
+                .as_ref()
+                .expect("initialized")
+                .global_metadata
+                .promise
+                .clone(),
+        );
+        let constructor = self.get_property(&promise, &JsString::from("constructor"), span)?;
+        let constructor = if matches!(constructor, Value::Undefined) {
+            default
+        } else {
+            let Value::Object(object) = constructor else {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "Promise constructor property is not an object",
+                ));
+            };
+            let species = self.get_property(&object, &WellKnownSymbol::Species.symbol(), span)?;
+            if matches!(species, Value::Undefined | Value::Null) {
+                default
+            } else {
+                if !self.is_constructor(&species, span)? {
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        "Promise species is not a constructor",
+                    ));
+                }
+                species
+            }
+        };
+        let capability = self.new_promise_capability(constructor, span)?;
+        let result = capability.promise.clone();
+        let fulfill = if self.is_callable(&on_fulfilled, span)? {
+            on_fulfilled
+        } else {
+            Value::Undefined
+        };
+        let reject = if self.is_callable(&on_rejected, span)? {
+            on_rejected
+        } else {
+            Value::Undefined
+        };
+        let fulfill = PromiseReaction {
+            capability: capability.clone(),
+            handler: fulfill,
+            fulfill: true,
+        };
+        let reject = PromiseReaction {
+            capability,
+            handler: reject,
+            fulfill: false,
+        };
+        if let Some((reaction, argument)) = self.object_work(span, |objects, budget| {
+            objects.add_promise_reactions(&promise, fulfill, reject, budget)
+        })? {
+            self.enqueue_promise_job(PromiseJob::Reaction { reaction, argument }, span)?;
+        }
+        Ok(result)
+    }
+
+    fn settle_promise(
+        &mut self,
+        promise: &ObjectHandle,
+        fulfilled: bool,
+        value: Value,
+        span: Span,
+    ) -> Result<(), Error> {
+        let reactions = self.object_work(span, |objects, budget| {
+            objects.settle_promise(promise, fulfilled, value, budget)
+        })?;
+        for reaction in reactions {
+            let argument = self.object_work(span, |objects, budget| {
+                objects.promise_result(promise, budget)
+            })?;
+            self.enqueue_promise_job(PromiseJob::Reaction { reaction, argument }, span)?;
+        }
+        Ok(())
+    }
+
+    fn enqueue_promise_job(&mut self, job: PromiseJob, span: Span) -> Result<(), Error> {
+        let moved = if self.promise_jobs.len() == self.promise_jobs.capacity() {
+            self.promise_jobs.len()
+        } else {
+            0
+        };
+        self.object_work(span, |_, budget| {
+            budget.charge(
+                moved
+                    .checked_add(1)
+                    .ok_or(crate::object::Error::WorkLimit)?,
+            )
+        })?;
+        self.promise_jobs.try_reserve(1).map_err(|_| Error::Limit {
+            span,
+            message: "Promise job capacity exceeded".into(),
+        })?;
+        self.promise_jobs.push_back(job);
+        Ok(())
+    }
+
     pub(super) fn promise_constructor(
         &mut self,
         new_target: ObjectHandle,
@@ -135,9 +291,7 @@ impl Realm {
             unreachable!("private resolving record")
         };
         if !resolve {
-            self.object_work(span, |objects, budget| {
-                objects.settle_promise(&promise, false, value, budget)
-            })?;
+            self.settle_promise(&promise, false, value, span)?;
             return Ok(Value::Undefined);
         }
         if value.same_value(&Value::Object(promise.clone())) {
@@ -147,46 +301,36 @@ impl Realm {
                 "Promise cannot resolve itself",
             );
             let reason = self.language_exception_value(error)?;
-            self.object_work(span, |objects, budget| {
-                objects.settle_promise(&promise, false, reason, budget)
-            })?;
+            self.settle_promise(&promise, false, reason, span)?;
             return Ok(Value::Undefined);
         }
         let Value::Object(thenable) = value else {
-            self.object_work(span, |objects, budget| {
-                objects.settle_promise(&promise, true, value, budget)
-            })?;
+            self.settle_promise(&promise, true, value, span)?;
             return Ok(Value::Undefined);
         };
         let then = match self.get_property(&thenable, &JsString::from("then"), span) {
             Ok(then) => then,
             Err(error) => {
                 let reason = self.language_exception_value(error)?;
-                self.object_work(span, |objects, budget| {
-                    objects.settle_promise(&promise, false, reason, budget)
-                })?;
+                self.settle_promise(&promise, false, reason, span)?;
                 return Ok(Value::Undefined);
             }
         };
         if !self.is_callable(&then, span)? {
-            self.object_work(span, |objects, budget| {
-                objects.settle_promise(&promise, true, Value::Object(thenable), budget)
-            })?;
+            self.settle_promise(&promise, true, Value::Object(thenable), span)?;
             return Ok(Value::Undefined);
         }
         let Value::Object(then) = then else {
             unreachable!("callable object")
         };
-        self.object_work(span, |_, budget| budget.charge(3))?;
-        self.promise_jobs.try_reserve(1).map_err(|_| Error::Limit {
+        self.enqueue_promise_job(
+            PromiseJob::Thenable {
+                promise,
+                thenable,
+                then,
+            },
             span,
-            message: "Promise job capacity exceeded".into(),
-        })?;
-        self.promise_jobs.push_back(PromiseJob::Thenable {
-            promise,
-            thenable,
-            then,
-        });
+        )?;
         Ok(Value::Undefined)
     }
 
@@ -237,29 +381,42 @@ impl Realm {
         }
         let caller_work = self.remaining_steps;
         self.remaining_steps = self.limits.max_steps;
+        // Allocation never collects. Temporarily owning the front job avoids
+        // copying arbitrary reaction arguments; rollback cannot allocate.
+        let job = self.promise_jobs.pop_front().expect("queued job");
         let prepared = (|| -> Result<_, Error> {
-            self.object_work(span, |_, budget| budget.charge(3))?;
-            self.check_argument_count(2, span)?;
-            let job = self.promise_jobs.front().expect("queued job").clone();
-            let PromiseJob::Thenable { promise, .. } = &job;
-            let (resolve, reject) = self.promise_resolving_functions(promise, span)?;
+            self.object_work(span, |_, budget| budget.charge(job.roots().count() + 1))?;
+            let count = if matches!(job, PromiseJob::Thenable { .. }) {
+                2
+            } else {
+                1
+            };
+            self.check_argument_count(count, span)?;
             let mut arguments = Vec::new();
-            arguments.try_reserve_exact(2).map_err(|_| Error::Limit {
-                span,
-                message: "Promise job argument capacity exceeded".into(),
-            })?;
-            arguments.push(resolve);
-            arguments.push(reject.clone());
-            Ok((job, reject, arguments))
+            arguments
+                .try_reserve_exact(count)
+                .map_err(|_| Error::Limit {
+                    span,
+                    message: "Promise job argument capacity exceeded".into(),
+                })?;
+            let reject = if let PromiseJob::Thenable { promise, .. } = &job {
+                let (resolve, reject) = self.promise_resolving_functions(promise, span)?;
+                arguments.push(resolve);
+                arguments.push(reject.clone());
+                Some(reject)
+            } else {
+                None
+            };
+            Ok((reject, arguments))
         })();
-        let (job, reject, arguments) = match prepared {
+        let (reject, mut arguments) = match prepared {
             Ok(prepared) => prepared,
             Err(error) => {
+                self.promise_jobs.push_front(job);
                 self.remaining_steps = caller_work;
                 return Err(error);
             }
         };
-        self.promise_jobs.pop_front();
         let global = self
             .scopes
             .first()
@@ -270,15 +427,43 @@ impl Realm {
         let caller_scope_depth = self.scopes.len();
         self.job_active = true;
         let result = (|| -> Result<(), Error> {
-            let PromiseJob::Thenable { thenable, then, .. } = job;
-            if let Err(error) = self.call(
-                Value::Object(then),
-                Value::Object(thenable),
-                arguments,
-                span,
-            ) {
-                let reason = self.language_exception_value(error)?;
-                self.call(reject, Value::Undefined, vec![reason], span)?;
+            match job {
+                PromiseJob::Thenable { thenable, then, .. } => {
+                    if let Err(error) = self.call(
+                        Value::Object(then),
+                        Value::Object(thenable),
+                        arguments,
+                        span,
+                    ) {
+                        let reason = self.language_exception_value(error)?;
+                        self.call(
+                            reject.expect("thenable reject function"),
+                            Value::Undefined,
+                            vec![reason],
+                            span,
+                        )?;
+                    }
+                }
+                PromiseJob::Reaction { reaction, argument } => {
+                    let completion = if matches!(reaction.handler, Value::Undefined) {
+                        if reaction.fulfill {
+                            Ok(argument)
+                        } else {
+                            Err(Error::Thrown(argument))
+                        }
+                    } else {
+                        arguments.push(argument);
+                        self.call(reaction.handler, Value::Undefined, arguments, span)
+                    };
+                    let (method, value) = match completion {
+                        Ok(value) => (reaction.capability.resolve, value),
+                        Err(error) => (
+                            reaction.capability.reject,
+                            self.language_exception_value(error)?,
+                        ),
+                    };
+                    self.call(method, Value::Undefined, vec![value], span)?;
+                }
             }
             Ok(())
         })();
