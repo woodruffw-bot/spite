@@ -51,9 +51,28 @@ not an alternative language specification.
 | Proxy | Construction/revocation, all thirteen internal methods, trap invariants, cached callable/constructible capabilities, iterative forwarding, and dependent object/Array/JSON dispatch; constructor prototype fallback and Array species realm validation through Proxy/bound chains |
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16361 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16403 reviewed Test262 variants, sixteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## SuppressedError
+
+SuppressedError supports calls, construction, subclassing and bound construction,
+shares the ErrorData brand, and preserves its two error values without coercion
+(20.5.8). Message conversion follows prototype selection; the instance fields are
+created in message/error/suppressed order, and extra cause options are ignored.
+Five Runtime regressions cover these rules, inherited setters, descriptors,
+abrupt completions and retained values across collection. The reviewed global
+inventory snapshot adds the standard SuppressedError name.
+
+Twenty-one unchanged Test262 originals cover constructor/prototype reflection,
+message conversion and abrupt completions, custom/fallback newTarget prototypes,
+and initialization order. Their 42 Script variants require no new harness files.
+The cross-realm original remains deferred with $262.createRealm. The current
+inventory has 8,482 fixtures, 8,463 reviewed sources and 621 Runtime case files.
+All 16,403 corpus variants, 392 Runtime units and 1,764 integration tests outside
+the RegExp groups pass. Strict workspace Clippy, Rust 1.88 all-target checks,
+formatting, dependency policy and fixture inventories also pass.
 
 ## Iterator disposal
 

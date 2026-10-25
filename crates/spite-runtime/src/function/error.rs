@@ -18,10 +18,11 @@ pub(crate) enum ErrorConstructor {
     TypeError,
     URIError,
     AggregateError,
+    SuppressedError,
 }
 
 impl ErrorConstructor {
-    const ALL: [Self; 8] = [
+    const ALL: [Self; 9] = [
         Self::Error,
         Self::EvalError,
         Self::RangeError,
@@ -30,6 +31,7 @@ impl ErrorConstructor {
         Self::TypeError,
         Self::URIError,
         Self::AggregateError,
+        Self::SuppressedError,
     ];
 
     pub(crate) fn name(self) -> &'static str {
@@ -42,6 +44,7 @@ impl ErrorConstructor {
             Self::TypeError => "TypeError",
             Self::URIError => "URIError",
             Self::AggregateError => "AggregateError",
+            Self::SuppressedError => "SuppressedError",
         }
     }
 }
@@ -220,6 +223,14 @@ impl Realm {
         } else {
             None
         };
+        let suppressed = if kind == ErrorConstructor::SuppressedError {
+            Some((
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+            ))
+        } else {
+            None
+        };
         let intrinsic = self
             .intrinsics
             .as_ref()
@@ -228,8 +239,8 @@ impl Realm {
             .get(kind);
         let new_target = new_target.unwrap_or_else(|| intrinsic.constructor.clone());
         let fallback = intrinsic.prototype.clone();
-        // 20.5.1.1 / 20.5.6.1.1 / 20.5.7.1.1: select the prototype and allocate before
-        // converting message, then inspect cause only on object-valued options.
+        // 20.5.1.1 / 20.5.6.1.1 / 20.5.7.1.1 / 20.5.8.1.1: select the prototype
+        // and allocate before converting message or installing additional fields.
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
             Value::Object(prototype) => prototype,
@@ -244,7 +255,12 @@ impl Realm {
             self.check_string(&message, span)?;
             self.define_builtin_property(&object, "message", message, true, span)?;
         }
-        if let Some(Value::Object(options)) = arguments.next() {
+        if let Some((error, suppressed)) = suppressed {
+            // SuppressedError retains both values without conversion and has no
+            // options parameter. In particular, it must not inspect cause.
+            self.define_builtin_property(&object, "error", error, true, span)?;
+            self.define_builtin_property(&object, "suppressed", suppressed, true, span)?;
+        } else if let Some(Value::Object(options)) = arguments.next() {
             let key = JsString::from("cause");
             if self.has_property(&options, &key, span)? {
                 let cause = self.get_property(&options, &key, span)?;

@@ -68,6 +68,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Bind built-in exceptions as JavaScript Error objects in catch clauses.
 - [x] Add Error/NativeError constructors, causes, ErrorData identity, and standard methods.
 - [x] Add AggregateError with ordered message/cause initialization and an intrinsic errors Array from synchronous IteratorToList.
+- [x] Add SuppressedError with ordered message/error/suppressed properties, ErrorData identity, and standard construction/inheritance.
 - [ ] Complete remaining statement early errors and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

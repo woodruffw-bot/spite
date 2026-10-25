@@ -1704,6 +1704,15 @@ ordinary Array properties; retain the constructor and prototype as intrinsic roo
 Use fallible list reservations and existing opt-in work/heap limits; impose no
 default list size or work quota. Host failures propagate without JavaScript cleanup.
 
+SuppressedError shares the ErrorData brand and Error inheritance (20.5.8).
+Calls and construction select the newTarget prototype and allocate first, convert
+a present third message argument, then create the non-enumerable error and
+suppressed properties in that order. Both values retain their original identity
+without conversion, including omitted arguments represented by undefined.
+Inherited setters are bypassed. Extra arguments are ignored; no cause option is
+read. Constructor/prototype roots and ordinary property tracing retain the graph
+across collection, including subclass and bound-constructor instances.
+
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced
 global bindings. Preserve the host-facing exception category, message, and source

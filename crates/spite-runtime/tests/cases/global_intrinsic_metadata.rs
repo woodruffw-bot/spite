@@ -261,11 +261,11 @@ fn global_inventory_has_exact_standard_names_and_data_descriptors() {
     let Value::String(names) = value else {
         panic!("global names must be a string: {value:?}")
     };
-    insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
+    insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
     check(
         r#"
         let names=Object.getOwnPropertyNames(this),keys=Reflect.ownKeys(this),descriptors=Object.getOwnPropertyDescriptors(this);
-        if(names.length!==59 || keys.length!==59 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
+        if(names.length!==60 || keys.length!==60 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
         for(let i=0;i<names.length;i++){
             let name=names[i],d=descriptors[name],fixed=name==='undefined'||name==='NaN'||name==='Infinity';
             if(keys[i]!==name || !Object.hasOwn(d,'value') || Object.hasOwn(d,'get') || d.enumerable || d.writable===fixed || d.configurable===fixed || !Object.is(d.value,this[name]))throw 2;
@@ -340,11 +340,10 @@ fn materialized_globals_can_be_deleted_recreated_and_redeclared_without_reservat
 }
 
 #[test]
-fn unreserved_absence_includes_out_of_edition_names_and_host_names() {
+fn unreserved_absence_includes_unimplemented_and_host_names() {
     for name in [
         "DisposableStack",
         "AsyncDisposableStack",
-        "SuppressedError",
         "$262",
         "unconfiguredHost",
     ] {
@@ -546,7 +545,7 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
     }
     assert_eq!(realm.eval("this"), Ok(global));
     assert_eq!(
-        realm.eval("Object.getOwnPropertyNames(this).length===52 && typeof Promise==='undefined' && typeof Proxy==='undefined' && typeof globalThis==='undefined'"),
+        realm.eval("Object.getOwnPropertyNames(this).length===53 && typeof Promise==='undefined' && typeof Proxy==='undefined' && typeof globalThis==='undefined'"),
         Ok(Value::Boolean(true))
     );
 }

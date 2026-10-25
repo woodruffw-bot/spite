@@ -1078,6 +1078,8 @@ mod string_well_formed;
 mod string_wrappers;
 #[path = "cases/super_properties.rs"]
 mod super_properties;
+#[path = "cases/suppressed_errors.rs"]
+mod suppressed_errors;
 #[path = "cases/switch.rs"]
 mod switch;
 #[path = "cases/symbols.rs"]

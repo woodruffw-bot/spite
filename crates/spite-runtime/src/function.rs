@@ -691,6 +691,7 @@ impl Builtin {
             Self::RegExpEscape => 1.0,
             Self::RegExpMember(member) => member.length(),
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
+            Self::Error(error::ErrorConstructor::SuppressedError) => 3.0,
             Self::SetAdd
             | Self::WeakSetAdd
             | Self::WeakSetDelete
