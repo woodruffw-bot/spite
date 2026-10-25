@@ -25882,3 +25882,21 @@ and quantified positive lookahead, operand word predicates and single-character
 positive lookbehind with predecessor capture extents. Later negative assertions
 retain their focused and differential evidence. Fixtures, snapshots, dependency
 policy, profiles, native stacks and default quotas are unchanged.
+
+## Core single-character negative lookbehind with word predicates
+
+The actual-source focused harness passes 266 tests (0.75 s), including four
+additional word-lookbehind groups. Checks cover negated boundary conjunctions,
+empty outside/undefined operand masks, original line/fold/property/backspace
+context, complete astral predecessors, initial-pair rewind, proof exclusions,
+200,000 wrappers, clone/drop and every construction/search cancellation followed
+by recovery.
+
+The native sticky-candidate oracle with independent complete-character search
+agrees on all 53,248 input/start/sticky/range/capture records across 512 patterns.
+Twelve ASCII iv patterns contribute 1,248 equivalent-range controls for the
+documented property-fold discrepancy. All 2,728 remaining lexed direct
+Unsupported controls stay excluded. Strict all-target workspace Clippy,
+documentation tests, formatting, policy, inventories and diff checks pass.
+Runtime integration remains separate. Fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.

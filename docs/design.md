@@ -14202,3 +14202,14 @@ existing negative result path retains empty outside ranges and undefined
 operand slots through named indices, String consumers, copies and collection.
 Original predecessor/line context and complete-character candidates stay in
 Core, while input conversion and stateful execution retain their shared paths.
+
+A separate negative single-character lookbehind entry accepts canonical operand
+word predicates with optional ^/$ gates. Its assertion-sign projection delegates
+to the established positive word-predecessor proof; at least one word predicate
+is required. Negation applies to the complete conjunction of the predecessor
+atom and both predicates, preserving original input context (22.2.2.4).
+Class-contained backspace escapes stay atom data. The shared complete-character
+candidate loop and bounded sticky predecessor probe retain linear actual work,
+initial-pair rewind, empty outside captures and undefined operand slots. Earlier
+line-only and forward entries keep their domains and charges. Construction,
+cloning and dropping remain flat. Runtime integration remains separate.

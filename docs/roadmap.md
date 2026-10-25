@@ -984,6 +984,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute single-character Unicode negative lookahead with word predicates through Runtime and String consumers, preserving named undefined slots, original context and execution state.
 - [x] Compile negative Unicode lookbehind over one unquantified predecessor atom, retaining original line context, undefined operand slots and linear complete-character search.
 - [x] Execute single-character Unicode negative lookbehind through Runtime and String consumers, preserving named undefined operand slots, outside ranges and original predecessor context.
+- [x] Compile single-character negative Unicode lookbehind with operand word predicates and line gates, preserving original context, undefined slots and complete-character candidates.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
