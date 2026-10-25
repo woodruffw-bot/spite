@@ -26238,3 +26238,24 @@ constructor-only Runtime increment has the focused and differential evidence
 above. Broad Test262 results record `3c6ca264`; negative q-class assertions retain
 separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+## Core negative lookbehind over one single-character q class
+
+The actual-source focused harness passes 294 tests (1.80 s), including four new
+negative q-lookbehind groups. Checks cover empty outside and undefined operand
+slots, absent/EOF predecessors, nested operations, original line/fold/property
+context, complete astral/lone-surrogate predecessors, initial-pair rewind, proof
+exclusions, 200,000 wrappers, clone/drop, linear retries over 20,000 characters
+and every checked construction/search cancellation followed by recovery.
+
+All 53,248 input/start/sticky/range/capture records across 512 patterns agree
+with the native sticky-candidate oracle and independent Unicode advancement.
+The 208 ignoreCase patterns contribute 21,632 equivalent ordinary-q control
+records for the documented Node defect. Seventeen ASCII iv patterns also use
+the documented equivalent-range control (1,768 overlapping records). The earlier
+positive q-lookahead record retains the original-q baseline disagreements.
+
+All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
+all-target workspace Clippy, documentation tests, formatting, policy, inventories
+and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.

@@ -14355,3 +14355,19 @@ existing host mapping. Shared empty outside/undefined operand capture access
 preserves own named indices properties, original q source/flags, String
 consumers, copies and collection. Original-context word and line predicates
 stay in Core, and user conversions remain outside the compiler frame.
+
+A separate checked negative q-class lookbehind entry proves one unquantified
+predecessor character with optional ^/$ gates (22.2.2.4, 22.2.2.9). Charged flat
+scans retain outside wrappers and project only the proved assertion sign before
+delegating to positive q-class lookbehind. Complete original v/vi validation and
+normalized capture heads remain prerequisites; projected source is never
+independently validated or rebound. Other widths, counts, word predicates and
+binding roles retain separate domains.
+
+The shared negative candidate loop negates one bounded sticky predecessor
+probe, preserving absent-predecessor and EOF behavior, original line/fold/
+surrogate context, complete-character search and initial-pair rewind. Outside
+captures remain empty and all operand slots undefined. Linear actual work,
+checked work/capacity errors and flat construction/clone/drop keep their shared
+paths. Earlier q-class entries retain their domains and charges. Runtime
+integration remains separate.
