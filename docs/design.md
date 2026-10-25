@@ -14418,6 +14418,14 @@ checked construction errors, initial-pair rewind and flat storage retain their
 shared paths. Earlier scalar/q entries keep their domains and charges. Runtime
 integration remains separate.
 
+Runtime selects checked word-scalar-set lookahead after its line-only scalar
+entry, gated by v mode and using full normalized source. Successful selection
+resets the projected outer offset, and checked construction errors retain their
+host mapping. Shared empty/operand range caching preserves original set syntax,
+names, indices, String consumers, copies and collection. Original-context word
+and line predicates stay in Core, while user conversions remain outside the
+compiler frame.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring

@@ -26447,3 +26447,27 @@ above. It includes positive/negative q-class lookahead/lookbehind with word
 predicates and exact original capture semantics. Later scalar v-set assertion
 extensions retain their focused and differential evidence. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Runtime scalar v-set lookahead with word predicates
+
+All thirty-six current positive-lookahead groups pass (0.90 s), including four
+new scalar word-set groups. Checks cover original boundary polarity, named
+independent empty/consuming indices, original set source/flags, line/property/
+fold/backspace context, String consumers, copies, collection and independent
+complete-pair/initial-rewind expectations. All thirteen constructor regressions
+pass (0.07 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns with the
+native sticky-candidate oracle and independent Unicode search/state bookkeeping.
+Fifty-three ASCII iv patterns contribute 11,024 equivalent-range controls for
+the documented property-fold discrepancy. Thirty-one complete JavaScript
+programs pass with the documented property/q-fold controls where needed;
+actual Runtime expectations retain original source syntax.
+
+Strict all-target workspace Clippy, documentation tests, formatting, dependency
+policy, inventories and diff checks pass. Runtime inventory remains 622. The
+completed q-assertion snapshot records all 437 Runtime units; this
+constructor-only Runtime increment has the focused and differential evidence
+above. Completed broad results record `c9b71cc1`; scalar-set assertions retain
+separate focused evidence. Fixtures, snapshots, dependencies, profiles, native
+stacks and default quotas are unchanged.

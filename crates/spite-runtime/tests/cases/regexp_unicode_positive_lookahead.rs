@@ -449,3 +449,48 @@ fn scalar_v_set_deep_wrappers_nested_classes_and_pair_offsets_keep_exact_slots()
     "#,
     );
 }
+
+#[test]
+fn word_scalar_v_sets_keep_original_polarity_source_and_named_independent_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]--[aeiou]]\\b','ab b!',3,'b'],['\\B[[a-z]--[aeiou]]\\b','ab!',1,'b'],['\\b[[a-z]--[aeiou]]\\B','bb!',0,'b']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+1&&r.lastIndex===row[2]&&r.source===source;
+            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_scalar_v_set_lines_folds_properties_and_backspace_keep_original_context() {
+    check(
+        r#"
+        var m=/(?=(?<run>^\b[[a-z]--[aeiou]]\b$))/dimv.exec('\nB\n'),ok=m.index===1&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
+        for(var text of ['S','ſ','K','K']){var m=/(?=(?<run>\b[[\p{ASCII}]--[x]]\b))/div.exec('!'+text+'!');ok=ok&&m.index===1&&m.groups.run===text&&m.indices.groups.run[1]===2}
+        var m=/(?=(?<run>\B[[\b]--[a]]\B))/dv.exec('\b');ok=ok&&m.index===0&&m.groups.run==='\b'&&m.indices.groups.run[1]===1;ok
+    "#,
+    );
+}
+
+#[test]
+fn word_scalar_v_set_string_consumers_copies_and_collection_keep_original_extents() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?=(?<run>\\b[[a-z]--[aeiou]]\\b)))',r=new RegExp(source,'dgv'),all=Array.from('!b! c'.matchAll(r));
+        var ok=all.length===2&&all[0].index===1&&all[0].groups.run==='b'&&all[1].index===4&&all[1].groups.run==='c'&&r.lastIndex===0;
+        ok=ok&&'!b! c'.replace(r,'<$<run>>')==='!<b>b! <c>c'&&JSON.stringify('!b! c'.split(new RegExp('(?=(\\b[[a-z]--[aeiou]]\\b))','v')))==='["!","b","b! ","c","c"]';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!b!').groups.run==='b';ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!c!');m.index===1&&m.groups.outside===''&&m.groups.run==='c'&&m.indices.groups.run[1]===2&&copy.lastIndex===1"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn word_scalar_v_set_search_preserves_complete_candidates_and_initial_pair_rewind() {
+    check(
+        "var r=new RegExp('(?=(?<run>\\\\B[[😀a]--[a]]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
+    );
+}
