@@ -16,6 +16,8 @@ mod async_arrows;
 mod async_function_syntax;
 #[path = "async_methods.rs"]
 mod async_methods;
+#[path = "await_expression.rs"]
+mod await_expression;
 #[path = "bigint.rs"]
 mod bigint;
 #[path = "binary_chains.rs"]

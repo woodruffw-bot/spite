@@ -48,7 +48,7 @@ impl Parser {
             let expression = self.expression_with_in(17, true)?;
             if matches!(
                 expression.kind,
-                ExprKind::Unary(..) | ExprKind::Update { .. }
+                ExprKind::Unary(..) | ExprKind::Await(_) | ExprKind::Update { .. }
             ) {
                 return Err(early(
                     expression.span,

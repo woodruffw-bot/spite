@@ -5,9 +5,9 @@ use spite_runtime::{Error, Realm, Value};
 #[test]
 fn unsupported_private_function_kinds_are_distinct_from_early_errors() {
     for source in [
-        "eval('class C{async #m(){await p}}');",
+        "eval('class C{async *#m(){}}');",
         "eval('class C{*#m(){}}');",
-        "eval('class C{static async #m(){await p}}');",
+        "eval('class C{static async *#m(){}}');",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();

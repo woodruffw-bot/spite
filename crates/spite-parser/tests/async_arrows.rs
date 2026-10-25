@@ -61,16 +61,14 @@ fn await_parameters_duplicates_and_line_terminators_are_syntax_errors() {
 }
 
 #[test]
-fn async_arrow_await_bodies_remain_explicitly_unsupported() {
-    for source in [
-        "async x=>await x",
-        "async()=>{return await p}",
-        "async()=>{await p; '\\u{110000}'",
-    ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+fn async_arrow_await_bodies_parse_and_report_later_lexical_errors() {
+    for source in ["async x=>await x", "async()=>{return await p}"] {
+        assert!(parse_script(source).is_ok(), "{source}");
     }
+    assert_eq!(
+        parse_script("async()=>{await p; '\\u{110000}'")
+            .unwrap_err()
+            .kind,
+        DiagnosticKind::Syntax
+    );
 }

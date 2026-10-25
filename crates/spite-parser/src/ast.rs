@@ -936,6 +936,8 @@ pub enum ExprKind {
     },
     /// A prefix unary expression.
     Unary(UnaryOp, Box<Expr>),
+    /// AwaitExpression with a UnaryExpression operand (13.3.9).
+    Await(Box<Expr>),
     /// An increment or decrement of a reference.
     Update {
         /// Increment or decrement.

@@ -758,7 +758,7 @@ impl Parser {
             ));
         }
         let depth = 1 + match &kind {
-            ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => e.depth,
+            ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::PrivateIn { value, .. } => value.depth,
             ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Function(function) => function
@@ -1133,7 +1133,9 @@ impl Parser {
                 break;
             }
             self.bump();
-            if op == BinaryOp::Exponentiate && matches!(left.kind, ExprKind::Unary(..)) {
+            if op == BinaryOp::Exponentiate
+                && matches!(left.kind, ExprKind::Unary(..) | ExprKind::Await(_))
+            {
                 return Err(self.error("unparenthesized unary expression before exponentiation"));
             }
             let right = self.expression(if op == BinaryOp::Exponentiate {
@@ -1254,7 +1256,15 @@ impl Parser {
             return self.make_expr(ExprKind::Class(class), span);
         }
         if self.at("await") && matches!(self.await_context, AwaitContext::Body) {
-            return Err(self.unsupported("await suspension is not implemented"));
+            let start = self.bump().span.start;
+            if !self.current().newline && self.at_using_declaration(false) {
+                return Err(self.unsupported("await using declarations are not implemented"));
+            }
+            // AwaitExpression consumes UnaryExpression, before multiplication,
+            // conditionals and assignment (13.3.9, 13.5, 13.6).
+            let argument = self.expression(15)?;
+            let span = Span::new(start, argument.span.end);
+            return self.make_expr(ExprKind::Await(Box::new(argument)), span);
         }
         if self.at("function") || self.at_async_function() {
             return self.function_expression();
@@ -2150,7 +2160,9 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Unary(UnaryOp::Delete, e) if private::is_private_reference(e) => {
             return Err(early(e.span, "cannot delete a private element"));
         }
-        ExprKind::Unary(_, e) | ExprKind::Parenthesized(e) => validate_expr(e, strict)?,
+        ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => {
+            validate_expr(e, strict)?
+        }
         ExprKind::Binary(_, a, b) => {
             validate_expr(a, strict)?;
             validate_expr(b, strict)?;

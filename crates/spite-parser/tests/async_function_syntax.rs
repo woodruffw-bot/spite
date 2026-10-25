@@ -70,14 +70,10 @@ fn binding_parameters_strictness_and_declaration_positions_report_syntax_errors(
 }
 
 #[test]
-fn await_and_other_suspended_forms_remain_explicitly_unsupported() {
+fn async_generators_remain_explicitly_unsupported() {
     for source in [
-        "async function f(){await p}",
-        "let f=async function(){return await p}",
         "async function* f(){}",
-        "async()=>await p",
-        "({async m(){await p}})",
-        "async function f(){await p; '\\u{110000}'",
+        "async function f(){await using x=null;}",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
@@ -90,8 +86,8 @@ fn await_and_other_suspended_forms_remain_explicitly_unsupported() {
 #[test]
 fn ordinary_dynamic_functions_can_retain_unexecuted_async_definitions() {
     for (parameters, body) in [
-        ("", "async function f(){}"),
-        ("x=(async function(){})", "return x"),
+        ("", "async function f(){await p}"),
+        ("x=(async function(){await p})", "return x"),
     ] {
         let function = parse_dynamic_function(parameters, body).unwrap();
         assert_eq!(function.kind, FunctionKind::Ordinary);

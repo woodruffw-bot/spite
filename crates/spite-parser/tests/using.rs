@@ -91,10 +91,10 @@ fn ordinary_using_identifiers_linebreaks_and_for_of_lookahead_remain_distinct() 
 }
 
 #[test]
-fn await_using_and_await_initializers_remain_explicitly_unsupported() {
+fn await_using_remains_unsupported_and_synchronous_using_accepts_await_initializers() {
+    assert!(parse_script("async function f(){using x=await p;}").is_ok());
     for source in [
         "async function f(){await using x=null;}",
-        "async function f(){using x=await p;}",
         "async function f(){for await(using x of []){}}",
     ] {
         assert_eq!(

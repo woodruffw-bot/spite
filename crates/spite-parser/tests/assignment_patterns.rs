@@ -108,13 +108,13 @@ fn defaults_and_keys_preserve_in_new_target_and_unavailable_feature_categories()
         parse_script("function f(){for({[new.target]:x=x in source}=source;false;) ;}").is_ok()
     );
     assert!(parse_script("[x=class{#field;}]=source").is_ok());
-    for source in ["({x=async()=>await p}=source)", "[x=function*(){}]=source"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
-    }
+    assert!(parse_script("({x=async()=>await p}=source)").is_ok());
+    let source = "[x=function*(){}]=source";
+    assert_eq!(
+        parse_script(source).unwrap_err().kind,
+        DiagnosticKind::Unsupported,
+        "{source}"
+    );
     assert_eq!(
         parse_script("({[new.target]:x}=source)").unwrap_err().kind,
         DiagnosticKind::Syntax

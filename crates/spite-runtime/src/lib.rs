@@ -1705,6 +1705,12 @@ impl Realm {
                     self.expression(no)?
                 }
             }
+            ExprKind::Await(_) => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "await suspension is not implemented",
+                ));
+            }
             ExprKind::Unary(op, inner) => {
                 if *op == UnaryOp::Delete && reference_expression(inner) {
                     // ECMA-262 13.5.1.2: deleting an environment reference

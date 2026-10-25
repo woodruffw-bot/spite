@@ -24,6 +24,13 @@ impl Parser {
         if let Some(head) = self.arrow_heads.get(&key) {
             return Ok(head.clone());
         }
+        // ArrowParameters may not contain AwaitExpression (15.3.1).
+        // Restore this context after the probe: a parenthesized expression that
+        // is not an arrow still uses its enclosing +Await grammar.
+        let previous_context = self.await_context;
+        if matches!(self.await_context, AwaitContext::Body) {
+            self.await_context = AwaitContext::Parameters;
+        }
         let probe = self.probe_cover(|parser| {
             parser.index = start;
             let parameters = if parser.at("(") {
@@ -40,6 +47,7 @@ impl Parser {
             }
             Ok(parameters)
         });
+        self.await_context = previous_context;
         let head = match probe {
             Ok(head) => Some(head),
             Err(error) if error.kind == DiagnosticKind::Syntax => None,

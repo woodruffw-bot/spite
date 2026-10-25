@@ -9471,3 +9471,10 @@ test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-sync-mapped-call
 test/built-ins/Array/fromAsync/non-iterable-with-thenable-then-method-err.js	-	-	-
 test/built-ins/Array/fromAsync/not-a-constructor.js	-	-	-
 test/built-ins/Array/fromAsync/prop-desc.js	-	-	-
+test/language/expressions/await/await-BindingIdentifier-in-global.js	-	-	-
+test/language/expressions/await/await-BindingIdentifier-nested.js	398	403	invalid function binding identifier
+test/language/expressions/await/await-in-function.js	-	-	-
+test/language/expressions/await/await-in-global.js	-	-	-
+test/language/expressions/await/await-in-nested-function.js	-	-	-
+test/language/expressions/await/early-errors-await-not-simple-assignment-target.js	379	388	invalid assignment target
+test/language/expressions/await/no-operand.js	344	345	expected an expression

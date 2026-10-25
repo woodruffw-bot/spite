@@ -111,7 +111,7 @@ fn closures_results_and_hidden_intrinsics_survive_collection() {
 }
 
 #[test]
-fn host_failures_bypass_rejection_and_await_compilation_stays_explicitly_unsupported() {
+fn host_failures_bypass_rejection_and_await_execution_stays_explicitly_unsupported() {
     let mut realm = Realm::default();
     realm
         .eval("let flag=0;async function f(){return new SharedArrayBuffer(0)}")
@@ -122,8 +122,8 @@ fn host_failures_bypass_rejection_and_await_compilation_stays_explicitly_unsuppo
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
-        "(async function(){}).constructor('await p')",
-        "new (async function(){}).constructor('await p')",
+        "(async function(){}).constructor('await p')()",
+        "new (async function(){}).constructor('await p')()",
     ] {
         assert!(
             matches!(
@@ -145,4 +145,31 @@ fn host_failures_bypass_rejection_and_await_compilation_stays_explicitly_unsuppo
         Err(Error::Limit { .. })
     ));
     assert_eq!(limited.eval("flag"), Ok(Value::Number(0.0)));
+}
+
+#[test]
+fn unexecuted_await_bodies_and_dynamic_async_compilation_preserve_source_and_metadata() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        async function declared(){return await missing}
+        let arrow=async()=>await missing,object={async m(){return await missing}};
+        class C{async m(){return await missing}}
+        let AsyncFunction=Object.getPrototypeOf(declared).constructor;
+        let dynamic=AsyncFunction('value','return await value');
+        typeof declared==='function'&&typeof arrow==='function'&&typeof object.m==='function'&&typeof C.prototype.m==='function'&&Object.getPrototypeOf(dynamic)===AsyncFunction.prototype&&dynamic.toString().includes('return await value')&&declared.toString()==='async function declared(){return await missing}'
+    "#),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn unsupported_await_execution_skips_operand_rejection_and_pending_finalizers() {
+    let mut realm = Realm::default();
+    realm.eval("let before=0,operand=0,handled=0;async function f(){before++;try{return await (operand++)}catch(e){handled=1}finally{handled=2}}").unwrap();
+    assert!(matches!(
+        realm.eval("try{f().catch(()=>{handled=3})}catch(e){handled=4}finally{handled=5}"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(
+        realm.eval("before===1&&operand===0&&handled===0"),
+        Ok(Value::Boolean(true))
+    );
 }

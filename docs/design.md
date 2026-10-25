@@ -370,7 +370,8 @@ Async source includes the six-character prefix in string/source work limits.
 Default/fallback prototypes use the retained async intrinsics, while explicit
 newTarget prototypes and subclasses remain observable after all conversions and
 validation. UTF-16 literals/comments and source remain lossless. Await bodies
-still report Unsupported during compilation.
+compile with retained AwaitExpression nodes; executing an await still reports
+Unsupported until continuation execution is implemented.
 
 Async arrows (15.9) retain an explicit kind and their complete source prefix.
 Their heads use +Await independently of ordinary calls named async; their bodies
@@ -387,7 +388,21 @@ home objects. Super property evaluation uses the original receiver in parameters
 and bodies. Methods inherit %AsyncFunction.prototype% and cannot be constructed.
 Literal class constructors cannot be async; computed constructor names remain
 ordinary method names. Prefix line breaks, duplicate method parameters and await
-bindings are syntax errors. Generator methods and await bodies remain Unsupported.
+bindings are syntax errors. Generator methods and await execution remain Unsupported.
+
+AwaitExpression (13.3.9) retains its UnaryExpression operand and complete source
+range. It binds before multiplication, logical operators and conditionals; an
+unparenthesized await cannot be the left operand of exponentiation, an assignment
+target, a constructor expression or a class heritage expression. Operand validation
+reaches strict-mode and private-name errors. Function/method/arrow bodies and
+computed keys inherit their appropriate Await grammar; parameters and class
+initialization enforce their separate restrictions. Arrow parameter probes
+isolate and restore that restriction so ordinary parenthesized expressions retain
+the enclosing async context. Nested async bodies in defaults remain valid.
+Until suspension frames are implemented, the evaluator reports Unsupported before
+evaluating an AwaitExpression operand. Unexecuted awaited bodies remain ordinary
+async function objects, including dynamically compiled functions. The host failure
+bypasses JavaScript rejection, catches and finalizers.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense
@@ -1078,7 +1093,8 @@ present ones use strict Set, as do inserted values. Always strictly set source
 length last, including zero arguments. Retain earlier effects on every abrupt
 completion; do not preflight all properties or roll back. All Array prototype
 methods are materialized, so its enumeration and integrity operations use ordinary
-property traversal; Array constructor enumeration awaits fromAsync.
+property traversal. Array.fromAsync completes the constructor property inventory,
+so constructor enumeration and integrity operations also use ordinary traversal.
 
 Array iteration follows edition-17 CreateArrayIterator and next (23.1.5.1–3).
 Store an optional iterated-object handle, a u64 next index, and key/value/key+value

@@ -56,9 +56,41 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18396 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18410 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Await expression grammar
+
+Async declarations, expressions, arrows, methods and dynamic functions retain
+AwaitExpression syntax with unary operands and original spans. Await binds before
+multiplication, logical and conditional operators, and cannot be an assignment
+target or an unparenthesized exponentiation base, constructor or class heritage.
+Strict and private-name validation reaches its operand. Arrow parameter probes
+restore the outer Await context when a parenthesized expression is not an arrow;
+nested async bodies remain valid in defaults. Using initializers may contain
+await syntax. Await-using, for-await-of and generator syntax remain Unsupported.
+
+Execution of an AwaitExpression still reports a host Unsupported failure before
+its operand. Async function creation and dynamic compilation accept unexecuted
+awaited bodies; calling a body that reaches await skips rejection and pending
+JavaScript handlers. Native async built-ins retain their implemented awaits.
+
+Four new Parser groups, an inspected AST snapshot and two Runtime groups cover
+precedence, scopes, lexical goals, early errors, compilation and host boundaries.
+All 355 Parser integration groups and eighteen units pass, along with 414 Runtime
+units and 1,880 non-RegExp integrations. Inventories contain 75 Parser case files
+and 639 Runtime case files; intrinsic entries remain 579 with unchanged quotas.
+
+Twenty-two complete originals were byte-verified. Four positives and three
+parse negatives with reviewed original spans/messages pass fourteen variants and
+are admitted unchanged. Fifteen originals remain Unsupported for suspension or
+generators. The complete Array/adapter candidate review remains eighteen passing
+and 244 Unsupported variants, with no missing helpers or other failure outcomes.
+Inventories contain 9,498 fixtures, nineteen helpers, 9,479 reviewed sources and
+18,410 variants. All reviewed variants and forty Test262 package tests pass.
+Formatting, strict Clippy, Rust 1.88, dependency policy and inventories pass.
+Suspension and continuation execution remain work.
 
 ## Array.fromAsync and Async-from-Sync
 
