@@ -27509,3 +27509,29 @@ the 2,728 remaining directly lexed Unsupported controls enters the new proof.
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Adjacent-q-union lookahead with word predicates: Runtime
+
+All 60 positive-lookahead integration groups (3.62 s) and 13 constructor groups
+(0.17 s) pass. Four new groups cover word-predicate polarity, shorter endpoint
+retries across operands, defined-empty members, named independent ranges,
+original line/fold/backspace/pair context, lastIndex, String consumers, copies,
+collection and deep lexical scopes. Initial-pair rewind remains an independent
+specification check.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 54 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete union classes and legal Unicode-candidate enumeration.
+Complete programs retain earlier documented equivalent controls; Runtime always
+receives original q source. Strict all-target workspace Clippy, documentation
+tests, Rust 1.85 all-target checks, formatting, policy, inventories and diff
+checks pass. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.
+
+An attempted direct execution of the older 3,099-test binary lacked Cargo on
+PATH, causing snapshot workspace discovery to fall back to the wrong root.
+That run was stopped and is not counted as validation. The reported inner-word
+snapshot passes through Cargo with the normal environment (5.85 s), without
+code or snapshot edits. The expanded full run is restarted through Cargo.

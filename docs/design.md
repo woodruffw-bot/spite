@@ -14908,3 +14908,12 @@ longer member in a later operand can fail while a shorter member in another
 operand succeeds. The selected whole-member capture extent remains independent
 of the empty assertion span; empty alternatives retain ordinary candidate
 priority (22.2.2.4, 22.2.2.7). Earlier constructor domains and work are unchanged.
+
+
+Runtime selects q-union lookahead with word predicates as a separate checked
+v-mode fallback after full original validation, retaining complete normalized
+capture scopes and the established host error boundary. The existing positive
+string cache keeps original selected-member extents, including shorter retries
+across operands and defined-empty spans, through named indices, consumers,
+copies and collection. Original source and reentrant conversion frames retain
+their existing boundaries.
