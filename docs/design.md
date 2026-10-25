@@ -3316,7 +3316,7 @@ bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
 preflight rollback moves rather than clones arbitrary argument values.
-The remaining any combinator is separate work. Async Test262 execution
+Async function syntax and suspension remain separate work. Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
 
 Promise.race constructs the supplied capability before reading its resolve
@@ -3352,6 +3352,15 @@ follows input order, and the aggregate fulfills only when every input settles.
 Public Object/Array replacements and inherited setters do not affect snapshot
 or result allocation. Iterator failures still reject rather than becoming
 settlement snapshots; host failures retain their separate category.
+
+Promise.any reuses that aggregation path for ordered rejection reasons
+(sec-promise.any). Each input receives the original capability resolve function
+and a guarded native reject element. A fulfillment can settle immediately;
+exhausted rejections, including empty input, create an intrinsic branded
+AggregateError with a writable, configurable, non-enumerable errors Array.
+Creation bypasses the public AggregateError constructor, prototype getters and
+Array iteration. Iterator failures reject with the original exception instead
+of wrapping it, and custom reject return values propagate from element callbacks.
 
 Promise.prototype.finally accepts object receivers without Promise branding
 (27.2.5.3). SpeciesConstructor precedes then lookup even for non-callable cleanup

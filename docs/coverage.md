@@ -52,10 +52,30 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers/race/all/allSettled, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17653 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17841 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise.any
+
+Any extends the common aggregation path with original resolve callbacks and
+guarded reject elements. The first fulfillment settles the result; exhausted
+rejections or empty input create an intrinsic branded AggregateError with an
+ordered errors Array and standard descriptors. Public constructors, prototype
+getters and Array iteration are bypassed. Iterator language failures reject
+directly, while host failures retain their separate category.
+
+Six Runtime regressions cover asynchronous fulfillment, deferred/empty rejection,
+ordered reasons, Error branding, descriptors, custom callback identities/returns,
+duplicate guards, poisoned public hooks, object/Symbol collection and cleanup.
+All 94 complete unchanged upstream originals pass 188 variants. Git blob hashes
+and manifest SHA-256 digests were verified. Inventories contain 9,204 fixtures,
+nineteen helpers, 9,185 reviewed sources and 17,841 variants. Runtime has 631 case
+files, 398 units and 1,818 integration tests outside RegExp groups.
+All 17,841 variants and all 40 Test262 package tests pass. Runtime units and
+integrations, strict Clippy, Rust 1.88 all-target checks, formatting, dependency
+policy and fixture inventories pass as well.
 
 ## Promise.allSettled
 

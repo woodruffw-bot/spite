@@ -530,6 +530,12 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
+            Member::PromiseAny => self.promise_aggregate(
+                super::PromiseAggregateKind::Any,
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             // Atomics.pause (sec-atomics.pause) observes no receiver/arguments.
             // The platform's spin-loop hint has no JavaScript-visible result.
             Member::AtomicsPause => {

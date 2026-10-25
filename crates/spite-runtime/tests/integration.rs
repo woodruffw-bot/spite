@@ -1301,3 +1301,6 @@ mod promise_all;
 mod promise_all_settled;
 #[path = "cases/promise_race.rs"]
 mod promise_race;
+
+#[path = "cases/promise_any.rs"]
+mod promise_any;

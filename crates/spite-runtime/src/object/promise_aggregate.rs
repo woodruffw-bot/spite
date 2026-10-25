@@ -169,8 +169,13 @@ impl Objects {
             .ok_or(Error::WrongKind)?;
         data.remaining = data.remaining.checked_sub(1).ok_or(Error::WrongKind)?;
         if data.remaining == 0 {
-            budget.value(&data.capability.resolve)?;
-            Ok(Some((data.capability.resolve.clone(), data.values.len())))
+            let callback = if data.kind == PromiseAggregateKind::Any {
+                &data.capability.reject
+            } else {
+                &data.capability.resolve
+            };
+            budget.value(callback)?;
+            Ok(Some((callback.clone(), data.values.len())))
         } else {
             Ok(None)
         }

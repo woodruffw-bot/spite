@@ -1,4 +1,4 @@
-//! Promise.all and allSettled aggregation with shared per-input guards.
+//! Promise.all, allSettled and any aggregation with shared per-input guards.
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
@@ -7,6 +7,7 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 pub(crate) enum PromiseAggregateKind {
     All,
     AllSettled,
+    Any,
 }
 
 impl Realm {
@@ -48,7 +49,7 @@ impl Realm {
                         objects.finish_promise_aggregate_remaining(&state, budget)
                     })?;
                     if let Some((resolve, len)) = ready {
-                        self.resolve_promise_aggregate_list(&state, resolve, len, span)?;
+                        self.settle_promise_aggregate_list(&state, resolve, len, kind, span)?;
                     }
                     return Ok(());
                 };
@@ -58,9 +59,12 @@ impl Realm {
                     })?;
                     let promise =
                         self.call(resolve.clone(), constructor.clone(), vec![value], span)?;
-                    let function =
-                        self.create_promise_aggregate_callback(&state, index, true, span)?;
-                    let rejected = if kind == PromiseAggregateKind::AllSettled {
+                    let fulfilled = if kind == PromiseAggregateKind::Any {
+                        capability.resolve.clone()
+                    } else {
+                        self.create_promise_aggregate_callback(&state, index, true, span)?
+                    };
+                    let rejected = if kind != PromiseAggregateKind::All {
                         self.create_promise_aggregate_callback(&state, index, false, span)?
                     } else {
                         capability.reject.clone()
@@ -69,7 +73,7 @@ impl Realm {
                         objects.increment_promise_aggregate_remaining(&state, budget)
                     })?;
                     let then = self.get_property_value(&promise, &JsString::from("then"), span)?;
-                    self.call(then, promise, vec![function, rejected], span)
+                    self.call(then, promise, vec![fulfilled, rejected], span)
                 })();
                 if let Err(error) = subscribe {
                     return Err(self.iterator_close_error(&iterator, error, span));
@@ -132,7 +136,7 @@ impl Realm {
             objects.store_promise_aggregate_element(&state, index, value, budget)
         })?;
         if let Some((resolve, len)) = ready {
-            self.resolve_promise_aggregate_list(&state, resolve, len, span)
+            self.settle_promise_aggregate_list(&state, resolve, len, kind, span)
         } else {
             Ok(Value::Undefined)
         }
@@ -178,13 +182,19 @@ impl Realm {
         Ok(Value::Object(object))
     }
 
-    fn resolve_promise_aggregate_list(
+    fn settle_promise_aggregate_list(
         &mut self,
         state: &ObjectHandle,
-        resolve: Value,
+        callback: Value,
         len: usize,
+        kind: PromiseAggregateKind,
         span: Span,
     ) -> Result<Value, Error> {
+        let error = if kind == PromiseAggregateKind::Any {
+            Some(self.create_intrinsic_aggregate_error(span)?)
+        } else {
+            None
+        };
         // Internal lists never consult Array.prototype or the global Array.
         // Copy one element at a time instead of allocating a temporary Vec.
         let array = self.create_intrinsic_array(len as u64, span)?;
@@ -194,6 +204,12 @@ impl Realm {
             })?;
             self.create_array_element(&array, index as u64, value, span)?;
         }
-        self.call(resolve, Value::Undefined, vec![Value::Object(array)], span)
+        let result = if let Some(error) = error {
+            self.define_builtin_property(&error, "errors", Value::Object(array), true, span)?;
+            Value::Object(error)
+        } else {
+            Value::Object(array)
+        };
+        self.call(callback, Value::Undefined, vec![result], span)
     }
 }

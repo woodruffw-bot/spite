@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9110 unmodified test fixtures and nineteen harness files come from
+These 9204 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,19 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Promise.any fixtures
+
+All 94 complete unchanged Promise/any originals pass 188 Script variants. They
+cover generic capabilities/resolve dispatch, guarded reject elements, callback
+metadata and identity, reentry, first fulfillment, ordered rejection reasons,
+AggregateError creation, empty input and iterator cleanup. Git blob hashes and
+manifest SHA-256 digests were verified; existing helpers suffice.
+
+Six native Runtime regressions add deferred inputs, intrinsic Error branding and
+descriptors, custom callback returns, constructor/iterator hook bypass, collection
+of object/Symbol reasons and host-failure controls. Inventories contain 9,204
+fixtures, nineteen helpers, 9,185 reviewed sources and 17,841 variants.
 
 ## Promise.allSettled fixtures
 
@@ -4281,7 +4294,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 17653 variants from 9091 reviewed sources.
+The `spite-test262` command runs 17841 variants from 9185 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

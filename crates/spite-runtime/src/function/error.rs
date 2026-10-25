@@ -225,6 +225,23 @@ impl Realm {
         })
     }
 
+    // Promise.any creates this intrinsic error directly, without constructor,
+    // prototype getter, message/cause or iterable conversion hooks.
+    pub(super) fn create_intrinsic_aggregate_error(
+        &mut self,
+        span: Span,
+    ) -> Result<ObjectHandle, Error> {
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .errors
+            .get(ErrorConstructor::AggregateError)
+            .prototype
+            .clone();
+        self.object_work(span, |objects, _| objects.create_error(&prototype))
+    }
+
     pub(super) fn error_constructor(
         &mut self,
         kind: ErrorConstructor,
