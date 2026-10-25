@@ -40,6 +40,7 @@ pub(crate) use map::CollectionKey;
 mod private;
 mod promise;
 pub(crate) use promise::PromiseReaction;
+mod promise_all;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
 mod regexp;
@@ -106,6 +107,7 @@ pub struct OrdinaryObject {
     regexp: Option<Box<RegExpData>>,
     error_data: bool,
     promise: Option<Box<promise::PromiseData>>,
+    promise_all: Option<Box<promise_all::PromiseAllData>>,
     disposable_stack: Option<Box<disposable_stack::DisposableStackData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
@@ -150,6 +152,7 @@ impl OrdinaryObject {
             regexp: None,
             error_data: false,
             promise: None,
+            promise_all: None,
             disposable_stack: None,
             disposable_resources: None,
             raw_json: false,
@@ -430,7 +433,8 @@ impl Trace for OrdinaryObject {
             | Callable::ProxyRevoker(_)
             | Callable::PromiseCapabilityExecutor(_)
             | Callable::PromiseResolvingFunction { .. }
-            | Callable::PromiseFinally { .. } => None,
+            | Callable::PromiseFinally { .. }
+            | Callable::PromiseAllResolveElement { .. } => None,
             Callable::Bound(bound) => Some(bound),
         });
         let capture = match self.callable.as_ref() {
@@ -444,6 +448,7 @@ impl Trace for OrdinaryObject {
             Some(Callable::PromiseCapabilityExecutor(capability)) => Some(capability),
             Some(Callable::PromiseResolvingFunction { cell, .. })
             | Some(Callable::PromiseFinally { cell, .. }) => Some(cell),
+            Some(Callable::PromiseAllResolveElement { state, .. }) => Some(state),
             Some(Callable::Builtin(_)) | None => None,
         };
         let home_object = match &self.callable {
@@ -464,6 +469,7 @@ impl Trace for OrdinaryObject {
             .chain(self.iterator.iter().flat_map(IteratorState::trace))
             .chain(self.error_data.then_some(None))
             .chain(self.promise.iter().flat_map(|data| data.trace()))
+            .chain(self.promise_all.iter().flat_map(|data| data.trace()))
             .chain(self.raw_json.then_some(None))
             .chain(
                 self.private_elements

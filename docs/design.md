@@ -3316,7 +3316,7 @@ bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
 arguments, handlers/capabilities and pending reactions participate in collection;
 preflight rollback moves rather than clones arbitrary argument values.
-The remaining aggregation combinators are separate work. Async Test262 execution
+The remaining allSettled/any combinators are separate work. Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
 
 Promise.race constructs the supplied capability before reading its resolve
@@ -3328,6 +3328,20 @@ failures reject the capability; body failures close the iterator while stepping,
 done and value failures do not. Incoming throws take precedence over language
 cleanup failures. Host failures bypass rejection and iterator cleanup. Empty
 input leaves native Promises pending, with no automatic job execution.
+
+Promise.all uses the same capability-first resolve/iterator ordering
+(sec-promise.all). A private traced record holds an ordered native value list,
+the capability and an exact native remaining count starting at one. Anonymous
+resolve-element functions retain their index and AlreadyCalled state. Each input
+appends an undefined slot before resolution, then increments the count before
+invoking then with that element's callback and the shared reject function.
+Exhaustion removes the initial count; fulfillment fills the original index once.
+When the count reaches zero, the realm creates an intrinsic Array and resolves
+the capability. It copies each value directly, bypassing public Array hooks and
+a temporary result vector. Empty input resolves an empty Array; native Promise
+observers still run as jobs. Callback return values preserve custom resolve
+results. Stored object/Symbol values and capabilities participate in collection.
+Native storage/count capacity failures remain host failures without default quotas.
 
 Promise.prototype.finally accepts object receivers without Promise branding
 (27.2.5.3). SpeciesConstructor precedes then lookup even for non-callable cleanup

@@ -3,6 +3,7 @@
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::PromiseReaction};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
+mod all;
 mod race;
 
 /// The outcome of one explicitly scheduled Promise job.

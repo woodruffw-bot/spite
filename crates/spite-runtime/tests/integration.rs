@@ -1295,5 +1295,7 @@ mod regexp_unicode_truth_table_zero_count_spine_string_class_alternative_capture
 #[path = "cases/regexp_unicode_zero_minimum_asserted_alternative_string_class_captures.rs"]
 mod regexp_unicode_zero_minimum_asserted_alternative_string_class_captures;
 
+#[path = "cases/promise_all.rs"]
+mod promise_all;
 #[path = "cases/promise_race.rs"]
 mod promise_race;

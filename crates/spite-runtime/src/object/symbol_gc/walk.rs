@@ -123,6 +123,7 @@ fn object_symbols(
         regexp: _,
         error_data: _,
         promise,
+        promise_all,
         disposable_stack: _,
         disposable_resources,
         raw_json: _,
@@ -203,6 +204,11 @@ fn object_symbols(
             visit(symbol(value))?;
         }
     }
+    if let Some(data) = promise_all {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
     // Cells' held values are unconditional strong fields of a reached
     // registry, and physical owners even in an unreachable registry record.
     if let Some(registry) = finalization_registry {
@@ -245,7 +251,8 @@ fn object_symbols(
             | Callable::ProxyRevoker(_)
             | Callable::PromiseCapabilityExecutor(_)
             | Callable::PromiseResolvingFunction { .. }
-            | Callable::PromiseFinally { .. },
+            | Callable::PromiseFinally { .. }
+            | Callable::PromiseAllResolveElement { .. },
         )
         | None => visit(None)?,
     }

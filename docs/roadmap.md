@@ -361,6 +361,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute async Test262 Scripts through the original completion harness and explicit Promise jobs, preserving failure and host-limit outcomes.
 - [x] Implement generic Promise.prototype.finally with captured species, observable then calls, awaited cleanup and original value/reason propagation.
 - [x] Implement Promise.race with generic capabilities, cached constructor resolution, ordered iterable subscription and phase-correct iterator cleanup.
+- [x] Implement Promise.all with ordered traced result lists, guarded native resolve elements, synchronous-callback reentry handling and intrinsic result Arrays.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

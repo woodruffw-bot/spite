@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8904 unmodified test fixtures and nineteen harness files come from
+These 9006 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,6 +30,20 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Promise.all fixtures
+
+All 98 complete unchanged Promise/all originals pass 196 Script variants. They
+cover generic capabilities, resolve lookup/calls, iteration and cleanup failures,
+native resolve-element metadata, duplicate callbacks, reentry, ordered results,
+empty input and rejection. Four previously deferred race sequencing originals add
+eight variants; both candidate directories now pass entirely. Git blob hashes
+and manifest SHA-256 digests were verified, with no helper changes.
+
+Five native Runtime regressions additionally cover deferred inputs, callback
+return values, intrinsic Arrays, object/Symbol collection and host failures.
+Inventories contain 9,006 fixtures, nineteen helpers, 8,987 reviewed sources and
+17,445 variants.
+
 ## Promise.race fixtures
 
 Ninety complete unchanged originals in Promise/race pass 180 Script variants.
@@ -39,8 +53,8 @@ assimilation, job ordering and empty input. Pinned Git blob hashes and manifest
 SHA-256 digests were verified. Existing helpers suffice.
 
 The separate 94-source review records 180 passing and eight Unsupported variants.
-Four sequencing originals also need Promise.all; they remain excluded unchanged
-without credit. Four native Runtime regressions add explicit protocol, cleanup
+Four sequencing originals initially needed Promise.all and are now admitted above.
+Four native Runtime regressions add explicit protocol, cleanup
 precedence and host-failure controls. Inventories contain 8,904 fixtures, nineteen
 helpers, 8,885 reviewed sources and 17,241 variants.
 
@@ -4253,7 +4267,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 17241 variants from 8885 reviewed sources.
+The `spite-test262` command runs 17445 variants from 8987 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

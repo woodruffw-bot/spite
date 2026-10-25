@@ -930,6 +930,11 @@ pub(crate) enum Callable {
         cell: ObjectHandle,
         kind: PromiseFinallyKind,
     },
+    PromiseAllResolveElement {
+        state: ObjectHandle,
+        index: usize,
+        called: bool,
+    },
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
@@ -950,7 +955,8 @@ impl Callable {
             | Self::ProxyRevoker(_)
             | Self::PromiseCapabilityExecutor(_)
             | Self::PromiseResolvingFunction { .. }
-            | Self::PromiseFinally { .. } => FunctionText::Native(""),
+            | Self::PromiseFinally { .. }
+            | Self::PromiseAllResolveElement { .. } => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1470,6 +1476,16 @@ impl Realm {
                     return self.promise_finally_callback(
                         cell,
                         kind,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
+                Some(Callable::PromiseAllResolveElement { .. }) => {
+                    let Value::Object(function) = function else {
+                        unreachable!("resolve element is callable")
+                    };
+                    return self.promise_all_resolve_element(
+                        function,
                         arguments.next().unwrap_or(Value::Undefined),
                         span,
                     );

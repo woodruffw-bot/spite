@@ -52,10 +52,31 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers/race, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17241 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise protocols | Branded construction/settlement, shared resolving functions/capabilities, resolve/reject/try/withResolvers/race/all, generic catch/finally, species-aware then, and explicit FIFO thenable/reaction jobs |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 17445 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Promise.all
+
+The generic all constructor collects results in input order with private traced
+storage, native exact counts and guarded resolve-element functions. The initial
+count delays custom synchronous callbacks until iteration is exhausted. Duplicate
+element callbacks do nothing. Empty input resolves an intrinsic empty Array;
+native observers run asynchronously. Rejection, iterator cleanup and host failures
+preserve their distinct completion rules.
+
+Five Runtime regressions cover ordered pending inputs, empty and rejected inputs,
+generic callback metadata/return values, duplicate and reentrant calls, cleanup
+precedence, collection of object/Symbol results and host failures. All 98 unchanged
+upstream all originals pass 196 variants; the four deferred race sequencing tests
+add eight more variants. Both candidate sets now pass completely. Git blob hashes
+and manifest SHA-256 digests were verified. Inventories contain 9,006 fixtures,
+nineteen helpers, 8,987 reviewed sources and 17,445 variants. Runtime has 629 case
+files, 398 units and 1,807 integration tests outside RegExp groups.
+All 17,445 variants and all 40 Test262 package tests pass. Runtime units and
+integrations, strict Clippy, Rust 1.88 all-target checks, formatting, dependency
+policy and fixture inventories also pass.
 
 ## Promise.race
 
@@ -69,7 +90,7 @@ closing, and host failures bypass both cleanup and rejection.
 Four Runtime regressions cover protocol ordering, full iteration, callback
 identity, asynchronous first settlement, empty input, cleanup precedence and
 host failures. Ninety unchanged upstream originals pass 180 variants; four other
-sequencing originals require Promise.all and remain Unsupported without credit.
+sequencing originals initially required Promise.all and are now admitted above.
 All pinned Git blob hashes and manifest SHA-256 digests were verified. Inventories
 contain 8,904 fixtures, nineteen helpers, 8,885 reviewed sources and 17,241 variants.
 There are 628 Runtime case files, 398 units and 1,802 integrations outside RegExp.

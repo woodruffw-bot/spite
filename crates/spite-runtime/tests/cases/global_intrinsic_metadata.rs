@@ -152,7 +152,6 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // Reading its metadata must not stand in for executing that dependency.
     let operations = [
         "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
-        "Promise.all([])",
         "Promise.allSettled([])",
         "Promise.any([])",
         "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'byteLength').get.call({})",
