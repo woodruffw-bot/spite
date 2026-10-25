@@ -14445,6 +14445,16 @@ indices, String consumers, copies and collection with captures preceding the
 empty root match. Original-context predecessor and line checks stay in Core;
 user conversions remain outside the compiler frame.
 
+A separate checked scalar-set lookbehind entry admits leading/trailing operand
+word predicates with optional ^/$ gates. It requires at least one word
+predicate and delegates the fixed character iteration to the existing checked
+word-set compiler (22.2.2.4, 22.2.2.9). A bounded predecessor probe retains
+original line/word/fold context and backspace class data; outside wrappers stay
+empty while operand wrappers capture the complete predecessor. Nested scalar
+algebra, checked errors, complete Unicode advancement, initial-pair rewind and
+actual-work cancellation keep their shared paths. Other domains retain their
+existing proofs. Runtime integration remains separate.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
