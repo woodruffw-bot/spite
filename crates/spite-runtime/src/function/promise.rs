@@ -6,6 +6,8 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 mod aggregate;
 pub(crate) use aggregate::PromiseAggregateKind;
 mod race;
+#[cfg(test)]
+mod reaction_tests;
 
 /// The outcome of one explicitly scheduled Promise job.
 #[derive(Debug)]
@@ -48,10 +50,11 @@ impl PromiseJob {
                         None
                     }
                 }
+                let capability = reaction.capability.as_ref();
                 [
-                    object(&reaction.capability.promise),
-                    object(&reaction.capability.resolve),
-                    object(&reaction.capability.reject),
+                    capability.and_then(|capability| object(&capability.promise)),
+                    capability.and_then(|capability| object(&capability.resolve)),
+                    capability.and_then(|capability| object(&capability.reject)),
                     object(&reaction.handler),
                     object(argument),
                 ]
@@ -242,7 +245,23 @@ impl Realm {
         // Species hooks may settle the parent before reaction registration.
         let constructor = self.promise_species_constructor(&promise, span)?;
         let capability = self.new_promise_capability(constructor, span)?;
-        let result = capability.promise.clone();
+        self.perform_promise_then(&promise, on_fulfilled, on_rejected, Some(capability), span)
+    }
+
+    // PerformPromiseThen (27.2.5.4.1) also serves specification-internal
+    // continuations. Without a capability it creates no derived Promise and
+    // performs no visible then, constructor or species lookup.
+    pub(super) fn perform_promise_then(
+        &mut self,
+        promise: &ObjectHandle,
+        on_fulfilled: Value,
+        on_rejected: Value,
+        capability: Option<PromiseCapability>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let result = capability
+            .as_ref()
+            .map_or(Value::Undefined, |capability| capability.promise.clone());
         let fulfill = if self.is_callable(&on_fulfilled, span)? {
             on_fulfilled
         } else {
@@ -264,7 +283,7 @@ impl Realm {
             fulfill: false,
         };
         if let Some((reaction, argument)) = self.object_work(span, |objects, budget| {
-            objects.add_promise_reactions(&promise, fulfill, reject, budget)
+            objects.add_promise_reactions(promise, fulfill, reject, budget)
         })? {
             self.enqueue_promise_job(PromiseJob::Reaction { reaction, argument }, span)?;
         }
@@ -567,12 +586,15 @@ impl Realm {
                         arguments.push(argument);
                         self.call(reaction.handler, Value::Undefined, arguments, span)
                     };
+                    let Some(capability) = reaction.capability else {
+                        // Specification-internal handlers consume their own
+                        // language completions. Host failures still reach the
+                        // job outcome and never become JavaScript rejections.
+                        return completion.map(|_| ());
+                    };
                     let (method, value) = match completion {
-                        Ok(value) => (reaction.capability.resolve, value),
-                        Err(error) => (
-                            reaction.capability.reject,
-                            self.language_exception_value(error)?,
-                        ),
+                        Ok(value) => (capability.resolve, value),
+                        Err(error) => (capability.reject, self.language_exception_value(error)?),
                     };
                     self.call(method, Value::Undefined, vec![value], span)?;
                 }

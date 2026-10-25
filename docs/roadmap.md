@@ -358,6 +358,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.
 - [x] Add branded Promise construction/resolution, shared first-settlement functions, identity-preserving resolve/try, and explicitly scheduled FIFO thenable jobs with traced captures.
 - [x] Add species-aware Promise.prototype.then, traced pending reactions, FIFO handler jobs, value/error propagation and child resolution.
+- [x] Share PerformPromiseThen with specification-internal reactions that omit derived Promise capabilities and visible then/species hooks.
 - [x] Execute async Test262 Scripts through the original completion harness and explicit Promise jobs, preserving failure and host-limit outcomes.
 - [x] Implement generic Promise.prototype.finally with captured species, observable then calls, awaited cleanup and original value/reason propagation.
 - [x] Implement Promise.race with generic capabilities, cached constructor resolution, ordered iterable subscription and phase-correct iterator cleanup.

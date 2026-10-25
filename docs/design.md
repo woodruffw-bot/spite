@@ -3361,9 +3361,16 @@ and exactly one value/reason. Missing handlers provide identity/thrower behavior
 Normal handler returns call resolve; language throws call reject; host failures
 bypass rejection. Abrupt supplied resolve/reject functions are reported to the
 host. Child resolution uses the same self-reference and thenable rules. Queued
-arguments, handlers/capabilities and pending reactions participate in collection;
-preflight rollback moves rather than clones arbitrary argument values.
-Async function syntax and suspension remain separate work. Async Test262 execution
+arguments, handlers/capabilities and pending reactions participate in collection.
+Preflight rollback moves rather than clones arbitrary argument values.
+
+Internal PerformPromiseThen calls can omit the result capability. Those reactions
+create no derived Promise, bypass visible then/constructor/species properties,
+and discard normal handler results without assimilating them. They share public
+reactions' registration order, FIFO jobs and capture tracing. Internal handlers
+consume their own language completions; host failures still report through the
+job outcome. Await syntax and execution continuations remain implementation work.
+Async Test262 execution
 drives this host API without changing ordinary realm scheduling.
 
 Promise.race constructs the supplied capability before reading its resolve

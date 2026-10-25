@@ -58,6 +58,23 @@ not an alternative language specification.
 
 
 
+## Internal Promise reactions
+
+Public then now shares PerformPromiseThen with specification-internal callers.
+Reactions can omit their result capability, avoiding derived Promise allocation
+and visible then, constructor or species hooks. Normal handler results are
+discarded without assimilation. Pending and settled reactions preserve public
+registration order and FIFO job execution; capture tracing and work accounting
+handle the omitted capability. Await syntax and continuations remain work.
+
+Four new Runtime unit groups cover pending/settled fulfillment and rejection,
+poisoned hooks, ignored thenable results, ordering with public handlers, object
+and Symbol retention/release, preflight rollback and host-failure reporting.
+All 402 Runtime units and 1,841 non-RegExp integrations pass. All 18,088 reviewed
+variants and all forty Test262 package tests pass. Strict Clippy, Rust 1.88,
+formatting, dependency policy and inventories pass. Fixture counts, intrinsic
+entries and product quotas are unchanged.
+
 ## Async methods
 
 Object, class, static and private async methods share the async call path while

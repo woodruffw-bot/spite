@@ -13,7 +13,7 @@ pub(crate) enum PromiseState {
 
 #[derive(Clone, Debug)]
 pub(crate) struct PromiseReaction {
-    pub capability: PromiseCapability,
+    pub capability: Option<PromiseCapability>,
     pub handler: Value,
     pub fulfill: bool,
 }
@@ -21,7 +21,8 @@ pub(crate) struct PromiseReaction {
 impl PromiseReaction {
     pub(crate) fn values(&self) -> impl Iterator<Item = &Value> {
         self.capability
-            .values()
+            .iter()
+            .flat_map(PromiseCapability::values)
             .chain(std::iter::once(&self.handler))
     }
 }
