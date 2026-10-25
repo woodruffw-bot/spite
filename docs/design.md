@@ -14336,3 +14336,14 @@ empty and every operand slot undefined through names, own indices properties,
 String consumers, copies and collection. Original q source/flags, coercion
 ordering and stateful execution remain in their shared paths; user conversions
 stay outside the compiler frame.
+
+A separate checked negative q-class lookahead entry accepts leading/trailing
+operand word predicates with optional ^/$ gates. It projects only the assertion
+sign and delegates to the checked positive word-q proof, requiring at least one
+word predicate and one character per q alternative (22.2.2.4, 22.2.2.9). Negation
+applies to the conjunction of the atom and its original-context predicates.
+Outside captures stay empty; all operand slots remain undefined. Backspace
+class data stays distinct from outside word assertions. The fixed-count sticky
+probe preserves linear actual work, complete-character search, initial-pair
+rewind and checked construction errors. Earlier q-class entries keep their
+domains and charges. Runtime integration remains separate.
