@@ -14347,3 +14347,11 @@ class data stays distinct from outside word assertions. The fixed-count sticky
 probe preserves linear actual work, complete-character search, initial-pair
 rewind and checked construction errors. Earlier q-class entries keep their
 domains and charges. Runtime integration remains separate.
+
+Runtime selects checked negative word-q lookahead after its line-only q-class
+entry, gated by v mode and using full normalized source. Successful selection
+resets the projected outer offset; checked construction failures use the
+existing host mapping. Shared empty outside/undefined operand capture access
+preserves own named indices properties, original q source/flags, String
+consumers, copies and collection. Original-context word and line predicates
+stay in Core, and user conversions remain outside the compiler frame.
