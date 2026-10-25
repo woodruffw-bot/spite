@@ -193,3 +193,49 @@ fn q_class_predecessor_deep_wrappers_and_pair_offsets_keep_exact_original_slots(
     "#,
     );
 }
+
+#[test]
+fn word_q_class_predecessors_keep_original_polarity_source_and_named_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','ab a!',4,'a'],['\\b[\\q{a|b}]\\B','ab!',1,'a'],['\\B[\\q{a|😀}]\\B','😀😀',2,'😀']]){
+            var source='(?<outside>(?<=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]-row[3].length&&m.indices.groups.run[1]===row[2]&&r.lastIndex===row[2]&&r.source===source;
+            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_q_class_predecessor_line_fold_property_and_backspace_context_stay_original() {
+    check(
+        r#"
+        var m=/(?<=(?<run>^\b[\q{a|😀}]\b$))/dimv.exec('\nA\n'),ok=m.index===2&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
+        for(var text of ['S','ſ','K','K']){var m=/(?<=(?<run>\b[\q{ſ|k}]\b))/div.exec('!'+text+'!');ok=ok&&m.index===2&&m.groups.run===text&&m.indices.groups.run[0]===1}
+        var m=/(?<=(?<run>\b[\p{ASCII}\q{😀}]\b))/div.exec('!ſ!');ok=ok&&m.index===2&&m.groups.run==='ſ';
+        var m=/(?<=(?<run>\B[\q{\u0008|a}]\B))/dv.exec('\b');ok=ok&&m.index===1&&m.groups.run==='\b'&&m.indices.groups.run[0]===0;ok
+    "#,
+    );
+}
+
+#[test]
+fn word_q_class_predecessor_string_consumers_copies_and_collection_keep_preceding_spans() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?<=(?<run>\\b[\\q{a|b}]\\b)))',r=new RegExp(source,'dgv'),all=Array.from('!a! b'.matchAll(r));
+        var ok=all.length===2&&all[0].index===2&&all[0].groups.run==='a'&&all[1].index===5&&all[1].groups.run==='b'&&r.lastIndex===0;
+        ok=ok&&'!a! b'.replace(r,'<$<run>>')==='!a<a>! b<b>'&&JSON.stringify('!a! b'.split(new RegExp('(?<=(\\b[\\q{a|b}]\\b))','v')))==='["!a","a","! b"]';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!a!').groups.run==='a';ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!b!');m.index===2&&m.groups.outside===''&&m.groups.run==='b'&&m.indices.groups.run[0]===1&&copy.lastIndex===2"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn word_q_class_predecessor_search_preserves_complete_candidates_and_initial_pair_rewind() {
+    check(
+        "var r=new RegExp('(?<=(?<run>\\\\B[\\\\q{😀|a}]\\\\B))','dgyv');r.lastIndex=3;var m=r.exec('😀😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===2",
+    );
+}

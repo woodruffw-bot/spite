@@ -14303,3 +14303,12 @@ distinct from outside predicates. Checked work/capacity errors, bounded retries,
 initial-pair rewind and flat construction/clone/drop keep their existing paths.
 Earlier q-class entries retain their domains and charges. Runtime integration
 remains separate.
+
+Runtime selects the word-predicate q-class lookbehind entry after the line-only
+q-lookbehind proof, gated by v mode and using full normalized source. Successful
+selection resets the projected outer offset, and checked construction failures
+use the existing host mapping. The common result cache preserves empty outside
+and preceding operand ranges through named indices and String consumers.
+Original q source/flags, word/line context, copies, collection and stateful
+Unicode candidates retain the shared paths. User conversions remain outside
+the compiler frame.
