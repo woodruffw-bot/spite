@@ -40,11 +40,26 @@ impl RegExpUnicodePositiveStringClassMatcher {
         multiline: bool,
         mut charge: impl FnMut(usize) -> Result<(), E>,
     ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
-        Self::compile_with_work_impl(source, ignore_case, multiline, &mut charge)
+        Self::compile_with_work_impl::<false, E>(source, ignore_case, multiline, &mut charge)
+    }
+
+    /// Compiles one single-q lookahead with operand word predicates and optional ^/$.
+    ///
+    /// At least one outside word predicate is required. Predicates inspect the
+    /// original input at the selected member endpoints; rejected longer members
+    /// can select shorter members, including defined empty ones (22.2.2.4).
+    /// Full original v/vi validation and normalized capture heads are required.
+    pub fn compile_single_q_lookahead_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<true, E>(source, ignore_case, multiline, &mut charge)
     }
 
     #[inline(never)]
-    fn compile_with_work_impl<E>(
+    fn compile_with_work_impl<const WORD: bool, E>(
         source: &JsString,
         ignore_case: bool,
         multiline: bool,
@@ -69,14 +84,20 @@ impl RegExpUnicodePositiveStringClassMatcher {
         } else {
             (body, 0)
         };
-        let start = usize::from(body.first() == Some(&0x5e));
+        let mut start = usize::from(body.first() == Some(&0x5e));
+        let leading_word = WORD && word_at(body, start);
+        start += 2 * usize::from(leading_word);
         if body.get(start) != Some(&0x5b) {
             return Ok(None);
         }
         let Some(end) = surrogate_atom_end(body, start, true, true) else {
             return Ok(None);
         };
-        if end != body.len() && !(body.get(end) == Some(&0x24) && end + 1 == body.len()) {
+        let trailing_word = WORD && word_at(body, end);
+        let tail = end + 2 * usize::from(trailing_word);
+        if (WORD && !leading_word && !trailing_word)
+            || (tail != body.len() && !(body.get(tail) == Some(&0x24) && tail + 1 == body.len()))
+        {
             return Ok(None);
         }
         let mut projected = Vec::new();
@@ -137,4 +158,8 @@ impl RegExpUnicodePositiveStringClassMatcher {
                 })
             })
     }
+}
+
+fn word_at(units: &[u16], at: usize) -> bool {
+    units.get(at) == Some(&0x5c) && matches!(units.get(at + 1), Some(0x62 | 0x42))
 }

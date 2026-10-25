@@ -27284,3 +27284,21 @@ Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
 checks, formatting, policy and inventories pass. All 622 Runtime case files
 remain registered. Fixtures, snapshots, dependencies, profiles, native-stack
 settings and default quotas are unchanged.
+
+
+## Variable-length single-q positive lookahead with word predicates: Core
+
+All 370 actual-source assertion groups pass (1.17 s). Four new groups cover
+word-predicate polarity, longest-to-shorter endpoint retries, earliest defined
+empty choices, independent outside/operand captures, original line/fold/
+backspace context, surrogate boundaries, deep scopes, linear failed endpoints,
+and every construction/search work abort followed by recovery.
+
+All 53,248 exact input/start/sticky/root/capture records across 512 new native
+patterns agree using the twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. The earlier
+non-word lookahead's 53,248 records are rechecked against the updated library.
+None of the 2,728 remaining directly lexed Unsupported controls is newly admitted.
+Strict all-target workspace Clippy and documentation tests pass. Runtime does
+not yet select the new constructor; fixtures, snapshots, dependencies, profiles,
+native-stack settings and default quotas are unchanged.

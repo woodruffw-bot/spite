@@ -14801,3 +14801,13 @@ including Some(empty), separately from the empty root and without dynamic
 capture storage. RegExpBuiltinExec and String consumers retain original names,
 indices, source, UTF-16 advancement and lastIndex behavior. Reentrant coercions
 remain outside the compilation frame.
+
+
+A separate variable-length single-q lookahead constructor admits canonical
+operand word predicates before/after the class, with optional ^/$ gates. It
+requires at least one predicate, retaining the earlier constructor's domain
+and charge sequence. Endpoint predicates inspect the original input: a longer
+member can fail a boundary while a shorter or empty member succeeds. The
+selected whole-member range remains independent of the empty assertion range.
+Checked decoding/folding, legal Unicode candidates, cancellation and lexical
+capture accounting reuse the established string-set plan (22.2.2.4, 22.2.2.7).
