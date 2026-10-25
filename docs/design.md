@@ -14965,3 +14965,22 @@ cache retains only the empty assertion range, with outside empty spans and
 named undefined operand slots through indices, consumers, copies and collection.
 Original-context conjunctions and complete Unicode candidates remain Core's
 responsibility.
+
+
+### Positive lookahead over literal characters and q strings
+
+A separate positive string-class constructor proves complete lookahead over
+ordinary literal characters beside q operands, requiring an empty or longer
+q member overall. The checked character-union compiler shares prefix storage
+and longest-member priority across one-character literals and strings; a literal
+member can supersede an empty alternative or satisfy an endpoint rejected by a
+longer string (22.2.2.4, 22.2.2.7). Source ordering does not override membership
+priority.
+
+Optional ^/$ gates and complete wrappers preserve original context, empty
+assertion spans and independent selected-member captures. Full original v/vi
+validation and normalized heads remain prerequisites. The private class-domain
+selector retains earlier domains and work sequences. Character-class escapes,
+properties, ranges, nesting, operations, word gates, repetitions, continuations
+and reference roles require separate proofs. Checked construction and cancellable
+search retain the existing host boundaries and original UTF-16 extents.

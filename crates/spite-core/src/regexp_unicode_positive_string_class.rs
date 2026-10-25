@@ -10,7 +10,8 @@ use std::ops::Range;
 /// A complete positive lookahead over a variable-length UnicodeSets q class.
 ///
 /// Full original v/vi validation and normalized capture heads are prerequisites.
-/// Separate constructors prove a single q operand or supported q unions.
+/// Separate constructors prove single q operands or supported unions of
+/// characters and strings.
 /// Complete unquantified ordinary/noncapturing wrappers may surround the
 /// assertion and its whole operand. Outside captures remain empty; operand
 /// wrappers capture the selected longest accepted member, including a defined
@@ -89,6 +90,22 @@ impl RegExpUnicodePositiveStringClassMatcher {
         Self::compile_with_work_impl::<true, 1, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles lookahead over literal characters beside variable-length q operands.
+    ///
+    /// At least one literal character and one empty or longer q member are
+    /// required. The checked union compiler shares longest-member priority
+    /// across characters and strings. Optional ^/$ gates and complete wrappers
+    /// retain original context and capture extents. Full original v/vi validation
+    /// and normalized capture heads are required.
+    pub fn compile_character_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 2, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
@@ -139,6 +156,13 @@ impl RegExpUnicodePositiveStringClassMatcher {
         let source = JsString::from_code_units(projected);
         let operand = if CLASS_KIND == 1 {
             RegExpUnicodeStringSetMatcher::compile_string_union_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        } else if CLASS_KIND == 2 {
+            RegExpUnicodeStringSetMatcher::compile_character_union_with_work(
                 &source,
                 ignore_case,
                 multiline,

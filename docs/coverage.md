@@ -27652,3 +27652,26 @@ profile changes, native-stack overrides or default quotas were used. These
 measurements are not a cold-build memory comparison. Later character/string
 union work has separate focused and differential evidence. Fixtures, snapshots
 and dependencies are unchanged.
+
+
+## Literal-character/string-union positive lookahead Core proof
+
+The focused compiler/regression harness passes all 398 groups (2.21 s),
+including four new character-union groups. The production library API passes
+all 20 positive string-class groups (0.05 s). These cover literal/string priority,
+earliest empty choices, independent captures, literal fallback after rejected
+longer endpoints, original line/fold/escape/surrogate context, deep scopes,
+bounded retries, proof exclusions and every construction/search work abort
+followed by recovery. Separate braced-surrogate regressions cover both q-member
+and literal-operand boundaries independently of Node.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration. All eight earlier
+single-q and q-union constructors retain byte-identical results, captures and
+work vectors across 1,024 construction and 106,496 search records before/after
+the new class-domain branch (107,520 total records). None of the 2,728 remaining
+directly lexed Unsupported controls enters the new proof. Strict all-target
+workspace Clippy, documentation tests, formatting, policy and inventories pass.
+Runtime does not yet select this constructor; fixtures, snapshots, dependencies,
+profiles, native stacks and default quotas are unchanged.
