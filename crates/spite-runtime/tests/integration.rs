@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_await_arrays.rs"]
+mod async_await_arrays;
+
 #[path = "cases/using_declarations.rs"]
 mod using_declarations;
 

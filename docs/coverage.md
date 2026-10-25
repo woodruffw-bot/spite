@@ -60,6 +60,23 @@ not an alternative language specification.
 
 
 
+## Awaited Array literals
+
+Array elements and spread operands can suspend while an intrinsic partial Array
+remains in traced expression state. Numeric accumulation preserves holes, length
+writes and order without replay. Ordinary and suspended literals share element
+definition, synchronous spreading and checked index storage. Spread yields do
+not receive an implicit Await, and anonymous element values remain unnamed.
+
+Six Runtime groups cover these rules, intrinsic construction, rejection and
+resource suppression, partial-array collection and opted-in property failures.
+Symbol ownership controls include a value retained only by a partial Array.
+All 416 units and 1,920 non-RegExp integrations pass across 643 Runtime case files.
+There are no new upstream admissions: the await review remains at 32 passing and
+12 Unsupported variants, and Array/adapter at 146 passing and 116 Unsupported.
+The corpus contains 9,573 fixtures, twenty helpers, 9,554 reviewed sources and
+18,556 variants. Intrinsic entries, Parser coverage and quotas are unchanged.
+
 ## Awaited calls
 
 Ordinary calls suspend in arguments and supported value callees. Callee lookup,

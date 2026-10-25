@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited Array literal review
+
+Awaited elements and spread operands add six Runtime groups and partial-array
+Symbol ownership controls. The complete original-source reviews retain their
+previous outcomes: await has 32 passing and 12 Unsupported variants; Array/adapter
+has 146 passing and 116 Unsupported. No additional upstream originals qualify
+for admission. Inventories remain at 9,573 fixtures, twenty helpers, 9,554 reviewed
+sources and 18,556 variants. No helper, fixture bytes or quota changes are needed.
+
 ## Awaited call fixtures
 
 Three complete unchanged originals add six variants for thenable assimilation,

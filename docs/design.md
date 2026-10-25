@@ -443,7 +443,7 @@ results participate in object tracing and the physical Symbol inventory. Their
 root return/discard/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including member references, construction, optional/super calls, literal elements,
+including member references, construction, optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -456,6 +456,15 @@ spread iteration does not implicitly await yielded values. Call targets and
 arguments participate in tracing and the physical Symbol inventory. Await-using
 is distinct from a synchronous using declaration with an awaited initializer and
 remains Unsupported. Unreachable awaits remain unevaluated.
+
+Array literals also suspend in elements and spread operands (13.2.4.1–2). The
+intrinsic Array is created before the first element and retained in the expression
+task. An element cursor and numeric next index preserve holes, length writes and
+left-to-right evaluation across awaits. Ordinary and suspended literals share
+element definition, synchronous spread and checked index accumulation; yielded
+Promises remain values. Rejection skips later elements and releases the partial
+Array through the existing abrupt-completion path. Partial Arrays participate in
+tracing and the physical Symbol inventory through their retained object values.
 
 Before suspension the cursor captures only the global environment plus the
 callee's own scope suffix, VariableEnvironment and strictness. Environment outer

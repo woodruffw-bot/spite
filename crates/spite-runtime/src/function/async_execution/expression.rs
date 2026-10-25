@@ -6,8 +6,10 @@ use crate::{
     Error, Realm, Value,
     object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask},
 };
-use spite_core::Span;
-use spite_parser::ast::{Argument, ArrowBody, BinaryOp, Expr, ExprKind, StatementKind};
+use spite_core::{JsString, Span};
+use spite_parser::ast::{
+    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, StatementKind,
+};
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
@@ -26,6 +28,10 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
                     .iter()
                     .any(|argument| has_supported_await(argument.expression()))
         }
+        ExprKind::Array(elements) => elements
+            .iter()
+            .filter_map(ArrayElement::expression)
+            .any(has_supported_await),
         // Unsupported parents retain the ordinary evaluator's explicit boundary.
         // Defining a nested async function does not execute its awaited body.
         _ => false,
@@ -80,6 +86,9 @@ fn expression_at<'a>(body: &'a ArrowBody, root: ExprRoot, path: &[ExprChild]) ->
             (ExprChild::CallArgument(index), ExprKind::Call { arguments, .. }) => {
                 arguments[*index].expression()
             }
+            (ExprChild::ArrayElement(index), ExprKind::Array(elements)) => elements[*index]
+                .expression()
+                .expect("array element expression"),
             _ => unreachable!("typed expression path"),
         };
     }
@@ -162,6 +171,7 @@ impl Realm {
                         | ExprKind::BinaryChain { .. }
                         | ExprKind::Conditional(..)
                         | ExprKind::Call { .. }
+                        | ExprKind::Array(_)
                             if has_supported_await(expression) =>
                         {
                             self.tick(span)?;
@@ -265,6 +275,21 @@ impl Realm {
                                             span,
                                         )?;
                                     }
+                                }
+                                ExprKind::Array(_) => {
+                                    let array =
+                                        Value::Object(self.create_intrinsic_array(0, span)?);
+                                    push(
+                                        &mut state,
+                                        ExprTask::ArrayNext {
+                                            path,
+                                            element: 0,
+                                            index: 0,
+                                            array,
+                                            span,
+                                        },
+                                        span,
+                                    )?;
                                 }
                                 _ => unreachable!("supported value node"),
                             }
@@ -430,6 +455,89 @@ impl Realm {
                             index: index + 1,
                             target,
                             arguments,
+                            span,
+                        },
+                        span,
+                    )?;
+                }
+                ExprTask::ArrayNext {
+                    path,
+                    mut element,
+                    mut index,
+                    array,
+                    span,
+                } => {
+                    let expression = expression_at(&data.body, state.root, &path);
+                    let ExprKind::Array(elements) = &expression.kind else {
+                        unreachable!("array accumulation cursor");
+                    };
+                    let Value::Object(handle) = &array else {
+                        unreachable!("intrinsic array");
+                    };
+                    while matches!(elements.get(element), Some(ArrayElement::Elision)) {
+                        index = Self::next_array_literal_index(index, span)?;
+                        self.set_property_or_throw(
+                            handle,
+                            JsString::from("length"),
+                            Value::Number(index as f64),
+                            span,
+                        )?;
+                        element += 1;
+                    }
+                    if element == elements.len() {
+                        self.set_property_or_throw(
+                            handle,
+                            JsString::from("length"),
+                            Value::Number(index as f64),
+                            span,
+                        )?;
+                        state.current = Some(array);
+                    } else {
+                        let child = child_path(&path, ExprChild::ArrayElement(element), span)?;
+                        push(
+                            &mut state,
+                            ExprTask::ArrayAppend {
+                                path,
+                                element,
+                                index,
+                                array,
+                                span,
+                            },
+                            span,
+                        )?;
+                        push(&mut state, ExprTask::Evaluate(child), span)?;
+                    }
+                }
+                ExprTask::ArrayAppend {
+                    path,
+                    element,
+                    index,
+                    array,
+                    span,
+                } => {
+                    let expression = expression_at(&data.body, state.root, &path);
+                    let ExprKind::Array(elements) = &expression.kind else {
+                        unreachable!("array accumulation append");
+                    };
+                    let syntax = &elements[element];
+                    let value = state.current.take().expect("array element value");
+                    let Value::Object(handle) = &array else {
+                        unreachable!("intrinsic array");
+                    };
+                    let index = self.append_array_literal_value(
+                        handle,
+                        index,
+                        value,
+                        matches!(syntax, ArrayElement::Spread(_)),
+                        syntax.expression().expect("array element expression").span,
+                    )?;
+                    push(
+                        &mut state,
+                        ExprTask::ArrayNext {
+                            path,
+                            element: element + 1,
+                            index,
+                            array,
                             span,
                         },
                         span,

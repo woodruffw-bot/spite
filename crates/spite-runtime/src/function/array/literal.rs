@@ -14,15 +14,16 @@ impl Realm {
         let mut index = 0;
         for element in elements {
             match element {
-                ArrayElement::Expression(expression) => {
+                ArrayElement::Expression(expression) | ArrayElement::Spread(expression) => {
                     // Anonymous functions do not acquire a name here.
                     let value = self.expression(expression)?;
-                    self.create_array_element(&array, index, value, expression.span)?;
-                    index = Self::next_array_literal_index(index, span)?;
-                }
-                ArrayElement::Spread(expression) => {
-                    let value = self.expression(expression)?;
-                    index = self.accumulate_array_spread(&array, index, value, expression.span)?;
+                    index = self.append_array_literal_value(
+                        &array,
+                        index,
+                        value,
+                        matches!(element, ArrayElement::Spread(_)),
+                        expression.span,
+                    )?;
                 }
                 ArrayElement::Elision => {
                     index = Self::next_array_literal_index(index, span)?;
@@ -44,6 +45,22 @@ impl Realm {
             span,
         )?;
         Ok(Value::Object(array))
+    }
+
+    pub(crate) fn append_array_literal_value(
+        &mut self,
+        array: &ObjectHandle,
+        index: u64,
+        value: Value,
+        spread: bool,
+        span: Span,
+    ) -> Result<u64, Error> {
+        if spread {
+            self.accumulate_array_spread(array, index, value, span)
+        } else {
+            self.create_array_element(array, index, value, span)?;
+            Self::next_array_literal_index(index, span)
+        }
     }
 
     fn accumulate_array_spread(
@@ -75,7 +92,7 @@ impl Realm {
         }
     }
 
-    fn next_array_literal_index(index: u64, span: Span) -> Result<u64, Error> {
+    pub(crate) fn next_array_literal_index(index: u64, span: Span) -> Result<u64, Error> {
         index.checked_add(1).ok_or_else(|| Error::Limit {
             span,
             message: "Array literal index exceeds platform capacity".into(),

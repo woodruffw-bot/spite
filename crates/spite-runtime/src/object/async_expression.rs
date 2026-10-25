@@ -24,6 +24,7 @@ pub(crate) enum ExprChild {
     No,
     CallCallee,
     CallArgument(usize),
+    ArrayElement(usize),
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
@@ -80,15 +81,32 @@ pub(crate) enum ExprTask {
         arguments: Vec<Value>,
         span: Span,
     },
+    ArrayNext {
+        path: ExprPath,
+        element: usize,
+        index: u64,
+        array: Value,
+        span: Span,
+    },
+    ArrayAppend {
+        path: ExprPath,
+        element: usize,
+        index: u64,
+        array: Value,
+        span: Span,
+    },
     CheckString(Span),
 }
 
 impl ExprTask {
     fn values(&self) -> impl Iterator<Item = &Value> {
-        let (left, target, arguments): (Option<&Value>, Option<&CallTarget>, &[Value]) = match self
+        let (value, target, arguments): (Option<&Value>, Option<&CallTarget>, &[Value]) = match self
         {
             Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
                 (Some(left), None, &[])
+            }
+            Self::ArrayNext { array, .. } | Self::ArrayAppend { array, .. } => {
+                (Some(array), None, &[])
             }
             Self::CallNext {
                 target, arguments, ..
@@ -98,7 +116,8 @@ impl ExprTask {
             } => (None, Some(target), arguments),
             _ => (None, None, &[]),
         };
-        left.into_iter()
+        value
+            .into_iter()
             .chain(target.into_iter().flat_map(CallTarget::values))
             .chain(arguments)
     }
