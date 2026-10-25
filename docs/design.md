@@ -14266,3 +14266,20 @@ the existing host mapping. Shared empty/operand range caching preserves names,
 original q source, indices, String consumers, copies and collection. Original
 context and complete-character search remain in Core; reentrant conversions
 remain outside the compiler frame.
+
+A separate checked positive lookbehind entry admits one unquantified v-mode
+class whose q alternatives each decode to a character, with optional ^/$ gates
+(22.2.2.4, 22.2.2.9). The flat assertion parser retains original direction while
+sharing complete wrapper inventories and the fixed single-iteration class
+projection. Checked class compilation proves the scalar domain before matching;
+empty/long q members, other counts, word gates, continuations and references
+remain separate proofs.
+
+The existing complete-predecessor search probes that class stickily at each
+candidate and requires it to end at the candidate. Outside captures remain
+empty there; operand wrappers retain the original preceding character. Fold,
+line and surrogate context, initial-pair rewind and bounded actual-work retries
+retain the shared path, without suffix rescans or input-sized capture storage.
+Construction, clone/drop and work/capacity errors keep their existing contracts.
+Earlier q-lookahead entries retain their domains and charges. Runtime integration
+remains separate.
