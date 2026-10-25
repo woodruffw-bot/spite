@@ -26,9 +26,9 @@ use spite_core::{
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
     RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
     RegExpUnicodeMatchError, RegExpUnicodeNegativeAtomMatcher,
-    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
-    RegExpUnicodePositiveAtomMatch, RegExpUnicodePositiveAtomMatcher,
-    RegExpUnicodePositiveStringClassMatcher,
+    RegExpUnicodeNegativeStringClassMatcher, RegExpUnicodeNullableClassCaptureMatcher,
+    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodePositiveAtomMatch,
+    RegExpUnicodePositiveAtomMatcher, RegExpUnicodePositiveStringClassMatcher,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
@@ -114,6 +114,7 @@ pub(crate) enum RegExpMatcherBody {
     UnicodePositiveAtom(RegExpUnicodePositiveAtomMatcher),
     UnicodePositiveStringClass(RegExpUnicodePositiveStringClassMatcher),
     UnicodeNegativeAtom(RegExpUnicodeNegativeAtomMatcher),
+    UnicodeNegativeStringClass(RegExpUnicodeNegativeStringClassMatcher),
     UnicodeNullableClassCaptures(RegExpUnicodeNullableClassCaptureMatcher),
     UnicodeNullableStringClassCaptures(RegExpUnicodeNullableStringClassCaptureMatcher),
     UnicodeEmptyStringClassCaptures(RegExpUnicodeEmptyStringClassCaptureMatcher),
@@ -333,6 +334,7 @@ impl RegExpMatcher {
             RegExpMatcherBody::UnicodePositiveAtom(m) => m.capture_count(),
             RegExpMatcherBody::UnicodePositiveStringClass(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeNegativeAtom(m) => m.capture_count(),
+            RegExpMatcherBody::UnicodeNegativeStringClass(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeNullableClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeNullableStringClassCaptures(m) => m.capture_count(),
             RegExpMatcherBody::UnicodeEmptyStringClassCaptures(m) => m.capture_count(),
@@ -1775,6 +1777,20 @@ impl RegExpMatcher {
                     })
                 });
         }
+        if let RegExpMatcherBody::UnicodeNegativeStringClass(matcher) = &self.body {
+            return matcher
+                .find_with_work(input, start, sticky, charge)
+                .map(|found| {
+                    found.map(|range| RegExpMatch {
+                        range,
+                        matcher: self,
+                        branch: 0,
+                        capture_count: self.capture_count,
+                        dynamic_captures: None,
+                        atom_capture: None,
+                    })
+                });
+        }
         if let RegExpMatcherBody::UnicodePositiveAtom(matcher) = &self.body {
             return matcher
                 .find_with_work(input, start, sticky, charge)
@@ -2006,6 +2022,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodePositiveAtom(_)
             | RegExpMatcherBody::UnicodePositiveStringClass(_)
             | RegExpMatcherBody::UnicodeNegativeAtom(_)
+            | RegExpMatcherBody::UnicodeNegativeStringClass(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
@@ -2156,6 +2173,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodePositiveAtom(_)
             | RegExpMatcherBody::UnicodePositiveStringClass(_)
             | RegExpMatcherBody::UnicodeNegativeAtom(_)
+            | RegExpMatcherBody::UnicodeNegativeStringClass(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
@@ -2338,6 +2356,7 @@ impl RegExpMatcher {
             | RegExpMatcherBody::UnicodePositiveAtom(_)
             | RegExpMatcherBody::UnicodePositiveStringClass(_)
             | RegExpMatcherBody::UnicodeNegativeAtom(_)
+            | RegExpMatcherBody::UnicodeNegativeStringClass(_)
             | RegExpMatcherBody::UnicodeNullableClassCaptures(_)
             | RegExpMatcherBody::UnicodeNullableStringClassCaptures(_)
             | RegExpMatcherBody::UnicodeEmptyStringClassCaptures(_)
@@ -2479,6 +2498,9 @@ impl RegExpMatch<'_> {
                 return None;
             }
             RegExpMatcherBody::UnicodeNegativeAtom(matcher) => {
+                return matcher.capture_range(index, &self.range);
+            }
+            RegExpMatcherBody::UnicodeNegativeStringClass(matcher) => {
                 return matcher.capture_range(index, &self.range);
             }
             RegExpMatcherBody::UnicodePositiveAtom(matcher) => {
@@ -6362,6 +6384,53 @@ mod unicode_positive_string_class_tests {
                     Some(operand.clone())
                 );
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod unicode_negative_string_class_tests {
+    use super::*;
+
+    #[test]
+    fn failed_string_operands_keep_undefined_cached_slots_and_cancellable_search() {
+        let body = RegExpUnicodeNegativeStringClassMatcher::compile_single_q_lookahead_validated_with_work(
+            &JsString::from(r"((?!(([\q{a|aaa|aa}]))))"), false, false, |_| Ok::<(), ()>(()),
+        ).unwrap().unwrap();
+        let matcher = RegExpMatcher::new(RegExpMatcherBody::UnicodeNegativeStringClass(body), 0);
+        let input = JsString::from("aaa😀");
+        assert_eq!(matcher.capture_count(), 3);
+        assert_eq!(matcher.search_passes(false), 0);
+        assert_eq!(matcher.search_passes(true), 0);
+        let mut work = Vec::new();
+        let found = matcher
+            .find_with_work(&input, 0, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap()
+            .unwrap();
+        assert_eq!(found.range, 3..3);
+        assert!(found.atom_capture.is_none());
+        assert!(found.dynamic_captures.is_none());
+        assert_eq!(found.capture(0), Some(3..3));
+        for index in 1..=3 {
+            assert_eq!(found.capture(index), None);
+        }
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(matches!(matcher.find_with_work(&input, 0, false, |n| {
+                seen.push(n); if seen.len() == stop + 1 { Err(stop) } else { Ok(()) }
+            }), Err(RegExpUnicodeMatchError::Work(n)) if n == stop));
+            assert_eq!(seen, work[..=stop]);
+            assert_eq!(
+                matcher
+                    .find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                    .unwrap()
+                    .unwrap()
+                    .capture(0),
+                Some(3..3)
+            );
         }
     }
 }

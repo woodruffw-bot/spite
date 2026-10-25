@@ -29,9 +29,9 @@ use spite_core::{
     RegExpUnicodeCountedNullableStringClassCaptureMatcher,
     RegExpUnicodeEmptyStringClassCaptureMatcher, RegExpUnicodeFoldedLiteralMatcher,
     RegExpUnicodeLiteralClassPairMatcher, RegExpUnicodeLiteralClassPairWordMatcher,
-    RegExpUnicodeNegativeAtomMatcher, RegExpUnicodeNullableClassCaptureMatcher,
-    RegExpUnicodeNullableStringClassCaptureMatcher, RegExpUnicodePositiveAtomMatcher,
-    RegExpUnicodePositiveStringClassMatcher,
+    RegExpUnicodeNegativeAtomMatcher, RegExpUnicodeNegativeStringClassMatcher,
+    RegExpUnicodeNullableClassCaptureMatcher, RegExpUnicodeNullableStringClassCaptureMatcher,
+    RegExpUnicodePositiveAtomMatcher, RegExpUnicodePositiveStringClassMatcher,
     RegExpUnicodePredicateChoiceSingleStringClassCaptureMatcher,
     RegExpUnicodePredicateChoiceStringClassAlternativeMatcher,
     RegExpUnicodePredicateChoiceStringClassCaptureMatcher,
@@ -4564,6 +4564,23 @@ impl Realm {
                 enclosing_captures = 0;
             }
             proof.map(RegExpMatcherBody::UnicodePositiveStringClass)
+        } else {
+            matcher
+        };
+        let matcher = if flags.code_units().contains(&u16::from(b'v')) && matcher.is_none() {
+            let proof = self.object_work(span, |_, budget| {
+                RegExpUnicodeNegativeStringClassMatcher::compile_single_q_lookahead_validated_with_work(
+                    &capture_source,
+                    flags.code_units().contains(&u16::from(b'i')),
+                    flags.code_units().contains(&u16::from(b'm')),
+                    |work| budget.charge(work),
+                )
+                .map_err(unicode_set_compile_error)
+            })?;
+            if proof.is_some() {
+                enclosing_captures = 0;
+            }
+            proof.map(RegExpMatcherBody::UnicodeNegativeStringClass)
         } else {
             matcher
         };

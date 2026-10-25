@@ -27340,3 +27340,25 @@ directly lexed Unsupported controls enters the proof. Strict all-target workspac
 Clippy, documentation tests, formatting, policy and inventories pass. Runtime
 does not yet select the new matcher; fixtures, snapshots, dependencies, profiles,
 native-stack settings and default quotas are unchanged.
+
+
+## Variable-length single-q negative lookahead Runtime execution
+
+All 39 negative-lookahead integration groups (2.87 s), 13 constructor groups
+(0.34 s) and 439 Runtime library tests (10.83 s) pass. Four new integration
+groups cover accepted-empty-member failure, named undefined operand slots and
+empty outside indices, original line/fold/surrogate context, lastIndex, String
+consumers, copies, collection and deep scopes. The approved initial-pair rewind
+and the braced-surrogate discrepancy retain independent specification checks.
+A Runtime cache unit verifies absent operand/dynamic state, every search work
+abort and subsequent recovery.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 33 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls and legal Unicode-candidate enumeration. Complete programs retain the
+earlier documented character-result/property controls; Runtime always receives
+original q source. Strict all-target workspace Clippy, documentation tests,
+Rust 1.85 all-target checks, formatting, policy, inventories and diff checks
+pass. Fixtures, snapshots, dependencies, profiles, native stacks and default
+quotas are unchanged.

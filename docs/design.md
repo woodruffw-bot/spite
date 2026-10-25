@@ -14839,3 +14839,13 @@ An accepted empty member makes negation fail at that candidate. Failed probes
 do not search a suffix internally; candidate advancement uses complete input
 characters, with only the approved initial low-surrogate rewind. Long prefix
 traversal remains interruptible, and no input-sized capture state is allocated.
+
+
+Runtime selects negative variable-length single-q lookahead only as a checked
+v-mode fallback after full original Pattern/flags validation, retaining the
+complete normalized capture scope and source. Work/capacity errors use the
+existing host boundary; enclosing offsets reset only on proof success. Search
+caches the empty root with no operand range or dynamic capture state. Capture
+lookup retains outside empty spans and named undefined operand slots through
+RegExpBuiltinExec, String consumers, copies and collection. User coercions
+remain outside the compilation frame.
