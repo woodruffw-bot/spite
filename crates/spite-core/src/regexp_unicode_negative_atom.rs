@@ -246,6 +246,27 @@ impl RegExpUnicodeNegativeAtomMatcher {
         )
     }
 
+    /// Compiles negative lookbehind over one checked scalar v-mode set class.
+    ///
+    /// Full original v/vi validation and normalized capture heads are required.
+    /// A nested/operator class proves one complete predecessor character, with
+    /// optional ^/$ gates retaining original input context. Successful negation
+    /// leaves outside wrappers empty and every operand slot undefined
+    /// (22.2.2.4, 22.2.2.9). Other widths and word gates need separate proofs.
+    pub fn compile_single_v_set_lookbehind_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, crate::RegExpUnicodeSetCompileError<E>> {
+        Self::compile_single_character_class_assertion_with_work::<false, true, true, E>(
+            source,
+            ignore_case,
+            multiline,
+            &mut charge,
+        )
+    }
+
     #[inline(never)]
     fn compile_single_character_class_assertion_with_work<
         const WORD: bool,
@@ -1931,6 +1952,167 @@ mod tests {
             );
             assert_eq!(seen, work[..=stop]);
             assert_eq!(find(&p, "a!a", 0, false), Some(1..1));
+        }
+    }
+    fn behind_scalar_set_plan(source: &str, i: bool, m: bool) -> RegExpUnicodeNegativeAtomMatcher {
+        RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookbehind_validated_with_work(
+            &JsString::from(source),
+            i,
+            m,
+            |_| Ok::<(), ()>(()),
+        )
+        .unwrap()
+        .unwrap()
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookbehind_negates_predecessors_and_keeps_operand_slots_undefined() {
+        for class in [
+            r"[[a-z]&&[ab]]",
+            r"[[[a-z]&&[ab]]--[x]]",
+            r"[[[a-z]&&[ab]]&&[ab]]",
+            r"[[a][b]]",
+        ] {
+            let p = behind_scalar_set_plan(&format!("((?<!(({class}))))"), false, false);
+            assert_eq!(p.capture_count(), 3);
+            let matched = find(&p, "ab!", 1, false).unwrap();
+            assert_eq!(matched, 3..3);
+            assert_eq!(p.capture_range(0, &matched), Some(3..3));
+            for index in 1..=3 {
+                assert_eq!(p.capture_range(index, &matched), None);
+            }
+            assert_eq!(find(&p, "ab!", 0, true), Some(0..0));
+            assert_eq!(find(&p, "ab!", 1, true), None);
+            assert_eq!(find(&p, "ab", 1, false), None);
+            assert_eq!(find(&p, "", 0, true), Some(0..0));
+            assert_eq!(find(&p, "ab!", 4, false), None);
+        }
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookbehind_keeps_original_line_fold_and_complete_predecessor_context()
+    {
+        let p = behind_scalar_set_plan(r"(?<!(^[[a😀]--[x]]$))", true, true);
+        assert_eq!(find(&p, "\nA\n", 2, true), None);
+        assert_eq!(find(&p, "!A!", 2, true), Some(2..2));
+        let p = behind_scalar_set_plan(r"(?<!([[ſk]--[x]]))", true, false);
+        for text in ["S", "ſ", "K", "K"] {
+            assert_eq!(find(&p, text, 1, true), None);
+        }
+        let p = behind_scalar_set_plan(r"(?<!([[\p{ASCII}][😀]]))", true, false);
+        assert_eq!(find(&p, "ſ", 1, true), None);
+        let p = behind_scalar_set_plan(r"(?<!([[😀a]--[x]]))", false, false);
+        assert_eq!(find(&p, "😀😀b", 2, false), Some(5..5));
+        assert_eq!(find(&p, "😀😀b", 3, true), None);
+        assert_eq!(find(&p, "😀b", 1, true), Some(0..0));
+        let p = behind_scalar_set_plan(r"(?<!([[\uD800x]--[q]]))", false, false);
+        assert_eq!(find(&p, "😀", 2, true), Some(2..2));
+        let input = JsString::from_code_units(vec![0xd800, 0x78]);
+        assert!(
+            p.find_with_work(&input, 1, true, |_| Ok::<(), ()>(()))
+                .unwrap()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookbehind_declines_other_domains_members_counts_and_scopes() {
+        for source in [
+            r"(?<!([a]))",
+            r"(?<!([\q{a|b}]))",
+            r"(?<!([[\q{a|b}]--[x]]))",
+            r"(?<!([\q{ab|a}]))",
+            r"(?<!([\q{|a}]))",
+            r"(?<!([[a-z]&&[ab]]+))",
+            r"(?<!([[a-z]&&[ab]]{1}))",
+            r"(?<!([[a-z]&&[ab]]a))",
+            r"(?<!([[a-z]&&[ab]]))a",
+            r"(?<!([[a-z]&&[ab]]))|b",
+            r"((?<!([[a-z]&&[ab]])))*",
+            r"(?<=([[a-z]&&[ab]]))",
+            r"(?!([[a-z]&&[ab]]))",
+            r"(?<!(\b[[a-z]&&[ab]]\b))",
+            r"(?i:(?<!([[a-z]&&[ab]])))",
+            r"((?<!(\1)))",
+        ] {
+            assert!(RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookbehind_validated_with_work(&JsString::from(source),false,false, |_| Ok::<(), ()>(())).unwrap().is_none(),"{source}");
+        }
+    }
+
+    #[test]
+    fn negative_scalar_v_set_lookbehind_deep_scopes_linear_retries_and_work_abort_recovery_stay_flat()
+     {
+        let source = format!(
+            "{}(?<!{}[[a-z]&&[ab]]{}){}",
+            "(".repeat(100_000),
+            "(".repeat(100_000),
+            ")".repeat(100_000),
+            ")".repeat(100_000)
+        );
+        let p = behind_scalar_set_plan(&source, false, false);
+        assert_eq!(p.capture_count(), 200_000);
+        let matched = find(&p.clone(), "!", 1, true).unwrap();
+        assert_eq!(p.capture_range(99_999, &matched), Some(1..1));
+        assert_eq!(p.capture_range(100_000, &matched), None);
+        let p = behind_scalar_set_plan(r"(?<!([[a-z]&&[ab]]))", false, false);
+        let input = JsString::from("a".repeat(20_000).as_str());
+        let mut total = 0usize;
+        assert!(
+            p.find_with_work(&input, 1, false, |n| {
+                total += n;
+                Ok::<(), ()>(())
+            })
+            .unwrap()
+            .is_none()
+        );
+        assert!(total < 250 * input.len() + 128, "{total}");
+        let source = JsString::from(r"((?<!([[a-z]&&[ab]])))");
+        let mut work = Vec::new();
+        let p =
+            RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookbehind_validated_with_work(
+                &source,
+                false,
+                false,
+                |n| {
+                    work.push(n);
+                    Ok::<(), usize>(())
+                },
+            )
+            .unwrap()
+            .unwrap();
+        assert_eq!(work[0], source.len() * 16 + 16);
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert!(
+                matches!(RegExpUnicodeNegativeAtomMatcher::compile_single_v_set_lookbehind_validated_with_work(&source,false,false,|n|{seen.push(n);if seen.len()==stop+1{Err(stop)}else{Ok(())}}),Err(crate::RegExpUnicodeSetCompileError::Work(n))if n==stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+        }
+        let input = JsString::from("ab!");
+        work.clear();
+        assert_eq!(
+            p.find_with_work(&input, 1, false, |n| {
+                work.push(n);
+                Ok::<(), usize>(())
+            })
+            .unwrap(),
+            Some(3..3)
+        );
+        for stop in 0..work.len() {
+            let mut seen = Vec::new();
+            assert_eq!(
+                p.find_with_work(&input, 1, false, |n| {
+                    seen.push(n);
+                    if seen.len() == stop + 1 {
+                        Err(stop)
+                    } else {
+                        Ok(())
+                    }
+                }),
+                Err(stop)
+            );
+            assert_eq!(seen, work[..=stop]);
+            assert_eq!(find(&p, "ab!", 1, false), Some(3..3));
         }
     }
 }

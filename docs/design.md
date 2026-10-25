@@ -14523,3 +14523,13 @@ their host mapping. Shared negative capture caching retains empty outside and
 undefined operand slots through named indices, String consumers, copies and
 collection. Original set syntax, word/line context and complete Unicode search
 remain in Core; user conversions stay outside the compiler frame.
+
+A separate checked negative scalar-set lookbehind entry proves one nested/
+operator class with character-valued leaves and optional ^/$ gates
+(22.2.2.4, 22.2.2.9). It projects only the assertion sign and delegates to
+checked positive scalar lookbehind, so negation applies to the original-context
+complete predecessor conjunction. Outside wrappers remain empty and all operand
+slots undefined. Bounded sticky predecessor probes, folded set algebra, checked
+errors, complete Unicode advancement, initial-pair rewind and actual-work
+cancellation retain their shared paths. Earlier entries keep their domains
+and charges. Runtime integration remains separate.
