@@ -594,3 +594,64 @@ fn word_character_result_class_search_preserves_complete_candidates_and_initial_
         "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀|😀x|}&&\\\\p{Any}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
     );
 }
+
+#[test]
+fn variable_q_classes_keep_longest_members_earliest_empty_choices_and_named_capture_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var state of ['','g','gy'])for(var row of [['[\\q{ab|a|}]','ab!',0,'ab'],['[\\q{|abc}]','!abc',0,''],['[\\q{a|aaa|aa}]','!aaa',1,'aaa'],['[\\q{😀a|😀|a|}]','😀a!',0,'😀a'],['[\\q{}]','',0,'']]){
+            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
+            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn variable_q_class_line_retries_folding_empty_members_and_surrogates_keep_original_context() {
+    check(
+        r#"
+        var m=/(?=(?<run>^[\q{ab|a|}]$))/dimv.exec('\nA\n'),ok=m.index===0&&m.groups.run===''&&m.indices.groups.run[1]===0;
+        var m=/(?=(?<run>[\q{a\r\nb|a|}]$))/dmv.exec('a\r\nbc');ok=ok&&m.index===0&&m.groups.run==='a'&&m.indices.groups.run[1]===1;
+        var m=/(?=(?<run>[\q{ſa|S|Kk|}]))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='SA'&&m.indices.groups.run[1]===2;
+        var r=/(?=(?<run>[\q{\uD800x|\uD800|}]))/dgv,m=r.exec('😀');ok=ok&&m.index===0&&m.groups.run===''&&r.lastIndex===0;
+        var m=r.exec('\ud800x');ok=ok&&m.groups.run==='\ud800x'&&m.indices.groups.run[1]===2;
+        r.lastIndex=10;ok=ok&&r.exec('a')===null&&r.lastIndex===0;
+        var m=/(?=(?<run>[\q{\u{10428}a|\u{10428}|}]))/div.exec('𐐀a');ok&&m.groups.run==='𐐀a'&&m.indices.groups.run[1]===3
+    "#,
+    );
+}
+
+#[test]
+fn variable_q_class_string_consumers_copies_and_collection_keep_selected_operand_extents() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var source='(?<outside>(?=(?<run>[\\q{a|aaa|aa}])))',r=new RegExp(source,'dgv'),all=Array.from('aa!'.matchAll(r));
+        var ok=all.length===2&&all[0].index===0&&all[0].groups.run==='aa'&&all[1].index===1&&all[1].groups.run==='a'&&r.lastIndex===0;
+        ok=ok&&'aa!'.replace(r,'<$<run>>')==='<aa>a<a>a!'&&'aa!'.replaceAll(r,'<$<run>>')==='<aa>a<a>a!'&&JSON.stringify('aa!'.split(new RegExp('(?=([\\q{a|aaa|aa}]))','v')))==='["a","a","a!"]';
+        var offsets=[];ok=ok&&'aa!'.replace(r,function(match,outside,run,offset,input,groups){offsets.push(offset);ok=ok&&outside===''&&run===groups.run;return '!';})==='!a!a!'&&JSON.stringify(offsets)==='[0,1]';
+        var empty=Array.from('😀a'.matchAll(/(?=(?<run>[\q{|abc}]))/dgv));ok=ok&&empty.length===3&&empty[0].index===0&&empty[1].index===2&&empty[2].index===3&&empty[2].groups.run==='';
+        var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('aaa').groups.run==='aaa';ok
+    "#), Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('aa');m.index===0&&m.groups.outside===''&&m.groups.run==='aa'&&m.indices.groups.run[1]===2&&copy.lastIndex===0"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn variable_q_class_deep_wrappers_and_pair_offsets_keep_exact_defined_slots() {
+    check(
+        r#"
+        var source='('.repeat(1000)+'(?='+'('.repeat(1000)+'[\\q{ab|a|}]'+')'.repeat(1000)+')'+')'.repeat(1000),r=new RegExp(source,'dgyv');r.lastIndex=1;var m=r.exec('!ab');
+        var ok=m.index===1&&m.length===2001&&m[0]===''&&r.lastIndex===1;
+        for(var i=1;i<=2000;i++)ok=ok&&m[i]===(i<=1000?'':'ab')&&m.indices[i][0]===1&&m.indices[i][1]===(i<=1000?1:3);ok
+    "#,
+    );
+    check(
+        "var r=new RegExp('(?=(?<run>[\\\\q{😀a|😀|a|}]))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===4&&r.lastIndex===1",
+    );
+    check(
+        "var r=new RegExp('(?=(?<run>[\\\\q{\\\\u{D83D}\\\\u{DE00}|}]))','dgyv'),m=r.exec('😀');m.index===0&&m.groups.run===''&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===0",
+    );
+}

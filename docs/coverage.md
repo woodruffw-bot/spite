@@ -27259,3 +27259,28 @@ q Pattern is retained for Core and validated by the native grammar. None of
 Strict all-target workspace Clippy and documentation tests pass. Runtime does
 not select this matcher yet; fixtures, snapshots, dependencies, profiles,
 native-stack settings and default quotas are unchanged.
+
+
+## Variable-length single-q positive lookahead Runtime execution
+
+All 48 positive-lookahead integration groups (2.25 s), 13 constructor groups
+(0.14 s) and 438 Runtime library tests (3.83 s) pass. Four new integration
+groups cover longest/empty members, original line/fold/surrogate context, named
+independent capture ranges, lastIndex, String consumers, copies, collection,
+deep scopes and the approved initial-pair rewind. A separate braced-surrogate
+regression follows the specification independently of Node. A Runtime cache
+unit verifies defined-empty versus consuming spans without dynamic capture
+state, every search cancellation event and recovery.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 42 complete raw JavaScript programs. Native
+metadata uses the same twelve independently specified longest-first literal-
+alternative controls and legal Unicode-candidate enumeration as Core. Complete
+programs also retain the documented earlier character-result/property controls;
+Runtime always receives original source. Independent surrogate regressions are
+kept separate from comparisons with the documented Node discrepancies.
+
+Strict all-target workspace Clippy, documentation tests, Rust 1.85 all-target
+checks, formatting, policy and inventories pass. All 622 Runtime case files
+remain registered. Fixtures, snapshots, dependencies, profiles, native-stack
+settings and default quotas are unchanged.

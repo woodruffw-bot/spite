@@ -14790,3 +14790,14 @@ whole-operand wrapper ranges, including defined empty captures. Outside
 wrappers capture the root range. Matching uses cancellable visited trie steps,
 original input context and UTF-16 extents without input-sized capture state.
 This forward proof does not establish reverse class-string priority.
+
+
+Runtime selects the variable-length single-q lookahead proof only after full
+original v-mode Pattern/flags validation and earlier proofs, using normalized
+capture heads and the complete lexical scope. It maps checked work/capacity
+errors through the existing host boundary and resets enclosing offsets only
+when the proof succeeds. The matcher caches the operand as Some(range),
+including Some(empty), separately from the empty root and without dynamic
+capture storage. RegExpBuiltinExec and String consumers retain original names,
+indices, source, UTF-16 advancement and lastIndex behavior. Reentrant coercions
+remain outside the compilation frame.
