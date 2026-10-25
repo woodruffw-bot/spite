@@ -27110,3 +27110,16 @@ lexed direct Unsupported controls stay excluded. Strict all-target workspace
 Clippy, documentation tests, formatting, policy, inventories and diff checks
 pass. Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete positive character-result assertion RegExp snapshot
+
+The Runtime snapshot at `f32bcefb` passes all 3,067 RegExp integration tests
+(774.41 s), completing its broad validation alongside 35 Test262 package tests
+and 16,343 reviewed corpus variants (416.12 s). It includes positive
+character-result lookahead/lookbehind with word predicates and independent
+empty/character/predecessor capture extents, alongside all earlier positive/
+negative q-class and scalar-set paths. Later negative character-result
+assertion extensions retain separate focused and differential evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
