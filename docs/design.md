@@ -14606,3 +14606,12 @@ capture the selected character. Checked errors, complete Unicode advancement,
 initial-pair rewind and actual-work cancellation retain their shared paths.
 Earlier entries keep their domains and charges. Runtime integration remains
 separate.
+
+
+Runtime selects checked word character-result lookahead after its line-only
+character-result entry, gated by v mode and using full normalized source.
+Successful selection resets the projected outer offset; checked errors retain
+their host mapping. Shared empty/operand range caching preserves original q/set
+syntax, named indices, String consumers, copies and collection. Original word/
+line context and complete Unicode search remain in Core; user conversions stay
+outside the compiler frame.

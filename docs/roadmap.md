@@ -1021,6 +1021,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compile positive lookahead over a v-mode class with empty/long q members and a proved character-only result, preserving checked errors, original line context and independent capture extents.
 - [x] Execute character-result class lookahead through Runtime and String consumers, preserving original q/set source, checked errors and independent named capture extents.
 - [x] Compile character-result class lookahead with operand word predicates and line gates, preserving checked algebra, original context and independent capture extents.
+- [x] Execute character-result lookahead with word predicates through Runtime and String consumers, preserving checked errors, original context and named capture extents.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
