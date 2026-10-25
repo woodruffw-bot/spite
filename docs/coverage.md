@@ -60,6 +60,24 @@ not an alternative language specification.
 
 
 
+## Function-body driver preparation
+
+Ordinary, method and arrow calls now share their existing call setup and caller
+restoration with an internal body driver. The driver receives initialized
+parameters and vars in the callee's active context, and can return owned execution
+state. Lexical/function declaration preparation is shared separately from body
+execution and resource disposal. Derived constructors retain their original
+return validation order. JavaScript behavior and fixture inventories do not change.
+
+Two new Runtime unit groups verify owned results from ordinary/arrow contexts and
+caller restoration after body-driver, parameter, language and host failures.
+Runtime inventories contain 416 units, 1,880 non-RegExp integrations and 639 case
+files. Intrinsic entries remain 579. Await execution still reports Unsupported
+until resumable frames are implemented; quotas and public APIs do not change.
+All 416 units, 1,880 non-RegExp integrations, 18,410 reviewed Test262 variants
+and forty Test262 package tests pass. Formatting, strict Clippy, Rust 1.88,
+dependency policy and fixture inventories pass.
+
 ## Await expression grammar
 
 Async declarations, expressions, arrows, methods and dynamic functions retain

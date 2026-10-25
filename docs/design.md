@@ -352,6 +352,15 @@ Unsupported. Async objects inherit the retained non-callable
 tag follow 27.7. Direct async definitions have ordinary name/length/source
 metadata, no own prototype and no construction capability.
 
+Ordinary and arrow calls share their parameter/var setup and caller restoration
+with an internal body driver. The driver runs while the callee's scopes,
+VariableEnvironment and strictness are installed, and can return an owned result
+other than a JavaScript Value. Every result and error restores the caller before
+returning; derived-constructor return validation still follows restoration.
+Function-body lexical and function-declaration preparation is separate from
+statement execution and resource disposal. This allows resumable body execution
+to reuse call setup without reconstructing or rerunning parameter initialization.
+
 Non-suspending async calls create a fresh intrinsic Promise capability before
 parameter/body instantiation (EvaluateAsyncFunctionBody). Normal returns resolve
 it; parameter, body and then-lookup language failures reject it. Host failures

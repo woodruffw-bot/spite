@@ -9,6 +9,15 @@ use spite_core::{JsString, Span};
 use spite_parser::ast::{ArrowBody, Function, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
 
+/// Inputs consumed by ordinary and method call setup before body execution.
+pub(super) struct OrdinaryInvocation {
+    pub code: ScriptFunction,
+    pub callee: ObjectHandle,
+    pub this: Value,
+    pub context: crate::environment::FunctionContext,
+    pub arguments: std::vec::IntoIter<Value>,
+}
+
 impl Realm {
     pub(super) fn call_ordinary(
         &mut self,
@@ -16,9 +25,50 @@ impl Realm {
         callee: ObjectHandle,
         this: Value,
         context: crate::environment::FunctionContext,
-        mut arguments: std::vec::IntoIter<Value>,
+        arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        let invocation = OrdinaryInvocation {
+            code,
+            callee,
+            this,
+            context,
+            arguments,
+        };
+        let (value, constructor_environment) =
+            self.with_ordinary_call(invocation, span, |realm, body| {
+                realm.function_body(body, span)
+            })?;
+        if let Some(environment) = constructor_environment {
+            match value {
+                value @ Value::Object(_) => Ok(value),
+                Value::Undefined => self.function_this_binding(&environment, span),
+                _ => Err(Self::exception(
+                    crate::ExceptionKind::TypeError,
+                    span,
+                    "derived constructor returned a primitive",
+                )),
+            }
+        } else {
+            Ok(value)
+        }
+    }
+
+    // Keep parameter/var instantiation and caller restoration shared by body
+    // evaluators. The driver runs with the callee's context still installed.
+    pub(super) fn with_ordinary_call<T>(
+        &mut self,
+        invocation: OrdinaryInvocation,
+        span: Span,
+        evaluate_body: impl FnOnce(&mut Self, &spite_parser::ast::FunctionBody) -> Result<T, Error>,
+    ) -> Result<(T, Option<EnvironmentHandle>), Error> {
+        let OrdinaryInvocation {
+            code,
+            callee,
+            this,
+            context,
+            mut arguments,
+        } = invocation;
         let derived = context.derived_constructor.is_some();
         let this = if code.strict {
             this
@@ -121,24 +171,12 @@ impl Realm {
             }
             self.initialize_parameters(&code.parameters, &mut arguments)?;
             self.instantiate_function_vars(&code.parameters, &code.body, span)?;
-            self.function_body(body, span)
+            evaluate_body(self, body)
         })();
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);
-        if let Some(environment) = constructor_environment {
-            match result? {
-                value @ Value::Object(_) => Ok(value),
-                Value::Undefined => self.function_this_binding(&environment, span),
-                _ => Err(Self::exception(
-                    crate::ExceptionKind::TypeError,
-                    span,
-                    "derived constructor returned a primitive",
-                )),
-            }
-        } else {
-            result
-        }
+        result.map(|value| (value, constructor_environment))
     }
 
     pub(crate) fn this_value(&mut self, span: Span) -> Result<Value, Error> {

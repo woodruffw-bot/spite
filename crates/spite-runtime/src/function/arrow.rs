@@ -71,9 +71,22 @@ impl Realm {
     pub(super) fn call_arrow(
         &mut self,
         arrow: ScriptFunction,
-        mut arguments: std::vec::IntoIter<Value>,
+        arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        self.with_arrow_call(arrow, arguments, span, |realm, body| match body {
+            ArrowBody::Expression(body) => realm.expression(body),
+            ArrowBody::Block(body) => realm.function_body(body, span),
+        })
+    }
+
+    pub(super) fn with_arrow_call<T>(
+        &mut self,
+        arrow: ScriptFunction,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+        evaluate_body: impl FnOnce(&mut Self, &ArrowBody) -> Result<T, Error>,
+    ) -> Result<T, Error> {
         let bindings = self.pattern_bindings(
             arrow
                 .parameters
@@ -104,10 +117,7 @@ impl Realm {
             }
             self.initialize_parameters(&arrow.parameters, &mut arguments)?;
             self.instantiate_function_vars(&arrow.parameters, &arrow.body, span)?;
-            match &arrow.body {
-                ArrowBody::Expression(body) => self.expression(body),
-                ArrowBody::Block(body) => self.function_body(body, span),
-            }
+            evaluate_body(self, &arrow.body)
         })();
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
@@ -241,6 +251,23 @@ impl Realm {
         body: &FunctionBody,
         span: Span,
     ) -> Result<Value, Error> {
+        let environment = self.prepare_function_body(body, span)?;
+        let completion = self.statements(body.statements());
+        let completion = self.dispose_environment_resources(&environment, completion, span)?;
+        match completion.kind {
+            CompletionKind::Return => Ok(completion.value.expect("return has a value")),
+            CompletionKind::Normal => Ok(Value::Undefined),
+            CompletionKind::Break | CompletionKind::Continue => {
+                unreachable!("validated control target")
+            }
+        }
+    }
+
+    pub(super) fn prepare_function_body(
+        &mut self,
+        body: &FunctionBody,
+        span: Span,
+    ) -> Result<EnvironmentHandle, Error> {
         // ECMA-262 10.2.11: sloppy bodies have a separate lexical environment;
         // strict bodies reuse the parameter/var environment.
         let var_environment = self.scopes.last().expect("var environment").clone();
@@ -265,20 +292,11 @@ impl Realm {
             body.function_declarations().into_iter(),
             Some(&var_environment),
         )?;
-        let environment = self
+        Ok(self
             .scopes
             .last()
             .expect("function body environment")
-            .clone();
-        let completion = self.statements(body.statements());
-        let completion = self.dispose_environment_resources(&environment, completion, span)?;
-        match completion.kind {
-            CompletionKind::Return => Ok(completion.value.expect("return has a value")),
-            CompletionKind::Normal => Ok(Value::Undefined),
-            CompletionKind::Break | CompletionKind::Continue => {
-                unreachable!("validated control target")
-            }
-        }
+            .clone())
     }
 
     pub(crate) fn named_expression(
