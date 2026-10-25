@@ -324,7 +324,7 @@ impl Objects {
                 | Builtin::TypedArrayAbstract
                 | Builtin::DataView
                 | Builtin::Set
-                | Builtin::DisposableStack
+                | Builtin::DisposableStack(_)
                 | Builtin::WeakSet
                 | Builtin::WeakMap
                 | Builtin::Map

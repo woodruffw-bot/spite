@@ -20,6 +20,7 @@ mod class;
 pub(crate) use class::ClassConstructor;
 mod class_field;
 pub(crate) use class_field::ClassField;
+mod async_dispose;
 mod class_private;
 mod class_static;
 mod construct;
@@ -71,8 +72,8 @@ pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
-    DisposableStack,
-    DisposableStackMember(disposable_stack::Member),
+    DisposableStack(crate::object::DisposableStackKind),
+    DisposableStackMember(crate::object::DisposableStackKind, disposable_stack::Member),
     GlobalMetadataConstructor(global_metadata::Constructor),
     GlobalMetadataMember(global_metadata::Member),
     Function,
@@ -502,8 +503,8 @@ impl Builtin {
             | Self::IteratorHelperNext => "next",
             Self::IteratorWrapperReturn | Self::IteratorHelperReturn => "return",
             Self::Iterator => "Iterator",
-            Self::DisposableStack => "DisposableStack",
-            Self::DisposableStackMember(member) => member.name(),
+            Self::DisposableStack(kind) => kind.name(),
+            Self::DisposableStackMember(kind, member) => member.name(kind),
             Self::IteratorDispose => "[Symbol.dispose]",
             Self::IteratorToArray => "toArray",
             Self::IteratorTake => "take",
@@ -703,7 +704,7 @@ impl Builtin {
             Self::RegExpMember(member) => member.length(),
             Self::Error(error::ErrorConstructor::AggregateError) => 2.0,
             Self::Error(error::ErrorConstructor::SuppressedError) => 3.0,
-            Self::DisposableStackMember(member) => member.length(),
+            Self::DisposableStackMember(_, member) => member.length(),
             Self::SetAdd
             | Self::WeakSetAdd
             | Self::WeakSetDelete
@@ -934,6 +935,10 @@ pub(crate) enum Callable {
         cell: ObjectHandle,
         kind: PromiseFinallyKind,
     },
+    AsyncDisposeResume {
+        state: ObjectHandle,
+        fulfilled: bool,
+    },
     PromiseAggregateElement {
         state: ObjectHandle,
         index: usize,
@@ -960,7 +965,8 @@ impl Callable {
             | Self::PromiseCapabilityExecutor(_)
             | Self::PromiseResolvingFunction { .. }
             | Self::PromiseFinally { .. }
-            | Self::PromiseAggregateElement { .. } => FunctionText::Native(""),
+            | Self::PromiseAggregateElement { .. }
+            | Self::AsyncDisposeResume { .. } => FunctionText::Native(""),
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1013,6 +1019,7 @@ pub(super) struct Intrinsics {
     pub weak_set: weak_set::WeakSetIntrinsics,
     pub weak_map: weak_map::WeakMapIntrinsics,
     pub disposable_stack: disposable_stack::DisposableStackIntrinsics,
+    pub async_disposable_stack: disposable_stack::DisposableStackIntrinsics,
     pub global_metadata: global_metadata::GlobalMetadataIntrinsics,
 }
 
@@ -1062,6 +1069,7 @@ impl Intrinsics {
         .chain(self.weak_set.roots())
         .chain(self.weak_map.roots())
         .chain(self.disposable_stack.roots())
+        .chain(self.async_disposable_stack.roots())
         .chain(self.global_metadata.roots())
     }
 }
@@ -1233,8 +1241,18 @@ impl Realm {
         )?;
         let weak_set = self.weak_set_intrinsics(&object_prototype, &function_prototype, span)?;
         let weak_map = self.weak_map_intrinsics(&object_prototype, &function_prototype, span)?;
-        let disposable_stack =
-            self.disposable_stack_intrinsics(&object_prototype, &function_prototype, span)?;
+        let disposable_stack = self.disposable_stack_intrinsics(
+            crate::object::DisposableStackKind::Sync,
+            &object_prototype,
+            &function_prototype,
+            span,
+        )?;
+        let async_disposable_stack = self.disposable_stack_intrinsics(
+            crate::object::DisposableStackKind::Async,
+            &object_prototype,
+            &function_prototype,
+            span,
+        )?;
         let global_metadata =
             self.global_metadata_intrinsics(&object_prototype, &function_prototype, span)?;
         let async_function =
@@ -1283,6 +1301,7 @@ impl Realm {
             weak_set,
             weak_map,
             disposable_stack,
+            async_disposable_stack,
             global_metadata,
         });
         Ok(object_prototype)
@@ -1485,6 +1504,14 @@ impl Realm {
                     return self.promise_finally_callback(
                         cell,
                         kind,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    );
+                }
+                Some(Callable::AsyncDisposeResume { state, fulfilled }) => {
+                    return self.resume_async_disposal(
+                        state,
+                        fulfilled,
                         arguments.next().unwrap_or(Value::Undefined),
                         span,
                     );

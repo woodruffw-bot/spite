@@ -387,6 +387,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "new (class {#value=key;read(){return this.#value;}})()",
         ),
         ("iterator next copies", "Iterator.from({next:key})"),
+        (
+            "async disposal resource across suspension",
+            "(()=>{let gate=new Promise(()=>{}),stack=new AsyncDisposableStack;stack.adopt(key,()=>{});stack.defer(()=>gate);stack.disposeAsync();return gate})()",
+        ),
+        (
+            "async disposal error across suspension",
+            "(()=>{let gate=new Promise(()=>{}),stack=new AsyncDisposableStack;stack.defer(()=>gate);stack.defer(()=>{throw key});stack.disposeAsync();return gate})()",
+        ),
     ];
     let mut realm = Realm::default();
     for (name, expression) in owners {

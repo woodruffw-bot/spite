@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_disposable_stack.rs"]
+mod async_disposable_stack;
+
 #[path = "cases/regexp_static_patterns.rs"]
 mod regexp_static_patterns;
 

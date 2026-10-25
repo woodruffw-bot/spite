@@ -70,6 +70,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add AggregateError with ordered message/cause initialization and an intrinsic errors Array from synchronous IteratorToList.
 - [x] Add SuppressedError with ordered message/error/suppressed properties, ErrorData identity, and standard construction/inheritance.
 - [x] Add synchronous DisposableStack with traced resource registration, intrinsic move, reverse cleanup, reentry and suppressed failures.
+- [x] Add AsyncDisposableStack with distinct brands, async/sync method lookup, native disposal continuations, intrinsic Promise awaits and suppression chains.
 - [ ] Complete remaining statement early errors and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

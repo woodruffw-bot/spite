@@ -244,11 +244,11 @@ fn global_inventory_has_exact_standard_names_and_data_descriptors() {
     let Value::String(names) = value else {
         panic!("global names must be a string: {value:?}")
     };
-    insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,DisposableStack,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
+    insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,AsyncDisposableStack,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,DisposableStack,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
     check(
         r#"
         let names=Object.getOwnPropertyNames(this),keys=Reflect.ownKeys(this),descriptors=Object.getOwnPropertyDescriptors(this);
-        if(names.length!==61 || keys.length!==61 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
+        if(names.length!==62 || keys.length!==62 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
         for(let i=0;i<names.length;i++){
             let name=names[i],d=descriptors[name],fixed=name==='undefined'||name==='NaN'||name==='Infinity';
             if(keys[i]!==name || !Object.hasOwn(d,'value') || Object.hasOwn(d,'get') || d.enumerable || d.writable===fixed || d.configurable===fixed || !Object.is(d.value,this[name]))throw 2;
@@ -323,8 +323,8 @@ fn materialized_globals_can_be_deleted_recreated_and_redeclared_without_reservat
 }
 
 #[test]
-fn unreserved_absence_includes_unimplemented_and_host_names() {
-    for name in ["AsyncDisposableStack", "$262", "unconfiguredHost"] {
+fn unreserved_absent_names_are_ordinary_global_properties() {
+    for name in ["AsyncFunction", "$262", "unconfiguredHost"] {
         check(&format!(
             "let g=this;typeof {name}==='undefined' && !('{name}' in g) && !Object.hasOwn(g,'{name}') && Object.getOwnPropertyDescriptor(g,'{name}')===undefined && delete g.{name} && (g.{name}=7)===7 && {name}===7 && delete g.{name} && typeof {name}==='undefined'"
         ));
@@ -479,6 +479,8 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
     // Drop all configurable public edges before collection. The temporary
     // array and its local environment do not become persistent JavaScript roots.
     let objects = realm.eval(r#"(()=>{let values=[
+        AsyncDisposableStack,AsyncDisposableStack.prototype,AsyncDisposableStack.prototype.adopt,AsyncDisposableStack.prototype.defer,
+        AsyncDisposableStack.prototype.disposeAsync,AsyncDisposableStack.prototype.move,AsyncDisposableStack.prototype.use,Object.getOwnPropertyDescriptor(AsyncDisposableStack.prototype,'disposed').get,
         Promise,Proxy,SharedArrayBuffer,WeakRef,FinalizationRegistry,Atomics,
         Promise.prototype,SharedArrayBuffer.prototype,WeakRef.prototype,FinalizationRegistry.prototype,
         Promise.all,Promise.allSettled,Promise.any,Promise.race,Promise.reject,Promise.resolve,Promise.try,Promise.withResolvers,
@@ -498,9 +500,9 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
     return values;})()"#).unwrap();
     assert_eq!(
         realm.read_property(&objects, &JsString::from("length")),
-        Ok(Value::Number(46.0))
+        Ok(Value::Number(54.0))
     );
-    let handles: Vec<_> = (0..46)
+    let handles: Vec<_> = (0..54)
         .map(|index| {
             let value = realm
                 .read_property(&objects, &JsString::from(index.to_string().as_str()))
@@ -512,7 +514,7 @@ fn deleted_global_bindings_do_not_unroot_any_new_intrinsic_metadata_object() {
         })
         .collect();
     let global = realm.eval("this").unwrap();
-    realm.eval("delete this.Promise;delete this.Proxy;delete this.SharedArrayBuffer;delete this.WeakRef;delete this.FinalizationRegistry;delete this.Atomics;delete this.globalThis").unwrap();
+    realm.eval("delete this.AsyncDisposableStack;delete this.Promise;delete this.Proxy;delete this.SharedArrayBuffer;delete this.WeakRef;delete this.FinalizationRegistry;delete this.Atomics;delete this.globalThis").unwrap();
     drop(objects);
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
     for (index, handle) in handles.iter().enumerate() {

@@ -89,13 +89,13 @@ impl Realm {
                 arguments.next().unwrap_or(Value::Undefined),
                 span,
             ),
-            Builtin::DisposableStack => Err(Self::exception(
+            Builtin::DisposableStack(_) => Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
                 "DisposableStack requires construction",
             )),
-            Builtin::DisposableStackMember(member) => {
-                self.disposable_stack_member(member, this, arguments, span)
+            Builtin::DisposableStackMember(kind, member) => {
+                self.disposable_stack_member(kind, member, this, arguments, span)
             }
             Builtin::Set => Err(Self::exception(
                 ExceptionKind::TypeError,

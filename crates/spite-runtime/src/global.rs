@@ -81,6 +81,20 @@ impl Realm {
             true,
             span,
         )?;
+        let async_disposable_stack = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .async_disposable_stack
+            .constructor
+            .clone();
+        self.define_builtin_property(
+            &object,
+            "AsyncDisposableStack",
+            Value::Object(async_disposable_stack),
+            true,
+            span,
+        )?;
         let bigint = self
             .intrinsics
             .as_ref()

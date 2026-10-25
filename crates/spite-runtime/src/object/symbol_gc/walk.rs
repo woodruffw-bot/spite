@@ -125,6 +125,7 @@ fn object_symbols(
         promise,
         promise_aggregate,
         disposable_stack: _,
+        async_disposal,
         disposable_resources,
         raw_json: _,
         map,
@@ -199,6 +200,11 @@ fn object_symbols(
             visit(symbol(value))?;
         }
     }
+    if let Some(data) = async_disposal {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
     if let Some(promise) = promise {
         for value in promise.values() {
             visit(symbol(value))?;
@@ -252,7 +258,8 @@ fn object_symbols(
             | Callable::PromiseCapabilityExecutor(_)
             | Callable::PromiseResolvingFunction { .. }
             | Callable::PromiseFinally { .. }
-            | Callable::PromiseAggregateElement { .. },
+            | Callable::PromiseAggregateElement { .. }
+            | Callable::AsyncDisposeResume { .. },
         )
         | None => visit(None)?,
     }

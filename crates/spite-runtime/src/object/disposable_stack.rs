@@ -1,11 +1,34 @@
-//! Synchronous disposable resources and their strong captures (sec-disposablestack-objects).
+//! Disposable resources and their strong captures (sec-disposablestack-objects).
 
 use super::{Budget, Error, Objects};
 use crate::Value;
 use spite_heap::Handle;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum DisposableStackKind {
+    Sync,
+    Async,
+}
+
+impl DisposableStackKind {
+    pub(crate) fn name(self) -> &'static str {
+        match self {
+            Self::Sync => "DisposableStack",
+            Self::Async => "AsyncDisposableStack",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum DisposalHint {
+    Sync,
+    Async,
+    AsyncFromSync,
+}
+
 #[derive(Debug)]
 pub(crate) struct DisposableResource {
+    pub hint: DisposalHint,
     pub value: Value,
     pub method: Value,
     // Adopt's unobservable closure is represented by its captured argument.
@@ -22,6 +45,7 @@ impl DisposableResource {
 
 #[derive(Debug)]
 pub(super) struct DisposableStackData {
+    pub(super) kind: DisposableStackKind,
     pub(super) disposed: bool,
     // A private heap record gives the List stable identity across reentrant move.
     resources: Handle,
@@ -39,12 +63,17 @@ impl DisposableStackData {
 }
 
 impl Objects {
-    pub(crate) fn create_disposable_stack(&mut self, prototype: &Handle) -> Result<Handle, Error> {
+    pub(crate) fn create_disposable_stack(
+        &mut self,
+        prototype: &Handle,
+        kind: DisposableStackKind,
+    ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         let resources = self.create(None)?;
         self.object_mut(&resources)?.disposable_resources = Some(Box::default());
         let stack = self.create(Some(prototype))?;
         self.object_mut(&stack)?.disposable_stack = Some(Box::new(DisposableStackData {
+            kind,
             disposed: false,
             resources,
         }));
@@ -61,11 +90,16 @@ impl Objects {
             .clone())
     }
 
-    pub(crate) fn disposable_stack_state(&self, stack: &Handle) -> Result<Option<bool>, Error> {
+    pub(crate) fn disposable_stack_state(
+        &self,
+        stack: &Handle,
+        kind: DisposableStackKind,
+    ) -> Result<Option<bool>, Error> {
         Ok(self
             .inspect(stack)?
             .disposable_stack
             .as_ref()
+            .filter(|data| data.kind == kind)
             .map(|data| data.disposed))
     }
 
@@ -126,7 +160,13 @@ impl Objects {
         target: &Handle,
         budget: &mut Budget,
     ) -> Result<(), Error> {
-        if self.disposable_stack_state(target)? != Some(false) {
+        let kind = self
+            .inspect(source)?
+            .disposable_stack
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .kind;
+        if self.disposable_stack_state(target, kind)? != Some(false) {
             return Err(Error::WrongKind);
         }
         budget.charge(1)?;

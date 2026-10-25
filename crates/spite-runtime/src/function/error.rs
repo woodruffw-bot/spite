@@ -242,6 +242,26 @@ impl Realm {
         self.object_work(span, |objects, _| objects.create_error(&prototype))
     }
 
+    pub(super) fn create_intrinsic_suppressed_error(
+        &mut self,
+        error: Value,
+        suppressed: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .errors
+            .get(ErrorConstructor::SuppressedError)
+            .prototype
+            .clone();
+        let object = self.object_work(span, |objects, _| objects.create_error(&prototype))?;
+        self.define_builtin_property(&object, "error", error, true, span)?;
+        self.define_builtin_property(&object, "suppressed", suppressed, true, span)?;
+        Ok(Value::Object(object))
+    }
+
     pub(super) fn error_constructor(
         &mut self,
         kind: ErrorConstructor,

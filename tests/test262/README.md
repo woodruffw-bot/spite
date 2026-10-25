@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9336 unmodified test fixtures and nineteen harness files come from
+These 9410 unmodified test fixtures and nineteen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## AsyncDisposableStack fixtures
+
+Seventy-four complete unchanged originals add 148 variants for construction,
+prototype selection, descriptors, brands, registration/state errors, move and
+basic disposal Promise results. Git blob hashes and manifest SHA-256 digests
+were verified. Existing helpers suffice.
+
+The complete 104-original built-ins/AsyncDisposableStack review records 148
+passing and sixty Unsupported variants. Twenty-nine originals require await
+syntax and one a foreign realm; they remain deferred. Twelve additional Runtime
+groups cover disposal suspension, order, nullish Await timing, sync fallbacks,
+suppression, collection and host failures without rewriting upstream tests.
+Inventories contain 9,410 fixtures, nineteen helpers, 9,391 reviewed sources and
+18,236 variants. Intrinsic entries increase by eight to 571; quotas are unchanged.
 
 ## Async method fixtures
 
@@ -4370,7 +4385,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 18088 variants from 9317 reviewed sources.
+The `spite-test262` command runs 18236 variants from 9391 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

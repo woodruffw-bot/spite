@@ -1791,8 +1791,32 @@ Native list growth is fallible. Registration prepays capture release; transfer
 is constant work. Host failures bypass remaining JavaScript cleanup and handlers,
 and release the removed captures. Existing opt-in work and heap quotas apply;
 no default resource count is imposed. Each stack also retains one private heap
-record for its list. AsyncDisposableStack and using/await using syntax remain
+record for its list. Using/await using syntax remain
 separate implementation work.
+
+AsyncDisposableStack shares construction, registration, move and resource storage
+with the synchronous stack, with a distinct internal brand and intrinsic graph
+([AsyncDisposableStack Objects](https://tc39.es/ecma262/#sec-asyncdisposablestack-objects)).
+Use prefers Symbol.asyncDispose and falls back to Symbol.dispose. The fallback
+creates an intrinsic Promise before invoking the synchronous method, ignores its
+return value and converts a language throw into rejection. Nullish resources
+record an empty async entry so disposal still performs the required Await.
+
+DisposeAsync creates a fresh intrinsic Promise before receiver validation, marks
+the stack disposed before cleanup and moves resources into a private traced
+continuation. It calls cached methods in reverse order and resumes through FIFO
+internal Promise reactions. Await uses intrinsic PromiseResolve and
+PerformPromiseThen without a derived capability, bypassing visible then and
+species hooks. Empty stacks complete without suspension; nullish-only resources
+require one Await. Repeated calls receive independent fulfilled Promises while
+an earlier disposal may remain pending. Language failures accumulate intrinsic
+SuppressedError chains; host failures bypass further cleanup and rejection.
+
+The native continuation retains remaining resources, its result capability and
+the pending error across jobs, and releases them on completion or host abort.
+Object and Symbol tracing includes every stored value, including closed
+ephemeron cycles. Resource storage and quotas remain shared with synchronous
+stacks; general await expressions and suspended Script contexts remain work.
 
 Built-in runtime exceptions materialize as Error objects when a catch binding
 needs a JavaScript value, using intrinsic prototypes independently of replaced

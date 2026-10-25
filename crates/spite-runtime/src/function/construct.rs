@@ -243,8 +243,8 @@ impl Realm {
                         span,
                     );
                 }
-                Callable::Builtin(Builtin::DisposableStack) => {
-                    return self.disposable_stack_constructor(new_target, span);
+                Callable::Builtin(Builtin::DisposableStack(kind)) => {
+                    return self.disposable_stack_constructor(kind, new_target, span);
                 }
                 Callable::Builtin(Builtin::Set) => {
                     return self.set_constructor(

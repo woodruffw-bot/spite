@@ -52,11 +52,43 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
+| AsyncDisposableStack | Shared registration/move with distinct brands, async/sync disposal lookup, native suspension and FIFO resumption, nullish Await timing, suppression and traced continuations |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18088 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18236 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## AsyncDisposableStack
+
+The async stack shares construction, registration, move and resource storage with
+the synchronous stack while enforcing a distinct brand. DisposeAsync creates a
+fresh intrinsic Promise before receiver validation and marks the stack disposed
+before invoking cached methods in reverse order. A traced native continuation
+uses internal Promise reactions to resume after each awaited result. Sync
+fallbacks ignore return values and await their own intrinsic wrapper Promise.
+Nullish resources preserve the required Await timing; empty stacks do not
+suspend. Language failures form intrinsic suppression chains; host failures
+bypass rejection and further cleanup. General await syntax remains Unsupported.
+
+Twelve Runtime groups cover metadata, brands, descriptors, state checks, cached
+lookup, receivers/arguments, reverse order, pending cleanup, repeated calls,
+fallback throws/results, job timing, move/getter reentry, poisoned Promise hooks,
+thenables, suppression, collection and host failures. Symbol census cases also
+check closed cycles through pending resource arguments and errors. All 402 units
+and 1,853 non-RegExp integrations pass. The exact global inventory gains the
+constructor, including ordinary descriptors and deletion; all eight new intrinsic
+objects remain rooted after public edges are removed. The retained realm count
+changes from 563 to 571; product quotas remain unchanged.
+
+The complete 104-original upstream review records 148 passing variants from 74
+whole sources and sixty Unsupported variants from thirty deferred sources.
+Twenty-nine deferred originals need await syntax; one needs a foreign realm.
+Admitted bytes match original Git blob hashes and manifest SHA-256 digests.
+Inventories contain 9,410 fixtures, nineteen helpers, 9,391 reviewed sources and
+18,236 variants, with 73 Parser and 636 Runtime case files. All 18,236 variants
+and all forty Test262 package tests pass. Formatting, strict Clippy, Rust 1.88,
+dependency policy and fixture inventories pass.
 
 ## Internal Promise reactions
 
