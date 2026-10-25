@@ -26721,3 +26721,15 @@ Unsupported controls stay excluded. Strict all-target workspace Clippy,
 documentation tests, formatting, policy, inventories and diff checks pass.
 Runtime integration remains separate. Fixtures, snapshots, dependencies,
 profiles, native stacks and default quotas are unchanged.
+
+
+## Complete positive scalar-set assertion RegExp snapshot
+
+The Runtime snapshot at `7da9655b` passes all 3,035 RegExp integration tests
+(869.61 s), completing its broad validation alongside 35 Test262 package tests
+and 16,343 reviewed corpus variants (463.28 s). It includes positive scalar
+v-set lookahead/lookbehind with optional word predicates, independent empty
+and character/predecessor captures, and all earlier single-character positive/
+negative q-class paths. Later negative scalar-set assertion extensions retain
+their separate focused and differential evidence. Fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.
