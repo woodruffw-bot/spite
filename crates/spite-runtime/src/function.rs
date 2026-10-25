@@ -1553,19 +1553,19 @@ impl Realm {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
-                    return self.call_ordinary(
-                        method.code,
-                        callee,
-                        this,
-                        crate::environment::FunctionContext {
-                            new_target: None,
-                            home_object: Some(method.home_object),
-                            derived_constructor: None,
-                            class_field_initializer: false,
-                        },
-                        arguments,
-                        span,
-                    );
+                    let method::MethodFunction { code, home_object } = *method;
+                    let context = crate::environment::FunctionContext {
+                        new_target: None,
+                        home_object: Some(home_object),
+                        derived_constructor: None,
+                        class_field_initializer: false,
+                    };
+                    if code.kind == spite_parser::ast::FunctionKind::Async {
+                        return self.call_async_body(span, |realm| {
+                            realm.call_ordinary(code, callee, this, context, arguments, span)
+                        });
+                    }
+                    return self.call_ordinary(code, callee, this, context, arguments, span);
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound

@@ -345,7 +345,7 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. Await suspension, async methods and async generators remain
+that context. Await suspension and async generators remain
 Unsupported. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
@@ -379,6 +379,15 @@ new.target. They inherit %AsyncFunction.prototype%, remain non-constructible and
 share the function body's fresh-Promise completion path. Expression and block
 bodies keep ordinary arrow scope and strictness rules. Native collection traces
 captured environments and results, and host failures bypass Promise rejection.
+
+Async methods (15.8) use the same async parameter/body grammar and fresh-Promise
+completion as functions and arrows. Object, class, static and private forms retain
+their existing property descriptors, strictness, private environments and live
+home objects. Super property evaluation uses the original receiver in parameters
+and bodies. Methods inherit %AsyncFunction.prototype% and cannot be constructed.
+Literal class constructors cannot be async; computed constructor names remain
+ordinary method names. Prefix line breaks, duplicate method parameters and await
+bindings are syntax errors. Generator methods and await bodies remain Unsupported.
 
 Rest parameters accept identifiers or nested patterns and are final, with no
 initializer or trailing comma (15.1). They collect the remaining internal argument values into a fresh dense

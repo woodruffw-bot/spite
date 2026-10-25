@@ -68,14 +68,29 @@ impl Parser {
                     let name_token = self.bump();
                     name = self.object_property_name(name_token)?;
                     (kind, self.object_method(property_start, kind)?)
-                } else {
-                    if !token.escaped
-                        && shorthand.as_deref() == Some("async")
-                        && !self.at(",")
-                        && !self.at("}")
-                    {
-                        return Err(self.unsupported("async methods are not implemented"));
+                } else if !token.escaped
+                    && shorthand.as_deref() == Some("async")
+                    && !self.at(",")
+                    && !self.at("}")
+                {
+                    if self.current().newline {
+                        return Err(self.error("line terminator after async method prefix"));
                     }
+                    if self.at("*") {
+                        return Err(self.unsupported("async generator methods are not implemented"));
+                    }
+                    let name_token = self.bump();
+                    name = self.object_property_name(name_token)?;
+                    (
+                        PropertyKind::Method,
+                        self.method_definition(
+                            property_start,
+                            PropertyKind::Method,
+                            FunctionKind::Async,
+                            false,
+                        )?,
+                    )
+                } else {
                     let Some(identifier) = shorthand.filter(|name| !reserved(name)) else {
                         return Err(early(token.span, "expected a colon after property name"));
                     };
@@ -147,13 +162,14 @@ impl Parser {
         start: usize,
         kind: PropertyKind,
     ) -> Result<Expr, Diagnostic> {
-        self.method_definition(start, kind, false)
+        self.method_definition(start, kind, FunctionKind::Ordinary, false)
     }
 
     pub(super) fn method_definition(
         &mut self,
         start: usize,
         kind: PropertyKind,
+        function_kind: FunctionKind,
         allow_super_call: bool,
     ) -> Result<Expr, Diagnostic> {
         self.enter()?;
@@ -167,8 +183,12 @@ impl Parser {
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
         self.allow_arguments = true;
-        self.allow_await_identifier = true;
-        self.await_context = AwaitContext::None;
+        self.allow_await_identifier = function_kind == FunctionKind::Ordinary;
+        self.await_context = if function_kind == FunctionKind::Async {
+            AwaitContext::Parameters
+        } else {
+            AwaitContext::None
+        };
         let result = (|| {
             let parameters = match kind {
                 PropertyKind::Getter => {
@@ -193,6 +213,11 @@ impl Parser {
                 }
                 _ => unreachable!("method property kind"),
             };
+            self.await_context = if function_kind == FunctionKind::Async {
+                AwaitContext::Body
+            } else {
+                AwaitContext::None
+            };
             let body = self.function_body()?;
             let span = Span::new(start, self.tokens[self.index - 1].span.end);
             let source = FunctionSource {
@@ -201,7 +226,7 @@ impl Parser {
             };
             self.make_expr(
                 ExprKind::Function(Rc::new(Function {
-                    kind: FunctionKind::Ordinary,
+                    kind: function_kind,
                     name: None,
                     parameters,
                     body,

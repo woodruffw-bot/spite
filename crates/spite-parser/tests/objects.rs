@@ -159,7 +159,7 @@ fn malformed_properties_and_nested_strict_violations_are_rejected() {
 
 #[test]
 fn suspended_methods_remain_explicitly_unsupported() {
-    for source in ["({*g() {}})", "({async m() {}})"] {
+    for source in ["({*g() {}})", "({async m() {await p}})"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

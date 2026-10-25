@@ -99,6 +99,7 @@ impl Parser {
             }
             let method_start = token.span.start;
             let mut kind = PropertyKind::Method;
+            let mut function_kind = FunctionKind::Ordinary;
             if !token.escaped
                 && !self.at("(")
                 && let Kind::Word(prefix) = &token.kind
@@ -114,10 +115,14 @@ impl Parser {
                     && !self.current().newline
                     && (self.at("*") || self.class_method_name_ahead())
                 {
-                    return Err(early_unsupported(
-                        token.span,
-                        "async methods are not implemented",
-                    ));
+                    if self.at("*") {
+                        return Err(early_unsupported(
+                            token.span,
+                            "async generator methods are not implemented",
+                        ));
+                    }
+                    function_kind = FunctionKind::Async;
+                    token = self.bump();
                 }
             }
             let mut name_span = token.span;
@@ -160,6 +165,9 @@ impl Parser {
             }
             let is_constructor = !is_static
                 && matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor"));
+            if is_constructor && function_kind == FunctionKind::Async {
+                return Err(early(name_span, "class constructor cannot be async"));
+            }
             if is_constructor && (kind != PropertyKind::Method || constructor.is_some()) {
                 return Err(early(name_span, "invalid or duplicate class constructor"));
             }
@@ -171,8 +179,12 @@ impl Parser {
                     "static class method cannot be named prototype",
                 ));
             }
-            let value =
-                self.method_definition(method_start, kind, is_constructor && heritage.is_some())?;
+            let value = self.method_definition(
+                method_start,
+                kind,
+                function_kind,
+                is_constructor && heritage.is_some(),
+            )?;
             if is_constructor {
                 let ExprKind::Function(function) = value.kind else {
                     unreachable!("method syntax")

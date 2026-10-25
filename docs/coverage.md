@@ -53,10 +53,36 @@ not an alternative language specification.
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
-| Async functions | Non-suspending declarations/expressions/arrows, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18033 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async functions | Non-suspending declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, lexical context and traced closures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18088 reviewed Test262 variants, nineteen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async methods
+
+Object, class, static and private async methods share the async call path while
+retaining their ordinary descriptors, strictness, private environments and live
+home objects. Parameters and bodies evaluate super properties with the original
+receiver. Async methods inherit the async intrinsic prototype and remain
+non-constructible. Language failures reject; host failures bypass rejection.
+Await bodies and generator methods remain Unsupported.
+
+Four Parser regressions and an inspected syntax snapshot cover async prefixes,
+computed/private names, line breaks, fields, unique parameters, constructor errors
+and nested grammar contexts. All eighteen Parser units and 346 integrations pass.
+Six Runtime groups cover metadata, receivers, parameter/body errors, super,
+private brands, dynamic source, collection and host failures. All 398 units and
+1,841 non-RegExp integrations pass, with strict Clippy and Rust 1.88 checks.
+
+The 55-source async method review includes 25 parse-negative originals held for
+separate diagnostic review. Of thirty positive originals, 28 pass 55 variants;
+two require await and remain deferred. All admitted sources retain their exact
+upstream bytes, verified against Git blob hashes and manifest SHA-256 digests.
+Inventories contain 9,336 fixtures, nineteen helpers, 9,317 reviewed sources and
+18,088 variants, with 73 Parser and 635 Runtime case files. Intrinsic entries
+remain 563 and product quotas are unchanged. All 18,088 variants and all forty
+Test262 package tests pass. Formatting, strict Clippy, Rust 1.88, dependency policy
+and fixture inventories pass.
 
 ## Async arrows
 

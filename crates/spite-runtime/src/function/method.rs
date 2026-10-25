@@ -23,15 +23,15 @@ impl Realm {
         kind: PropertyKind,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        let prototype = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .function_prototype
-            .clone();
+        let intrinsic = self.intrinsics.as_ref().expect("initialized");
+        let prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {
+            intrinsic.async_function.prototype.clone()
+        } else {
+            intrinsic.function_prototype.clone()
+        };
         let method = MethodFunction {
             code: ScriptFunction {
-                kind: spite_parser::ast::FunctionKind::Ordinary,
+                kind: syntax.kind,
                 environment: self.scopes.last().expect("active environment").clone(),
                 parameters: syntax.parameters.clone(),
                 body: ArrowBody::Block(syntax.body.clone()),

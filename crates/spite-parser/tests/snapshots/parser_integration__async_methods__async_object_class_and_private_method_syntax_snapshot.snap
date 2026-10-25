@@ -1,0 +1,386 @@
+---
+source: crates/spite-parser/tests/async_methods.rs
+expression: "parse_script(\"let o={async m(x=1){return x},async ['n'](){return super.n()}};class C extends B{async #m(){return this}static async m(){return super.m()}}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "o",
+                            ),
+                            span: Span {
+                                start: 4,
+                                end: 5,
+                            },
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 3,
+                                kind: Object(
+                                    [
+                                        Property(
+                                            ObjectProperty {
+                                                name: Literal(
+                                                    String(
+                                                        "m",
+                                                    ),
+                                                ),
+                                                value: Expr {
+                                                    depth: 2,
+                                                    kind: Function(
+                                                        Function {
+                                                            kind: Async,
+                                                            name: None,
+                                                            parameters: [
+                                                                Ordinary(
+                                                                    BindingElement {
+                                                                        pattern: BindingPattern {
+                                                                            kind: Identifier(
+                                                                                "x",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 15,
+                                                                                end: 16,
+                                                                            },
+                                                                        },
+                                                                        initializer: Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Literal(
+                                                                                    Number(
+                                                                                        1.0,
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 17,
+                                                                                    end: 18,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            body: FunctionBody {
+                                                                statements: [
+                                                                    Statement {
+                                                                        kind: Return(
+                                                                            Some(
+                                                                                Expr {
+                                                                                    depth: 1,
+                                                                                    kind: Identifier(
+                                                                                        "x",
+                                                                                    ),
+                                                                                    span: Span {
+                                                                                        start: 27,
+                                                                                        end: 28,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 20,
+                                                                            end: 28,
+                                                                        },
+                                                                    },
+                                                                ],
+                                                                strict: false,
+                                                            },
+                                                            source: FunctionSource(
+                                                                "async m(x=1){return x}",
+                                                            ),
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 7,
+                                                        end: 29,
+                                                    },
+                                                },
+                                                kind: Method,
+                                                span: Span {
+                                                    start: 7,
+                                                    end: 29,
+                                                },
+                                            },
+                                        ),
+                                        Property(
+                                            ObjectProperty {
+                                                name: Computed(
+                                                    Expr {
+                                                        depth: 1,
+                                                        kind: Literal(
+                                                            String(
+                                                                "n",
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 37,
+                                                            end: 40,
+                                                        },
+                                                    },
+                                                ),
+                                                value: Expr {
+                                                    depth: 1,
+                                                    kind: Function(
+                                                        Function {
+                                                            kind: Async,
+                                                            name: None,
+                                                            parameters: [],
+                                                            body: FunctionBody {
+                                                                statements: [
+                                                                    Statement {
+                                                                        kind: Return(
+                                                                            Some(
+                                                                                Expr {
+                                                                                    depth: 2,
+                                                                                    kind: Call {
+                                                                                        callee: Expr {
+                                                                                            depth: 1,
+                                                                                            kind: SuperProperty(
+                                                                                                Literal(
+                                                                                                    String(
+                                                                                                        "n",
+                                                                                                    ),
+                                                                                                ),
+                                                                                            ),
+                                                                                            span: Span {
+                                                                                                start: 51,
+                                                                                                end: 58,
+                                                                                            },
+                                                                                        },
+                                                                                        arguments: [],
+                                                                                    },
+                                                                                    span: Span {
+                                                                                        start: 51,
+                                                                                        end: 60,
+                                                                                    },
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 44,
+                                                                            end: 60,
+                                                                        },
+                                                                    },
+                                                                ],
+                                                                strict: false,
+                                                            },
+                                                            source: FunctionSource(
+                                                                "async ['n'](){return super.n()}",
+                                                            ),
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 30,
+                                                        end: 61,
+                                                    },
+                                                },
+                                                kind: Method,
+                                                span: Span {
+                                                    start: 30,
+                                                    end: 61,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                span: Span {
+                                    start: 6,
+                                    end: 62,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 0,
+                end: 63,
+            },
+        },
+        Statement {
+            kind: Class(
+                Class {
+                    name: Some(
+                        FunctionName {
+                            name: "C",
+                            span: Span {
+                                start: 69,
+                                end: 70,
+                            },
+                        },
+                    ),
+                    heritage: Some(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "B",
+                            ),
+                            span: Span {
+                                start: 79,
+                                end: 80,
+                            },
+                        },
+                    ),
+                    default_constructor: true,
+                    constructor: Function {
+                        kind: Ordinary,
+                        name: None,
+                        parameters: [],
+                        body: FunctionBody {
+                            statements: [],
+                            strict: false,
+                        },
+                        source: FunctionSource(
+                            "class C extends B{async #m(){return this}static async m(){return super.m()}}",
+                        ),
+                    },
+                    elements: [
+                        Method {
+                            is_static: false,
+                            property: ObjectProperty {
+                                name: Private(
+                                    PrivateIdentifier {
+                                        name: "#m",
+                                        span: Span {
+                                            start: 87,
+                                            end: 89,
+                                        },
+                                    },
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            kind: Async,
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: This,
+                                                                    span: Span {
+                                                                        start: 99,
+                                                                        end: 103,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 92,
+                                                            end: 103,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "async #m(){return this}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 81,
+                                        end: 104,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 81,
+                                    end: 104,
+                                },
+                            },
+                        },
+                        Method {
+                            is_static: true,
+                            property: ObjectProperty {
+                                name: Literal(
+                                    String(
+                                        "m",
+                                    ),
+                                ),
+                                value: Expr {
+                                    depth: 1,
+                                    kind: Function(
+                                        Function {
+                                            kind: Async,
+                                            name: None,
+                                            parameters: [],
+                                            body: FunctionBody {
+                                                statements: [
+                                                    Statement {
+                                                        kind: Return(
+                                                            Some(
+                                                                Expr {
+                                                                    depth: 2,
+                                                                    kind: Call {
+                                                                        callee: Expr {
+                                                                            depth: 1,
+                                                                            kind: SuperProperty(
+                                                                                Literal(
+                                                                                    String(
+                                                                                        "m",
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 128,
+                                                                                end: 135,
+                                                                            },
+                                                                        },
+                                                                        arguments: [],
+                                                                    },
+                                                                    span: Span {
+                                                                        start: 128,
+                                                                        end: 137,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ),
+                                                        span: Span {
+                                                            start: 121,
+                                                            end: 137,
+                                                        },
+                                                    },
+                                                ],
+                                                strict: false,
+                                            },
+                                            source: FunctionSource(
+                                                "async m(){return super.m()}",
+                                            ),
+                                        },
+                                    ),
+                                    span: Span {
+                                        start: 111,
+                                        end: 138,
+                                    },
+                                },
+                                kind: Method,
+                                span: Span {
+                                    start: 104,
+                                    end: 138,
+                                },
+                            },
+                        },
+                    ],
+                    source: FunctionSource(
+                        "class C extends B{async #m(){return this}static async m(){return super.m()}}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 63,
+                end: 139,
+            },
+        },
+    ],
+    strict: false,
+}

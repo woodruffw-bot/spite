@@ -1306,6 +1306,8 @@ mod promise_race;
 mod async_arrows;
 #[path = "cases/async_functions.rs"]
 mod async_functions;
+#[path = "cases/async_methods.rs"]
+mod async_methods;
 #[path = "cases/dynamic_async_function.rs"]
 mod dynamic_async_function;
 #[path = "cases/promise_any.rs"]

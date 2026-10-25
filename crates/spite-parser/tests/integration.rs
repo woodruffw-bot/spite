@@ -14,6 +14,8 @@ mod assignment_patterns;
 mod async_arrows;
 #[path = "async_function_syntax.rs"]
 mod async_function_syntax;
+#[path = "async_methods.rs"]
+mod async_methods;
 #[path = "bigint.rs"]
 mod bigint;
 #[path = "binary_chains.rs"]
