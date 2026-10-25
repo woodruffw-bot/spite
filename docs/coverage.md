@@ -27686,3 +27686,23 @@ alongside complete single-q and earlier assertion paths. Later literal-character
 string-union work has separate focused and differential evidence. Fixtures,
 harness files, reviewed entries, snapshots, dependencies, profiles, native
 stacks and default quotas are unchanged.
+
+
+## Literal-character/string-union positive lookahead Runtime execution
+
+All 64 positive-lookahead integration groups (4.90 s) and 13 constructor groups
+(0.29 s) pass. Four new groups cover literal/string priority, earliest empty
+choices, named independent ranges, literal fallback after rejected endpoints,
+original line/fold/escape/surrogate context, lastIndex, String consumers, copies,
+collection and deep scopes. Initial-pair rewind and braced-surrogate behavior
+retain independent specification checks.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 58 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete character/string classes and legal Unicode-candidate
+enumeration. Complete programs retain earlier documented equivalent controls;
+Runtime always receives original q source. Strict all-target workspace Clippy,
+documentation tests, Rust 1.85 all-target checks, formatting, policy, inventories
+and diff checks pass. Fixtures, snapshots, dependencies, profiles, native stacks
+and default quotas are unchanged.

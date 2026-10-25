@@ -14984,3 +14984,12 @@ selector retains earlier domains and work sequences. Character-class escapes,
 properties, ranges, nesting, operations, word gates, repetitions, continuations
 and reference roles require separate proofs. Checked construction and cancellable
 search retain the existing host boundaries and original UTF-16 extents.
+
+
+Runtime selects literal-character/string-union lookahead as a separate checked
+v-mode fallback after full original validation. Complete normalized capture
+scopes retain original bindings; checked errors and enclosing-offset reset on
+proof success use the existing boundaries. The positive string-class cache
+retains selected literal or string extents, including defined-empty members,
+through named indices, consumers, copies and collection. Original source and
+reentrant conversion frames retain their established behavior.
