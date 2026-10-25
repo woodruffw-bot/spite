@@ -14159,3 +14159,14 @@ collection all use the shared capture accessor. The compiler remains separate
 from reentrant input conversions. Native V8 search can select an interior-pair
 candidate for `(?!😀)`; independent expectations and sticky probes at legal
 Unicode boundaries verify the complete-character search required here.
+
+A separate negative-lookahead entry admits one unquantified operand atom with
+outside word predicates and optional ^/$ gates. It changes only the proved
+assertion sign before delegating to the established positive word-atom proof;
+at least one word predicate is required. Negation applies to the conjunction of
+the operand and both predicates, retaining their full original input context
+(22.2.2.4). Class-contained backspace escapes remain atom data. Outside captures
+remain empty and all operand captures undefined. The fixed-count sticky probe
+and complete-character candidate loop keep linear actual work and the approved
+initial-pair rewind. Earlier line-only negative proofs keep their domains and
+charges. Runtime integration remains separate.
