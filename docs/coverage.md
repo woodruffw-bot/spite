@@ -27738,3 +27738,23 @@ alternative controls and legal Unicode-candidate enumeration. None of the
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Literal-character/string-union lookahead with word predicates: Runtime
+
+All 68 positive-lookahead integration groups (2.63 s) and 13 constructor groups
+(0.08 s) pass. Four new groups cover word-predicate polarity, literal fallback
+after rejected longer members, defined-empty choices, named independent ranges,
+original line/fold/backspace/pair context, lastIndex, String consumers, copies,
+collection and deep scopes. Independent checks retain initial-pair rewind and
+supplementary case folding with original operand extents.
+
+All 106,496 native metadata records across 512 patterns and four d/global/sticky
+flag combinations agree, as do all 62 complete raw JavaScript programs. Native
+metadata uses twelve independently specified longest-first literal-alternative
+controls for complete character/string classes and legal Unicode-candidate
+enumeration. Complete programs retain earlier documented equivalent controls;
+Runtime always receives original q source. Strict all-target workspace Clippy,
+documentation tests, Rust 1.85 all-target checks, formatting, policy, inventories
+and diff checks pass. Fixtures, snapshots, dependencies, profiles, native stacks
+and default quotas are unchanged.

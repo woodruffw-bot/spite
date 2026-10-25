@@ -15002,3 +15002,12 @@ priority across literals and strings while predicates inspect original
 endpoints. A rejected longer string can select a shorter literal or an empty
 member, retaining independent operand capture extents and original UTF-16
 spans (22.2.2.4, 22.2.2.7). Earlier domains and work remain unchanged.
+
+
+Runtime selects character/string-union lookahead with word predicates as a
+separate checked v-mode fallback after full original validation. Complete
+normalized capture scopes retain original bindings; checked errors and
+enclosing-offset reset on proof success use the established boundaries. The
+positive string cache retains selected literal/string extents and defined-empty
+members through named indices, consumers, copies and collection, with original
+source and reentrant conversion behavior preserved.
