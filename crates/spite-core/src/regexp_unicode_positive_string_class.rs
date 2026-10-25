@@ -121,6 +121,21 @@ impl RegExpUnicodePositiveStringClassMatcher {
         Self::compile_with_work_impl::<true, 2, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles lookahead over scalar escapes, properties or ranges beside q strings.
+    ///
+    /// A scalar operand and an empty or longer q member are required. The checked
+    /// scalar-union compiler retains folded interval semantics and longest-member
+    /// priority with original ^/$ context and independent capture extents. Full
+    /// original v/vi validation and normalized capture heads are required.
+    pub fn compile_scalar_union_lookahead_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<false, 3, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,
@@ -178,6 +193,13 @@ impl RegExpUnicodePositiveStringClassMatcher {
             )?
         } else if CLASS_KIND == 2 {
             RegExpUnicodeStringSetMatcher::compile_character_union_with_work(
+                &source,
+                ignore_case,
+                multiline,
+                &mut charge,
+            )?
+        } else if CLASS_KIND == 3 {
+            RegExpUnicodeStringSetMatcher::compile_scalar_union_with_work(
                 &source,
                 ignore_case,
                 multiline,

@@ -1158,3 +1158,233 @@ fn word_character_unions_keep_deep_scopes_bounded_retries_and_work_abort_recover
     );
     assert!(total <= input.len() * 250 + 128, "{total}");
 }
+
+fn scalar_union_compile(source: &str, i: bool, m: bool) -> RegExpUnicodePositiveStringClassMatcher {
+    RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_validated_with_work(
+        &JsString::from(source),
+        i,
+        m,
+        |_| Ok::<(), ()>(()),
+    )
+    .unwrap()
+    .unwrap()
+}
+
+#[test]
+fn scalar_unions_keep_character_string_priority_empty_choices_and_capture_scopes() {
+    for (class, text, root, operand) in [
+        (r"[\d\q{ab|}]", "ab!", 0..0, 0..2),
+        (r"[\d\q{ab|}]", "1a", 0..0, 0..1),
+        (r"[\d\q{ab|}]", "!ab", 0..0, 0..0),
+        (r"[a-z\q{ab|abc}]", "abc!", 0..0, 0..3),
+        (r"[\p{Any}\q{😀😀|}]", "😀😀!", 0..0, 0..4),
+        (r"[\p{Any}\q{😀😀|}]", "a!", 0..0, 0..1),
+    ] {
+        let plan = scalar_union_compile(&format!("((?=(({class}))))"), false, false);
+        let found = plan
+            .find_with_work(&JsString::from(text), 0, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            (found.range.clone(), found.operand.clone()),
+            (root.clone(), operand.clone()),
+            "{class}"
+        );
+        assert_eq!(plan.capture_count(), 3);
+        assert_eq!(plan.capture_range(0, &found), Some(root));
+        assert_eq!(plan.capture_range(1, &found), Some(operand.clone()));
+        assert_eq!(plan.capture_range(2, &found), Some(operand));
+        assert_eq!(plan.capture_range(3, &found), None);
+    }
+}
+
+#[test]
+fn scalar_unions_keep_original_line_fold_whitespace_property_and_surrogate_context() {
+    for (source, i, m, text, start, root, operand) in [
+        (
+            r"(?=(^[a-z\q{ab|abc}]$))",
+            true,
+            true,
+            "\nA\n",
+            0,
+            1..1,
+            1..2,
+        ),
+        (r"(?=([\w\q{a\nb}]$))", false, true, "a\nbc", 0, 0..0, 0..1),
+        (
+            r"(?=([\p{ASCII}\q{😀a|}]))",
+            true,
+            false,
+            "ſK",
+            0,
+            0..0,
+            0..1,
+        ),
+        (
+            r"(?=([\P{ASCII}\q{ab}]))",
+            true,
+            false,
+            "ſK😀",
+            0,
+            2..2,
+            2..4,
+        ),
+        (
+            r"(?=([\p{Any}\q{😀😀|}]))",
+            false,
+            false,
+            "!😀😀",
+            2,
+            1..1,
+            1..5,
+        ),
+        (
+            r"(?=([\s\q{ab}]))",
+            false,
+            false,
+            "\u{85}\u{feff}",
+            0,
+            1..1,
+            1..2,
+        ),
+        (
+            r"(?=([\p{Join_Control}\q{ab}]))",
+            false,
+            false,
+            "!\u{200c}",
+            0,
+            1..1,
+            1..2,
+        ),
+    ] {
+        let plan = scalar_union_compile(source, i, m);
+        let found = plan
+            .find_with_work(&JsString::from(text), start, false, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap();
+        assert_eq!((found.range, found.operand), (root, operand), "{source}");
+    }
+    let plan = scalar_union_compile(r"(?=([\D\q{\uD800x|}]))", false, false);
+    assert_eq!(
+        plan.find_with_work(
+            &JsString::from_code_units(vec![0xd800, 0x78]),
+            0,
+            true,
+            |_| Ok::<(), ()>(())
+        )
+        .unwrap()
+        .unwrap()
+        .operand,
+        0..2
+    );
+    assert_eq!(
+        plan.find_with_work(&JsString::from("😀"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap()
+            .unwrap()
+            .operand,
+        0..2
+    );
+    let plan = scalar_union_compile(r"(?=([\d\q{\u{D83D}\u{DE00}}]))", false, false);
+    assert_eq!(
+        plan.find_with_work(&JsString::from("😀"), 0, true, |_| Ok::<(), ()>(()))
+            .unwrap(),
+        None
+    );
+}
+
+#[test]
+fn scalar_union_proof_keeps_other_domains_operations_counts_and_binding_roles_separate() {
+    for source in [
+        r"(?=([\d]))",
+        r"(?=([\q{ab}]))",
+        r"(?=([\q{ab}\q{}]))",
+        r"(?=([x\q{ab}]))",
+        r"(?=([\d\q{a}]))",
+        r"(?=([[a-z]\q{ab}]))",
+        r"(?=([\d&&\q{ab}]))",
+        r"(?=([\p{RGI_Emoji}\q{ab}]))",
+        r"(?=([\d\q{ab}]{1}))",
+        r"(?=([\d\q{ab}]?))",
+        r"(?=([\d\q{ab}]a))",
+        r"(?=([\d\q{ab}]|a))",
+        r"(?<=([\d\q{ab}]))",
+        r"(?!([\d\q{ab}]))",
+        r"(?=(\b[\d\q{ab}]))",
+        r"(?=(?i:[\d\q{ab}]))",
+        r"(?=([\d\q{ab}])\1)",
+        r"(?=([\d\q{ab}])$)",
+    ] {
+        assert!(RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_validated_with_work(
+            &JsString::from(source), false, false, |_| Ok::<(), ()>(()),
+        ).unwrap().is_none(), "{source}");
+    }
+}
+
+#[test]
+fn scalar_unions_keep_deep_scopes_bounded_retries_and_work_abort_recovery() {
+    let depth = 100_000;
+    let source = "(".repeat(depth) + r"(?=([a-z\q{abc|}]))" + &")".repeat(depth);
+    let plan = scalar_union_compile(&source, false, false);
+    assert_eq!(plan.capture_count(), depth + 1);
+    let found = plan
+        .find_with_work(&JsString::from("abc!"), 0, true, |_| Ok::<(), ()>(()))
+        .unwrap()
+        .unwrap();
+    assert_eq!(plan.capture_range(depth - 1, &found), Some(0..0));
+    assert_eq!(plan.capture_range(depth, &found), Some(0..3));
+    let source = JsString::from(r"((?=(([\w\q{aa}]$))))");
+    let mut construction = Vec::new();
+    let plan = RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_validated_with_work(
+        &source, false, false, |n| { construction.push(n); Ok::<(), usize>(()) },
+    ).unwrap().unwrap();
+    for stop in 0..construction.len() {
+        let mut seen = Vec::new();
+        assert!(
+            matches!(RegExpUnicodePositiveStringClassMatcher::compile_scalar_union_lookahead_validated_with_work(
+            &source, false, false, |n| { seen.push(n); if seen.len() == stop + 1 { Err(stop) } else { Ok(()) } },
+        ), Err(RegExpUnicodeSetCompileError::Work(n)) if n == stop)
+        );
+        assert_eq!(seen, construction[..=stop]);
+    }
+    let input = JsString::from("!!aaa");
+    let mut work = Vec::new();
+    let expected = plan
+        .find_with_work(&input, 0, false, |n| {
+            work.push(n);
+            Ok::<(), usize>(())
+        })
+        .unwrap();
+    assert_eq!(expected.as_ref().map(|m| m.operand.clone()), Some(3..5));
+    for stop in 0..work.len() {
+        let mut seen = Vec::new();
+        assert_eq!(
+            plan.find_with_work(&input, 0, false, |n| {
+                seen.push(n);
+                if seen.len() == stop + 1 {
+                    Err(stop)
+                } else {
+                    Ok(())
+                }
+            }),
+            Err(stop)
+        );
+        assert_eq!(seen, work[..=stop]);
+        assert_eq!(
+            plan.clone()
+                .find_with_work(&input, 0, false, |_| Ok::<(), usize>(()))
+                .unwrap(),
+            expected
+        );
+    }
+    let input = JsString::from(("a".repeat(20_000) + "!").as_str());
+    let mut total = 0;
+    assert_eq!(
+        plan.find_with_work(&input, 0, false, |n| {
+            total += n;
+            Ok::<(), ()>(())
+        })
+        .unwrap(),
+        None
+    );
+    assert!(total <= input.len() * 500 + 128, "{total}");
+}

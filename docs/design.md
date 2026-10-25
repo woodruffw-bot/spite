@@ -15058,3 +15058,23 @@ cache retains only the empty assertion range, with outside empty captures and
 named undefined operand slots through indices, consumers, copies and collection.
 Original-context literal/string conjunctions and Unicode candidates remain
 Core's responsibility.
+
+
+### Positive lookahead over scalar operands and q strings
+
+A separate checked positive constructor proves complete lookahead over scalar
+class escapes, properties and ranges beside q operands, requiring an empty or
+longer q member. It delegates membership to the existing scalar-union compiler,
+which combines folded scalar intervals with shared string-prefix storage. The
+longest accepted member wins at the earliest candidate; an empty member can win
+before a later consuming candidate (22.2.2.4, 22.2.2.7, 22.2.2.9).
+
+Optional ^/$ gates inspect original input and can reject a longer string in
+favor of a scalar member. Complete wrappers preserve empty outside spans and
+independent whole-operand extents, including defined-empty captures. Full original
+v/vi validation and normalized capture heads precede projection; source is never
+independently rebound. The private class-domain selector preserves earlier
+constructor domains and work sequences. Word predicates, nesting, operations,
+repetition, continuations, references and reverse matching require separate
+proofs. Checked construction and cancellable traversal use existing host
+boundaries without input-sized capture state.

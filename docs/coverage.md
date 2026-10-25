@@ -27852,3 +27852,25 @@ class source. Strict all-target workspace Clippy, documentation tests, Rust
 1.85 all-target checks, formatting, policy, inventories and diff checks pass.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+
+## Scalar/string-union positive lookahead: Core
+
+The focused compiler/regression harness passes all 414 groups (3.56 s),
+including four new scalar-union groups. The production library API passes all
+28 positive string-class groups (0.42 s). New coverage includes scalar/string
+priority, earliest empty membership, original line endpoints, folded ASCII and
+complements, whitespace and Join_Control, lone and paired surrogates, complete
+wrapper roles, 100,000 nested scopes, bounded failed retries and every
+construction/search work abort followed by recovery. Braced-surrogate and
+folded-property expectations retain independent specification checks.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified scalar/literal-alternative
+controls and legal Unicode-candidate enumeration. All twelve earlier
+constructors retain byte-identical results, captures and work vectors across
+1,536 construction and 159,744 search records (161,280 total). None of the
+2,728 remaining directly lexed Unsupported controls enters the new proof.
+Strict all-target workspace Clippy, documentation tests, formatting, policy
+and inventories pass. Runtime does not yet select this constructor; fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
