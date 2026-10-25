@@ -14437,6 +14437,14 @@ word predicates retain separate proof domains. Checked errors, complete Unicode
 advancement, initial-pair rewind and actual-work cancellation keep their shared
 paths. Runtime integration remains separate.
 
+Runtime selects checked scalar-set lookbehind after its scalar-lookahead
+entries, gated by v mode and using full normalized source. Successful selection
+resets the projected outer offset; checked errors retain their host mapping.
+The shared empty/operand range cache preserves original set source, named
+indices, String consumers, copies and collection with captures preceding the
+empty root match. Original-context predecessor and line checks stay in Core;
+user conversions remain outside the compiler frame.
+
 A separate checked negative q-class lookbehind entry accepts leading/trailing
 operand word predicates with optional ^/$ gates. It projects only the proved
 assertion sign and delegates to checked positive word-q lookbehind, requiring
