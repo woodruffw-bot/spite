@@ -14292,3 +14292,14 @@ empty outside and predecessor capture ranges, so named indices and String
 consumers slice the original preceding character. Original q source/flags,
 copies, collection and stateful execution keep their existing paths. User
 conversions remain outside the compiler frame.
+
+A separate checked q-class lookbehind entry admits leading/trailing operand
+word predicates with optional ^/$ gates. At least one word predicate is
+required around a class whose q alternatives each decode to one character.
+The fixed single iteration stays within those gates; the existing complete
+predecessor loop retains their original input context, empty outside captures
+and preceding operand spans (22.2.2.4, 22.2.2.9). Backspace class data stays
+distinct from outside predicates. Checked work/capacity errors, bounded retries,
+initial-pair rewind and flat construction/clone/drop keep their existing paths.
+Earlier q-class entries retain their domains and charges. Runtime integration
+remains separate.

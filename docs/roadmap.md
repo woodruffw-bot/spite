@@ -992,6 +992,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute positive q-class lookahead with word predicates through Runtime and String consumers, preserving original source, context, checked errors and independent capture ranges.
 - [x] Compile positive lookbehind over one single-character q class, retaining checked class semantics, original line context, predecessor capture extents and linear search.
 - [x] Execute single-character q-class lookbehind through Runtime and String consumers, preserving original source, checked errors, predecessor capture ranges and execution state.
+- [x] Compile q-class lookbehind with operand word predicates and line gates, preserving original context, checked errors and predecessor capture spans.
 - [x] Execute complete ordinary/modifier spines around independently empty optional established-negative concatenations through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute concatenations of optional established-negative spines and independently empty earlier terms through Runtime and String consumers with original bindings and complete lexical inventories.
 - [x] Execute optional ordinary/modifier spines over established negative failures and their complete required wrappers through Runtime and String consumers with original bindings and complete lexical inventories.
