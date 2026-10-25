@@ -40,6 +40,7 @@ pub(crate) use method::MethodFunction;
 mod number;
 mod object;
 mod ordinary;
+mod promise;
 mod proxy;
 mod reflect;
 mod regexp;
@@ -918,6 +919,7 @@ mod tests;
 pub(crate) enum Callable {
     Builtin(Builtin),
     ProxyRevoker(Option<ObjectHandle>),
+    PromiseCapabilityExecutor(ObjectHandle),
     Bound(BoundFunction),
     Arrow(ScriptFunction),
     Ordinary(ScriptFunction),
@@ -934,7 +936,9 @@ impl Callable {
     fn source_text(&self) -> FunctionText {
         match self {
             Self::Builtin(builtin) => FunctionText::Native(builtin.initial_name()),
-            Self::Bound(_) | Self::ProxyRevoker(_) => FunctionText::Native(""),
+            Self::Bound(_) | Self::ProxyRevoker(_) | Self::PromiseCapabilityExecutor(_) => {
+                FunctionText::Native("")
+            }
             Self::Arrow(function) | Self::Ordinary(function) => {
                 FunctionText::Script(function.source.clone())
             }
@@ -1439,6 +1443,9 @@ impl Realm {
             }
             let builtin = match callable {
                 Some(Callable::Builtin(builtin)) => builtin,
+                Some(Callable::PromiseCapabilityExecutor(capability)) => {
+                    return self.promise_capability_executor(capability, arguments, span);
+                }
                 Some(Callable::ProxyRevoker(_)) => {
                     let Value::Object(revoker) = function else {
                         unreachable!("revoker is callable")

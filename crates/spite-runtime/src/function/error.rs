@@ -145,6 +145,20 @@ impl Realm {
         )
     }
 
+    // Convert a language throw without resetting the active Script/job allowance.
+    // Host failures retain their handler-bypassing completion.
+    pub(super) fn language_exception_value(&mut self, error: Error) -> Result<Value, Error> {
+        match error {
+            Error::Thrown(value) => Ok(value),
+            Error::Exception {
+                kind,
+                span,
+                message,
+            } => self.materialize_exception(kind, message, span),
+            error => Err(error),
+        }
+    }
+
     pub(super) fn error_intrinsics(
         &mut self,
         object_prototype: &ObjectHandle,

@@ -3243,15 +3243,35 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise and SharedArrayBuffer retain
+Intrinsic Promise construction, reaction jobs and SharedArrayBuffer retain
 explicit Unsupported results for their deferred bodies after ordinary argument
 evaluation and the specified call/new prefix checks. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
 accessors return their original receiver. The
-metadata adds 45 rooted intrinsic objects; global mutation or deletion cannot
+metadata adds 46 rooted intrinsic objects; global mutation or deletion cannot
 unroot them.
+
+NewPromiseCapability (27.2.1.5) constructs through the supplied constructor and
+uses a native executor with standard empty-name/length-two metadata. Its private
+traced Record holds resolve/reject values; a second initialization throws unless
+both earlier values are undefined. Both final callbacks must be callable. The
+result need not carry a Promise brand. Retained executors keep captures alive;
+unreachable cycles use ordinary object/Symbol collection.
+
+Promise.withResolvers and Promise.reject use this capability with supplied
+constructors. WithResolvers creates an intrinsic ordinary result with ordered
+promise/resolve/reject data properties, bypassing inherited setters. Reject calls
+the supplied reject function with undefined as receiver and the original reason.
+Promise.try follows edition 17's callback-first algorithm: reject non-object
+receivers before Call, invoke the callback with undefined and the remaining
+arguments, then construct a capability and forward the result or language throw
+to its resolve/reject callback. Callback validation therefore precedes constructor
+and capability validation for object receivers. Resolver failures propagate;
+host failures bypass rejection and JavaScript handlers without resetting work.
+PromiseResolve's branded identity path remains deferred with intrinsic Promise
+construction. Constructed results retain the supplied constructor's identity.
 
 The complete global own-key set supports reflection, enumeration, copying, and
 integrity operations through ordinary object behavior. Standard bindings can be

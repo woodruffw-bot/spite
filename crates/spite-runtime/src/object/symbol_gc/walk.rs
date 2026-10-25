@@ -236,7 +236,8 @@ fn object_symbols(
             | Callable::Arrow(_)
             | Callable::Ordinary(_)
             | Callable::Method(_)
-            | Callable::ProxyRevoker(_),
+            | Callable::ProxyRevoker(_)
+            | Callable::PromiseCapabilityExecutor(_),
         )
         | None => visit(None)?,
     }

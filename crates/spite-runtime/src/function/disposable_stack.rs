@@ -316,8 +316,8 @@ impl Realm {
                     return Err(error);
                 }
                 failure = Some(if let Some(suppressed) = failure {
-                    let error = self.disposal_error_value(error)?;
-                    let suppressed = self.disposal_error_value(suppressed)?;
+                    let error = self.language_exception_value(error)?;
+                    let suppressed = self.language_exception_value(suppressed)?;
                     let value = self.error_constructor(
                         ErrorConstructor::SuppressedError,
                         None,
@@ -333,18 +333,6 @@ impl Realm {
         match failure {
             Some(error) => Err(error),
             None => Ok(Value::Undefined),
-        }
-    }
-
-    fn disposal_error_value(&mut self, error: Error) -> Result<Value, Error> {
-        match error {
-            Error::Thrown(value) => Ok(value),
-            Error::Exception {
-                kind,
-                message,
-                span,
-            } => self.materialize_exception(kind, message, span),
-            _ => unreachable!("only language exceptions are suppressed"),
         }
     }
 

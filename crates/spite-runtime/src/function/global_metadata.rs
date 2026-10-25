@@ -483,7 +483,7 @@ impl Realm {
         &mut self,
         member: Member,
         receiver: Value,
-        arguments: std::vec::IntoIter<Value>,
+        mut arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
         match member {
@@ -492,6 +492,11 @@ impl Realm {
             // receiver branding, coercion, allocation, or species recursion.
             Member::PromiseSpecies | Member::SharedArrayBufferSpecies => Ok(receiver),
             Member::WeakRefDeref => self.weak_ref_deref(receiver, span),
+            Member::PromiseWithResolvers => self.promise_with_resolvers(receiver, span),
+            Member::PromiseReject => {
+                self.promise_reject(receiver, arguments.next().unwrap_or(Value::Undefined), span)
+            }
+            Member::PromiseTry => self.promise_try(receiver, arguments, span),
             // Atomics.pause (sec-atomics.pause) observes no receiver/arguments.
             // The platform's spin-loop hint has no JavaScript-visible result.
             Member::AtomicsPause => {

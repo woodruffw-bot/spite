@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 8574 unmodified test fixtures and seventeen harness files come from
+These 8594 unmodified test fixtures and seventeen harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,25 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Generic Promise capability fixtures
+
+Twenty unchanged originals from `Promise/{withResolvers,reject,try}/` cover
+receiver/constructor checks, capability initialization, callable validation,
+constructor throws and function metadata. All forty Script variants pass.
+Pinned Git blob hashes and manifest SHA-256 digests were verified before admission;
+existing helpers suffice. Seven Runtime regressions additionally exercise complete
+positive custom-constructor paths, callback-first try ordering, exact receivers
+and arguments, returned descriptors, thrown identities and capture collection.
+
+The separate 36-original candidate review records forty passing variants and
+32 Unsupported variants. The latter sixteen sources require intrinsic Promise
+construction or async support and are not admitted or rewritten. Intrinsic
+Promise construction, branded resolution and reaction jobs remain deferred.
+
+Current inventories contain 8,594 fixtures, seventeen harness files, 8,575
+reviewed sources and 16,627 variants. The pin, license and existing bytes remain
+unchanged; both metadata and corpus inventory assertions track the admission.
 
 ## Atomics.pause fixtures
 
@@ -4132,7 +4151,7 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 16587 variants from 8555 reviewed sources.
+The `spite-test262` command runs 16627 variants from 8575 reviewed sources.
 The cohort sections above describe the admitted whole originals and deferred
 prerequisites; `runner.tsv` enumerates every source and
 expected outcome. Nineteen other fixtures remain component regressions outside

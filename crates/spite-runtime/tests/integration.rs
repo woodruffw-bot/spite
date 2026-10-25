@@ -318,6 +318,8 @@ mod private_fields;
 mod private_methods;
 #[path = "cases/private_syntax.rs"]
 mod private_syntax;
+#[path = "cases/promise_capability.rs"]
+mod promise_capability;
 #[path = "cases/properties.rs"]
 mod properties;
 #[path = "cases/prototypes.rs"]

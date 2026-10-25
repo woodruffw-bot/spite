@@ -52,9 +52,31 @@ not an alternative language specification.
 | JSON | Exact ECMA-404 parsing, intrinsic value creation, iterative revivers with primitive source contexts, frozen raw JSON values, and iterative stringify with replacers, indentation, raw embedding, cycles, and full reflection |
 | Limits | Opt-in source size, evaluation/arithmetic work, string code units, BigInt magnitude bits, shared object/environment heap slots, properties per object, and call argument count; checked platform capacity and native-stack guards |
 | DisposableStack | Pending/disposed state, use/adopt/defer registration, intrinsic move, reverse disposal and suppression chains, standard reflection, reentry, and traced captures |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16587 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Promise capabilities | Shared native capability executors and generic withResolvers/reject/try calls through supplied constructors; intrinsic Promise construction/jobs remain deferred |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 16627 reviewed Test262 variants, seventeen pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Generic Promise capabilities
+
+NewPromiseCapability creates a traced native executor, validates initialization
+and callbacks, and constructs through the supplied constructor. Generic
+withResolvers/reject/try dispatch uses this shared implementation. Promise.try
+follows edition 17's callback-before-construction order for object receivers.
+Seven Runtime regressions cover positive custom constructors, descriptors,
+receivers/arguments, error ordering, retained captures and host-failure bypass.
+DisposableStack shares the language-exception conversion helper without resetting
+the active work allowance.
+
+Twenty unchanged Test262 originals pass forty Script variants. Sixteen other
+candidate originals still require intrinsic Promise construction or async support
+and remain deferred; no Unsupported result receives passing credit. The inventory
+now has 8,594 fixtures, seventeen helpers, 8,575 reviewed sources and 623 Runtime
+case files. Intrinsic Promise construction, branded resolution and reaction jobs
+remain implementation work.
+All 16,627 variants and all 35 Test262 package tests pass. The 392 Runtime units,
+1,781 integration tests outside RegExp groups, strict Clippy, Rust 1.88 all-target
+checks, formatting, dependency policy and fixture inventories also pass.
 
 ## Atomics.pause
 

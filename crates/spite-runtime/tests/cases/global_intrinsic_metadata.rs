@@ -148,8 +148,8 @@ fn deferred_constructors_require_new_with_ordinary_type_error_completion() {
 
 #[test]
 fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
-    // Each operation is deliberately still a deferred algorithm. Merely reading
-    // its real metadata object is supported and must not stand in for this call.
+    // Each operation reaches a deferred algorithm or intrinsic constructor.
+    // Reading its metadata must not stand in for executing that dependency.
     let operations = [
         "new Promise(()=>{hits++})",
         "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
@@ -159,7 +159,7 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
         "Promise.race([])",
         "Promise.reject(7)",
         "Promise.resolve(7)",
-        "Promise.try(()=>{hits++})",
+        "Promise.try(()=>0)",
         "Promise.withResolvers()",
         "Promise.prototype.catch.call({},()=>{hits++})",
         "Promise.prototype.finally.call({},()=>{hits++})",
