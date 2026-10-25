@@ -14109,3 +14109,18 @@ slice captures from the full original input, so replacement and split preserve
 predecessor values. Source/flags, copies, collection, original coercions and
 stateful execution retain the shared result path. The compiler frame remains
 separate from reentrant user conversions.
+
+
+A separate Core lookbehind entry admits outside word predicates around one
+unquantified predecessor atom, with optional ^/$ gates. The lexical envelope
+requires at least one word predicate and preserves class-contained backspace
+escapes. Its fixed single iteration evaluates both predicate boundaries against
+the full original input. For one non-reference character, predicate truth is
+independent of matching direction; only the assertion position and operand
+extent differ.
+
+The existing complete-predecessor loop retains linear actual work, original
+Unicode-i word folds and the approved initial-pair rewind. Outside wrappers
+stay empty at the candidate, while operand wrappers retain the preceding
+character. Earlier lookahead and line-only lookbehind constructors keep their
+proof domains and work. Runtime integration remains separate.

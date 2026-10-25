@@ -25695,3 +25695,20 @@ diff checks pass. The finished broad runs record the preceding `04ce1dcc`
 lookahead snapshot; lookbehind has the focused and differential evidence above.
 Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
 are unchanged.
+
+## Core captured Unicode lookbehind with word predicates
+
+The actual-source focused harness passes 247 tests, including four additional
+word-lookbehind groups. Checks cover predecessor/outside masks, boundary
+polarity, class backspace, original line and Unicode-i word context, astral
+candidates, initial-pair rewind, proof exclusions, 200,000 wrappers and every
+construction/search work cancellation followed by recovery.
+
+The native sticky-candidate oracle with independent Unicode advancement agrees
+on all 53,248 input/start/sticky/range/capture records across 512 patterns. Two
+ASCII iv patterns contribute 208 equivalent-range controls for the documented
+Node property-fold discrepancy. All 2,728 remaining lexed direct Unsupported
+controls stay excluded. Strict workspace Clippy with all targets, documentation
+tests, formatting, policy, inventories and diff checks pass. Runtime integration
+remains separate. Fixtures, snapshots, dependencies, profiles, native stacks and
+default quotas are unchanged.
