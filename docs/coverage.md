@@ -26259,3 +26259,14 @@ All 2,728 remaining lexed direct Unsupported controls stay excluded. Strict
 all-target workspace Clippy, documentation tests, formatting, policy, inventories
 and diff checks pass. Runtime integration remains separate. Fixtures, snapshots,
 dependencies, profiles, native stacks and default quotas are unchanged.
+
+## Complete RegExp validation of positive q-class assertions
+
+The Runtime snapshot at `3c6ca264` passes all 3,003 RegExp integration tests
+(819.95 s), completing its broad validation alongside the recorded 35 Test262
+package tests and 16,343 reviewed corpus variants (418.34 s). It includes
+positive single-character q-class lookahead/lookbehind with word predicates,
+original checked class semantics and independent capture extents. Later
+negative q-class increments retain their focused and differential evidence.
+Fixtures, snapshots, dependencies, profiles, native stacks and default quotas
+are unchanged.
