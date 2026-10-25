@@ -15078,3 +15078,12 @@ constructor domains and work sequences. Word predicates, nesting, operations,
 repetition, continuations, references and reverse matching require separate
 proofs. Checked construction and cancellable traversal use existing host
 boundaries without input-sized capture state.
+
+
+A separate scalar/string-union constructor admits operand word predicates and
+optional ^/$ gates, requiring at least one predicate, a scalar operand and an
+empty or longer q member. Folded scalar intervals and shared string prefixes
+retain longest accepted membership while predicates inspect original endpoints.
+Rejected longer strings can select shorter scalar or empty members, with
+independent whole-operand captures and original UTF-16 spans (22.2.2.4, 22.2.2.7).
+Earlier constructor domains and work sequences remain unchanged.

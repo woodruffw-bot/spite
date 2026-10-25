@@ -136,6 +136,21 @@ impl RegExpUnicodePositiveStringClassMatcher {
         Self::compile_with_work_impl::<false, 3, E>(source, ignore_case, multiline, &mut charge)
     }
 
+    /// Compiles scalar/string-union lookahead with word predicates and ^/$ gates.
+    ///
+    /// At least one predicate, one scalar operand and an empty or longer q
+    /// member are required. Folded scalar membership and string priority share
+    /// original endpoint context and independent whole-operand capture spans.
+    /// Full original v/vi validation and normalized capture heads are required.
+    pub fn compile_scalar_union_lookahead_with_word_boundaries_validated_with_work<E>(
+        source: &JsString,
+        ignore_case: bool,
+        multiline: bool,
+        mut charge: impl FnMut(usize) -> Result<(), E>,
+    ) -> Result<Option<Self>, RegExpUnicodeSetCompileError<E>> {
+        Self::compile_with_work_impl::<true, 3, E>(source, ignore_case, multiline, &mut charge)
+    }
+
     #[inline(never)]
     fn compile_with_work_impl<const WORD: bool, const CLASS_KIND: u8, E>(
         source: &JsString,

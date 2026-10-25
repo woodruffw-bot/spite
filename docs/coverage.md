@@ -27874,3 +27874,36 @@ constructors retain byte-identical results, captures and work vectors across
 Strict all-target workspace Clippy, documentation tests, formatting, policy
 and inventories pass. Runtime does not yet select this constructor; fixtures,
 snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Scalar/string-union positive lookahead with word predicates: Core
+
+The focused compiler/regression harness passes all 418 groups (3.80 s). The
+production library API passes all 32 positive string-class groups (0.31 s),
+including four new word-scalar-union groups covering shorter scalar endpoint
+fallbacks, defined-empty members, independent captures, line/fold/backspace/pair
+context, folded ASCII and complement membership, deep scopes, bounded retries
+and every construction/search work abort followed by recovery. Pair and folded
+property expectations retain independent specification checks.
+
+All 53,248 exact native input/start/sticky/root/capture records across 512
+patterns agree using twelve independently specified scalar/literal-alternative
+controls and legal Unicode-candidate enumeration. None of the 2,728 remaining
+directly lexed Unsupported controls enters the new proof. Strict all-target
+workspace Clippy, documentation tests, formatting, policy and inventories pass.
+Runtime does not yet select the word constructor; fixtures, snapshots,
+dependencies, profiles, native stacks and default quotas are unchanged.
+
+
+## Complete character/string-union Core and positive Runtime regression gates
+
+The complete character/string-union Core snapshot at `a35d35a3` passes all
+1,899 tests on Rust 1.85 (569.14 s test execution; 623.14 s total). The normal
+test-profile build reports 53.93 s and maximum child RSS is 2,495,416 KiB. This
+is an incremental measurement, not a cold-build comparison; no compiler
+diagnostic flags or profile changes were used.
+
+The positive character/string-union Runtime snapshot at `5c8fabb6` passes all
+3,123 RegExp integration tests through Cargo with the normal environment
+(1,179.70 s). Its full reviewed Test262 result is recorded separately. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.
