@@ -25712,3 +25712,26 @@ controls stay excluded. Strict workspace Clippy with all targets, documentation
 tests, formatting, policy, inventories and diff checks pass. Runtime integration
 remains separate. Fixtures, snapshots, dependencies, profiles, native stacks and
 default quotas are unchanged.
+
+## Runtime single-character Unicode lookbehind with word predicates
+
+All nine current lookbehind groups pass (0.71 s), including four additional
+groups for word polarity, named predecessor/outside ranges, original source,
+line/fold/property/backspace context, String consumers, copies and collection.
+Independent surrogate expectations require the complete b predecessor at 4..5
+in `a😀ab!`, with the empty assertion at 5, and check initial-pair rewind.
+All thirteen constructor regressions pass (0.08 s), including native reentry.
+
+The fresh CLI agrees on 106,496 metadata records across 512 patterns against
+the native sticky-candidate oracle with independent complete-character search
+and state bookkeeping. Two ASCII iv patterns contribute 416 equivalent-range
+controls for the documented Node property-fold discrepancy. Eight complete
+JavaScript programs agree separately; independent surrogate expectations remain
+outside direct V8 search comparison.
+
+All 436 Runtime unit tests pass (3.75 s). Strict all-target workspace Clippy,
+documentation tests, Rust 1.85 all-target workspace checking, formatting,
+dependency policy, inventories and diff checks pass. Runtime inventory remains
+620 case files. Broad results above record the preceding lookahead snapshot;
+this extension has the focused and differential evidence here. Fixtures,
+snapshots, dependencies, profiles, native stacks and default quotas are unchanged.

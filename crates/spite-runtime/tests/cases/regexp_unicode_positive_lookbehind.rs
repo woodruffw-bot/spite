@@ -88,3 +88,54 @@ fn predecessor_deep_wrappers_retain_all_empty_and_consuming_capture_slots() {
     "#,
     );
 }
+
+#[test]
+fn word_predecessor_captures_keep_boundary_polarity_source_and_outside_ranges() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\B','aaa',1],['\\Ba\\B','aaaa',2],['\\b[a-z]\\b','!a!',2]]){
+            var source='(?<outside>(?<=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode);r.lastIndex=row[2];var m=r.exec(row[1]);
+            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]-1&&m.indices.groups.run[1]===row[2]&&r.lastIndex===row[2]&&r.source===source;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_predecessor_line_fold_property_and_backspace_contexts_remain_original() {
+    check(
+        r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var m=new RegExp('(?<=(?<run>^\\ba\\b$))','dim'+mode).exec('\nA\n');ok=ok&&m.index===2&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
+            var m=new RegExp('(?<=(?<run>\\bſ\\b))','di'+mode).exec('!ſ!');ok=ok&&m.index===2&&m.groups.run==='ſ';
+            var m=new RegExp('(?<=(?<run>\\b\\p{ASCII}\\b))','di'+mode).exec('!ſ!');ok=ok&&m.index===2&&m.groups.run==='ſ';
+            var m=new RegExp('(?<=(?<run>\\B[\\b]\\B))','d'+mode).exec('\b');ok=ok&&m.index===1&&m.groups.run==='\b'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===1;
+        }ok
+    "#,
+    );
+}
+
+#[test]
+fn word_predecessor_string_consumers_copies_and_collection_keep_preceding_captures() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        var ok=true;
+        for(var mode of ['u','v']){
+            var source='(?<=(?<run>\\ba\\b))',r=new RegExp(source,'dg'+mode),all=Array.from('!!a! a'.matchAll(r));
+            ok=ok&&all.length===2&&all[0].index===3&&all[1].index===6&&all[0].groups.run==='a'&&r.lastIndex===0;
+            ok=ok&&'!!a! a'.replace(r,'<$<run>>')==='!!a<a>! a<a>'&&JSON.stringify('!!a! a'.split(new RegExp('(?<=(\\ba\\b))',mode)))==='["!!a","a","! a"]';
+            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!a!').groups.run==='a';
+        }ok
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('!a!');m.index===2&&m.groups.run==='a'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2&&copy.lastIndex===2"),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn word_predecessor_search_retains_complete_character_and_initial_pair_boundaries() {
+    check(
+        "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?<=(?<run>\\\\B.\\\\b))','dg'+mode),m=r.exec('a😀ab!');ok=ok&&m.index===5&&m.groups.run==='b'&&m.indices.groups.run[0]===4&&m.indices.groups.run[1]===5&&r.lastIndex===5;r=new RegExp('(?<=(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=2;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0}ok",
+    );
+}

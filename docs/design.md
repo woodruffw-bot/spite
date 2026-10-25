@@ -14123,4 +14123,11 @@ The existing complete-predecessor loop retains linear actual work, original
 Unicode-i word folds and the approved initial-pair rewind. Outside wrappers
 stay empty at the candidate, while operand wrappers retain the preceding
 character. Earlier lookahead and line-only lookbehind constructors keep their
-proof domains and work. Runtime integration remains separate.
+proof domains and work.
+
+Runtime selects the word-predicate lookbehind entry after the existing positive
+assertion proofs. It retains full normalized source, resets the projected
+capture offset on success and shares the cached empty/predecessor ranges.
+Original word and line context therefore survives result construction, named
+indices, String consumers, copies and collection. Ordinary search visits only
+complete Unicode candidates, independently of native-engine surrogate search.
