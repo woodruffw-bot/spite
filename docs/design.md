@@ -508,8 +508,7 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Three-clause for statements still use ordinary execution and retain
-their explicit await boundaries.
+them. Switch and with statements retain their explicit await boundaries.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
 condition uses ordinary ToBoolean once; unselected branches remain unevaluated.
@@ -594,6 +593,24 @@ chain. Normal and matching continue completions resume enumeration after scopes
 and finalizers finish; other abrupt completions propagate without an observable
 iterator return hook. Retained loop values participate in the physical Symbol
 inventory, and host abort keeps its shared cleanup isolation.
+
+Three-clause for cursors suspend in initializers, tests, updates and bodies
+(14.7.4.2–4). Typed header roots select the retained source by phase; initializer
+and update values are discarded while body completions alone update the loop's
+last value. Missing tests are true and missing initializers/updates do no work.
+Declaration and header initializers share one binding continuation, preserving
+all-binding TDZ, pattern initialization, pre-RHS var references and resource order.
+
+Let headers reuse CreatePerIterationEnvironment before the first test and after
+each normal or matching continue body, after finalizers and before update. The
+cursor's traced environment follows each replacement, so initializer, test, body
+and update closures retain the specified distinct records. Const and using
+headers retain one environment. Header resources dispose once when the whole loop
+exits, preserving abrupt completion and suppression; scope restoration precedes
+an outer handler. Break/return/throw skip update, and labelled control reuses the
+shared completion path. Current header environments and loop values participate
+in tracing, validation and physical Symbol ownership; host abort clears captures
+without executing JavaScript cleanup.
 
 Labelled statements retain typed source locations without adding environments
 (14.13). A matching labelled break becomes normal completion without UpdateEmpty.

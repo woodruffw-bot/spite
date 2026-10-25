@@ -392,6 +392,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
         ),
         (
+            "async for loop value across awaited update",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{let n=0;for(;n++===0;await gate){key}};f();return gate})()",
+        ),
+        (
             "async for-in loop value across suspension",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{for(const x in {a:1,b:2}){if(x==='a'){key}else await gate}};f();return gate})()",
         ),

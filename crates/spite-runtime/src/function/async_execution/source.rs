@@ -46,6 +46,7 @@ pub(super) fn active_statement<'a>(
                 StatementChild::LoopBody,
                 StatementKind::While { body, .. } | StatementKind::DoWhile { body, .. },
             ) => body,
+            (StatementChild::ForBody, StatementKind::For { body, .. }) => body,
             (StatementChild::ForOfBody, StatementKind::ForOf { body, .. }) => body,
             (StatementChild::ForInBody, StatementKind::ForIn { body, .. }) => body,
             (StatementChild::LabelBody, StatementKind::Labelled { body, .. }) => body,

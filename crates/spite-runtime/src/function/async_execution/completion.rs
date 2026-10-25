@@ -45,6 +45,10 @@ impl Realm {
                     result =
                         result.map(|completion| completion.update_empty(Some(Value::Undefined)));
                 }
+                Some(AsyncStatementFrame::For(_)) => match self.advance_async_for(data, result) {
+                    FrameStep::Continue => return Ok(None),
+                    FrameStep::Complete(completion) => result = completion,
+                },
                 Some(AsyncStatementFrame::Loop(_)) => match self.advance_async_loop(data, result) {
                     FrameStep::Continue => return Ok(None),
                     FrameStep::Complete(completion) => result = completion,

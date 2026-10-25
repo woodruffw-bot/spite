@@ -393,6 +393,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Suspend synchronous for-of RHS/body execution with lexical TDZ, shared binding initialization, using iterations, cached iterator state and correct closing.
 - [x] Resume labelled statements and direct iteration label chains with matching break/continue, intervening finalizers and inner iterator closing.
 - [x] Suspend for-in RHS/body execution with shared live enumeration, lexical TDZ, fresh iteration bindings, labelled control and traced current objects.
+- [x] Suspend three-clause for headers/bodies with shared initializers, per-iteration let environments, labelled control and whole-loop using disposal.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

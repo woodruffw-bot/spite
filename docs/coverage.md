@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Suspended three-clause for
+
+Eleven Runtime groups and a Symbol ownership control cover all header/body phases,
+absent headers, initializer TDZ/patterns, mapped var aliases, per-iteration let
+captures, const scopes, labelled control, resources and rejection from every
+header phase. Collection controls retain active header environments and body
+values and release them after exit; host abort releases resource captures at
+budget zero. All 416 units and 2,013 non-RegExp integrations pass across 655 Runtime
+case files; strict Clippy and Rust 1.88 checks pass. Complete original reviews remain
+at 36 passing/8 Unsupported await
+variants and 152 passing/110 Unsupported Array/adapter variants. No additional
+original qualifies; inventories remain 9,578 fixtures, twenty helpers, 9,559
+reviewed sources, 18,566 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Suspended for-in enumeration
 
 Nine Runtime groups and a Symbol ownership control cover awaited RHS/body

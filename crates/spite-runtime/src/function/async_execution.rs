@@ -1,10 +1,12 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
+mod binding;
 mod block;
 mod completion;
 mod conditional;
 mod expression;
 mod for_in;
+mod for_loop;
 mod for_of;
 mod iteration;
 mod iteration_head;
@@ -18,14 +20,14 @@ use super::{
     PromiseCapability, ScriptFunction, async_native::AsyncResumeKind, ordinary::OrdinaryInvocation,
 };
 use crate::{
-    Completion, CompletionKind, Error, ObjectHandle, Realm, Reference, Value,
+    Completion, CompletionKind, Error, ObjectHandle, Realm, Value,
     object::{
         async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
         async_expression::ExprRoot,
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPatternKind, StatementKind};
+use spite_parser::ast::{ArrowBody, StatementKind};
 
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
@@ -207,6 +209,11 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_label(data, span);
         }
+        if matches!(statement.kind, StatementKind::For { .. }) {
+            let span = statement.span;
+            self.tick(span)?;
+            return self.enter_async_for(data, span);
+        }
         if matches!(
             statement.kind,
             StatementKind::ForOf { .. } | StatementKind::ForIn { .. }
@@ -270,72 +277,6 @@ impl Realm {
         self.statement(statement).map(Step::Complete)
     }
 
-    fn async_binding_step(
-        &mut self,
-        data: &mut AsyncExecutionData,
-        first: usize,
-        mut resumed: Option<Value>,
-    ) -> Result<Step, Error> {
-        let (bindings, using, var) =
-            match &active_statement(&data.body, data.statement.as_ref()).kind {
-                StatementKind::Lexical { bindings, .. } => (bindings, false, false),
-                StatementKind::Using(bindings) => (bindings, true, false),
-                StatementKind::Var(bindings) => (bindings, false, true),
-                _ => unreachable!("declaration continuation"),
-            };
-        let environment = self.scopes.last().expect("body lexical scope").clone();
-        for (element, binding) in bindings.iter().enumerate().skip(first) {
-            if let Some(value) = resumed.take() {
-                if var {
-                    if let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
-                        let target = data.var_target.take().expect("resolved var target");
-                        self.put(
-                            Reference::Lexical(target, name),
-                            value,
-                            binding.pattern.span,
-                        )?;
-                    } else {
-                        self.assign_pattern(&binding.pattern, value)?;
-                    }
-                } else if using {
-                    // AddDisposableResource still precedes binding initialization.
-                    self.initialize_using_value(&binding.pattern, value, &environment)?;
-                } else {
-                    self.initialize_pattern(&binding.pattern, value, &environment)?;
-                }
-            } else if binding
-                .initializer
-                .as_ref()
-                .is_some_and(expression::has_supported_await)
-            {
-                self.tick(binding.pattern.span)?;
-                if var && let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
-                    let Reference::Lexical(environment, _) =
-                        self.resolve(name, binding.pattern.span)?
-                    else {
-                        return Err(Self::unsupported(
-                            binding.pattern.span,
-                            "awaited var target requires a declarative reference",
-                        ));
-                    };
-                    data.var_target = Some(environment);
-                }
-                return self.start_async_expression(
-                    data,
-                    ExprRoot::Binding { element },
-                    AsyncAwaitAction::Binding { element },
-                );
-            } else if var {
-                self.evaluate_var_bindings(std::slice::from_ref(binding))?;
-            } else if using {
-                self.initialize_using_bindings(std::slice::from_ref(binding))?;
-            } else {
-                self.initialize_bindings(std::slice::from_ref(binding))?;
-            }
-        }
-        Ok(Step::Complete(Completion::normal(None)))
-    }
-
     fn complete_async_value(
         &mut self,
         data: &mut AsyncExecutionData,
@@ -352,6 +293,7 @@ impl Realm {
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
             AsyncAwaitAction::LoopTest => self.finish_async_loop_test(data, value),
+            AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),
             AsyncAwaitAction::IterationSource => self.finish_async_iteration_source(data, value),
             AsyncAwaitAction::Binding { element } => {
                 self.async_binding_step(data, element, Some(value))

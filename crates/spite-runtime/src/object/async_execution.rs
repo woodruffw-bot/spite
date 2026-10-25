@@ -25,6 +25,7 @@ pub(crate) enum AsyncAwaitAction {
     Expression,
     IfTest,
     LoopTest,
+    ForHeader,
     IterationSource,
     Binding { element: usize },
 }
@@ -39,6 +40,7 @@ pub(crate) enum StatementChild {
     FinallyBody,
     LoopBody,
     ForOfBody,
+    ForBody,
     ForInBody,
     LabelBody,
 }
@@ -85,6 +87,23 @@ pub(crate) enum AsyncLoopPhase {
     Body,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum AsyncForPhase {
+    Initialize,
+    Test,
+    Body,
+    Update,
+}
+
+#[derive(Debug)]
+pub(crate) struct AsyncForCursor {
+    pub location: StatementLocation,
+    pub phase: AsyncForPhase,
+    pub environment: Option<EnvironmentHandle>,
+    pub disposable: bool,
+    pub value: Value,
+}
+
 #[derive(Debug)]
 pub(crate) struct AsyncIterationHead {
     pub location: StatementLocation,
@@ -116,6 +135,7 @@ pub(crate) enum AsyncStatementFrame {
         disposable: bool,
     },
     Loop(AsyncLoopCursor),
+    For(AsyncForCursor),
     IterationHead(AsyncIterationHead),
     ForOf(AsyncForOfCursor),
     ForIn(AsyncForInCursor),
@@ -130,6 +150,7 @@ impl AsyncStatementFrame {
             Self::Try(_) => None,
             Self::Scope { environment, .. } => Some(environment),
             Self::Loop(_) => None,
+            Self::For(cursor) => cursor.environment.as_ref(),
             Self::IterationHead(head) => head.environment.as_ref(),
             Self::ForOf(_) | Self::ForIn(_) => None,
             Self::Label(_) => None,
@@ -147,6 +168,7 @@ impl AsyncStatementFrame {
             },
             Self::Scope { .. } => None,
             Self::Loop(cursor) => Some(&cursor.value),
+            Self::For(cursor) => Some(&cursor.value),
             Self::IterationHead(_) => None,
             Self::ForOf(cursor) => Some(&cursor.value),
             Self::ForIn(cursor) => Some(&cursor.value),
@@ -168,6 +190,7 @@ impl AsyncStatementFrame {
             | Self::Try(_)
             | Self::Scope { .. }
             | Self::Loop(_)
+            | Self::For(_)
             | Self::IterationHead(_)
             | Self::Label(_) => None,
         }

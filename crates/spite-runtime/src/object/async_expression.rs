@@ -11,6 +11,7 @@ pub(crate) enum ExprRoot {
     Statement,
     IfTest,
     LoopTest,
+    ForHeader,
     IterationSource,
     Binding { element: usize },
 }

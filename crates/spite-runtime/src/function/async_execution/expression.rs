@@ -80,6 +80,7 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("iteration source"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::ForHeader) => super::for_loop::header_expression(data),
         (ArrowBody::Block(_), ExprRoot::LoopTest) => {
             let Some(crate::object::async_execution::AsyncStatementFrame::Loop(cursor)) =
                 data.frames.last()
@@ -100,12 +101,8 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
             test
         }
         (ArrowBody::Block(_), ExprRoot::Binding { element }) => {
-            let bindings = match &active_statement(&data.body, data.statement.as_ref()).kind {
-                StatementKind::Lexical { bindings, .. }
-                | StatementKind::Using(bindings)
-                | StatementKind::Var(bindings) => bindings,
-                _ => unreachable!("binding expression root"),
-            };
+            let (bindings, _, _) =
+                super::binding::binding_source(&data.body, super::binding::binding_location(data));
             bindings[element]
                 .initializer
                 .as_ref()

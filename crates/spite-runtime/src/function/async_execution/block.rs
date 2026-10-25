@@ -29,6 +29,8 @@ impl Realm {
             return self.async_for_of_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForIn(_))) {
             return self.async_for_in_step(data);
+        } else if matches!(data.frames.last(), Some(AsyncStatementFrame::For(_))) {
+            return self.async_for_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::Loop(_))) {
             return self.async_loop_test(data);
         } else if let Some(frame) = data.frames.last() {
