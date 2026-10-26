@@ -224,8 +224,10 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         if fields[0] == "script-runtime-error" {
             assert!(!meta.has_flag("raw"));
             let error_type = match fields[2] {
-                "test/language/module-code/eval-self-abrupt.js" => "Test262Error",
-                "test/language/statements/using/global-use-before-initialization-in-declaration-statement.js"
+                "test/language/module-code/eval-self-abrupt.js"
+                | "test/language/module-code/eval-export-dflt-expr-err-eval.js" => "Test262Error",
+                "test/language/module-code/eval-export-dflt-expr-err-get-value.js"
+                | "test/language/statements/using/global-use-before-initialization-in-declaration-statement.js"
                 | "test/language/statements/using/global-use-before-initialization-in-prior-statement.js" => {
                     "ReferenceError"
                 }
@@ -252,6 +254,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 10652);
+    assert_eq!(count, 10657);
     assert_eq!(harness_count, 22);
 }

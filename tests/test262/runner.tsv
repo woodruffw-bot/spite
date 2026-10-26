@@ -10632,3 +10632,8 @@ test/language/module-code/top-level-await/top-level-ticks-2.js	-	-	-
 test/language/module-code/top-level-await/top-level-ticks.js	-	-	-
 test/language/module-code/top-level-await/void-await-expr.js	-	-	-
 test/language/module-code/top-level-await/while-dynamic-evaluation.js	-	-	-
+test/language/module-code/eval-export-dflt-cls-anon-semi.js	-	-	-
+test/language/module-code/eval-export-dflt-expr-err-eval.js	-	-	-
+test/language/module-code/eval-export-dflt-expr-err-get-value.js	-	-	-
+test/language/module-code/eval-export-dflt-fun-anon-semi.js	-	-	-
+test/language/module-code/eval-export-dflt-gen-anon-semi.js	-	-	-

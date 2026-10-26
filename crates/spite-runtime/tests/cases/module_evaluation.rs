@@ -115,22 +115,29 @@ fn language_errors_reject_evaluation_and_host_errors_bypass_rejection_and_cleanu
 }
 
 #[test]
-fn dependencies_and_synthetic_defaults_stop_before_body_effects_but_named_defaults_execute() {
+fn dependencies_stop_before_effects_while_default_declarations_and_expressions_execute() {
     let mut realm = Realm::default();
     realm.eval("let effects=0").unwrap();
-    for source in [
-        "effects++;import 'other'",
-        "effects++;export*from'other'",
-        "effects++;export default 1",
-        "effects++;export default function(){}",
-        "effects++;export default class{}",
-    ] {
+    for source in ["effects++;import 'other'", "effects++;export*from'other'"] {
         assert!(
             matches!(realm.eval_module(source), Err(Error::Unsupported { .. })),
             "{source}"
         );
     }
     check(&mut realm, "effects===0");
+    for source in [
+        "effects++;export default 1",
+        "effects++;export default function(){}",
+        "effects++;export default class{}",
+    ] {
+        let promise = realm.eval_module(source).unwrap();
+        assert!(matches!(
+            state(&realm, &promise),
+            PromiseState::Fulfilled(_)
+        ));
+    }
+    check(&mut realm, "effects===3");
+
     for source in [
         "export default function f(){return 7};globalThis.result=f()",
         "export default class C{static value=7};globalThis.result=C.value",

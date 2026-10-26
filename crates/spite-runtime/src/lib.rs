@@ -556,7 +556,9 @@ impl Realm {
         if functions_lexical {
             self.initialize_functions(
                 statements.filter_map(|statement| match &statement.kind {
-                    StatementKind::Function(function) => Some(function.as_ref()),
+                    StatementKind::Function(function) if function.name.is_some() => {
+                        Some(function.as_ref())
+                    }
                     _ => None,
                 }),
                 Some(&handle),

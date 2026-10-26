@@ -16,6 +16,7 @@ pub(crate) enum AsyncAwaitAction {
     Return,
     AsyncGeneratorReturn,
     AsyncGeneratorYield(Span),
+    ModuleDefault,
     DelegationResult(super::async_expression::DelegationOperation),
     Throw,
     Expression,
@@ -261,24 +262,35 @@ impl AsyncStatementFrame {
 #[derive(Debug)]
 pub(crate) enum SourceFunctionMode {
     Async(PromiseCapability),
+    Module {
+        capability: PromiseCapability,
+        default_export: Option<usize>,
+    },
     Generator(Handle),
     AsyncGenerator(Handle),
 }
 
 impl SourceFunctionMode {
+    pub(crate) fn module_default(&self) -> Option<usize> {
+        match self {
+            Self::Module { default_export, .. } => *default_export,
+            _ => None,
+        }
+    }
+
     pub(crate) fn is_async_generator(&self) -> bool {
         matches!(self, Self::AsyncGenerator(_))
     }
     pub(crate) fn promise(&self) -> Option<&PromiseCapability> {
         match self {
-            Self::Async(capability) => Some(capability),
+            Self::Async(capability) | Self::Module { capability, .. } => Some(capability),
             Self::Generator(_) | Self::AsyncGenerator(_) => None,
         }
     }
     pub(crate) fn generator(&self) -> Option<&Handle> {
         match self {
             Self::Generator(callee) | Self::AsyncGenerator(callee) => Some(callee),
-            Self::Async(_) => None,
+            Self::Async(_) | Self::Module { .. } => None,
         }
     }
 }

@@ -56,11 +56,35 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises; graph loading and synthetic default exports remain Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises and synthetic default exports; graph loading remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20435 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Synthetic default Module exports
+
+Anonymous default functions, generators, async functions and async generators
+initialize the synthetic *default* binding before body entry, with the name
+default and original source retained. Anonymous classes receive their name before
+static initialization. Default expressions share NamedEvaluation and the source
+interpreter; awaited expressions keep the synthetic binding in TDZ until they
+complete. Comma and await expressions preserve value naming instead of applying
+an anonymous-definition name. Default export cells follow IsConstantDeclaration.
+
+Four Runtime unit groups cover initialization before a suspended body, exact
+source, function/class naming, static name methods and awaited TDZ. The existing
+six integration groups retain their earlier default-boundary programs positively.
+All 421 Runtime units and 2,263 non-RegExp integrations pass across 688 files;
+fourteen runner probes and thirteen CLI groups pass. Parser coverage stays
+18/434 across 88 files; intrinsic entries stay 591 with no helper or quota changes.
+
+The same eighty-original module review now reports 49 passed/32 Unsupported with
+every other outcome zero. Five newly passing whole files add five Module variants,
+including two runtime negatives with exact constructor-name expectations. The
+inventory contains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources and
+20,440 variants. The full gate and all forty-four runner/package checks pass, with
+Clippy, Rust 1.88 and inventories.
 
 ## Standalone Module execution
 

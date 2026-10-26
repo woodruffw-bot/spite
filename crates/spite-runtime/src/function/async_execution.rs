@@ -159,6 +159,7 @@ impl Realm {
         &mut self,
         body: spite_parser::ast::FunctionBody,
         root: crate::environment::EnvironmentHandle,
+        default_export: Option<usize>,
         span: Span,
     ) -> Result<Value, Error> {
         let context = crate::object::source_context::SourceExecutionContext {
@@ -172,10 +173,14 @@ impl Realm {
         self.with_source_execution_context(context, |realm| {
             // Module functions are lexical and initialized before body entry.
             realm.instantiate(body.statements().iter(), false, true)?;
+            realm.prepare_module_default(&body, &root, default_export)?;
             realm.call_async_body(span, |realm, capability, _| {
                 let data = new_execution_data(
                     ArrowBody::Block(body),
-                    SourceFunctionMode::Async(capability.clone()),
+                    SourceFunctionMode::Module {
+                        capability: capability.clone(),
+                        default_export,
+                    },
                     Some(root),
                     span,
                 );
@@ -344,7 +349,40 @@ impl Realm {
         }
     }
 
+    fn async_module_default_step(&mut self, data: &mut AsyncExecutionData) -> Result<Step, Error> {
+        let statement = active_statement(&data.body, data.statement.as_ref());
+        self.tick(statement.span)?;
+        let value = match &statement.kind {
+            StatementKind::Function(_) => return Ok(Step::Complete(Completion::normal(None))),
+            StatementKind::Class(class) => {
+                self.class_definition(class, Some(spite_core::JsString::from("default").into()))?
+            }
+            StatementKind::Expression(expression)
+                if expression::has_supported_await(expression) =>
+            {
+                return self.start_async_expression(
+                    data,
+                    ExprRoot::Statement,
+                    AsyncAwaitAction::ModuleDefault,
+                );
+            }
+            StatementKind::Expression(expression) => {
+                self.named_expression(expression, spite_core::JsString::from("default"))?
+            }
+            _ => unreachable!("synthetic default declaration"),
+        };
+        self.complete_async_value(data, AsyncAwaitAction::ModuleDefault, value)
+    }
+
     fn async_source_statement(&mut self, data: &mut AsyncExecutionData) -> Result<Step, Error> {
+        if let Some(index) = data.function.module_default()
+            && data
+                .statement
+                .as_ref()
+                .is_some_and(|location| location.root == index && location.children.is_empty())
+        {
+            return self.async_module_default_step(data);
+        }
         let statement = active_statement(&data.body, data.statement.as_ref());
         if matches!(statement.kind, StatementKind::Block(_)) {
             let span = statement.span;
@@ -457,6 +495,12 @@ impl Realm {
     ) -> Result<Step, Error> {
         match action {
             AsyncAwaitAction::Discard => Ok(Step::Complete(Completion::normal(Some(value)))),
+            AsyncAwaitAction::ModuleDefault => {
+                let environment = data.root_scope.as_ref().expect("module environment");
+                let span = active_statement(&data.body, data.statement.as_ref()).span;
+                self.initialize_module_default(environment, value, span)?;
+                Ok(Step::Complete(Completion::normal(None)))
+            }
             AsyncAwaitAction::Return if data.function.is_async_generator() => {
                 // ReturnStatement awaits its expression in async generators
                 // before finalizers run (14.10, GetGeneratorKind).

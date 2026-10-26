@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10652 unmodified test fixtures and twenty-two harness files come from
+These 10657 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Synthetic default Module export review
+
+The same eighty-original module review now reports 49 passed/32 Unsupported;
+every other outcome is zero. Five newly passing whole files add five Module
+variants for anonymous default declarations and expression errors. The two runtime
+negatives retain their original Test262Error/ReferenceError expectations. Files
+requiring dependency loading remain excluded as a whole.
+
+Four Runtime unit groups verify declaration initialization before a suspended
+body, name inference, original source, class static-name behavior and awaited TDZ.
+Existing default-boundary programs remain as positive controls. The inventory
+contains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources and 20,440
+variants. The full gate and all forty-four runner/package checks pass. Helpers,
+591 intrinsic entries and resource defaults/allowances are unchanged.
 
 ## Standalone Module evaluation review
 

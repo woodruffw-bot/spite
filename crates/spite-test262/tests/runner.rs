@@ -663,6 +663,12 @@ fn module_source_limits_and_phase_mismatches_preserve_nonpassing_outcomes() {
 #[test]
 fn module_evaluation_checks_await_rejection_pending_jobs_and_async_completion() {
     for (frontmatter, body, passes) in [
+        ("flags: [module]", "export default 1", true),
+        (
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: TypeError",
+            "export default 1",
+            false,
+        ),
         (
             "flags: [module]",
             "await Promise.resolve(1);export let x=2",
@@ -694,12 +700,7 @@ fn module_evaluation_checks_await_rejection_pending_jobs_and_async_completion() 
             cases[0].outcome
         );
     }
-    for body in [
-        "import 'other'",
-        "export default 1",
-        "import.meta",
-        "await print",
-    ] {
+    for body in ["import 'other'", "import.meta", "await print"] {
         let cases = Runner::default()
             .run(
                 &source(

@@ -92,7 +92,7 @@ impl Runner {
     /// Parse-negative tests never evaluate harness code or test bodies. Async
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
     /// Promise jobs. Module parse negatives use the Module goal and the same exact
-    /// review checks; module dependencies, synthetic default exports, raw async harness setup, and agent settings
+    /// review checks; module dependencies, raw async harness setup, and agent settings
     /// remain explicitly unsupported. Host helper names are reserved so missing helpers
     /// cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.

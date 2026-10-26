@@ -10673,3 +10673,8 @@ script-pass	574d304fc862bfadd6be0fa6151c5e4a159311746ad530629bf0bfa11f7f60a8	tes
 script-pass	c21c806fdf32be2141a7cfed1f09b18ff169d28eed8259ec3590d98a34fe9934	test/language/module-code/top-level-await/top-level-ticks.js
 script-pass	3d67b30760df03f4cadb6b093b9cbc38e3d89335a477fef8ebfb06df8e2f5b72	test/language/module-code/top-level-await/void-await-expr.js
 script-pass	c8692fa39ad2bb9bb7921b6407540b0f852b2cc327ea83b343f9fcf1c9a21088	test/language/module-code/top-level-await/while-dynamic-evaluation.js
+script-pass	8f51596535737bf33603d78543bfb00f8792802208b9ff0f9cc0212a7d329de1	test/language/module-code/eval-export-dflt-cls-anon-semi.js
+script-runtime-error	b4f444a14c97d83a7dac2124d6ca7a3d6ae0231e088370169fc9d15945295edb	test/language/module-code/eval-export-dflt-expr-err-eval.js
+script-runtime-error	6a769f4a6507a092bc2f898a3555567796e66e93d4ddc0a7fe9d3240a5df492d	test/language/module-code/eval-export-dflt-expr-err-get-value.js
+script-pass	5e07612c564201578fda64fcb97493bffcdb1a7d9d4731a1f937b22dda60bc50	test/language/module-code/eval-export-dflt-fun-anon-semi.js
+script-pass	b4866570c972b626075e779a8ff3338437f55c95fd22910af9bf9095d1572ec3	test/language/module-code/eval-export-dflt-gen-anon-semi.js

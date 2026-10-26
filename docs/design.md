@@ -483,8 +483,19 @@ without creating a function or arguments object. Evaluation returns an intrinsic
 Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
-Dependency requests and synthetic default exports stop before body effects.
+Dependency requests stop before body effects.
 Module records, graph linking/caching, namespaces and import.meta remain work.
+
+Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
+Anonymous hoistable declarations initialize this cell during Module instantiation
+and receive the name default. Their declaration statements do not evaluate again.
+Anonymous class declarations receive the inferred name before static initialization;
+class-defined name properties retain their own behavior. Default expressions use
+the existing NamedEvaluation helpers or suspend through a Module-default source
+action. The binding stays in TDZ until expression completion; awaited values and
+comma expressions do not acquire an anonymous-definition name. All synthetic
+defaults use mutable cells as IsConstantDeclaration specifies, with no source-level
+syntax for referring to their synthetic name.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before
