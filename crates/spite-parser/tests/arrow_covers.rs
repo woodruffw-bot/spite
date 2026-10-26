@@ -71,10 +71,7 @@ fn invalid_patterns_and_arrow_line_terminators_remain_syntax_errors() {
         })
         .collect();
     insta::assert_debug_snapshot!(diagnostics);
-    assert_eq!(
-        parse_script("import('x')").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
+    assert!(parse_script("import('x')").is_ok());
 }
 
 #[test]

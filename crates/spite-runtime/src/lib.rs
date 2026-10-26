@@ -1647,6 +1647,12 @@ impl Realm {
                     self.expression(no)?
                 }
             }
+            ExprKind::ImportCall { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "dynamic module loading is not implemented",
+                ));
+            }
             ExprKind::Yield { .. } => {
                 return Err(Self::unsupported(
                     expr.span,

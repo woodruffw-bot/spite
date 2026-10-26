@@ -56,9 +56,37 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19472 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19518 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Dynamic import grammar and retained calls
+
+ImportCall syntax retains its specifier/options and full source range, accepting
+one or two AssignmentExpressions and optional trailing commas. Strict/private
+validation traverses operands; ordinary call/member/tag suffixes parse. Direct new
+operands reject unparenthesized calls, while parenthesized results remain valid.
+Unexecuted imports and functions containing imports now execute normally. Executed
+imports retain the explicit module-loading host boundary before operands or jobs.
+
+Three Parser groups and a reviewed AST snapshot cover grammar, contexts and early
+errors. Three Runtime groups cover retained functions, unexecuted calls, catchable
+invalid syntax and executed host failures. Earlier valid-import parser controls
+now parse positively; the runtime control invokes its compiled function. Existing
+groups, helpers, quotas and the 585-entry intrinsic inventory are retained.
+
+All eighteen Parser units, 388 Parser integrations, 417 Runtime units, 2,219
+non-RegExp integrations and thirteen CLI groups pass across 81 Parser and 682
+Runtime files. Strict Clippy, Rust 1.88, policy and inventories pass.
+
+The scoped upstream review covers 31 whole edition-17 syntax originals: top-level
+argument/new forms, assignment/update targets, call/tag suffixes and parenthesized
+new. Twenty-three exact reviewed negatives add 46 variants. Eight loading-dependent
+originals remain wholly excluded, yielding sixteen Unsupported variants; failures,
+limits, setup failures and unverified negatives are zero. The corpus contains
+10,088 fixtures, twenty helpers, 10,069 reviewed sources and 19,518 variants. The
+complete conformance gate and all forty runner/package checks pass.
+Proposal-specific import.source/import.defer variants are outside this review.
 
 ## Script restrictions for module-only syntax
 

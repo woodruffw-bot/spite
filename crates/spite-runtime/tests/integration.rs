@@ -1446,3 +1446,6 @@ mod generator_delegation;
 
 #[path = "cases/script_module_syntax.rs"]
 mod script_module_syntax;
+
+#[path = "cases/import_call.rs"]
+mod import_call;

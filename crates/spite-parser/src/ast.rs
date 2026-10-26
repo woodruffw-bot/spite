@@ -909,6 +909,13 @@ pub enum ExprKind {
         /// Argument expressions in source order.
         arguments: Vec<Argument>,
     },
+    /// A dynamic import with a specifier and optional import options (13.3.10).
+    ImportCall {
+        /// Module specifier expression, evaluated before options.
+        specifier: Box<Expr>,
+        /// Optional second expression, including explicit undefined.
+        options: Option<Box<Expr>>,
+    },
     /// Construction with optional parentheses and ordered ordinary/spread arguments.
     New {
         /// Expression whose value must be a constructor at runtime.

@@ -86,7 +86,13 @@ Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a
 Module goal (13.3.1 early errors); direct eval and dynamic function source therefore
 report catchable SyntaxErrors. Valid dynamic import retains its distinct
-Unsupported host boundary until module loading is implemented. Keyword-named
+Unsupported host boundary until module loading is implemented.
+ImportCall nodes retain the specifier, optional options expression and full source
+span (13.3.10). Their grammar accepts one or two AssignmentExpressions and optional
+trailing commas, rejects spread and direct new operands, and participates in the
+usual depth/strict/private validation. Parenthesized import results can be new
+operands. Unexecuted calls are ordinary retained syntax; executed calls report the
+host boundary before operand evaluation or Promise/job creation. Keyword-named
 ordinary properties and methods retain their existing grammar.
 
 Left-associated binary expression spines (13.6–13.13, 13.16) use an initial

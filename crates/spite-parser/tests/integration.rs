@@ -165,3 +165,6 @@ mod dynamic_generator_function;
 
 #[path = "script_module_syntax.rs"]
 mod script_module_syntax;
+
+#[path = "import_call.rs"]
+mod import_call;

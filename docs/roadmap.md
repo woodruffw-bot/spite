@@ -424,6 +424,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume object-binding computed keys and defaults across declarations, headers and catch parameters with shared mixed-pattern state, GetV, exclusion sets and object rest.
 - [x] Share rest Array collection and rest Object copying between binding and assignment patterns while preserving reference order and closing.
 - [ ] Complete await expressions and suspended control-flow continuations.
+- [x] Parse ImportCall specifiers/options with standard argument and new-expression grammar, retained source, strict/private validation and an execution-only module-loading boundary.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

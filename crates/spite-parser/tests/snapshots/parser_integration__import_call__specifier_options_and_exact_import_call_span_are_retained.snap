@@ -1,0 +1,103 @@
+---
+source: crates/spite-parser/tests/import_call.rs
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Expression(
+                Expr {
+                    depth: 4,
+                    kind: ImportCall {
+                        specifier: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                RegExp {
+                                    body: "x",
+                                    flags: "",
+                                },
+                            ),
+                            span: Span {
+                                start: 7,
+                                end: 10,
+                            },
+                        },
+                        options: Some(
+                            Expr {
+                                depth: 3,
+                                kind: Object(
+                                    [
+                                        Property(
+                                            ObjectProperty {
+                                                name: Literal(
+                                                    String(
+                                                        "with",
+                                                    ),
+                                                ),
+                                                value: Expr {
+                                                    depth: 2,
+                                                    kind: Object(
+                                                        [
+                                                            Property(
+                                                                ObjectProperty {
+                                                                    name: Literal(
+                                                                        String(
+                                                                            "type",
+                                                                        ),
+                                                                    ),
+                                                                    value: Expr {
+                                                                        depth: 1,
+                                                                        kind: Literal(
+                                                                            String(
+                                                                                "json",
+                                                                            ),
+                                                                        ),
+                                                                        span: Span {
+                                                                            start: 24,
+                                                                            end: 30,
+                                                                        },
+                                                                    },
+                                                                    kind: Data,
+                                                                    span: Span {
+                                                                        start: 19,
+                                                                        end: 30,
+                                                                    },
+                                                                },
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    span: Span {
+                                                        start: 18,
+                                                        end: 31,
+                                                    },
+                                                },
+                                                kind: Data,
+                                                span: Span {
+                                                    start: 13,
+                                                    end: 31,
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                span: Span {
+                                    start: 12,
+                                    end: 32,
+                                },
+                            },
+                        ),
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 34,
+                    },
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 34,
+            },
+        },
+    ],
+    strict: false,
+}

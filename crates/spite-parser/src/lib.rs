@@ -12,6 +12,7 @@ mod cover;
 mod dynamic_function;
 mod function;
 mod generator;
+mod import_call;
 mod iteration;
 pub mod json;
 mod lexer;
@@ -775,6 +776,9 @@ impl Parser {
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::PrivateIn { value, .. } => value.depth,
+            ExprKind::ImportCall { specifier, options } => specifier
+                .depth
+                .max(options.as_ref().map_or(0, |options| options.depth)),
             ExprKind::Yield { argument, .. } => {
                 argument.as_ref().map_or(0, |argument| argument.depth)
             }
@@ -1278,6 +1282,14 @@ impl Parser {
             let token = self.bump();
             return self.make_expr(ExprKind::Literal(Literal::Null), token.span);
         }
+        if self.at("import")
+            && !self.current().escaped
+            && self
+                .token_at(self.index + 1)
+                .is_some_and(|token| token.kind == Kind::Punct("("))
+        {
+            return self.import_call();
+        }
         if self.at("class") {
             let class = self.class_definition(false)?;
             let span = class.source.span;
@@ -1401,18 +1413,7 @@ impl Parser {
             Kind::Word(name) if name == "import" && self.at(".") => {
                 Err(early(span, "import.meta is only allowed in Modules"))
             }
-            Kind::Word(name) if name != "import" || (!self.at("(") && !self.at(".")) => {
-                Err(Diagnostic::new(
-                    DiagnosticKind::Syntax,
-                    span,
-                    "reserved word cannot begin an expression",
-                ))
-            }
-            Kind::Word(_) => Err(Diagnostic::new(
-                DiagnosticKind::Unsupported,
-                span,
-                "expression form is not implemented",
-            )),
+            Kind::Word(_) => Err(early(span, "reserved word cannot begin an expression")),
             _ => Err(Diagnostic::new(
                 DiagnosticKind::Syntax,
                 span,
@@ -1485,6 +1486,7 @@ fn member_base(expr: &Expr) -> bool {
             | ExprKind::Member(..)
             | ExprKind::SuperProperty(_)
             | ExprKind::Call { .. }
+            | ExprKind::ImportCall { .. }
             | ExprKind::New {
                 arguments: Some(_),
                 ..
@@ -2161,6 +2163,12 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::SuperCall(arguments) => {
             for argument in arguments {
                 validate_expr(argument.expression(), strict)?;
+            }
+        }
+        ExprKind::ImportCall { specifier, options } => {
+            validate_expr(specifier, strict)?;
+            if let Some(options) = options {
+                validate_expr(options, strict)?;
             }
         }
         ExprKind::Call { callee, arguments } => {

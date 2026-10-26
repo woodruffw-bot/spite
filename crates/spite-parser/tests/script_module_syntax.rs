@@ -49,18 +49,14 @@ fn dynamic_function_bodies_keep_the_script_goal_for_module_only_forms() {
 }
 
 #[test]
-fn valid_dynamic_import_keeps_its_host_boundary_and_keyword_property_names_parse() {
+fn valid_dynamic_import_and_keyword_property_names_parse() {
     for source in [
         "import('source')",
         "let x=import('source')",
         "function f(){return import('source')}",
         "async function f(){return await import('source')}",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
     for source in [
         "({import:1,export:2}).import",

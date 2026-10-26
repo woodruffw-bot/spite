@@ -10045,3 +10045,26 @@ test/language/expressions/import.meta/syntax/goal-async-function-params-or-body.
 test/language/expressions/import.meta/syntax/goal-function-params-or-body.js	-	-	-
 test/language/expressions/import.meta/syntax/goal-generator-params-or-body.js	-	-	-
 test/language/expressions/import.meta/syntax/goal-script.js	472	478	import.meta is only allowed in Modules
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-5-lhs-equals-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-6-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-7-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-8-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-9-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/top-level-assignment-expr-not-optional.js	586	587	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/top-level-no-new-call-expression-prop-access.js	769	784	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/top-level-no-new-call-expression.js	633	643	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/top-level-no-rest-param.js	742	745	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/top-level-not-extensible-args.js	786	788	expected )
+test/language/expressions/dynamic-import/syntax/invalid/top-level-typeof-import.js	587	593	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-1-update-expression.js	1165	1175	invalid update target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-10-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-11-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-12-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-13-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-14-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-15-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-16-lhs-assignment-operator-assignment-expression.js	1445	1455	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-17-lhs-assignment-operator-assignment-expression.js	1461	1471	invalid assignment target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-2-update-expression.js	1162	1172	invalid update target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-3-update-expression.js	1134	1144	invalid update target
+test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-4-update-expression.js	1134	1144	invalid update target

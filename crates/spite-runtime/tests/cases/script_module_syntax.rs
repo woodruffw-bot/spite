@@ -17,7 +17,7 @@ fn dynamic_import_still_aborts_language_handlers_as_an_unsupported_feature() {
     let mut realm = Realm::default();
     realm.eval("let caught=0,finalized=0").unwrap();
     let error = realm
-        .eval("try{Function(\"import('source')\")}catch{caught++}finally{finalized++}")
+        .eval("try{Function(\"import('source')\")()}catch{caught++}finally{finalized++}")
         .unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
     assert_eq!(

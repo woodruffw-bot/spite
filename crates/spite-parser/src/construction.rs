@@ -43,11 +43,8 @@ impl Parser {
         // new F.x(a).y() constructs F.x before reading/calling y. Recursive new
         // expressions consume their own argument list first: new new F()().
         let callee = self.expression(18)?;
-        if contains_unparenthesized_super_call(&callee) {
-            return Err(early(
-                callee.span,
-                "super call is not a constructor expression",
-            ));
+        if let Some(message) = invalid_constructor_call(&callee) {
+            return Err(early(callee.span, message));
         }
         if matches!(callee.kind, ExprKind::OptionalChain { .. }) {
             return Err(early(
@@ -74,12 +71,13 @@ impl Parser {
     }
 }
 
-fn contains_unparenthesized_super_call(expression: &Expr) -> bool {
+fn invalid_constructor_call(expression: &Expr) -> Option<&'static str> {
     match &expression.kind {
-        ExprKind::SuperCall(_) => true,
+        ExprKind::SuperCall(_) => Some("super call is not a constructor expression"),
+        ExprKind::ImportCall { .. } => Some("import call is not a constructor expression"),
         ExprKind::Member(base, _) | ExprKind::TaggedTemplate { tag: base, .. } => {
-            contains_unparenthesized_super_call(base)
+            invalid_constructor_call(base)
         }
-        _ => false,
+        _ => None,
     }
 }

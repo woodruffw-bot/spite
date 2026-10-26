@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10065 unmodified test fixtures and twenty harness files come from
+These 10088 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Dynamic import grammar review
+
+Twenty-three unchanged syntax negatives add 46 variants, with exact reviewed
+rejection spans/messages for argument counts, spread, assignment/update targets
+and direct new forms. The scoped 31-original review also includes call/tag suffixes
+and parenthesized new: their eight loading-dependent originals remain excluded as
+whole files. Outcomes are 46 passed/16 Unsupported and zero failures, limits, setup
+failures or unverified negatives. Proposal-specific import.source/import.defer
+variants are outside this edition-17 review.
+
+The complete inventory contains 10,088 fixtures, twenty helpers, 10,069 reviewed
+sources and 19,518 variants. Three Parser groups, one AST snapshot and three Runtime
+groups cover the retained syntax and execution-only module-loading boundary.
+Existing groups, helpers, quotas and intrinsic entries are unchanged.
 
 ## Script module-syntax restrictions
 
