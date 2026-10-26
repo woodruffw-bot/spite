@@ -104,9 +104,14 @@ be unique across these forms; bare star exports contribute no explicit name.
 Variable, lexical, function, generator, async-function and class exports retain
 their ordinary declaration nodes and derive export metadata from the existing
 binding-name collectors. This keeps destructuring and Module scope conflicts in
-the shared validators. Default exports remain Unsupported, and nested static
-declarations are syntax errors. No Module AST is accepted by Script execution
-APIs, and linking/evaluation remain separate implementation work.
+the shared validators. Default exports use the existing function/class parsers
+with optional declaration names, or the AssignmentExpression parser with ASI
+(16.2.3). Their records distinguish named declaration bindings from the synthetic
+*default* binding of anonymous declarations and expressions. Parenthesized named
+function/class expressions introduce no Module binding. Shared strict/scope
+validation and exported-name uniqueness still apply. Nested static declarations
+are syntax errors. Async-generator syntax, module linking and evaluation remain
+implementation work; no Module AST is accepted by Script execution APIs.
 
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a

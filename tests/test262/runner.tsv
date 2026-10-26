@@ -10206,3 +10206,12 @@ test/language/export/escaped-as-export-specifier.js	839	846	expected }
 test/language/export/escaped-default.js	812	824	expected an export declaration
 test/language/module-code/early-dup-export-decl.js	425	426	duplicate lexical binding
 test/language/import/escaped-as-import-specifier.js	840	847	expected }
+test/language/module-code/early-dup-export-dflt-id.js	461	468	duplicate exported name
+test/language/module-code/early-dup-export-star-as-dflt.js	480	487	duplicate exported name
+test/language/module-code/export-default-asyncfunction-declaration-binding-exists.js	565	566	duplicate lexical binding
+test/language/module-code/export-default-function-declaration-binding-exists.js	548	549	duplicate lexical binding
+test/language/module-code/export-default-generator-declaration-binding-exists.js	552	553	duplicate lexical binding
+test/language/module-code/parse-err-export-dflt-const.js	350	355	reserved word cannot begin an expression
+test/language/module-code/parse-err-export-dflt-expr.js	750	751	expected a semicolon or line terminator
+test/language/module-code/parse-err-export-dflt-let.js	352	353	expected a semicolon or line terminator
+test/language/module-code/parse-err-export-dflt-var.js	341	344	reserved word cannot begin an expression

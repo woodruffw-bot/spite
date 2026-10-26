@@ -94,7 +94,7 @@ impl Parser {
             };
             return Ok((declaration, Some(statement)));
         } else if self.at("default") {
-            return Err(self.unsupported("default exports are not implemented"));
+            return self.default_export(start);
         } else {
             return Err(self.error("expected an export declaration"));
         };
@@ -106,6 +106,44 @@ impl Parser {
                 span: Span::new(start, end),
             },
             None,
+        ))
+    }
+
+    fn default_export(
+        &mut self,
+        start: usize,
+    ) -> Result<(ExportDeclaration, Option<Statement>), Diagnostic> {
+        let keyword = self.bump().span;
+        let body_start = self.current().span.start;
+        // 16.2.3: declaration lookahead excludes function/async function/class
+        // from the AssignmentExpression alternative. Only expressions need ASI.
+        let kind = if self.at("function") || self.at_async_function() {
+            StatementKind::Function(self.ordinary_function(false)?)
+        } else if self.at("class") {
+            StatementKind::Class(self.class_definition(false)?)
+        } else {
+            let expression = self.expression(2)?;
+            self.semicolon()?;
+            StatementKind::Expression(expression)
+        };
+        let end = self.tokens[self.index - 1].span.end;
+        let statement = Statement {
+            kind,
+            span: Span::new(body_start, end),
+        };
+        let local = block_lexical_names(&statement)
+            .next()
+            .map(|(name, span)| ModuleExportName {
+                value: JsString::from(name),
+                span,
+                quoted: false,
+            });
+        Ok((
+            ExportDeclaration {
+                kind: ExportKind::Default { local, keyword },
+                span: Span::new(start, end),
+            },
+            Some(statement),
         ))
     }
 
@@ -127,6 +165,14 @@ pub(super) fn validate(
     let mut exported = BTreeSet::new();
     for declaration in exports {
         match &declaration.kind {
+            ExportKind::Default { keyword, .. } => insert(
+                &mut exported,
+                &ModuleExportName {
+                    value: JsString::from("default"),
+                    span: *keyword,
+                    quoted: false,
+                },
+            )?,
             ExportKind::Declaration { names } => {
                 for name in names {
                     insert(&mut exported, name)?;

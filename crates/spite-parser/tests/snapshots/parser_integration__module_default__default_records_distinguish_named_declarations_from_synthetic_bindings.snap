@@ -1,0 +1,70 @@
+---
+source: crates/spite-parser/tests/module_default.rs
+assertion_line: 51
+expression: records
+---
+[
+    (
+        "export default function named(){}",
+        Some(
+            "named",
+        ),
+        "function",
+    ),
+    (
+        "export default function(){}",
+        None,
+        "function",
+    ),
+    (
+        "export default function* named(){}",
+        Some(
+            "named",
+        ),
+        "function",
+    ),
+    (
+        "export default function*(){}",
+        None,
+        "function",
+    ),
+    (
+        "export default async function named(){}",
+        Some(
+            "named",
+        ),
+        "function",
+    ),
+    (
+        "export default async function(){}",
+        None,
+        "function",
+    ),
+    (
+        "export default class Named{}",
+        Some(
+            "Named",
+        ),
+        "class",
+    ),
+    (
+        "export default class{}",
+        None,
+        "class",
+    ),
+    (
+        "export default (function internal(){})",
+        None,
+        "expression",
+    ),
+    (
+        "export default (class Internal{})",
+        None,
+        "expression",
+    ),
+    (
+        "export default 42;",
+        None,
+        "expression",
+    ),
+]

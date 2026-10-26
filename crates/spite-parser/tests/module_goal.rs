@@ -137,8 +137,11 @@ fn static_module_declarations_keep_their_explicit_boundary_only_at_top_level() {
         assert_eq!(parse_module(source).unwrap().imports().len(), 1);
     }
     assert_eq!(parse_module("export {}").unwrap().exports().len(), 1);
+    assert_eq!(parse_module("export default 1").unwrap().exports().len(), 1);
     assert_eq!(
-        parse_module("export default 1").unwrap_err().kind,
+        parse_module("export default async function* g(){}")
+            .unwrap_err()
+            .kind,
         DiagnosticKind::Unsupported
     );
     for source in ["{import 'source'}", "function f(){export {}}"] {

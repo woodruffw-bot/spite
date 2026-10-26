@@ -5,8 +5,8 @@ use std::{fmt, rc::Rc};
 
 /// A parsed Module body, distinct from Script execution input.
 ///
-/// All Module code is strict. Imports and declaration/named/star exports retain
-/// module records; default exports, linking and execution remain work.
+/// All Module code is strict. Imports and exports retain module records;
+/// linking and execution remain separate implementation work.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     pub(crate) statements: Vec<Statement>,
@@ -100,9 +100,16 @@ pub struct ExportSpecifier {
     pub exported: ModuleExportName,
 }
 
-/// The supported static export forms; default exports remain work.
+/// Static export forms retained for Module linking and evaluation.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExportKind {
+    /// A default declaration or expression retained in Module statements.
+    Default {
+        /// Named declaration binding; None denotes the synthetic *default* binding.
+        local: Option<ModuleExportName>,
+        /// The default keyword's range, used for duplicate exported-name errors.
+        keyword: Span,
+    },
     /// Bound names exported by a declaration retained in Module statements.
     Declaration {
         /// Names in declaration order, including destructuring bindings.
@@ -127,7 +134,7 @@ pub enum ExportKind {
 /// A static export declaration and its complete source range.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExportDeclaration {
-    /// Declaration, named or star export metadata.
+    /// Static export metadata.
     pub kind: ExportKind,
     /// Complete declaration range, including an explicit semicolon.
     pub span: Span,
@@ -411,7 +418,7 @@ pub enum StatementKind {
     Debugger,
     /// An expression statement.
     Expression(Expr),
-    /// An ordinary function declaration; its syntax always has a name.
+    /// A function declaration; default exports permit anonymous declarations.
     Function(Rc<Function>),
     /// A class declaration with a mutable lexical declaration binding.
     Class(Rc<Class>),

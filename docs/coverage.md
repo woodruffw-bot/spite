@@ -56,9 +56,36 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19669 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19678 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Default export records and grammar
+
+Default exports retain ordinary function/generator/async-function/class nodes or
+an assignment-expression node. Records distinguish a named declaration's Module
+binding from the synthetic *default* binding of anonymous declarations and
+expressions. Declaration lookahead, expression ASI, shared strict/scope validation
+and exported-name uniqueness follow edition 17. Parenthesized named expressions
+introduce no Module binding. Async-generator syntax and module linking/evaluation
+remain Unsupported; Module ASTs cannot execute through Script APIs.
+
+Seven new Parser groups and a reviewed record snapshot cover binding distinctions,
+declaration lookahead, expressions/ASI, aliases and scope conflicts, duplicate
+default names, strict bodies, UTF-16 source and opted-in limits. Existing default
+boundary programs are retained positively; async generators provide the remaining
+boundary control. All eighteen Parser units, 421 Parser integrations, 417 Runtime
+units, 2,229 non-RegExp integrations, thirteen CLI groups and thirteen runner probes
+pass across 86 Parser and 683 Runtime files. Clippy, Rust 1.88 and inventories pass.
+
+Nine unchanged syntax negatives add nine exact reviewed variants. The 55-original
+default cohort reports thirteen passed/41 Unsupported/one unverified; the export
+cohort reports 61 passed/nine Unsupported/two unverified. Those two malformed
+originals reject before their intended duplicate-name/Unicode checks and remain
+wholly excluded. The import cohort reports 56 passed/eleven Unsupported. Other
+outcomes are zero. The corpus contains 10,235 fixtures, twenty helpers, 10,216
+reviewed sources and 19,678 variants. The full gate and all forty-three
+runner/package checks pass; helpers, quotas and 585 intrinsic entries are unchanged.
 
 ## Declaration exports
 

@@ -516,6 +516,8 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         "export {}",
         "export var value",
         "export function value(){}",
+        "export default 1",
+        "export default function(){}",
     ] {
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
@@ -533,7 +535,7 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         ));
     }
     {
-        let body = "export default 1";
+        let body = "export default async function* gap(){}";
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
             body,

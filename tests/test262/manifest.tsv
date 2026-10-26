@@ -10245,3 +10245,12 @@ parse-syntax-error	d49a0f074128a9ad3f84655b12d9332a8a3df9cf40bd53545b43330923c90
 parse-syntax-error	b8bb67c1db599f90eecf75542bccf4991e71aadcdd969a33d00ff166fbcc2b60	test/language/export/escaped-default.js
 parse-syntax-error	32ecbf5b749af83757b28c851d8f98ed9b9d014a2025eb5d200ba0525899e5af	test/language/module-code/early-dup-export-decl.js
 parse-syntax-error	5df8fa3fd6b4e09fc6e450056073a2ab49e583f41ab7b5d8f313ebd66e28c846	test/language/import/escaped-as-import-specifier.js
+parse-syntax-error	60fa7477ce1dd373895d75ef3049f495b5f138ebec5e477f3dc6d724dea91183	test/language/module-code/early-dup-export-dflt-id.js
+parse-syntax-error	87d3bbb5dd4d155e192e6c4f96679ca4593e95c42174d6d8bb2bda70fe6725d5	test/language/module-code/early-dup-export-star-as-dflt.js
+parse-syntax-error	d98193819df758ee15af97f1c4d23c2f8fa9a4edb185269c8404627d5a45f521	test/language/module-code/export-default-asyncfunction-declaration-binding-exists.js
+parse-syntax-error	bbe2acaa3668ea6b180f8da0ec42b303896a6e5cb6bcf2a61e954a8e0ab30d91	test/language/module-code/export-default-function-declaration-binding-exists.js
+parse-syntax-error	ab8509b914794616ddbf8c86923d2378243c2f33f5ba28b96369139ee6052cf8	test/language/module-code/export-default-generator-declaration-binding-exists.js
+parse-syntax-error	741df6cfa5fb8914617c5f772dbe9d0b05195d321692183dc59f99433b44030d	test/language/module-code/parse-err-export-dflt-const.js
+parse-syntax-error	7c548ba4e9d7884d67be5bb80113c6be043ce535a4bb2c89e294e10d19ea185a	test/language/module-code/parse-err-export-dflt-expr.js
+parse-syntax-error	fd5262ec065a167f874ade7a3e7b47a0797d3020e5b271848a0aacd78e510139	test/language/module-code/parse-err-export-dflt-let.js
+parse-syntax-error	15b4beeaaa05b262340b9e6fc952f6d8a07afa4621d6f0bcbfbb7b2c40a5a2cc	test/language/module-code/parse-err-export-dflt-var.js

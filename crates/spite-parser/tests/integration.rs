@@ -175,6 +175,9 @@ mod module_goal;
 #[path = "module_imports.rs"]
 mod module_imports;
 
+#[path = "module_default.rs"]
+mod module_default;
+
 #[path = "module_declarations.rs"]
 mod module_declarations;
 

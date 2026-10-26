@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10226 unmodified test fixtures and twenty harness files come from
+These 10235 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,24 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Default export review
+
+Nine unchanged Module syntax negatives add nine variants with exact rejection
+reviews for duplicate default names, named declaration binding conflicts and
+invalid default expression/declaration grammar. The 55-original default cohort
+reports thirteen passed/41 Unsupported/one unverified; the 72-original export
+cohort reports 61 passed/nine Unsupported/two unverified. Two malformed originals
+reject before their intended duplicate-name/Unicode checks and remain wholly
+excluded. The 67-original import cohort reports 56 passed/eleven Unsupported.
+Other outcomes are zero.
+
+The corpus contains 10,235 fixtures, twenty helpers, 10,216 reviewed sources and
+19,678 variants. Seven Parser groups and a reviewed record snapshot cover default
+bindings, grammar, scope and source handling. Earlier boundary programs are
+retained positively, with async-generator controls still Unsupported. Helpers,
+quotas and intrinsic entries are unchanged. The full gate and all forty-three
+runner/package checks pass. Module linking/evaluation remain implementation work.
 
 ## Declaration export review
 
