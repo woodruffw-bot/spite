@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including optional/super calls,
+including computed super accesses/calls,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -570,7 +570,23 @@ and counting physically repeated Symbol slots. Converted key input objects are
 released before awaited values; rejected or abandoned literals release their
 partial state before handlers or host abort. Tests retain positive coverage of
 formerly unsupported object-await forms; remaining boundary controls exercise
-awaited optional-chain keys.
+awaited pattern defaults after optional chains gained suspension support.
+
+Optional chains suspend in bases, computed keys and call arguments (13.3.10).
+Each optional nullish check skips its whole ungrouped suffix before evaluating
+keys or arguments. Core Reference operations preserve deferred key conversion,
+getters, private access and final deletion; delete never reads the final property.
+Awaited member/nested-chain bases retain their references, including parenthesized
+outer calls and tags. Calls capture the function/receiver once, pass spread/raw
+values through ordinary argument accumulation and check callability afterwards;
+optional eval is indirect.
+
+Pending keys retain base Values and call cursors retain targets/earlier arguments
+through the established value inventory. Nested reference handoff actions contain
+source paths and flags without JavaScript owners. Short-circuits do not replay
+source or evaluate skipped unsupported forms. Host abort retains its cleanup and
+capture-release rules; boundary controls now use genuinely unsupported pattern
+defaults, with positive coverage for the prior optional-chain programs.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

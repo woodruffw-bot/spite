@@ -401,6 +401,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume tagged templates through shared call/argument continuations with saved receivers, raw substitutions, frozen site caching and indirect eval.
 - [x] Resume private-in after awaited RHS evaluation with preserved lexical brands, direct lookup and shared primitive/error behavior.
 - [x] Resume object-literal keys/values/spreads/prototype definitions with shared property evaluation, naming, home objects and traced partial state.
+- [x] Resume optional chains with lazy nullish suffixes, awaited bases/keys/arguments, preserved call/tag/delete references and indirect eval.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

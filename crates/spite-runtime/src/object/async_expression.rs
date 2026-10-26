@@ -36,6 +36,9 @@ pub(crate) enum ExprChild {
     ObjectKey(usize),
     ObjectValue(usize),
     ObjectSpread(usize),
+    OptionalBase,
+    OptionalKey(usize),
+    OptionalArgument { step: usize, index: usize },
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
@@ -61,6 +64,10 @@ impl InvocationTarget {
 #[derive(Debug)]
 pub(crate) enum MemberAction {
     Value,
+    OptionalBase {
+        path: ExprPath,
+        action: Box<MemberAction>,
+    },
     Update {
         op: UpdateOp,
         prefix: bool,
@@ -79,6 +86,16 @@ pub(crate) enum MemberAction {
     Delete {
         span: Span,
     },
+}
+
+#[derive(Debug)]
+pub(crate) struct OptionalCallCursor {
+    pub path: ExprPath,
+    pub step: usize,
+    pub index: usize,
+    pub target: InvocationTarget,
+    pub arguments: Vec<Value>,
+    pub action: MemberAction,
 }
 
 #[derive(Debug)]
@@ -188,6 +205,18 @@ pub(crate) enum ExprTask {
         element: usize,
         object: Value,
     },
+    OptionalBase {
+        path: ExprPath,
+        action: MemberAction,
+    },
+    OptionalKey {
+        path: ExprPath,
+        step: usize,
+        base: Value,
+        action: MemberAction,
+    },
+    OptionalArgumentNext(OptionalCallCursor),
+    OptionalArgumentAppend(OptionalCallCursor),
     PrivateIn(ExprPath),
     DestructureApply(ExprPath),
     AssignmentApply {
@@ -220,8 +249,13 @@ impl ExprTask {
                 | Self::ObjectKey { object, .. }
                 | Self::ObjectValue { object, .. }
                 | Self::ObjectSpread { object, .. } => (Some(object), None, &[]),
-                Self::MemberKey { base, .. } => (Some(base), None, &[]),
+                Self::MemberKey { base, .. } | Self::OptionalKey { base, .. } => {
+                    (Some(base), None, &[])
+                }
                 Self::AssignmentApply { left, .. } => (left.as_ref(), None, &[]),
+                Self::OptionalArgumentNext(cursor) | Self::OptionalArgumentAppend(cursor) => {
+                    (None, Some(&cursor.target), &cursor.arguments)
+                }
                 Self::ArgumentNext {
                     target, arguments, ..
                 }

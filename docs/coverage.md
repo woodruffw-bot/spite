@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Optional chains with awaited operands
+
+Eight Runtime groups and three Symbol ownership controls cover lazy nullish
+suffixes, awaited bases/keys/arguments, nested and parenthesized references,
+calls/tags/deletion, raw spread, indirect eval, private/super/dynamic/using contexts,
+collection and argument/host limits. All 417 units and 2,074 non-RegExp integrations
+pass across 663 Runtime case files; strict Clippy and Rust 1.88 checks pass. Former
+optional-await boundary forms have positive coverage; boundary controls now use
+awaited pattern defaults. All test groups and quotas are retained.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers are unchanged.
+
 ## Object literals with awaited definitions
 
 Eight Runtime groups and three Symbol ownership controls cover ordered keys and

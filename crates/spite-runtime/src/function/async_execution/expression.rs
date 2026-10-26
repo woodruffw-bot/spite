@@ -3,6 +3,7 @@
 mod assignment;
 mod member;
 mod object;
+mod optional;
 mod template;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
@@ -17,8 +18,8 @@ use crate::{
 };
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
-    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, ObjectElement, PropertyName,
-    StatementKind, UnaryOp,
+    Argument, ArrayElement, ArrowBody, BinaryOp, ChainStepKind, Expr, ExprKind, ObjectElement,
+    PropertyName, StatementKind, UnaryOp,
 };
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
@@ -29,6 +30,11 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
             has_supported_await(value)
         }
+        ExprKind::OptionalChain {base, steps} => has_supported_await(base) || steps.iter().any(|step| match &step.kind {
+            ChainStepKind::Property(PropertyName::Computed(key)) => has_supported_await(key),
+            ChainStepKind::Call(arguments) => arguments.iter().any(|argument| has_supported_await(argument.expression())),
+            _ => false,
+        }),
         ExprKind::Object(elements) => elements.iter().any(|element| match element {
             ObjectElement::Spread(value) => has_supported_await(value),
             ObjectElement::Property(property) => has_supported_await(&property.value) || matches!(&property.name, PropertyName::Computed(key) if has_supported_await(key)),
@@ -209,6 +215,23 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 };
                 value
             }
+            (ExprChild::OptionalBase, ExprKind::OptionalChain { base, .. }) => base,
+            (ExprChild::OptionalKey(step), ExprKind::OptionalChain { steps, .. }) => {
+                let ChainStepKind::Property(PropertyName::Computed(key)) = &steps[*step].kind
+                else {
+                    unreachable!("optional key source")
+                };
+                key
+            }
+            (
+                ExprChild::OptionalArgument { step, index },
+                ExprKind::OptionalChain { steps, .. },
+            ) => {
+                let ChainStepKind::Call(arguments) = &steps[*step].kind else {
+                    unreachable!("optional argument source")
+                };
+                arguments[*index].expression()
+            }
             (ExprChild::MemberBase, ExprKind::Member(base, _)) => base,
             (ExprChild::MemberKey, ExprKind::Member(_, PropertyName::Computed(key))) => key,
             _ => unreachable!("typed expression path"),
@@ -352,6 +375,7 @@ impl Realm {
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
+                        | ExprKind::OptionalChain { .. }
                         | ExprKind::Object(_)
                         | ExprKind::PrivateIn { .. }
                         | ExprKind::DestructuringAssign { .. }
@@ -419,6 +443,12 @@ impl Realm {
                                         units: Vec::new(),
                                     },
                                     span,
+                                )?,
+                                ExprKind::OptionalChain { .. } => self.begin_async_optional(
+                                    data,
+                                    &mut state,
+                                    path,
+                                    MemberAction::Value,
                                 )?,
                                 ExprKind::Object(_) => {
                                     let object = Value::Object(self.new_literal_object(span)?);
@@ -887,6 +917,39 @@ impl Realm {
                         },
                         expression.span,
                     )?;
+                }
+                ExprTask::OptionalBase { path, action } => {
+                    let value = state.current.take().expect("optional base value");
+                    self.async_optional_step(
+                        data,
+                        &mut state,
+                        path,
+                        0,
+                        crate::Reference::Value(value),
+                        action,
+                    )?;
+                }
+                ExprTask::OptionalKey {
+                    path,
+                    step,
+                    base,
+                    action,
+                } => {
+                    let key = state.current.take().expect("optional key value");
+                    self.async_optional_step(
+                        data,
+                        &mut state,
+                        path,
+                        step + 1,
+                        crate::Reference::Property { base, key },
+                        action,
+                    )?;
+                }
+                ExprTask::OptionalArgumentNext(cursor) => {
+                    self.async_optional_argument_next(data, &mut state, cursor)?
+                }
+                ExprTask::OptionalArgumentAppend(cursor) => {
+                    self.async_optional_argument_append(data, &mut state, cursor)?
                 }
                 ExprTask::PrivateIn(path) => {
                     let expression = expression_at(data, state.root, &path);

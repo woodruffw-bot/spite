@@ -25,6 +25,12 @@ impl Realm {
         ) {
             path = child_path(&path, ExprChild::Inner, span)?;
         }
+        if matches!(
+            expression_at(data, state.root, &path).kind,
+            ExprKind::OptionalChain { .. }
+        ) {
+            return self.begin_async_optional(data, state, path, action);
+        }
         debug_assert!(matches!(
             expression_at(data, state.root, &path).kind,
             ExprKind::Member(..)
@@ -87,6 +93,9 @@ impl Realm {
         // GetValue/Delete performs coercion after both base and key evaluation.
         match action {
             MemberAction::Value => state.current = Some(self.get(&mut reference, span)?),
+            MemberAction::OptionalBase { path, action } => {
+                self.async_optional_step(data, state, path, 0, reference, *action)?
+            }
             MemberAction::Update {
                 op,
                 prefix,

@@ -30,6 +30,17 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited optional-chain review
+
+Eight Runtime groups and three Symbol ownership controls cover short circuits,
+saved references/receivers, calls/tags/delete, contexts, collection and host limits.
+Former boundary forms have positive coverage; unsupported controls use pattern
+defaults. Complete reviews retain 36 passing/8 Unsupported await variants, 160
+passing/102 Unsupported Array/adapter variants and 188 passing update variants.
+No additional unchanged original qualifies. Inventories remain 9,690 fixtures,
+twenty helpers, 9,671 reviewed sources and 18,762 variants; helpers, quotas and
+intrinsic entries are unchanged.
+
 ## Awaited object-literal review
 
 Eight Runtime groups and three Symbol ownership controls cover ordered definitions,
