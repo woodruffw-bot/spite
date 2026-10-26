@@ -109,7 +109,8 @@ fn defaults_and_keys_preserve_in_new_target_and_unavailable_feature_categories()
     );
     assert!(parse_script("[x=class{#field;}]=source").is_ok());
     assert!(parse_script("({x=async()=>await p}=source)").is_ok());
-    let source = "[x=function*(){}]=source";
+    assert!(parse_script("[x=function*(){}]=source").is_ok());
+    let source = "[x=async function*(){}]=source";
     assert_eq!(
         parse_script(source).unwrap_err().kind,
         DiagnosticKind::Unsupported,

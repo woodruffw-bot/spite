@@ -179,6 +179,8 @@ impl Parser {
         let previous_arguments = self.allow_arguments;
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
+        let previous_yield = self.yield_context;
+        self.yield_context = YieldContext::None;
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
@@ -241,6 +243,7 @@ impl Parser {
         self.allow_arguments = previous_arguments;
         self.allow_await_identifier = previous_await;
         self.await_context = previous_context;
+        self.yield_context = previous_yield;
         self.depth -= 1;
         result
     }

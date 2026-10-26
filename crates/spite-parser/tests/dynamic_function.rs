@@ -103,7 +103,8 @@ fn combined_early_errors_use_body_strictness_and_parameter_bindings() {
 #[test]
 fn unsupported_syntax_and_native_stack_guards_keep_their_categories() {
     assert!(parse_dynamic_function("", "class C{#field;}").is_ok());
-    let (parameters, body) = ("", "function* f(){}");
+    assert!(parse_dynamic_function("", "function* f(){}").is_ok());
+    let (parameters, body) = ("", "async function* f(){}");
     assert_eq!(
         parse_dynamic_function(parameters, body).unwrap_err().kind,
         DiagnosticKind::Unsupported,

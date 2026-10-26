@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9825 unmodified test fixtures and twenty harness files come from
+These 9837 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,16 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Generator grammar review
+
+Twelve unchanged originals add 24 syntax-negative variants with exact reviewed
+spans/messages. They cover yield context restrictions, rest commas and parameter
+early errors. Eight Parser and two Runtime groups cover retained grammar and
+explicit execution boundaries; prior groups/quotas are retained. The complete gate
+contains 9,837 fixtures, twenty helpers, 9,818 reviewed sources and 19,036 variants.
+Generator objects/resumption and generator methods remain unimplemented;
+Unsupported outcomes receive no negative-test credit.
 
 ## Object binding-key/default review
 

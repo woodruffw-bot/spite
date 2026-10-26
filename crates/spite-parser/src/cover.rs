@@ -35,7 +35,8 @@ impl Parser {
                 .iter()
                 .enumerate()
                 .fold(0, |bits, (i, set)| bits | (u16::from(*set) << i))
-                | ((self.await_context as u16) << flags.len()),
+                | ((self.await_context as u16) << flags.len())
+                | ((self.yield_context as u16) << (flags.len() + 2)),
             private_depth: self.private_scopes.len(),
         }
     }

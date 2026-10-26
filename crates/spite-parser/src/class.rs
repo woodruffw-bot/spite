@@ -35,7 +35,10 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "expected a class binding identifier"));
             };
-            if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
+            if reserved(&name)
+                || (name == "await" && !self.allow_await_identifier)
+                || (name == "yield" && !matches!(self.yield_context, YieldContext::None))
+            {
                 return Err(early(token.span, "invalid class binding identifier"));
             }
             validate_binding_name(&name, token.span, true)?;
@@ -268,6 +271,7 @@ impl Parser {
             self.allow_arguments,
             self.allow_await_identifier,
             self.await_context,
+            self.yield_context,
         );
         self.allow_return = false;
         self.allow_in = true;
@@ -277,6 +281,7 @@ impl Parser {
         self.allow_arguments = false;
         self.allow_await_identifier = false;
         self.await_context = AwaitContext::None;
+        self.yield_context = YieldContext::None;
         let result = (|| {
             self.expect("{")?;
             let mut statements = Vec::new();
@@ -302,6 +307,7 @@ impl Parser {
             self.allow_arguments,
             self.allow_await_identifier,
             self.await_context,
+            self.yield_context,
         ) = previous;
         self.depth -= 1;
         result

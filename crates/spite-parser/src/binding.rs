@@ -82,7 +82,10 @@ impl Parser {
         let Kind::Word(name) = token.kind else {
             return Err(early(token.span, "expected binding identifier"));
         };
-        if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
+        if reserved(&name)
+            || (name == "await" && !self.allow_await_identifier)
+            || (name == "yield" && !matches!(self.yield_context, YieldContext::None))
+        {
             self.defer_cover_error(early(token.span, "invalid binding identifier"))?;
         }
         Ok(BindingPattern {

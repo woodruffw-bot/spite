@@ -247,6 +247,12 @@ impl Realm {
         expression: bool,
         span: Span,
     ) -> Result<Value, Error> {
+        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
+            return Err(Self::unsupported(
+                span,
+                "generator function objects are not implemented",
+            ));
+        }
         self.ensure_object_intrinsics(span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         let function_prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {

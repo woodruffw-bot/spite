@@ -191,7 +191,10 @@ fn invalid_or_unsupported_handlers_prevent_all_execution() {
     for (handler, kind) in [
         ("catch { let x; let x; }", DiagnosticKind::Syntax),
         ("catch { continue; }", DiagnosticKind::Syntax),
-        ("catch { function* gap(){} }", DiagnosticKind::Unsupported),
+        (
+            "catch { async function* gap(){} }",
+            DiagnosticKind::Unsupported,
+        ),
     ] {
         let mut realm = Realm::default();
         realm.eval("let x = 1;").unwrap();
@@ -199,4 +202,9 @@ fn invalid_or_unsupported_handlers_prevent_all_execution() {
         assert!(matches!(realm.eval(&source), Err(Error::Parse(d)) if d.kind == kind));
         assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
     }
+    let mut realm = Realm::default();
+    realm
+        .eval("let x=1;x=99;try{x=2}catch{function* gap(){}}finally{x=3}")
+        .unwrap();
+    assert_eq!(realm.eval("x"), Ok(Value::Number(3.0)));
 }

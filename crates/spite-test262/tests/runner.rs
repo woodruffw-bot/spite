@@ -225,6 +225,13 @@ fn unsupported_and_limits_are_never_negative_passes() {
     ));
     assert!(matches!(
         negative("parse", "SyntaxError", "function* f() {}"),
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative("parse", "SyntaxError", "async function* f() {}"),
         Outcome::Unsupported {
             stage: Stage::Parse,
             ..

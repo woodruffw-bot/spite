@@ -1428,3 +1428,6 @@ mod async_catch_binding;
 
 #[path = "cases/async_object_binding.rs"]
 mod async_object_binding;
+
+#[path = "cases/generator_grammar.rs"]
+mod generator_grammar;

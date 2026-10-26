@@ -183,7 +183,8 @@ fn strings_preserve_utf16_and_escapes() {
 
 #[test]
 fn unsupported_features_remain_distinct() {
-    for source in ["class C {*method(){}}", "function* f() {}"] {
+    assert!(parse_script("function* f() {}").is_ok());
+    for source in ["class C {*method(){}}", "async function* f() {}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

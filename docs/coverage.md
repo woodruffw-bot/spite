@@ -60,6 +60,27 @@ not an alternative language specification.
 
 
 
+## Generator function and YieldExpression grammar
+
+Eight Parser groups and two Runtime groups cover generator kind/source, bare and
+delegating yield, precedence, ASI/RegExp goals, contextual names, nested function
+and arrow boundaries, parameter restrictions, strict/private validation, dynamic
+ordinary Function bodies and distinct host limits/runtime boundaries. The new AST
+snapshot was inspected. All 18 Parser units, 369 Parser integrations, 417 Runtime
+units and 2,175 non-RegExp Runtime integrations pass, across 77 Parser and 676
+Runtime case files; Clippy and Rust 1.88 checks pass. Prior generator parser
+programs now have positive coverage. Existing host-abort controls invoke newly
+compilable Function bodies to retain their cleanup assertions; all groups and
+quotas remain.
+
+Twelve unchanged pinned originals add 24 reviewed syntax-negative variants.
+Exact rejection spans/messages identify forbidden yield bindings/references/
+labels/parameter defaults, rest commas and non-simple parameter early errors.
+No Unsupported outcome earns negative-test credit. Inventories contain 9,837
+fixtures, twenty helpers, 9,818 reviewed sources, 19,036 variants and 579 intrinsic
+entries. Generator function objects, resumption, generator methods and async
+generators remain explicit implementation work.
+
 ## Awaited keys and defaults in object bindings
 
 Twelve Runtime groups and four Symbol ownership controls cover computed-key

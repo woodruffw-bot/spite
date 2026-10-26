@@ -371,6 +371,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Promise.allSettled with shared fulfill/reject guards, ordered intrinsic settlement snapshots and the common aggregation path.
 - [x] Implement Promise.any with first-fulfillment resolution, guarded ordered rejection reasons and intrinsic AggregateError creation.
 - [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
+- [x] Parse synchronous generator declarations/expressions and yield/yield* with retained kind/source, Yield contexts and exact syntax boundaries before unimplemented runtime object creation.
 - [x] Create non-constructible async function objects with intrinsic metadata and fresh Promise-returning calls, including parameter/body rejection and traced environments.
 - [x] Compile dynamic AsyncFunction source with independent async grammar goals, ordered conversion/prototype hooks, global scope and lossless source retention.
 - [x] Parse and execute non-suspending async arrows with lexical context, async intrinsic metadata and fresh Promise completion.

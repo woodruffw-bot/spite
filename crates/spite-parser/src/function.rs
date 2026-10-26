@@ -15,7 +15,18 @@ impl Parser {
         require_name: bool,
     ) -> Result<Rc<Function>, Diagnostic> {
         let asynchronous = self.at_async_function();
-        let name_index = self.index + if asynchronous { 2 } else { 1 };
+        let mut name_index = self.index + if asynchronous { 2 } else { 1 };
+        let generator = self
+            .token_at(name_index)
+            .is_some_and(|token| token.kind == Kind::Punct("*"));
+        if generator {
+            name_index += 1;
+        }
+        let name_yield_allowed = if require_name {
+            matches!(self.yield_context, YieldContext::None)
+        } else {
+            !generator
+        };
         let name_await_allowed = if require_name {
             self.allow_await_identifier
         } else {
@@ -39,6 +50,12 @@ impl Parser {
         let previous_arguments = self.allow_arguments;
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
+        let previous_yield = self.yield_context;
+        self.yield_context = if generator {
+            YieldContext::Parameters
+        } else {
+            YieldContext::None
+        };
         self.allow_new_target = true;
         self.allow_super_property = false;
         self.allow_super_call = false;
@@ -49,13 +66,20 @@ impl Parser {
         } else {
             AwaitContext::None
         };
-        let result = self.ordinary_function_inner(require_name, asynchronous, name_await_allowed);
+        let result = self.ordinary_function_inner(
+            require_name,
+            asynchronous,
+            name_await_allowed,
+            generator,
+            name_yield_allowed,
+        );
         self.allow_new_target = previous;
         self.allow_super_property = previous_super;
         self.allow_super_call = previous_super_call;
         self.allow_arguments = previous_arguments;
         self.allow_await_identifier = previous_await;
         self.await_context = previous_context;
+        self.yield_context = previous_yield;
         self.depth -= 1;
         result
     }
@@ -65,18 +89,19 @@ impl Parser {
         require_name: bool,
         asynchronous: bool,
         name_await_allowed: bool,
+        generator: bool,
+        name_yield_allowed: bool,
     ) -> Result<Rc<Function>, Diagnostic> {
         let start = self.current().span.start;
         if asynchronous {
             self.expect("async")?;
         }
         self.expect("function")?;
-        if self.at("*") {
-            return Err(self.unsupported(if asynchronous {
-                "async generator functions are not implemented"
-            } else {
-                "generator functions are not implemented"
-            }));
+        if generator {
+            if asynchronous {
+                return Err(self.unsupported("async generator functions are not implemented"));
+            }
+            self.expect("*")?;
         }
         let name = if self.at("(") {
             if require_name {
@@ -88,7 +113,10 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "expected a function binding identifier"));
             };
-            if reserved(&name) || (name == "await" && !name_await_allowed) {
+            if reserved(&name)
+                || (name == "await" && !name_await_allowed)
+                || (name == "yield" && !name_yield_allowed)
+            {
                 return Err(early(token.span, "invalid function binding identifier"));
             }
             Some(FunctionName {
@@ -102,6 +130,11 @@ impl Parser {
         } else {
             AwaitContext::None
         };
+        self.yield_context = if generator {
+            YieldContext::Body
+        } else {
+            YieldContext::None
+        };
         let body = self.function_body()?;
         let span = Span::new(start, self.tokens[self.index - 1].span.end);
         let source = FunctionSource {
@@ -109,7 +142,9 @@ impl Parser {
             span,
         };
         Ok(Rc::new(Function {
-            kind: if asynchronous {
+            kind: if generator {
+                FunctionKind::Generator
+            } else if asynchronous {
                 FunctionKind::Async
             } else {
                 FunctionKind::Ordinary
@@ -176,7 +211,10 @@ impl Parser {
             let Kind::Word(name) = token.kind else {
                 return Err(early(token.span, "invalid function parameter"));
             };
-            if reserved(&name) || (name == "await" && !self.allow_await_identifier) {
+            if reserved(&name)
+                || (name == "await" && !self.allow_await_identifier)
+                || (name == "yield" && !matches!(self.yield_context, YieldContext::None))
+            {
                 self.defer_cover_error(early(token.span, invalid_name))?;
             }
             BindingPattern {

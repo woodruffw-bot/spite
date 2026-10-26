@@ -159,7 +159,7 @@ fn unsupported_source_is_a_host_abort_after_all_observable_conversions() {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
         let body = format!("'{body}'");
-        assert!(matches!(realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}});}}catch{{flag=5;}}finally{{flag=6;}}")),Err(Error::Unsupported{..})));
+        assert!(matches!(realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}})();}}catch{{flag=5;}}finally{{flag=6;}}")),Err(Error::Unsupported{..})));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(4.0)));
     }
 }

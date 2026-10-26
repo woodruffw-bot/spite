@@ -11,6 +11,7 @@ mod construction;
 mod cover;
 mod dynamic_function;
 mod function;
+mod generator;
 mod iteration;
 pub mod json;
 mod lexer;
@@ -196,6 +197,13 @@ enum AwaitContext {
     Body,
 }
 
+#[derive(Clone, Copy)]
+enum YieldContext {
+    None,
+    Parameters,
+    Body,
+}
+
 struct Parser {
     source: std::rc::Rc<source::SourceText>,
     lexer: Lexer,
@@ -219,6 +227,7 @@ struct Parser {
     allow_arguments: bool,
     allow_await_identifier: bool,
     await_context: AwaitContext,
+    yield_context: YieldContext,
     private_scopes: Vec<private::PrivateScope>,
 }
 
@@ -260,6 +269,7 @@ impl Parser {
             allow_arguments: true,
             allow_await_identifier: true,
             await_context: AwaitContext::None,
+            yield_context: YieldContext::None,
             private_scopes: Vec::new(),
         })
     }
@@ -725,7 +735,9 @@ impl Parser {
         let token = self.bump();
         match token.kind {
             Kind::Word(name)
-                if !reserved(&name) && (name != "await" || self.allow_await_identifier) =>
+                if !reserved(&name)
+                    && (name != "await" || self.allow_await_identifier)
+                    && (name != "yield" || matches!(self.yield_context, YieldContext::None)) =>
             {
                 Ok(Label {
                     name,
@@ -757,9 +769,20 @@ impl Parser {
                 },
             ));
         }
+        if !matches!(self.yield_context, YieldContext::None)
+            && matches!(&kind, ExprKind::Identifier(name) if name == "yield")
+        {
+            return Err(early(
+                span,
+                "yield cannot be an identifier in a generator context",
+            ));
+        }
         let depth = 1 + match &kind {
             ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => e.depth,
             ExprKind::PrivateIn { value, .. } => value.depth,
+            ExprKind::Yield { argument, .. } => {
+                argument.as_ref().map_or(0, |argument| argument.depth)
+            }
             ExprKind::Update { argument, .. } => argument.depth,
             ExprKind::Function(function) => function
                 .parameters
@@ -942,7 +965,12 @@ impl Parser {
         result
     }
     fn expression_inner(&mut self, minimum: u8) -> Result<Expr, Diagnostic> {
-        let mut left = if minimum <= 10 && self.allow_in && self.at("#") {
+        let mut left = if minimum <= 2
+            && self.at("yield")
+            && !matches!(self.yield_context, YieldContext::None)
+        {
+            self.yield_expression()?
+        } else if minimum <= 10 && self.allow_in && self.at("#") {
             let name = self.private_identifier()?;
             self.use_private_identifier(&name)?;
             self.expect("in")?;
@@ -981,6 +1009,11 @@ impl Parser {
             self.prefix()?
         };
         loop {
+            // YieldExpression is an AssignmentExpression; only an outer comma
+            // may extend it without parentheses.
+            if matches!(left.kind, ExprKind::Yield { .. }) && !self.at(",") {
+                break;
+            }
             if minimum <= 17 && self.at("(") {
                 if !member_base(&left) {
                     if self.current().newline {
@@ -2164,6 +2197,10 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
         ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => {
             validate_expr(e, strict)?
         }
+        ExprKind::Yield {
+            argument: Some(argument),
+            ..
+        } => validate_expr(argument, strict)?,
         ExprKind::Binary(_, a, b) => {
             validate_expr(a, strict)?;
             validate_expr(b, strict)?;

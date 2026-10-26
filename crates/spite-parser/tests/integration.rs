@@ -153,3 +153,6 @@ mod with;
 
 #[path = "for_await.rs"]
 mod for_await;
+
+#[path = "generator_functions.rs"]
+mod generator_functions;

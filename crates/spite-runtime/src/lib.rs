@@ -1647,6 +1647,12 @@ impl Realm {
                     self.expression(no)?
                 }
             }
+            ExprKind::Yield { .. } => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "yield suspension is not implemented",
+                ));
+            }
             ExprKind::Await(_) => {
                 return Err(Self::unsupported(
                     expr.span,

@@ -1,0 +1,284 @@
+---
+source: crates/spite-parser/tests/generator_functions.rs
+assertion_line: 28
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    kind: Generator,
+                    name: Some(
+                        FunctionName {
+                            name: "g",
+                            span: Span {
+                                start: 10,
+                                end: 11,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Ordinary(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 12,
+                                        end: 13,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 14,
+                                            end: 15,
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                        Rest(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "tail",
+                                    ),
+                                    span: Span {
+                                        start: 19,
+                                        end: 23,
+                                    },
+                                },
+                                initializer: None,
+                            },
+                        ),
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Yield {
+                                            delegated: false,
+                                            argument: None,
+                                        },
+                                        span: Span {
+                                            start: 25,
+                                            end: 30,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 25,
+                                    end: 31,
+                                },
+                            },
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 3,
+                                        kind: Yield {
+                                            delegated: false,
+                                            argument: Some(
+                                                Expr {
+                                                    depth: 2,
+                                                    kind: Binary(
+                                                        Add,
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Identifier(
+                                                                "x",
+                                                            ),
+                                                            span: Span {
+                                                                start: 37,
+                                                                end: 38,
+                                                            },
+                                                        },
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Literal(
+                                                                Number(
+                                                                    2.0,
+                                                                ),
+                                                            ),
+                                                            span: Span {
+                                                                start: 39,
+                                                                end: 40,
+                                                            },
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 37,
+                                                        end: 40,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                        span: Span {
+                                            start: 31,
+                                            end: 40,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 31,
+                                    end: 41,
+                                },
+                            },
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 2,
+                                        kind: Yield {
+                                            delegated: true,
+                                            argument: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "tail",
+                                                    ),
+                                                    span: Span {
+                                                        start: 48,
+                                                        end: 52,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                        span: Span {
+                                            start: 41,
+                                            end: 52,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 41,
+                                    end: 53,
+                                },
+                            },
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 6,
+                                            kind: Parenthesized(
+                                                Expr {
+                                                    depth: 5,
+                                                    kind: Assign(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Identifier(
+                                                                "x",
+                                                            ),
+                                                            span: Span {
+                                                                start: 61,
+                                                                end: 62,
+                                                            },
+                                                        },
+                                                        Expr {
+                                                            depth: 4,
+                                                            kind: Yield {
+                                                                delegated: false,
+                                                                argument: Some(
+                                                                    Expr {
+                                                                        depth: 3,
+                                                                        kind: Call {
+                                                                            callee: Expr {
+                                                                                depth: 2,
+                                                                                kind: Member(
+                                                                                    Expr {
+                                                                                        depth: 1,
+                                                                                        kind: Literal(
+                                                                                            RegExp {
+                                                                                                body: "y",
+                                                                                                flags: "",
+                                                                                            },
+                                                                                        ),
+                                                                                        span: Span {
+                                                                                            start: 69,
+                                                                                            end: 72,
+                                                                                        },
+                                                                                    },
+                                                                                    Literal(
+                                                                                        String(
+                                                                                            "test",
+                                                                                        ),
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 69,
+                                                                                    end: 77,
+                                                                                },
+                                                                            },
+                                                                            arguments: [
+                                                                                Expression(
+                                                                                    Expr {
+                                                                                        depth: 1,
+                                                                                        kind: Literal(
+                                                                                            String(
+                                                                                                "y",
+                                                                                            ),
+                                                                                        ),
+                                                                                        span: Span {
+                                                                                            start: 78,
+                                                                                            end: 81,
+                                                                                        },
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                        },
+                                                                        span: Span {
+                                                                            start: 69,
+                                                                            end: 82,
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            },
+                                                            span: Span {
+                                                                start: 63,
+                                                                end: 82,
+                                                            },
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 61,
+                                                        end: 82,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 60,
+                                                end: 83,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 53,
+                                    end: 84,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "function* g(x=1,...tail){yield;yield x+2;yield* tail;return (x=yield /y/.test('y'));}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 85,
+            },
+        },
+    ],
+    strict: false,
+}

@@ -117,16 +117,18 @@ impl ClassElement {
     }
 }
 
-/// The supported ordinary and asynchronous function grammar forms.
+/// The supported ordinary, asynchronous and generator function grammar forms.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FunctionKind {
     /// An ordinary function, method or accessor.
     Ordinary,
     /// An async function or arrow.
     Async,
+    /// A synchronous generator function.
+    Generator,
 }
 
-/// Shared syntax for an ordinary or async function, method, or accessor body.
+/// Shared syntax for a function, method, or accessor body.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
     /// Function grammar and evaluation kind.
@@ -940,6 +942,13 @@ pub enum ExprKind {
     Unary(UnaryOp, Box<Expr>),
     /// AwaitExpression with a UnaryExpression operand (13.3.9).
     Await(Box<Expr>),
+    /// YieldExpression, retaining delegation and an optional operand.
+    Yield {
+        /// Whether the operand delegates through an iterator.
+        delegated: bool,
+        /// Absent for bare yield.
+        argument: Option<Box<Expr>>,
+    },
     /// An increment or decrement of a reference.
     Update {
         /// Increment or decrement.

@@ -28,6 +28,10 @@ impl Parser {
         // Restore this context after the probe: a parenthesized expression that
         // is not an arrow still uses its enclosing +Await grammar.
         let previous_context = self.await_context;
+        let previous_yield = self.yield_context;
+        if matches!(self.yield_context, YieldContext::Body) {
+            self.yield_context = YieldContext::Parameters;
+        }
         if matches!(self.await_context, AwaitContext::Body) {
             self.await_context = AwaitContext::Parameters;
         }
@@ -48,6 +52,7 @@ impl Parser {
             Ok(parameters)
         });
         self.await_context = previous_context;
+        self.yield_context = previous_yield;
         let head = match probe {
             Ok(head) => Some(head),
             Err(error) if error.kind == DiagnosticKind::Syntax => None,
@@ -66,11 +71,13 @@ impl Parser {
         {
             let previous_await = self.allow_await_identifier;
             let previous_context = self.await_context;
+            let previous_yield = self.yield_context;
             self.allow_await_identifier = false;
             self.await_context = AwaitContext::Parameters;
             let result = self.arrow_head(self.index + 1);
             self.allow_await_identifier = previous_await;
             self.await_context = previous_context;
+            self.yield_context = previous_yield;
             result?
         } else {
             None
@@ -96,6 +103,8 @@ impl Parser {
         // both parameters and bodies (15.3, 15.9). Other lexical context stays.
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
+        let previous_yield = self.yield_context;
+        self.yield_context = YieldContext::None;
         self.allow_await_identifier = kind == FunctionKind::Ordinary;
         self.await_context = if kind == FunctionKind::Async {
             AwaitContext::Body
@@ -114,6 +123,7 @@ impl Parser {
         })();
         self.allow_await_identifier = previous_await;
         self.await_context = previous_context;
+        self.yield_context = previous_yield;
         let (body, end) = result?;
         let span = Span::new(start, end);
         let source = FunctionSource {

@@ -9805,3 +9805,15 @@ test/built-ins/AsyncFromSyncIteratorPrototype/next/absent-value-not-passed.js	-	
 test/built-ins/AsyncFromSyncIteratorPrototype/next/for-await-next-rejected-promise-close.js	-	-	-
 test/built-ins/AsyncFromSyncIteratorPrototype/return/absent-value-not-passed.js	-	-	-
 test/built-ins/AsyncFromSyncIteratorPrototype/return/return-null.js	-	-	-
+test/language/statements/generators/param-dflt-yield.js	790	795	yield is not allowed in generator parameters
+test/language/statements/generators/yield-as-binding-identifier.js	798	803	invalid binding identifier
+test/language/statements/generators/yield-as-binding-identifier-escaped.js	806	816	invalid binding identifier
+test/language/statements/generators/yield-as-identifier-reference.js	806	811	yield cannot be an identifier in a generator context
+test/language/statements/generators/yield-as-identifier-reference-escaped.js	814	824	yield cannot be an identifier in a generator context
+test/language/statements/generators/yield-as-label-identifier.js	788	793	invalid label identifier
+test/language/statements/generators/yield-as-label-identifier-escaped.js	796	806	invalid label identifier
+test/language/statements/generators/yield-as-parameter.js	413	418	invalid function parameter identifier
+test/language/statements/generators/rest-params-trailing-comma-early-error.js	1782	1783	expected )
+test/language/statements/generators/dflt-params-duplicates.js	1854	1855	duplicate lexical binding
+test/language/statements/generators/array-destructuring-param-strict-body.js	5234	5276	use strict directive with non-simple parameters
+test/language/statements/generators/object-destructuring-param-strict-body.js	5236	5279	use strict directive with non-simple parameters

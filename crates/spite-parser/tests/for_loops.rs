@@ -86,6 +86,12 @@ fn unsupported_headers_and_invalid_await_contexts_are_classified() {
         "for (var [x] = function* gap(){};;) ;",
         "for (var {x} = function* gap(){};;) ;",
     ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+    }
+    for source in [
+        "for (var [x] = async function* gap(){};;) ;",
+        "for (var {x} = async function* gap(){};;) ;",
+    ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

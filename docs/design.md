@@ -332,7 +332,7 @@ text for Function.prototype.toString. Arrow instantiation captures the current e
 
 Ordinary function expressions and declarations share the binding parameter and
 function-body parser with arrows (15.2). Names, parameters, bodies, and source text are retained.
-Only simple lists in non-strict ordinary or async function definitions permit duplicate parameters;
+Only simple lists in non-strict ordinary, async or generator function definitions permit duplicate parameters;
 strict or non-simple lists require unique names. A function's own strict directive
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
@@ -340,7 +340,7 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generators and await suspension remain separate steps. Async declaration
+Generator execution remains a separate step. Async declaration
 and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
@@ -351,6 +351,21 @@ Unsupported; direct awaited body continuations are implemented below. Async obje
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
 tag follow 27.7. Direct async definitions have ordinary name/length/source
 metadata, no own prototype and no construction capability.
+
+Synchronous generator declarations and expressions retain FunctionKind::Generator,
+exact source and YieldExpression nodes with optional operands and a delegation
+flag (15.5). Yield uses assignment precedence, its restricted line terminator and
+the ordinary RegExp lexical goal. Bare yield ends before a line break; yield*
+requires its operand. Unparenthesized yield cannot serve as an operator operand,
+assignment target or member base. Generator parameters forbid YieldExpression
+and yield bindings. Declaration names inherit the enclosing Yield context;
+expression names use +Yield. Ordinary nested functions, arrows and methods reset
+their body context, while cover-cache keys distinguish parameter/body Yield
+contexts. Strict/private validation traverses the operand. Generator methods and
+async generators remain parser boundaries. Creating a generator function object
+remains a runtime Unsupported boundary before body effects. Ordinary dynamic
+Function bodies can retain unexecuted generator definitions; invoking such a body
+reaches the same runtime boundary during declaration instantiation.
 
 Ordinary and arrow calls share their parameter/var setup and caller restoration
 with an internal body driver. The driver runs while the callee's scopes,
@@ -1942,7 +1957,7 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported generator/async functions and native-stack exhaustion remain separate
+function context. Unsupported generator methods/async generators and native-stack exhaustion remain separate
 diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
 
@@ -2792,8 +2807,8 @@ Captured environments, functions, and ordinary objects form one traced graph, so
 shared bindings survive caller exit and unreachable closure cycles are reclaimed.
 
 Modules use standard module records and host resolution hooks. Promises use a job
-queue. Async functions and generators require resumable execution, which can later
-use explicit interpreter frames. Module loading, clocks, entropy, and agent creation
+queue. Async functions use explicit resumable interpreter frames; generator
+execution remains work. Module loading, clocks, entropy, and agent creation
 are host capabilities. The default host exposes no non-standard JavaScript globals.
 Test262 host helpers exist only in the conformance host.
 
