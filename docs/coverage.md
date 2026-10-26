@@ -60,6 +60,20 @@ not an alternative language specification.
 
 
 
+## Dynamic GeneratorFunction parser APIs
+
+Six Parser groups cover generator kind/name/source, retained yield forms,
+independent parameter/body boundaries, strictness and combined early errors,
+context resets, RegExp goals, lone surrogates in both inputs and distinct native
+limits/unsupported syntax. The compact source snapshot was inspected. All 18
+Parser units, 381 Parser integrations, 417 Runtime units and 2,177 non-RegExp
+Runtime integrations pass across 79 Parser and 677 Runtime case files; Clippy and
+Rust 1.88 checks pass. Existing ordinary/async dynamic inputs retain their grammar.
+
+The complete reviewed corpus remains 9,837 fixtures, twenty helpers, 9,818 reviewed
+sources, 19,036 variants and 579 intrinsic entries. Groups, helpers and quotas are
+retained. Generator constructor/object execution remains separate runtime work.
+
 ## Generator method grammar
 
 Six Parser groups and two Runtime groups cover object/class/static/private forms,

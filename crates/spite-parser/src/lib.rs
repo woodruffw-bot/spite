@@ -25,7 +25,8 @@ mod using;
 
 pub use dynamic_function::{
     parse_dynamic_async_function, parse_dynamic_async_function_utf16, parse_dynamic_function,
-    parse_dynamic_function_utf16,
+    parse_dynamic_function_utf16, parse_dynamic_generator_function,
+    parse_dynamic_generator_function_utf16,
 };
 pub use regexp::{
     RegExpNamedCapture, RegExpNamedReference, RegExpPatternMetadata, parse_regexp_pattern,

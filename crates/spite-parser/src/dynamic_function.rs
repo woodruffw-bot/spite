@@ -36,8 +36,8 @@ pub fn parse_dynamic_function_utf16(
 }
 
 /// Parses dynamic AsyncFunction source with independent async grammar goals.
-/// Await bindings/parameter expressions are syntax errors; body suspension remains
-/// explicitly unsupported until continuation execution is implemented.
+/// Await bindings/parameter expressions are syntax errors; body syntax retains
+/// AwaitExpression nodes.
 pub fn parse_dynamic_async_function(
     parameters: &str,
     body: &str,
@@ -62,6 +62,33 @@ pub fn parse_dynamic_async_function_utf16(
     )
 }
 
+/// Parses dynamic GeneratorFunction source with separate parameter/body goals.
+/// Generator parameters forbid yield bindings and expressions; the body retains
+/// bare/delegating YieldExpression nodes and its independent strictness.
+pub fn parse_dynamic_generator_function(
+    parameters: &str,
+    body: &str,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_str(parameters),
+        source::SourceText::from_str(body),
+        FunctionKind::Generator,
+    )
+}
+
+/// Parses dynamic GeneratorFunction inputs as lossless UTF-16, retaining the
+/// standard `function* anonymous` source and all original source code points.
+pub fn parse_dynamic_generator_function_utf16(
+    parameters: &JsString,
+    body: &JsString,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_utf16(parameters)?,
+        source::SourceText::from_utf16(body)?,
+        FunctionKind::Generator,
+    )
+}
+
 fn parse_sources(
     parameters: source::SourceText,
     body: source::SourceText,
@@ -75,6 +102,11 @@ fn parse_sources(
         AwaitContext::Parameters
     } else {
         AwaitContext::None
+    };
+    parser.yield_context = if kind == FunctionKind::Generator {
+        YieldContext::Parameters
+    } else {
+        YieldContext::None
     };
     let result = parser.formal_parameter_list("invalid function parameter identifier", false);
     parser.finish(result)?;
@@ -93,13 +125,18 @@ fn parse_sources(
     } else {
         AwaitContext::None
     };
+    parser.yield_context = if kind == FunctionKind::Generator {
+        YieldContext::Body
+    } else {
+        YieldContext::None
+    };
     let result = parser.function_body_contents(false);
     parser.finish(result)?;
 
-    let prefix = source::SourceText::from_str(if kind == FunctionKind::Async {
-        "async function anonymous("
-    } else {
-        "function anonymous("
+    let prefix = source::SourceText::from_str(match kind {
+        FunctionKind::Ordinary => "function anonymous(",
+        FunctionKind::Async => "async function anonymous(",
+        FunctionKind::Generator => "function* anonymous(",
     });
     let middle = source::SourceText::from_str("\n) {");
     let suffix = source::SourceText::from_str("}");

@@ -159,3 +159,6 @@ mod generator_functions;
 
 #[path = "generator_methods.rs"]
 mod generator_methods;
+
+#[path = "dynamic_generator_function.rs"]
+mod dynamic_generator_function;

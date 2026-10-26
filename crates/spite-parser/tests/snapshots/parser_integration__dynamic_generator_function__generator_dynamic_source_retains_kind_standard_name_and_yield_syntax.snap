@@ -1,0 +1,10 @@
+---
+source: crates/spite-parser/tests/dynamic_generator_function.rs
+assertion_line: 26
+expression: "(function.kind, function.source.to_js_string(), function.body.is_strict())"
+---
+(
+    Generator,
+    "function* anonymous(x=1,...tail\u000a) {\u000ayield x;yield* tail\u000a}",
+    false,
+)

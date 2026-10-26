@@ -30,6 +30,13 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Dynamic generator grammar review
+
+Six Parser groups cover separate dynamic generator goals, combined early errors
+and retained UTF-16 source. The complete gate remains 9,837 fixtures, twenty
+helpers, 9,818 reviewed sources and 19,036 variants. Prior groups, assertions,
+helpers, quotas and intrinsic entries are unchanged.
+
 ## Generator method grammar review
 
 Six Parser and two Runtime groups cover generator methods and their explicit

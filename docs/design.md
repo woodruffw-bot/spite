@@ -1971,6 +1971,15 @@ function context. Unsupported generator methods/async generators and native-stac
 diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
 
+Dynamic GeneratorFunction parser entry points use the same independent goals and
+combined-source validation with +Yield/~Await parameters/body (20.2.1.1.1, 15.5).
+Parameters reject yield bindings and expressions; bodies retain bare/delegating
+yield and allow ordinary await identifiers. The prescribed `function* anonymous`
+source includes the standard line feeds and preserves lone surrogates in both
+inputs. Strictness comes from the constructed body, with shared duplicate-name,
+non-simple parameter and lexical-conflict checks. These APIs prepare syntax for
+the generator constructor; generator function/method objects remain runtime work.
+
 Source storage uses unchanged scalar UTF-8 text plus an ordered table of lone
 surrogate code points at their encoded byte positions. The scanner uses U+FFFD
 at these positions, which has the same lexical classification outside literals
