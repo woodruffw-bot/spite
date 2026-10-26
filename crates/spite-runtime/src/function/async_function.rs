@@ -73,6 +73,7 @@ impl Realm {
         let capability = self.intrinsic_promise_capability(span)?;
         let base = self.scopes.len();
         match execute(self, &capability, base) {
+            Ok(AsyncBodyOutcome::Yielded(_)) => unreachable!("async body cannot yield"),
             Ok(AsyncBodyOutcome::Suspended) => (),
             Ok(AsyncBodyOutcome::Complete(value)) => {
                 self.call(capability.resolve, Value::Undefined, vec![value], span)?;

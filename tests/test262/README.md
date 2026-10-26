@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9943 unmodified test fixtures and twenty harness files come from
+These 9994 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Ordinary yield review
+
+51 unchanged pinned originals add 99 variants, including constructors, consecutive
+yields and return/throw through catch/finally. Fourteen Runtime groups and ten
+Symbol ownership controls cover shared interpreter suspension, retained values,
+iterator cleanup and capture release. All prior groups, helpers, quotas and the
+585-entry intrinsic inventory are retained. The complete gate contains 9,994
+fixtures, twenty helpers, 9,975 reviewed sources and 19,333 variants.
+
+Generator-statement review reports 131 passed/2 Unsupported variants; built-ins
+report 162 passed/6 Unsupported. Failures, limits, setup failures and unverified
+negatives are zero in these reviews. Unsupported outcomes receive no credit.
+Delegated yield, async generators and the async-generator-dependent intrinsic
+helper remain outside this increment.
 
 ## Generator object/runtime review
 

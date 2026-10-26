@@ -464,6 +464,46 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),object={x:key};(async()=>{with(object){var[x=await gate]=[]}})();return gate})()",
         ),
         (
+            "generator yielded parameter",
+            "(()=>{let iterator=(function*(x){yield 0;return x})(key);iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded strict receiver",
+            "(()=>{let iterator=(function*(){'use strict';yield 0;return this}).call(key);iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded callee property",
+            "(()=>{let f=function*(arguments){yield 0};f.kept=key;let iterator=f(0);f=null;iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded binary left operand",
+            "(()=>{let iterator=(function*(){return key+(yield 0)})();iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded pending return",
+            "(()=>{let iterator=(function*(){try{yield 0}finally{yield 1}})();iterator.next();iterator.return(key);return iterator})()",
+        ),
+        (
+            "generator yielded pending throw",
+            "(()=>{let iterator=(function*(){try{yield 0}finally{yield 1}})();iterator.next();iterator.throw(key);return iterator})()",
+        ),
+        (
+            "generator yielded binding cached next",
+            "(()=>{let next=(()=>{let value=key;return()=>({done:false,value:(value,undefined)})})(),source={next,[Symbol.iterator](){return this},return(){return{}}},iterator=(function*(){let[x=yield 0]=source})();iterator.next();source.next=null;next=null;return iterator})()",
+        ),
+        (
+            "generator yielded object key",
+            "(()=>{let iterator=(function*(){return{[key]:yield 0}})();iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded assignment raw key",
+            "(()=>{let iterator=(function*(){({})[key]=yield 0})();iterator.next();return iterator})()",
+        ),
+        (
+            "generator yielded earlier call argument",
+            "(()=>{let call=()=>{},iterator=(function*(){return call(key,yield 0)})();iterator.next();return iterator})()",
+        ),
+        (
             "generator suspended parameter",
             "(function*(x){return x})(key)",
         ),

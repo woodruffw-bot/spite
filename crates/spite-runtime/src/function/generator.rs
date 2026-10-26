@@ -1,8 +1,12 @@
-//! Generator objects and native body completion (15.5, 27.3, 27.5).
+//! Generator objects, suspension and abrupt resumption (15.5, 27.3, 27.5).
 
-use super::{Builtin, ordinary::OrdinaryInvocation};
+use super::{
+    Builtin,
+    async_execution::{AsyncBodyOutcome, SourceResume},
+    ordinary::OrdinaryInvocation,
+};
 use crate::{
-    CompletionKind, Error, ExceptionKind, ObjectHandle, Realm, Value,
+    Error, ExceptionKind, ObjectHandle, Realm, Value,
     object::{
         DataDescriptor,
         generator::{GeneratorStart, GeneratorStatus},
@@ -203,7 +207,9 @@ impl Realm {
                 "generator is already executing",
             ));
         }
-        if matches!(kind, Builtin::GeneratorReturn | Builtin::GeneratorThrow) {
+        if status != GeneratorStatus::SuspendedYield
+            && matches!(kind, Builtin::GeneratorReturn | Builtin::GeneratorThrow)
+        {
             self.objects
                 .complete_generator(&generator)
                 .expect("validated generator");
@@ -216,29 +222,42 @@ impl Realm {
         if status == GeneratorStatus::Completed {
             return self.iterator_result(Value::Undefined, true, span);
         }
-        let GeneratorStart {
-            body,
-            context,
-            root,
-            callee,
-            span: body_span,
-        } = self.object_work(span, |objects, _| objects.take_generator_start(&generator))?;
-        let completion = self.with_source_execution_context(context, |realm| {
-            let completion = realm.statements(body.statements());
-            let completion = realm.dispose_environment_resources(&root, completion, body_span)?;
-            match completion.kind {
-                CompletionKind::Return => Ok(completion.value.expect("return value")),
-                CompletionKind::Normal => Ok(Value::Undefined),
-                CompletionKind::Break | CompletionKind::Continue => {
-                    unreachable!("validated generator body control")
-                }
-            }
-        });
+        let outcome = if status == GeneratorStatus::SuspendedStart {
+            let GeneratorStart {
+                body,
+                context,
+                root,
+                callee,
+                span: body_span,
+            } = self.object_work(span, |objects, _| objects.take_generator_start(&generator))?;
+            self.with_source_execution_context(context, |realm| {
+                realm.start_generator_execution(body, root, callee, body_span, generator.clone())
+            })
+        } else {
+            let mut data = self.object_work(span, |objects, _| {
+                objects.take_generator_execution(&generator)
+            })?;
+            let context = data.context.take().expect("yielded generator context");
+            let resumed = match kind {
+                Builtin::GeneratorNext => SourceResume::Value(value),
+                Builtin::GeneratorReturn => SourceResume::Return(value),
+                Builtin::GeneratorThrow => SourceResume::Throw(Error::Thrown(value)),
+                _ => unreachable!("generator resume operation"),
+            };
+            self.with_source_execution_context(context, |realm| {
+                realm.resume_generator_execution(*data, generator.clone(), resumed)
+            })
+        };
+        let completion = match outcome {
+            Ok(AsyncBodyOutcome::Yielded(result)) => return Ok(result),
+            Ok(AsyncBodyOutcome::Suspended) => unreachable!("synchronous generator cannot await"),
+            Ok(AsyncBodyOutcome::Complete(value)) => Ok(value),
+            Err(error) => Err(error),
+        };
         // Completing and releasing captures must work even after budget exhaustion.
         self.objects
             .complete_generator(&generator)
             .expect("executing generator");
-        drop(callee);
         self.iterator_result(completion?, true, span)
     }
 }

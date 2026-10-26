@@ -19,8 +19,10 @@ impl Realm {
             data.iteration_value = None;
             data.next = None;
         }
-        if data.pattern_binding.is_some() {
-            result = result.map_err(|error| self.close_async_pattern_binding_error(data, error));
+        if data.pattern_binding.is_some()
+            && !matches!(&result, Ok(completion) if completion.kind == CompletionKind::Normal)
+        {
+            result = self.close_async_pattern_binding(data, result);
         }
         loop {
             result = match result {

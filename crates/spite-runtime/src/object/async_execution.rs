@@ -256,8 +256,29 @@ impl AsyncStatementFrame {
 }
 
 #[derive(Debug)]
+pub(crate) enum SourceFunctionMode {
+    Async(PromiseCapability),
+    Generator(Handle),
+}
+
+impl SourceFunctionMode {
+    pub(crate) fn promise(&self) -> Option<&PromiseCapability> {
+        match self {
+            Self::Async(capability) => Some(capability),
+            Self::Generator(_) => None,
+        }
+    }
+    pub(crate) fn generator(&self) -> Option<&Handle> {
+        match self {
+            Self::Generator(callee) => Some(callee),
+            Self::Async(_) => None,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub(crate) struct AsyncExecutionData {
-    pub capability: PromiseCapability,
+    pub function: SourceFunctionMode,
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub pattern_binding: Option<super::async_binding::AsyncPatternBinding>,
@@ -288,8 +309,10 @@ impl AsyncExecutionData {
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.capability
-            .values()
+        self.function
+            .promise()
+            .into_iter()
+            .flat_map(PromiseCapability::values)
             .chain(&self.normal)
             .chain(&self.iteration_value)
             .chain(self.pattern_binding.iter().flat_map(|state| state.values()))
@@ -303,9 +326,10 @@ impl AsyncExecutionData {
     }
 
     fn objects(&self) -> impl Iterator<Item = &Handle> {
-        self.frames
-            .iter()
-            .filter_map(AsyncStatementFrame::object)
+        self.function
+            .generator()
+            .into_iter()
+            .chain(self.frames.iter().filter_map(AsyncStatementFrame::object))
             .chain(
                 self.pattern_binding
                     .iter()
@@ -357,6 +381,24 @@ impl Objects {
         data: Box<AsyncExecutionData>,
         budget: &mut Budget,
     ) -> Result<Handle, Error> {
+        self.validate_source_execution_data(&data, budget)?;
+        let state = if let Some(state) = state {
+            if self.inspect(state)?.async_execution.is_some() {
+                return Err(Error::WrongKind);
+            }
+            state.clone()
+        } else {
+            self.create(None)?
+        };
+        self.object_mut(&state)?.async_execution = Some(data);
+        Ok(state)
+    }
+
+    pub(crate) fn validate_source_execution_data(
+        &self,
+        data: &AsyncExecutionData,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
         debug_assert!(data.context.is_some());
         for value in data.values() {
             budget.value(value)?;
@@ -370,16 +412,7 @@ impl Objects {
         for object in data.objects() {
             self.inspect(object)?;
         }
-        let state = if let Some(state) = state {
-            if self.inspect(state)?.async_execution.is_some() {
-                return Err(Error::WrongKind);
-            }
-            state.clone()
-        } else {
-            self.create(None)?
-        };
-        self.object_mut(&state)?.async_execution = Some(data);
-        Ok(state)
+        Ok(())
     }
 
     pub(crate) fn take_async_execution(

@@ -129,6 +129,7 @@ pub(crate) enum ExprTask {
         span: Span,
     },
     Await(Span),
+    Yield(Span),
     BinaryLeft {
         op: BinaryOp,
         right: ExprPath,

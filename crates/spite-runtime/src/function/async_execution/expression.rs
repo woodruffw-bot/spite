@@ -24,7 +24,7 @@ use spite_parser::ast::{
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
-        ExprKind::Await(_) => true,
+        ExprKind::Await(_) | ExprKind::Yield { .. } => true,
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
@@ -183,6 +183,10 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 ExprChild::Inner,
                 ExprKind::Parenthesized(inner)
                 | ExprKind::Await(inner)
+                | ExprKind::Yield {
+                    argument: Some(inner),
+                    ..
+                }
                 | ExprKind::Unary(_, inner)
                 | ExprKind::Update {
                     argument: inner, ..
@@ -425,6 +429,7 @@ impl Realm {
                     let span = expression.span;
                     match &expression.kind {
                         ExprKind::Await(_)
+                        | ExprKind::Yield { .. }
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
@@ -450,6 +455,31 @@ impl Realm {
                             self.tick(span)?;
                             push(&mut state, ExprTask::CheckString(span), span)?;
                             match &expression.kind {
+                                ExprKind::Yield {
+                                    delegated,
+                                    argument,
+                                } => {
+                                    if *delegated {
+                                        return Err(Self::unsupported(
+                                            span,
+                                            "yield delegation is not implemented",
+                                        ));
+                                    }
+                                    push(&mut state, ExprTask::Yield(span), span)?;
+                                    if argument.is_some() {
+                                        push(
+                                            &mut state,
+                                            ExprTask::Evaluate(child_path(
+                                                &path,
+                                                ExprChild::Inner,
+                                                span,
+                                            )?),
+                                            span,
+                                        )?;
+                                    } else {
+                                        state.current = Some(Value::Undefined);
+                                    }
+                                }
                                 ExprKind::Await(_) => {
                                     push(&mut state, ExprTask::Await(span), span)?;
                                     push(
@@ -682,6 +712,11 @@ impl Realm {
                 ExprTask::Unary { op, span } => {
                     let value = state.current.take().expect("unary operand");
                     state.current = Some(self.unary_value(op, value, span)?);
+                }
+                ExprTask::Yield(span) => {
+                    let value = state.current.take().expect("yield operand");
+                    data.expression = Some(state);
+                    return Ok(Step::Yield(value, AsyncAwaitAction::Expression, span));
                 }
                 ExprTask::Await(span) => {
                     let value = state.current.take().expect("await operand");

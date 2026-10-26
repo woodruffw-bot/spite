@@ -2,7 +2,7 @@
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, binding, expression};
 use crate::{
-    Error, Realm, Value,
+    Completion, Error, Realm, Value,
     environment::EnvironmentHandle,
     object::{
         async_binding::{
@@ -441,26 +441,34 @@ impl Realm {
         Ok(Step::Continue)
     }
 
-    pub(super) fn close_async_pattern_binding_error(
+    pub(super) fn close_async_pattern_binding(
         &mut self,
         data: &mut AsyncExecutionData,
-        mut error: Error,
-    ) -> Error {
+        mut result: Result<Completion, Error>,
+    ) -> Result<Completion, Error> {
         let mut state = data
             .pattern_binding
             .take()
-            .expect("abandoned array binding");
+            .expect("abandoned pattern binding");
         while let Some(mut cursor) = state.cursors.pop() {
             cursor.reference = None;
-            if !error.is_language_exception() {
+            if result
+                .as_ref()
+                .is_err_and(|error| !error.is_language_exception())
+            {
                 break;
             }
             if let BindingCursorKind::Array(iterator) = cursor.kind
                 && !iterator.is_done()
             {
-                error = self.iterator_close_error(&iterator, error, cursor.span);
+                result = match result {
+                    Ok(completion) => self
+                        .iterator_close(&iterator, cursor.span)
+                        .map(|()| completion),
+                    Err(error) => Err(self.iterator_close_error(&iterator, error, cursor.span)),
+                };
             }
         }
-        error
+        result
     }
 }

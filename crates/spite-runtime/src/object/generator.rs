@@ -26,6 +26,7 @@ impl GeneratorStart {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum GeneratorStatus {
     SuspendedStart,
+    SuspendedYield,
     Executing,
     Completed,
 }
@@ -33,20 +34,31 @@ pub(crate) enum GeneratorStatus {
 #[derive(Debug)]
 pub(crate) enum GeneratorData {
     SuspendedStart(GeneratorStart),
+    SuspendedYield(Box<super::async_execution::AsyncExecutionData>),
     Executing,
     Completed,
 }
 
 impl GeneratorData {
+    pub(super) fn execution(&self) -> Option<&super::async_execution::AsyncExecutionData> {
+        match self {
+            Self::SuspendedYield(data) => Some(data),
+            Self::SuspendedStart(_) | Self::Executing | Self::Completed => None,
+        }
+    }
+
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         let start = match self {
             Self::SuspendedStart(start) => Some(start),
-            Self::Executing | Self::Completed => None,
+            Self::SuspendedYield(_) | Self::Executing | Self::Completed => None,
         };
-        start.into_iter().flat_map(|start| {
-            std::iter::once(Some(&start.callee))
-                .chain(start.environments().map(|environment| Some(&environment.0)))
-        })
+        start
+            .into_iter()
+            .flat_map(|start| {
+                std::iter::once(Some(&start.callee))
+                    .chain(start.environments().map(|environment| Some(&environment.0)))
+            })
+            .chain(self.execution().into_iter().flat_map(|data| data.trace()))
     }
 }
 
@@ -73,6 +85,7 @@ impl Objects {
     ) -> Result<Option<GeneratorStatus>, Error> {
         match self.inspect(generator)?.generator.as_deref() {
             Some(GeneratorData::SuspendedStart(_)) => Ok(Some(GeneratorStatus::SuspendedStart)),
+            Some(GeneratorData::SuspendedYield(_)) => Ok(Some(GeneratorStatus::SuspendedYield)),
             Some(GeneratorData::Executing) => Ok(Some(GeneratorStatus::Executing)),
             Some(GeneratorData::Completed) => Ok(Some(GeneratorStatus::Completed)),
             None => Ok(None),
@@ -97,6 +110,45 @@ impl Objects {
             unreachable!("validated suspended generator")
         };
         Ok(start)
+    }
+
+    pub(crate) fn store_generator_execution(
+        &mut self,
+        generator: &Handle,
+        data: Box<super::async_execution::AsyncExecutionData>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        debug_assert!(data.function.generator().is_some());
+        self.validate_source_execution_data(&data, budget)?;
+        let slot = self
+            .object_mut(generator)?
+            .generator
+            .as_deref_mut()
+            .ok_or(Error::WrongKind)?;
+        if !matches!(slot, GeneratorData::Executing) {
+            return Err(Error::WrongKind);
+        }
+        *slot = GeneratorData::SuspendedYield(data);
+        Ok(())
+    }
+
+    pub(crate) fn take_generator_execution(
+        &mut self,
+        generator: &Handle,
+    ) -> Result<Box<super::async_execution::AsyncExecutionData>, Error> {
+        let slot = self
+            .object_mut(generator)?
+            .generator
+            .as_deref_mut()
+            .ok_or(Error::WrongKind)?;
+        if !matches!(slot, GeneratorData::SuspendedYield(_)) {
+            return Err(Error::WrongKind);
+        }
+        let GeneratorData::SuspendedYield(data) = std::mem::replace(slot, GeneratorData::Executing)
+        else {
+            unreachable!("suspended generator execution")
+        };
+        Ok(data)
     }
 
     pub(crate) fn complete_generator(&mut self, generator: &Handle) -> Result<(), Error> {

@@ -27,7 +27,7 @@ use super::{
 use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Value,
     object::{
-        async_execution::{AsyncAwaitAction, AsyncExecutionData},
+        async_execution::{AsyncAwaitAction, AsyncExecutionData, SourceFunctionMode},
         async_expression::ExprRoot,
     },
 };
@@ -37,6 +37,13 @@ use spite_parser::ast::{ArrowBody, StatementKind};
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
     Suspended,
+    Yielded(Value),
+}
+
+pub(super) enum SourceResume {
+    Value(Value),
+    Throw(Error),
+    Return(Value),
 }
 
 enum Step {
@@ -44,11 +51,37 @@ enum Step {
     Complete(Completion),
     Finish(Completion),
     Await(Value, AsyncAwaitAction, Span),
+    Yield(Value, AsyncAwaitAction, Span),
 }
 
 enum FrameStep {
     Continue,
     Complete(Result<Completion, Error>),
+}
+
+fn new_execution_data(
+    body: ArrowBody,
+    function: SourceFunctionMode,
+    root_scope: Option<crate::environment::EnvironmentHandle>,
+    span: Span,
+) -> AsyncExecutionData {
+    AsyncExecutionData {
+        function,
+        body,
+        expression: None,
+        pattern_binding: None,
+        index: 0,
+        statement: None,
+        next: None,
+        frames: Vec::new(),
+        normal: None,
+        pending: AsyncAwaitAction::Discard,
+        root_scope,
+        var_target: None,
+        iteration_value: None,
+        context: None,
+        span,
+    }
 }
 
 impl Realm {
@@ -98,36 +131,56 @@ impl Realm {
             ArrowBody::Block(body) => Some(self.prepare_function_body(body, span)?),
             ArrowBody::Expression(_) => None,
         };
-        let data = AsyncExecutionData {
-            capability,
+        let data = new_execution_data(
             body,
-            expression: None,
-            pattern_binding: None,
-            index: 0,
-            statement: None,
-            next: None,
-            frames: Vec::new(),
-            normal: None,
-            pending: AsyncAwaitAction::Discard,
+            SourceFunctionMode::Async(capability),
             root_scope,
-            var_target: None,
-            iteration_value: None,
-            context: None,
             span,
-        };
+        );
         self.drive_async_execution(data, None, None, base)
+    }
+
+    pub(super) fn start_generator_execution(
+        &mut self,
+        body: spite_parser::ast::FunctionBody,
+        root: crate::environment::EnvironmentHandle,
+        callee: ObjectHandle,
+        span: Span,
+        state: ObjectHandle,
+    ) -> Result<AsyncBodyOutcome, Error> {
+        let data = new_execution_data(
+            ArrowBody::Block(body),
+            SourceFunctionMode::Generator(callee),
+            Some(root),
+            span,
+        );
+        self.drive_async_execution(data, Some(state), None, 1)
+    }
+
+    pub(super) fn resume_generator_execution(
+        &mut self,
+        data: AsyncExecutionData,
+        state: ObjectHandle,
+        resumed: SourceResume,
+    ) -> Result<AsyncBodyOutcome, Error> {
+        self.drive_async_execution(data, Some(state), Some(resumed), 1)
     }
 
     fn drive_async_execution(
         &mut self,
         mut data: AsyncExecutionData,
         mut state: Option<ObjectHandle>,
-        resumed: Option<Result<Value, Error>>,
+        resumed: Option<SourceResume>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
         let mut next_step = resumed.map(|completion| match completion {
-            Err(error) => Err(error),
-            Ok(value) => {
+            SourceResume::Throw(error) => Err(error),
+            SourceResume::Return(value) => Ok(Step::Complete(Completion {
+                kind: CompletionKind::Return,
+                value: Some(value),
+                target: None,
+            })),
+            SourceResume::Value(value) => {
                 let action = data.pending;
                 self.complete_async_value(&mut data, action, value)
             }
@@ -143,6 +196,29 @@ impl Realm {
                 }
                 Ok(Step::Complete(completion)) => Ok(completion),
                 Err(error) => Err(error),
+                Ok(Step::Yield(value, action, span)) => {
+                    debug_assert!(data.function.generator().is_some());
+                    let result = match self.iterator_result(value, false, span) {
+                        Ok(result) => result,
+                        Err(error) => return self.finish_async_execution(data, Err(error), base),
+                    };
+                    data.pending = action;
+                    data.context = match self.capture_source_execution_context(
+                        base,
+                        span,
+                        "generator context allocation failed",
+                    ) {
+                        Ok(context) => Some(context),
+                        Err(error) => return self.finish_async_execution(data, Err(error), base),
+                    };
+                    let generator = state.as_ref().expect("source generator state");
+                    match self.object_work(span, |objects, budget| {
+                        objects.store_generator_execution(generator, Box::new(data), budget)
+                    }) {
+                        Ok(()) => return Ok(AsyncBodyOutcome::Yielded(result)),
+                        Err(error) => return Err(self.abort_async_execution(base, error)),
+                    }
+                }
                 Ok(Step::Await(value, action, span)) => {
                     data.pending = action;
                     data.context = match self.capture_source_execution_context(
@@ -425,16 +501,21 @@ impl Realm {
             return Ok(Value::Undefined);
         };
         let context = data.context.take().expect("suspended source context");
-        let capability = data.capability.clone();
+        let capability = data
+            .function
+            .promise()
+            .expect("async source capability")
+            .clone();
         let completion = if fulfilled {
-            Ok(value)
+            SourceResume::Value(value)
         } else {
-            Err(Error::Thrown(value))
+            SourceResume::Throw(Error::Thrown(value))
         };
         let outcome = self.with_source_execution_context(context, |realm| {
             realm.drive_async_execution(*data, Some(state), Some(completion), 1)
         });
         match outcome {
+            Ok(AsyncBodyOutcome::Yielded(_)) => unreachable!("async body cannot yield"),
             Ok(AsyncBodyOutcome::Suspended) => (),
             Ok(AsyncBodyOutcome::Complete(value)) => {
                 self.call(capability.resolve, Value::Undefined, vec![value], span)?;

@@ -394,17 +394,26 @@ these slots contain handles/source AST rather than direct Symbol cells.
 
 The first next ignores its argument, marks the generator executing and installs
 its saved scopes through the same caller-restoration helper as source async
-functions. Native statements run to completion with ordinary return/throw,
-finally and root resource disposal. Completion releases captures and produces a
-fresh done-true iterator result; normal completion yields undefined. Executed
-YieldExpression remains an explicit Unsupported boundary before its operand.
-Host failures release cached resources and complete the generator without further
-JavaScript cleanup, including at budget exhaustion. Reentrant resumes throw
-TypeError. Return/throw before start skip the body; completed next returns
-undefined, completed return preserves its argument and completed throw preserves
-the thrown value. Yield suspension, delegation and suspended-yield abrupt resumes
-remain implementation work. No Promise, job, automatic Await or default quota is
-added to synchronous generator execution.
+functions. A shared source execution record distinguishes an async Promise
+capability from a generator's actual callee. The statement/expression driver
+handles ordinary yield alongside await, preserving evaluated operands, references,
+iterator records, lexical environments and pending completions (15.5, 27.5.3).
+Yield creates a fresh done-false iterator result before saving the execution record
+on the generator object. Next injects its value; throw and return inject abrupt
+completions through the existing catch/finally and resource-unwind paths. A finally
+block can yield while retaining an earlier return or throw. Active binding
+iterators close from inner to outer: a closing language error replaces return,
+while an incoming throw retains precedence. Object and Symbol tracing follows all
+saved VM values, contexts and the actual callee.
+
+Completion releases captures and produces a fresh done-true iterator result;
+normal completion yields undefined. Host failures release cached resources and
+complete the generator without further JavaScript cleanup, including at budget
+exhaustion. Reentrant resumes throw TypeError. Return/throw before start skip the
+body; completed next returns undefined, completed return preserves its argument
+and completed throw preserves the thrown value. Delegated yield remains an
+explicit Unsupported boundary before its operand. No Promise, job, automatic
+Await or default quota is added to synchronous generator execution.
 
 Ordinary and arrow calls share their parameter/var setup and caller restoration
 with an internal body driver. The driver runs while the callee's scopes,

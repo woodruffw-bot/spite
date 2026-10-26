@@ -146,6 +146,19 @@ fn native_body_completions_run_finalizers_and_resource_disposal_once() {
 
 #[test]
 fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup() {
+    let mut resumed = Realm::default();
+    resumed.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{before++;yield(operand++)}catch{caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
+    collect(&mut resumed);
+    check(
+        &mut resumed,
+        "before===1&&operand===1&&disposed===0&&finalized===0&&caught===0&&weak.deref()!==undefined",
+    );
+    check(
+        &mut resumed,
+        "iterator.next().done&&disposed===1&&finalized===1&&caught===0",
+    );
+    collect(&mut resumed);
+    check(&mut resumed, "weak.deref()===undefined");
     for limited in [false, true] {
         let mut realm = Realm::new(Limits {
             max_steps: limited.then_some(10_000),
@@ -156,7 +169,7 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
         let tail = if limited {
             "spin()"
         } else {
-            "yield (operand++)"
+            "yield* (operand++)"
         };
         realm.eval(&format!("function*g(){{using r=resource;delete resource[Symbol.dispose];try{{before++;{tail}}}catch{{caught++}}finally{{finalized++}}}}let iterator=g()")).unwrap();
         let error = realm.eval("iterator.next()").unwrap_err();

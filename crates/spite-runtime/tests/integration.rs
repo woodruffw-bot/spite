@@ -1437,3 +1437,6 @@ mod generator_methods;
 
 #[path = "cases/generator_objects.rs"]
 mod generator_objects;
+
+#[path = "cases/generator_yield.rs"]
+mod generator_yield;

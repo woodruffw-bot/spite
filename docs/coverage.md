@@ -56,9 +56,36 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 18566 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19333 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Ordinary generator yield and abrupt resumption
+
+Fourteen Runtime groups cover yield values and injected next arguments, expression
+and reference ordering, loops/labels/switch/with, yielded binding keys/defaults,
+method/private contexts, synchronous and asynchronous consumers, abrupt iterator
+closing, yielding finally blocks, host aborts and capture collection. Ten Symbol
+ownership controls exercise suspended parameters, callees, receivers, operands,
+completion values, iterator methods, property keys and call arguments. The prior
+yield-boundary program now executes positively; its delegated-yield host control
+and every existing group/quota are retained.
+
+All 18 Parser units, 381 Parser integrations, 417 Runtime units and 2,203 non-RegExp
+Runtime integrations pass across 79 Parser and 679 Runtime case files. Strict
+Clippy, Rust 1.88, policy and fixture inventory checks pass. The intrinsic inventory
+remains 585 entries. All thirteen CLI groups pass after retaining generator declaration
+success and moving the Unsupported control to async-generator syntax.
+
+51 unchanged pinned originals add 99 variants, covering generator statements,
+constructors, next/return/throw and newly passing await/Array.fromAsync/for-await
+programs. The reviewed corpus contains 9,994 fixtures, twenty helpers, 9,975
+reviewed sources and 19,333 variants; the complete conformance gate and all forty
+runner/package checks pass. Generator-statement candidate review reports
+131 passed/2 Unsupported variants; built-ins report 162 passed/6 Unsupported,
+with failures, limits, setup failures and unverified negatives at zero. Unsupported
+outcomes receive no credit; the async-generator-dependent intrinsic helper remains
+outside admission. Delegated yield and async generators remain implementation work.
 
 ## Generator objects and lazy native body completion
 

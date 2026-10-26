@@ -129,9 +129,7 @@ fn object_symbols(
         disposable_stack: _,
         async_disposal,
         async_execution,
-        // Generator state owns handles and source AST only. Object tracing
-        // inventories its callee and every retained environment handle.
-        generator: _,
+        generator,
         array_from_async,
         disposable_resources,
         raw_json: _,
@@ -212,7 +210,11 @@ fn object_symbols(
             visit(symbol(value))?;
         }
     }
-    if let Some(data) = async_execution {
+    for data in async_execution.as_deref().into_iter().chain(
+        generator
+            .as_deref()
+            .and_then(super::super::generator::GeneratorData::execution),
+    ) {
         for value in data.values() {
             visit(symbol(value))?;
         }
