@@ -113,6 +113,17 @@ validation and exported-name uniqueness still apply. Nested static declarations
 are syntax errors. Async-generator syntax, module linking and evaluation remain
 implementation work; no Module AST is accepted by Script execution APIs.
 
+Module::entries constructs the static records used by ParseModule (16.2).
+ModuleRequests are deduplicated by decoded specifier and canonical attributes in
+first source occurrence order across imports and reexports. Import entries retain
+clause order; local, indirect and bare-star export lists retain export order.
+Exports of imported names and namespace objects are rewritten to indirect entries
+using the original request (sec-parsemodule), so ResolveExport can recognize
+identical bindings reached through star graphs. Namespace markers remain distinct
+from the literal star name; bare stars exclude default, while anonymous default
+values use the synthetic *default* local name. These records perform no host
+resolution, linking or evaluation.
+
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a
 Module goal (13.3.1 early errors); direct eval and dynamic function source therefore

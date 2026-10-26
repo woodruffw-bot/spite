@@ -365,6 +365,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain named local/indirect exports and star/namespace reexports, with module binding resolution, unique exported names and shared request/attribute validation.
 - [x] Parse exported variable, lexical, function, generator, async-function and class declarations through ordinary declaration nodes and shared binding/scope checks.
 - [x] Parse default function/generator/async-function/class declarations and assignment expressions, retaining named versus synthetic bindings, declaration lookahead, strict scope checks and unique default export names.
+- [x] Construct source-ordered deduplicated ModuleRequests and normalized import/local/indirect/star export entries, rewriting imported named and namespace reexports to their original requests.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

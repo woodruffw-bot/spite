@@ -31,6 +31,54 @@ impl Module {
     }
 }
 
+/// Static request and binding records constructed by ParseModule (16.2).
+///
+/// These entries describe linkage; they do not resolve or execute modules.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ModuleEntries {
+    /// Distinct requests in first source occurrence order.
+    pub requested_modules: Vec<ModuleRequest>,
+    /// Imported bindings in source and clause order.
+    pub import_entries: Vec<ImportEntry>,
+    /// Exports bound in this module, including synthetic default bindings.
+    pub local_export_entries: Vec<LocalExportEntry>,
+    /// Named and namespace exports provided by requested modules.
+    pub indirect_export_entries: Vec<IndirectExportEntry>,
+    /// Bare star requests, whose exports exclude the default name.
+    pub star_export_entries: Vec<ModuleRequest>,
+}
+
+/// An ImportEntry Record with a decoded local binding name.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportEntry {
+    /// Requested module and canonical attributes.
+    pub request: ModuleRequest,
+    /// Export name or namespace-object marker.
+    pub imported: ImportName,
+    /// Local BindingIdentifier StringValue.
+    pub local: JsString,
+}
+
+/// An ExportEntry Record referring to a binding in this module.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LocalExportEntry {
+    /// Local binding, or the synthetic *default* name.
+    pub local: JsString,
+    /// Name exposed by this module.
+    pub exported: JsString,
+}
+
+/// An ExportEntry Record referring to a requested module.
+#[derive(Clone, Debug, PartialEq)]
+pub struct IndirectExportEntry {
+    /// Requested module and canonical attributes.
+    pub request: ModuleRequest,
+    /// Export name; None is the ~all~ marker requesting the namespace object.
+    pub imported: Option<JsString>,
+    /// Name exposed by this module.
+    pub exported: JsString,
+}
+
 /// A static import and its requested module (16.2.2).
 #[derive(Clone, Debug, PartialEq)]
 pub struct ImportDeclaration {

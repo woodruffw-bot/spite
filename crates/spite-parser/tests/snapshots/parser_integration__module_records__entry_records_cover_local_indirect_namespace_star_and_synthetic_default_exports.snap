@@ -1,0 +1,178 @@
+---
+source: crates/spite-parser/tests/module_records.rs
+assertion_line: 44
+expression: entries
+---
+ModuleEntries {
+    requested_modules: [
+        ModuleRequest {
+            specifier: "first",
+            attributes: [
+                ImportAttribute {
+                    key: "type",
+                    value: "json",
+                },
+            ],
+        },
+        ModuleRequest {
+            specifier: "second",
+            attributes: [],
+        },
+        ModuleRequest {
+            specifier: "third",
+            attributes: [],
+        },
+        ModuleRequest {
+            specifier: "fourth",
+            attributes: [],
+        },
+        ModuleRequest {
+            specifier: "fifth",
+            attributes: [],
+        },
+    ],
+    import_entries: [
+        ImportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Name(
+                "default",
+            ),
+            local: "defaultValue",
+        },
+        ImportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Name(
+                "named",
+            ),
+            local: "local",
+        },
+        ImportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Name(
+                "*",
+            ),
+            local: "star",
+        },
+        ImportEntry {
+            request: ModuleRequest {
+                specifier: "second",
+                attributes: [],
+            },
+            imported: Namespace,
+            local: "ns",
+        },
+    ],
+    local_export_entries: [
+        LocalExportEntry {
+            local: "own",
+            exported: "own",
+        },
+        LocalExportEntry {
+            local: "*default*",
+            exported: "default",
+        },
+    ],
+    indirect_export_entries: [
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Some(
+                "named",
+            ),
+            exported: "renamed",
+        },
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Some(
+                "default",
+            ),
+            exported: "fallback",
+        },
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "second",
+                attributes: [],
+            },
+            imported: None,
+            exported: "namespace",
+        },
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "type",
+                        value: "json",
+                    },
+                ],
+            },
+            imported: Some(
+                "*",
+            ),
+            exported: "literalStar",
+        },
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "third",
+                attributes: [],
+            },
+            imported: Some(
+                "remote",
+            ),
+            exported: "indirect",
+        },
+        IndirectExportEntry {
+            request: ModuleRequest {
+                specifier: "fourth",
+                attributes: [],
+            },
+            imported: None,
+            exported: "whole",
+        },
+    ],
+    star_export_entries: [
+        ModuleRequest {
+            specifier: "fifth",
+            attributes: [],
+        },
+    ],
+}

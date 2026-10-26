@@ -30,6 +30,16 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Normalized Module entry records
+
+Module::entries now builds static requests and normalized import/local/indirect/
+star export records. Six Parser groups and a reviewed snapshot cover request
+order/equality, imported name and namespace reexports, default locals and lossless
+strings. Linking/evaluation remain Unsupported; no new Module execution is
+credited. The corpus remains 10,235 fixtures, twenty helpers, 10,216 reviewed
+sources and 19,678 variants. The full gate and all forty-three runner/package
+checks pass; original programs/groups, helpers, quotas and intrinsics are retained.
+
 ## Default export review
 
 Nine unchanged Module syntax negatives add nine variants with exact rejection

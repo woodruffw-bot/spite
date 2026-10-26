@@ -178,6 +178,9 @@ mod module_imports;
 #[path = "module_default.rs"]
 mod module_default;
 
+#[path = "module_records.rs"]
+mod module_records;
+
 #[path = "module_declarations.rs"]
 mod module_declarations;
 

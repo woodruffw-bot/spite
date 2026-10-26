@@ -60,6 +60,26 @@ not an alternative language specification.
 
 
 
+## Normalized Module request and binding records
+
+Module::entries constructs ParseModule's static linkage records. Requests preserve
+first occurrence order across imports/reexports and deduplicate decoded specifiers
+plus canonical attributes. Import bindings and each export list retain source
+order. Local exports of imported names and namespace objects become indirect
+entries referring to their original requests. Literal star names, namespace
+markers, bare-star default exclusion and synthetic default locals remain distinct.
+Host resolution, linking and evaluation remain implementation work.
+
+Six new Parser groups and a reviewed entries snapshot cover all entry forms,
+interleaved requests, attribute equality, imported binding rewrites, declaration
+and default locals, lossless strings, escaped bindings and empty/dynamic-only
+Modules. All eighteen Parser units, 427 Parser integrations, 417 Runtime units,
+2,229 non-RegExp integrations, thirteen CLI groups and thirteen runner probes pass
+across 87 Parser and 683 Runtime files. Clippy, Rust 1.88, policy and inventories
+pass. The corpus remains 10,235 fixtures, twenty helpers, 10,216 reviewed sources
+and 19,678 variants; the full gate and all forty-three runner/package checks pass.
+Existing programs/groups, helpers, quotas and 585 intrinsic entries are unchanged.
+
 ## Default export records and grammar
 
 Default exports retain ordinary function/generator/async-function/class nodes or

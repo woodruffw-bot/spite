@@ -4,6 +4,7 @@ use super::*;
 
 mod exports;
 mod imports;
+mod records;
 
 /// Parses the supported Module body with strict code and top-level Await.
 ///
