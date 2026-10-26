@@ -1011,6 +1011,15 @@ and own data definitions. Binding recursion shares the existing evaluator
 native-stack guard across callback reentry. Host aborts restore the catch scope
 and skip JavaScript cleanup.
 
+Catch array-parameter defaults use the same suspended binding cursor as declarations
+and iteration heads. After materializing the thrown value and instantiating all
+catch names, a traced staging frame defers initialization to the next execution
+step. Iterator acquisition and initialization failures therefore enter the ordinary
+binding cleanup path before unwinding the catch scope. The catch body waits for
+the entire pattern; initialization errors replace the original throw and proceed
+through finally or an outer handler without reentering the same catch clause.
+Escaping closures retain initialized catch cells after the iterator state is released.
+
 Let/const declarations use the same BindingElement/BindingPattern syntax and
 BindingInitialization (14.3.1). Every bound name participates in lexical,
 parameter, catch, and nested-var early conflicts; property keys are not names.

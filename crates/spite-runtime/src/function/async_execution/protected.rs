@@ -62,7 +62,16 @@ impl Realm {
                 Err(error) => return FrameStep::Complete(Err(error)),
             };
             data.frames.push(AsyncStatementFrame::Try(cursor));
-            if handler.parameter.is_some() && data.frames.try_reserve(1).is_err() {
+            let suspended_binding = handler
+                .parameter
+                .as_ref()
+                .is_some_and(super::binding_array::has_array_binding_await);
+            if handler.parameter.is_some()
+                && data
+                    .frames
+                    .try_reserve(if suspended_binding { 2 } else { 1 })
+                    .is_err()
+            {
                 return FrameStep::Complete(Err(allocation_error(handler.span)));
             }
             let Err(error) = result else {
@@ -75,7 +84,12 @@ impl Realm {
                         span: handler.span,
                         disposable: false,
                     });
-                    if let Err(error) = self.initialize_pattern(
+                    if suspended_binding {
+                        // Initialize on the next execution step so acquisition errors
+                        // enter the ordinary binding cleanup and completion path.
+                        data.frames
+                            .push(AsyncStatementFrame::CatchBinding { environment, value });
+                    } else if let Err(error) = self.initialize_pattern(
                         handler.parameter.as_ref().expect("catch parameter"),
                         value,
                         &environment,

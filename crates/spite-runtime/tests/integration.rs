@@ -1422,3 +1422,6 @@ mod async_iteration_binding;
 
 #[path = "cases/async_var_array.rs"]
 mod async_var_array;
+
+#[path = "cases/async_catch_binding.rs"]
+mod async_catch_binding;

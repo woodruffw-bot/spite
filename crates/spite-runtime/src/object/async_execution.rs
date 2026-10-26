@@ -166,6 +166,10 @@ pub(crate) enum AsyncStatementFrame {
     Switch(AsyncSwitchCursor),
     With(EnvironmentHandle),
     If,
+    CatchBinding {
+        environment: EnvironmentHandle,
+        value: Value,
+    },
     Try(AsyncTryCursor),
     Scope {
         environment: EnvironmentHandle,
@@ -187,6 +191,7 @@ impl AsyncStatementFrame {
             Self::Block(block) => Some(&block.environment),
             Self::Switch(cursor) => Some(&cursor.environment),
             Self::With(environment) => Some(environment),
+            Self::CatchBinding { environment, .. } => Some(environment),
             Self::If => None,
             Self::Try(_) => None,
             Self::Scope { environment, .. } => Some(environment),
@@ -203,6 +208,7 @@ impl AsyncStatementFrame {
             Self::Block(block) => block.normal.as_ref(),
             Self::Switch(cursor) => Some(&cursor.value),
             Self::With(_) => None,
+            Self::CatchBinding { value, .. } => Some(value),
             Self::If => None,
             Self::Try(cursor) => match cursor.pending.as_ref() {
                 Some(Ok(completion)) => completion.value.as_ref(),
@@ -244,6 +250,7 @@ impl AsyncStatementFrame {
             | Self::Switch(_)
             | Self::With(_)
             | Self::If
+            | Self::CatchBinding { .. }
             | Self::Try(_)
             | Self::Scope { .. }
             | Self::Loop(_)

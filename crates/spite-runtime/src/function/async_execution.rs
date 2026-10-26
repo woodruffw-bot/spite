@@ -183,6 +183,24 @@ impl Realm {
     }
 
     fn async_execution_step(&mut self, data: &mut AsyncExecutionData) -> Result<Step, Error> {
+        if matches!(
+            data.frames.last(),
+            Some(crate::object::async_execution::AsyncStatementFrame::CatchBinding { .. })
+        ) {
+            let Some(crate::object::async_execution::AsyncStatementFrame::CatchBinding {
+                environment,
+                value,
+            }) = data.frames.pop()
+            else {
+                unreachable!("pending catch binding")
+            };
+            return self.start_async_array_binding(
+                data,
+                crate::object::async_binding_array::ArrayBindingRoot::Catch,
+                value,
+                Some(environment),
+            );
+        }
         if data.array_binding.is_some() {
             return self.advance_async_array_binding(data);
         }

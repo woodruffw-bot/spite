@@ -464,6 +464,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),object={x:key};(async()=>{with(object){var[x=await gate]=[]}})();return gate})()",
         ),
         (
+            "async catch array cached next",
+            "(()=>{let gate=new Promise(()=>{}),next=(()=>{let value=key;return()=>({done:false,value:(value,undefined)})})(),iterator={next,return(){return{}}};(async()=>{try{throw{[Symbol.iterator](){return iterator}}}catch([x=await gate]){}})();iterator.next=null;next=null;return gate})()",
+        ),
+        (
+            "async catch array initialized binding",
+            "(()=>{let gate=new Promise(()=>{}),input=[key];(async()=>{try{throw input}catch([x,y=await gate]){}})();input[0]=null;return gate})()",
+        ),
+        (
             "async switch input",
             "(()=>{let gate=new Promise(()=>{});(async()=>{switch(key){case await gate:break}})();return gate})()",
         ),

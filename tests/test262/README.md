@@ -30,6 +30,14 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Catch array-default review
+
+Eight Runtime groups and two Symbol ownership controls cover suspended catch
+parameters, body ordering, failure cleanup, escaped cells and host isolation.
+Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources and 19,012 variants. Helpers, test groups, quotas and
+intrinsic entries are unchanged.
+
 ## Var array-default review
 
 Nine Runtime groups and two Symbol ownership controls cover saved references,

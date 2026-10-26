@@ -25,6 +25,7 @@ pub(crate) struct ArrayBindingCursor {
 pub(crate) enum ArrayBindingRoot {
     Declaration(usize),
     Iteration,
+    Catch,
 }
 
 #[derive(Debug)]

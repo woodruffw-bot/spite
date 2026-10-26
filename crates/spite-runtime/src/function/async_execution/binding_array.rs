@@ -1,6 +1,6 @@
 //! Lexical array-binding defaults through the shared Await expression evaluator.
 
-use super::{AsyncAwaitAction, AsyncExecutionData, Step, binding, expression};
+use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, binding, expression};
 use crate::{
     Error, Realm, Value,
     environment::EnvironmentHandle,
@@ -13,7 +13,9 @@ use crate::{
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPattern, BindingPatternKind, Expr, ForBinding};
+use spite_parser::ast::{
+    ArrowBody, BindingPattern, BindingPatternKind, Expr, ForBinding, StatementKind,
+};
 
 pub(super) fn has_array_binding_await(pattern: &BindingPattern) -> bool {
     match &pattern.kind {
@@ -42,6 +44,24 @@ fn pattern_at<'a>(
     let mut pattern = match root {
         ArrayBindingRoot::Declaration(index) => {
             &binding::binding_source(body, location).0[index].pattern
+        }
+        ArrayBindingRoot::Catch => {
+            let cursor = frames
+                .iter()
+                .rev()
+                .find_map(|frame| match frame {
+                    AsyncStatementFrame::Try(cursor) => Some(cursor),
+                    _ => None,
+                })
+                .expect("catch binding source");
+            let StatementKind::Try {
+                handler: Some(handler),
+                ..
+            } = &active_statement(body, Some(&cursor.location)).kind
+            else {
+                unreachable!("catch parameter source")
+            };
+            handler.parameter.as_ref().expect("catch binding pattern")
         }
         ArrayBindingRoot::Iteration => {
             match super::iteration_head::iteration_binding(body, frames) {
@@ -210,7 +230,7 @@ impl Realm {
                     ArrayBindingRoot::Declaration(binding) => {
                         self.async_binding_step(data, binding + 1, None)
                     }
-                    ArrayBindingRoot::Iteration => Ok(Step::Continue),
+                    ArrayBindingRoot::Iteration | ArrayBindingRoot::Catch => Ok(Step::Continue),
                 };
             };
             let pattern = pattern_at(

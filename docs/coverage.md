@@ -60,6 +60,20 @@ not an alternative language specification.
 
 
 
+## Awaited array defaults in catch parameters
+
+Eight Runtime groups and two Symbol ownership controls cover body-entry ordering,
+mutable catch cells, nested patterns/rest, names, TDZ errors, rejection, iterator
+acquisition/step/close failures, private/dynamic contexts, collection and host
+abort. All 417 units and 2,161 non-RegExp integrations pass across 674 Runtime case
+files; Clippy and Rust 1.88 checks pass. Initialization runs outside the completion
+dispatcher, so acquisition errors follow ordinary binding cleanup before finally
+or outer handlers. Escaped catch cells outlive released iterator state.
+
+Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources, 19,012 variants, 76 Parser case files and 579 intrinsic
+entries. Helpers, test groups and quotas are retained.
+
 ## Awaited var array bindings and saved references
 
 Nine Runtime groups and two Symbol ownership controls cover parameter aliases,

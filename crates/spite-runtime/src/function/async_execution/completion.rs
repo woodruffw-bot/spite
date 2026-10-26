@@ -59,6 +59,9 @@ impl Realm {
                     result =
                         result.map(|completion| completion.update_empty(Some(Value::Undefined)));
                 }
+                Some(AsyncStatementFrame::CatchBinding { .. }) => {
+                    unreachable!("catch binding initializes before body execution")
+                }
                 Some(AsyncStatementFrame::If) => {
                     data.frames.pop();
                     result =
