@@ -1,5 +1,7 @@
 //! Shared source declaration and for-header initializer continuations.
 
+use crate::object::async_binding_array::ArrayBindingRoot;
+
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
 use crate::{
     Completion, Error, Realm, Value,
@@ -70,7 +72,12 @@ impl Realm {
                     self.initialize_using_value(&binding.pattern, value, &environment)?;
                 } else {
                     if super::binding_array::has_array_binding_await(&binding.pattern) {
-                        return self.start_async_array_binding(data, element, value, environment);
+                        return self.start_async_array_binding(
+                            data,
+                            ArrayBindingRoot::Declaration(element),
+                            value,
+                            environment,
+                        );
                     }
                     self.initialize_pattern(&binding.pattern, value, &environment)?;
                 }
@@ -97,7 +104,12 @@ impl Realm {
             {
                 self.tick(binding.pattern.span)?;
                 let value = self.binding_element_value(binding, Value::Undefined)?;
-                return self.start_async_array_binding(data, element, value, environment);
+                return self.start_async_array_binding(
+                    data,
+                    ArrayBindingRoot::Declaration(element),
+                    value,
+                    environment,
+                );
             } else if var {
                 self.evaluate_var_bindings(std::slice::from_ref(binding))?;
             } else if using {

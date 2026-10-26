@@ -14,13 +14,20 @@ use crate::{
 use spite_core::{Span, WellKnownSymbol};
 use spite_parser::ast::{ArrowBody, Expr, ForBinding, StatementKind};
 
-fn iteration_binding<'a>(body: &'a ArrowBody, frames: &[AsyncStatementFrame]) -> &'a ForBinding {
-    let location = match frames.last() {
-        Some(AsyncStatementFrame::ForOf(cursor)) => &cursor.location,
-        Some(AsyncStatementFrame::ForIn(cursor)) => &cursor.location,
-        Some(AsyncStatementFrame::ForAwait(cursor)) => &cursor.location,
-        _ => unreachable!("iteration binding cursor"),
-    };
+pub(super) fn iteration_binding<'a>(
+    body: &'a ArrowBody,
+    frames: &[AsyncStatementFrame],
+) -> &'a ForBinding {
+    let location = frames
+        .iter()
+        .rev()
+        .find_map(|frame| match frame {
+            AsyncStatementFrame::ForOf(cursor) => Some(&cursor.location),
+            AsyncStatementFrame::ForIn(cursor) => Some(&cursor.location),
+            AsyncStatementFrame::ForAwait(cursor) => Some(&cursor.location),
+            _ => None,
+        })
+        .expect("iteration binding cursor");
     match &active_statement(body, Some(location)).kind {
         StatementKind::ForOf { binding, .. } | StatementKind::ForIn { binding, .. } => binding,
         _ => unreachable!("iteration binding source"),
@@ -143,6 +150,21 @@ impl Realm {
                 AsyncAwaitAction::IterationBinding,
             );
         }
+        if let ForBinding::Lexical {
+            binding: pattern, ..
+        } = binding
+            && super::binding_array::has_array_binding_await(pattern)
+        {
+            let environment = self
+                .prepare_async_iteration_scope(&mut data.frames, binding, span)?
+                .expect("lexical iteration environment");
+            return self.start_async_array_binding(
+                data,
+                crate::object::async_binding_array::ArrayBindingRoot::Iteration,
+                value,
+                environment,
+            );
+        }
         self.initialize_async_iteration_binding(&mut data.frames, binding, value, span)?;
         Ok(Step::Continue)
     }
@@ -154,6 +176,15 @@ impl Realm {
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
+        let environment = self.prepare_async_iteration_scope(frames, binding, span)?;
+        self.initialize_iteration_binding(binding, value, environment.as_ref())
+    }
+    fn prepare_async_iteration_scope(
+        &mut self,
+        frames: &mut Vec<AsyncStatementFrame>,
+        binding: &ForBinding,
+        span: Span,
+    ) -> Result<Option<crate::environment::EnvironmentHandle>, Error> {
         if matches!(binding, ForBinding::Lexical { .. } | ForBinding::Using(_)) {
             frames.try_reserve(1).map_err(|_| Error::Limit {
                 span,
@@ -168,10 +199,6 @@ impl Realm {
                 disposable: *disposable,
             });
         }
-        self.initialize_iteration_binding(
-            binding,
-            value,
-            scope.as_ref().map(|(environment, _)| environment),
-        )
+        Ok(scope.map(|(environment, _)| environment))
     }
 }

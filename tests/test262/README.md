@@ -30,6 +30,14 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Iteration array-default review
+
+Eight Runtime groups and a Symbol ownership control extend lexical array defaults
+to all three iteration forms. They cover scopes, contexts, closing order and host
+isolation; var, object and assignment gaps remain explicit. Complete candidate
+reviews and inventories remain 9,825 fixtures, twenty helpers, 9,806 reviewed
+sources and 19,012 variants; helpers, quotas and intrinsic entries are unchanged.
+
 ## Lexical array-default review
 
 Ten Runtime groups and two Symbol ownership controls cover suspended defaults,

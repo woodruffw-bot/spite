@@ -1017,14 +1017,18 @@ parameter, catch, and nested-var early conflicts; property keys are not names.
 Default-value selection, binding iterator acquisition and rest Array collection
 are separate shared operations. Ordinary initialization still resolves references
 before stepping, preserves default name inference and uses the same closing path.
-Lexical Array BindingPatterns in declaration lists and three-clause for headers
-can suspend in defaults. An owned cursor stack retains the binding environment,
+Lexical Array BindingPatterns in declaration lists, three-clause headers and
+for-in/of/await-of heads can suspend in defaults. An owned cursor stack retains the binding environment,
 typed paths into the source pattern and actual IteratorRecords for nested arrays.
 Elisions skip values; rest uses the shared collector. Defined values skip defaults,
 and non-awaited defaults keep native name inference. Default results produced by
 await receive no additional name hint. Each default resumes before later elements
 or declarators. The expression and pattern drivers return to their common outer
 loop between steps, including when an await branch is unselected.
+Iteration roots create their fresh lexical scope before initialization and queue
+the body until the complete pattern finishes. Partial normal binding closes its
+own iterator before body execution. A failing head closes inner binding iterators
+before its outer iterator, with asynchronous closing retained for for-await-of.
 
 Normal partial consumption closes the current iterator before advancing its
 parent. Rejection or nested initialization failure closes still-active iterators

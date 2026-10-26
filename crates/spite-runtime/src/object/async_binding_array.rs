@@ -18,9 +18,15 @@ pub(crate) struct ArrayBindingCursor {
     pub span: Span,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum ArrayBindingRoot {
+    Declaration(usize),
+    Iteration,
+}
+
 #[derive(Debug)]
 pub(crate) struct AsyncArrayBinding {
-    pub binding: usize,
+    pub root: ArrayBindingRoot,
     pub environment: EnvironmentHandle,
     pub cursors: Vec<ArrayBindingCursor>,
     pub pending_index: Option<usize>,

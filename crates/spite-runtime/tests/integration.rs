@@ -1416,3 +1416,6 @@ mod async_iteration_targets;
 
 #[path = "cases/async_array_binding.rs"]
 mod async_array_binding;
+
+#[path = "cases/async_iteration_binding.rs"]
+mod async_iteration_binding;

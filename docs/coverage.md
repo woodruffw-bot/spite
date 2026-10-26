@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Awaited lexical array bindings in iteration heads
+
+Eight Runtime groups and a Symbol ownership control cover fresh let/const cells,
+async next/default ordering, for-in key patterns, method/dynamic contexts, name
+inference, labelled control, inner-before-outer closing and host abort. All 417
+units and 2,144 non-RegExp integrations pass across 672 Runtime case files; Clippy
+and Rust 1.88 checks pass. Declaration and iteration roots share the array cursor.
+The body waits for binding completion; rejection closes binding iterators before
+the outer iterator. Abandoned expression operands are released before closing.
+Var, object and assignment-pattern gaps remain explicit.
+
+Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources, 19,012 variants, 76 Parser case files and 579 intrinsic
+entries. Helpers and quotas are unchanged.
+
 ## Awaited defaults in lexical array bindings
 
 Ten Runtime groups and two Symbol ownership controls cover ordered defaults,

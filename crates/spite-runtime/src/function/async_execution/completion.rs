@@ -11,9 +11,6 @@ impl Realm {
         data: &mut AsyncExecutionData,
         mut result: Result<Completion, Error>,
     ) -> Result<Option<Completion>, Error> {
-        if data.array_binding.is_some() {
-            result = result.map_err(|error| self.close_async_array_binding_error(data, error));
-        }
         if !matches!(&result, Ok(completion) if completion.kind == CompletionKind::Normal) {
             // An abandoned expression or initializer must not retain operands
             // and target environments through later completion handling.
@@ -21,6 +18,9 @@ impl Realm {
             data.var_target = None;
             data.iteration_value = None;
             data.next = None;
+        }
+        if data.array_binding.is_some() {
+            result = result.map_err(|error| self.close_async_array_binding_error(data, error));
         }
         loop {
             result = match result {

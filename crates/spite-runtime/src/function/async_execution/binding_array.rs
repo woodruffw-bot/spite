@@ -5,13 +5,15 @@ use crate::{
     Error, Realm, Value,
     environment::EnvironmentHandle,
     object::{
-        async_binding_array::{ArrayBindingChild, ArrayBindingCursor, AsyncArrayBinding},
-        async_execution::StatementLocation,
+        async_binding_array::{
+            ArrayBindingChild, ArrayBindingCursor, ArrayBindingRoot, AsyncArrayBinding,
+        },
+        async_execution::{AsyncStatementFrame, StatementLocation},
         async_expression::ExprRoot,
     },
 };
 use spite_core::Span;
-use spite_parser::ast::{ArrowBody, BindingPattern, BindingPatternKind, Expr};
+use spite_parser::ast::{ArrowBody, BindingPattern, BindingPatternKind, Expr, ForBinding};
 
 pub(super) fn has_array_binding_await(pattern: &BindingPattern) -> bool {
     match &pattern.kind {
@@ -33,10 +35,23 @@ pub(super) fn has_array_binding_await(pattern: &BindingPattern) -> bool {
 fn pattern_at<'a>(
     body: &'a ArrowBody,
     location: Option<&StatementLocation>,
-    binding_index: usize,
+    frames: &[AsyncStatementFrame],
+    root: ArrayBindingRoot,
     path: &[ArrayBindingChild],
 ) -> &'a BindingPattern {
-    let mut pattern = &binding::binding_source(body, location).0[binding_index].pattern;
+    let mut pattern = match root {
+        ArrayBindingRoot::Declaration(index) => {
+            &binding::binding_source(body, location).0[index].pattern
+        }
+        ArrayBindingRoot::Iteration => {
+            let ForBinding::Lexical { binding, .. } =
+                super::iteration_head::iteration_binding(body, frames)
+            else {
+                unreachable!("lexical iteration array binding")
+            };
+            binding
+        }
+    };
     for child in path {
         let BindingPatternKind::Array { elements, rest } = &pattern.kind else {
             unreachable!("array binding path")
@@ -60,7 +75,8 @@ pub(super) fn default_expression(data: &AsyncExecutionData) -> &Expr {
     let pattern = pattern_at(
         &data.body,
         binding::binding_location(data),
-        state.binding,
+        &data.frames,
+        state.root,
         &cursor.path,
     );
     let BindingPatternKind::Array { elements, .. } = &pattern.kind else {
@@ -95,13 +111,13 @@ impl Realm {
     pub(super) fn start_async_array_binding(
         &mut self,
         data: &mut AsyncExecutionData,
-        binding: usize,
+        root: ArrayBindingRoot,
         value: Value,
         environment: EnvironmentHandle,
     ) -> Result<Step, Error> {
         debug_assert!(data.array_binding.is_none());
         data.array_binding = Some(AsyncArrayBinding {
-            binding,
+            root,
             environment,
             cursors: Vec::new(),
             pending_index: None,
@@ -120,7 +136,8 @@ impl Realm {
         let pattern = pattern_at(
             &data.body,
             binding::binding_location(data),
-            state.binding,
+            &data.frames,
+            state.root,
             &path,
         );
         let BindingPatternKind::Array { rest, .. } = &pattern.kind else {
@@ -155,7 +172,8 @@ impl Realm {
         let pattern = pattern_at(
             &data.body,
             binding::binding_location(data),
-            state.binding,
+            &data.frames,
+            state.root,
             &path,
         );
         if has_array_binding_await(pattern) {
@@ -172,17 +190,23 @@ impl Realm {
         loop {
             let state = data.array_binding.as_ref().expect("array binding state");
             let Some(cursor) = state.cursors.last() else {
-                let binding = data
+                let root = data
                     .array_binding
                     .take()
                     .expect("completed array binding")
-                    .binding;
-                return self.async_binding_step(data, binding + 1, None);
+                    .root;
+                return match root {
+                    ArrayBindingRoot::Declaration(binding) => {
+                        self.async_binding_step(data, binding + 1, None)
+                    }
+                    ArrayBindingRoot::Iteration => Ok(Step::Continue),
+                };
             };
             let pattern = pattern_at(
                 &data.body,
                 binding::binding_location(data),
-                state.binding,
+                &data.frames,
+                state.root,
                 &cursor.path,
             );
             let BindingPatternKind::Array { elements, rest } = &pattern.kind else {
