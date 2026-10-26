@@ -46,7 +46,7 @@ impl Realm {
             };
             let key = object.key.take().expect("completed property key");
             if rest.is_some() {
-                self.binding_exclude_key(&mut object.excluded, key, span)?;
+                self.exclude_rest_key(&mut object.excluded, key, span)?;
             }
             object.phase = ObjectBindingPhase::Key;
             cursor.index += 1;
@@ -125,7 +125,7 @@ impl Realm {
                 .binding_reference(rest, environment.as_ref())?
                 .map(|reference| reference.into_owned(rest.span))
                 .transpose()?;
-            let value = self.binding_object_rest(object.value.clone(), &object.excluded, span)?;
+            let value = self.copy_rest_object(object.value.clone(), &object.excluded, span)?;
             let cursor = data
                 .pattern_binding
                 .as_mut()

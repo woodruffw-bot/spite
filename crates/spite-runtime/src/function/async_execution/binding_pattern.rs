@@ -395,7 +395,8 @@ impl Realm {
                     .binding_reference(rest, environment.as_ref())?
                     .map(|reference| reference.into_owned(rest.span))
                     .transpose()?;
-                let value = self.binding_array_rest(iterator, span)?;
+                let value =
+                    self.iterator_rest_array(iterator, span, "binding array capacity exceeded")?;
                 let path = child_path(&cursor.path, BindingChild::Rest, span)?;
                 self.initialize_async_pattern_node(data, path, value)?;
             } else {

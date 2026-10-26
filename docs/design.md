@@ -1037,6 +1037,10 @@ patterns. Object rest uses the same intrinsic creation, live property copying an
 exclusion accounting as native BindingInitialization. Each physical Symbol key
 slot participates in the internal Symbol inventory, including a key simultaneously
 held as the current property and in the exclusion set.
+Bindings and destructuring assignments share rest Array collection, intrinsic
+rest Object creation and excluded-key work accounting. Callers retain their
+reference-before-access order, iterator records, closing policy and capacity
+diagnostics; the shared operations perform no additional JavaScript evaluation.
 Elisions skip values; rest uses the shared collector. Defined values skip defaults,
 and non-awaited defaults keep native name inference. Default results produced by
 await receive no additional name hint. Each default resumes before later elements

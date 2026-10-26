@@ -1,7 +1,7 @@
 //! Ordered DestructuringAssignmentEvaluation (13.15.5.2–6).
 
-use crate::{Error, ExceptionKind, Realm, Reference, Value, object::DataDescriptor};
-use spite_core::{JsString, PropertyKey, WellKnownSymbol};
+use crate::{Error, ExceptionKind, Realm, Reference, Value};
+use spite_core::WellKnownSymbol;
 use spite_parser::ast::{
     AssignmentElement, AssignmentPattern, AssignmentPatternKind, AssignmentTarget, ExprKind,
     PropertyName,
@@ -69,27 +69,13 @@ impl Realm {
                     let next = self.get_property_value(&value, &key, span)?;
                     self.assignment_element_value(&property.element, next, reference)?;
                     if rest.is_some() {
-                        self.object_work(span, |_, budget| {
-                            budget.charge(match &key {
-                                PropertyKey::String(key) => key.len() + 1,
-                                PropertyKey::Symbol(_) => 1,
-                            })
-                        })?;
-                        excluded.insert(key);
+                        self.exclude_rest_key(&mut excluded, key, span)?;
                     }
                 }
                 if let Some(rest) = rest {
                     let reference = self.reference(rest)?;
-                    let prototype = self
-                        .intrinsics
-                        .as_ref()
-                        .expect("initialized")
-                        .object_prototype
-                        .clone();
-                    let object =
-                        self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
-                    self.copy_data_properties(&object, value, &excluded, span)?;
-                    self.put(reference, Value::Object(object), rest.span)?;
+                    let value = self.copy_rest_object(value, &excluded, span)?;
+                    self.put(reference, value, rest.span)?;
                 }
             }
             AssignmentPatternKind::Array { elements, rest } => {
@@ -125,32 +111,12 @@ impl Realm {
                     }
                     if let Some(rest) = rest {
                         let reference = self.assignment_target_reference(rest)?;
-                        let Value::Object(array) = self.create_array_from_list([], span)? else {
-                            unreachable!("intrinsic Array creation")
-                        };
-                        let mut index = 0usize;
-                        while !iterator.is_done() {
-                            let Some(next) = self.iterator_step_value(&mut iterator, span)? else {
-                                break;
-                            };
-                            self.define_property_or_throw(
-                                &array,
-                                JsString::from(index.to_string().as_str()),
-                                DataDescriptor {
-                                    value: Some(next),
-                                    writable: Some(true),
-                                    enumerable: Some(true),
-                                    configurable: Some(true),
-                                }
-                                .into(),
-                                span,
-                            )?;
-                            index = index.checked_add(1).ok_or_else(|| Error::Limit {
-                                span,
-                                message: "assignment array capacity exceeded".into(),
-                            })?;
-                        }
-                        self.assign_destructured_target(rest, Value::Object(array), reference)?;
+                        let value = self.iterator_rest_array(
+                            &mut iterator,
+                            span,
+                            "assignment array capacity exceeded",
+                        )?;
+                        self.assign_destructured_target(rest, value, reference)?;
                     }
                     Ok(())
                 })();

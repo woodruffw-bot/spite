@@ -72,6 +72,12 @@ one cursor stack and native key/rest operations. Former object-binding boundary
 programs now execute positively; assignment-pattern boundaries remain explicit.
 Every prior group and quota is retained.
 
+A subsequent refactor shares rest Array collection, rest Object creation/copying
+and exclusion accounting with destructuring assignment. Existing reference timing,
+iterator closing and capacity diagnostics are preserved. The same 417 units,
+2,173 non-RegExp integrations and 19,012 reviewed variants pass; groups, fixtures,
+helpers and quotas are unchanged.
+
 Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
 9,806 reviewed sources, 19,012 variants, 76 Parser case files and 579 intrinsic
 entries. Helpers and quotas are unchanged.

@@ -130,12 +130,12 @@ impl Realm {
                     let next = self.get_property_value(&value, &key, span)?;
                     self.binding_element(&property.element, next, environment, reference)?;
                     if rest.is_some() {
-                        self.binding_exclude_key(&mut excluded, key, span)?;
+                        self.exclude_rest_key(&mut excluded, key, span)?;
                     }
                 }
                 if let Some(rest) = rest {
                     let reference = self.binding_reference(rest, environment)?;
-                    let value = self.binding_object_rest(value, &excluded, span)?;
+                    let value = self.copy_rest_object(value, &excluded, span)?;
                     self.binding_initialization(rest, value, environment, reference)?;
                 }
             }
@@ -162,7 +162,11 @@ impl Realm {
                     }
                     if let Some(rest) = rest {
                         let reference = self.binding_reference(rest, environment)?;
-                        let value = self.binding_array_rest(&mut iterator, span)?;
+                        let value = self.iterator_rest_array(
+                            &mut iterator,
+                            span,
+                            "binding array capacity exceeded",
+                        )?;
                         self.binding_initialization(rest, value, environment, reference)?;
                     }
                     Ok(())
@@ -204,7 +208,7 @@ impl Realm {
 
     // Keys hash immutable strings or Symbol identity, never Symbol liveness.
     #[allow(clippy::mutable_key_type)]
-    pub(super) fn binding_exclude_key(
+    pub(super) fn exclude_rest_key(
         &mut self,
         excluded: &mut HashSet<PropertyKey>,
         key: PropertyKey,
@@ -221,7 +225,7 @@ impl Realm {
     }
 
     #[allow(clippy::mutable_key_type)]
-    pub(super) fn binding_object_rest(
+    pub(super) fn copy_rest_object(
         &mut self,
         value: Value,
         excluded: &HashSet<PropertyKey>,
@@ -255,10 +259,11 @@ impl Realm {
         self.get_iterator_from_method(value, method, span)
     }
 
-    pub(super) fn binding_array_rest(
+    pub(super) fn iterator_rest_array(
         &mut self,
         iterator: &mut IteratorRecord,
         span: Span,
+        capacity_message: &'static str,
     ) -> Result<Value, Error> {
         let Value::Object(array) = self.create_array_from_list([], span)? else {
             unreachable!("intrinsic Array creation");
@@ -282,7 +287,7 @@ impl Realm {
             )?;
             index = index.checked_add(1).ok_or_else(|| Error::Limit {
                 span,
-                message: "binding array capacity exceeded".into(),
+                message: capacity_message.into(),
             })?;
         }
         Ok(Value::Object(array))

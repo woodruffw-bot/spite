@@ -32,6 +32,9 @@ stacks, helpers, dependencies or JavaScript resource defaults change.
 
 ## Object binding-key/default review
 
+Binding and assignment patterns also share rest collection and copying. The full
+19,012-variant gate retains identical inputs, helpers, assertions and quotas.
+
 Twelve Runtime groups and four Symbol ownership controls cover object keys,
 defaults, live rest copying, mixed patterns and scope/error ordering. Original
 object-binding boundary programs now have positive coverage; assignment-pattern

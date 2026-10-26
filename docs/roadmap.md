@@ -415,6 +415,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume var array-binding defaults with pre-step/rest target references, mapped aliases and shared writes across declarations and iteration heads.
 - [x] Resume catch array-parameter defaults before body entry with shared iterator cleanup, mutable catch cells and finally/outer-handler transitions.
 - [x] Resume object-binding computed keys and defaults across declarations, headers and catch parameters with shared mixed-pattern state, GetV, exclusion sets and object rest.
+- [x] Share rest Array collection and rest Object copying between binding and assignment patterns while preserving reference order and closing.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
