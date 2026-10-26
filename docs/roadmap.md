@@ -369,6 +369,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate standalone Modules with isolated strict var/lexical/function environments, undefined this, correct direct-eval context and top-level Await through the shared source interpreter and intrinsic evaluation Promise.
 - [x] Evaluate synthetic default exports with anonymous function/class naming, declaration instantiation and awaited expressions.
 - [x] Retain realm-owned Source Text Module records with host root lifetimes, stable environment cells and cached evaluation Promise identity across pending, fulfillment, rejection and host aborts.
+- [x] Create cached standalone Module namespace exotic objects with live export cells, pre-evaluation TDZ/hoisting, UTF-16 key ordering, null immutable prototype, non-extensibility, descriptor/write/delete invariants and traced record cycles.
 - [ ] Link host-provided Module graphs with stable records, live import bindings, cycles and namespace objects.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.

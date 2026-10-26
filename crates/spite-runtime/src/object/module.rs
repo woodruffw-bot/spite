@@ -10,11 +10,12 @@ pub(super) struct ModuleData {
     source: Module,
     environment: Option<EnvironmentHandle>,
     evaluation: Option<Value>,
+    namespace: Option<Value>,
 }
 
 impl ModuleData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.evaluation.iter()
+        self.evaluation.iter().chain(self.namespace.iter())
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
@@ -26,6 +27,45 @@ impl ModuleData {
 }
 
 impl Objects {
+    pub(crate) fn module_environment(
+        &self,
+        record: &Handle,
+    ) -> Result<Option<EnvironmentHandle>, Error> {
+        Ok(self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .environment
+            .clone())
+    }
+    pub(crate) fn module_namespace(&self, record: &Handle) -> Result<Option<Value>, Error> {
+        Ok(self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .namespace
+            .clone())
+    }
+    pub(crate) fn store_module_namespace(
+        &mut self,
+        record: &Handle,
+        namespace: Handle,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(1)?;
+        if !self.inspect(&namespace)?.is_module_namespace() {
+            return Err(Error::WrongKind);
+        };
+        self.object_mut(record)?
+            .module_record
+            .as_mut()
+            .ok_or(Error::WrongKind)?
+            .namespace = Some(Value::Object(namespace));
+        Ok(())
+    }
+
     pub(crate) fn create_module_record(
         &mut self,
         source: Module,
@@ -39,6 +79,7 @@ impl Objects {
             source,
             environment: None,
             evaluation: None,
+            namespace: None,
         }));
         Ok(record)
     }

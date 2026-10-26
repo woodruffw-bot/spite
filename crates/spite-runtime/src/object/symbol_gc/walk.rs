@@ -132,6 +132,8 @@ fn object_symbols(
         generator,
         async_generator,
         module_record,
+        // Only a record handle and String export names; no owning Symbols.
+        module_namespace: _,
         array_from_async,
         disposable_resources,
         raw_json: _,

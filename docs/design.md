@@ -484,7 +484,7 @@ Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Dependency requests stop before body effects.
-Graph linking/caching, namespaces and import.meta remain work.
+Graph linking/caching and import.meta remain work.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -497,6 +497,23 @@ their fresh-instance behavior by creating a new record per call. Records trace
 their environment and Promise; cloned handles share a root token and dropping
 the last token permits ordinary collection. Handles from another realm are
 rejected. Heap fields store handles rather than host root tokens.
+
+Realm::module_namespace prepares a standalone record's environment and caches its
+namespace without entering the body (10.4.6, GetModuleNamespace). Evaluation reuses
+that prepared environment. Namespace exports resolve to live local cells; lexical
+TDZ persists until body initialization and hoisted functions retain their identity.
+Own keys sort exported String names by UTF-16 units, including numeric names, then
+append Symbol.toStringTag. The prototype is null and the object is non-extensible.
+Export descriptors are writable/enumerable/non-configurable data descriptions,
+but [[Set]] always returns false. [[DefineOwnProperty]] reads the current binding
+before rejecting incompatible fields and accepts a value only by SameValue.
+[[HasProperty]]/[[Delete]] test export membership without reading a cell. Symbol
+properties use ordinary storage. Realm and Proxy dispatch share dynamic descriptor
+reads; raw exported descriptor operations require Realm dispatch. Namespaces trace
+their record and records cache the namespace, with ordinary cycle collection.
+Export keys, sorting and copies respect opt-in work/string/property limits.
+Namespace construction and initial evaluation reset fresh host work budgets;
+operations inside active jobs share the job allowance.
 
 Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
 Anonymous hoistable declarations initialize this cell during Module instantiation

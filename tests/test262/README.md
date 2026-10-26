@@ -30,6 +30,21 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Standalone Module namespace verification
+
+Nine Runtime unit groups verify live namespace cells, preparation without body
+entry, hoisted/default identity, TDZ, UTF-16 key order, exotic descriptors/writes,
+sealing/freezing, Proxy invariants, async reads, record-cycle collection and host
+work budgets. The
+public host API exposes these namespaces for retained standalone records. Original
+namespace tests requiring dependency loading stay excluded as whole files.
+
+No new upstream files or execution credit are added. The inventory remains
+10,657 fixtures, twenty-two helpers, 10,638 reviewed sources and 20,440 variants.
+The full gate and all forty-four runner/package checks pass. Native work/string/
+property checks use existing opt-in limits; 591 intrinsic entries and resource
+defaults/allowances remain unchanged.
+
 ## Retained Module record verification
 
 Native Module handles now retain environment cells and the original evaluation

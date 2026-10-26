@@ -34,6 +34,7 @@ mod descriptor;
 mod disposable_stack;
 pub(crate) mod generator;
 mod module;
+mod module_namespace;
 pub(crate) mod source_context;
 pub(crate) use disposable_stack::{DisposableResource, DisposableStackKind, DisposalHint};
 mod iterator;
@@ -124,6 +125,7 @@ pub struct OrdinaryObject {
     generator: Option<Box<generator::GeneratorData>>,
     async_generator: Option<Box<async_generator::AsyncGeneratorData>>,
     module_record: Option<Box<module::ModuleData>>,
+    module_namespace: Option<Box<module_namespace::NamespaceData>>,
     array_from_async: Option<Box<array_from_async::AsyncArrayData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
@@ -175,6 +177,7 @@ impl OrdinaryObject {
             generator: None,
             async_generator: None,
             module_record: None,
+            module_namespace: None,
             array_from_async: None,
             disposable_resources: None,
             raw_json: false,
@@ -365,14 +368,14 @@ impl OrdinaryObject {
     }
 
     /// Returns the number of physically stored ordinary properties.
-    /// Virtual TypedArray elements require [`Objects::own_keys`] for enumeration.
+    /// Virtual TypedArray elements and namespace exports use [`Objects::own_keys`].
     pub fn property_count(&self) -> usize {
         self.properties.len()
     }
 
     /// Looks up a stored own property without consulting the prototype.
     /// Use [`Objects::get_own`] or [`Objects::has_own`] for exotic properties and
-    /// current mapped-argument values; this record does not resolve buffer bytes.
+    /// current mapped-argument values. Namespace export reads require the Realm.
     pub fn own_property<'key>(&self, key: impl Into<PropertyKeyRef<'key>>) -> Option<&Property> {
         let key = key.into();
         self.property_index(key)
@@ -518,6 +521,7 @@ impl Trace for OrdinaryObject {
             .chain(self.generator.iter().flat_map(|data| data.trace()))
             .chain(self.async_generator.iter().flat_map(|data| data.trace()))
             .chain(self.module_record.iter().flat_map(|data| data.trace()))
+            .chain(self.module_namespace.iter().map(|data| Some(&data.record)))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
                 resources

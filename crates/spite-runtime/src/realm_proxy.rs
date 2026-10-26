@@ -638,6 +638,11 @@ impl Realm {
                 self.object_work(span, |objects, _| objects.prevent_extensions(&object))?,
             ),
             ObjectOperation::GetOwnProperty(key) => {
+                if let Some(property) =
+                    self.namespace_export_property(&object, (&key).into(), span)?
+                {
+                    return Ok(ObjectStep::Reply(ObjectReply::OwnProperty(Some(property))));
+                };
                 let property = self.object_work(span, |objects, budget| {
                     objects.get_own(&object, &key, budget)
                 })?;
@@ -650,6 +655,11 @@ impl Realm {
                 ObjectReply::OwnProperty(property)
             }
             ObjectOperation::DefineOwnProperty(key, descriptor) => {
+                if let Some(allowed) =
+                    self.namespace_define_property(&object, (&key).into(), &descriptor, span)?
+                {
+                    return Ok(ObjectStep::Reply(ObjectReply::Boolean(allowed)));
+                };
                 self.check_missing_intrinsic_mutation(&object, &key, span)?;
                 let action = self.object_work(span, |objects, budget| {
                     objects.typed_array_define_action(&object, &key, &descriptor, budget)
@@ -701,6 +711,11 @@ impl Realm {
                 }
             }
             ObjectOperation::Get(key, receiver) => {
+                if let Some(Property::Data(property)) =
+                    self.namespace_export_property(&object, (&key).into(), span)?
+                {
+                    return Ok(ObjectStep::Reply(ObjectReply::Value(property.value)));
+                };
                 let (property, terminal) = self.object_work(span, |objects, budget| {
                     let property = objects.get_own(&object, &key, budget)?;
                     let terminal = property.is_none()
@@ -738,6 +753,14 @@ impl Realm {
                 }
             }
             ObjectOperation::Set(key, assigned, receiver) => {
+                if self
+                    .objects
+                    .inspect(&object)
+                    .map_err(Error::InvalidObject)?
+                    .is_module_namespace()
+                {
+                    return Ok(ObjectStep::Reply(ObjectReply::Boolean(false)));
+                };
                 let action = self.object_work(span, |objects, budget| {
                     objects.typed_array_set_action(
                         &object,

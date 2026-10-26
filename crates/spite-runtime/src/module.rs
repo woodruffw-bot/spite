@@ -1,5 +1,7 @@
 //! Standalone Source Text Module environments and evaluation (16.2.1).
 
+mod namespace;
+
 use crate::{BindingState, Error, ObjectHandle, Realm, Value, environment::ThisBinding};
 use spite_core::Span;
 use spite_parser::{
@@ -78,19 +80,51 @@ impl Realm {
         {
             return Ok(promise);
         }
+        if !self.job_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
         let source = self
             .objects
             .module_source(record)
             .map_err(Error::InvalidObject)?
             .clone();
-        self.evaluate_module_source(&source, record)
+        self.prepare_module_record(&source, record)?;
+        let environment = self
+            .objects
+            .module_environment(record)
+            .map_err(Error::InvalidObject)?
+            .expect("linked standalone module");
+        let body = source.body();
+        let span = Span::new(
+            0,
+            source
+                .statements()
+                .last()
+                .map_or(0, |statement| statement.span.end),
+        );
+        self.evaluate_module_body(
+            body,
+            environment,
+            module_default_index(&source),
+            record,
+            span,
+        )
     }
 
-    fn evaluate_module_source(
+    fn prepare_module_record(
         &mut self,
         module: &Module,
         record: &ObjectHandle,
-    ) -> Result<Value, Error> {
+    ) -> Result<(), Error> {
+        if self
+            .objects
+            .module_environment(record)
+            .map_err(Error::InvalidObject)?
+            .is_some()
+        {
+            return Ok(());
+        }
+
         if !module.imports().is_empty()
             || module.exports().iter().any(|export| {
                 matches!(
@@ -108,22 +142,7 @@ impl Realm {
                 "module dependency loading is not implemented",
             ));
         }
-        let default_export = module.exports().iter().find_map(|export| {
-            if matches!(export.kind, ExportKind::Default { local: None, .. }) {
-                Some(
-                    module
-                        .statements()
-                        .iter()
-                        .position(|statement| {
-                            export.span.start <= statement.span.start
-                                && statement.span.end <= export.span.end
-                        })
-                        .expect("retained default export statement"),
-                )
-            } else {
-                None
-            }
-        });
+        let default_export = module_default_index(module);
         self.initialize_realm()?;
         if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
@@ -167,7 +186,7 @@ impl Realm {
             objects.environment_mut(&environment)?.this = Some(ThisBinding::Module);
             Ok(environment)
         })?;
-        self.evaluate_module_body(body, environment, default_export, record, span)
+        self.instantiate_module_body(&body, environment, default_export, record, span)
     }
 
     pub(crate) fn prepare_module_default(
@@ -210,6 +229,25 @@ impl Realm {
             environment,
         )
     }
+}
+
+fn module_default_index(module: &Module) -> Option<usize> {
+    module.exports().iter().find_map(|export| {
+        if matches!(export.kind, ExportKind::Default { local: None, .. }) {
+            Some(
+                module
+                    .statements()
+                    .iter()
+                    .position(|statement| {
+                        export.span.start <= statement.span.start
+                            && statement.span.end <= export.span.end
+                    })
+                    .expect("retained default export statement"),
+            )
+        } else {
+            None
+        }
+    })
 }
 
 #[cfg(test)]

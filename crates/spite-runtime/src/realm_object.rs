@@ -265,6 +265,14 @@ impl Realm {
         // be treated as absent, including on a distinct write receiver.
         let mut current = target.clone();
         let descriptor = loop {
+            if self
+                .objects
+                .inspect(&current)
+                .map_err(Error::InvalidObject)?
+                .is_module_namespace()
+            {
+                return Ok(false);
+            };
             let action = self.object_work(span, |objects, budget| {
                 if objects.proxy_state(&current, budget)?.is_some() {
                     return Ok(None);
@@ -394,6 +402,11 @@ impl Realm {
         let key = key.into();
         let mut next = Some(object.clone());
         while let Some(handle) = next {
+            if let Some(Property::Data(property)) =
+                self.namespace_export_property(&handle, key, span)?
+            {
+                return Ok(property.value);
+            };
             let (own, numeric_absence, proxy) = self.object_work(span, |objects, budget| {
                 if objects.proxy_state(&handle, budget)?.is_some() {
                     return Ok((None, false, true));
@@ -883,6 +896,9 @@ impl Realm {
         span: Span,
     ) -> Result<Option<Property>, Error> {
         let key = key.into();
+        if let Some(property) = self.namespace_export_property(object, key, span)? {
+            return Ok(Some(property));
+        };
         let property = self.object_work(span, |objects, budget| {
             if objects.proxy_state(object, budget)?.is_some() {
                 return Ok(None);

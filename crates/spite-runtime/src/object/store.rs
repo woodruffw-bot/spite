@@ -1011,6 +1011,9 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
+        if record.namespace_has_export((&key).into(), budget)? {
+            return Err(Error::RequiresRuntime);
+        };
         if record.typed_array_data().is_some() {
             match self.typed_array_define_action(object, &key, &descriptor, budget)? {
                 super::TypedArrayDefineAction::Ordinary => {}
@@ -1126,6 +1129,9 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
+        if record.is_module_namespace() {
+            return self.namespace_own_keys(object, budget);
+        };
         if record.typed_array_data().is_some() {
             return self.typed_array_own_keys(object, budget);
         }
@@ -1158,6 +1164,10 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
+        if record.namespace_has_export(key, budget)? {
+            budget.lookup(record, key)?;
+            return Ok(true);
+        };
         if record.typed_array_data().is_some()
             && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
         {
@@ -1168,6 +1178,7 @@ impl Objects {
     }
 
     /// Copies an own complete descriptor with bounded key scans and value-copy work.
+    /// Namespace export descriptors require Realm dispatch for live values and TDZ.
     pub fn get_own<'key>(
         &self,
         object: &Handle,
@@ -1179,6 +1190,9 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
+        if record.namespace_has_export(key, budget)? {
+            return Err(Error::RequiresRuntime);
+        };
         if record.typed_array_data().is_some()
             && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
         {
@@ -1371,6 +1385,10 @@ impl Objects {
         if record.is_proxy() {
             return Err(Error::RequiresRuntime);
         }
+        if record.namespace_has_export(key, budget)? {
+            budget.lookup(record, key)?;
+            return Ok(false);
+        };
         if record.typed_array_data().is_some()
             && let Some(index) = self.typed_array_numeric_index(object, key, budget)?
         {

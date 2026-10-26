@@ -54,6 +54,11 @@ impl Realm {
         span: Span,
     ) -> Result<bool, Error> {
         let key = key.into();
+        if let Some(allowed) =
+            self.namespace_define_property(object, (&key).into(), &descriptor, span)?
+        {
+            return Ok(allowed);
+        };
         self.check_missing_intrinsic_mutation(object, &key, span)?;
         let action = self.object_work(span, |objects, budget| {
             if objects.proxy_state(object, budget)?.is_some() {

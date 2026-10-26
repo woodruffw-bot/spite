@@ -56,11 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports and retained record identity; graph loading remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity and live namespace exotics; graph loading remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Standalone Module namespace objects
+
+Realm::module_namespace prepares a record's bindings without body evaluation and
+caches a unique namespace. Reads observe live local cells, including TDZ before
+initialization; hoisted function/default identities survive later evaluation.
+Exported String keys sort by UTF-16 units, including numeric names, before the
+Symbol tag. Namespaces have a null prototype, are non-extensible, reject all
+assignment receivers and expose live writable/enumerable/non-configurable data
+descriptions. Definitions require compatible attributes and SameValue. Presence
+and deletion avoid TDZ reads; descriptor validation follows the required order.
+Realm and Proxy dispatch preserve these exotic rules and target invariants.
+
+Nine Runtime unit groups exercise preparation/hoisting, numeric/non-BMP keys,
+live descriptors, writes, SameValue/attributes, TDZ ordering, sealing/freezing,
+Proxy forwarding/invariants, async values, namespace/record cycle collection and
+fresh host work budgets without resetting active jobs.
+All 430 Runtime units and 2,269 non-RegExp integrations pass across 689 files;
+thirteen CLI groups, Clippy, Rust 1.88 and inventories pass. Parser stays 18/434
+across 88 files, with 591 intrinsic entries. Native namespace keys respect the
+existing opt-in work/string/property limits.
+
+This host API increment admits no new upstream originals; dependency-based
+namespace fixtures await graph loading/linking. The inventory remains 10,657
+fixtures, twenty-two helpers, 10,638 reviewed sources and 20,440 variants. The
+full gate and all forty-four runner/package checks pass. Existing fixtures,
+helpers, dependencies and resource defaults/allowances are unchanged.
 
 ## Retained Source Text Module records
 

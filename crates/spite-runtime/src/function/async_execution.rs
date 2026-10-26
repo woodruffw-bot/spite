@@ -155,14 +155,11 @@ impl Realm {
         self.drive_async_execution(data, Some(state), None, 1)
     }
 
-    pub(crate) fn evaluate_module_body(
+    fn with_module_context<T>(
         &mut self,
-        body: spite_parser::ast::FunctionBody,
         root: crate::environment::EnvironmentHandle,
-        default_export: Option<usize>,
-        record: &ObjectHandle,
-        span: Span,
-    ) -> Result<Value, Error> {
+        execute: impl FnOnce(&mut Self) -> Result<T, Error>,
+    ) -> Result<T, Error> {
         let context = crate::object::source_context::SourceExecutionContext {
             scopes: vec![
                 self.scopes.first().expect("global environment").clone(),
@@ -171,13 +168,35 @@ impl Realm {
             variable: Some(root.clone()),
             strict: true,
         };
-        self.with_source_execution_context(context, |realm| {
-            // Module functions are lexical and initialized before body entry.
+        self.with_source_execution_context(context, execute)
+    }
+
+    pub(crate) fn instantiate_module_body(
+        &mut self,
+        body: &spite_parser::ast::FunctionBody,
+        root: crate::environment::EnvironmentHandle,
+        default_export: Option<usize>,
+        record: &ObjectHandle,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.with_module_context(root.clone(), |realm| {
             realm.instantiate(body.statements().iter(), false, true)?;
-            realm.prepare_module_default(&body, &root, default_export)?;
+            realm.prepare_module_default(body, &root, default_export)?;
             realm.object_work(span, |objects, budget| {
-                objects.store_module_environment(record, root.clone(), budget)
-            })?;
+                objects.store_module_environment(record, root, budget)
+            })
+        })
+    }
+
+    pub(crate) fn evaluate_module_body(
+        &mut self,
+        body: spite_parser::ast::FunctionBody,
+        root: crate::environment::EnvironmentHandle,
+        default_export: Option<usize>,
+        record: &ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        self.with_module_context(root.clone(), |realm| {
             realm.call_async_body(span, |realm, capability, _| {
                 realm.object_work(span, |objects, budget| {
                     objects.begin_module_evaluation(record, capability.promise.clone(), budget)
