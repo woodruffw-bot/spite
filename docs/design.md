@@ -82,6 +82,13 @@ tails. Preserve whether trivia contains a line terminator. Do not approximate AS
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
 
+Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
+static import/export declarations as syntax errors. ImportMeta also requires a
+Module goal (13.3.1 early errors); direct eval and dynamic function source therefore
+report catchable SyntaxErrors. Valid dynamic import retains its distinct
+Unsupported host boundary until module loading is implemented. Keyword-named
+ordinary properties and methods retain their existing grammar.
+
 Left-associated binary expression spines (13.6–13.13, 13.16) use an initial
 operand and an ordered vector of operator/right-operand steps. Each step retains
 its original complete prefix span; right subtrees and parentheses retain their

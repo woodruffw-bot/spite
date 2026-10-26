@@ -1443,3 +1443,6 @@ mod generator_yield;
 
 #[path = "cases/generator_delegation.rs"]
 mod generator_delegation;
+
+#[path = "cases/script_module_syntax.rs"]
+mod script_module_syntax;

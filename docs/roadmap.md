@@ -73,6 +73,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add AsyncDisposableStack with distinct brands, async/sync method lookup, native disposal continuations, intrinsic Promise awaits and suppression chains.
 - [x] Parse synchronous using declarations and loop headers with identifier-only bindings, contextual lookahead and lexical/Script/switch early errors.
 - [x] Dispose using resources at lexical scope and loop exits while preserving abrupt completions.
+- [x] Reject static module declarations and import.meta under Script/dynamic-function goals as syntax errors, preserving the valid dynamic-import host boundary.
 - [ ] Complete remaining statement early errors and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

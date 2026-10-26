@@ -10080,3 +10080,7 @@ script-pass	c02cf297ac40e97a60e6d08fbd7b9a5b80d8bc4522331949a1afb61d9f53cd6a	tes
 script-pass	b4b090032521f0920a708bf3d35f8f6c9d9970be38de27e45516ba81263d7ab4	test/language/statements/using/fn-name-gen.js
 script-pass	acf2ffecaca718174ec3bed1ec0721615fbae878fe62bf463812679fa57ad1eb	test/language/statements/using/initializer-disposed-at-end-of-asyncfunctionbody.js
 script-pass	119f1770ef7dd195eb577b6d939312385b689e71844f41cd0e5f99c589cdece0	test/language/statements/using/initializer-disposed-at-end-of-generatorbody.js
+script-pass	cbe2b1c3d4517a3990bd56a420cb7125195adda746591a544e8b4a82a71e27a0	test/language/expressions/import.meta/syntax/goal-async-function-params-or-body.js
+script-pass	0f0f10d06669f27d6fa67c55415952d892e82cf7037c79f0b74a755289f17bbb	test/language/expressions/import.meta/syntax/goal-function-params-or-body.js
+script-pass	0a24c4839d48c07a64e6c8cb0dfc9d7747d4cc5542c691bd559abc227de07f53	test/language/expressions/import.meta/syntax/goal-generator-params-or-body.js
+parse-syntax-error	8c82c510f0f1557cf5dab7fe5c6c624094542d3b95c7701e51c5a3969fa3e171	test/language/expressions/import.meta/syntax/goal-script.js

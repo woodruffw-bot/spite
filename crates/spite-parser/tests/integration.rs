@@ -162,3 +162,6 @@ mod generator_methods;
 
 #[path = "dynamic_generator_function.rs"]
 mod dynamic_generator_function;
+
+#[path = "script_module_syntax.rs"]
+mod script_module_syntax;

@@ -10041,3 +10041,7 @@ test/language/statements/generators/yield-star-before-newline.js	-	-	-
 test/language/statements/using/fn-name-gen.js	-	-	-
 test/language/statements/using/initializer-disposed-at-end-of-asyncfunctionbody.js	-	-	-
 test/language/statements/using/initializer-disposed-at-end-of-generatorbody.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-async-function-params-or-body.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-function-params-or-body.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-generator-params-or-body.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-script.js	472	478	import.meta is only allowed in Modules

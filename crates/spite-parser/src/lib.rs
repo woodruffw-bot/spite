@@ -657,12 +657,6 @@ impl Parser {
             self.semicolon()?;
             StatementKind::Throw(expr)
         } else {
-            if let Kind::Word(word) = &self.current().kind
-                && !self.current().escaped
-                && matches!(word.as_str(), "import" | "export")
-            {
-                return Err(self.unsupported("statement is not implemented"));
-            }
             let expr = self.expression(1)?;
             self.semicolon()?;
             StatementKind::Expression(expr)
@@ -1403,6 +1397,9 @@ impl Parser {
                 } else {
                     Err(early(span, "super call requires a derived constructor"))
                 }
+            }
+            Kind::Word(name) if name == "import" && self.at(".") => {
+                Err(early(span, "import.meta is only allowed in Modules"))
             }
             Kind::Word(name) if name != "import" || (!self.at("(") && !self.at(".")) => {
                 Err(Diagnostic::new(

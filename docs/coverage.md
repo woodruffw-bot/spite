@@ -56,9 +56,31 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19464 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19472 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Script restrictions for module-only syntax
+
+Static import/export declarations and import.meta now produce Syntax errors under
+Script and dynamic-function goals. Three Parser groups and two Runtime groups
+cover nested Script contexts, all supported dynamic constructors, catchable eval
+errors, retained keyword properties and the dynamic-import host boundary. The
+existing CLI group adds Script import.meta/export checks. All prior groups and
+quotas remain unchanged.
+
+All eighteen Parser units, 385 Parser integrations, 417 Runtime units, 2,216
+non-RegExp integrations and thirteen CLI groups pass across 80 Parser and 681
+Runtime files. Clippy, Rust 1.88, policy and inventory checks pass. Intrinsics remain
+585 entries.
+
+Four unchanged pinned originals add eight variants: dynamic ordinary/async/generator
+function parameters/bodies and one exact reviewed Script syntax negative. The
+18-file import.meta syntax review has eight passed/15 Unsupported variants and
+zero failures, limits, setup failures or unverified negatives. Module-mode and
+async-generator originals remain wholly excluded. The inventory contains 10,065
+fixtures, twenty helpers, 10,046 reviewed sources and 19,472 variants. The complete
+conformance gate and all forty runner/package checks pass.
 
 ## Synchronous yield delegation
 

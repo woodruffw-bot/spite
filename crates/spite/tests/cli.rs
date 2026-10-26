@@ -69,6 +69,8 @@ fn errors_have_a_failing_exit_status() {
         ("1n / 0n", "RangeError"),
         ("throw 7", "uncaught 7"),
         ("const x;", "Syntax"),
+        ("import.meta", "Syntax"),
+        ("export {}", "Syntax"),
     ] {
         let output = Command::new(env!("CARGO_BIN_EXE_spite"))
             .args(["--eval", source])
