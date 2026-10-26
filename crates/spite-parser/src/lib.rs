@@ -1720,7 +1720,31 @@ fn validate_scope<'a>(
     labels: &mut Vec<(&'a str, bool)>,
     scope_kind: ScopeKind,
 ) -> Result<(), Diagnostic> {
+    validate_scope_with_bindings(
+        statements,
+        strict,
+        control,
+        labels,
+        scope_kind,
+        std::iter::empty(),
+    )
+}
+
+fn validate_scope_with_bindings<'a>(
+    statements: impl IntoIterator<Item = &'a Statement>,
+    strict: bool,
+    control: ControlContext,
+    labels: &mut Vec<(&'a str, bool)>,
+    scope_kind: ScopeKind,
+    initial_bindings: impl IntoIterator<Item = (&'a str, Span)>,
+) -> Result<(), Diagnostic> {
     let mut names = BTreeSet::new();
+    for (name, span) in initial_bindings {
+        validate_binding_name(name, span, strict)?;
+        if !names.insert(name) {
+            return Err(early(span, "duplicate lexical binding"));
+        }
+    }
     let mut var_names = BTreeSet::new();
     let mut declarations = Vec::new();
     for statement in statements {

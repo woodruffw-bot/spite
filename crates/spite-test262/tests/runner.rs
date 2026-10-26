@@ -508,7 +508,12 @@ fn module_parse_negatives_require_the_exact_module_goal_rejection_without_a_scri
 
 #[test]
 fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() {
-    for body in ["import.meta", "await 1", "using value=null"] {
+    for body in [
+        "import.meta",
+        "await 1",
+        "using value=null",
+        "import 'source'",
+    ] {
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
             body,
@@ -524,7 +529,8 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
             }
         ));
     }
-    for body in ["import 'source'", "export {}"] {
+    {
+        let body = "export {}";
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
             body,

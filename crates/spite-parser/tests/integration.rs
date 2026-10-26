@@ -171,3 +171,6 @@ mod import_call;
 
 #[path = "module_goal.rs"]
 mod module_goal;
+
+#[path = "module_imports.rs"]
+mod module_imports;

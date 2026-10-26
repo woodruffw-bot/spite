@@ -10092,3 +10092,54 @@ test/language/expressions/import.meta/syntax/invalid-assignment-target-for-of-lo
 test/language/expressions/import.meta/syntax/invalid-assignment-target-object-destructuring-expr.js	784	795	invalid destructuring assignment target
 test/language/expressions/import.meta/syntax/invalid-assignment-target-object-rest-destructuring-expr.js	797	808	invalid destructuring assignment target
 test/language/expressions/import.meta/syntax/invalid-assignment-target-update-expr.js	712	723	invalid update target
+test/language/import/dup-bound-names.js	379	380	duplicate lexical binding
+test/language/import/escaped-as-namespace-import.js	819	826	expected as
+test/language/import/escaped-from.js	823	832	expected from
+test/language/module-code/early-dup-lex.js	448	449	duplicate lexical binding
+test/language/module-code/early-lex-and-var.js	434	435	var declaration conflicts with lexical binding
+test/language/module-code/export-expname-import-unpaired-surrogate.js	512	520	module export name is not well-formed Unicode
+test/language/module-code/parse-err-decl-pos-import-for-const.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-in-const.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-in-let.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-in-lhs.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-in-var.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-let.js	337	343	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-lhs.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-of-const.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-of-let.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-of-lhs.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-of-var.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-for-var.js	337	343	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-switch-case.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-switch-dftl.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-try-catch-finally.js	347	353	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-try-catch.js	335	341	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-try-finally.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-try-try.js	319	325	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-while.js	325	331	reserved word cannot begin an expression
+test/language/module-code/import-attributes/early-dup-attribute-key-import-nobinding.js	626	637	duplicate import attribute key
+test/language/module-code/import-attributes/early-dup-attribute-key-import-withbinding.js	630	641	duplicate import attribute key
+test/language/module-code/parse-err-decl-pos-import-function-decl.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-function-expr.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-generator-decl.js	350	356	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-generator-expr.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-if-else.js	330	336	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-if-if.js	322	328	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-labeled.js	320	326	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-object-gen-method.js	345	351	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-object-getter.js	325	331	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-object-method.js	321	327	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-object-setter.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-switch-case-dflt.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-arrow-function.js	320	326	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-block-stmt-list.js	321	327	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-block-stmt.js	313	319	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-decl-meth-static.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-decl-meth.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-decl-method-gen-static.js	363	369	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-decl-method-gen.js	356	362	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-expr-meth-gen-static.js	363	369	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-expr-meth-gen.js	356	362	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-expr-meth-static.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-class-expr-meth.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-import-do-while.js	314	320	reserved word cannot begin an expression

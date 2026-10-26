@@ -89,9 +89,16 @@ The immutable Module goal forbids await IdentifierReference/BindingIdentifier/la
 even in nested non-async code (13.1.1). Function/arrow contexts still determine
 where AwaitExpression is permitted. ImportMeta inherits the source goal through
 nested functions; eval and dynamic constructors use their own Script goals.
-Static import/export ModuleItems remain explicit Unsupported boundaries; nested
-static declarations are syntax errors. No Module AST is accepted by Script
-execution APIs, and module linking/evaluation remain separate implementation work.
+Static imports retain ModuleRequest records and default/named/namespace bindings
+(16.2.2). Namespace-object markers remain distinct from a quoted star export name.
+ModuleExportName strings must be well-formed Unicode; specifier and attribute
+strings preserve all UTF-16 code units. WithClause attributes have unique keys,
+string values and canonical UTF-16 key ordering. Imported local names seed the
+shared lexical-scope validator, so duplicates and var/lexical/function conflicts
+use the same checks as ordinary module declarations. Ordinary Script/function
+scopes supply an empty seed. Export declarations remain Unsupported; nested static
+declarations are syntax errors. No Module AST is accepted by Script execution APIs,
+and linking/evaluation remain separate implementation work.
 
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a

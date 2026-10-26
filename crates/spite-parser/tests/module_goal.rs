@@ -133,12 +133,10 @@ fn module_context_reaches_nested_meta_while_function_context_restricts_await_and
 
 #[test]
 fn static_module_declarations_keep_their_explicit_boundary_only_at_top_level() {
-    for source in [
-        "import 'source'",
-        "import value from 'source'",
-        "export {}",
-        "export default 1",
-    ] {
+    for source in ["import 'source'", "import value from 'source'"] {
+        assert_eq!(parse_module(source).unwrap().imports().len(), 1);
+    }
+    for source in ["export {}", "export default 1"] {
         assert_eq!(
             parse_module(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

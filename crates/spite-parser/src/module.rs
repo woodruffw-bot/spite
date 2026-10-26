@@ -2,10 +2,12 @@
 
 use super::*;
 
+mod imports;
+
 /// Parses the supported Module body with strict code and top-level Await.
 ///
-/// Static import/export declarations return Unsupported until their module
-/// records are implemented. The returned AST cannot be passed to Script APIs.
+/// Static imports retain module requests and bindings. Export declarations remain
+/// Unsupported; the returned AST cannot be passed to Script execution APIs.
 pub fn parse_module(source: &str) -> Result<Module, Diagnostic> {
     let mut parser = Parser::new(source)?;
     let result = contents(&mut parser);
@@ -40,6 +42,7 @@ fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
     parser.allow_await_identifier = false;
     parser.await_context = AwaitContext::Body;
     let mut statements = Vec::new();
+    let mut imports = Vec::new();
     while parser.current().kind != Kind::Eof {
         // Declarations are ModuleItems only at this level. Nested declarations
         // remain Syntax errors; import() and import.meta are expressions.
@@ -52,17 +55,27 @@ fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
                 .token_at(parser.index + 1)
                 .is_some_and(|token| !matches!(token.kind, Kind::Punct("(" | ".")))
         {
-            return Err(parser.unsupported("module import declarations are not implemented"));
+            imports.push(parser.import_declaration()?);
+            continue;
         }
         statements.push(parser.statement(true)?);
     }
     reject_legacy_tokens(&parser.tokens)?;
-    validate_scope(
+    validate_scope_with_bindings(
         &statements,
         true,
         ControlContext::default(),
         &mut Vec::new(),
         ScopeKind::Module,
+        imports.iter().flat_map(|declaration| {
+            declaration
+                .bindings
+                .iter()
+                .map(|binding| (binding.local.as_str(), binding.span))
+        }),
     )?;
-    Ok(Module { statements })
+    Ok(Module {
+        statements,
+        imports,
+    })
 }

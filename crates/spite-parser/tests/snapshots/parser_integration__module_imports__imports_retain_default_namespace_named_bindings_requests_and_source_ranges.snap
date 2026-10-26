@@ -1,0 +1,127 @@
+---
+source: crates/spite-parser/tests/module_imports.rs
+expression: module
+---
+Module {
+    statements: [
+        Statement {
+            kind: Lexical {
+                mutable: true,
+                bindings: [
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "value",
+                            ),
+                            span: Span {
+                                start: 123,
+                                end: 128,
+                            },
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        1.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 129,
+                                    end: 130,
+                                },
+                            },
+                        ),
+                    },
+                ],
+            },
+            span: Span {
+                start: 119,
+                end: 130,
+            },
+        },
+    ],
+    imports: [
+        ImportDeclaration {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [
+                    ImportAttribute {
+                        key: "a",
+                        value: "first",
+                    },
+                    ImportAttribute {
+                        key: "z",
+                        value: "last",
+                    },
+                ],
+            },
+            bindings: [
+                ImportBinding {
+                    imported: Name(
+                        "default",
+                    ),
+                    local: "main",
+                    span: Span {
+                        start: 7,
+                        end: 11,
+                    },
+                },
+                ImportBinding {
+                    imported: Namespace,
+                    local: "ns",
+                    span: Span {
+                        start: 17,
+                        end: 19,
+                    },
+                },
+            ],
+            span: Span {
+                start: 0,
+                end: 59,
+            },
+        },
+        ImportDeclaration {
+            request: ModuleRequest {
+                specifier: "second",
+                attributes: [],
+            },
+            bindings: [
+                ImportBinding {
+                    imported: Name(
+                        "default",
+                    ),
+                    local: "other",
+                    span: Span {
+                        start: 78,
+                        end: 83,
+                    },
+                },
+                ImportBinding {
+                    imported: Name(
+                        "a-b",
+                    ),
+                    local: "dash",
+                    span: Span {
+                        start: 93,
+                        end: 97,
+                    },
+                },
+                ImportBinding {
+                    imported: Name(
+                        "plain",
+                    ),
+                    local: "plain",
+                    span: Span {
+                        start: 98,
+                        end: 103,
+                    },
+                },
+            ],
+            span: Span {
+                start: 59,
+                end: 119,
+            },
+        },
+    ],
+}

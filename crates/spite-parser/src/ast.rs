@@ -5,18 +5,73 @@ use std::{fmt, rc::Rc};
 
 /// A parsed Module body, distinct from Script execution input.
 ///
-/// All Module code is strict. Static import/export declarations are an explicit
-/// parser boundary until their module records and binding semantics are added.
+/// All Module code is strict. Imports retain module requests and local bindings;
+/// exports, linking and execution remain separate implementation work.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     pub(crate) statements: Vec<Statement>,
+    pub(crate) imports: Vec<ImportDeclaration>,
 }
 
 impl Module {
+    /// Returns static import declarations in source order.
+    pub fn imports(&self) -> &[ImportDeclaration] {
+        &self.imports
+    }
+
     /// Returns retained top-level statements in source order.
     pub fn statements(&self) -> &[Statement] {
         &self.statements
     }
+}
+
+/// A static import and its requested module (16.2.2).
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportDeclaration {
+    /// Decoded module specifier and canonical import attributes.
+    pub request: ModuleRequest,
+    /// Imported names and their local bindings, in clause order.
+    pub bindings: Vec<ImportBinding>,
+    /// Complete declaration range, including an explicit semicolon.
+    pub span: Span,
+}
+
+/// A module request. Attributes are ordered by UTF-16 key values.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ModuleRequest {
+    /// ModuleSpecifier StringValue, without host path interpretation.
+    pub specifier: JsString,
+    /// Unique key/value entries in canonical key order.
+    pub attributes: Vec<ImportAttribute>,
+}
+
+/// One statically specified import attribute.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportAttribute {
+    /// IdentifierName or StringLiteral key value.
+    pub key: JsString,
+    /// StringLiteral value.
+    pub value: JsString,
+}
+
+/// A named export or a namespace import, which has no string import name.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ImportName {
+    /// Export name, including the default export or an arbitrary quoted name.
+    Name(JsString),
+    /// The namespace-object import marker.
+    Namespace,
+}
+
+/// One imported binding and its original local-name range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ImportBinding {
+    /// Export name or namespace-object marker.
+    pub imported: ImportName,
+    /// Decoded local BindingIdentifier.
+    pub local: String,
+    /// Local BindingIdentifier source range.
+    pub span: Span,
 }
 
 /// A parsed and validated Script. Constructed only by the parser.

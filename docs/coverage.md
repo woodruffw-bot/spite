@@ -56,9 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19555 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19606 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Static import declarations and module requests
+
+Static imports retain decoded module requests, default/named/namespace bindings,
+local-name ranges and full declaration spans. All clause combinations, arbitrary
+quoted export names and import attributes follow edition 17. Imported local names
+seed the existing Module lexical validator; Script/function callers use an empty
+seed. Attribute keys are unique and ordered by UTF-16 value, values are strings,
+and quoted ModuleExportNames must be well-formed Unicode. Specifier/attribute
+strings preserve lone surrogates. Imports remain ModuleItems; exports, linking and
+execution stay explicit boundaries.
+
+Seven Parser groups and a reviewed import-record snapshot cover clause records,
+reserved/escaped names, binding/scope conflicts, malformed grammar, attributes,
+UTF-16 ordering, surrogate distinctions and goal separation. The prior Module AST
+snapshot adds only an empty imports field. Existing import-boundary programs are
+retained positively, including the runner's valid-parse-negative failure check.
+
+All eighteen Parser units, 401 Parser integrations, 417 Runtime units, 2,229
+non-RegExp integrations, thirteen CLI groups and thirteen runner probes pass across
+83 Parser and 683 Runtime files. Strict Clippy, Rust 1.88, policy and inventories
+pass. Existing helpers, quotas and the 585-entry intrinsic inventory are unchanged.
+
+The scoped 67-original imports/scope/attributes review reports 51 passed/sixteen
+Unsupported and zero failures, limits, setup failures or unverified negatives.
+Fifty-one exact reviewed syntax negatives add 51 variants; originals requiring
+exports or linking remain wholly excluded. The corpus contains 10,163 fixtures,
+twenty helpers, 10,144 reviewed sources and 19,606 variants. The complete gate and
+all forty-three runner/package checks pass.
 
 ## Reviewed Module syntax negatives in the conformance runner
 
