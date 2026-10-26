@@ -10678,3 +10678,9 @@ script-runtime-error	b4f444a14c97d83a7dac2124d6ca7a3d6ae0231e088370169fc9d159452
 script-runtime-error	6a769f4a6507a092bc2f898a3555567796e66e93d4ddc0a7fe9d3240a5df492d	test/language/module-code/eval-export-dflt-expr-err-get-value.js
 script-pass	5e07612c564201578fda64fcb97493bffcdb1a7d9d4731a1f937b22dda60bc50	test/language/module-code/eval-export-dflt-fun-anon-semi.js
 script-pass	b4866570c972b626075e779a8ff3338437f55c95fd22910af9bf9095d1572ec3	test/language/module-code/eval-export-dflt-gen-anon-semi.js
+script-pass	5a8e3d8ea43bc5bb8afd0f83a840342970bf9f8c946dd880eec29bace81bef91	test/language/expressions/import.meta/import-meta-is-an-ordinary-object.js
+script-pass	211f92e37e1c87e80e68a289b00efa9f4e8369e5bd8ecb6df799d744009b0a43	test/language/expressions/import.meta/not-accessible-from-direct-eval.js
+script-pass	0f34657774e235c23530da54eb56c87e3576e3744789ca7751965cb407f76a55	test/language/expressions/import.meta/same-object-returned.js
+script-pass	c89ed59d66c4c85396d1da2fa9c0f3d34f6392dd296226c28f58ce32521ddea6	test/language/expressions/import.meta/syntax/goal-async-generator-params-or-body.js
+script-pass	438ff4f1ed5818916721d5504ef7f625cb78edc2882225295efeccaa64b4c29a	test/language/expressions/import.meta/syntax/goal-module-nested-function.js
+script-pass	87cf3fe7e60f591aeb8c5a6ccbd2aeac7a5ea7c13ff82277043e3c3f8f8d3a74	test/language/expressions/import.meta/syntax/goal-module.js

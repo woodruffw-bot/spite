@@ -56,11 +56,33 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles; dependency evaluation remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; dependency evaluation remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20447 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Per-record import.meta
+
+import.meta returns one cached ordinary object for each Module record. The
+specification's default host hooks produce an empty, extensible object with a
+null prototype. Ordinary descriptors, prototype mutation and integrity operations
+apply. Functions and class initializers retain their defining Module identity
+under foreign callers, async suspension and both generator kinds. Module this
+records trace their owner, keeping metadata and Symbol properties alive through
+escaped functions and releasing cycles when the last roots disappear.
+
+Four new Runtime unit groups cover these rules, lazy creation before body entry,
+collection and host refusal. All 442 Runtime units and 2,275 non-RegExp integration groups pass across 690
+files, with thirteen CLI groups, strict Clippy and Rust 1.88. Intrinsic entries remain 591. The existing Module runner
+control now checks import.meta positively and retains explicit host failures.
+
+Six whole unchanged Test262 originals add seven required modes for ordinary
+objects, stable identity, Module syntax and eval/dynamic-constructor exclusions.
+The distinct-for-each-module original and its fixture await dependency evaluation.
+Inventories contain 10,663 fixtures, twenty-two helpers, 10,644 reviewed sources
+and 20,447 variants. The full corpus and forty-four runner/package checks pass.
+Existing helpers, dependencies and resource defaults are unchanged.
 
 ## Module graph linking and live import bindings
 

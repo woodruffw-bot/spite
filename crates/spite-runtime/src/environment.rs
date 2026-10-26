@@ -18,7 +18,7 @@ pub(crate) struct BindingState {
 
 #[derive(Debug)]
 pub(crate) enum ThisBinding {
-    Module,
+    Module(Handle),
     Uninitialized,
     Initialized(Value),
 }
@@ -62,7 +62,8 @@ impl Trace for Environment {
             .chain(std::iter::once(self.derived_constructor.as_ref()))
             .chain(std::iter::once(self.this.as_ref().and_then(
                 |value| match value {
-                    ThisBinding::Initialized(Value::Object(handle)) => Some(handle),
+                    ThisBinding::Initialized(Value::Object(handle))
+                    | ThisBinding::Module(handle) => Some(handle),
                     _ => None,
                 },
             )))

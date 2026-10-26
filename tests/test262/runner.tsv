@@ -10637,3 +10637,9 @@ test/language/module-code/eval-export-dflt-expr-err-eval.js	-	-	-
 test/language/module-code/eval-export-dflt-expr-err-get-value.js	-	-	-
 test/language/module-code/eval-export-dflt-fun-anon-semi.js	-	-	-
 test/language/module-code/eval-export-dflt-gen-anon-semi.js	-	-	-
+test/language/expressions/import.meta/import-meta-is-an-ordinary-object.js	-	-	-
+test/language/expressions/import.meta/not-accessible-from-direct-eval.js	-	-	-
+test/language/expressions/import.meta/same-object-returned.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-async-generator-params-or-body.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-module-nested-function.js	-	-	-
+test/language/expressions/import.meta/syntax/goal-module.js	-	-	-

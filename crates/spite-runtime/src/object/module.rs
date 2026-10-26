@@ -18,13 +18,17 @@ pub(super) struct ModuleData {
     environment: Option<EnvironmentHandle>,
     evaluation: Option<Value>,
     namespace: Option<Value>,
+    import_meta: Option<Value>,
     dependencies: Option<Vec<Handle>>,
     link_state: ModuleLinkState,
 }
 
 impl ModuleData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.evaluation.iter().chain(self.namespace.iter())
+        self.evaluation
+            .iter()
+            .chain(self.namespace.iter())
+            .chain(self.import_meta.iter())
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
@@ -37,6 +41,31 @@ impl ModuleData {
 }
 
 impl Objects {
+    pub(crate) fn module_import_meta(
+        &mut self,
+        record: &Handle,
+        budget: &mut Budget,
+    ) -> Result<Value, Error> {
+        budget.charge(1)?;
+        let data = self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?;
+        if let Some(value) = &data.import_meta {
+            return Ok(value.clone());
+        }
+        // 13.3.12: default HostGetImportMetaProperties is empty and
+        // HostFinalizeImportMeta performs no further operations.
+        let value = Value::Object(self.create(None)?);
+        self.object_mut(record)?
+            .module_record
+            .as_mut()
+            .ok_or(Error::WrongKind)?
+            .import_meta = Some(value.clone());
+        Ok(value)
+    }
+
     pub(crate) fn module_link_state(&self, record: &Handle) -> Result<ModuleLinkState, Error> {
         Ok(self
             .inspect(record)?
@@ -198,6 +227,7 @@ impl Objects {
             environment: None,
             evaluation: None,
             namespace: None,
+            import_meta: None,
             dependencies: None,
             link_state: ModuleLinkState::Unlinked,
         }));

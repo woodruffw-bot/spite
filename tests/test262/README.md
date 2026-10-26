@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 10657 unmodified test fixtures and twenty-two harness files come from
+These 10663 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## import.meta objects and syntax
+
+Six whole unchanged originals add seven required modes for ordinary metadata
+objects, per-record identity, Module syntax and Script/eval/dynamic-constructor
+exclusions. The default host hooks leave metadata objects empty with a null
+prototype. Hashes and all required modes are verified at the existing pin.
+The cross-module distinct-for-each-module.js and its fixture remain excluded
+until dependency evaluation is implemented. Existing parse-negative originals,
+harness files and fixture bodies are unchanged. The inventory contains 10,663
+fixtures, twenty-two helpers, 10,644 reviewed sources and 20,447 variants.
 
 ## Full-corpus execution
 

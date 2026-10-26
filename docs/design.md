@@ -484,7 +484,7 @@ Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Dependency requests stop before body effects.
-Graph evaluation and import.meta remain work.
+Graph evaluation remains work.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -546,6 +546,17 @@ can precede a cycle ancestor's environment initialization without reading values
 Import maps, namespace targets and suspended import references trace record edges
 through ordinary collection. Dependency evaluation remains an explicit boundary;
 evaluating a linked graph stops before any body effect.
+
+import.meta caches one ordinary null-prototype object per Source Text Module
+record (13.3.12). The default HostGetImportMetaProperties returns no properties
+and HostFinalizeImportMeta does nothing, so the initial object is empty and
+extensible. Ordinary mutation, prototype changes and integrity operations apply.
+Module environment this records retain their owning Module record; source
+functions and class initializers follow their defining environment chain rather
+than a caller's Module. This also preserves identity across async/generator
+suspension and keeps cached metadata reachable through escaped functions.
+Module records trace their metadata objects through the normal collector. Script,
+eval and dynamic function goals continue to reject import.meta syntactically.
 
 Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
 Anonymous hoistable declarations initialize this cell during Module instantiation

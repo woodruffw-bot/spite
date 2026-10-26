@@ -3,6 +3,7 @@
 mod binding;
 mod graph;
 mod link;
+mod meta;
 mod resolution;
 pub(crate) use binding::ModuleBinding;
 mod namespace;
@@ -166,7 +167,7 @@ impl Realm {
         }
         let environment = self.object_work(span, |objects, budget| {
             let environment = objects.create_environment(Some(global.clone()), bindings, budget)?;
-            objects.environment_mut(&environment)?.this = Some(ThisBinding::Module);
+            objects.environment_mut(&environment)?.this = Some(ThisBinding::Module(record.clone()));
             Ok(environment)
         })?;
         self.object_work(span, |objects, budget| {

@@ -68,7 +68,10 @@ impl Realm {
                         let record = objects.environment(&environment)?;
                         Ok((
                             record.this.is_some(),
-                            matches!(record.this, Some(crate::environment::ThisBinding::Module)),
+                            matches!(
+                                record.this,
+                                Some(crate::environment::ThisBinding::Module(_))
+                            ),
                             record.home_object.is_some(),
                             record.derived_constructor.is_some(),
                             record.class_field_initializer,
