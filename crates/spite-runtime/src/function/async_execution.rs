@@ -6,6 +6,7 @@ mod binding_pattern;
 mod block;
 mod completion;
 mod conditional;
+mod delegation;
 mod expression;
 mod for_await;
 mod for_in;
@@ -173,16 +174,25 @@ impl Realm {
         resumed: Option<SourceResume>,
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
-        let mut next_step = resumed.map(|completion| match completion {
-            SourceResume::Throw(error) => Err(error),
-            SourceResume::Return(value) => Ok(Step::Complete(Completion {
-                kind: CompletionKind::Return,
-                value: Some(value),
-                target: None,
-            })),
-            SourceResume::Value(value) => {
-                let action = data.pending;
-                self.complete_async_value(&mut data, action, value)
+        let mut next_step = resumed.map(|completion| {
+            if data
+                .expression
+                .as_ref()
+                .is_some_and(|state| state.delegation.is_some())
+            {
+                return self.resume_yield_delegation(&mut data, completion);
+            }
+            match completion {
+                SourceResume::Throw(error) => Err(error),
+                SourceResume::Return(value) => Ok(Step::Complete(Completion {
+                    kind: CompletionKind::Return,
+                    value: Some(value),
+                    target: None,
+                })),
+                SourceResume::Value(value) => {
+                    let action = data.pending;
+                    self.complete_async_value(&mut data, action, value)
+                }
             }
         });
         loop {
@@ -196,12 +206,8 @@ impl Realm {
                 }
                 Ok(Step::Complete(completion)) => Ok(completion),
                 Err(error) => Err(error),
-                Ok(Step::Yield(value, action, span)) => {
+                Ok(Step::Yield(result, action, span)) => {
                     debug_assert!(data.function.generator().is_some());
-                    let result = match self.iterator_result(value, false, span) {
-                        Ok(result) => result,
-                        Err(error) => return self.finish_async_execution(data, Err(error), base),
-                    };
                     data.pending = action;
                     data.context = match self.capture_source_execution_context(
                         base,

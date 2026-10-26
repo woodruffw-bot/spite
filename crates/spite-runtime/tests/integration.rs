@@ -1440,3 +1440,6 @@ mod generator_objects;
 
 #[path = "cases/generator_yield.rs"]
 mod generator_yield;
+
+#[path = "cases/generator_delegation.rs"]
+mod generator_delegation;

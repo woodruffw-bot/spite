@@ -56,9 +56,34 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19376 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19464 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Synchronous yield delegation
+
+Ten Runtime groups cover cached next/one-argument calls, exact result identity,
+live throw/return methods, false-done returns, missing-method closing, abrupt
+result access, nested delegation, reentry, retained iterator/method captures and
+host-abort cleanup. Two Symbol ownership controls exercise delegated iterator
+properties and cached next closures. Both prior delegated-yield host controls now
+retain their original programs as positive checks and use the async-generator
+syntax gap for Unsupported. Every prior group and quota remains intact.
+
+All 417 Runtime units, 2,214 non-RegExp integrations and thirteen CLI groups pass
+across 680 Runtime case files. Parser coverage remains eighteen units and 382
+integrations across 79 files. Strict Clippy, Rust 1.88, policy and inventories pass;
+the intrinsic inventory remains 585 entries.
+
+Forty yield-expression originals, one generator-statement original and three using
+originals add 88 variants. All 63 yield-expression files pass their 123 variants;
+all 75 reviewed generator-statement root files pass their 133 variants. The
+84-file built-in review remains 162 passed/6 Unsupported for async-generator
+intrinsic discovery or cross-realm support. No reviewed protocol candidate fails
+or reaches a limit/setup failure. The corpus contains 10,061 fixtures, twenty
+helpers, 10,042 reviewed sources and 19,464 variants. The complete conformance
+gate and all forty runner/package checks pass. Async generators and other
+unsupported source parents remain implementation work; Unsupported earns no credit.
 
 ## Bare yield at template boundaries
 

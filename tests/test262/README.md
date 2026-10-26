@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10017 unmodified test fixtures and twenty harness files come from
+These 10061 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Synchronous yield delegation review
+
+Forty unchanged yield-expression originals, one generator-statement original and
+three using originals add 88 variants. The full inventory contains 10,061 fixtures,
+twenty helpers, 10,042 reviewed sources and 19,464 variants. All 63 yield-expression
+files pass 123 variants, and all 75 reviewed generator-statement root files pass
+133 variants. Built-in review remains 162 passed/6 Unsupported, with no failures,
+limits, setup failures or unverified negatives in these three reviews.
+
+Ten Runtime groups and two Symbol ownership controls cover delegated protocol
+forwarding, cleanup, result identity and collection. Original host-boundary
+programs are retained positively; reusable Unsupported controls use async-generator
+syntax. Helpers, quotas and intrinsic entries are unchanged. Async-generator
+intrinsic discovery and cross-realm originals remain excluded as whole files.
 
 ## Yield-expression lexical boundary review
 

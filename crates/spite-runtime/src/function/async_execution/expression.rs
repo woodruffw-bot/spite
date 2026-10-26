@@ -396,6 +396,7 @@ impl Realm {
             action,
             tasks: Vec::new(),
             current: None,
+            delegation: None,
         };
         let task = if matches!(root, ExprRoot::IterationTarget) {
             ExprTask::IterationTarget(Vec::new())
@@ -459,13 +460,12 @@ impl Realm {
                                     delegated,
                                     argument,
                                 } => {
-                                    if *delegated {
-                                        return Err(Self::unsupported(
-                                            span,
-                                            "yield delegation is not implemented",
-                                        ));
-                                    }
-                                    push(&mut state, ExprTask::Yield(span), span)?;
+                                    let task = if *delegated {
+                                        ExprTask::DelegateYield(span)
+                                    } else {
+                                        ExprTask::Yield(span)
+                                    };
+                                    push(&mut state, task, span)?;
                                     if argument.is_some() {
                                         push(
                                             &mut state,
@@ -713,10 +713,24 @@ impl Realm {
                     let value = state.current.take().expect("unary operand");
                     state.current = Some(self.unary_value(op, value, span)?);
                 }
+                ExprTask::DelegateYield(span) => {
+                    let value = state.current.take().expect("yield delegation operand");
+                    let iterator = self.binding_iterator(value, span)?;
+                    state.delegation = Some(crate::object::async_expression::GeneratorDelegation {
+                        iterator,
+                        span,
+                    });
+                    data.expression = Some(state);
+                    return self.resume_yield_delegation(
+                        data,
+                        super::SourceResume::Value(Value::Undefined),
+                    );
+                }
                 ExprTask::Yield(span) => {
                     let value = state.current.take().expect("yield operand");
+                    let result = self.iterator_result(value, false, span)?;
                     data.expression = Some(state);
-                    return Ok(Step::Yield(value, AsyncAwaitAction::Expression, span));
+                    return Ok(Step::Yield(result, AsyncAwaitAction::Expression, span));
                 }
                 ExprTask::Await(span) => {
                     let value = state.current.take().expect("await operand");

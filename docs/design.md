@@ -411,9 +411,19 @@ normal completion yields undefined. Host failures release cached resources and
 complete the generator without further JavaScript cleanup, including at budget
 exhaustion. Reentrant resumes throw TypeError. Return/throw before start skip the
 body; completed next returns undefined, completed return preserves its argument
-and completed throw preserves the thrown value. Delegated yield remains an
-explicit Unsupported boundary before its operand. No Promise, job, automatic
-Await or default quota is added to synchronous generator execution.
+and completed throw preserves the thrown value. No Promise, job, automatic Await or default quota is added to
+synchronous generator execution.
+
+Synchronous yield* retains the existing IteratorRecord in expression state (15.5).
+Next calls the cached method with one argument, initially undefined; throw/return
+perform live GetMethod lookups with the original iterator receiver. Missing throw
+closes with a normal completion before reporting TypeError, so closing errors take
+precedence. Missing return preserves the injected return value. Each result must
+be an object; done is read first. A false done forwards that exact object without
+reading value. A true done reads value and completes either the expression or the
+injected return. Iterator and cached-next edges participate in the shared object
+and Symbol tracing paths. The outer statement driver handles catches, yielding
+finally blocks, binding iterator closing and host-abort cleanup.
 
 Ordinary and arrow calls share their parameter/var setup and caller restoration
 with an internal body driver. The driver runs while the callee's scopes,

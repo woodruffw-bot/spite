@@ -130,6 +130,7 @@ pub(crate) enum ExprTask {
     },
     Await(Span),
     Yield(Span),
+    DelegateYield(Span),
     BinaryLeft {
         op: BinaryOp,
         right: ExprPath,
@@ -321,11 +322,18 @@ impl ExprTask {
 }
 
 #[derive(Debug)]
+pub(crate) struct GeneratorDelegation {
+    pub iterator: crate::function::IteratorRecord,
+    pub span: Span,
+}
+
+#[derive(Debug)]
 pub(crate) struct AsyncExpressionData {
     pub root: ExprRoot,
     pub action: AsyncAwaitAction,
     pub tasks: Vec<ExprTask>,
     pub current: Option<Value>,
+    pub delegation: Option<GeneratorDelegation>,
 }
 
 impl AsyncExpressionData {
@@ -353,11 +361,21 @@ impl AsyncExpressionData {
             .iter()
             .filter_map(ExprTask::reference)
             .filter_map(Reference::object)
+            .chain(
+                self.delegation
+                    .iter()
+                    .map(|state| state.iterator.iterator_handle()),
+            )
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
         self.current
             .iter()
             .chain(self.tasks.iter().flat_map(ExprTask::values))
+            .chain(
+                self.delegation
+                    .iter()
+                    .map(|state| state.iterator.next_value()),
+            )
     }
 }
