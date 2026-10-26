@@ -7,7 +7,7 @@ fn await_using_boundaries_abort_handlers_for_statements_and_loops() {
     for source in [
         "async function f(){await using x=null;}f();",
         "async function f(){let value;using x=([value=await p]=[]);}f();",
-        "async function f(){for await(using x of []){}}f();",
+        "async function f(){for await(await using x of []){}}f();",
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();

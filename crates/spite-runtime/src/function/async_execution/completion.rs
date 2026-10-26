@@ -106,6 +106,12 @@ impl Realm {
                         FrameStep::Complete(completion) => result = completion,
                     }
                 }
+                Some(AsyncStatementFrame::ForAwait(_)) => {
+                    match self.advance_async_for_await(data, result) {
+                        FrameStep::Continue => return Ok(None),
+                        FrameStep::Complete(completion) => result = completion,
+                    }
+                }
                 Some(AsyncStatementFrame::ForOf(_)) => {
                     match self.advance_async_for_of(data, result) {
                         FrameStep::Continue => return Ok(None),

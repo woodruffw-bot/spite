@@ -29,6 +29,8 @@ pub(crate) enum AsyncAwaitAction {
     SwitchSelector,
     LoopTest,
     ForHeader,
+    ForAwaitNext,
+    ForAwaitClose,
     IterationSource,
     Binding { element: usize },
 }
@@ -122,6 +124,22 @@ pub(crate) struct AsyncForOfCursor {
     pub value: Value,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum AsyncForAwaitPhase {
+    Next,
+    Body,
+    Close,
+}
+
+#[derive(Debug)]
+pub(crate) struct AsyncForAwaitCursor {
+    pub location: StatementLocation,
+    pub iterator: IteratorRecord,
+    pub value: Value,
+    pub phase: AsyncForAwaitPhase,
+    pub pending: Option<Result<Completion, crate::Error>>,
+}
+
 #[derive(Debug)]
 pub(crate) struct AsyncForInCursor {
     pub location: StatementLocation,
@@ -156,6 +174,7 @@ pub(crate) enum AsyncStatementFrame {
     For(AsyncForCursor),
     IterationHead(AsyncIterationHead),
     ForOf(AsyncForOfCursor),
+    ForAwait(AsyncForAwaitCursor),
     ForIn(AsyncForInCursor),
     Label(StatementLocation),
 }
@@ -172,7 +191,7 @@ impl AsyncStatementFrame {
             Self::Loop(_) => None,
             Self::For(cursor) => cursor.environment.as_ref(),
             Self::IterationHead(head) => head.environment.as_ref(),
-            Self::ForOf(_) | Self::ForIn(_) => None,
+            Self::ForOf(_) | Self::ForIn(_) | Self::ForAwait(_) => None,
             Self::Label(_) => None,
         }
     }
@@ -193,20 +212,31 @@ impl AsyncStatementFrame {
             Self::For(cursor) => Some(&cursor.value),
             Self::IterationHead(_) => None,
             Self::ForOf(cursor) => Some(&cursor.value),
+            Self::ForAwait(cursor) => Some(&cursor.value),
             Self::ForIn(cursor) => Some(&cursor.value),
             Self::Label(_) => None,
         };
         let next = match self {
             Self::ForOf(cursor) => Some(cursor.iterator.next_value()),
+            Self::ForAwait(cursor) => Some(cursor.iterator.next_value()),
             Self::Switch(cursor) => cursor.input.as_ref(),
             _ => None,
         };
-        value.into_iter().chain(next)
+        let pending = match self {
+            Self::ForAwait(cursor) => match cursor.pending.as_ref() {
+                Some(Ok(completion)) => completion.value.as_ref(),
+                Some(Err(crate::Error::Thrown(value))) => Some(value),
+                _ => None,
+            },
+            _ => None,
+        };
+        value.into_iter().chain(next).chain(pending)
     }
 
     fn object(&self) -> Option<&Handle> {
         match self {
             Self::ForOf(cursor) => Some(cursor.iterator.iterator_handle()),
+            Self::ForAwait(cursor) => Some(cursor.iterator.iterator_handle()),
             Self::ForIn(cursor) => cursor.iterator.object_handle(),
             Self::Block(_)
             | Self::Switch(_)

@@ -1,16 +1,27 @@
-//! Parsed for-await source remains a host boundary until async stepping lands.
+//! Parsed for-await source, reachable execution and dynamic compilation.
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
+use spite_runtime::{PromiseJobOutcome, Realm, Value};
 
 #[test]
-fn for_await_boundary_precedes_rhs_iterator_work_and_bypasses_handlers_and_disposal() {
+fn for_await_executes_the_iterable_then_unwinds_finalizers_and_root_resources() {
     let mut realm = Realm::default();
     realm
         .eval("let before=0,operand=0,handled=0,disposed=0;const dispose=Symbol.dispose")
         .unwrap();
-    assert!(matches!(realm.eval("async function f(){using r={[dispose](){disposed++}};before++;try{for await(var x of (operand++,[])){} }catch{handled=1}finally{handled=2}}try{f().catch(()=>{handled=3})}catch{handled=4}finally{handled=5}"),Err(Error::Unsupported{..})));
+    realm.eval("async function f(){using r={[dispose](){disposed++}};before++;try{for await(var x of (operand++,[])){} }catch{handled=1}finally{handled=2}}try{f().catch(()=>{handled=3})}catch{handled=4}finally{handled=5}").unwrap();
     assert_eq!(
-        realm.eval("before===1&&operand===0&&handled===0&&disposed===0"),
+        realm.eval("before===1&&operand===1&&handled===5&&disposed===0"),
+        Ok(Value::Boolean(true))
+    );
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            PromiseJobOutcome::NoJob => break,
+            PromiseJobOutcome::Completed => (),
+            PromiseJobOutcome::Reported(error) => panic!("{error}"),
+        }
+    }
+    assert_eq!(
+        realm.eval("before===1&&operand===1&&handled===2&&disposed===1"),
         Ok(Value::Boolean(true))
     );
 }

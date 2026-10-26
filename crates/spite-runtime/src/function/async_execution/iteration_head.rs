@@ -5,7 +5,8 @@ use crate::{
     Completion, Error, ExceptionKind, Realm, Value,
     object::{
         async_execution::{
-            AsyncForInCursor, AsyncForOfCursor, AsyncIterationHead, AsyncStatementFrame,
+            AsyncForAwaitCursor, AsyncForAwaitPhase, AsyncForInCursor, AsyncForOfCursor,
+            AsyncIterationHead, AsyncStatementFrame,
         },
         async_expression::ExprRoot,
     },
@@ -73,6 +74,15 @@ impl Realm {
                 location: head.location,
                 iterator,
                 value: Value::Undefined,
+            })
+        } else if matches!(statement.kind, StatementKind::ForOf { awaited: true, .. }) {
+            let iterator = self.get_for_await_iterator(value, span)?;
+            AsyncStatementFrame::ForAwait(AsyncForAwaitCursor {
+                location: head.location,
+                iterator,
+                value: Value::Undefined,
+                phase: AsyncForAwaitPhase::Next,
+                pending: None,
             })
         } else {
             let method = self

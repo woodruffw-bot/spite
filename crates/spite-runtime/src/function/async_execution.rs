@@ -5,6 +5,7 @@ mod block;
 mod completion;
 mod conditional;
 mod expression;
+mod for_await;
 mod for_in;
 mod for_loop;
 mod for_of;
@@ -216,13 +217,6 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_for(data, span);
         }
-        if matches!(statement.kind, StatementKind::ForOf { awaited: true, .. }) {
-            self.tick(statement.span)?;
-            return Err(Self::unsupported(
-                statement.span,
-                "for-await-of execution is not implemented",
-            ));
-        }
         if matches!(
             statement.kind,
             StatementKind::ForOf { .. } | StatementKind::ForIn { .. }
@@ -329,6 +323,10 @@ impl Realm {
             AsyncAwaitAction::SwitchSelector => self.finish_async_switch_selector(data, value),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
             AsyncAwaitAction::LoopTest => self.finish_async_loop_test(data, value),
+            AsyncAwaitAction::ForAwaitNext => self.finish_async_for_await_next(data, value),
+            AsyncAwaitAction::ForAwaitClose => self
+                .finish_async_for_await_close(data, Some(Ok(value)))
+                .map(Step::Complete),
             AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),
             AsyncAwaitAction::IterationSource => self.finish_async_iteration_source(data, value),
             AsyncAwaitAction::Binding { element } => {

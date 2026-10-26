@@ -27,6 +27,8 @@ impl Realm {
             next
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::Switch(_))) {
             return self.async_switch_step(data);
+        } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForAwait(_))) {
+            return self.async_for_await_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForOf(_))) {
             return self.async_for_of_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForIn(_))) {

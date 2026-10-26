@@ -424,6 +424,22 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{});(async()=>{with(key){await gate}})();return gate})()",
         ),
         (
+            "async for-await cached next callable",
+            "(()=>{let gate=new Promise(()=>{}),next=(()=>{let value=key;return()=>{value;return gate}})(),iterator={next},source={[Symbol.asyncIterator](){return iterator}};(async()=>{for await(const x of source){}})();iterator.next=null;next=null;return gate})()",
+        ),
+        (
+            "async for-await loop value",
+            "(()=>{let gate=new Promise(()=>{}),n=0,source={[Symbol.asyncIterator](){return this},next(){return n++===0?{done:false,value:0}:gate}};(async()=>{for await(const x of source){key}})();return gate})()",
+        ),
+        (
+            "async for-await pending return",
+            "(()=>{let gate=new Promise(()=>{}),source={[Symbol.asyncIterator](){return this},next(){return{done:false,value:0}},return(){return gate}};(async()=>{for await(const x of source){return key}})();return gate})()",
+        ),
+        (
+            "async for-await pending throw",
+            "(()=>{let gate=new Promise(()=>{}),source={[Symbol.asyncIterator](){return this},next(){return{done:false,value:0}},return(){return gate}};(async()=>{for await(const x of source){throw key}})();return gate})()",
+        ),
+        (
             "async switch input",
             "(()=>{let gate=new Promise(()=>{});(async()=>{switch(key){case await gate:break}})();return gate})()",
         ),
@@ -584,6 +600,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "Array.fromAsync close error across suspension"
                 | "source awaited lexical across suspension"
                 | "source awaited var across suspension"
+                | "async for-await cached next callable"
+                | "async for-await loop value"
+                | "async for-await pending return"
+                | "async for-await pending throw"
         ) {
             loop {
                 match realm.run_next_promise_job().unwrap() {

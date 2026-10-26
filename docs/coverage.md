@@ -60,6 +60,28 @@ not an alternative language specification.
 
 
 
+## For-await-of execution and asynchronous iterator closing
+
+Thirteen Runtime groups and four Symbol ownership controls cover async/sync
+protocol selection, sequential next results, raw async values, cached methods,
+step errors, awaited closing, throw precedence, labels, lexical/var/pattern
+bindings, synchronous using disposal, collection and host abort in every phase.
+All 417 units and 2,119 non-RegExp integrations pass across 669 Runtime case files;
+Clippy and Rust 1.88 checks pass. Existing grammar-boundary programs have positive
+execution coverage; the remaining resource boundary uses actual await-using.
+Parser totals remain 18 units and 361 integrations across 76 case files.
+
+Admitted 131 unchanged whole positive originals and 242 variants: ten core loop
+originals, 117 declaration-pattern originals and four Async-from-Sync originals.
+Every source matches its pinned Git blob and SHA-256 digest. Complete reviews
+record core 28 passing/7 Unsupported, declaration patterns 214 passing/8
+Unsupported/9 unverified syntax variants, and Array/adapter 168 passing/94
+Unsupported. The seven declaration-negative originals remain deferred for review.
+Earlier await and update cohorts retain 36 passing/8 Unsupported and 188 passing
+variants respectively; failed, setup and quota outcomes remain zero throughout.
+Inventories are 9,825 fixtures, twenty helpers, 9,806 reviewed sources, 19,012
+variants and 579 intrinsic entries. Helpers and quotas are unchanged.
+
 ## For-await-of grammar and reviewed initializer errors
 
 Six Parser groups cover async contexts, all supported head forms, escaped tokens,

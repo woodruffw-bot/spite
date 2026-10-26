@@ -1407,3 +1407,6 @@ mod async_await_with;
 
 #[path = "cases/for_await_grammar.rs"]
 mod for_await_grammar;
+
+#[path = "cases/for_await.rs"]
+mod for_await;
