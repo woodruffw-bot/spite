@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including optional/super calls, object literals,
+including optional/super calls, tagged templates, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -528,6 +528,15 @@ and raw yielded Promise values. The expression returns its original RHS value.
 Its continuation stores an AST path; the existing expression value and statement
 completion owners retain the RHS through suspension. Awaits inside pattern keys,
 targets and defaults remain explicit gaps.
+
+Untagged templates suspend in substitutions (13.2.8.6). Cooked components and
+substitutions append left to right; each completed substitution uses ToString
+before the next expression runs. Ordinary and suspended evaluation share cooked
+element appending. Continuations move an owned UTF-16 buffer and typed AST paths,
+preserving lone surrogates without retaining converted objects. Buffer growth
+checks the existing opt-in string limit before fallible reservation; limit and
+allocation failures keep host-abort isolation. Tagged templates retain their
+explicit await boundary.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

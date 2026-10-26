@@ -474,6 +474,10 @@ impl Realm {
                 message: "string length limit exceeded".into(),
             });
         }
+        units.try_reserve(part.len()).map_err(|_| Error::Limit {
+            span,
+            message: "string allocation failed".into(),
+        })?;
         units.extend_from_slice(part.code_units());
         Ok(())
     }
@@ -1563,15 +1567,7 @@ impl Realm {
                 // with ToString before the next one. Raw text is not evaluated.
                 let mut units = Vec::new();
                 for (index, element) in elements.iter().enumerate() {
-                    self.tick(element.span)?;
-                    self.append_string(
-                        &mut units,
-                        element
-                            .cooked
-                            .as_ref()
-                            .expect("validated untagged template"),
-                        element.span,
-                    )?;
+                    self.append_template_element(&mut units, element)?;
                     if let Some(substitution) = substitutions.get(index) {
                         let value = self.expression(substitution)?;
                         let value = self.string(value, substitution.span)?;

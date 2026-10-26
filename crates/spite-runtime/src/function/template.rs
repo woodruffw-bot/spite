@@ -6,6 +6,22 @@ use spite_parser::ast::{Expr, TemplateElement};
 use std::rc::Rc;
 
 impl Realm {
+    pub(crate) fn append_template_element(
+        &mut self,
+        units: &mut Vec<u16>,
+        element: &TemplateElement,
+    ) -> Result<(), Error> {
+        self.tick(element.span)?;
+        self.append_string(
+            units,
+            element
+                .cooked
+                .as_ref()
+                .expect("validated untagged template"),
+            element.span,
+        )
+    }
+
     pub(crate) fn tagged_template(
         &mut self,
         tag: &Expr,

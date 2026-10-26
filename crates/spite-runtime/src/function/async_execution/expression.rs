@@ -2,6 +2,7 @@
 
 mod assignment;
 mod member;
+mod template;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
 use crate::function::CallTarget;
@@ -25,6 +26,7 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
         ExprKind::DestructuringAssign { value, .. } => has_supported_await(value),
+        ExprKind::Template { substitutions, .. } => substitutions.iter().any(has_supported_await),
         ExprKind::Binary(_, left, right)
         | ExprKind::Assign(left, right)
         | ExprKind::CompoundAssign(_, left, right) => {
@@ -164,6 +166,9 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
             (ExprChild::ArrayElement(index), ExprKind::Array(elements)) => elements[*index]
                 .expression()
                 .expect("array element expression"),
+            (ExprChild::TemplateSubstitution(index), ExprKind::Template { substitutions, .. }) => {
+                &substitutions[*index]
+            }
             (ExprChild::MemberBase, ExprKind::Member(base, _)) => base,
             (ExprChild::MemberKey, ExprKind::Member(_, PropertyName::Computed(key))) => key,
             _ => unreachable!("typed expression path"),
@@ -252,6 +257,7 @@ impl Realm {
                         ExprKind::Await(_)
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
+                        | ExprKind::Template { .. }
                         | ExprKind::DestructuringAssign { .. }
                         | ExprKind::Update { .. }
                         | ExprKind::Assign(..)
@@ -308,6 +314,15 @@ impl Realm {
                                         span,
                                     )?;
                                 }
+                                ExprKind::Template { .. } => push(
+                                    &mut state,
+                                    ExprTask::TemplateNext {
+                                        path,
+                                        index: 0,
+                                        units: Vec::new(),
+                                    },
+                                    span,
+                                )?,
                                 ExprKind::DestructuringAssign { .. } => {
                                     let value = child_path(&path, ExprChild::Right, span)?;
                                     push(&mut state, ExprTask::DestructureApply(path), span)?;
@@ -721,6 +736,12 @@ impl Realm {
                         action,
                         span,
                     )?;
+                }
+                ExprTask::TemplateNext { path, index, units } => {
+                    self.async_template_next(data, &mut state, path, index, units)?
+                }
+                ExprTask::TemplateAppend { path, index, units } => {
+                    self.async_template_append(data, &mut state, path, index, units)?
                 }
                 ExprTask::DestructureApply(path) => {
                     let value = state.current.take().expect("destructuring RHS value");

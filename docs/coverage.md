@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Untagged templates with awaited substitutions
+
+Seven Runtime groups cover conversion order, nested/repeated awaits, BigInt and
+lossless UTF-16, rejection, private/dynamic contexts, converted-object collection,
+string limits before/after suspension and host abort. All 417 units and 2,046
+non-RegExp integrations pass across 659 Runtime case files; strict Clippy and
+Rust 1.88 checks pass. Ordinary and suspended templates share cooked component
+appending; pending prefixes store UTF-16 units without extra JavaScript owners.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Destructuring assignment with awaited RHS
 
 Eight Runtime groups cover nested array/object/rest patterns, RHS identity,

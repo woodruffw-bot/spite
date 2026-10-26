@@ -32,6 +32,7 @@ pub(crate) enum ExprChild {
     ArrayElement(usize),
     MemberBase,
     MemberKey,
+    TemplateSubstitution(usize),
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
@@ -152,6 +153,16 @@ pub(crate) enum ExprTask {
         base: Value,
         action: MemberAction,
         span: Span,
+    },
+    TemplateNext {
+        path: ExprPath,
+        index: usize,
+        units: Vec<u16>,
+    },
+    TemplateAppend {
+        path: ExprPath,
+        index: usize,
+        units: Vec<u16>,
     },
     DestructureApply(ExprPath),
     AssignmentApply {
