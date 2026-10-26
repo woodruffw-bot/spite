@@ -34,6 +34,7 @@ mod descriptor;
 mod disposable_stack;
 pub(crate) mod generator;
 mod module;
+pub(crate) use module::ModuleExecutionStatus;
 pub(crate) use module::ModuleLinkState;
 mod module_namespace;
 pub(crate) mod source_context;

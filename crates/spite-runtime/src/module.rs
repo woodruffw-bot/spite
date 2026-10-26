@@ -1,6 +1,7 @@
 //! Source Text Module records, linking and standalone evaluation (16.2.1).
 
 mod binding;
+mod evaluation;
 mod graph;
 mod link;
 mod meta;
@@ -20,7 +21,7 @@ use std::collections::BTreeMap;
 ///
 /// Clones refer to the same record. The record, bindings and evaluation Promise
 /// remain reachable until the last handle is dropped. Loaded graphs support
-/// linking; dependency evaluation remains unsupported.
+/// linking and synchronous dependency evaluation.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ModuleHandle {
     root: crate::object::Root,
@@ -34,8 +35,8 @@ impl Realm {
     /// Promise. Returned values are unrooted; retain them with [`Self::root_value`]
     /// across collection. Evaluation never collects.
     ///
-    /// Use retained records to load and link dependencies. Dependency evaluation
-    /// remains unsupported.
+    /// Use retained records to load dependencies. Dependency graphs containing
+    /// top-level await still require asynchronous scheduling.
     pub fn eval_module(&mut self, source: &str) -> Result<Value, Error> {
         let module = self.create_module(source)?;
         self.evaluate_module_record(&module)
@@ -80,6 +81,13 @@ impl Realm {
     /// Promise until its last clone is dropped.
     pub fn evaluate_module_record(&mut self, module: &ModuleHandle) -> Result<Value, Error> {
         let record = module.root.handle();
+        let record = self
+            .objects
+            .module_execution(record)
+            .map_err(Error::InvalidObject)?
+            .and_then(|execution| execution.cycle_root.clone())
+            .unwrap_or_else(|| record.clone());
+        let record = &record;
         if let Some(promise) = self
             .objects
             .module_evaluation(record)
@@ -96,11 +104,8 @@ impl Realm {
             .map_err(Error::InvalidObject)?
             .clone();
         self.link_module_record(record, Span::new(0, 0))?;
-        if !source.requested_modules().is_empty() {
-            return Err(Self::unsupported(
-                Span::new(0, 0),
-                "module dependency evaluation is not implemented",
-            ));
+        if !source.has_top_level_await() || !source.requested_modules().is_empty() {
+            return self.evaluate_sync_module_graph(record, Span::new(0, 0));
         }
         let environment = self
             .objects

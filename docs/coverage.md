@@ -56,11 +56,37 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; dependency evaluation remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous graph evaluation and cached cycle Promises; asynchronous dependencies remain Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20447 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Synchronous Module graph evaluation
+
+Loaded synchronous graphs evaluate dependencies in source order through an
+iterative DFS and the shared source interpreter. Shared dependencies run once;
+successful cyclic components share their cycle root's exact evaluation Promise.
+Language failures cache the original reason on the active stack without replay,
+while completed independent dependencies remain successful. Failed components
+without a cycle root retain their own later-created rejected Promises.
+
+A synchronous Module source mode preserves strict scopes, synthetic defaults,
+imported live cells and import.meta without allocating a body Promise for every
+dependency. Evaluation state traces capabilities, errors and cycle-root edges.
+Host aborts leave pending cached Promises, skip JavaScript catches/finally, and
+release active bookkeeping at zero budget. Graphs with HasTLA are refused before
+any body entry; standalone top-level Await remains supported.
+
+Nine new Runtime unit groups cover ordering/diamonds, successful and abrupt
+cycles, dependency error identity, completed branches, host abort propagation,
+refusal before async body entry, Symbol/graph collection, 600-module traversal
+and selected injected work-refusal points. Existing loading/linking examples now
+assert their successful graph evaluation. All 451 units and 2,275 non-RegExp integrations pass across 690 files, with
+thirteen CLI groups, strict Clippy, Rust 1.88, inventories and the full corpus. Parser remains 18/438 across 88
+files, with 591 intrinsic entries. No upstream originals are admitted in this
+host API increment; inventory remains 10,663 fixtures, twenty-two helpers,
+10,644 reviewed sources and 20,447 variants.
 
 ## Module top-level-await static semantics
 

@@ -215,6 +215,29 @@ impl Realm {
         })
     }
 
+    pub(crate) fn execute_sync_module_body(
+        &mut self,
+        body: spite_parser::ast::FunctionBody,
+        root: crate::environment::EnvironmentHandle,
+        default_export: Option<usize>,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.with_module_context(root.clone(), |realm| {
+            let data = new_execution_data(
+                ArrowBody::Block(body),
+                SourceFunctionMode::SyncModule { default_export },
+                Some(root),
+                span,
+            );
+            match realm.drive_async_execution(data, None, None, 1)? {
+                AsyncBodyOutcome::Complete(_) => Ok(()),
+                AsyncBodyOutcome::Suspended | AsyncBodyOutcome::Yielded(_) => {
+                    unreachable!("Module HasTLA is false")
+                }
+            }
+        })
+    }
+
     pub(super) fn resume_generator_execution(
         &mut self,
         data: AsyncExecutionData,

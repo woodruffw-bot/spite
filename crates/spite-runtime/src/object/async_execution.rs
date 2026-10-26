@@ -266,6 +266,9 @@ pub(crate) enum SourceFunctionMode {
         capability: PromiseCapability,
         default_export: Option<usize>,
     },
+    SyncModule {
+        default_export: Option<usize>,
+    },
     Generator(Handle),
     AsyncGenerator(Handle),
 }
@@ -273,7 +276,9 @@ pub(crate) enum SourceFunctionMode {
 impl SourceFunctionMode {
     pub(crate) fn module_default(&self) -> Option<usize> {
         match self {
-            Self::Module { default_export, .. } => *default_export,
+            Self::Module { default_export, .. } | Self::SyncModule { default_export } => {
+                *default_export
+            }
             _ => None,
         }
     }
@@ -284,13 +289,13 @@ impl SourceFunctionMode {
     pub(crate) fn promise(&self) -> Option<&PromiseCapability> {
         match self {
             Self::Async(capability) | Self::Module { capability, .. } => Some(capability),
-            Self::Generator(_) | Self::AsyncGenerator(_) => None,
+            Self::Generator(_) | Self::AsyncGenerator(_) | Self::SyncModule { .. } => None,
         }
     }
     pub(crate) fn generator(&self) -> Option<&Handle> {
         match self {
             Self::Generator(callee) | Self::AsyncGenerator(callee) => Some(callee),
-            Self::Async(_) | Self::Module { .. } => None,
+            Self::Async(_) | Self::Module { .. } | Self::SyncModule { .. } => None,
         }
     }
 }

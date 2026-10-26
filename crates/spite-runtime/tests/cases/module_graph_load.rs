@@ -74,11 +74,8 @@ fn aliases_and_cycles_preserve_record_identity_without_entering_module_bodies() 
         .unwrap();
     assert_eq!(calls, 3);
     check(&mut realm, "effects===0");
-    assert!(matches!(
-        realm.evaluate_module_record(&root),
-        Err(Error::Unsupported { .. })
-    ));
-    check(&mut realm, "effects===0");
+    realm.evaluate_module_record(&root).unwrap();
+    check(&mut realm, "effects===2");
 }
 
 #[test]

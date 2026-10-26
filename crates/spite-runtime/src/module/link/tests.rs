@@ -77,11 +77,8 @@ fn named_default_and_quoted_imports_are_live_read_only_and_use_undefined_call_re
         &mut realm,
         "ns.set(7)===undefined&&ns.read()[1]===7&&ns.indirect()===7&&(()=>{try{ns.write()}catch(e){return e instanceof TypeError}})()",
     );
-    assert!(matches!(
-        realm.evaluate_module_record(&modules[0]),
-        Err(Error::Unsupported { .. })
-    ));
-    check(&mut realm, "effects===1");
+    realm.evaluate_module_record(&modules[0]).unwrap();
+    check(&mut realm, "effects===2");
 }
 
 #[test]

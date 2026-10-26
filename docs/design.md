@@ -110,7 +110,7 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Module dependency evaluation remains implementation work;
+are syntax errors. Asynchronous Module dependency evaluation remains implementation work;
 no Module AST is accepted by Script execution APIs.
 
 Module::has_top_level_await implements Module Contains `await`, the HasTLA
@@ -491,8 +491,9 @@ without creating a function or arguments object. Evaluation returns an intrinsic
 Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
-Dependency requests stop before body effects.
-Graph evaluation remains work.
+Synchronous graphs execute dependencies before parent bodies. Graphs containing
+top-level await remain unsupported before body effects until asynchronous
+dependency scheduling is implemented.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -554,6 +555,23 @@ can precede a cycle ancestor's environment initialization without reading values
 Import maps, namespace targets and suspended import references trace record edges
 through ordinary collection. Dependency evaluation remains an explicit boundary;
 evaluating a linked graph stops before any body effect.
+
+Synchronous InnerModuleEvaluation uses an explicit DFS and active component stack
+(16.2.1.6.2). Dependencies execute in source order, shared records run once, and
+successful components retain their cycle root. Evaluating any member of a
+successful cycle returns that root's exact top-level Promise. A language failure
+marks only the active stack with the original reason; completed independent
+components remain successful. Failed components without a cycle root keep their
+own later-created rejected Promises while sharing the original reason.
+
+The existing source interpreter has a synchronous Module mode, preserving strict
+environments, synthetic defaults, import.meta and disposal without allocating a
+body Promise for each synchronous dependency. Top-level capability, evaluation
+errors and cycle-root edges participate in normal tracing. Host failures leave
+pending cached Promises, bypass cleanup and preserve aborted state without body
+replay; bookkeeping release needs no work allowance. Graph preflight refuses
+any HasTLA module before body entry. Standalone top-level Await retains its
+existing evaluation path; asynchronous dependency scheduling remains work.
 
 import.meta caches one ordinary null-prototype object per Source Text Module
 record (13.3.12). The default HostGetImportMetaProperties returns no properties

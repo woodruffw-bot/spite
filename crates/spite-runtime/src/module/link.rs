@@ -25,7 +25,8 @@ impl Realm {
     ///
     /// Load requests with [`Self::load_module_graph`] first. Cyclic groups finish
     /// linking together. A failure resets the active group while completed
-    /// dependencies remain linked. Graph evaluation remains unsupported.
+    /// dependencies remain linked. Synchronous graphs can then be evaluated with
+    /// [`Self::evaluate_module_record`].
     pub fn link_module(&mut self, module: &ModuleHandle) -> Result<(), Error> {
         let record = module.root.handle();
         if self

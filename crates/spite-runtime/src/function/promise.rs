@@ -86,7 +86,7 @@ pub(crate) enum PromiseFinallyKind {
 }
 
 impl Realm {
-    pub(super) fn intrinsic_promise_capability(
+    pub(crate) fn intrinsic_promise_capability(
         &mut self,
         span: Span,
     ) -> Result<PromiseCapability, Error> {

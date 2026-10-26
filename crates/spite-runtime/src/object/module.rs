@@ -5,6 +5,9 @@ use crate::{Value, environment::EnvironmentHandle};
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::Module;
 
+mod evaluation;
+pub(crate) use evaluation::{ModuleExecution, ModuleExecutionStatus};
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ModuleLinkState {
     Unlinked,
@@ -21,6 +24,7 @@ pub(super) struct ModuleData {
     import_meta: Option<Value>,
     dependencies: Option<Vec<Handle>>,
     link_state: ModuleLinkState,
+    execution: Option<Box<ModuleExecution>>,
 }
 
 impl ModuleData {
@@ -29,6 +33,11 @@ impl ModuleData {
             .iter()
             .chain(self.namespace.iter())
             .chain(self.import_meta.iter())
+            .chain(
+                self.execution
+                    .iter()
+                    .flat_map(|execution| execution.values()),
+            )
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
@@ -37,6 +46,12 @@ impl ModuleData {
             .map(|environment| Some(&environment.0))
             .chain(self.values().flat_map(Trace::trace))
             .chain(self.dependencies.iter().flatten().map(Some))
+            .chain(
+                self.execution
+                    .iter()
+                    .filter_map(|execution| execution.cycle_root.as_ref())
+                    .map(Some),
+            )
     }
 }
 
@@ -230,6 +245,7 @@ impl Objects {
             import_meta: None,
             dependencies: None,
             link_state: ModuleLinkState::Unlinked,
+            execution: None,
         }));
         Ok(record)
     }
