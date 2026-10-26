@@ -87,6 +87,14 @@ impl Realm {
             PropertyName::Literal(literal) => self.literal_value(literal, span)?,
             PropertyName::Computed(expression) => self.expression(expression)?,
         };
+        self.make_super_property_reference(key, this_value, span)
+    }
+    pub(crate) fn make_super_property_reference(
+        &mut self,
+        key: Value,
+        this_value: Value,
+        span: Span,
+    ) -> Result<Reference<'static>, Error> {
         let mut next = self.scopes.last().cloned();
         let mut base = Value::Undefined;
         while let Some(environment) = next {

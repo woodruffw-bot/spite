@@ -30,6 +30,7 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
             has_supported_await(value)
         }
+        ExprKind::SuperProperty(PropertyName::Computed(key)) => has_supported_await(key),
         ExprKind::OptionalChain {base, steps} => has_supported_await(base) || steps.iter().any(|step| match &step.kind {
             ChainStepKind::Property(PropertyName::Computed(key)) => has_supported_await(key),
             ChainStepKind::Call(arguments) => arguments.iter().any(|argument| has_supported_await(argument.expression())),
@@ -215,6 +216,7 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 };
                 value
             }
+            (ExprChild::SuperKey, ExprKind::SuperProperty(PropertyName::Computed(key))) => key,
             (ExprChild::OptionalBase, ExprKind::OptionalChain { base, .. }) => base,
             (ExprChild::OptionalKey(step), ExprKind::OptionalChain { steps, .. }) => {
                 let ChainStepKind::Property(PropertyName::Computed(key)) = &steps[*step].kind
@@ -375,6 +377,7 @@ impl Realm {
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
+                        | ExprKind::SuperProperty(_)
                         | ExprKind::OptionalChain { .. }
                         | ExprKind::Object(_)
                         | ExprKind::PrivateIn { .. }
@@ -443,6 +446,12 @@ impl Realm {
                                         units: Vec::new(),
                                     },
                                     span,
+                                )?,
+                                ExprKind::SuperProperty(_) => self.begin_async_member(
+                                    data,
+                                    &mut state,
+                                    path,
+                                    MemberAction::Value,
                                 )?,
                                 ExprKind::OptionalChain { .. } => self.begin_async_optional(
                                     data,
@@ -950,6 +959,15 @@ impl Realm {
                 }
                 ExprTask::OptionalArgumentAppend(cursor) => {
                     self.async_optional_argument_append(data, &mut state, cursor)?
+                }
+                ExprTask::SuperKey {
+                    this_value,
+                    action,
+                    span,
+                } => {
+                    let key = state.current.take().expect("super computed key value");
+                    let reference = self.make_super_property_reference(key, this_value, span)?;
+                    self.finish_async_member(data, &mut state, reference, action, span)?;
                 }
                 ExprTask::PrivateIn(path) => {
                     let expression = expression_at(data, state.root, &path);

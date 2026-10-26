@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Computed super properties with awaited keys
+
+Six Runtime groups and a Symbol ownership control cover early this validation,
+late home-prototype lookup, key coercion, calls/optional calls/tags/construction,
+assignments/updates, deletion, rejection, collection and host abort. All 417 units
+and 2,080 non-RegExp integrations pass across 664 Runtime case files; strict Clippy
+and Rust 1.88 checks pass. Ordinary and suspended execution share the final super
+reference operation, and the pending key retains only the already-read this Value.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Optional chains with awaited operands
 
 Eight Runtime groups and three Symbol ownership controls cover lazy nullish

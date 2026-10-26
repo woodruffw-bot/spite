@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited computed super-property review
+
+Six Runtime groups and a Symbol ownership control cover this/prototype/key timing,
+saved references, contexts, collection and host abort. Complete reviews retain
+36 passing/8 Unsupported await variants, 160 passing/102 Unsupported Array/adapter
+variants and 188 passing update variants. No additional unchanged original
+qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671 reviewed sources
+and 18,762 variants; helpers, quotas and intrinsic entries are unchanged.
+
 ## Awaited optional-chain review
 
 Eight Runtime groups and three Symbol ownership controls cover short circuits,

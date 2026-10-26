@@ -31,6 +31,22 @@ impl Realm {
         ) {
             return self.begin_async_optional(data, state, path, action);
         }
+        if let ExprKind::SuperProperty(PropertyName::Computed(_)) =
+            &expression_at(data, state.root, &path).kind
+        {
+            let this_value = self.this_value(span)?;
+            let child = child_path(&path, ExprChild::SuperKey, span)?;
+            push(
+                state,
+                ExprTask::SuperKey {
+                    this_value,
+                    action,
+                    span,
+                },
+                span,
+            )?;
+            return push(state, ExprTask::Evaluate(child), span);
+        }
         debug_assert!(matches!(
             expression_at(data, state.root, &path).kind,
             ExprKind::Member(..)

@@ -36,6 +36,7 @@ pub(crate) enum ExprChild {
     ObjectKey(usize),
     ObjectValue(usize),
     ObjectSpread(usize),
+    SuperKey,
     OptionalBase,
     OptionalKey(usize),
     OptionalArgument { step: usize, index: usize },
@@ -217,6 +218,11 @@ pub(crate) enum ExprTask {
     },
     OptionalArgumentNext(OptionalCallCursor),
     OptionalArgumentAppend(OptionalCallCursor),
+    SuperKey {
+        this_value: Value,
+        action: MemberAction,
+        span: Span,
+    },
     PrivateIn(ExprPath),
     DestructureApply(ExprPath),
     AssignmentApply {
@@ -249,9 +255,11 @@ impl ExprTask {
                 | Self::ObjectKey { object, .. }
                 | Self::ObjectValue { object, .. }
                 | Self::ObjectSpread { object, .. } => (Some(object), None, &[]),
-                Self::MemberKey { base, .. } | Self::OptionalKey { base, .. } => {
-                    (Some(base), None, &[])
-                }
+                Self::MemberKey { base, .. }
+                | Self::OptionalKey { base, .. }
+                | Self::SuperKey {
+                    this_value: base, ..
+                } => (Some(base), None, &[]),
                 Self::AssignmentApply { left, .. } => (left.as_ref(), None, &[]),
                 Self::OptionalArgumentNext(cursor) | Self::OptionalArgumentAppend(cursor) => {
                     (None, Some(&cursor.target), &cursor.arguments)

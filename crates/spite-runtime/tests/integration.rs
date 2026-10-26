@@ -11,6 +11,9 @@ mod async_await_update;
 #[path = "cases/async_await_destructuring.rs"]
 mod async_await_destructuring;
 
+#[path = "cases/async_await_super_property.rs"]
+mod async_await_super_property;
+
 #[path = "cases/async_await_optional.rs"]
 mod async_await_optional;
 

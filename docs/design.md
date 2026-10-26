@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including computed super accesses/calls,
+including awaited super construction calls,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -587,6 +587,15 @@ source paths and flags without JavaScript owners. Short-circuits do not replay
 source or evaluate skipped unsupported forms. Host abort retains its cleanup and
 capture-release rules; boundary controls now use genuinely unsupported pattern
 defaults, with positive coverage for the prior optional-chain programs.
+
+Computed super properties suspend in keys (13.3.7.1/3). GetThisBinding runs before
+key evaluation, so uninitialized derived this rejects before key side effects.
+After the key completes, shared MakeSuperPropertyReference reads the home object's
+current prototype. Key coercion remains deferred to GetValue/PutValue/delete.
+The saved this Value is traced and counted across suspension. Existing reference
+actions preserve receivers for calls, optional calls and tags, value-only
+construction, assignments and updates; super deletion still throws without
+property access or key coercion. Pending keys do not retain superseded prototypes.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate
