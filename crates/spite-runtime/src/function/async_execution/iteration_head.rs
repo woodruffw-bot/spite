@@ -155,12 +155,12 @@ impl Realm {
             ForBinding::Var(binding) => Some(&binding.pattern),
             _ => None,
         };
-        if pattern.is_some_and(super::binding_array::has_array_binding_await) {
+        if pattern.is_some_and(super::binding_pattern::has_binding_await) {
             let environment =
                 self.prepare_async_iteration_scope(&mut data.frames, binding, span)?;
-            return self.start_async_array_binding(
+            return self.start_async_pattern_binding(
                 data,
-                crate::object::async_binding_array::ArrayBindingRoot::Iteration,
+                crate::object::async_binding::BindingRoot::Iteration,
                 value,
                 environment,
             );

@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Object binding-key/default review
+
+Twelve Runtime groups and four Symbol ownership controls cover object keys,
+defaults, live rest copying, mixed patterns and scope/error ordering. Original
+object-binding boundary programs now have positive coverage; assignment-pattern
+gaps remain explicit and every group/quota is retained. Complete candidate
+reviews and inventories remain 9,825 fixtures, twenty helpers, 9,806 reviewed
+sources and 19,012 variants; helpers and intrinsic entries are unchanged.
+
 ## Catch array-default review
 
 Eight Runtime groups and two Symbol ownership controls cover suspended catch

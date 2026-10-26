@@ -5,7 +5,9 @@ use crate::{
     function::IteratorRecord, object::DataDescriptor,
 };
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
-use spite_parser::ast::{BindingElement, BindingPattern, BindingPatternKind, PropertyName};
+use spite_parser::ast::{
+    BindingElement, BindingPattern, BindingPatternKind, BindingProperty, PropertyName,
+};
 use std::collections::{BTreeMap, HashSet};
 
 impl Realm {
@@ -120,19 +122,7 @@ impl Realm {
                         })?;
                 }
                 for property in properties {
-                    let key_value = match &property.key {
-                        PropertyName::Private(_) => {
-                            return Err(Self::unsupported(
-                                span,
-                                "private elements are not implemented",
-                            ));
-                        }
-                        PropertyName::Literal(literal) => {
-                            self.literal_value(literal, property.element.pattern.span)?
-                        }
-                        PropertyName::Computed(expression) => self.expression(expression)?,
-                    };
-                    let key = self.property_key(key_value, span)?;
+                    let key = self.binding_property_key(property, span)?;
                     // KeyedBindingInitialization resolves SingleNameBinding before
                     // GetV; with/unscopables hooks can mutate the source or target.
                     let reference =
@@ -140,32 +130,13 @@ impl Realm {
                     let next = self.get_property_value(&value, &key, span)?;
                     self.binding_element(&property.element, next, environment, reference)?;
                     if rest.is_some() {
-                        self.object_work(span, |_, budget| {
-                            budget.charge(match &key {
-                                PropertyKey::String(key) => key.len() + 1,
-                                PropertyKey::Symbol(_) => 1,
-                            })
-                        })?;
-                        excluded.insert(key);
+                        self.binding_exclude_key(&mut excluded, key, span)?;
                     }
                 }
                 if let Some(rest) = rest {
                     let reference = self.binding_reference(rest, environment)?;
-                    let prototype = self
-                        .intrinsics
-                        .as_ref()
-                        .expect("initialized")
-                        .object_prototype
-                        .clone();
-                    let object =
-                        self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
-                    self.copy_data_properties(&object, value, &excluded, span)?;
-                    self.binding_initialization(
-                        rest,
-                        Value::Object(object),
-                        environment,
-                        reference,
-                    )?;
+                    let value = self.binding_object_rest(value, &excluded, span)?;
+                    self.binding_initialization(rest, value, environment, reference)?;
                 }
             }
             BindingPatternKind::Array { elements, rest } => {
@@ -209,6 +180,62 @@ impl Realm {
             }
         }
         Ok(())
+    }
+
+    pub(super) fn binding_property_key(
+        &mut self,
+        property: &BindingProperty,
+        span: Span,
+    ) -> Result<PropertyKey, Error> {
+        let value = match &property.key {
+            PropertyName::Private(_) => {
+                return Err(Self::unsupported(
+                    span,
+                    "private elements are not implemented",
+                ));
+            }
+            PropertyName::Literal(literal) => {
+                self.literal_value(literal, property.element.pattern.span)?
+            }
+            PropertyName::Computed(expression) => self.expression(expression)?,
+        };
+        self.property_key(value, span)
+    }
+
+    // Keys hash immutable strings or Symbol identity, never Symbol liveness.
+    #[allow(clippy::mutable_key_type)]
+    pub(super) fn binding_exclude_key(
+        &mut self,
+        excluded: &mut HashSet<PropertyKey>,
+        key: PropertyKey,
+        span: Span,
+    ) -> Result<(), Error> {
+        self.object_work(span, |_, budget| {
+            budget.charge(match &key {
+                PropertyKey::String(key) => key.len() + 1,
+                PropertyKey::Symbol(_) => 1,
+            })
+        })?;
+        excluded.insert(key);
+        Ok(())
+    }
+
+    #[allow(clippy::mutable_key_type)]
+    pub(super) fn binding_object_rest(
+        &mut self,
+        value: Value,
+        excluded: &HashSet<PropertyKey>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .object_prototype
+            .clone();
+        let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        self.copy_data_properties(&object, value, excluded, span)?;
+        Ok(Value::Object(object))
     }
 
     pub(super) fn binding_iterator(

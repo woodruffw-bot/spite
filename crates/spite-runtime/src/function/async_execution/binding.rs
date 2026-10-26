@@ -1,6 +1,6 @@
 //! Shared source declaration and for-header initializer continuations.
 
-use crate::object::async_binding_array::ArrayBindingRoot;
+use crate::object::async_binding::BindingRoot;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
 use crate::{
@@ -64,10 +64,10 @@ impl Realm {
                     if let BindingPatternKind::Identifier(_) = &binding.pattern.kind {
                         let target = data.var_target.take().expect("resolved var target");
                         self.put(target, value, binding.pattern.span)?;
-                    } else if super::binding_array::has_array_binding_await(&binding.pattern) {
-                        return self.start_async_array_binding(
+                    } else if super::binding_pattern::has_binding_await(&binding.pattern) {
+                        return self.start_async_pattern_binding(
                             data,
-                            ArrayBindingRoot::Declaration(element),
+                            BindingRoot::Declaration(element),
                             value,
                             None,
                         );
@@ -78,10 +78,10 @@ impl Realm {
                     // AddDisposableResource still precedes binding initialization.
                     self.initialize_using_value(&binding.pattern, value, &environment)?;
                 } else {
-                    if super::binding_array::has_array_binding_await(&binding.pattern) {
-                        return self.start_async_array_binding(
+                    if super::binding_pattern::has_binding_await(&binding.pattern) {
+                        return self.start_async_pattern_binding(
                             data,
-                            ArrayBindingRoot::Declaration(element),
+                            BindingRoot::Declaration(element),
                             value,
                             Some(environment),
                         );
@@ -105,12 +105,12 @@ impl Realm {
                     ExprRoot::Binding { element },
                     AsyncAwaitAction::Binding { element },
                 );
-            } else if !using && super::binding_array::has_array_binding_await(&binding.pattern) {
+            } else if !using && super::binding_pattern::has_binding_await(&binding.pattern) {
                 self.tick(binding.pattern.span)?;
                 let value = self.binding_element_value(binding, Value::Undefined)?;
-                return self.start_async_array_binding(
+                return self.start_async_pattern_binding(
                     data,
-                    ArrayBindingRoot::Declaration(element),
+                    BindingRoot::Declaration(element),
                     value,
                     if var { None } else { Some(environment) },
                 );

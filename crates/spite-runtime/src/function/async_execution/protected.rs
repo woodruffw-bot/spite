@@ -65,7 +65,7 @@ impl Realm {
             let suspended_binding = handler
                 .parameter
                 .as_ref()
-                .is_some_and(super::binding_array::has_array_binding_await);
+                .is_some_and(super::binding_pattern::has_binding_await);
             if handler.parameter.is_some()
                 && data
                     .frames

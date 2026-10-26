@@ -60,6 +60,22 @@ not an alternative language specification.
 
 
 
+## Awaited keys and defaults in object bindings
+
+Twelve Runtime groups and four Symbol ownership controls cover computed-key
+conversion, default ordering/names, pre-GetV var references, primitive receivers,
+live object rest, repeated excluded Symbol keys, mixed nested patterns, catch and
+iteration/header scopes, TDZ/coercibility, private/dynamic contexts, collection
+and host abort. All 417 units and 2,173 non-RegExp integrations pass across 675
+Runtime case files; Clippy and Rust 1.88 checks pass. Array/object bindings share
+one cursor stack and native key/rest operations. Former object-binding boundary
+programs now execute positively; assignment-pattern boundaries remain explicit.
+Every prior group and quota is retained.
+
+Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources, 19,012 variants, 76 Parser case files and 579 intrinsic
+entries. Helpers and quotas are unchanged.
+
 ## Awaited array defaults in catch parameters
 
 Eight Runtime groups and two Symbol ownership controls cover body-entry ordering,

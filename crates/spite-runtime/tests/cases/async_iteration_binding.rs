@@ -110,11 +110,20 @@ fn const_defaults_preserve_names_immutability_method_and_dynamic_contexts() {
 }
 
 #[test]
-fn unimplemented_iteration_pattern_forms_remain_host_boundaries() {
+fn object_iteration_bindings_execute_and_assignment_patterns_remain_host_boundaries() {
     for header in [
         "for(var {x=await(operand++)} of [{}])",
         "for(const {x=await(operand++)} of [{}])",
+    ] {
+        let mut realm = Realm::default();
+        realm.eval("let before=0,operand=0,handled=0").unwrap();
+        realm.eval(&format!("async function f(){{var x;before++;try{{{header}{{}}}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")).unwrap();
+        drain(&mut realm);
+        check(&mut realm, "before===1&&operand===1&&handled===2");
+    }
+    for header in [
         "for([x=await(operand++)] of [[]])",
+        "for({x=await(operand++)} of [{}])",
     ] {
         let mut realm = Realm::default();
         realm.eval("let before=0,operand=0,handled=0").unwrap();

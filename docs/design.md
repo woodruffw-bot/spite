@@ -1011,8 +1011,8 @@ and own data definitions. Binding recursion shares the existing evaluator
 native-stack guard across callback reentry. Host aborts restore the catch scope
 and skip JavaScript cleanup.
 
-Catch array-parameter defaults use the same suspended binding cursor as declarations
-and iteration heads. After materializing the thrown value and instantiating all
+Catch array/object parameter defaults and computed keys use the same suspended
+binding cursor as declarations and iteration heads. After materializing the thrown value and instantiating all
 catch names, a traced staging frame defers initialization to the next execution
 step. Iterator acquisition and initialization failures therefore enter the ordinary
 binding cleanup path before unwinding the catch scope. The catch body waits for
@@ -1026,9 +1026,17 @@ parameter, catch, and nested-var early conflicts; property keys are not names.
 Default-value selection, binding iterator acquisition and rest Array collection
 are separate shared operations. Ordinary initialization still resolves references
 before stepping, preserves default name inference and uses the same closing path.
-Array BindingPatterns in lexical/var declaration lists, three-clause headers and
-for-in/of/await-of heads can suspend in defaults. An owned cursor stack retains the binding environment,
-typed paths into the source pattern and actual IteratorRecords for nested arrays.
+Array and object BindingPatterns in lexical/var declaration lists, three-clause
+headers, for-in/of/await-of heads and catch parameters can suspend in defaults or
+computed keys. An owned cursor stack retains the binding environment, typed paths
+into the source pattern, actual IteratorRecords for arrays and source values for
+objects. Mixed patterns share that stack and unwind array iterators inside out.
+Object keys are converted once before target resolution and GetV. Pending keys
+and the exact String/Symbol exclusion set remain live through defaults or nested
+patterns. Object rest uses the same intrinsic creation, live property copying and
+exclusion accounting as native BindingInitialization. Each physical Symbol key
+slot participates in the internal Symbol inventory, including a key simultaneously
+held as the current property and in the exclusion set.
 Elisions skip values; rest uses the shared collector. Defined values skip defaults,
 and non-awaited defaults keep native name inference. Default results produced by
 await receive no additional name hint. Each default resumes before later elements
@@ -1051,7 +1059,7 @@ parent. Rejection or nested initialization failure closes still-active iterators
 from inside out, preserving original throws; step errors retain their Done flags.
 Host abort abandons records without JavaScript closing or disposal. Cursor methods,
 iterator handles and the binding environment participate in tracing and capture
-validation. Object and assignment-pattern awaited defaults remain distinct
+validation. Awaited targets, keys and defaults inside assignment patterns remain
 Unsupported forms.
 Patterns require an initializer outside for-in/of declarations, and lexical
 BoundNames cannot contain let. Declaration instantiation creates all names before

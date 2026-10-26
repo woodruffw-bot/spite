@@ -472,6 +472,22 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),input=[key];(async()=>{try{throw input}catch([x,y=await gate]){}})();input[0]=null;return gate})()",
         ),
         (
+            "async object binding primitive source",
+            "(()=>{let gate=new Promise(()=>{});(async()=>{let{[await gate]:x}=key})();return gate})()",
+        ),
+        (
+            "async object binding pending converted key",
+            "(()=>{let gate=new Promise(()=>{}),source={[key]:undefined};(async()=>{let{[key]:x=await gate}=source})();delete source[key];return gate})()",
+        ),
+        (
+            "async object binding excluded symbol key",
+            "(()=>{let gate=new Promise(()=>{}),source={[key]:1};(async()=>{let{[key]:x,y=await gate,...rest}=source})();delete source[key];return gate})()",
+        ),
+        (
+            "async object binding repeated physical key slots",
+            "(()=>{let gate=new Promise(()=>{}),source={[key]:undefined};(async()=>{let{[key]:x=1,[key]:y=await gate,...rest}=source})();delete source[key];return gate})()",
+        ),
+        (
             "async switch input",
             "(()=>{let gate=new Promise(()=>{});(async()=>{switch(key){case await gate:break}})();return gate})()",
         ),

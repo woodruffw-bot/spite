@@ -33,7 +33,8 @@ pub(crate) enum AsyncAwaitAction {
     ForAwaitClose,
     IterationSource,
     IterationBinding,
-    ArrayBindingDefault,
+    BindingDefault,
+    BindingKey,
     Binding { element: usize },
 }
 
@@ -266,7 +267,7 @@ pub(crate) struct AsyncExecutionData {
     pub capability: PromiseCapability,
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
-    pub array_binding: Option<super::async_binding_array::AsyncArrayBinding>,
+    pub pattern_binding: Option<super::async_binding::AsyncPatternBinding>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -286,7 +287,11 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.symbols())
             .chain(self.var_target.iter().flat_map(Reference::symbols))
-            .chain(self.array_binding.iter().flat_map(|state| state.symbols()))
+            .chain(
+                self.pattern_binding
+                    .iter()
+                    .flat_map(|state| state.symbols()),
+            )
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
@@ -294,7 +299,7 @@ impl AsyncExecutionData {
             .values()
             .chain(&self.normal)
             .chain(&self.iteration_value)
-            .chain(self.array_binding.iter().flat_map(|state| state.values()))
+            .chain(self.pattern_binding.iter().flat_map(|state| state.values()))
             .chain(self.var_target.iter().flat_map(Reference::values))
             .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(
@@ -308,7 +313,11 @@ impl AsyncExecutionData {
         self.frames
             .iter()
             .filter_map(AsyncStatementFrame::object)
-            .chain(self.array_binding.iter().flat_map(|state| state.objects()))
+            .chain(
+                self.pattern_binding
+                    .iter()
+                    .flat_map(|state| state.objects()),
+            )
             .chain(self.var_target.iter().filter_map(Reference::object))
             .chain(
                 self.expression
@@ -323,7 +332,7 @@ impl AsyncExecutionData {
             .flat_map(|expression| expression.environments())
             .chain(self.root_scope.iter())
             .chain(
-                self.array_binding
+                self.pattern_binding
                     .iter()
                     .flat_map(|state| state.environments()),
             )

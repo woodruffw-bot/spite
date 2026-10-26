@@ -1,7 +1,8 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
 mod binding;
-mod binding_array;
+mod binding_object;
+mod binding_pattern;
 mod block;
 mod completion;
 mod conditional;
@@ -101,7 +102,7 @@ impl Realm {
             capability,
             body,
             expression: None,
-            array_binding: None,
+            pattern_binding: None,
             index: 0,
             statement: None,
             next: None,
@@ -194,15 +195,15 @@ impl Realm {
             else {
                 unreachable!("pending catch binding")
             };
-            return self.start_async_array_binding(
+            return self.start_async_pattern_binding(
                 data,
-                crate::object::async_binding_array::ArrayBindingRoot::Catch,
+                crate::object::async_binding::BindingRoot::Catch,
                 value,
                 Some(environment),
             );
         }
-        if data.array_binding.is_some() {
-            return self.advance_async_array_binding(data);
+        if data.pattern_binding.is_some() {
+            return self.advance_async_pattern_binding(data);
         }
         match &data.body {
             ArrowBody::Expression(expression) => {
@@ -352,7 +353,8 @@ impl Realm {
                 .finish_async_for_await_close(data, Some(Ok(value)))
                 .map(Step::Complete),
             AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),
-            AsyncAwaitAction::ArrayBindingDefault => self.resume_async_array_default(data, value),
+            AsyncAwaitAction::BindingDefault => self.resume_async_binding_default(data, value),
+            AsyncAwaitAction::BindingKey => self.resume_async_binding_key(data, value),
             AsyncAwaitAction::IterationBinding => {
                 data.iteration_value = None;
                 Ok(Step::Continue)
