@@ -5,8 +5,8 @@ use std::{fmt, rc::Rc};
 
 /// A parsed Module body, distinct from Script execution input.
 ///
-/// All Module code is strict. Imports and named/star exports retain module
-/// records; declaration/default exports, linking and execution remain work.
+/// All Module code is strict. Imports and declaration/named/star exports retain
+/// module records; default exports, linking and execution remain work.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     pub(crate) statements: Vec<Statement>,
@@ -100,9 +100,14 @@ pub struct ExportSpecifier {
     pub exported: ModuleExportName,
 }
 
-/// The supported static export forms; declarations/default exports remain work.
+/// The supported static export forms; default exports remain work.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExportKind {
+    /// Bound names exported by a declaration retained in Module statements.
+    Declaration {
+        /// Names in declaration order, including destructuring bindings.
+        names: Vec<ModuleExportName>,
+    },
     /// Named local exports or named reexports from a module request.
     Named {
         /// Entries in source order.
@@ -122,7 +127,7 @@ pub enum ExportKind {
 /// A static export declaration and its complete source range.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExportDeclaration {
-    /// Named or star export metadata.
+    /// Declaration, named or star export metadata.
     pub kind: ExportKind,
     /// Complete declaration range, including an explicit semicolon.
     pub span: Span,

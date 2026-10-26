@@ -101,9 +101,12 @@ reexports retain names, aliases, requests and source ranges (16.2.3). Local expo
 references must be identifiers declared in the Module, including imported names;
 global properties and nested lexical bindings do not qualify. Exported names must
 be unique across these forms; bare star exports contribute no explicit name.
-Declaration/default exports remain Unsupported, and nested static declarations
-are syntax errors. No Module AST is accepted by Script execution APIs, and
-linking/evaluation remain separate implementation work.
+Variable, lexical, function, generator, async-function and class exports retain
+their ordinary declaration nodes and derive export metadata from the existing
+binding-name collectors. This keeps destructuring and Module scope conflicts in
+the shared validators. Default exports remain Unsupported, and nested static
+declarations are syntax errors. No Module AST is accepted by Script execution
+APIs, and linking/evaluation remain separate implementation work.
 
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10222 unmodified test fixtures and twenty harness files come from
+These 10226 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,22 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Declaration export review
+
+Four unchanged Module syntax negatives add four variants with exact rejection
+reviews for escaped import/export terminals and duplicate exported declarations.
+The 72-original export cohort reports 59 passed/twelve Unsupported and one
+unverified original: its malformed quoted star rejects before its intended
+Unicode-name check, so it remains wholly excluded. The 67-original import cohort
+reports 56 passed/eleven Unsupported; other outcomes are zero.
+
+The corpus contains 10,226 fixtures, twenty helpers, 10,207 reviewed sources and
+19,669 variants. Six Parser groups and a reviewed name/range snapshot cover
+declaration exports and their shared scope checks. Prior programs/groups, helpers,
+quotas and intrinsics remain intact. The full gate and all forty-three
+runner/package checks pass. Default exports and module linking/execution remain
+Unsupported.
 
 ## Named and star export review
 

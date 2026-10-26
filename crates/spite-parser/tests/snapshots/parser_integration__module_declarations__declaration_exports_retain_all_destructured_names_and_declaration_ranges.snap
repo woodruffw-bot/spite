@@ -1,0 +1,59 @@
+---
+source: crates/spite-parser/tests/module_declarations.rs
+assertion_line: 36
+expression: records
+---
+[
+    (
+        [
+            (
+                "b",
+                "b",
+            ),
+            (
+                "c",
+                "c",
+            ),
+            (
+                "d",
+                "d",
+            ),
+            (
+                "e",
+                "e",
+            ),
+        ],
+        "export var {a:b,c}=source,[d,...e]=source;",
+    ),
+    (
+        [
+            (
+                "f",
+                "f",
+            ),
+            (
+                "h",
+                "h",
+            ),
+        ],
+        "export const [f,{g:h}]=source;",
+    ),
+    (
+        [
+            (
+                "gen",
+                "gen",
+            ),
+        ],
+        "export function* gen(){}",
+    ),
+    (
+        [
+            (
+                "C",
+                "C",
+            ),
+        ],
+        "export class C{}",
+    ),
+]

@@ -175,5 +175,8 @@ mod module_goal;
 #[path = "module_imports.rs"]
 mod module_imports;
 
+#[path = "module_declarations.rs"]
+mod module_declarations;
+
 #[path = "module_exports.rs"]
 mod module_exports;

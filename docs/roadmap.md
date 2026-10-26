@@ -363,6 +363,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Validate reviewed Test262 Module parse negatives with the Module goal, exact unprefixed rejection evidence, phase checks and separate unsupported linking/execution outcomes.
 - [x] Parse static default/named/namespace imports and combinations into module requests/bindings, with strict shared scope conflicts, well-formed quoted export names and unique canonical import attributes.
 - [x] Retain named local/indirect exports and star/namespace reexports, with module binding resolution, unique exported names and shared request/attribute validation.
+- [x] Parse exported variable, lexical, function, generator, async-function and class declarations through ordinary declaration nodes and shared binding/scope checks.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

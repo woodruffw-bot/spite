@@ -7,8 +7,8 @@ mod imports;
 
 /// Parses the supported Module body with strict code and top-level Await.
 ///
-/// Static imports and named/star exports retain module records. Declaration and
-/// default exports remain Unsupported. The AST is separate from Script execution.
+/// Static imports and declaration/named/star exports retain module records.
+/// Default exports remain Unsupported. The AST is separate from Script execution.
 pub fn parse_module(source: &str) -> Result<Module, Diagnostic> {
     let mut parser = Parser::new(source)?;
     let result = contents(&mut parser);
@@ -49,7 +49,11 @@ fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
         // Declarations are ModuleItems only at this level. Nested declarations
         // remain Syntax errors; import() and import.meta are expressions.
         if parser.at("export") && !parser.current().escaped {
-            exports.push(parser.export_declaration()?);
+            let (export, statement) = parser.export_declaration()?;
+            exports.push(export);
+            if let Some(statement) = statement {
+                statements.push(statement);
+            }
             continue;
         }
         if parser.at("import")

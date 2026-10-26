@@ -10202,3 +10202,7 @@ test/language/module-code/early-import-arguments.js	986	995	invalid binding in s
 test/language/module-code/early-import-as-arguments.js	978	987	invalid binding in strict mode
 test/language/module-code/early-import-as-eval.js	973	977	invalid binding in strict mode
 test/language/module-code/early-import-eval.js	976	980	invalid binding in strict mode
+test/language/export/escaped-as-export-specifier.js	839	846	expected }
+test/language/export/escaped-default.js	812	824	expected an export declaration
+test/language/module-code/early-dup-export-decl.js	425	426	duplicate lexical binding
+test/language/import/escaped-as-import-specifier.js	840	847	expected }

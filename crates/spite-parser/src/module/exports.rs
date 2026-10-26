@@ -1,9 +1,11 @@
-//! Named/star export records and Module exported-name/binding early errors (16.2.3).
+//! Export records and Module exported-name/binding early errors (16.2.3).
 
 use super::*;
 
 impl Parser {
-    pub(super) fn export_declaration(&mut self) -> Result<ExportDeclaration, Diagnostic> {
+    pub(super) fn export_declaration(
+        &mut self,
+    ) -> Result<(ExportDeclaration, Option<Statement>), Diagnostic> {
         let start = self.bump().span.start;
         let kind = if self.eat("*") {
             let exported = if self.eat("as") {
@@ -53,15 +55,58 @@ impl Parser {
                 specifiers,
                 request,
             }
+        } else if self.at("var")
+            || self.at("let")
+            || self.at("const")
+            || self.at("function")
+            || self.at("class")
+            || self.at_async_function()
+        {
+            // ExportDeclaration : export VariableStatement / Declaration (16.2.3).
+            // Keep the ordinary declaration in the shared Module scope validator.
+            let statement = self.statement(true)?;
+            if !matches!(
+                statement.kind,
+                StatementKind::Var(_)
+                    | StatementKind::Lexical { .. }
+                    | StatementKind::Function(_)
+                    | StatementKind::Class(_)
+            ) {
+                return Err(early(statement.span, "expected an export declaration"));
+            }
+            let mut names: Vec<_> = block_lexical_names(&statement)
+                .map(|(name, span)| ModuleExportName {
+                    value: JsString::from(name),
+                    span,
+                    quoted: false,
+                })
+                .collect();
+            let mut variables = Vec::new();
+            statement.collect_var_declarations(&mut variables);
+            names.extend(variables.into_iter().map(|name| ModuleExportName {
+                value: JsString::from(name.name),
+                span: name.span,
+                quoted: false,
+            }));
+            let declaration = ExportDeclaration {
+                kind: ExportKind::Declaration { names },
+                span: Span::new(start, statement.span.end),
+            };
+            return Ok((declaration, Some(statement)));
+        } else if self.at("default") {
+            return Err(self.unsupported("default exports are not implemented"));
         } else {
-            return Err(self.unsupported("declaration and default exports are not implemented"));
+            return Err(self.error("expected an export declaration"));
         };
         self.semicolon()?;
         let end = self.tokens[self.index - 1].span.end;
-        Ok(ExportDeclaration {
-            kind,
-            span: Span::new(start, end),
-        })
+        Ok((
+            ExportDeclaration {
+                kind,
+                span: Span::new(start, end),
+            },
+            None,
+        ))
     }
 
     fn export_request(&mut self) -> Result<ModuleRequest, Diagnostic> {
@@ -82,6 +127,11 @@ pub(super) fn validate(
     let mut exported = BTreeSet::new();
     for declaration in exports {
         match &declaration.kind {
+            ExportKind::Declaration { names } => {
+                for name in names {
+                    insert(&mut exported, name)?;
+                }
+            }
             ExportKind::Named { specifiers, .. } => {
                 for entry in specifiers {
                     insert(&mut exported, &entry.exported)?;

@@ -145,7 +145,7 @@ fn quoted_names_require_well_formed_unicode_and_reexports_share_attribute_checks
 }
 
 #[test]
-fn exports_remain_module_items_and_declaration_default_forms_keep_their_boundary() {
+fn exports_remain_module_items_and_default_forms_keep_their_boundary() {
     for source in ["export {}", "let x;export{x}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
@@ -159,14 +159,14 @@ fn exports_remain_module_items_and_declaration_default_forms_keep_their_boundary
         );
     }
     for source in [
-        "export default 1",
         "export let x=1",
         "export function f(){}",
         "export class C{}",
     ] {
-        assert_eq!(
-            parse_module(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported
-        );
+        assert_eq!(parse_module(source).unwrap().exports().len(), 1);
     }
+    assert_eq!(
+        parse_module("export default 1").unwrap_err().kind,
+        DiagnosticKind::Unsupported
+    );
 }
