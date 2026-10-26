@@ -56,10 +56,32 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions and traced scopes; async yield delegation remains Unsupported |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20023 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20391 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async-generator yield delegation
+
+Async yield delegation reuses the existing source interpreter and delegation
+cursor. It selects async iterators or the shared async-from-sync adapter, awaits
+method results, preserves raw true-async values, caches next and looks up
+throw/return live. Missing throw awaits iterator closing before its protocol
+TypeError; missing return performs the additional required Await. Delegate Await
+rejections reach the outer catch without forwarding to the delegate's throw.
+
+Eight Runtime groups cover these paths, nested delegation/consumers, queued
+requests, retained iterator/cached-next captures, and host-abort isolation. All
+417 units and 2,257 non-RegExp integrations pass across 687 case files; thirteen
+CLI groups and thirteen runner probes pass. Parser coverage stays eighteen/434
+across 88 files. Intrinsic entries stay 591, with no helper, dependency or resource
+allowance changes.
+
+All 184 unchanged pinned originals pass both required modes: 368 passed and every
+other scoped outcome zero. They are admitted as whole files. The inventory now
+contains 10,608 fixtures, twenty-one helpers, 10,589 reviewed sources and 20,391
+variants. The full gate and all forty-three runner/package checks pass, alongside
+Clippy, Rust 1.88 and inventory checks.
 
 ## Async-generator instances and serialized requests
 

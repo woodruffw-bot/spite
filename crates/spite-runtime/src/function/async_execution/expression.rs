@@ -771,13 +771,11 @@ impl Realm {
                 }
                 ExprTask::DelegateYield(span) => {
                     let value = state.current.take().expect("yield delegation operand");
-                    if data.function.is_async_generator() {
-                        return Err(Self::unsupported(
-                            span,
-                            "async generator yield delegation is not implemented",
-                        ));
-                    }
-                    let iterator = self.binding_iterator(value, span)?;
+                    let iterator = if data.function.is_async_generator() {
+                        self.get_async_iterator(value, span)?
+                    } else {
+                        self.binding_iterator(value, span)?
+                    };
                     state.delegation = Some(crate::object::async_expression::GeneratorDelegation {
                         iterator,
                         span,

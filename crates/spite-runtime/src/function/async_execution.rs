@@ -172,10 +172,11 @@ impl Realm {
         base: usize,
     ) -> Result<AsyncBodyOutcome, Error> {
         let mut next_step = resumed.map(|completion| {
-            if data
-                .expression
-                .as_ref()
-                .is_some_and(|state| state.delegation.is_some())
+            if !matches!(data.pending, AsyncAwaitAction::DelegationResult(_))
+                && data
+                    .expression
+                    .as_ref()
+                    .is_some_and(|state| state.delegation.is_some())
             {
                 return self.resume_yield_delegation(&mut data, completion);
             }
@@ -435,6 +436,9 @@ impl Realm {
                     AsyncAwaitAction::AsyncGeneratorReturn,
                     data.span,
                 ))
+            }
+            AsyncAwaitAction::DelegationResult(operation) => {
+                self.finish_yield_delegation(data, value, operation)
             }
             AsyncAwaitAction::AsyncGeneratorYield(span) => {
                 Ok(Step::Yield(value, AsyncAwaitAction::Expression, span))

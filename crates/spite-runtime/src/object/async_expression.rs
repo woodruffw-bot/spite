@@ -332,6 +332,13 @@ impl ExprTask {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum DelegationOperation {
+    Next,
+    Return,
+    Close,
+}
+
 #[derive(Debug)]
 pub(crate) struct GeneratorDelegation {
     pub iterator: crate::function::IteratorRecord,

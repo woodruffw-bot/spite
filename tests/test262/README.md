@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10424 unmodified test fixtures and twenty-one harness files come from
+These 10608 unmodified test fixtures and twenty-one harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,22 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Async-generator delegation review
+
+All 184 unchanged pinned originals pass both required Script modes, adding 368
+variants with every other scoped outcome zero. Git blob hashes and SHA-256 digests
+verify their original bytes. The files cover async/sync iterator selection,
+next/throw/return forwarding, method/result errors, thenable assimilation, raw
+async values and the extra Await for a missing return method. Whole originals are
+admitted without removing assertions or changing their setup.
+
+Eight Runtime groups cover protocol ordering, nested consumers, retained captures
+and host aborts. Earlier CLI/runner delegation boundary programs are retained as
+positive controls. The inventory contains 10,608 fixtures, twenty-one helpers,
+10,589 reviewed sources and 20,391 variants. All full-corpus variants and
+forty-three runner/package checks pass. Intrinsic entries stay 591; helpers,
+dependencies and resource defaults/allowances are unchanged.
 
 ## Async-generator instance review
 

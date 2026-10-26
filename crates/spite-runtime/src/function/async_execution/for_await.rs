@@ -11,7 +11,7 @@ use crate::{
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {
-    pub(super) fn get_for_await_iterator(
+    pub(super) fn get_async_iterator(
         &mut self,
         value: Value,
         span: Span,
@@ -27,7 +27,7 @@ impl Realm {
                 Self::exception(
                     ExceptionKind::TypeError,
                     span,
-                    "for-await-of value is not iterable",
+                    "async iteration value is not iterable",
                 )
             })?;
         let record = self.get_iterator_from_method(value, method, span)?;

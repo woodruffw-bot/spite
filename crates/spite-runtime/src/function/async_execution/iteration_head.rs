@@ -103,7 +103,7 @@ impl Realm {
                 value: Value::Undefined,
             })
         } else if matches!(statement.kind, StatementKind::ForOf { awaited: true, .. }) {
-            let iterator = self.get_for_await_iterator(value, span)?;
+            let iterator = self.get_async_iterator(value, span)?;
             AsyncStatementFrame::ForAwait(AsyncForAwaitCursor {
                 location: head.location,
                 iterator,

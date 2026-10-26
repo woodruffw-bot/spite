@@ -65,7 +65,7 @@ fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),
         (
-            "async function* gap(){yield*[]};gap().next()",
+            "async function f(){await using resource=null}",
             "Unsupported",
         ),
         ("1n + 1", "TypeError"),
@@ -83,16 +83,21 @@ fn errors_have_a_failing_exit_status() {
         assert!(String::from_utf8(output.stderr).unwrap().contains(expected));
         assert!(output.stdout.is_empty());
     }
-    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
-        .args(["--eval", "async function* gap(){};gap();undefined"])
-        .output()
-        .unwrap();
-    assert!(output.status.success());
-    assert_eq!(
-        String::from_utf8(output.stdout).unwrap().trim(),
-        "undefined"
-    );
-    assert!(output.stderr.is_empty());
+    for source in [
+        "async function* gap(){};gap();undefined",
+        "async function* gap(){yield*[]};gap().next();undefined",
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--eval", source])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "undefined"
+        );
+        assert!(output.stderr.is_empty());
+    }
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))
         .args(["--eval", "function* gap(){}; gap().next().done"])
         .output()

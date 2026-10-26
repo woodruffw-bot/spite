@@ -16,6 +16,7 @@ pub(crate) enum AsyncAwaitAction {
     Return,
     AsyncGeneratorReturn,
     AsyncGeneratorYield(Span),
+    DelegationResult(super::async_expression::DelegationOperation),
     Throw,
     Expression,
     IfTest,

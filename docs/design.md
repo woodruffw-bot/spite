@@ -457,8 +457,19 @@ Initial/completed return requests use PromiseResolve and drain in order; initial
 throw skips the body. Await uses retained intrinsic Promises and internal reactions
 without species hooks. Host aborts clear source resources and request captures
 without JavaScript cleanup or rejection. Start contexts, request values/capabilities
-and shared VM state participate in object and Symbol tracing. Async yield
-delegation remains an explicit Unsupported boundary after operand evaluation.
+and shared VM state participate in object and Symbol tracing.
+
+Async yield delegation shares the synchronous delegation cursor and expression
+interpreter (15.5). GetIterator with the async hint selects @@asyncIterator or
+wraps a synchronous iterator using AsyncFromSyncIterator. Next is cached; throw
+and return are looked up when requested. Method results are awaited before
+checking their object type and reading done/value. True async iterator values
+remain raw; the sync adapter performs its own value unwrapping. A missing throw
+awaits a zero-argument return call, requires an object without reading done/value,
+then raises the protocol TypeError. A missing return awaits the incoming value
+again as YieldExpression specifies. Awaited method rejection propagates to the
+outer body without being forwarded to the delegate's throw method. Iterator and
+cached-method captures use the existing object/Symbol tracing path.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before
@@ -894,7 +905,7 @@ iteration awaits next results. Assignment, pattern, var/lexical and synchronous
 using heads retain their existing validation; an async IdentifierReference is
 valid in a for-await head. The grammar rejects for-await-in, three-clause headers,
 initializers, escaped terminals and use outside an async body. Unexecuted loops
-remain inert. Await-using and async generators remain separate boundaries.
+remain inert. Await-using remains a separate boundary.
 Unsupported parsing never verifies a negative conformance test.
 
 For-await-of execution uses a source cursor with next, body and close phases
@@ -1809,7 +1820,7 @@ and final length failures skip closing. Host failures bypass rejection and closi
 completion releases cursor captures even after a host allowance is exhausted.
 No public then/species hook or replacement Promise binding participates in native
 Await. Array constructor own-key reflection is now complete. Source for-await-of
-shares the adapter and intrinsic Await protocol; async generators remain work.
+and async generator delegation share the adapter and intrinsic Await protocol.
 
 Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
 (27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator
