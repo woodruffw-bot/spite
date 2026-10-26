@@ -181,6 +181,9 @@ mod module_default;
 #[path = "module_records.rs"]
 mod module_records;
 
+#[path = "async_generators.rs"]
+mod async_generators;
+
 #[path = "module_declarations.rs"]
 mod module_declarations;
 

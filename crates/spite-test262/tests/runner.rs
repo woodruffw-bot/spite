@@ -232,6 +232,24 @@ fn unsupported_and_limits_are_never_negative_passes() {
     ));
     assert!(matches!(
         negative("parse", "SyntaxError", "async function* f() {}"),
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative("runtime", "TypeError", "async function* f() {}"),
+        Outcome::Unsupported {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative(
+            "parse",
+            "SyntaxError",
+            "async function f(){await using value=null}"
+        ),
         Outcome::Unsupported {
             stage: Stage::Parse,
             ..
@@ -518,6 +536,7 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         "export function value(){}",
         "export default 1",
         "export default function(){}",
+        "export default async function* gap(){}",
     ] {
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
@@ -535,7 +554,7 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         ));
     }
     {
-        let body = "export default async function* gap(){}";
+        let body = "await using value=null";
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
             body,

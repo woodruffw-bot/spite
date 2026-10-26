@@ -64,12 +64,7 @@ fn top_level_eval_goals_keep_control_and_constructor_early_errors() {
     insta::assert_debug_snapshot!(diagnostics);
     assert!(parse_script_utf16(&JsString::from("class C{#field;}")).is_ok());
     assert!(parse_script_utf16(&JsString::from("function* gap(){}")).is_ok());
-    assert_eq!(
-        parse_script_utf16(&JsString::from("async function* gap(){}"))
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
-    );
+    assert!(parse_script_utf16(&JsString::from("async function* gap(){}")).is_ok());
 }
 
 #[test]

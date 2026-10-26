@@ -145,7 +145,7 @@ fn quoted_names_require_well_formed_unicode_and_reexports_share_attribute_checks
 }
 
 #[test]
-fn exports_remain_module_items_and_async_generators_keep_their_boundary() {
+fn all_export_forms_remain_module_items() {
     for source in ["export {}", "let x;export{x}"] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
@@ -168,8 +168,9 @@ fn exports_remain_module_items_and_async_generators_keep_their_boundary() {
     assert_eq!(parse_module("export default 1").unwrap().exports().len(), 1);
     assert_eq!(
         parse_module("export default async function* g(){}")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
+            .unwrap()
+            .exports()
+            .len(),
+        1
     );
 }

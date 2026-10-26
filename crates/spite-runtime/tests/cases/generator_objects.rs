@@ -176,7 +176,7 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')"
+            "Function('async function* gap(){}')()"
         };
         realm.eval(&format!("function*g(){{using r=resource;delete resource[Symbol.dispose];try{{before++;{tail}}}catch{{caught++}}finally{{finalized++}}}}let iterator=g()")).unwrap();
         let error = realm.eval("iterator.next()").unwrap_err();

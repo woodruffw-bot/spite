@@ -151,8 +151,9 @@ fn malformed_or_nested_declaration_exports_are_syntax_errors() {
     assert_eq!(parse_module("export default 1").unwrap().exports().len(), 1);
     assert_eq!(
         parse_module("export async function* g(){}")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
+            .unwrap()
+            .exports()
+            .len(),
+        1
     );
 }

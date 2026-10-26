@@ -3,7 +3,8 @@
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::{
-    ast::FunctionKind, parse_dynamic_async_function_utf16, parse_dynamic_function_utf16,
+    ast::FunctionKind, parse_dynamic_async_function_utf16,
+    parse_dynamic_async_generator_function_utf16, parse_dynamic_function_utf16,
     parse_dynamic_generator_function_utf16,
 };
 
@@ -33,6 +34,7 @@ impl Realm {
         let body = self.string(body, span)?;
         let overhead = match kind {
             FunctionKind::Async => 32,
+            FunctionKind::AsyncGenerator => 33,
             FunctionKind::Ordinary => 26,
             FunctionKind::Generator => 27,
         };
@@ -106,6 +108,9 @@ impl Realm {
         self.object_work(span, |_, budget| budget.charge(bytes))?;
         let syntax = (match kind {
             FunctionKind::Async => parse_dynamic_async_function_utf16(&joined, &body),
+            FunctionKind::AsyncGenerator => {
+                parse_dynamic_async_generator_function_utf16(&joined, &body)
+            }
             FunctionKind::Ordinary => parse_dynamic_function_utf16(&joined, &body),
             FunctionKind::Generator => parse_dynamic_generator_function_utf16(&joined, &body),
         })
@@ -121,6 +126,12 @@ impl Realm {
         })?;
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
         let (constructor, fallback) = match kind {
+            FunctionKind::AsyncGenerator => {
+                return Err(Self::unsupported(
+                    span,
+                    "async generator constructors are not implemented",
+                ));
+            }
             FunctionKind::Async => (
                 &intrinsic.async_function.constructor,
                 &intrinsic.async_function.prototype,

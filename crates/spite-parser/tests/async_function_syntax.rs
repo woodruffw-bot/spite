@@ -70,11 +70,10 @@ fn binding_parameters_strictness_and_declaration_positions_report_syntax_errors(
 }
 
 #[test]
-fn async_generators_remain_explicitly_unsupported() {
-    for source in [
-        "async function* f(){}",
-        "async function f(){await using x=null;}",
-    ] {
+fn async_generators_parse_while_await_using_remains_unsupported() {
+    assert!(parse_script("async function* f(){}").is_ok());
+    {
+        let source = "async function f(){await using x=null;}";
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

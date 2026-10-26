@@ -84,9 +84,11 @@ impl Parser {
                     if self.current().newline {
                         return Err(self.error("line terminator after async method prefix"));
                     }
-                    if self.at("*") {
-                        return Err(self.unsupported("async generator methods are not implemented"));
-                    }
+                    let function_kind = if self.eat("*") {
+                        FunctionKind::AsyncGenerator
+                    } else {
+                        FunctionKind::Async
+                    };
                     let name_token = self.bump();
                     name = self.object_property_name(name_token)?;
                     (
@@ -94,7 +96,7 @@ impl Parser {
                         self.method_definition(
                             property_start,
                             PropertyKind::Method,
-                            FunctionKind::Async,
+                            function_kind,
                             false,
                         )?,
                     )
@@ -188,7 +190,7 @@ impl Parser {
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
         let previous_yield = self.yield_context;
-        self.yield_context = if function_kind == FunctionKind::Generator {
+        self.yield_context = if function_kind.is_generator() {
             YieldContext::Parameters
         } else {
             YieldContext::None
@@ -197,8 +199,8 @@ impl Parser {
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
         self.allow_arguments = true;
-        self.allow_await_identifier = function_kind != FunctionKind::Async;
-        self.await_context = if function_kind == FunctionKind::Async {
+        self.allow_await_identifier = !function_kind.is_async();
+        self.await_context = if function_kind.is_async() {
             AwaitContext::Parameters
         } else {
             AwaitContext::None
@@ -227,12 +229,12 @@ impl Parser {
                 }
                 _ => unreachable!("method property kind"),
             };
-            self.await_context = if function_kind == FunctionKind::Async {
+            self.await_context = if function_kind.is_async() {
                 AwaitContext::Body
             } else {
                 AwaitContext::None
             };
-            self.yield_context = if function_kind == FunctionKind::Generator {
+            self.yield_context = if function_kind.is_generator() {
                 YieldContext::Body
             } else {
                 YieldContext::None

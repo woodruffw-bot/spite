@@ -133,10 +133,9 @@ fn for_await_keeps_nested_native_depth_limits_and_remaining_gaps_explicit() {
         parse_script(&source).unwrap_err().kind,
         DiagnosticKind::Limit
     );
-    for source in [
-        "async function* f(){for await(var x of []);}",
-        "async function f(){for await(await using x of []);}",
-    ] {
+    assert!(parse_script("async function* f(){for await(var x of []);}").is_ok());
+    {
+        let source = "async function f(){for await(await using x of []);}";
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

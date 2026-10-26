@@ -132,7 +132,7 @@ fn module_context_reaches_nested_meta_while_function_context_restricts_await_and
 }
 
 #[test]
-fn static_module_declarations_keep_their_explicit_boundary_only_at_top_level() {
+fn static_module_declarations_remain_module_items_with_an_await_using_boundary() {
     for source in ["import 'source'", "import value from 'source'"] {
         assert_eq!(parse_module(source).unwrap().imports().len(), 1);
     }
@@ -140,8 +140,13 @@ fn static_module_declarations_keep_their_explicit_boundary_only_at_top_level() {
     assert_eq!(parse_module("export default 1").unwrap().exports().len(), 1);
     assert_eq!(
         parse_module("export default async function* g(){}")
-            .unwrap_err()
-            .kind,
+            .unwrap()
+            .exports()
+            .len(),
+        1
+    );
+    assert_eq!(
+        parse_module("await using value=null").unwrap_err().kind,
         DiagnosticKind::Unsupported
     );
     for source in ["{import 'source'}", "function f(){export {}}"] {

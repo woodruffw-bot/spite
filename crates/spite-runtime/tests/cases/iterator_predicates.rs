@@ -221,10 +221,10 @@ fn large_default_inputs_work_and_host_aborts_skip_handlers_and_cleanup() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
         for body in [
             format!(
-                "Iterator.prototype.{method}.call(i,()=>Function('async function* gap(){{}}'))"
+                "Iterator.prototype.{method}.call(i,()=>Function('async function* gap(){{}}')())"
             ),
             format!(
-                "i.return=()=>Function('async function* gap(){{}}');Iterator.prototype.{method}.call(i,()=>{predicate})"
+                "i.return=()=>Function('async function* gap(){{}}')();Iterator.prototype.{method}.call(i,()=>{predicate})"
             ),
         ] {
             let mut realm = Realm::default();

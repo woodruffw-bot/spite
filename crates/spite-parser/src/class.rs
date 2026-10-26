@@ -118,13 +118,11 @@ impl Parser {
                     && !self.current().newline
                     && (self.at("*") || self.class_method_name_ahead())
                 {
-                    if self.at("*") {
-                        return Err(early_unsupported(
-                            token.span,
-                            "async generator methods are not implemented",
-                        ));
-                    }
-                    function_kind = FunctionKind::Async;
+                    function_kind = if self.eat("*") {
+                        FunctionKind::AsyncGenerator
+                    } else {
+                        FunctionKind::Async
+                    };
                     token = self.bump();
                 }
             }
@@ -140,7 +138,7 @@ impl Parser {
                 if kind != PropertyKind::Method {
                     return Err(self.error("class accessor requires parameters"));
                 }
-                if function_kind == FunctionKind::Generator {
+                if function_kind.is_generator() {
                     return Err(self.error("generator method requires parameters"));
                 }
                 if let PropertyName::Private(name) = &property_name {
@@ -171,10 +169,10 @@ impl Parser {
             }
             let is_constructor = !is_static
                 && matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor"));
-            if is_constructor && function_kind == FunctionKind::Generator {
+            if is_constructor && function_kind.is_generator() {
                 return Err(early(name_span, "class constructor cannot be a generator"));
             }
-            if is_constructor && function_kind == FunctionKind::Async {
+            if is_constructor && function_kind.is_async() {
                 return Err(early(name_span, "class constructor cannot be async"));
             }
             if is_constructor && (kind != PropertyKind::Method || constructor.is_some()) {
@@ -350,10 +348,6 @@ impl Parser {
         }
         is_method
     }
-}
-
-fn early_unsupported(span: Span, message: &str) -> Diagnostic {
-    Diagnostic::new(DiagnosticKind::Unsupported, span, message)
 }
 
 pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {

@@ -89,6 +89,33 @@ pub fn parse_dynamic_generator_function_utf16(
     )
 }
 
+/// Parses dynamic AsyncGeneratorFunction source with separate parameter/body goals.
+/// Parameters forbid await/yield bindings and expressions; the body retains
+/// bare/delegating YieldExpression nodes and its independent strictness.
+pub fn parse_dynamic_async_generator_function(
+    parameters: &str,
+    body: &str,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_str(parameters),
+        source::SourceText::from_str(body),
+        FunctionKind::AsyncGenerator,
+    )
+}
+
+/// Parses dynamic AsyncGeneratorFunction inputs as lossless UTF-16, retaining the
+/// standard `async function* anonymous` source and all original source code points.
+pub fn parse_dynamic_async_generator_function_utf16(
+    parameters: &JsString,
+    body: &JsString,
+) -> Result<Rc<Function>, Diagnostic> {
+    parse_sources(
+        source::SourceText::from_utf16(parameters)?,
+        source::SourceText::from_utf16(body)?,
+        FunctionKind::AsyncGenerator,
+    )
+}
+
 fn parse_sources(
     parameters: source::SourceText,
     body: source::SourceText,
@@ -97,13 +124,13 @@ fn parse_sources(
     let parameters = Rc::new(parameters);
     let mut parser = Parser::from_source(parameters.clone())?;
     parser.allow_new_target = true;
-    parser.allow_await_identifier = kind != FunctionKind::Async;
-    parser.await_context = if kind == FunctionKind::Async {
+    parser.allow_await_identifier = !kind.is_async();
+    parser.await_context = if kind.is_async() {
         AwaitContext::Parameters
     } else {
         AwaitContext::None
     };
-    parser.yield_context = if kind == FunctionKind::Generator {
+    parser.yield_context = if kind.is_generator() {
         YieldContext::Parameters
     } else {
         YieldContext::None
@@ -119,13 +146,13 @@ fn parse_sources(
     let body = Rc::new(source::SourceText::join(&[&newline, &body, &newline])?);
     let mut parser = Parser::from_source(body.clone())?;
     parser.allow_new_target = true;
-    parser.allow_await_identifier = kind != FunctionKind::Async;
-    parser.await_context = if kind == FunctionKind::Async {
+    parser.allow_await_identifier = !kind.is_async();
+    parser.await_context = if kind.is_async() {
         AwaitContext::Body
     } else {
         AwaitContext::None
     };
-    parser.yield_context = if kind == FunctionKind::Generator {
+    parser.yield_context = if kind.is_generator() {
         YieldContext::Body
     } else {
         YieldContext::None
@@ -137,6 +164,7 @@ fn parse_sources(
         FunctionKind::Ordinary => "function anonymous(",
         FunctionKind::Async => "async function anonymous(",
         FunctionKind::Generator => "function* anonymous(",
+        FunctionKind::AsyncGenerator => "async function* anonymous(",
     });
     let middle = source::SourceText::from_str("\n) {");
     let suffix = source::SourceText::from_str("}");

@@ -69,16 +69,12 @@ fn utf16_source_and_literal_contents_preserve_lone_surrogates() {
 }
 
 #[test]
-fn awaited_bodies_parse_while_generators_and_native_depth_limits_remain_distinct() {
+fn awaited_bodies_and_nested_async_generators_keep_native_depth_limits() {
     for body in ["await p", "return await p", "return async()=>await p"] {
         assert!(parse_dynamic_async_function("", body).is_ok(), "{body}");
     }
     let body = "async function* g(){}";
-    assert_eq!(
-        parse_dynamic_async_function("", body).unwrap_err().kind,
-        DiagnosticKind::Unsupported,
-        "{body}"
-    );
+    assert!(parse_dynamic_async_function("", body).is_ok());
     let body = format!(
         "return {}0{};",
         "(".repeat(MAX_DEPTH + 1),

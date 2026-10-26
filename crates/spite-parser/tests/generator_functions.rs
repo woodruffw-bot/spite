@@ -165,11 +165,7 @@ fn dynamic_ordinary_functions_retain_generator_syntax_and_depth_limits_stay_sepa
         "({async *g(){}})",
         "class C{async *g(){}}",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
     let source = format!(
         "function*g(){{yield {}0{}}}",

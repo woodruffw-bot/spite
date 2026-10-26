@@ -199,7 +199,7 @@ fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')"
+            "Function('async function* gap(){}')()"
         };
         realm.eval(&format!("function*g(){{using r=resource;delete resource[Symbol.dispose];try{{yield 1;{tail}}}catch{{caught++}}finally{{finalized++}}}}let iterator=g();iterator.next()")).unwrap();
         let error = realm.eval("iterator.next()").unwrap_err();

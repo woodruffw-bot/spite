@@ -103,7 +103,7 @@ fn ordinary_literals_keep_their_grammar_and_parenthesized_patterns_are_not_targe
 }
 
 #[test]
-fn defaults_and_keys_preserve_in_new_target_and_unavailable_feature_categories() {
+fn defaults_and_keys_preserve_in_new_target_and_suspended_function_grammar() {
     assert!(
         parse_script("function f(){for({[new.target]:x=x in source}=source;false;) ;}").is_ok()
     );
@@ -111,11 +111,7 @@ fn defaults_and_keys_preserve_in_new_target_and_unavailable_feature_categories()
     assert!(parse_script("({x=async()=>await p}=source)").is_ok());
     assert!(parse_script("[x=function*(){}]=source").is_ok());
     let source = "[x=async function*(){}]=source";
-    assert_eq!(
-        parse_script(source).unwrap_err().kind,
-        DiagnosticKind::Unsupported,
-        "{source}"
-    );
+    assert!(parse_script(source).is_ok(), "{source}");
     assert_eq!(
         parse_script("({[new.target]:x}=source)").unwrap_err().kind,
         DiagnosticKind::Syntax

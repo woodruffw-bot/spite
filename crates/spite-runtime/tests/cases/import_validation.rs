@@ -137,7 +137,7 @@ fn host_failures_during_conversion_bypass_rejection_handlers_and_disposal() {
         let tail = if limited {
             "while(true){}"
         } else {
-            "Function('async function* gap(){}')"
+            "Function('async function* gap(){}')()"
         };
         realm.eval(&format!("let disposed=0,caught=0,finalized=0;let resource={{[Symbol.dispose](){{disposed++}}}},weak=new WeakRef(resource[Symbol.dispose]);let source={{toString(){{{tail}}}}}")).unwrap();
         let error = realm.eval("function f(){using r=resource;delete resource[Symbol.dispose];try{import(source,{})}catch{caught++}finally{finalized++}}f()").unwrap_err();

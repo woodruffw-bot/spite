@@ -72,7 +72,7 @@ fn complete_own_reflection_and_integrity_operations_do_not_invoke_accessors() {
 }
 
 #[test]
-fn unsupported_async_generator_syntax_skips_handlers_after_argument_effects() {
+fn unsupported_async_generator_creation_skips_handlers_after_argument_effects() {
     for expression in [
         "Function((flag=3,'async function* gap(){}'))",
         "new Function((flag=3,'async function* gap(){}'))",
@@ -85,7 +85,7 @@ fn unsupported_async_generator_syntax_skips_handlers_after_argument_effects() {
         assert!(
             matches!(
                 realm.eval(&format!(
-                    "try{{{expression};}}catch{{flag=5;}}finally{{flag=7;}}"
+                    "try{{({expression})();}}catch{{flag=5;}}finally{{flag=7;}}"
                 )),
                 Err(Error::Unsupported { .. })
             ),

@@ -55,7 +55,7 @@ fn lexical_diagnostics_survive_cover_and_computed_name_lookahead() {
 }
 
 #[test]
-fn unrequested_lexical_failure_cannot_mask_recognized_unsupported_syntax() {
+fn lexical_errors_survive_generator_and_async_generator_grammar() {
     assert_eq!(
         parse_script("function* g() { /*").unwrap_err().kind,
         DiagnosticKind::Syntax
@@ -71,7 +71,7 @@ fn unrequested_lexical_failure_cannot_mask_recognized_unsupported_syntax() {
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
+            DiagnosticKind::Syntax,
             "{source}"
         );
     }

@@ -55,15 +55,11 @@ fn class_early_errors_snapshot() {
 }
 
 #[test]
-fn incomplete_class_features_never_receive_negative_test_credit() {
+fn generator_method_forms_parse_while_native_depth_limits_stay_separate() {
     assert!(parse_script("class C{async m(){await p}}").is_ok());
     assert!(parse_script("class C{*g(){}}").is_ok());
     let source = "class C{async *g(){}}";
-    assert_eq!(
-        parse_script(source).unwrap_err().kind,
-        DiagnosticKind::Unsupported,
-        "{source}"
-    );
+    assert!(parse_script(source).is_ok(), "{source}");
     let source = format!("let C={};", "class { [".repeat(MAX_DEPTH * 2));
     assert_eq!(
         parse_script(&source).unwrap_err().kind,

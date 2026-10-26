@@ -77,7 +77,7 @@ fn header_validation_and_label_contexts_are_preserved() {
 }
 
 #[test]
-fn unsupported_headers_and_invalid_await_contexts_are_classified() {
+fn suspended_function_headers_and_invalid_await_contexts_are_classified() {
     assert_eq!(
         parse_script("for await (x of y) ;").unwrap_err().kind,
         DiagnosticKind::Syntax
@@ -92,11 +92,7 @@ fn unsupported_headers_and_invalid_await_contexts_are_classified() {
         "for (var [x] = async function* gap(){};;) ;",
         "for (var {x} = async function* gap(){};;) ;",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

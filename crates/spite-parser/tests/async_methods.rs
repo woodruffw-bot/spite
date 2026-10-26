@@ -56,12 +56,8 @@ fn constructor_await_duplicate_parameter_and_linebreak_early_errors_are_syntax()
 }
 
 #[test]
-fn async_generator_method_forms_remain_explicitly_unsupported() {
+fn async_generator_method_forms_share_supported_method_grammar() {
     for source in ["({async *m(){}})", "class C{static async *m(){}}"] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }

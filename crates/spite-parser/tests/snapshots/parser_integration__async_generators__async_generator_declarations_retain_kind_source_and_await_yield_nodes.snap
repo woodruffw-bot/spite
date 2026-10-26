@@ -1,0 +1,181 @@
+---
+source: crates/spite-parser/tests/async_generators.rs
+assertion_line: 19
+expression: script
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    kind: AsyncGenerator,
+                    name: Some(
+                        FunctionName {
+                            name: "g",
+                            span: Span {
+                                start: 31,
+                                end: 32,
+                            },
+                        },
+                    ),
+                    parameters: [
+                        Ordinary(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "first",
+                                    ),
+                                    span: Span {
+                                        start: 33,
+                                        end: 38,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 39,
+                                            end: 40,
+                                        },
+                                    },
+                                ),
+                            },
+                        ),
+                        Rest(
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "rest",
+                                    ),
+                                    span: Span {
+                                        start: 44,
+                                        end: 48,
+                                    },
+                                },
+                                initializer: None,
+                            },
+                        ),
+                    ],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 3,
+                                        kind: Yield {
+                                            delegated: false,
+                                            argument: Some(
+                                                Expr {
+                                                    depth: 2,
+                                                    kind: Await(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Identifier(
+                                                                "first",
+                                                            ),
+                                                            span: Span {
+                                                                start: 62,
+                                                                end: 67,
+                                                            },
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 56,
+                                                        end: 67,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                        span: Span {
+                                            start: 50,
+                                            end: 67,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 50,
+                                    end: 68,
+                                },
+                            },
+                            Statement {
+                                kind: Expression(
+                                    Expr {
+                                        depth: 2,
+                                        kind: Yield {
+                                            delegated: true,
+                                            argument: Some(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Identifier(
+                                                        "rest",
+                                                    ),
+                                                    span: Span {
+                                                        start: 75,
+                                                        end: 79,
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                        span: Span {
+                                            start: 68,
+                                            end: 79,
+                                        },
+                                    },
+                                ),
+                                span: Span {
+                                    start: 68,
+                                    end: 80,
+                                },
+                            },
+                            Statement {
+                                kind: Return(
+                                    Some(
+                                        Expr {
+                                            depth: 2,
+                                            kind: Await(
+                                                Expr {
+                                                    depth: 1,
+                                                    kind: Literal(
+                                                        Number(
+                                                            0.0,
+                                                        ),
+                                                    ),
+                                                    span: Span {
+                                                        start: 93,
+                                                        end: 94,
+                                                    },
+                                                },
+                                            ),
+                                            span: Span {
+                                                start: 87,
+                                                end: 94,
+                                            },
+                                        },
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 80,
+                                    end: 94,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "async /* retained */ function* g(first=1,...rest){yield await first;yield* rest;return await 0}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 95,
+            },
+        },
+    ],
+    strict: false,
+}

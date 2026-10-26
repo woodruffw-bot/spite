@@ -15,7 +15,8 @@
 
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 pub use spite_parser::{
-    ast, parse_module, parse_module_utf16, parse_module_with_source_limit, parse_script,
+    ast, parse_dynamic_async_generator_function, parse_dynamic_async_generator_function_utf16,
+    parse_module, parse_module_utf16, parse_module_with_source_limit, parse_script,
     parse_script_with_source_limit,
 };
 pub use spite_runtime::{

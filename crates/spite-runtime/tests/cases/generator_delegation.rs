@@ -187,7 +187,7 @@ fn delegate_host_failures_complete_and_release_state_without_cleanup() {
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')"
+            "Function('async function* gap(){}')()"
         };
         realm.eval(&format!(r#"
             let weak;function*g(){{let source={{[Symbol.iterator](){{return this}},next(){{if(calls++){{{tail}}}return{{done:false,value:1}}}},return(){{closed++;return{{}}}}}};weak=new WeakRef(source);try{{yield*source}}catch{{caught++}}finally{{finalized++}}}}let iterator=g();iterator.next()

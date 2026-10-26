@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10235 unmodified test fixtures and twenty harness files come from
+These 10312 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,26 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Async-generator syntax review
+
+Seventy-five unchanged async-generator syntax negatives add 143 variants with
+exact reviewed rejection points for Await/Yield names and parameters, strict
+bindings, non-simple strict bodies, lexical conflicts, super restrictions and
+assignment/linebreak grammar. Two newly reachable Module negatives add two more
+variants for a default declaration binding conflict and an import.meta for-await
+assignment target. All 77 originals retain their pinned bytes and copyright;
+strict-prefix offsets are reviewed against the original source.
+
+The scoped 75-original cohort passes all 143 variants. The default Module cohort
+reports fourteen passed/forty Unsupported/one previously excluded malformed file;
+import.meta reports nineteen passed/four Unsupported. Other outcomes are zero.
+The inventory contains 10,312 fixtures, twenty helpers, 10,293 reviewed sources and
+19,823 variants. Seven Parser groups, a reviewed AST snapshot and three Runtime
+groups cover grammar and execution boundaries. Prior programs/groups are retained;
+host-abort controls invoke compiled bodies to reach function-object creation.
+The full gate and all forty-three runner/package checks pass. Helpers, quotas and
+intrinsics are unchanged; async-generator function objects remain Unsupported.
 
 ## Normalized Module entry records
 

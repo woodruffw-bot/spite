@@ -103,15 +103,11 @@ fn function_source_includes_the_method_name_and_accessor_prefix() {
 }
 
 #[test]
-fn unimplemented_method_dependencies_remain_explicit() {
+fn async_generator_method_dependencies_parse() {
     assert!(parse_script("({async m(){await p}})").is_ok());
     assert!(parse_script("({*m(){}})").is_ok());
     let source = "({async *m(){}})";
-    assert_eq!(
-        parse_script(source).unwrap_err().kind,
-        DiagnosticKind::Unsupported,
-        "{source}"
-    );
+    assert!(parse_script(source).is_ok(), "{source}");
 }
 
 #[test]

@@ -10215,3 +10215,80 @@ test/language/module-code/parse-err-export-dflt-const.js	350	355	reserved word c
 test/language/module-code/parse-err-export-dflt-expr.js	750	751	expected a semicolon or line terminator
 test/language/module-code/parse-err-export-dflt-let.js	352	353	expected a semicolon or line terminator
 test/language/module-code/parse-err-export-dflt-var.js	341	344	reserved word cannot begin an expression
+test/language/statements/async-generator/array-destructuring-param-strict-body.js	4637	4685	use strict directive with non-simple parameters
+test/language/statements/async-generator/await-as-binding-identifier-escaped.js	896	906	invalid binding identifier
+test/language/statements/async-generator/await-as-binding-identifier.js	888	893	invalid binding identifier
+test/language/statements/async-generator/await-as-identifier-reference-escaped.js	904	914	await cannot be an identifier in an async function
+test/language/statements/async-generator/await-as-identifier-reference.js	901	902	expected an expression
+test/language/statements/async-generator/await-as-label-identifier-escaped.js	886	896	invalid label identifier
+test/language/statements/async-generator/await-as-label-identifier.js	878	883	invalid label identifier
+test/language/statements/async-generator/dflt-params-duplicates.js	1263	1264	duplicate lexical binding
+test/language/statements/async-generator/object-destructuring-param-strict-body.js	4639	4688	use strict directive with non-simple parameters
+test/language/statements/async-generator/rest-param-strict-body.js	4646	4694	use strict directive with non-simple parameters
+test/language/statements/async-generator/rest-params-trailing-comma-early-error.js	1191	1192	expected )
+test/language/statements/async-generator/yield-as-binding-identifier-escaped.js	896	906	invalid binding identifier
+test/language/statements/async-generator/yield-as-binding-identifier.js	888	893	invalid binding identifier
+test/language/statements/async-generator/yield-as-identifier-reference-escaped.js	904	914	yield cannot be an identifier in a generator context
+test/language/statements/async-generator/yield-as-identifier-reference.js	896	901	yield cannot be an identifier in a generator context
+test/language/statements/async-generator/yield-as-label-identifier-escaped.js	886	896	invalid label identifier
+test/language/statements/async-generator/yield-as-label-identifier.js	878	883	invalid label identifier
+test/language/statements/async-generator/yield-identifier-strict.js	809	814	invalid binding in strict mode
+test/language/expressions/async-generator/array-destructuring-param-strict-body.js	4610	4656	use strict directive with non-simple parameters
+test/language/expressions/async-generator/await-as-binding-identifier-escaped.js	899	909	invalid binding identifier
+test/language/expressions/async-generator/await-as-binding-identifier.js	891	896	invalid binding identifier
+test/language/expressions/async-generator/await-as-identifier-reference-escaped.js	907	917	await cannot be an identifier in an async function
+test/language/expressions/async-generator/await-as-identifier-reference.js	904	905	expected an expression
+test/language/expressions/async-generator/await-as-label-identifier-escaped.js	889	899	invalid label identifier
+test/language/expressions/async-generator/await-as-label-identifier.js	881	886	invalid label identifier
+test/language/expressions/async-generator/dflt-params-duplicates.js	1234	1235	duplicate lexical binding
+test/language/expressions/async-generator/early-errors-expression-NSPL-with-USD.js	513	550	use strict directive with non-simple parameters
+test/language/expressions/async-generator/early-errors-expression-arguments-in-formal-parameters.js	488	497	invalid binding in strict mode
+test/language/expressions/async-generator/early-errors-expression-await-as-function-binding-identifier.js	440	445	invalid function binding identifier
+test/language/expressions/async-generator/early-errors-expression-binding-identifier-arguments.js	525	534	invalid binding in strict mode
+test/language/expressions/async-generator/early-errors-expression-binding-identifier-eval.js	520	524	invalid binding in strict mode
+test/language/expressions/async-generator/early-errors-expression-body-contains-super-call.js	468	473	super call requires a derived constructor
+test/language/expressions/async-generator/early-errors-expression-body-contains-super-property.js	472	477	super property access outside a method
+test/language/expressions/async-generator/early-errors-expression-eval-in-formal-parameters.js	442	446	invalid binding in strict mode
+test/language/expressions/async-generator/early-errors-expression-formals-body-duplicate-const.js	669	670	lexical declaration conflicts with parameter
+test/language/expressions/async-generator/early-errors-expression-formals-body-duplicate-let.js	521	522	lexical declaration conflicts with parameter
+test/language/expressions/async-generator/early-errors-expression-formals-contains-await-expr.js	472	477	await is not allowed in async function parameters
+test/language/expressions/async-generator/early-errors-expression-formals-contains-await.js	501	506	invalid function parameter identifier
+test/language/expressions/async-generator/early-errors-expression-formals-contains-super-call.js	466	471	super call requires a derived constructor
+test/language/expressions/async-generator/early-errors-expression-formals-contains-super-property.js	470	475	super property access outside a method
+test/language/expressions/async-generator/early-errors-expression-formals-contains-yield-expr.js	472	477	yield is not allowed in generator parameters
+test/language/expressions/async-generator/early-errors-expression-formals-contains-yield.js	501	506	invalid function parameter identifier
+test/language/expressions/async-generator/early-errors-expression-label-name-await.js	582	587	invalid label identifier
+test/language/expressions/async-generator/early-errors-expression-label-name-yield.js	665	670	invalid label identifier
+test/language/expressions/async-generator/early-errors-expression-not-simple-assignment-target.js	407	428	invalid assignment target
+test/language/expressions/async-generator/early-errors-expression-yield-as-function-binding-identifier.js	465	470	invalid function binding identifier
+test/language/expressions/async-generator/early-errors-expression-yield-star-after-newline.js	436	437	expected an expression
+test/language/expressions/async-generator/named-array-destructuring-param-strict-body.js	4642	4690	use strict directive with non-simple parameters
+test/language/expressions/async-generator/named-await-as-binding-identifier-escaped.js	904	914	invalid binding identifier
+test/language/expressions/async-generator/named-await-as-binding-identifier.js	896	901	invalid binding identifier
+test/language/expressions/async-generator/named-await-as-identifier-reference-escaped.js	912	922	await cannot be an identifier in an async function
+test/language/expressions/async-generator/named-await-as-identifier-reference.js	909	910	expected an expression
+test/language/expressions/async-generator/named-await-as-label-identifier-escaped.js	894	904	invalid label identifier
+test/language/expressions/async-generator/named-await-as-label-identifier.js	886	891	invalid label identifier
+test/language/expressions/async-generator/named-dflt-params-duplicates.js	1268	1269	duplicate lexical binding
+test/language/expressions/async-generator/named-object-destructuring-param-strict-body.js	4644	4693	use strict directive with non-simple parameters
+test/language/expressions/async-generator/named-rest-param-strict-body.js	4651	4699	use strict directive with non-simple parameters
+test/language/expressions/async-generator/named-rest-params-trailing-comma-early-error.js	1196	1197	expected )
+test/language/expressions/async-generator/named-yield-as-binding-identifier-escaped.js	904	914	invalid binding identifier
+test/language/expressions/async-generator/named-yield-as-binding-identifier.js	896	901	invalid binding identifier
+test/language/expressions/async-generator/named-yield-as-identifier-reference-escaped.js	912	922	yield cannot be an identifier in a generator context
+test/language/expressions/async-generator/named-yield-as-identifier-reference.js	904	909	yield cannot be an identifier in a generator context
+test/language/expressions/async-generator/named-yield-as-label-identifier-escaped.js	894	904	invalid label identifier
+test/language/expressions/async-generator/named-yield-as-label-identifier.js	886	891	invalid label identifier
+test/language/expressions/async-generator/named-yield-identifier-strict.js	817	822	invalid binding in strict mode
+test/language/expressions/async-generator/object-destructuring-param-strict-body.js	4612	4659	use strict directive with non-simple parameters
+test/language/expressions/async-generator/rest-param-strict-body.js	4619	4665	use strict directive with non-simple parameters
+test/language/expressions/async-generator/rest-params-trailing-comma-early-error.js	1162	1163	expected )
+test/language/expressions/async-generator/yield-as-binding-identifier-escaped.js	899	909	invalid binding identifier
+test/language/expressions/async-generator/yield-as-binding-identifier.js	891	896	invalid binding identifier
+test/language/expressions/async-generator/yield-as-identifier-reference-escaped.js	907	917	yield cannot be an identifier in a generator context
+test/language/expressions/async-generator/yield-as-identifier-reference.js	899	904	yield cannot be an identifier in a generator context
+test/language/expressions/async-generator/yield-as-label-identifier-escaped.js	889	899	invalid label identifier
+test/language/expressions/async-generator/yield-as-label-identifier.js	881	886	invalid label identifier
+test/language/expressions/async-generator/yield-identifier-strict.js	812	817	invalid binding in strict mode
+test/language/module-code/export-default-asyncgenerator-declaration-binding-exists.js	569	571	duplicate lexical binding
+test/language/expressions/import.meta/syntax/invalid-assignment-target-for-await-of-loop.js	770	781	invalid for-of assignment target

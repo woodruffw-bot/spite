@@ -110,7 +110,7 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Async-generator syntax, module linking and evaluation remain
+are syntax errors. Async-generator function objects, module linking and evaluation remain
 implementation work; no Module AST is accepted by Script execution APIs.
 
 Module::entries constructs the static records used by ParseModule (16.2).
@@ -407,8 +407,8 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. General await expressions and async generators remain
-Unsupported; direct awaited body continuations are implemented below. Async objects inherit the retained non-callable
+that context. Async-generator function objects remain Unsupported; awaited body
+continuations use the shared source interpreter below. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
 tag follow 27.7. Direct async definitions have ordinary name/length/source
@@ -423,9 +423,21 @@ assignment target or member base. Generator parameters forbid YieldExpression
 and yield bindings. Declaration names inherit the enclosing Yield context;
 expression names use +Yield. Ordinary nested functions, arrows and methods reset
 their body context, while cover-cache keys distinguish parameter/body Yield
-contexts. Strict/private validation traverses the operand. Async generators
-remain parser boundaries. Ordinary dynamic Function bodies can retain generator
+contexts. Strict/private validation traverses the operand. Ordinary dynamic Function bodies can retain generator
 definitions, whose function objects are created during declaration instantiation.
+
+Async-generator declarations, expressions and object/class/static/private methods
+use FunctionKind::AsyncGenerator with both Await and Yield contexts (15.6).
+Parameters forbid both expressions and both binding names; expression names also
+forbid await/yield, while declaration names inherit the enclosing context.
+Methods use UniqueFormalParameters; declaration/expression duplicate simple
+parameters follow strictness as edition 17 specifies. Shared method/class checks
+cover super/private access, constructors and restricted async line terminators.
+Dynamic AsyncGeneratorFunction UTF-8/UTF-16 APIs use independent parameter/body
+goals and the standard async function* anonymous source. Unexecuted syntax and
+dynamic bodies compile; attempted function-object creation is a host Unsupported
+failure until the runtime objects are implemented. Host-abort controls invoke
+compiled bodies explicitly, and unused catch bodies retain normal execution.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before
@@ -2077,8 +2089,8 @@ other. It then parses the prescribed `function anonymous` source and validates
 combined parameter/body early errors with no inherited caller strictness. Source
 ranges and retained source belong to that combined allocation. Identifier/pattern/default/
 rest parameters share the existing function grammar; new.target and return use
-function context. Unsupported generator methods/async generators and native-stack exhaustion remain separate
-diagnostic categories. UTF-8 and
+function context. Unsupported syntax such as await-using and native-stack
+exhaustion remain separate diagnostic categories. UTF-8 and
 lossless UTF-16 parser entry points share this grammar and validation.
 
 Dynamic GeneratorFunction parser entry points use the same independent goals and

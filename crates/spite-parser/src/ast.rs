@@ -311,6 +311,18 @@ pub enum FunctionKind {
     Async,
     /// A synchronous generator function.
     Generator,
+    /// An asynchronous generator function or method.
+    AsyncGenerator,
+}
+
+impl FunctionKind {
+    pub(crate) fn is_async(self) -> bool {
+        matches!(self, Self::Async | Self::AsyncGenerator)
+    }
+
+    pub(crate) fn is_generator(self) -> bool {
+        matches!(self, Self::Generator | Self::AsyncGenerator)
+    }
 }
 
 /// Shared syntax for a function, method, or accessor body.

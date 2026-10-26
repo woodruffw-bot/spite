@@ -101,15 +101,11 @@ fn combined_early_errors_use_body_strictness_and_parameter_bindings() {
 }
 
 #[test]
-fn unsupported_syntax_and_native_stack_guards_keep_their_categories() {
+fn nested_async_generators_parse_while_native_stack_guards_stay_distinct() {
     assert!(parse_dynamic_function("", "class C{#field;}").is_ok());
     assert!(parse_dynamic_function("", "function* f(){}").is_ok());
     let (parameters, body) = ("", "async function* f(){}");
-    assert_eq!(
-        parse_dynamic_function(parameters, body).unwrap_err().kind,
-        DiagnosticKind::Unsupported,
-        "{parameters:?} / {body:?}"
-    );
+    assert!(parse_dynamic_function(parameters, body).is_ok());
     let body = format!(
         "return {}0{};",
         "(".repeat(MAX_DEPTH + 1),

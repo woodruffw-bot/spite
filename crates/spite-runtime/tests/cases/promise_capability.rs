@@ -67,7 +67,7 @@ fn callback_errors_are_rejected_but_resolver_errors_propagate_unchanged() {
             "let rejected=false,flag=0;function C(executor){executor(()=>{},()=>{rejected=true})}",
         )
         .unwrap();
-    assert!(matches!(realm.eval("try{Promise.try.call(C,()=>{Function('async function* gap(){}')})}catch{flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{Promise.try.call(C,()=>{Function('async function* gap(){}')()})}catch{flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
     assert_eq!(realm.eval("!rejected&&flag===0"), Ok(Value::Boolean(true)));
 }
 

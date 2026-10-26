@@ -99,9 +99,6 @@ impl Parser {
         }
         self.expect("function")?;
         if generator {
-            if asynchronous {
-                return Err(self.unsupported("async generator functions are not implemented"));
-            }
             self.expect("*")?;
         }
         let name = if self.at("(") {
@@ -143,7 +140,9 @@ impl Parser {
             span,
         };
         Ok(Rc::new(Function {
-            kind: if generator {
+            kind: if generator && asynchronous {
+                FunctionKind::AsyncGenerator
+            } else if generator {
                 FunctionKind::Generator
             } else if asynchronous {
                 FunctionKind::Async

@@ -1438,6 +1438,9 @@ mod generator_methods;
 #[path = "cases/generator_objects.rs"]
 mod generator_objects;
 
+#[path = "cases/async_generator_syntax.rs"]
+mod async_generator_syntax;
+
 #[path = "cases/generator_yield.rs"]
 mod generator_yield;
 

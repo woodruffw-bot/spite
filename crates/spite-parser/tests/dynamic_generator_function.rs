@@ -160,13 +160,8 @@ fn nested_functions_methods_await_identifiers_and_regexp_goals_keep_their_contex
 }
 
 #[test]
-fn unsupported_async_generators_and_native_depth_limits_stay_distinct() {
-    assert_eq!(
-        parse_dynamic_generator_function("", "async function*g(){}")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
-    );
+fn nested_async_generators_parse_while_native_depth_limits_stay_distinct() {
+    assert!(parse_dynamic_generator_function("", "async function*g(){}").is_ok());
     let body = format!(
         "yield {}0{}",
         "(".repeat(MAX_DEPTH + 1),

@@ -186,9 +186,10 @@ fn default_exports_validate_strict_bodies_and_reject_invalid_grammar() {
     }
     assert_eq!(
         parse_module("export default async function*(){}")
-            .unwrap_err()
-            .kind,
-        DiagnosticKind::Unsupported
+            .unwrap()
+            .exports()
+            .len(),
+        1
     );
 }
 

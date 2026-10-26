@@ -114,10 +114,7 @@ fn function_boundaries_reset_control_targets_and_grammar_restrictions() {
         );
     }
     assert!(parse_script("(function*(){})").is_ok());
-    assert_eq!(
-        parse_script("(async function*(){})").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
+    assert!(parse_script("(async function*(){})").is_ok());
 }
 
 #[test]

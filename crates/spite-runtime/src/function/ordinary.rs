@@ -250,6 +250,12 @@ impl Realm {
         self.ensure_object_intrinsics(span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         let function_prototype = match syntax.kind {
+            spite_parser::ast::FunctionKind::AsyncGenerator => {
+                return Err(Self::unsupported(
+                    span,
+                    "async generator function objects are not implemented",
+                ));
+            }
             spite_parser::ast::FunctionKind::Async => intrinsics.async_function.prototype.clone(),
             spite_parser::ast::FunctionKind::Generator => {
                 intrinsics.generator.function_prototype.clone()

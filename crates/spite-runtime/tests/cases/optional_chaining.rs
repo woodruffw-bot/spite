@@ -169,7 +169,7 @@ fn opted_in_host_limits_and_unsupported_features_skip_javascript_handlers() {
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{Function?.((flag=7,'async function* gap(){}'));}catch{flag=1;}finally{flag=2;}"
+            "try{Function?.((flag=7,'async function* gap(){}'))();}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

@@ -146,17 +146,13 @@ fn generator_constructors_fields_and_accessor_combinations_are_syntax_errors() {
 }
 
 #[test]
-fn async_generator_methods_and_native_depth_limits_keep_distinct_boundaries() {
+fn async_generator_methods_parse_while_native_depth_limits_stay_distinct() {
     for source in [
         "({async *g(){}})",
         "class C{async *g(){}}",
         "class C{static async *#g(){}}",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
     let source = format!(
         "({{*g(){{yield {}0{}}}}})",

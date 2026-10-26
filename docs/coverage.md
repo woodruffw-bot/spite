@@ -56,9 +56,41 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19678 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async generator grammar | Declarations/expressions and object/class/static/private methods, joint Await/Yield contexts, dynamic compilation and lossless source; function objects remain Unsupported |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19823 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async-generator grammar and execution boundaries
+
+Async-generator declarations/expressions and object/class/static/private methods
+share the function/method parsers with both Await and Yield contexts. Parameter,
+name, strictness, private/super and constructor early errors follow edition 17.
+Dynamic UTF-8/UTF-16 APIs parse parameters and bodies independently and retain the
+standard async function* anonymous source. Syntax inside unexecuted code or a
+compiled body succeeds; attempted function-object creation stays Host Unsupported.
+No async-generator object execution is credited.
+
+Seven new Parser groups and a reviewed AST snapshot cover grammar contexts,
+method forms, names/parameters, nested contexts, dynamic goals, UTF-16 source,
+Module exports and native depth limits. Earlier async-generator programs are
+retained positively; malformed streaming tails now produce real Syntax errors.
+Three Runtime groups cover inert syntax, actual creation and constructor/body
+timing. Existing host-abort controls explicitly invoke compiled bodies, while an
+unused catch body remains inert. Runner probes distinguish valid parse negatives,
+runtime host failures and remaining unsupported grammar.
+
+All eighteen Parser units, 434 Parser integrations, 417 Runtime units, 2,232
+non-RegExp integrations, thirteen CLI groups and thirteen runner probes pass across
+88 Parser and 684 Runtime files. Clippy, Rust 1.88, policy and inventories pass.
+Seventy-five unchanged scoped syntax negatives pass all 143 required variants;
+two newly reachable Module negatives add two more. Exact rejection reviews,
+upstream blob hashes and SHA-256 digests cover all 77 originals. The default Module
+cohort now reports fourteen passed/forty Unsupported/one previously excluded
+malformed original; import.meta reports nineteen passed/four Unsupported. Other
+outcomes are zero. The corpus contains 10,312 fixtures, twenty helpers, 10,293
+reviewed sources and 19,823 variants. The full gate and all forty-three
+runner/package checks pass; quotas and 585 intrinsic entries are unchanged.
 
 ## Normalized Module request and binding records
 

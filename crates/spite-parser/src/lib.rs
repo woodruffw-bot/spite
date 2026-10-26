@@ -26,8 +26,9 @@ mod template;
 mod using;
 
 pub use dynamic_function::{
-    parse_dynamic_async_function, parse_dynamic_async_function_utf16, parse_dynamic_function,
-    parse_dynamic_function_utf16, parse_dynamic_generator_function,
+    parse_dynamic_async_function, parse_dynamic_async_function_utf16,
+    parse_dynamic_async_generator_function, parse_dynamic_async_generator_function_utf16,
+    parse_dynamic_function, parse_dynamic_function_utf16, parse_dynamic_generator_function,
     parse_dynamic_generator_function_utf16,
 };
 pub use module::{parse_module, parse_module_utf16, parse_module_with_source_limit};
