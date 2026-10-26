@@ -34,7 +34,7 @@ impl Realm {
     /// source order. Record identity handles shared dependencies and cycles.
     /// Successfully loaded records are cached, so repeated loading calls no
     /// resolver. Errors leave new dependency links unchanged. No body executes;
-    /// graph linking and dependency evaluation remain unsupported.
+    /// use [`Self::link_module`] to initialize bindings after loading.
     pub fn load_module_graph(
         &mut self,
         root: &ModuleHandle,

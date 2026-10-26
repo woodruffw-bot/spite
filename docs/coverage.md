@@ -56,11 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics and host-supplied graph loading; graph linking/evaluation remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles; dependency evaluation remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Module graph linking and live import bindings
+
+Realm::link_module initializes loaded graphs without entering their bodies.
+An iterative depth-first walk completes strongly connected components together.
+Missing or ambiguous imports/indirect exports raise linking SyntaxErrors; failure
+resets active components while preserving completed dependency identities.
+Work-limit aborts also release active linking states without requiring budget.
+
+Named/default/quoted imports read live target cells, preserve var/lexical TDZ
+rules and reject assignment. Calls use undefined receivers. Star resolution
+compares final target bindings across diamonds, excludes default, and omits
+ambiguous namespace names. Namespace imports and normalized reexports preserve
+cached target identity even through self cycles. Import records and suspended
+references retain target records and Symbols through ordinary collection.
+
+Eight new unit groups cover these rules, cyclic hoisting, direct eval, shadowing,
+failed-link retry, ownership/loading boundaries, work-abort positions and GC
+across awaited import assignment. All 438 Runtime units and 2,275 non-RegExp
+integration groups pass across 690 case files. Parser remains 18/434 across 88
+files, with thirteen CLI groups and 591 intrinsic entries. Dependency evaluation
+still stops before body entry; it receives no upstream execution credit.
+
+The inventory remains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources
+and 20,440 variants. The full corpus, forty-four runner/package checks, strict
+Clippy, Rust 1.88 and inventory checks pass. Fixtures,
+helpers, dependencies and resource defaults remain unchanged.
 
 ## Host-supplied Module graph loading
 

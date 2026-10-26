@@ -110,7 +110,7 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Module linking and evaluation remain implementation work;
+are syntax errors. Module dependency evaluation remains implementation work;
 no Module AST is accepted by Script execution APIs.
 
 Module::entries constructs the static records used by ParseModule (16.2).
@@ -484,7 +484,7 @@ Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Dependency requests stop before body effects.
-Graph linking/evaluation and import.meta remain work.
+Graph evaluation and import.meta remain work.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -498,9 +498,9 @@ their environment and Promise; cloned handles share a root token and dropping
 the last token permits ordinary collection. Handles from another realm are
 rejected. Heap fields store handles rather than host root tokens.
 
-Realm::module_namespace prepares a standalone record's environment and caches its
+Realm::module_namespace links a loaded record's graph and caches its
 namespace without entering the body (10.4.6, GetModuleNamespace). Evaluation reuses
-that prepared environment. Namespace exports resolve to live local cells; lexical
+that prepared environment. Namespace exports resolve to live target cells; lexical
 TDZ persists until body initialization and hoisted functions retain their identity.
 Own keys sort exported String names by UTF-16 units, including numeric names, then
 append Symbol.toStringTag. The prototype is null and the object is non-extensible.
@@ -525,8 +525,27 @@ installation share the host work budget; capacities are checked before growth.
 All records and dependency handles are validated and prepaid before a batch installs
 links, so resolver/ownership/work failures publish no partial graph. Dependency
 edges participate in ordinary tracing and keep loaded record environments alive.
-Loading does not instantiate import bindings or run bodies. Graph linking and
-dependency evaluation remain explicit implementation boundaries.
+Loading does not instantiate import bindings or run bodies.
+
+Realm::link_module implements InnerModuleLinking with an explicit DFS stack and
+strongly connected component completion (16.2.1.6.1). Environments instantiate
+after dependency traversal. Completed dependencies remain linked when a later
+failure resets the active component and its ancestors; rollback needs no work
+allowance and leaves no record in the linking state. Linking never runs bodies.
+GetExportedNames and ResolveExport use explicit stacks with per-query visited
+records/name pairs. Star exports exclude default, compare actual target binding
+identities across diamonds, and omit ambiguous names from namespaces. Missing or
+ambiguous named imports and indirect exports are linking SyntaxErrors.
+
+Module environment imports retain resolved target record/name pairs separately
+from local cells. Reads observe the target's current cell or TDZ; writes always
+throw TypeError, and calls supply undefined as receiver. Namespace resolutions use
+a distinct marker and preserve the target's cached identity, including imported
+namespace reexports normalized by edition 17 ParseModule. Namespace construction
+can precede a cycle ancestor's environment initialization without reading values.
+Import maps, namespace targets and suspended import references trace record edges
+through ordinary collection. Dependency evaluation remains an explicit boundary;
+evaluating a linked graph stops before any body effect.
 
 Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
 Anonymous hoistable declarations initialize this cell during Module instantiation

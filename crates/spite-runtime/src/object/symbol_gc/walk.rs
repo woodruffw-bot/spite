@@ -76,6 +76,8 @@ pub(super) fn symbols(
             let Environment {
                 outer: _,
                 bindings,
+                // Module aliases own only record handles and immutable names.
+                imports: _,
                 private_names,
                 binding_object: _,
                 this,
@@ -132,7 +134,7 @@ fn object_symbols(
         generator,
         async_generator,
         module_record,
-        // Only a record handle and String export names; no owning Symbols.
+        // Only record handles and immutable String names; no owning Symbols.
         module_namespace: _,
         array_from_async,
         disposable_resources,

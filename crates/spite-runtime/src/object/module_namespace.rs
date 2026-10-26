@@ -1,18 +1,30 @@
 //! Module namespace export names and links (10.4.6).
 
 use super::{Budget, Error, Objects, OrdinaryObject, PropertyKey, PropertyKeyRef};
-use crate::environment::EnvironmentHandle;
+use crate::module::ModuleBinding;
 use spite_core::JsString;
 use spite_heap::Handle;
 
 #[derive(Debug)]
 pub(super) struct NamespaceData {
     pub record: Handle,
-    exports: Vec<(JsString, String)>,
+    exports: Vec<(JsString, ModuleBinding)>,
 }
 
 impl NamespaceData {
-    fn binding(&self, key: PropertyKeyRef<'_>, budget: &mut Budget) -> Result<Option<&str>, Error> {
+    pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
+        std::iter::once(Some(&self.record)).chain(
+            self.exports
+                .iter()
+                .map(|(_, binding)| Some(&binding.module)),
+        )
+    }
+
+    fn binding(
+        &self,
+        key: PropertyKeyRef<'_>,
+        budget: &mut Budget,
+    ) -> Result<Option<&ModuleBinding>, Error> {
         let Some(key) = key.as_string() else {
             return Ok(None);
         };
@@ -27,7 +39,7 @@ impl NamespaceData {
             .exports
             .binary_search_by(|(name, _)| name.cmp(key))
             .ok()
-            .map(|index| self.exports[index].1.as_str()))
+            .map(|index| &self.exports[index].1))
     }
 }
 
@@ -51,13 +63,13 @@ impl Objects {
     pub(crate) fn create_module_namespace(
         &mut self,
         record: &Handle,
-        mut exports: Vec<(JsString, String)>,
+        mut exports: Vec<(JsString, ModuleBinding)>,
         budget: &mut Budget,
     ) -> Result<Handle, Error> {
         self.module_source(record)?;
         for (name, local) in &exports {
             budget.charge(name.len())?;
-            budget.charge(local.len() + 1)?;
+            budget.charge(local.name.as_ref().map_or(1, |name| name.len() + 1))?;
         }
         let sorting = exports
             .len()
@@ -86,18 +98,15 @@ impl Objects {
         object: &Handle,
         key: PropertyKeyRef<'_>,
         budget: &mut Budget,
-    ) -> Result<Option<(EnvironmentHandle, String)>, Error> {
+    ) -> Result<Option<ModuleBinding>, Error> {
         let Some(data) = &self.inspect(object)?.module_namespace else {
             return Ok(None);
         };
-        let Some(local) = data.binding(key, budget)? else {
+        let Some(binding) = data.binding(key, budget)? else {
             return Ok(None);
         };
-        budget.charge(local.len() + 1)?;
-        let environment = self
-            .module_environment(&data.record)?
-            .ok_or(Error::WrongKind)?;
-        Ok(Some((environment, local.to_owned())))
+        budget.charge(1)?;
+        Ok(Some(binding.clone()))
     }
 
     pub(super) fn namespace_own_keys(

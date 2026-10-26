@@ -27,6 +27,7 @@ pub(crate) enum ThisBinding {
 pub(crate) struct Environment {
     pub outer: Option<EnvironmentHandle>,
     pub bindings: BTreeMap<String, BindingState>,
+    pub imports: BTreeMap<String, crate::module::ModuleBinding>,
     // Transparent class-body records supply a separate private namespace.
     pub private_names: BTreeMap<String, crate::private::PrivateName>,
     // Some only for with environments; their properties are resolved live.
@@ -71,6 +72,7 @@ impl Trace for Environment {
             }))
             .chain(self.private_names.values().map(|_| None))
             .chain(self.disposable_resources.iter().map(Some))
+            .chain(self.imports.values().map(|binding| Some(&binding.module)))
     }
 }
 

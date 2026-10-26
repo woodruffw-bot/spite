@@ -34,6 +34,7 @@ mod descriptor;
 mod disposable_stack;
 pub(crate) mod generator;
 mod module;
+pub(crate) use module::ModuleLinkState;
 mod module_namespace;
 pub(crate) mod source_context;
 pub(crate) use disposable_stack::{DisposableResource, DisposableStackKind, DisposalHint};
@@ -521,7 +522,7 @@ impl Trace for OrdinaryObject {
             .chain(self.generator.iter().flat_map(|data| data.trace()))
             .chain(self.async_generator.iter().flat_map(|data| data.trace()))
             .chain(self.module_record.iter().flat_map(|data| data.trace()))
-            .chain(self.module_namespace.iter().map(|data| Some(&data.record)))
+            .chain(self.module_namespace.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
                 resources

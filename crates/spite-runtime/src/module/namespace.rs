@@ -1,10 +1,7 @@
 //! GetModuleNamespace and Module namespace exotic methods (10.4.6, 16.2.1).
 
 use super::*;
-use crate::{
-    Reference,
-    object::{DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor};
 use spite_core::{JsString, PropertyKeyRef, WellKnownSymbol};
 
 impl Realm {
@@ -15,6 +12,30 @@ impl Realm {
     /// retains it; use [`Self::root_value`] if it must outlive that handle.
     pub fn module_namespace(&mut self, module: &ModuleHandle) -> Result<Value, Error> {
         let record = module.root.handle();
+        if self
+            .objects
+            .module_link_state(record)
+            .map_err(Error::InvalidObject)?
+            == crate::object::ModuleLinkState::Linked
+            && let Some(namespace) = self
+                .objects
+                .module_namespace(record)
+                .map_err(Error::InvalidObject)?
+        {
+            return Ok(namespace);
+        }
+        if !self.job_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
+        self.link_module_record(record, Span::new(0, 0))?;
+        self.module_namespace_record(record, Span::new(0, 0))
+    }
+
+    pub(crate) fn module_namespace_record(
+        &mut self,
+        record: &ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
         if let Some(namespace) = self
             .objects
             .module_namespace(record)
@@ -22,30 +43,25 @@ impl Realm {
         {
             return Ok(namespace);
         };
-        if !self.job_active {
-            self.remaining_steps = self.limits.max_steps;
-        }
-        let source = self
-            .objects
-            .module_source(record)
-            .map_err(Error::InvalidObject)?
-            .clone();
-        self.prepare_module_record(&source, record)?;
-        let span = Span::new(0, 0);
-        let entries = source.entries().local_export_entries;
-        let mut exports = Vec::new();
-        exports
-            .try_reserve_exact(entries.len())
-            .map_err(|_| Error::Limit {
-                span,
-                message: "module namespace capacity exceeded".into(),
-            })?;
-        for entry in entries {
-            self.check_string(&Value::String(entry.exported.clone()), span)?;
-            exports.push((
-                entry.exported,
-                String::from_utf16(entry.local.code_units()).expect("local module binding"),
-            ));
+        let catalog = self.module_catalog(record, span)?;
+        let index = catalog.positions[record];
+        let exports = self.object_work(span, |_, budget| {
+            let names = catalog.export_names(index, budget)?;
+            let mut exports = Vec::new();
+            exports
+                .try_reserve_exact(names.len())
+                .map_err(|_| spite_heap::Error::Capacity)?;
+            for name in names {
+                if let super::resolution::ExportResolution::Binding(binding) =
+                    catalog.resolve(index, &name, budget)?
+                {
+                    exports.push((name, binding));
+                }
+            }
+            Ok(exports)
+        })?;
+        for (name, _) in &exports {
+            self.check_string(&Value::String(name.clone()), span)?;
         }
         let namespace = self.object_work(span, |objects, budget| {
             objects.create_module_namespace(record, exports, budget)
@@ -85,13 +101,13 @@ impl Realm {
         {
             return Ok(None);
         };
-        let Some((environment, name)) = self.object_work(span, |objects, budget| {
+        let Some(binding) = self.object_work(span, |objects, budget| {
             objects.namespace_binding(object, key, budget)
         })?
         else {
             return Ok(None);
         };
-        let value = self.get(&mut Reference::Lexical(environment, name.into()), span)?;
+        let value = self.read_module_binding(&binding, span)?;
         Ok(Some(Property::Data(DataProperty {
             value,
             writable: true,

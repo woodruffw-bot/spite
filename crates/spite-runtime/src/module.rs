@@ -1,6 +1,10 @@
-//! Standalone Source Text Module environments and evaluation (16.2.1).
+//! Source Text Module records, linking and standalone evaluation (16.2.1).
 
+mod binding;
 mod graph;
+mod link;
+mod resolution;
+pub(crate) use binding::ModuleBinding;
 mod namespace;
 
 use crate::{BindingState, Error, ObjectHandle, Realm, Value, environment::ThisBinding};
@@ -14,8 +18,8 @@ use std::collections::BTreeMap;
 /// A retained Source Text Module record owned by one Realm.
 ///
 /// Clones refer to the same record. The record, bindings and evaluation Promise
-/// remain reachable until the last handle is dropped. Graph linking and dependency
-/// evaluation remain unsupported.
+/// remain reachable until the last handle is dropped. Loaded graphs support
+/// linking; dependency evaluation remains unsupported.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ModuleHandle {
     root: crate::object::Root,
@@ -29,7 +33,8 @@ impl Realm {
     /// Promise. Returned values are unrooted; retain them with [`Self::root_value`]
     /// across collection. Evaluation never collects.
     ///
-    /// Dependency linking and evaluation remain unsupported.
+    /// Use retained records to load and link dependencies. Dependency evaluation
+    /// remains unsupported.
     pub fn eval_module(&mut self, source: &str) -> Result<Value, Error> {
         let module = self.create_module(source)?;
         self.evaluate_module_record(&module)
@@ -89,7 +94,13 @@ impl Realm {
             .module_source(record)
             .map_err(Error::InvalidObject)?
             .clone();
-        self.prepare_module_record(&source, record)?;
+        self.link_module_record(record, Span::new(0, 0))?;
+        if !source.requested_modules().is_empty() {
+            return Err(Self::unsupported(
+                Span::new(0, 0),
+                "module dependency evaluation is not implemented",
+            ));
+        }
         let environment = self
             .objects
             .module_environment(record)
@@ -112,42 +123,13 @@ impl Realm {
         )
     }
 
-    fn prepare_module_record(
+    fn initialize_module_record(
         &mut self,
         module: &Module,
         record: &ObjectHandle,
+        imports: BTreeMap<String, ModuleBinding>,
     ) -> Result<(), Error> {
-        if self
-            .objects
-            .module_environment(record)
-            .map_err(Error::InvalidObject)?
-            .is_some()
-        {
-            return Ok(());
-        }
-
-        if !module.imports().is_empty()
-            || module.exports().iter().any(|export| {
-                matches!(
-                    export.kind,
-                    ExportKind::Star { .. }
-                        | ExportKind::Named {
-                            request: Some(_),
-                            ..
-                        }
-                )
-            })
-        {
-            return Err(Self::unsupported(
-                Span::new(0, 0),
-                "module dependency linking is not implemented",
-            ));
-        }
         let default_export = module_default_index(module);
-        self.initialize_realm()?;
-        if !self.job_active {
-            self.remaining_steps = self.limits.max_steps;
-        }
         let body = module.body();
         let span = Span::new(
             0,
@@ -186,6 +168,9 @@ impl Realm {
             let environment = objects.create_environment(Some(global.clone()), bindings, budget)?;
             objects.environment_mut(&environment)?.this = Some(ThisBinding::Module);
             Ok(environment)
+        })?;
+        self.object_work(span, |objects, budget| {
+            objects.store_module_imports(&environment, imports, budget)
         })?;
         self.instantiate_module_body(&body, environment, default_export, record, span)
     }

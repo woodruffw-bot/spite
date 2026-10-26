@@ -10,6 +10,7 @@ use std::borrow::Cow;
 pub(super) enum Reference<'a> {
     Value(Value),
     Lexical(EnvironmentHandle, Cow<'a, str>),
+    Import(crate::module::ModuleBinding),
     ObjectBinding {
         object: ObjectHandle,
         name: Cow<'a, str>,
@@ -61,6 +62,7 @@ impl Reference<'_> {
     pub(super) fn into_owned(self, span: Span) -> Result<Reference<'static>, Error> {
         Ok(match self {
             Self::Value(value) => Reference::Value(value),
+            Self::Import(binding) => Reference::Import(binding),
             Self::Lexical(environment, name) => {
                 Reference::Lexical(environment, own_name(name, span)?)
             }
@@ -121,6 +123,7 @@ impl Reference<'_> {
     pub(crate) fn object(&self) -> Option<&ObjectHandle> {
         match self {
             Self::ObjectBinding { object, .. } => Some(object),
+            Self::Import(binding) => Some(&binding.module),
             _ => None,
         }
     }

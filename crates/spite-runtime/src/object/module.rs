@@ -5,6 +5,13 @@ use crate::{Value, environment::EnvironmentHandle};
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::Module;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum ModuleLinkState {
+    Unlinked,
+    Linking,
+    Linked,
+}
+
 #[derive(Debug)]
 pub(super) struct ModuleData {
     source: Module,
@@ -12,6 +19,7 @@ pub(super) struct ModuleData {
     evaluation: Option<Value>,
     namespace: Option<Value>,
     dependencies: Option<Vec<Handle>>,
+    link_state: ModuleLinkState,
 }
 
 impl ModuleData {
@@ -29,6 +37,81 @@ impl ModuleData {
 }
 
 impl Objects {
+    pub(crate) fn module_link_state(&self, record: &Handle) -> Result<ModuleLinkState, Error> {
+        Ok(self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .link_state)
+    }
+    pub(crate) fn begin_module_link(
+        &mut self,
+        record: &Handle,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(1)?;
+        let data = self
+            .object_mut(record)?
+            .module_record
+            .as_mut()
+            .ok_or(Error::WrongKind)?;
+        if data.link_state != ModuleLinkState::Unlinked {
+            return Err(Error::WrongKind);
+        };
+        data.link_state = ModuleLinkState::Linking;
+        Ok(())
+    }
+    pub(crate) fn finish_module_links(
+        &mut self,
+        records: &[Handle],
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(records.len())?;
+        for record in records {
+            if self.module_link_state(record)? != ModuleLinkState::Linking
+                || self.module_environment(record)?.is_none()
+            {
+                return Err(Error::WrongKind);
+            };
+        }
+        for record in records {
+            self.object_mut(record)?
+                .module_record
+                .as_mut()
+                .ok_or(Error::WrongKind)?
+                .link_state = ModuleLinkState::Linked;
+        }
+        Ok(())
+    }
+    pub(crate) fn rollback_module_links(&mut self, records: &[Handle]) -> Result<(), Error> {
+        for record in records {
+            let data = self
+                .object_mut(record)?
+                .module_record
+                .as_mut()
+                .ok_or(Error::WrongKind)?;
+            if data.link_state == ModuleLinkState::Linking {
+                data.link_state = ModuleLinkState::Unlinked;
+                data.environment = None;
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn store_module_imports(
+        &mut self,
+        environment: &EnvironmentHandle,
+        imports: std::collections::BTreeMap<String, crate::module::ModuleBinding>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        budget.charge(imports.len())?;
+        for binding in imports.values() {
+            self.module_source(&binding.module)?;
+        }
+        self.environment_mut(environment)?.imports = imports;
+        Ok(())
+    }
+
     pub(crate) fn module_dependencies(&self, record: &Handle) -> Result<Option<&[Handle]>, Error> {
         Ok(self
             .inspect(record)?
@@ -116,6 +199,7 @@ impl Objects {
             evaluation: None,
             namespace: None,
             dependencies: None,
+            link_state: ModuleLinkState::Unlinked,
         }));
         Ok(record)
     }
@@ -147,11 +231,12 @@ impl Objects {
     ) -> Result<(), Error> {
         budget.charge(1)?;
         self.environment(&environment)?;
-        self.object_mut(record)?
+        let data = self
+            .object_mut(record)?
             .module_record
             .as_mut()
-            .ok_or(Error::WrongKind)?
-            .environment = Some(environment);
+            .ok_or(Error::WrongKind)?;
+        data.environment = Some(environment);
         Ok(())
     }
 

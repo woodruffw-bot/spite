@@ -63,6 +63,7 @@ impl Realm {
                 }
                 deleted
             }
+            Reference::Import(_) => false,
             Reference::Lexical(environment, name) => {
                 let bindings = &mut self
                     .objects

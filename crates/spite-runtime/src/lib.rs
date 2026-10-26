@@ -1269,6 +1269,10 @@ impl Realm {
             if scope.bindings.contains_key(name) {
                 return Ok(Reference::Lexical(handle, name.into()));
             }
+            if let Some(binding) = scope.imports.get(name) {
+                return Ok(Reference::Import(binding.clone()));
+            }
+
             // Release the heap borrow before observable unscopables getters.
             let object = scope.binding_object.clone();
             next = scope.outer.clone();
@@ -1319,6 +1323,7 @@ impl Realm {
     }
     fn get(&mut self, reference: &mut Reference<'_>, span: Span) -> Result<Value, Error> {
         match reference {
+            Reference::Import(binding) => self.read_module_binding(binding, span),
             Reference::Value(value) => {
                 self.object_work(span, |_, budget| budget.value(value))?;
                 Ok(value.clone())
@@ -1370,6 +1375,14 @@ impl Realm {
     }
     fn put(&mut self, reference: Reference<'_>, value: Value, span: Span) -> Result<(), Error> {
         match reference {
+            Reference::Import(_) => {
+                return Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "cannot assign to an imported binding",
+                ));
+            }
+
             Reference::Value(_) => unreachable!("parser rejects optional-chain assignment targets"),
             Reference::Private { base, name } => self.private_set(&base, &name, value, span)?,
             Reference::Property { base, mut key } => {
