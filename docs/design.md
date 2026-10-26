@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including optional/super calls, object literals,
+including optional/super calls,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -555,6 +555,22 @@ resolution and direct brand lookup without coercion, accessor invocation or Prox
 has traps. Await rejection bypasses the brand operation. The existing value and
 context owners retain the RHS and lexical private environment; no private-name
 identity is copied into the expression task.
+
+Object literals suspend in computed names, values, spreads and prototype
+initializers (13.2.5.5). Ordinary and suspended evaluation share object creation,
+key conversion and data/prototype definition. ToPropertyKey finishes before the
+value starts, and its primitive result survives a later await without repeated
+coercion. Synchronous values reuse NamedEvaluation, including class static-element
+timing; computed method/accessor names use the existing home-object definition.
+Spreads reuse CopyDataProperties with live descriptors, snapshotted keys and raw
+values. Magic prototype definitions remain distinct from computed/shorthand keys.
+
+Continuations retain the partial object and converted key as Values, tracing both
+and counting physically repeated Symbol slots. Converted key input objects are
+released before awaited values; rejected or abandoned literals release their
+partial state before handlers or host abort. Tests retain positive coverage of
+formerly unsupported object-await forms; remaining boundary controls exercise
+awaited optional-chain keys.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

@@ -33,6 +33,9 @@ pub(crate) enum ExprChild {
     MemberBase,
     MemberKey,
     TemplateSubstitution(usize),
+    ObjectKey(usize),
+    ObjectValue(usize),
+    ObjectSpread(usize),
 }
 
 pub(crate) type ExprPath = Vec<ExprChild>;
@@ -164,6 +167,27 @@ pub(crate) enum ExprTask {
         index: usize,
         units: Vec<u16>,
     },
+    ObjectNext {
+        path: ExprPath,
+        element: usize,
+        object: Value,
+    },
+    ObjectKey {
+        path: ExprPath,
+        element: usize,
+        object: Value,
+    },
+    ObjectValue {
+        path: ExprPath,
+        element: usize,
+        object: Value,
+        key: Value,
+    },
+    ObjectSpread {
+        path: ExprPath,
+        element: usize,
+        object: Value,
+    },
     PrivateIn(ExprPath),
     DestructureApply(ExprPath),
     AssignmentApply {
@@ -192,6 +216,10 @@ impl ExprTask {
                 Self::ArrayNext { array, .. } | Self::ArrayAppend { array, .. } => {
                     (Some(array), None, &[])
                 }
+                Self::ObjectNext { object, .. }
+                | Self::ObjectKey { object, .. }
+                | Self::ObjectValue { object, .. }
+                | Self::ObjectSpread { object, .. } => (Some(object), None, &[]),
                 Self::MemberKey { base, .. } => (Some(base), None, &[]),
                 Self::AssignmentApply { left, .. } => (left.as_ref(), None, &[]),
                 Self::ArgumentNext {
@@ -202,8 +230,13 @@ impl ExprTask {
                 } => (None, Some(target), arguments),
                 _ => (None, None, &[]),
             };
+        let key = match self {
+            Self::ObjectValue { key, .. } => Some(key),
+            _ => None,
+        };
         value
             .into_iter()
+            .chain(key)
             .chain(target.into_iter().flat_map(InvocationTarget::values))
             .chain(arguments)
             .chain(self.reference().into_iter().flat_map(Reference::values))

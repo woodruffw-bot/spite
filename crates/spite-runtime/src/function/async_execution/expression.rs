@@ -2,6 +2,7 @@
 
 mod assignment;
 mod member;
+mod object;
 mod template;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
@@ -16,8 +17,8 @@ use crate::{
 };
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
-    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, PropertyName, StatementKind,
-    UnaryOp,
+    Argument, ArrayElement, ArrowBody, BinaryOp, Expr, ExprKind, ObjectElement, PropertyName,
+    StatementKind, UnaryOp,
 };
 
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
@@ -28,6 +29,10 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
             has_supported_await(value)
         }
+        ExprKind::Object(elements) => elements.iter().any(|element| match element {
+            ObjectElement::Spread(value) => has_supported_await(value),
+            ObjectElement::Property(property) => has_supported_await(&property.value) || matches!(&property.name, PropertyName::Computed(key) if has_supported_await(key)),
+        }),
         ExprKind::Template { substitutions, .. } => substitutions.iter().any(has_supported_await),
         ExprKind::TaggedTemplate {
             tag, substitutions, ..
@@ -183,6 +188,27 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
             (ExprChild::TemplateSubstitution(index), ExprKind::Template { substitutions, .. }) => {
                 &substitutions[*index]
             }
+            (ExprChild::ObjectSpread(index), ExprKind::Object(elements)) => {
+                let ObjectElement::Spread(value) = &elements[*index] else {
+                    unreachable!("object spread source")
+                };
+                value
+            }
+            (ExprChild::ObjectValue(index), ExprKind::Object(elements)) => {
+                let ObjectElement::Property(property) = &elements[*index] else {
+                    unreachable!("object property source")
+                };
+                &property.value
+            }
+            (ExprChild::ObjectKey(index), ExprKind::Object(elements)) => {
+                let ObjectElement::Property(property) = &elements[*index] else {
+                    unreachable!("object property source")
+                };
+                let PropertyName::Computed(value) = &property.name else {
+                    unreachable!("computed object key")
+                };
+                value
+            }
             (ExprChild::MemberBase, ExprKind::Member(base, _)) => base,
             (ExprChild::MemberKey, ExprKind::Member(_, PropertyName::Computed(key))) => key,
             _ => unreachable!("typed expression path"),
@@ -326,6 +352,7 @@ impl Realm {
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
+                        | ExprKind::Object(_)
                         | ExprKind::PrivateIn { .. }
                         | ExprKind::DestructuringAssign { .. }
                         | ExprKind::Update { .. }
@@ -393,6 +420,18 @@ impl Realm {
                                     },
                                     span,
                                 )?,
+                                ExprKind::Object(_) => {
+                                    let object = Value::Object(self.new_literal_object(span)?);
+                                    push(
+                                        &mut state,
+                                        ExprTask::ObjectNext {
+                                            path,
+                                            element: 0,
+                                            object,
+                                        },
+                                        span,
+                                    )?;
+                                }
                                 ExprKind::PrivateIn { .. } => {
                                     let value = child_path(&path, ExprChild::Right, span)?;
                                     push(&mut state, ExprTask::PrivateIn(path), span)?;
@@ -793,6 +832,61 @@ impl Realm {
                 }
                 ExprTask::TemplateAppend { path, index, units } => {
                     self.async_template_append(data, &mut state, path, index, units)?
+                }
+                ExprTask::ObjectNext {
+                    path,
+                    element,
+                    object,
+                } => self.async_object_next(data, &mut state, path, element, object)?,
+                ExprTask::ObjectKey {
+                    path,
+                    element,
+                    object,
+                } => {
+                    let value = state.current.take().expect("object computed key value");
+                    let property = object::property(data, &state, &path, element);
+                    let key = self.property_key(value, property.span)?;
+                    self.async_object_property(data, &mut state, path, element, object, key)?;
+                }
+                ExprTask::ObjectValue {
+                    path,
+                    element,
+                    object,
+                    key,
+                } => {
+                    let value = state.current.take().expect("object property value");
+                    self.async_object_value(
+                        data,
+                        &mut state,
+                        path,
+                        element,
+                        object,
+                        (object::value_key(key), value),
+                    )?;
+                }
+                ExprTask::ObjectSpread {
+                    path,
+                    element,
+                    object,
+                } => {
+                    let value = state.current.take().expect("object spread value");
+                    let expression = expression_at(data, state.root, &path);
+                    let ExprKind::Object(elements) = &expression.kind else {
+                        unreachable!("object source")
+                    };
+                    let ObjectElement::Spread(source) = &elements[element] else {
+                        unreachable!("object spread source")
+                    };
+                    self.copy_spread_properties(object::handle(&object), value, source.span)?;
+                    push(
+                        &mut state,
+                        ExprTask::ObjectNext {
+                            path,
+                            element: element + 1,
+                            object,
+                        },
+                        expression.span,
+                    )?;
                 }
                 ExprTask::PrivateIn(path) => {
                     let expression = expression_at(data, state.root, &path);

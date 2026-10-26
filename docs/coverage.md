@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Object literals with awaited definitions
+
+Eight Runtime groups and three Symbol ownership controls cover ordered keys and
+values, computed methods/accessors, function/class naming, home objects, prototype
+rules, live spread, raw Promises, abrupt completion, using/dynamic/private contexts,
+collection and host abort. All 417 units and 2,066 non-RegExp integrations pass
+across 662 Runtime case files; strict Clippy and Rust 1.88 checks pass. Former
+object-await boundary forms now have positive coverage; genuine unsupported
+controls use optional-chain keys. No test group or quota was removed.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers are unchanged.
+
 ## Private-in with awaited RHS
 
 Four Runtime groups cover instance/static/method/accessor brands, inheritance,

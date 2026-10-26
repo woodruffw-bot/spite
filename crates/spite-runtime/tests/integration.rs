@@ -11,6 +11,9 @@ mod async_await_update;
 #[path = "cases/async_await_destructuring.rs"]
 mod async_await_destructuring;
 
+#[path = "cases/async_await_object.rs"]
+mod async_await_object;
+
 #[path = "cases/async_await_private_in.rs"]
 mod async_await_private_in;
 

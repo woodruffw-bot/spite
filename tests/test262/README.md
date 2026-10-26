@@ -30,6 +30,17 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited object-literal review
+
+Eight Runtime groups and three Symbol ownership controls cover ordered definitions,
+naming/home objects, spread/prototypes, contexts, collection and host abort.
+Former unsupported object-await programs have positive coverage; boundary controls
+use a remaining optional-chain gap. Complete reviews retain 36 passing/8
+Unsupported await variants, 160 passing/102 Unsupported Array/adapter variants and
+188 passing update variants. No additional unchanged original qualifies.
+Inventories remain 9,690 fixtures, twenty helpers, 9,671 reviewed sources and
+18,762 variants; helpers, quotas and intrinsic entries are unchanged.
+
 ## Awaited private-in review
 
 Four Runtime groups cover lexical/private brands, non-object and rejection

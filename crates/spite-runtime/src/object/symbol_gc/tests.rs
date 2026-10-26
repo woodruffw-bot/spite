@@ -392,6 +392,18 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
         ),
         (
+            "async partial object earlier value",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>({saved:key,later:await gate});f();return gate})()",
+        ),
+        (
+            "async object converted key",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>({[key]:await gate});f();return gate})()",
+        ),
+        (
+            "async object repeated physical symbol key slots",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>({[key]:1,[key]:await gate});f();return gate})()",
+        ),
+        (
             "async tagged template earlier raw argument",
             "(()=>{let gate=new Promise(()=>{}),tag=()=>{},f=async()=>tag`${key}${await gate}`;f();return gate})()",
         ),

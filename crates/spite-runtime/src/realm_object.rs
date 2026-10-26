@@ -703,13 +703,75 @@ impl Realm {
         self.define_property_or_throw(object, key, descriptor, property.span)
     }
 
+    pub(crate) fn new_literal_object(&mut self, span: Span) -> Result<ObjectHandle, Error> {
+        let prototype = self.ensure_object_intrinsics(span)?;
+        let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        Ok(object)
+    }
+
+    pub(crate) fn literal_property_key(
+        &mut self,
+        property: &ObjectProperty,
+    ) -> Result<PropertyKey, Error> {
+        let key = match &property.name {
+            PropertyName::Private(_) => {
+                return Err(Self::unsupported(
+                    property.span,
+                    "private elements are not implemented",
+                ));
+            }
+            PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,
+            PropertyName::Computed(expression) => self.expression(expression)?,
+        };
+        // ToPropertyKey precedes evaluation of the property's value.
+        self.property_key(key, property.span)
+    }
+
+    pub(crate) fn define_literal_data_property(
+        &mut self,
+        object: &ObjectHandle,
+        key: PropertyKey,
+        property: &ObjectProperty,
+        value: Value,
+    ) -> Result<(), Error> {
+        if property.kind == PropertyKind::Prototype {
+            let prototype = match &value {
+                Value::Object(handle) => Some(handle),
+                Value::Null => None,
+                _ => return Ok(()),
+            };
+            let changed = self.object_work(property.span, |objects, budget| {
+                objects.set_prototype(object, prototype, budget)
+            })?;
+            debug_assert!(
+                changed,
+                "new literal is extensible and cannot be its own ancestor"
+            );
+        } else {
+            let created = self.object_work(property.span, |objects, budget| {
+                objects.define(
+                    object,
+                    key,
+                    DataDescriptor {
+                        value: Some(value),
+                        writable: Some(true),
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    budget,
+                )
+            })?;
+            debug_assert!(created, "new literal has only configurable properties");
+        }
+        Ok(())
+    }
+
     pub(super) fn object_literal(
         &mut self,
         properties: &[ObjectElement],
         span: Span,
     ) -> Result<Value, Error> {
-        let prototype = self.ensure_object_intrinsics(span)?;
-        let object = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let object = self.new_literal_object(span)?;
         for element in properties {
             let property = match element {
                 ObjectElement::Spread(expression) => {
@@ -720,18 +782,7 @@ impl Realm {
                 ObjectElement::Property(property) => property,
             };
             self.tick(property.span)?;
-            let key = match &property.name {
-                PropertyName::Private(_) => {
-                    return Err(Self::unsupported(
-                        property.span,
-                        "private elements are not implemented",
-                    ));
-                }
-                PropertyName::Literal(literal) => self.literal_value(literal, property.span)?,
-                PropertyName::Computed(expression) => self.expression(expression)?,
-            };
-            // ToPropertyKey precedes evaluation of the property's value.
-            let key = self.property_key(key, property.span)?;
+            let key = self.literal_property_key(property)?;
             if matches!(
                 property.kind,
                 PropertyKind::Method | PropertyKind::Getter | PropertyKind::Setter
@@ -744,35 +795,7 @@ impl Realm {
             } else {
                 self.named_expression(&property.value, key.clone())?
             };
-            if property.kind == PropertyKind::Prototype {
-                let prototype = match &value {
-                    Value::Object(handle) => Some(handle),
-                    Value::Null => None,
-                    _ => continue,
-                };
-                let changed = self.object_work(property.span, |objects, budget| {
-                    objects.set_prototype(&object, prototype, budget)
-                })?;
-                debug_assert!(
-                    changed,
-                    "new literal is extensible and cannot be its own ancestor"
-                );
-            } else {
-                let created = self.object_work(property.span, |objects, budget| {
-                    objects.define(
-                        &object,
-                        key,
-                        DataDescriptor {
-                            value: Some(value),
-                            writable: Some(true),
-                            enumerable: Some(true),
-                            configurable: Some(true),
-                        },
-                        budget,
-                    )
-                })?;
-                debug_assert!(created, "new literal has only configurable properties");
-            }
+            self.define_literal_data_property(&object, key, property, value)?;
         }
         Ok(Value::Object(object))
     }
