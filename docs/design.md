@@ -1014,6 +1014,9 @@ and skip JavaScript cleanup.
 Let/const declarations use the same BindingElement/BindingPattern syntax and
 BindingInitialization (14.3.1). Every bound name participates in lexical,
 parameter, catch, and nested-var early conflicts; property keys are not names.
+Default-value selection, binding iterator acquisition and rest Array collection
+are separate shared operations. Ordinary initialization still resolves references
+before stepping, preserves default name inference and uses the same closing path.
 Patterns require an initializer outside for-in/of declarations, and lexical
 BoundNames cannot contain let. Declaration instantiation creates all names before
 evaluating any initializer. Identifier initializers receive named evaluation;

@@ -30,6 +30,14 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Shared binding-operation review
+
+Default-value selection, binding iterator acquisition and rest collection now use
+shared native helpers. Existing Runtime, Clippy and Rust 1.88 checks pass;
+pattern-await behavior is unchanged. Complete candidate reviews and inventories
+remain 9,825 fixtures, twenty helpers, 9,806 reviewed sources and 19,012 variants;
+helpers, quotas and intrinsic entries are unchanged.
+
 ## Awaited iteration-target review
 
 Seven Runtime groups and a Symbol ownership control cover target evaluation,

@@ -2,9 +2,9 @@
 
 use crate::{
     BindingState, Error, ExceptionKind, Realm, Reference, Value, environment::EnvironmentHandle,
-    object::DataDescriptor,
+    function::IteratorRecord, object::DataDescriptor,
 };
-use spite_core::{JsString, PropertyKey, WellKnownSymbol};
+use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 use spite_parser::ast::{BindingElement, BindingPattern, BindingPatternKind, PropertyName};
 use std::collections::{BTreeMap, HashSet};
 
@@ -169,16 +169,7 @@ impl Realm {
                 }
             }
             BindingPatternKind::Array { elements, rest } => {
-                let method = self
-                    .get_method(&value, &WellKnownSymbol::Iterator.symbol(), span)?
-                    .ok_or_else(|| {
-                        Self::exception(
-                            ExceptionKind::TypeError,
-                            span,
-                            "binding value is not iterable",
-                        )
-                    })?;
-                let mut iterator = self.get_iterator_from_method(value, method, span)?;
+                let mut iterator = self.binding_iterator(value, span)?;
                 let result = (|| {
                     for element in elements {
                         self.tick(span)?;
@@ -200,37 +191,8 @@ impl Realm {
                     }
                     if let Some(rest) = rest {
                         let reference = self.binding_reference(rest, environment)?;
-                        let Value::Object(array) = self.create_array_from_list([], span)? else {
-                            unreachable!("intrinsic Array creation");
-                        };
-                        let mut index = 0usize;
-                        while !iterator.is_done() {
-                            let Some(next) = self.iterator_step_value(&mut iterator, span)? else {
-                                break;
-                            };
-                            self.define_property_or_throw(
-                                &array,
-                                JsString::from(index.to_string().as_str()),
-                                DataDescriptor {
-                                    value: Some(next),
-                                    writable: Some(true),
-                                    enumerable: Some(true),
-                                    configurable: Some(true),
-                                }
-                                .into(),
-                                span,
-                            )?;
-                            index = index.checked_add(1).ok_or_else(|| Error::Limit {
-                                span,
-                                message: "binding array capacity exceeded".into(),
-                            })?;
-                        }
-                        self.binding_initialization(
-                            rest,
-                            Value::Object(array),
-                            environment,
-                            reference,
-                        )?;
+                        let value = self.binding_array_rest(&mut iterator, span)?;
+                        self.binding_initialization(rest, value, environment, reference)?;
                     }
                     Ok(())
                 })();
@@ -249,6 +211,73 @@ impl Realm {
         Ok(())
     }
 
+    pub(super) fn binding_iterator(
+        &mut self,
+        value: Value,
+        span: Span,
+    ) -> Result<IteratorRecord, Error> {
+        let method = self
+            .get_method(&value, &WellKnownSymbol::Iterator.symbol(), span)?
+            .ok_or_else(|| {
+                Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "binding value is not iterable",
+                )
+            })?;
+        self.get_iterator_from_method(value, method, span)
+    }
+
+    pub(super) fn binding_array_rest(
+        &mut self,
+        iterator: &mut IteratorRecord,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(array) = self.create_array_from_list([], span)? else {
+            unreachable!("intrinsic Array creation");
+        };
+        let mut index = 0usize;
+        while !iterator.is_done() {
+            let Some(next) = self.iterator_step_value(iterator, span)? else {
+                break;
+            };
+            self.define_property_or_throw(
+                &array,
+                JsString::from(index.to_string().as_str()),
+                DataDescriptor {
+                    value: Some(next),
+                    writable: Some(true),
+                    enumerable: Some(true),
+                    configurable: Some(true),
+                }
+                .into(),
+                span,
+            )?;
+            index = index.checked_add(1).ok_or_else(|| Error::Limit {
+                span,
+                message: "binding array capacity exceeded".into(),
+            })?;
+        }
+        Ok(Value::Object(array))
+    }
+
+    pub(super) fn binding_element_value(
+        &mut self,
+        element: &BindingElement,
+        mut value: Value,
+    ) -> Result<Value, Error> {
+        if matches!(value, Value::Undefined)
+            && let Some(initializer) = &element.initializer
+        {
+            value = if let BindingPatternKind::Identifier(name) = &element.pattern.kind {
+                self.named_expression(initializer, JsString::from(name.as_str()))?
+            } else {
+                self.expression(initializer)?
+            };
+        }
+        Ok(value)
+    }
+
     pub(super) fn initialize_binding_element(
         &mut self,
         element: &BindingElement,
@@ -261,19 +290,11 @@ impl Realm {
     fn binding_element<'a>(
         &mut self,
         element: &'a BindingElement,
-        mut value: Value,
+        value: Value,
         environment: Option<&EnvironmentHandle>,
         reference: Option<Reference<'a>>,
     ) -> Result<(), Error> {
-        if matches!(value, Value::Undefined)
-            && let Some(initializer) = &element.initializer
-        {
-            value = if let BindingPatternKind::Identifier(name) = &element.pattern.kind {
-                self.named_expression(initializer, JsString::from(name.as_str()))?
-            } else {
-                self.expression(initializer)?
-            };
-        }
+        let value = self.binding_element_value(element, value)?;
         self.binding_initialization(&element.pattern, value, environment, reference)
     }
 }

@@ -60,6 +60,19 @@ not an alternative language specification.
 
 
 
+## Shared binding operations for suspended defaults
+
+Ordinary BindingInitialization now calls shared default-value selection, iterator
+acquisition and rest collection helpers. Their operations, evaluation order,
+name inference, property definitions and closing paths are retained. Existing
+coverage passes: 417 units, 2,126 non-RegExp integrations, Clippy and Rust 1.88.
+This is preparation for source-level awaited binding defaults; pattern defaults
+still retain their existing Unsupported boundary.
+
+Complete candidate reviews and inventories are unchanged: 9,825 fixtures, twenty
+helpers, 9,806 reviewed sources, 19,012 variants, 670 Runtime case files, 76 Parser
+case files and 579 intrinsic entries. Helpers and quotas are unchanged.
+
 ## Awaited iteration assignment targets
 
 Seven Runtime groups and a Symbol ownership control cover value-before-target
