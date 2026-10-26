@@ -1,4 +1,4 @@
-//! Await bodies and generator private methods remain host failures.
+//! Generator private method objects and async generators remain host failures.
 
 use spite_runtime::{Error, Realm, Value};
 

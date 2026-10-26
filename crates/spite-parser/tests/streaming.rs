@@ -60,10 +60,14 @@ fn unrequested_lexical_failure_cannot_mask_recognized_unsupported_syntax() {
         parse_script("function* g() { /*").unwrap_err().kind,
         DiagnosticKind::Syntax
     );
+    assert_eq!(
+        parse_script("class C { *g() { /*").unwrap_err().kind,
+        DiagnosticKind::Syntax
+    );
     for source in [
         "async function* g() { /*",
         "async function* f() { await p; '\\u{110000}'",
-        "class C { *g() { /*",
+        "class C { async *g() { /*",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,

@@ -1431,3 +1431,6 @@ mod async_object_binding;
 
 #[path = "cases/generator_grammar.rs"]
 mod generator_grammar;
+
+#[path = "cases/generator_methods.rs"]
+mod generator_methods;

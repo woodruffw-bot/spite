@@ -159,8 +159,9 @@ fn malformed_properties_and_nested_strict_violations_are_rejected() {
 
 #[test]
 fn suspended_methods_remain_explicitly_unsupported() {
+    assert!(parse_script("({*g() {}})").is_ok());
     assert!(parse_script("({async m() {await p}})").is_ok());
-    let source = "({*g() {}})";
+    let source = "({async *g() {}})";
     assert_eq!(
         parse_script(source).unwrap_err().kind,
         DiagnosticKind::Unsupported,

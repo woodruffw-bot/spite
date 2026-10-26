@@ -30,6 +30,14 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Generator method grammar review
+
+Six Parser and two Runtime groups cover generator methods and their explicit
+object-creation boundary, including an awaited computed key. Previous method-gap
+programs now parse positively; groups and quotas are retained. The complete gate
+remains 9,837 fixtures, twenty helpers, 9,818 reviewed sources and 19,036 variants;
+helpers and intrinsic entries are unchanged.
+
 ## Generator grammar review
 
 Twelve unchanged originals add 24 syntax-negative variants with exact reviewed

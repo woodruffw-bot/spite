@@ -15,17 +15,25 @@ impl Parser {
                 }
                 continue;
             }
-            if self.at("*") {
-                return Err(self.unsupported("generator methods are not implemented"));
-            }
+            let property_start = self.current().span.start;
+            let generator = self.eat("*");
             let token = self.bump();
-            let property_start = token.span.start;
             let shorthand = match &token.kind {
                 Kind::Word(name) => Some(name.clone()),
                 _ => None,
             };
             let mut name = self.object_property_name(token.clone())?;
-            let (kind, value) = if self.eat(":") {
+            let (kind, value) = if generator {
+                (
+                    PropertyKind::Method,
+                    self.method_definition(
+                        property_start,
+                        PropertyKind::Method,
+                        FunctionKind::Generator,
+                        false,
+                    )?,
+                )
+            } else if self.eat(":") {
                 let prototype = matches!(&name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("__proto__"));
                 if prototype && prototype_seen {
                     return Err(early(
@@ -180,12 +188,16 @@ impl Parser {
         let previous_await = self.allow_await_identifier;
         let previous_context = self.await_context;
         let previous_yield = self.yield_context;
-        self.yield_context = YieldContext::None;
+        self.yield_context = if function_kind == FunctionKind::Generator {
+            YieldContext::Parameters
+        } else {
+            YieldContext::None
+        };
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = allow_super_call;
         self.allow_arguments = true;
-        self.allow_await_identifier = function_kind == FunctionKind::Ordinary;
+        self.allow_await_identifier = function_kind != FunctionKind::Async;
         self.await_context = if function_kind == FunctionKind::Async {
             AwaitContext::Parameters
         } else {
@@ -219,6 +231,11 @@ impl Parser {
                 AwaitContext::Body
             } else {
                 AwaitContext::None
+            };
+            self.yield_context = if function_kind == FunctionKind::Generator {
+                YieldContext::Body
+            } else {
+                YieldContext::None
             };
             let body = self.function_body()?;
             let span = Span::new(start, self.tokens[self.index - 1].span.end);

@@ -23,6 +23,12 @@ impl Realm {
         kind: PropertyKind,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
+        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
+            return Err(Self::unsupported(
+                span,
+                "generator method objects are not implemented",
+            ));
+        }
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
         let prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {
             intrinsic.async_function.prototype.clone()

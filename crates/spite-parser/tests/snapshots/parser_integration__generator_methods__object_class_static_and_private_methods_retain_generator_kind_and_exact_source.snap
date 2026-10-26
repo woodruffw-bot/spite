@@ -1,0 +1,27 @@
+---
+source: crates/spite-parser/tests/generator_methods.rs
+assertion_line: 63
+expression: summaries
+---
+[
+    (
+        Generator,
+        "*g(x){yield x}",
+        false,
+    ),
+    (
+        Generator,
+        "*['h'](){yield* tail}",
+        true,
+    ),
+    (
+        Generator,
+        "*#g(){yield 1}",
+        false,
+    ),
+    (
+        Generator,
+        "*h(){yield 2}",
+        false,
+    ),
+]

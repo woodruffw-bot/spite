@@ -57,7 +57,8 @@ fn class_early_errors_snapshot() {
 #[test]
 fn incomplete_class_features_never_receive_negative_test_credit() {
     assert!(parse_script("class C{async m(){await p}}").is_ok());
-    let source = "class C{*g(){}}";
+    assert!(parse_script("class C{*g(){}}").is_ok());
+    let source = "class C{async *g(){}}";
     assert_eq!(
         parse_script(source).unwrap_err().kind,
         DiagnosticKind::Unsupported,

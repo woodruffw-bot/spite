@@ -94,16 +94,16 @@ impl Parser {
                 }
                 token = self.bump();
             }
-            if token.kind == Kind::Punct("*") {
-                return Err(early_unsupported(
-                    token.span,
-                    "generator methods are not implemented",
-                ));
-            }
             let method_start = token.span.start;
             let mut kind = PropertyKind::Method;
-            let mut function_kind = FunctionKind::Ordinary;
-            if !token.escaped
+            let mut function_kind = if token.kind == Kind::Punct("*") {
+                token = self.bump();
+                FunctionKind::Generator
+            } else {
+                FunctionKind::Ordinary
+            };
+            if function_kind == FunctionKind::Ordinary
+                && !token.escaped
                 && !self.at("(")
                 && let Kind::Word(prefix) = &token.kind
             {
@@ -140,6 +140,9 @@ impl Parser {
                 if kind != PropertyKind::Method {
                     return Err(self.error("class accessor requires parameters"));
                 }
+                if function_kind == FunctionKind::Generator {
+                    return Err(self.error("generator method requires parameters"));
+                }
                 if let PropertyName::Private(name) = &property_name {
                     self.declare_private_identifier(name, is_static, PropertyKind::Data)?;
                 }
@@ -168,6 +171,9 @@ impl Parser {
             }
             let is_constructor = !is_static
                 && matches!(&property_name, PropertyName::Literal(Literal::String(name)) if name == &JsString::from("constructor"));
+            if is_constructor && function_kind == FunctionKind::Generator {
+                return Err(early(name_span, "class constructor cannot be a generator"));
+            }
             if is_constructor && function_kind == FunctionKind::Async {
                 return Err(early(name_span, "class constructor cannot be async"));
             }

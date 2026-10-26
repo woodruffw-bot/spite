@@ -361,11 +361,21 @@ assignment target or member base. Generator parameters forbid YieldExpression
 and yield bindings. Declaration names inherit the enclosing Yield context;
 expression names use +Yield. Ordinary nested functions, arrows and methods reset
 their body context, while cover-cache keys distinguish parameter/body Yield
-contexts. Strict/private validation traverses the operand. Generator methods and
-async generators remain parser boundaries. Creating a generator function object
+contexts. Strict/private validation traverses the operand. Async generators
+remain parser boundaries. Creating a generator function object
 remains a runtime Unsupported boundary before body effects. Ordinary dynamic
 Function bodies can retain unexecuted generator definitions; invoking such a body
 reaches the same runtime boundary during declaration instantiation.
+
+Synchronous generator methods share the method parser for object, class, static
+and private definitions. Computed names use the enclosing grammar context before
+parameters switch to +Yield/~Await and bodies enable YieldExpression. Method
+parameters are unique even in sloppy objects; constructor/prototype/private-name
+rules remain class early errors. Names such as get, set, async and static retain
+their ordinary property-name meaning after the generator star. Source ranges
+include the star and exclude the class static modifier. Method-object creation
+remains an explicit runtime boundary after computed names and before body effects,
+including when an async object-literal key has resumed.
 
 Ordinary and arrow calls share their parameter/var setup and caller restoration
 with an internal body driver. The driver runs while the callee's scopes,

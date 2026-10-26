@@ -157,7 +157,14 @@ fn delegation_requires_an_operand_and_unparenthesized_yields_are_not_references_
 fn dynamic_ordinary_functions_retain_generator_syntax_and_depth_limits_stay_separate() {
     let function = parse_dynamic_function("", "function*g(){yield 1};return g").unwrap();
     assert_eq!(function.kind, FunctionKind::Ordinary);
-    for source in ["async function*g(){}", "({*g(){}})", "class C{*g(){}}"] {
+    for source in ["({*g(){}})", "class C{*g(){}}"] {
+        assert!(parse_script(source).is_ok(), "{source}");
+    }
+    for source in [
+        "async function*g(){}",
+        "({async *g(){}})",
+        "class C{async *g(){}}",
+    ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,
             DiagnosticKind::Unsupported,

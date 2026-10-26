@@ -60,6 +60,23 @@ not an alternative language specification.
 
 
 
+## Generator method grammar
+
+Six Parser groups and two Runtime groups cover object/class/static/private forms,
+exact source and delegation flags, contextual names, ASI, enclosing computed-key
+contexts, parameter uniqueness/Yield restrictions, super/private validation and
+constructor/field errors. The compact method-source snapshot was inspected.
+Method-object boundaries preserve key effects and skip body execution, disposal,
+finalizers and rejection handlers after an awaited key; captures are released.
+All 18 Parser units, 375 Parser integrations, 417 Runtime units and 2,177 non-RegExp
+Runtime integrations pass across 78 Parser and 677 Runtime case files; Clippy and
+Rust 1.88 checks pass. Prior method-gap programs now have positive parser coverage;
+all previous groups and quotas are retained.
+
+The complete reviewed corpus remains 9,837 fixtures, twenty helpers, 9,818 reviewed
+sources, 19,036 variants and 579 intrinsic entries. Helpers and quotas are unchanged.
+Generator function/method objects, resumption and async generators remain work.
+
 ## Generator function and YieldExpression grammar
 
 Eight Parser groups and two Runtime groups cover generator kind/source, bare and
