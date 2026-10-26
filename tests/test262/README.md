@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10102 unmodified test fixtures and twenty harness files come from
+These 10112 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Reviewed Module syntax negatives
+
+Ten unchanged Module syntax negatives add ten variants with exact reviewed
+unprefixed rejection points. Module tests use the Module parser; valid negatives
+fail, unreviewed syntax errors remain unverified, and unsupported/limit outcomes
+never pass. Linking/execution remain Unsupported before harness setup and no
+Module AST executes through Script APIs.
+
+Three runner groups cover goal/phase/review boundaries, limits and unsupported
+execution. The complete import.meta syntax directory reports eighteen passed/five
+Unsupported, with all other counts zero. Its async-generator-dependent for-await
+negative remains excluded as a whole. The inventory contains 10,112 fixtures,
+twenty helpers, 10,093 reviewed sources and 19,555 variants. Existing groups,
+helpers, quotas and intrinsic entries are unchanged.
 
 ## Module parser goal foundation
 

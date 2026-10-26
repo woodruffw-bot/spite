@@ -56,9 +56,33 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19545 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19555 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Reviewed Module syntax negatives in the conformance runner
+
+Module variants now use the real Module goal and opted-in source limits. Syntax
+negatives require the same exact reviewed span/message as Script negatives, with
+no strict-mode prefix. A valid parse negative fails; unsupported syntax and limits
+remain nonpassing. Parsed Modules return Unsupported for linking/execution before
+harness setup and never execute as Scripts.
+
+Three runner groups cover proper goal/review matching, rejected Script-prefix
+spans, unverified/mismatched reviews, valid negatives, missing declarations, phase
+mismatches, source limits and unimplemented execution. The thirteen runner probes
+pass; Clippy, Rust 1.88, policy and inventories pass. Parser and Runtime counts
+remain eighteen/394 and 417/2,229, plus thirteen CLI groups across 82 Parser and
+683 Runtime files. Existing groups, helpers, quotas and intrinsics are unchanged.
+
+Ten unchanged Module originals add ten variants for escaped ImportMeta terminals
+and invalid assignment/update/iteration/destructuring targets. The complete
+18-original import.meta syntax review now reports eighteen passed/five Unsupported
+and zero failures, limits, setup failures or unverified negatives. The for-await
+negative that requires async-generator syntax remains wholly excluded. The corpus
+contains 10,112 fixtures, twenty helpers, 10,093 reviewed sources and 19,555 variants.
+The complete gate and all forty-three runner/package checks pass; the intrinsic
+inventory remains 585 entries. Linking and execution remain work.
 
 ## Public Module parser goal foundation
 

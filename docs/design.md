@@ -2938,7 +2938,12 @@ without adding a YAML dependency, rejecting unsupported metadata forms explicitl
 Plan strict, non-strict, module, and raw execution without rewriting test bodies;
 raw sources retain their exact bytes. Preserve harness include order. Then match
 results by phase and error type, keeping harness/setup failures separate from the
-test result. Modules, raw async setup and agent configuration remain unsupported.
+test result. Module variants use the real Module parser and the same exact
+span/message review for parse negatives, without a Script strict-mode prefix.
+Valid parse negatives fail the gate; unsupported grammar and host limits never
+count as passes. Parsed Modules remain Unsupported for linking/execution and never
+enter Script evaluation or harness setup. Raw async setup and agent configuration
+also remain unsupported.
 Async Script variants execute the original doneprintHandle.js and selected
 includes, then drain the explicit Promise queue. A private print capture requires
 exactly one completion, rejects failure or duplicate messages, and keeps reported

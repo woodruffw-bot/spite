@@ -1,6 +1,8 @@
 use crate::{Metadata, MetadataError, Mode, Negative, Phase};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
-use spite_parser::{parse_script, parse_script_with_source_limit};
+use spite_parser::{
+    parse_module, parse_module_with_source_limit, parse_script, parse_script_with_source_limit,
+};
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 mod async_completion;
@@ -70,7 +72,7 @@ pub struct CaseResult {
     pub outcome: Outcome,
 }
 
-/// A Script runner with Promise-job completion and explicit unsupported capabilities.
+/// Script execution and reviewed Module syntax checks with explicit host boundaries.
 #[derive(Clone, Debug, Default)]
 pub struct Runner {
     /// Limits used for each Script evaluation in a fresh test realm.
@@ -84,8 +86,9 @@ impl Runner {
     /// `load_harness` provides unchanged UTF-8 harness files by safe relative name.
     /// Parse-negative tests never evaluate harness code or test bodies. Async
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
-    /// Promise jobs. Modules, raw async harness setup, and agent settings remain
-    /// explicitly unsupported. Host helper names are reserved so missing helpers
+    /// Promise jobs. Module parse negatives use the Module goal and the same exact
+    /// review checks; Module execution, raw async harness setup, and agent settings
+    /// remain explicitly unsupported. Host helper names are reserved so missing helpers
     /// cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.
     pub fn run(
@@ -114,10 +117,28 @@ impl Runner {
         load_harness: &mut impl FnMut(&str) -> Result<String, String>,
     ) -> Outcome {
         if mode == Mode::Module {
-            return unsupported(
-                Stage::Parse,
-                "module parsing and resolution are not implemented",
-            );
+            let parsed = match self.limits.max_source_bytes {
+                Some(limit) => parse_module_with_source_limit(original, limit),
+                None => parse_module(original),
+            };
+            return match parsed {
+                Err(diagnostic) => parse_result(diagnostic, metadata.negative.as_ref(), review, 0),
+                Ok(_)
+                    if metadata
+                        .negative
+                        .as_ref()
+                        .is_some_and(|negative| negative.phase == Phase::Parse) =>
+                {
+                    failed(
+                        Stage::Parse,
+                        "expected a parse exception, but parsing succeeded",
+                    )
+                }
+                Ok(_) => unsupported(
+                    Stage::Runtime,
+                    "module linking and execution are not implemented",
+                ),
+            };
         }
         let source = mode.prepare_source(original);
         let parsed = match self.limits.max_source_bytes {

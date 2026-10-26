@@ -10082,3 +10082,13 @@ test/language/expressions/dynamic-import/import-attributes/2nd-param-non-object.
 test/language/expressions/dynamic-import/import-attributes/trailing-comma-reject.js	-	-	-
 test/language/expressions/dynamic-import/assign-expr-get-value-abrupt-throws.js	-	-	-
 test/language/expressions/dynamic-import/escape-sequence-import.js	1021	1032	reserved word cannot be an identifier
+test/language/expressions/import.meta/syntax/escape-sequence-import.js	978	989	reserved word cannot be an identifier
+test/language/expressions/import.meta/syntax/escape-sequence-meta.js	983	992	expected meta after import dot
+test/language/expressions/import.meta/syntax/invalid-assignment-target-array-destructuring-expr.js	780	791	invalid destructuring assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-array-rest-destructuring-expr.js	783	794	invalid destructuring assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-assignment-expr.js	781	792	invalid assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-for-in-loop.js	705	716	invalid for-in assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-for-of-loop.js	715	726	invalid for-of assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-object-destructuring-expr.js	784	795	invalid destructuring assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-object-rest-destructuring-expr.js	797	808	invalid destructuring assignment target
+test/language/expressions/import.meta/syntax/invalid-assignment-target-update-expr.js	712	723	invalid update target

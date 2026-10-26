@@ -10121,3 +10121,13 @@ script-pass	170ecb5d2b640bc43bc847e759c4d71fe840d031eff9ca5121c5a3cbbd010f8c	tes
 script-pass	24c8f6880e2562fb9efc353dacf303f24c819104198c8d225c150129563d1008	test/language/expressions/dynamic-import/import-attributes/trailing-comma-reject.js
 script-pass	e856975950b76ebdd1447bd273f4a7e07485333a6fe1d82e356582577f732b23	test/language/expressions/dynamic-import/assign-expr-get-value-abrupt-throws.js
 parse-syntax-error	144e19cd58f4843588295c4ba911a46cd3bce330f7c2204f5d27db6168a45b8c	test/language/expressions/dynamic-import/escape-sequence-import.js
+parse-syntax-error	ce1d9261067ef21fd9d83a4574afb78ae7d54d698902c319f79a57b942962ca0	test/language/expressions/import.meta/syntax/escape-sequence-import.js
+parse-syntax-error	c8fb14dd6b3c5b49959ba48b7024f7412fa70cdedb2c06c3cb9bf0d68e220a46	test/language/expressions/import.meta/syntax/escape-sequence-meta.js
+parse-syntax-error	2fbc3aae223fed21950a692929b59186bee54cb2b9e15c94b8ba9378800fa0ff	test/language/expressions/import.meta/syntax/invalid-assignment-target-array-destructuring-expr.js
+parse-syntax-error	14e7eca195c0daaa118a53df2e243b6a749f5f188cac30b1f0f511f1f441d101	test/language/expressions/import.meta/syntax/invalid-assignment-target-array-rest-destructuring-expr.js
+parse-syntax-error	494bf34ff1ba093e983262dbcc7ff86fa7be1b3cd8971316caa1cebd050ca89b	test/language/expressions/import.meta/syntax/invalid-assignment-target-assignment-expr.js
+parse-syntax-error	21ef3b3c4a135a0673129c72765de17e63e561e3916438b7f3510ec106167115	test/language/expressions/import.meta/syntax/invalid-assignment-target-for-in-loop.js
+parse-syntax-error	5e3c3fee53c2a9c361754a1e4f3c7b2ff42fbaf2917003edcb49d309701aaf94	test/language/expressions/import.meta/syntax/invalid-assignment-target-for-of-loop.js
+parse-syntax-error	c7aa223f3adf7e0e51c0c9fa7d28c54e7faeb23877cb9b931cd36206b22fe5e4	test/language/expressions/import.meta/syntax/invalid-assignment-target-object-destructuring-expr.js
+parse-syntax-error	a37abbb17e395f114351b526c479b4acf9bd5ba13a0ca432c80979b2c6fe0333	test/language/expressions/import.meta/syntax/invalid-assignment-target-object-rest-destructuring-expr.js
+parse-syntax-error	fb407018303e308e808afc656092825725d860dab800da05b8b2ab7fd90c4be3	test/language/expressions/import.meta/syntax/invalid-assignment-target-update-expr.js

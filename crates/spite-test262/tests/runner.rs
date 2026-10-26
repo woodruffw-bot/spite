@@ -469,3 +469,128 @@ fn outcome_snapshot_keeps_non_passing_categories_visible() {
     ];
     insta::assert_debug_snapshot!(outcomes);
 }
+
+#[test]
+fn module_parse_negatives_require_the_exact_module_goal_rejection_without_a_script_prefix() {
+    let text = source(
+        "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
+        "import.meta = 1",
+    );
+    let start = text.rfind("import.meta").unwrap();
+    let review = ParseExpectation {
+        span: Span::new(start, start + 11),
+        message: "invalid assignment target".into(),
+    };
+    let run = |review: Option<&ParseExpectation>| {
+        Runner::default()
+            .run(&text, review, |_| {
+                panic!("Module parse test loaded harness")
+            })
+            .unwrap()
+            .remove(0)
+    };
+    let case = run(Some(&review));
+    assert_eq!(case.mode, Mode::Module);
+    assert_eq!(case.outcome, Outcome::Passed);
+    assert!(matches!(run(None).outcome, Outcome::UnverifiedSyntax(_)));
+    let mismatched = ParseExpectation {
+        span: Span::new(start + 14, start + 25),
+        ..review
+    };
+    assert!(matches!(
+        run(Some(&mismatched)).outcome,
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() {
+    for body in ["import.meta", "await 1", "using value=null"] {
+        let text = source(
+            "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
+            body,
+        );
+        let cases = Runner::default()
+            .run(&text, None, |_| panic!("Module negative loaded harness"))
+            .unwrap();
+        assert!(matches!(
+            cases[0].outcome,
+            Outcome::Failed {
+                stage: Stage::Parse,
+                ..
+            }
+        ));
+    }
+    for body in ["import 'source'", "export {}"] {
+        let text = source(
+            "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
+            body,
+        );
+        let cases = Runner::default()
+            .run(&text, None, |_| panic!("unsupported Module loaded harness"))
+            .unwrap();
+        assert!(matches!(
+            cases[0].outcome,
+            Outcome::Unsupported {
+                stage: Stage::Parse,
+                ..
+            }
+        ));
+    }
+    let text = source("flags: [module]", "throw 7");
+    let cases = Runner::default()
+        .run(&text, None, |_| {
+            panic!("unimplemented Module execution loaded harness")
+        })
+        .unwrap();
+    assert!(matches!(
+        cases[0].outcome,
+        Outcome::Unsupported {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn module_source_limits_and_phase_mismatches_preserve_nonpassing_outcomes() {
+    let text = source(
+        "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
+        "import.meta = 1",
+    );
+    let runner = Runner {
+        limits: Limits {
+            max_source_bytes: Some(text.len() - 1),
+            ..Default::default()
+        },
+    };
+    assert!(matches!(
+        runner
+            .run(&text, None, |_| panic!("limited Module loaded harness"))
+            .unwrap()[0]
+            .outcome,
+        Outcome::Limit {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+    let text = source(
+        "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError",
+        "with({}){}",
+    );
+    assert!(matches!(
+        Runner::default()
+            .run(&text, None, |_| panic!(
+                "Module phase mismatch loaded harness"
+            ))
+            .unwrap()[0]
+            .outcome,
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+}
