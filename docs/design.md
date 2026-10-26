@@ -443,8 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including awaited super construction calls,
-pattern defaults and control flow. Ordinary calls support awaited arguments and
+including pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
 argument. A later suspension retains that target and every preceding argument;
@@ -476,7 +475,7 @@ and selected function before arguments; parentheses preserve that receiver, whil
 value-producing await/comma forms do not. Private resolution and brands use the
 restored private context. Deletion evaluates the reference without reading its
 value and preserves strict failures. Retained bases participate in tracing and
-the physical Symbol inventory. Assignments and updates remain separate work.
+the physical Symbol inventory. Assignments and updates use the same references.
 
 New expressions support awaited constructors and arguments (sec-evaluatenew).
 Calls and construction share argument continuations with a typed invocation
@@ -487,6 +486,17 @@ after the arguments finish. Awaited member constructor values use ordinary
 GetValue without a call receiver. Optional argument lists, spread, storage limits
 and abrupt completion reuse the established algorithms. Constructor values and
 earlier arguments participate in tracing and the physical Symbol inventory.
+
+Super calls in lexical async arrows support awaited arguments (13.3.7.2).
+Ordinary and suspended execution share constructor preparation and completion:
+GetSuperConstructor captures the superclass, active constructor, newTarget and
+this environment before argument evaluation. The existing argument cursor retains
+that target and earlier arguments across suspension. Constructibility checks and
+newTarget prototype lookup follow arguments; BindThisValue follows construction,
+and instance element initialization follows binding. A repeated super call still
+constructs before binding rejects it; an initializer failure leaves this bound.
+Saved target values and the this environment participate in tracing and capture
+validation. Host abort discards the continuation without JavaScript cleanup.
 
 Simple and compound assignment support awaited member targets and RHS expressions
 (13.15.2). The Reference type is shared with ordinary evaluation: names borrow

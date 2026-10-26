@@ -30,6 +30,7 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
             has_supported_await(value)
         }
+        ExprKind::SuperCall(arguments) => arguments.iter().any(|argument| has_supported_await(argument.expression())),
         ExprKind::SuperProperty(PropertyName::Computed(key)) => has_supported_await(key),
         ExprKind::OptionalChain {base, steps} => has_supported_await(base) || steps.iter().any(|step| match &step.kind {
             ChainStepKind::Property(PropertyName::Computed(key)) => has_supported_await(key),
@@ -183,6 +184,9 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
             (ExprChild::Argument(index), ExprKind::TaggedTemplate { substitutions, .. }) => {
                 &substitutions[*index]
             }
+            (ExprChild::Argument(index), ExprKind::SuperCall(arguments)) => {
+                arguments[*index].expression()
+            }
             (ExprChild::Argument(index), ExprKind::Call { arguments, .. }) => {
                 arguments[*index].expression()
             }
@@ -244,7 +248,7 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
 
 fn invocation_arguments(expression: &Expr) -> &[Argument] {
     match &expression.kind {
-        ExprKind::Call { arguments, .. } => arguments,
+        ExprKind::Call { arguments, .. } | ExprKind::SuperCall(arguments) => arguments,
         ExprKind::New { arguments, .. } => arguments.as_deref().unwrap_or(&[]),
         _ => unreachable!("invocation argument cursor"),
     }
@@ -377,6 +381,7 @@ impl Realm {
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
+                        | ExprKind::SuperCall(_)
                         | ExprKind::SuperProperty(_)
                         | ExprKind::OptionalChain { .. }
                         | ExprKind::Object(_)
@@ -447,6 +452,13 @@ impl Realm {
                                     },
                                     span,
                                 )?,
+                                ExprKind::SuperCall(_) => {
+                                    let target =
+                                        InvocationTarget::Super(self.prepare_super_call(span)?);
+                                    self.begin_async_invocation_arguments(
+                                        data, &mut state, path, target, span,
+                                    )?;
+                                }
                                 ExprKind::SuperProperty(_) => self.begin_async_member(
                                     data,
                                     &mut state,
@@ -726,6 +738,9 @@ impl Realm {
                         state.current = Some(match target {
                             InvocationTarget::Call(target) => {
                                 self.invoke_call(target, arguments, span)?
+                            }
+                            InvocationTarget::Super(target) => {
+                                self.finish_super_call(target, arguments, span)?
                             }
                             InvocationTarget::Construct(constructor) => {
                                 self.construct(constructor, arguments, span)?

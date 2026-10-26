@@ -392,6 +392,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
         ),
         (
+            "async super construction earlier argument",
+            "(()=>{let gate=new Promise(()=>{});class B{}class C extends B{constructor(){return(async()=>super(key,await gate))()}}new C();return gate})()",
+        ),
+        (
             "async super computed-key saved this",
             "(()=>{let gate=new Promise(()=>{}),object={async f(){'use strict';return super[await gate]}};object.f.call(key);return gate})()",
         ),

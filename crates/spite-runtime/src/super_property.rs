@@ -1,8 +1,25 @@
 //! SuperProperty and MakeSuperPropertyReference (13.3.7.1, 13.3.7.3).
 
-use crate::{Error, Realm, Reference, Value};
+use crate::{Error, Realm, Reference, Value, environment::EnvironmentHandle};
 use spite_core::Span;
 use spite_parser::ast::{Argument, PropertyName};
+
+#[derive(Debug)]
+pub(crate) struct SuperCallTarget {
+    environment: EnvironmentHandle,
+    function: Value,
+    superclass: Value,
+    new_target: Value,
+}
+
+impl SuperCallTarget {
+    pub(crate) fn values(&self) -> impl Iterator<Item = &Value> {
+        [&self.function, &self.superclass, &self.new_target].into_iter()
+    }
+    pub(crate) fn environment(&self) -> &EnvironmentHandle {
+        &self.environment
+    }
+}
 
 impl Realm {
     pub(super) fn super_call(
@@ -11,6 +28,12 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.tick(span)?;
+        let target = self.prepare_super_call(span)?;
+        let values = self.argument_list(arguments)?;
+        self.finish_super_call(target, values, span)
+    }
+
+    pub(crate) fn prepare_super_call(&mut self, span: Span) -> Result<SuperCallTarget, Error> {
         let mut next = self.scopes.last().cloned();
         let (environment, function, new_target) = loop {
             let environment = next.expect("validated derived constructor context");
@@ -39,7 +62,28 @@ impl Realm {
         let superclass = self
             .get_prototype_of(&function, span)?
             .map_or(Value::Null, Value::Object);
-        let values = self.argument_list(arguments)?;
+        Ok(SuperCallTarget {
+            environment,
+            function: Value::Object(function),
+            superclass,
+            new_target: Value::Object(new_target),
+        })
+    }
+
+    pub(crate) fn finish_super_call(
+        &mut self,
+        target: SuperCallTarget,
+        values: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let Value::Object(function) = target.function else {
+            unreachable!("super function object")
+        };
+        let Value::Object(new_target) = target.new_target else {
+            unreachable!("super newTarget")
+        };
+        let environment = target.environment;
+        let superclass = target.superclass;
         let instance =
             self.construct_with_new_target(superclass, values, Some(new_target), span)?;
         let initialized = self.object_work(span, |objects, budget| {

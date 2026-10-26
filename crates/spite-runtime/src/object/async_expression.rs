@@ -48,17 +48,31 @@ pub(crate) type ExprPath = Vec<ExprChild>;
 pub(crate) enum InvocationTarget {
     Call(CallTarget),
     Construct(Value),
+    Super(crate::super_property::SuperCallTarget),
 }
 
 impl InvocationTarget {
     fn values(&self) -> impl Iterator<Item = &Value> {
-        let (value, call) = match self {
-            Self::Call(call) => (None, Some(call)),
-            Self::Construct(value) => (Some(value), None),
+        let (value, call, super_target) = match self {
+            Self::Call(call) => (None, Some(call), None),
+            Self::Construct(value) => (Some(value), None, None),
+            Self::Super(target) => (None, None, Some(target)),
         };
         value
             .into_iter()
             .chain(call.into_iter().flat_map(CallTarget::values))
+            .chain(
+                super_target
+                    .into_iter()
+                    .flat_map(crate::super_property::SuperCallTarget::values),
+            )
+    }
+
+    fn environment(&self) -> Option<&EnvironmentHandle> {
+        match self {
+            Self::Super(target) => Some(target.environment()),
+            _ => None,
+        }
     }
 }
 
@@ -235,6 +249,18 @@ pub(crate) enum ExprTask {
 }
 
 impl ExprTask {
+    fn invocation_environment(&self) -> Option<&EnvironmentHandle> {
+        match self {
+            Self::ArgumentNext { target, .. } | Self::ArgumentAppend { target, .. } => {
+                target.environment()
+            }
+            Self::OptionalArgumentNext(cursor) | Self::OptionalArgumentAppend(cursor) => {
+                cursor.target.environment()
+            }
+            _ => None,
+        }
+    }
+
     fn reference(&self) -> Option<&Reference<'static>> {
         match self {
             Self::AssignmentApply { reference, .. } => Some(reference),
@@ -306,6 +332,11 @@ impl AsyncExpressionData {
             .iter()
             .filter_map(ExprTask::reference)
             .filter_map(Reference::environment)
+            .chain(
+                self.tasks
+                    .iter()
+                    .filter_map(ExprTask::invocation_environment),
+            )
     }
 
     pub(super) fn objects(&self) -> impl Iterator<Item = &Handle> {

@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Super calls with awaited arguments
+
+Seven Runtime groups and a Symbol ownership control cover early superclass
+selection, raw spread, deferred constructibility/prototype lookup, repeated this
+binding, throwing field initializers, collection and host/argument limits. All
+417 units and 2,087 non-RegExp integrations pass across 665 Runtime case files;
+strict Clippy and Rust 1.88 checks pass. Ordinary and suspended super calls share
+constructor preparation, construction, this binding and instance initialization.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Computed super properties with awaited keys
 
 Six Runtime groups and a Symbol ownership control cover early this validation,
