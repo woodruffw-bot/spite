@@ -1,0 +1,144 @@
+---
+source: crates/spite-parser/tests/for_await.rs
+expression: "parse_script(\"async function f(){for await(const x of source){await x}for(let y of source);}\").unwrap()"
+---
+Script {
+    statements: [
+        Statement {
+            kind: Function(
+                Function {
+                    kind: Async,
+                    name: Some(
+                        FunctionName {
+                            name: "f",
+                            span: Span {
+                                start: 15,
+                                end: 16,
+                            },
+                        },
+                    ),
+                    parameters: [],
+                    body: FunctionBody {
+                        statements: [
+                            Statement {
+                                kind: ForOf {
+                                    awaited: true,
+                                    binding: Lexical {
+                                        mutable: false,
+                                        binding: BindingPattern {
+                                            kind: Identifier(
+                                                "x",
+                                            ),
+                                            span: Span {
+                                                start: 35,
+                                                end: 36,
+                                            },
+                                        },
+                                    },
+                                    iterable: Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "source",
+                                        ),
+                                        span: Span {
+                                            start: 40,
+                                            end: 46,
+                                        },
+                                    },
+                                    body: Statement {
+                                        kind: Block(
+                                            [
+                                                Statement {
+                                                    kind: Expression(
+                                                        Expr {
+                                                            depth: 2,
+                                                            kind: Await(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: Identifier(
+                                                                        "x",
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 54,
+                                                                        end: 55,
+                                                                    },
+                                                                },
+                                                            ),
+                                                            span: Span {
+                                                                start: 48,
+                                                                end: 55,
+                                                            },
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 48,
+                                                        end: 55,
+                                                    },
+                                                },
+                                            ],
+                                        ),
+                                        span: Span {
+                                            start: 47,
+                                            end: 56,
+                                        },
+                                    },
+                                },
+                                span: Span {
+                                    start: 19,
+                                    end: 56,
+                                },
+                            },
+                            Statement {
+                                kind: ForOf {
+                                    awaited: false,
+                                    binding: Lexical {
+                                        mutable: true,
+                                        binding: BindingPattern {
+                                            kind: Identifier(
+                                                "y",
+                                            ),
+                                            span: Span {
+                                                start: 64,
+                                                end: 65,
+                                            },
+                                        },
+                                    },
+                                    iterable: Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "source",
+                                        ),
+                                        span: Span {
+                                            start: 69,
+                                            end: 75,
+                                        },
+                                    },
+                                    body: Statement {
+                                        kind: Empty,
+                                        span: Span {
+                                            start: 76,
+                                            end: 77,
+                                        },
+                                    },
+                                },
+                                span: Span {
+                                    start: 56,
+                                    end: 77,
+                                },
+                            },
+                        ],
+                        strict: false,
+                    },
+                    source: FunctionSource(
+                        "async function f(){for await(const x of source){await x}for(let y of source);}",
+                    ),
+                },
+            ),
+            span: Span {
+                start: 0,
+                end: 78,
+            },
+        },
+    ],
+    strict: false,
+}

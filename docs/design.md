@@ -717,8 +717,18 @@ throw-reason precedence and host-failure isolation. Iterator return lookup remai
 live, and synchronous yield/return values receive no implicit Await. Iterator
 handles, cached methods and loop values are traced and validated, with every
 stored Symbol counted. Parameter-catch and iteration scopes share a lexical scope
-frame, with disposal enabled only for resource iterations. For-await-of remains
-Unsupported; this is synchronous iteration with suspended source execution.
+frame, with disposal enabled only for resource iterations. For-await-of execution
+remains Unsupported; this is synchronous iteration with suspended source execution.
+
+For-await-of grammar is accepted in async bodies (14.7.5), including async arrows,
+methods and dynamic AsyncFunction bodies. The existing ForOf AST records whether
+iteration awaits next results. Assignment, pattern, var/lexical and synchronous
+using heads retain their existing validation; an async IdentifierReference is
+valid in a for-await head. The grammar rejects for-await-in, three-clause headers,
+initializers, escaped terminals and use outside an async body. Runtime dispatch
+reports Unsupported before evaluating the iterable or acquiring an iterator;
+unexecuted loops remain inert. Await-using and async generators remain separate
+boundaries. Unsupported parsing never verifies a negative conformance test.
 
 For-in loops support awaited RHS expressions and bodies (14.7.5.6–10). Ordinary
 and suspended execution share one internal enumeration state: the current object,
@@ -1552,8 +1562,8 @@ original throw taking precedence over closing language failures. Step failures
 and final length failures skip closing. Host failures bypass rejection and closing;
 completion releases cursor captures even after a host allowance is exhausted.
 No public then/species hook or replacement Promise binding participates in native
-Await. Array constructor own-key reflection is now complete. Async generators,
-for-await-of and source-level await remain separate work.
+Await. Array constructor own-key reflection is now complete. Async generators and
+for-await-of execution remain separate work.
 
 Iterator.from uses GetIteratorFlattenable in iterate-string-primitives mode
 (27.1.3.2.2): reject all other primitives before hooks, get/call Symbol.iterator

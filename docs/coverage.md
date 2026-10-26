@@ -60,6 +60,26 @@ not an alternative language specification.
 
 
 
+## For-await-of grammar and reviewed initializer errors
+
+Six Parser groups cover async contexts, all supported head forms, escaped tokens,
+labels/conflicts, dynamic compilation and native depth limits. Parser totals are
+18 units and 361 integrations across 76 case files. Three existing snapshots add
+only six false iteration flags; one new AST snapshot distinguishes async/sync
+loops. Two Runtime groups cover unreachable loops and the explicit host boundary
+before iterable evaluation, handlers and disposal. All 417 units and 2,106
+non-RegExp integrations pass across 668 Runtime case files; Clippy and Rust 1.88
+checks pass. Asynchronous stepping/closing and await-using remain separate work.
+
+Four unchanged pinned initializer-error originals pass both Script variants after
+review of the exact initializer spans and diagnostics. The complete nineteen-file
+core review has eight passing and 27 Unsupported variants, with unverified and
+other non-passing categories at zero. Earlier cohorts retain 36 passing/8
+Unsupported await variants, 160 passing/102 Unsupported Array/adapter variants
+and 188 passing update variants. Inventories are 9,694 fixtures, twenty helpers,
+9,675 reviewed sources, 18,770 variants and 579 intrinsic entries. Helpers and
+quotas are unchanged.
+
 ## With statements and awaited object-binding var initializers
 
 Eight Runtime groups and a Symbol ownership control cover awaited objects/bodies,

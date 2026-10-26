@@ -9709,3 +9709,7 @@ script-pass	128193f2334f9a9c7e48f8a32996765e3b9c4a49cff0c34a146efe7bfea7dc6f	tes
 script-pass	cce941fa3b5fb50748218aaf91d2de6c3d4681c9aa8683ef1b364407a802be31	test/language/expressions/postfix-decrement/operator-x-postfix-decrement-calls-putvalue-lhs-newvalue-.js
 script-pass	09d4c03139e55016badf71ed20bd3b811a0e88cfd6a950a6e43669ae26bfac35	test/language/expressions/postfix-decrement/target-cover-id.js
 script-pass	cf141c6133ef8f3233e0bb51602e61d20567e3ac8d3cf395800425677cd78bc1	test/language/expressions/postfix-decrement/whitespace.js
+parse-syntax-error	7a2b4798ead88054714b672796c5b9d680d2dad89e24e2bc68c7b31ed75e3b65	test/language/statements/for-await-of/head-const-init.js
+parse-syntax-error	28fc90a5b20c667c58db664ababf8cf4288572933eb034528b88bbcc722cd9cd	test/language/statements/for-await-of/head-let-init.js
+parse-syntax-error	7c7fa1500de2e11b0d23c6e04414ad624aed0e811bd8b665acefec552d7b49a3	test/language/statements/for-await-of/head-using-init.js
+parse-syntax-error	994cb4fe99089491f9358638cde84743a156fea85aaf38886fd83a77a7986f9b	test/language/statements/for-await-of/head-var-init.js

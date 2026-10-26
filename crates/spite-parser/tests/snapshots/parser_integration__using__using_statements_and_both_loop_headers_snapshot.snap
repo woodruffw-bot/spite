@@ -135,6 +135,7 @@ Script {
                     },
                     Statement {
                         kind: ForOf {
+                            awaited: false,
                             binding: Using(
                                 BindingPattern {
                                     kind: Identifier(

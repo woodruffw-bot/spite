@@ -77,11 +77,14 @@ fn header_validation_and_label_contexts_are_preserved() {
 }
 
 #[test]
-fn unsupported_header_forms_are_not_syntax_error_passes() {
+fn unsupported_headers_and_invalid_await_contexts_are_classified() {
+    assert_eq!(
+        parse_script("for await (x of y) ;").unwrap_err().kind,
+        DiagnosticKind::Syntax
+    );
     for source in [
         "for (var [x] = function* gap(){};;) ;",
         "for (var {x} = function* gap(){};;) ;",
-        "for await (x of y) ;",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9690 unmodified test fixtures and twenty harness files come from
+These 9694 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,19 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## For-await-of grammar review
+
+Four byte-verified pinned initializer-error originals pass both Script variants
+after review of exact initializer spans and diagnostics. The complete nineteen-file
+core review has eight passing and 27 Unsupported variants, with unverified and
+other non-passing categories at zero. Runtime execution still reports Unsupported
+before iterable evaluation. Six Parser groups, one new/reviewed AST snapshot and
+two Runtime groups cover the grammar and runtime boundary; existing groups remain.
+Earlier candidate cohorts retain 36 passing/8 Unsupported await variants, 160
+passing/102 Unsupported Array/adapter variants and 188 passing update variants.
+Inventories are 9,694 fixtures, twenty helpers, 9,675 reviewed sources and 18,770
+variants; helpers, quotas and intrinsic entries are unchanged.
 
 ## Awaited with/object-binding review
 

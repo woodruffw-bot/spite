@@ -928,7 +928,16 @@ impl Realm {
                 binding,
                 iterable,
                 body,
-            } => self.for_of(binding, iterable, body, labels, statement.span),
+                awaited,
+            } => {
+                if *awaited {
+                    return Err(Self::unsupported(
+                        statement.span,
+                        "for-await-of execution is not implemented",
+                    ));
+                }
+                self.for_of(binding, iterable, body, labels, statement.span)
+            }
             StatementKind::ForIn {
                 binding,
                 object,

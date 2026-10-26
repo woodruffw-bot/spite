@@ -117,16 +117,12 @@ fn invalid_parameters_duplicate_names_and_strict_bindings_are_early_errors() {
 }
 
 #[test]
-fn unimplemented_parameter_and_body_forms_remain_explicit_gaps() {
+fn async_arrows_accept_for_await_bodies() {
     for source in [
         "async x=>{for await(x of items){}}",
         "async (x)=>{for await(x of items){}}",
     ] {
-        assert_eq!(
-            parse_script(source).unwrap_err().kind,
-            DiagnosticKind::Unsupported,
-            "{source}"
-        );
+        assert!(parse_script(source).is_ok(), "{source}");
     }
 }
 

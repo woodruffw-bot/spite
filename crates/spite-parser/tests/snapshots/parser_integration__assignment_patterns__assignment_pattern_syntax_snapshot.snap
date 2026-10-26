@@ -200,6 +200,7 @@ Script {
         },
         Statement {
             kind: ForOf {
+                awaited: false,
                 binding: Pattern(
                     AssignmentPattern {
                         kind: Array {

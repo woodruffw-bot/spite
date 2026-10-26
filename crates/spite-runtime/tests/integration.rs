@@ -1404,3 +1404,6 @@ mod async_await_switch;
 
 #[path = "cases/async_await_with.rs"]
 mod async_await_with;
+
+#[path = "cases/for_await_grammar.rs"]
+mod for_await_grammar;

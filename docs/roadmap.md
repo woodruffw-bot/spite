@@ -406,6 +406,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume super-call arguments in lexical async arrows through shared constructor selection, argument accumulation, this binding and instance initialization.
 - [x] Resume switch discriminants, selectors and case bodies with shared case scope, strict selection, default fallback, fall-through and completion values.
 - [x] Resume with objects and bodies through shared object-environment creation, scope restoration and saved declarative/object var references.
+- [x] Parse for-await-of in async bodies with explicit AST iteration kind, context/head validation and a runtime boundary before iterable evaluation.
+- [ ] Evaluate for-await-of through asynchronous iterator stepping and closing.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

@@ -76,12 +76,12 @@ fn invalid_targets_initializers_scopes_and_controls_are_syntax_errors() {
 }
 
 #[test]
-fn patterns_parse_and_async_iteration_stays_unsupported() {
+fn patterns_parse_and_async_iteration_requires_an_async_context() {
     assert!(parse_script("for([x] of []) ;").is_ok());
     assert!(parse_script("for({x} of []) ;").is_ok());
     assert_eq!(
         parse_script("for await(x of []) ;").unwrap_err().kind,
-        DiagnosticKind::Unsupported
+        DiagnosticKind::Syntax
     );
     let source = format!("{};", "for(let x of []) ".repeat(MAX_DEPTH * 2));
     assert_eq!(

@@ -1849,6 +1849,7 @@ fn validate_statement<'a>(
             binding,
             iterable,
             body,
+            ..
         }
         | StatementKind::ForIn {
             binding,

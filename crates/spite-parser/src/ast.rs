@@ -353,8 +353,10 @@ pub enum StatementKind {
         /// Repeated statement.
         body: Box<Statement>,
     },
-    /// A synchronous loop over an iterable.
+    /// A synchronous or asynchronous loop over an iterable.
     ForOf {
+        /// Whether iteration awaits next results (`for await...of`).
+        awaited: bool,
         /// Assignment target or single declaration initialized per iteration.
         binding: ForBinding,
         /// Iterable expression evaluated once before iterator acquisition.

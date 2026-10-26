@@ -216,6 +216,13 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_for(data, span);
         }
+        if matches!(statement.kind, StatementKind::ForOf { awaited: true, .. }) {
+            self.tick(statement.span)?;
+            return Err(Self::unsupported(
+                statement.span,
+                "for-await-of execution is not implemented",
+            ));
+        }
         if matches!(
             statement.kind,
             StatementKind::ForOf { .. } | StatementKind::ForIn { .. }

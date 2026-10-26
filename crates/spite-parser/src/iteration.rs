@@ -1,4 +1,4 @@
-//! Three-clause, for-in, and synchronous for-of loop headers (14.7.4–5).
+//! Three-clause, for-in, and synchronous/asynchronous for-of headers (14.7.4–5).
 
 use crate::*;
 
@@ -9,6 +9,7 @@ pub(super) enum ForHeader {
         update: Option<Expr>,
     },
     Of {
+        awaited: bool,
         binding: ForBinding,
         iterable: Expr,
     },
@@ -31,7 +32,12 @@ impl ForHeader {
                 update,
                 body,
             },
-            Self::Of { binding, iterable } => StatementKind::ForOf {
+            Self::Of {
+                awaited,
+                binding,
+                iterable,
+            } => StatementKind::ForOf {
+                awaited,
                 binding,
                 iterable,
                 body,
@@ -49,9 +55,24 @@ impl Parser {
     // Finish the header before recursively parsing the body. Large temporary AST
     // values must not remain on native frames at every nested statement level.
     pub(super) fn for_header(&mut self) -> Result<Box<ForHeader>, Diagnostic> {
-        if self.at("await") {
-            return Err(self.unsupported("for-await-of is not implemented"));
+        let await_span = if self.at("await") {
+            if !matches!(self.await_context, AwaitContext::Body) {
+                return Err(self.error("for-await-of requires an async body"));
+            }
+            Some(self.bump().span)
+        } else {
+            None
+        };
+        let header = self.for_header_inner(await_span.is_some())?;
+        if let Some(span) = await_span
+            && !matches!(header.as_ref(), ForHeader::Of { .. })
+        {
+            return Err(early(span, "for-await-of requires an of header"));
         }
+        Ok(header)
+    }
+
+    fn for_header_inner(&mut self, awaited: bool) -> Result<Box<ForHeader>, Diagnostic> {
         self.expect("(")?;
         if let Some(cover) = self.pattern_cover()?
             && self.tokens.get(cover.end).is_some_and(|token| {
@@ -70,6 +91,7 @@ impl Parser {
                 ForHeader::Of {
                     binding,
                     iterable: expression,
+                    awaited,
                 }
             } else {
                 ForHeader::In {
@@ -104,13 +126,14 @@ impl Parser {
         };
         let is_of = self.eat("of");
         if is_of || self.eat("in") {
-            let binding = self.iteration_binding(initializer, &header_start, is_of)?;
+            let binding = self.iteration_binding(initializer, &header_start, is_of, awaited)?;
             let expression = self.expression_with_in(if is_of { 2 } else { 1 }, true)?;
             self.expect(")")?;
             Ok(Box::new(if is_of {
                 ForHeader::Of {
                     binding,
                     iterable: expression,
+                    awaited,
                 }
             } else {
                 ForHeader::In {
@@ -146,6 +169,7 @@ impl Parser {
         initializer: Option<ForInitializer>,
         header_start: &Token,
         is_of: bool,
+        awaited: bool,
     ) -> Result<ForBinding, Diagnostic> {
         let invalid_target = if is_of {
             "invalid for-of assignment target"
@@ -163,7 +187,8 @@ impl Parser {
                 if (is_of
                     && !header_start.escaped
                     && (matches!(&header_start.kind, Kind::Word(name) if name == "let")
-                        || matches!(&expression.kind, ExprKind::Identifier(name) if name == "async")))
+                        || (!awaited
+                            && matches!(&expression.kind, ExprKind::Identifier(name) if name == "async"))))
                     || !assignment_target(&expression)
                 {
                     return Err(early(expression.span, invalid_target));

@@ -9670,3 +9670,7 @@ test/language/expressions/postfix-decrement/operator-x-postfix-decrement-calls-p
 test/language/expressions/postfix-decrement/operator-x-postfix-decrement-calls-putvalue-lhs-newvalue-.js	-	-	-
 test/language/expressions/postfix-decrement/target-cover-id.js	-	-	-
 test/language/expressions/postfix-decrement/whitespace.js	-	-	-
+test/language/statements/for-await-of/head-const-init.js	486	487	for-of requires one binding without an initializer
+test/language/statements/for-await-of/head-let-init.js	484	485	for-of requires one binding without an initializer
+test/language/statements/for-await-of/head-using-init.js	553	556	for-of requires one binding without an initializer
+test/language/statements/for-await-of/head-var-init.js	480	481	for-of requires one binding without an initializer

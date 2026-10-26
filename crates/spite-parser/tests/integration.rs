@@ -150,3 +150,6 @@ mod var;
 mod var_patterns;
 #[path = "with.rs"]
 mod with;
+
+#[path = "for_await.rs"]
+mod for_await;

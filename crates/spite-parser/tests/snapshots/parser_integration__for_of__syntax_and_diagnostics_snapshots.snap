@@ -6,6 +6,7 @@ Script {
     statements: [
         Statement {
             kind: ForOf {
+                awaited: false,
                 binding: Assignment(
                     Expr {
                         depth: 1,
@@ -54,6 +55,7 @@ Script {
         },
         Statement {
             kind: ForOf {
+                awaited: false,
                 binding: Var(
                     BindingElement {
                         pattern: BindingPattern {
@@ -111,6 +113,7 @@ Script {
                         },
                         body: Statement {
                             kind: ForOf {
+                                awaited: false,
                                 binding: Lexical {
                                     mutable: true,
                                     binding: BindingPattern {
@@ -170,6 +173,7 @@ Script {
         },
         Statement {
             kind: ForOf {
+                awaited: false,
                 binding: Lexical {
                     mutable: false,
                     binding: BindingPattern {
