@@ -484,7 +484,7 @@ Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Dependency requests stop before body effects.
-Graph linking/caching and import.meta remain work.
+Graph linking/evaluation and import.meta remain work.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -514,6 +514,19 @@ their record and records cache the namespace, with ordinary cycle collection.
 Export keys, sorting and copies respect opt-in work/string/property limits.
 Namespace construction and initial evaluation reset fresh host work budgets;
 operations inside active jobs share the job allowance.
+
+Module::requested_modules and Realm::module_requests expose ParseModule's
+source-ordered requests with canonical attributes. Realm::load_module_graph accepts
+a host resolver returning retained records for a referrer/request pair (16.2.1).
+An iterative depth-first traversal preserves source order, uses record identities
+for shared subgraphs/cycles, and caches successful graphs. Specifiers and attribute
+Strings retain their original UTF-16 values. Request metadata, callbacks and batch
+installation share the host work budget; capacities are checked before growth.
+All records and dependency handles are validated and prepaid before a batch installs
+links, so resolver/ownership/work failures publish no partial graph. Dependency
+edges participate in ordinary tracing and keep loaded record environments alive.
+Loading does not instantiate import bindings or run bodies. Graph linking and
+dependency evaluation remain explicit implementation boundaries.
 
 Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
 Anonymous hoistable declarations initialize this cell during Module instantiation

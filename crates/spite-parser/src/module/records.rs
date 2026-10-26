@@ -97,7 +97,7 @@ impl Module {
             }
         }
         ModuleEntries {
-            requested_modules: self.module_requests(),
+            requested_modules: self.requested_modules(),
             import_entries,
             local_export_entries,
             indirect_export_entries,
@@ -105,7 +105,10 @@ impl Module {
         }
     }
 
-    fn module_requests(&self) -> Vec<ModuleRequest> {
+    /// Returns distinct requests in first source occurrence order.
+    ///
+    /// Equality compares decoded specifiers and canonical import attributes.
+    pub fn requested_modules(&self) -> Vec<ModuleRequest> {
         let mut requests: Vec<_> = self
             .imports
             .iter()

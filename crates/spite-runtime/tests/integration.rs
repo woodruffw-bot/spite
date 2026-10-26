@@ -1470,3 +1470,6 @@ mod module_evaluation;
 
 #[path = "cases/module_records.rs"]
 mod module_records;
+
+#[path = "cases/module_graph_load.rs"]
+mod module_graph_load;

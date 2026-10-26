@@ -11,6 +11,7 @@ pub(super) struct ModuleData {
     environment: Option<EnvironmentHandle>,
     evaluation: Option<Value>,
     namespace: Option<Value>,
+    dependencies: Option<Vec<Handle>>,
 }
 
 impl ModuleData {
@@ -23,10 +24,44 @@ impl ModuleData {
             .iter()
             .map(|environment| Some(&environment.0))
             .chain(self.values().flat_map(Trace::trace))
+            .chain(self.dependencies.iter().flatten().map(Some))
     }
 }
 
 impl Objects {
+    pub(crate) fn module_dependencies(&self, record: &Handle) -> Result<Option<&[Handle]>, Error> {
+        Ok(self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .dependencies
+            .as_deref())
+    }
+    pub(crate) fn install_module_graph(
+        &mut self,
+        graph: Vec<(Handle, Vec<Handle>)>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        for (record, dependencies) in &graph {
+            budget.charge(dependencies.len().checked_add(1).ok_or(Error::WorkLimit)?)?;
+            if self.module_dependencies(record)?.is_some() {
+                return Err(Error::WrongKind);
+            };
+            for dependency in dependencies {
+                self.module_source(dependency)?;
+            }
+        }
+        for (record, dependencies) in graph {
+            self.object_mut(&record)?
+                .module_record
+                .as_mut()
+                .ok_or(Error::WrongKind)?
+                .dependencies = Some(dependencies);
+        }
+        Ok(())
+    }
+
     pub(crate) fn module_environment(
         &self,
         record: &Handle,
@@ -80,6 +115,7 @@ impl Objects {
             environment: None,
             evaluation: None,
             namespace: None,
+            dependencies: None,
         }));
         Ok(record)
     }

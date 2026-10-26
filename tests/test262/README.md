@@ -30,6 +30,19 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Host-supplied Module graph loading verification
+
+Six Runtime groups verify depth-first request order, shared/cyclic identities,
+canonical attributes and lossless UTF-16, atomic nested failure/retry, realm
+ownership and dependency retention. One existing Parser group now checks the
+public request-list getter against normalized entries. Host resolvers supply
+records; loading executes no body. Import binding/linking and graph evaluation
+remain Unsupported, so dependency-based originals receive no new credit.
+
+The inventory remains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources
+and 20,440 variants. The full gate and all forty-four runner/package checks pass.
+Existing helpers, 591 intrinsic entries and resource defaults/allowances remain.
+
 ## Standalone Module namespace verification
 
 Nine Runtime unit groups verify live namespace cells, preparation without body

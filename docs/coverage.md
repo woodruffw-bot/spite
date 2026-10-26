@@ -56,11 +56,34 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity and live namespace exotics; graph loading remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics and host-supplied graph loading; graph linking/evaluation remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Host-supplied Module graph loading
+
+Realm::load_module_graph accepts a host resolver for each distinct referrer/request
+pair. An iterative depth-first walk preserves source order and shares records by
+identity, including aliases and cycles. Successful graphs cache dependency edges;
+repeated loading calls no resolver. Ownership/work validation precedes one batch
+publication, so failures leave new links unchanged. Loaded edges retain records
+and their environments through ordinary tracing. Loading leaves bodies inert;
+import binding/linking and dependency evaluation remain Unsupported.
+
+Module::requested_modules exposes the existing canonical request construction,
+with a shared Parser assertion. Realm::module_requests retains UTF-16 specifiers
+and attributes, including lone surrogates. Six Runtime groups cover traversal,
+request/attribute equality, aliases/cycles, nested failure/retry, ownership and
+record retention. All 430 units and 2,275 non-RegExp integrations pass across 690
+case files. Parser stays 18/434 across 88 files; thirteen CLI groups, Clippy, Rust
+1.88 and inventories pass. Intrinsic entries remain 591.
+
+This host-loading phase adds no upstream execution credit. The inventory remains
+10,657 fixtures, twenty-two helpers, 10,638 reviewed sources and 20,440 variants.
+The full gate and all forty-four runner/package checks pass. Existing fixtures,
+helpers, dependencies and resource defaults/allowances are unchanged.
 
 ## Standalone Module namespace objects
 

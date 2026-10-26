@@ -1,5 +1,6 @@
 //! Standalone Source Text Module environments and evaluation (16.2.1).
 
+mod graph;
 mod namespace;
 
 use crate::{BindingState, Error, ObjectHandle, Realm, Value, environment::ThisBinding};
@@ -13,8 +14,8 @@ use std::collections::BTreeMap;
 /// A retained Source Text Module record owned by one Realm.
 ///
 /// Clones refer to the same record. The record, bindings and evaluation Promise
-/// remain reachable until the last handle is dropped. Dependency loading remains
-/// unsupported.
+/// remain reachable until the last handle is dropped. Graph linking and dependency
+/// evaluation remain unsupported.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ModuleHandle {
     root: crate::object::Root,
@@ -28,7 +29,7 @@ impl Realm {
     /// Promise. Returned values are unrooted; retain them with [`Self::root_value`]
     /// across collection. Evaluation never collects.
     ///
-    /// Dependency loading remains unsupported.
+    /// Dependency linking and evaluation remain unsupported.
     pub fn eval_module(&mut self, source: &str) -> Result<Value, Error> {
         let module = self.create_module(source)?;
         self.evaluate_module_record(&module)
@@ -139,7 +140,7 @@ impl Realm {
         {
             return Err(Self::unsupported(
                 Span::new(0, 0),
-                "module dependency loading is not implemented",
+                "module dependency linking is not implemented",
             ));
         }
         let default_export = module_default_index(module);

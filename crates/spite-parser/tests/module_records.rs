@@ -7,6 +7,7 @@ use spite_parser::{ast::ImportName, parse_module};
 fn requests_follow_first_source_occurrence_and_compare_canonical_attributes() {
     let module = parse_module("export {} from 'b';import value from 'a';export * from 'c';import 'c';export {} from 'b' with {b:'2',a:'1'};import 'b' with {a:'1',b:'2'};export {} from 'b' with {a:'1',b:'3'};import('dynamic')").unwrap();
     let entries = module.entries();
+    assert_eq!(module.requested_modules(), entries.requested_modules);
     let names: Vec<_> = entries
         .requested_modules
         .iter()
