@@ -112,7 +112,7 @@ fn const_defaults_preserve_names_immutability_method_and_dynamic_contexts() {
 #[test]
 fn unimplemented_iteration_pattern_forms_remain_host_boundaries() {
     for header in [
-        "for(var [x=await(operand++)] of [[]])",
+        "for(var {x=await(operand++)} of [{}])",
         "for(const {x=await(operand++)} of [{}])",
         "for([x=await(operand++)] of [[]])",
     ] {

@@ -49,7 +49,7 @@ impl Realm {
         self.binding_initialization(pattern, value, None, None)
     }
 
-    fn binding_reference<'a>(
+    pub(super) fn binding_reference<'a>(
         &mut self,
         pattern: &'a BindingPattern,
         environment: Option<&EnvironmentHandle>,
@@ -62,7 +62,7 @@ impl Realm {
         Ok(None)
     }
 
-    fn binding_initialization<'a>(
+    pub(super) fn binding_initialization<'a>(
         &mut self,
         pattern: &'a BindingPattern,
         value: Value,

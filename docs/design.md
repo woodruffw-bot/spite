@@ -1017,7 +1017,7 @@ parameter, catch, and nested-var early conflicts; property keys are not names.
 Default-value selection, binding iterator acquisition and rest Array collection
 are separate shared operations. Ordinary initialization still resolves references
 before stepping, preserves default name inference and uses the same closing path.
-Lexical Array BindingPatterns in declaration lists, three-clause headers and
+Array BindingPatterns in lexical/var declaration lists, three-clause headers and
 for-in/of/await-of heads can suspend in defaults. An owned cursor stack retains the binding environment,
 typed paths into the source pattern and actual IteratorRecords for nested arrays.
 Elisions skip values; rest uses the shared collector. Defined values skip defaults,
@@ -1029,13 +1029,20 @@ Iteration roots create their fresh lexical scope before initialization and queue
 the body until the complete pattern finishes. Partial normal binding closes its
 own iterator before body execution. A failing head closes inner binding iterators
 before its outer iterator, with asynchronous closing retained for for-await-of.
+Var patterns resolve and save each identifier Reference before stepping, even
+after exhaustion; rest targets resolve before collecting remaining values. The
+saved Reference survives an awaited default and keeps the selected declarative or
+with-object target despite later unscopables changes. The same core initializer
+performs writes, including mapped-arguments aliases. Cached references participate
+in value, environment, object-handle and internal Symbol inventories and are
+released before iterator closing on failure.
 
 Normal partial consumption closes the current iterator before advancing its
 parent. Rejection or nested initialization failure closes still-active iterators
 from inside out, preserving original throws; step errors retain their Done flags.
 Host abort abandons records without JavaScript closing or disposal. Cursor methods,
 iterator handles and the binding environment participate in tracing and capture
-validation. Var, object and assignment-pattern awaited defaults remain distinct
+validation. Object and assignment-pattern awaited defaults remain distinct
 Unsupported forms.
 Patterns require an initializer outside for-in/of declarations, and lexical
 BoundNames cannot contain let. Declaration instantiation creates all names before

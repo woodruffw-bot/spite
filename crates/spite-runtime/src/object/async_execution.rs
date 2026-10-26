@@ -279,6 +279,7 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.symbols())
             .chain(self.var_target.iter().flat_map(Reference::symbols))
+            .chain(self.array_binding.iter().flat_map(|state| state.symbols()))
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
@@ -314,7 +315,11 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.environments())
             .chain(self.root_scope.iter())
-            .chain(self.array_binding.iter().map(|state| &state.environment))
+            .chain(
+                self.array_binding
+                    .iter()
+                    .flat_map(|state| state.environments()),
+            )
             .chain(self.var_target.iter().filter_map(Reference::environment))
             .chain(
                 self.frames

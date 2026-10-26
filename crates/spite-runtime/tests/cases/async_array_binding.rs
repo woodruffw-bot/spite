@@ -172,9 +172,9 @@ fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
 }
 
 #[test]
-fn var_object_and_assignment_pattern_awaits_remain_explicit_host_boundaries() {
+fn object_and_assignment_pattern_awaits_remain_explicit_host_boundaries() {
     for declaration in [
-        "var [x=await(operand++)]=[]",
+        "var {x=await(operand++)}={}",
         "let {x=await(operand++)}={}",
         "let x;([x=await(operand++)]=[])",
     ] {

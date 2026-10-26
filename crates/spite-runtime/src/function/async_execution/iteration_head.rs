@@ -150,14 +150,14 @@ impl Realm {
                 AsyncAwaitAction::IterationBinding,
             );
         }
-        if let ForBinding::Lexical {
-            binding: pattern, ..
-        } = binding
-            && super::binding_array::has_array_binding_await(pattern)
-        {
-            let environment = self
-                .prepare_async_iteration_scope(&mut data.frames, binding, span)?
-                .expect("lexical iteration environment");
+        let pattern = match binding {
+            ForBinding::Lexical { binding, .. } => Some(binding),
+            ForBinding::Var(binding) => Some(&binding.pattern),
+            _ => None,
+        };
+        if pattern.is_some_and(super::binding_array::has_array_binding_await) {
+            let environment =
+                self.prepare_async_iteration_scope(&mut data.frames, binding, span)?;
             return self.start_async_array_binding(
                 data,
                 crate::object::async_binding_array::ArrayBindingRoot::Iteration,

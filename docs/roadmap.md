@@ -412,6 +412,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share binding default evaluation, iterator acquisition and rest collection for suspended binding initialization.
 - [x] Resume lexical array-binding defaults in declaration lists and three-clause headers with nested iterator state, rest, name inference and closing.
 - [x] Resume lexical array-binding defaults in for-in/of/await-of heads with fresh scopes, deferred body entry and inner-before-outer closing.
+- [x] Resume var array-binding defaults with pre-step/rest target references, mapped aliases and shared writes across declarations and iteration heads.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

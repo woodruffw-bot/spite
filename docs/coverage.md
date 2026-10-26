@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Awaited var array bindings and saved references
+
+Nine Runtime groups and two Symbol ownership controls cover parameter aliases,
+multiple declarators, RHS/header suspension, references before stepping and rest
+collection, exhausted iterators, with/unscopables changes, all iteration forms,
+names, nested closing and host abort. All 417 units and 2,153 non-RegExp integrations
+pass across 673 Runtime case files; Clippy and Rust 1.88 checks pass. Cached
+References use the existing value/environment/object/Symbol inventories. Former
+var-array boundary programs now have positive coverage; boundary controls use
+object/assignment patterns. Every prior test group and quota is retained.
+
+Complete candidate reviews and inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources, 19,012 variants, 76 Parser case files and 579 intrinsic
+entries. Helpers and quotas are unchanged.
+
 ## Awaited lexical array bindings in iteration heads
 
 Eight Runtime groups and a Symbol ownership control cover fresh let/const cells,

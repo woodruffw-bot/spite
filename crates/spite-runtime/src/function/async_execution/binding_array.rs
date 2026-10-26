@@ -44,12 +44,11 @@ fn pattern_at<'a>(
             &binding::binding_source(body, location).0[index].pattern
         }
         ArrayBindingRoot::Iteration => {
-            let ForBinding::Lexical { binding, .. } =
-                super::iteration_head::iteration_binding(body, frames)
-            else {
-                unreachable!("lexical iteration array binding")
-            };
-            binding
+            match super::iteration_head::iteration_binding(body, frames) {
+                ForBinding::Lexical { binding, .. } => binding,
+                ForBinding::Var(binding) => &binding.pattern,
+                _ => unreachable!("iteration array binding"),
+            }
         }
     };
     for child in path {
@@ -113,7 +112,7 @@ impl Realm {
         data: &mut AsyncExecutionData,
         root: ArrayBindingRoot,
         value: Value,
-        environment: EnvironmentHandle,
+        environment: Option<EnvironmentHandle>,
     ) -> Result<Step, Error> {
         debug_assert!(data.array_binding.is_none());
         data.array_binding = Some(AsyncArrayBinding {
@@ -158,6 +157,7 @@ impl Realm {
             index: 0,
             rest_pending,
             span,
+            reference: None,
         });
         Ok(())
     }
@@ -176,10 +176,21 @@ impl Realm {
             state.root,
             &path,
         );
+        let environment = state.environment.clone();
+        let reference = data
+            .array_binding
+            .as_mut()
+            .expect("array binding state")
+            .cursors
+            .last_mut()
+            .expect("binding reference cursor")
+            .reference
+            .take();
         if has_array_binding_await(pattern) {
+            debug_assert!(reference.is_none());
             self.push_async_array_binding(data, path, value)
         } else {
-            self.initialize_pattern(pattern, value, &state.environment)
+            self.binding_initialization(pattern, value, environment.as_ref(), reference)
         }
     }
 
@@ -216,6 +227,7 @@ impl Realm {
             if cursor.index < elements.len() {
                 let index = cursor.index;
                 self.tick(span)?;
+                let environment = state.environment.clone();
                 let cursor = data
                     .array_binding
                     .as_mut()
@@ -230,6 +242,10 @@ impl Realm {
                     }
                     continue;
                 };
+                cursor.reference = self
+                    .binding_reference(&element.pattern, environment.as_ref())?
+                    .map(|reference| reference.into_owned(element.pattern.span))
+                    .transpose()?;
                 let value = if cursor.iterator.is_done() {
                     Value::Undefined
                 } else {
@@ -263,7 +279,8 @@ impl Realm {
                 let path = child_path(&cursor.path, ArrayBindingChild::Element(index), span)?;
                 self.initialize_async_array_node(data, path, value)?;
             } else if cursor.rest_pending {
-                debug_assert!(rest.is_some());
+                let rest = rest.as_ref().expect("array rest binding");
+                let environment = state.environment.clone();
                 let cursor = data
                     .array_binding
                     .as_mut()
@@ -272,6 +289,10 @@ impl Realm {
                     .last_mut()
                     .expect("array cursor");
                 cursor.rest_pending = false;
+                cursor.reference = self
+                    .binding_reference(rest, environment.as_ref())?
+                    .map(|reference| reference.into_owned(rest.span))
+                    .transpose()?;
                 let value = self.binding_array_rest(&mut cursor.iterator, span)?;
                 let path = child_path(&cursor.path, ArrayBindingChild::Rest, span)?;
                 self.initialize_async_array_node(data, path, value)?;
@@ -316,7 +337,8 @@ impl Realm {
         mut error: Error,
     ) -> Error {
         let mut state = data.array_binding.take().expect("abandoned array binding");
-        while let Some(cursor) = state.cursors.pop() {
+        while let Some(mut cursor) = state.cursors.pop() {
+            cursor.reference = None;
             if !error.is_language_exception() {
                 break;
             }

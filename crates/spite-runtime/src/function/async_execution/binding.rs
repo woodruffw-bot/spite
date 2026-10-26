@@ -64,6 +64,13 @@ impl Realm {
                     if let BindingPatternKind::Identifier(_) = &binding.pattern.kind {
                         let target = data.var_target.take().expect("resolved var target");
                         self.put(target, value, binding.pattern.span)?;
+                    } else if super::binding_array::has_array_binding_await(&binding.pattern) {
+                        return self.start_async_array_binding(
+                            data,
+                            ArrayBindingRoot::Declaration(element),
+                            value,
+                            None,
+                        );
                     } else {
                         self.assign_pattern(&binding.pattern, value)?;
                     }
@@ -76,7 +83,7 @@ impl Realm {
                             data,
                             ArrayBindingRoot::Declaration(element),
                             value,
-                            environment,
+                            Some(environment),
                         );
                     }
                     self.initialize_pattern(&binding.pattern, value, &environment)?;
@@ -98,17 +105,14 @@ impl Realm {
                     ExprRoot::Binding { element },
                     AsyncAwaitAction::Binding { element },
                 );
-            } else if !var
-                && !using
-                && super::binding_array::has_array_binding_await(&binding.pattern)
-            {
+            } else if !using && super::binding_array::has_array_binding_await(&binding.pattern) {
                 self.tick(binding.pattern.span)?;
                 let value = self.binding_element_value(binding, Value::Undefined)?;
                 return self.start_async_array_binding(
                     data,
                     ArrayBindingRoot::Declaration(element),
                     value,
-                    environment,
+                    if var { None } else { Some(environment) },
                 );
             } else if var {
                 self.evaluate_var_bindings(std::slice::from_ref(binding))?;
