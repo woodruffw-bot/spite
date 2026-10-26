@@ -9974,3 +9974,26 @@ test/built-ins/GeneratorPrototype/throw/try-finally-nested-try-catch-within-oute
 test/built-ins/GeneratorPrototype/throw/try-finally-nested-try-catch-within-outer-try-before-nested.js	-	-	-
 test/built-ins/GeneratorPrototype/throw/try-finally-within-finally.js	-	-	-
 test/built-ins/GeneratorPrototype/throw/try-finally-within-try.js	-	-	-
+test/language/expressions/yield/arguments-object-attributes.js	-	-	-
+test/language/expressions/yield/captured-free-vars.js	-	-	-
+test/language/expressions/yield/formal-parameters-after-reassignment-non-strict.js	-	-	-
+test/language/expressions/yield/formal-parameters-after-reassignment-strict.js	-	-	-
+test/language/expressions/yield/formal-parameters.js	-	-	-
+test/language/expressions/yield/from-catch.js	-	-	-
+test/language/expressions/yield/from-try.js	-	-	-
+test/language/expressions/yield/from-with.js	-	-	-
+test/language/expressions/yield/in-iteration-stmt.js	510	518	invalid for-in assignment target
+test/language/expressions/yield/in-rltn-expr.js	-	-	-
+test/language/expressions/yield/invalid-left-hand-side.js	778	779	expected an expression
+test/language/expressions/yield/iter-value-specified.js	-	-	-
+test/language/expressions/yield/then-return.js	-	-	-
+test/language/expressions/yield/within-for.js	-	-	-
+test/language/expressions/yield/iter-value-unspecified.js	-	-	-
+test/language/expressions/yield/rhs-iter.js	-	-	-
+test/language/expressions/yield/rhs-omitted.js	-	-	-
+test/language/expressions/yield/rhs-primitive.js	-	-	-
+test/language/expressions/yield/rhs-regexp.js	-	-	-
+test/language/expressions/yield/rhs-template-middle.js	-	-	-
+test/language/expressions/yield/rhs-unresolvable.js	-	-	-
+test/language/expressions/yield/rhs-yield.js	-	-	-
+test/language/expressions/yield/star-in-iteration-stmt.js	512	522	invalid for-in assignment target

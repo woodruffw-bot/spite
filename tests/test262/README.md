@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9994 unmodified test fixtures and twenty harness files come from
+These 10017 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,15 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Yield-expression lexical boundary review
+
+The unchanged rhs-template-middle original now passes after recognizing template
+continuation tokens as bare-yield boundaries. Twenty positive originals and three
+syntax negatives with reviewed spans/messages add 43 variants. The complete
+inventory is 10,017 fixtures, twenty helpers, 9,998 reviewed sources and 19,376
+variants. The 63-file expression review has 43 passed/80 Unsupported variants;
+all other outcome counts are zero. Delegation remains outside this increment.
 
 ## Ordinary yield review
 

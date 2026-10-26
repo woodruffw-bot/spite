@@ -56,9 +56,25 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19333 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19376 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Bare yield at template boundaries
+
+The yield parser recognizes TemplateMiddle/TemplateTail continuation tokens as
+bare-yield boundaries. One Parser group covers middle/tail, tagged templates,
+RegExp operands and missing delegated operands; one Runtime group verifies resumed
+substitutions and once-only effects. All 18 Parser units, 382 Parser integrations,
+417 Runtime units and 2,204 non-RegExp integrations pass. Existing groups, helpers,
+quotas and intrinsic entries are unchanged.
+
+Twenty positive pinned originals and three exact reviewed syntax negatives add
+43 variants. The full yield-expression review has 43 passed/80 Unsupported
+variants and zero failures, limits, setup failures or unverified negatives.
+The reviewed inventory contains 10,017 fixtures, twenty helpers, 9,998 sources
+and 19,376 variants. The complete conformance gate and all forty package checks
+pass. Unsupported originals remain excluded as whole files.
 
 ## Ordinary generator yield and abrupt resumption
 

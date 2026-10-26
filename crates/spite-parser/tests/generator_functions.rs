@@ -181,3 +181,29 @@ fn dynamic_ordinary_functions_retain_generator_syntax_and_depth_limits_stay_sepa
         DiagnosticKind::Limit
     );
 }
+
+#[test]
+fn bare_yield_ends_before_template_middle_and_tail_components() {
+    for source in [
+        "function*g(){return `a${yield}b${yield}c`}",
+        "function*g(){return `${yield}`}",
+        "function*g(){return tag`a${yield}b`}",
+        "function*g(){return `${yield /x/.test('x')}`}",
+    ] {
+        assert!(
+            parse_script(source).is_ok(),
+            "{source}: {:?}",
+            parse_script(source)
+        );
+    }
+    for source in [
+        "function*g(){return `${yield*}`}",
+        "function*g(){return `${yield\n*x}`}",
+    ] {
+        assert_eq!(
+            parse_script(source).unwrap_err().kind,
+            DiagnosticKind::Syntax,
+            "{source}"
+        );
+    }
+}

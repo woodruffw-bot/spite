@@ -233,3 +233,16 @@ fn yielded_symbols_bigints_and_promises_remain_raw_values() {
         "let key=Symbol(),promise=Promise.resolve(7);function*g(){yield key;yield 9n;return yield promise}let iterator=g(),a=iterator.next(),b=iterator.next(),c=iterator.next(),d=iterator.next(key);a.value===key&&b.value===9n&&c.value===promise&&!c.done&&d.done&&d.value===key",
     );
 }
+
+#[test]
+fn bare_yield_inside_template_middle_and_tail_resumes_its_substitution() {
+    let mut realm = Realm::default();
+    check(
+        &mut realm,
+        r#"
+        let effects=0;function*g(){return `a${yield}b${(effects++,yield)}c`}
+        let iterator=g(),a=iterator.next(),b=iterator.next(7),c=iterator.next(9);
+        !a.done&&a.value===undefined&&!b.done&&b.value===undefined&&c.done&&c.value==='a7b9c'&&effects===1
+    "#,
+    );
+}

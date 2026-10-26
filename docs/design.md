@@ -355,7 +355,7 @@ metadata, no own prototype and no construction capability.
 Synchronous generator declarations and expressions retain FunctionKind::Generator,
 exact source and YieldExpression nodes with optional operands and a delegation
 flag (15.5). Yield uses assignment precedence, its restricted line terminator and
-the ordinary RegExp lexical goal. Bare yield ends before a line break; yield*
+the ordinary RegExp lexical goal. Bare yield ends before a line break or a template continuation token; yield*
 requires its operand. Unparenthesized yield cannot serve as an operator operand,
 assignment target or member base. Generator parameters forbid YieldExpression
 and yield bindings. Declaration names inherit the enclosing Yield context;

@@ -10,7 +10,14 @@ impl Parser {
         let start = self.current().span.start;
         self.expect("yield")?;
         let bare = self.current().newline
-            || matches!(self.current().kind, Kind::Eof)
+            || matches!(
+                self.current().kind,
+                Kind::Eof
+                    | Kind::Template {
+                        continuation: true,
+                        ..
+                    }
+            )
             || [";", "}", ")", "]", ",", ":"]
                 .iter()
                 .any(|end| self.at(end));
