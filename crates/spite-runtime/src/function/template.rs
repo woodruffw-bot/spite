@@ -48,7 +48,7 @@ impl Realm {
         self.call(function, this, arguments, span)
     }
 
-    fn get_template_object(
+    pub(crate) fn get_template_object(
         &mut self,
         elements: &Rc<[TemplateElement]>,
         span: Span,

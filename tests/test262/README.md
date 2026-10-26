@@ -30,6 +30,16 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited tagged template review
+
+Eight Runtime groups and two Symbol ownership controls cover saved callees and
+receivers, raw arguments, frozen/raw site identity, contexts, collection and host
+limits. Complete reviews retain 36 passing/8 Unsupported await variants, 160
+passing/102 Unsupported Array/adapter variants and 188 passing update variants.
+No additional unchanged original qualifies. Inventories remain 9,690 fixtures,
+twenty helpers, 9,671 reviewed sources and 18,762 variants; helpers, quotas and
+intrinsic entries are unchanged.
+
 ## Awaited untagged template review
 
 Seven Runtime groups cover ordered conversion, UTF-16, context, collection,

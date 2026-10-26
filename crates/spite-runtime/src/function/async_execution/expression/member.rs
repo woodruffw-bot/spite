@@ -107,17 +107,7 @@ impl Realm {
                 span: call_span,
             } => {
                 let target = InvocationTarget::Call(self.prepare_reference_call(reference, span)?);
-                push(
-                    state,
-                    ExprTask::ArgumentNext {
-                        path,
-                        index: 0,
-                        target,
-                        arguments: Vec::new(),
-                        span: call_span,
-                    },
-                    call_span,
-                )?;
+                self.begin_async_invocation_arguments(data, state, path, target, call_span)?;
             }
         }
         Ok(())

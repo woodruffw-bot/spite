@@ -11,6 +11,9 @@ mod async_await_update;
 #[path = "cases/async_await_destructuring.rs"]
 mod async_await_destructuring;
 
+#[path = "cases/async_await_tagged_template.rs"]
+mod async_await_tagged_template;
+
 #[path = "cases/async_await_template.rs"]
 mod async_await_template;
 

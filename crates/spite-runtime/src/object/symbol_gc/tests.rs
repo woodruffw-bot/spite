@@ -392,6 +392,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
         ),
         (
+            "async tagged template earlier raw argument",
+            "(()=>{let gate=new Promise(()=>{}),tag=()=>{},f=async()=>tag`${key}${await gate}`;f();return gate})()",
+        ),
+        (
+            "async tagged template receiver",
+            "(()=>{let gate=new Promise(()=>{});Symbol.prototype.pendingTag=function(){};let f=async()=>key.pendingTag`${await gate}`;f();delete Symbol.prototype.pendingTag;return gate})()",
+        ),
+        (
             "async assignment raw reference base",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{key.x=await gate};f();return gate})()",
         ),

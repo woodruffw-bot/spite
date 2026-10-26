@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Tagged templates with awaited tags/substitutions
+
+Eight Runtime groups and two Symbol ownership controls cover callee/receiver
+capture, awaited value/member tags, raw substitutions, frozen site caching,
+invalid cooked escapes, deferred callability, eval/private/super/object contexts,
+collection and argument/host limits. All 417 units and 2,054 non-RegExp integrations
+pass across 660 Runtime case files; strict Clippy and Rust 1.88 checks pass. Tagged
+calls reuse the ordinary callee and argument state, including its existing owners.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Untagged templates with awaited substitutions
 
 Seven Runtime groups cover conversion order, nested/repeated awaits, BigInt and

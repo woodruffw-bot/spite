@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including optional/super calls, tagged templates, object literals,
+including optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -535,8 +535,18 @@ before the next expression runs. Ordinary and suspended evaluation share cooked
 element appending. Continuations move an owned UTF-16 buffer and typed AST paths,
 preserving lone surrogates without retaining converted objects. Buffer growth
 checks the existing opt-in string limit before fallible reservation; limit and
-allocation failures keep host-abort isolation. Tagged templates retain their
-explicit await boundary.
+allocation failures keep host-abort isolation.
+
+Tagged templates suspend in tags and substitutions (13.3.11.1). They reuse the
+ordinary call target and argument cursors: callee/receiver capture precedes
+GetTemplateObject, then the frozen template object becomes the first argument.
+Substitutions remain raw values and callability is checked after their evaluation.
+Typed callee/argument paths select tag/substitution source without syntax cloning.
+Parenthesized member references keep receivers; awaited tag values use undefined
+this. Tagged eval is indirect. Native registry lookup preserves site identity,
+raw text, invalid cooked escapes and freezing across suspended invocations.
+Template arguments count toward existing argument limits; retained receivers and
+earlier substitutions use the established tracing and physical Symbol owners.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

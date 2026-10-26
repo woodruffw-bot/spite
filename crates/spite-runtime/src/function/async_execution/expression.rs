@@ -27,6 +27,9 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::Update { argument, .. } => has_supported_await(argument),
         ExprKind::DestructuringAssign { value, .. } => has_supported_await(value),
         ExprKind::Template { substitutions, .. } => substitutions.iter().any(has_supported_await),
+        ExprKind::TaggedTemplate {
+            tag, substitutions, ..
+        } => has_supported_await(tag) || substitutions.iter().any(has_supported_await),
         ExprKind::Binary(_, left, right)
         | ExprKind::Assign(left, right)
         | ExprKind::CompoundAssign(_, left, right) => {
@@ -154,8 +157,14 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
             (ExprChild::Test, ExprKind::Conditional(test, _, _)) => test,
             (ExprChild::Yes, ExprKind::Conditional(_, yes, _)) => yes,
             (ExprChild::No, ExprKind::Conditional(_, _, no)) => no,
-            (ExprChild::Callee, ExprKind::Call { callee, .. } | ExprKind::New { callee, .. }) => {
-                callee
+            (
+                ExprChild::Callee,
+                ExprKind::Call { callee, .. }
+                | ExprKind::New { callee, .. }
+                | ExprKind::TaggedTemplate { tag: callee, .. },
+            ) => callee,
+            (ExprChild::Argument(index), ExprKind::TaggedTemplate { substitutions, .. }) => {
+                &substitutions[*index]
             }
             (ExprChild::Argument(index), ExprKind::Call { arguments, .. }) => {
                 arguments[*index].expression()
@@ -182,6 +191,26 @@ fn invocation_arguments(expression: &Expr) -> &[Argument] {
         ExprKind::Call { arguments, .. } => arguments,
         ExprKind::New { arguments, .. } => arguments.as_deref().unwrap_or(&[]),
         _ => unreachable!("invocation argument cursor"),
+    }
+}
+
+fn invocation_argument_count(expression: &Expr) -> usize {
+    if let ExprKind::TaggedTemplate { substitutions, .. } = &expression.kind {
+        substitutions.len()
+    } else {
+        invocation_arguments(expression).len()
+    }
+}
+
+fn invocation_argument(expression: &Expr, index: usize) -> (&Expr, bool) {
+    if let ExprKind::TaggedTemplate { substitutions, .. } = &expression.kind {
+        (&substitutions[index], false)
+    } else {
+        let argument = &invocation_arguments(expression)[index];
+        (
+            argument.expression(),
+            matches!(argument, Argument::Spread(_)),
+        )
     }
 }
 
@@ -221,6 +250,40 @@ fn short_circuit(op: BinaryOp, value: &Value) -> bool {
 }
 
 impl Realm {
+    pub(super) fn begin_async_invocation_arguments(
+        &mut self,
+        data: &AsyncExecutionData,
+        state: &mut AsyncExpressionData,
+        path: ExprPath,
+        mut target: InvocationTarget,
+        span: Span,
+    ) -> Result<(), Error> {
+        let mut arguments = Vec::new();
+        if let ExprKind::TaggedTemplate { elements, .. } =
+            &expression_at(data, state.root, &path).kind
+        {
+            let InvocationTarget::Call(call) = &mut target else {
+                unreachable!("tagged call target")
+            };
+            // Tagged eval is an ordinary indirect call. GetTemplateObject runs
+            // after callee/receiver capture and before any substitution.
+            call.direct_eval = false;
+            let template = self.get_template_object(elements, span)?;
+            self.append_argument(&mut arguments, Value::Object(template), span)?;
+        }
+        push(
+            state,
+            ExprTask::ArgumentNext {
+                path,
+                index: 0,
+                target,
+                arguments,
+                span,
+            },
+            span,
+        )
+    }
+
     pub(super) fn start_async_expression(
         &mut self,
         data: &mut AsyncExecutionData,
@@ -265,6 +328,7 @@ impl Realm {
                         | ExprKind::Binary(..)
                         | ExprKind::BinaryChain { .. }
                         | ExprKind::Conditional(..)
+                        | ExprKind::TaggedTemplate { .. }
                         | ExprKind::Call { .. }
                         | ExprKind::Array(_)
                         | ExprKind::Member(..)
@@ -401,7 +465,8 @@ impl Realm {
                                         span,
                                     )?;
                                 }
-                                ExprKind::Call { callee, .. } => {
+                                ExprKind::Call { callee, .. }
+                                | ExprKind::TaggedTemplate { tag: callee, .. } => {
                                     if has_supported_await(callee) {
                                         let callee_path =
                                             child_path(&path, ExprChild::Callee, span)?;
@@ -427,16 +492,8 @@ impl Realm {
                                     } else {
                                         let target =
                                             InvocationTarget::Call(self.prepare_call(callee)?);
-                                        push(
-                                            &mut state,
-                                            ExprTask::ArgumentNext {
-                                                path,
-                                                index: 0,
-                                                target,
-                                                arguments: Vec::new(),
-                                                span,
-                                            },
-                                            span,
+                                        self.begin_async_invocation_arguments(
+                                            data, &mut state, path, target, span,
                                         )?;
                                     }
                                 }
@@ -566,17 +623,7 @@ impl Realm {
                             direct_eval: false,
                         })
                     };
-                    push(
-                        &mut state,
-                        ExprTask::ArgumentNext {
-                            path,
-                            index: 0,
-                            target,
-                            arguments: Vec::new(),
-                            span,
-                        },
-                        span,
-                    )?;
+                    self.begin_async_invocation_arguments(data, &mut state, path, target, span)?;
                 }
                 ExprTask::ArgumentNext {
                     path,
@@ -586,8 +633,7 @@ impl Realm {
                     span,
                 } => {
                     let expression = expression_at(data, state.root, &path);
-                    let syntax = invocation_arguments(expression);
-                    if index == syntax.len() {
+                    if index == invocation_argument_count(expression) {
                         state.current = Some(match target {
                             InvocationTarget::Call(target) => {
                                 self.invoke_call(target, arguments, span)?
@@ -620,15 +666,9 @@ impl Realm {
                     span,
                 } => {
                     let expression = expression_at(data, state.root, &path);
-                    let syntax = invocation_arguments(expression);
-                    let argument = &syntax[index];
+                    let (argument, spread) = invocation_argument(expression, index);
                     let value = state.current.take().expect("argument value");
-                    self.append_evaluated_argument(
-                        &mut arguments,
-                        value,
-                        matches!(argument, Argument::Spread(_)),
-                        argument.expression().span,
-                    )?;
+                    self.append_evaluated_argument(&mut arguments, value, spread, argument.span)?;
                     push(
                         &mut state,
                         ExprTask::ArgumentNext {
