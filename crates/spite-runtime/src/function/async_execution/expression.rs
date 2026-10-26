@@ -1,5 +1,6 @@
 //! Value expression continuations; source nodes stay in the retained function AST.
 
+mod assignment;
 mod member;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
@@ -22,7 +23,11 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
         ExprKind::Await(_) => true,
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
-        ExprKind::Binary(_, left, right) => has_supported_await(left) || has_supported_await(right),
+        ExprKind::Binary(_, left, right)
+        | ExprKind::Assign(left, right)
+        | ExprKind::CompoundAssign(_, left, right) => {
+            has_supported_await(left) || has_supported_await(right)
+        }
         ExprKind::BinaryChain { head, steps } => {
             has_supported_await(head) || steps.iter().any(|step| has_supported_await(&step.right))
         }
@@ -120,8 +125,18 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 ExprChild::Inner,
                 ExprKind::Parenthesized(inner) | ExprKind::Await(inner) | ExprKind::Unary(_, inner),
             ) => inner,
-            (ExprChild::Left, ExprKind::Binary(_, left, _)) => left,
-            (ExprChild::Right, ExprKind::Binary(_, _, right)) => right,
+            (
+                ExprChild::Left,
+                ExprKind::Binary(_, left, _)
+                | ExprKind::Assign(left, _)
+                | ExprKind::CompoundAssign(_, left, _),
+            ) => left,
+            (
+                ExprChild::Right,
+                ExprKind::Binary(_, _, right)
+                | ExprKind::Assign(_, right)
+                | ExprKind::CompoundAssign(_, _, right),
+            ) => right,
             (ExprChild::ChainHead, ExprKind::BinaryChain { head, .. }) => head,
             (ExprChild::ChainRight(index), ExprKind::BinaryChain { steps, .. }) => {
                 &steps[*index].right
@@ -229,6 +244,8 @@ impl Realm {
                         ExprKind::Await(_)
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
+                        | ExprKind::Assign(..)
+                        | ExprKind::CompoundAssign(..)
                         | ExprKind::Binary(..)
                         | ExprKind::BinaryChain { .. }
                         | ExprKind::Conditional(..)
@@ -281,6 +298,16 @@ impl Realm {
                                         span,
                                     )?;
                                 }
+                                ExprKind::Assign(..) => {
+                                    self.begin_async_assignment(data, &mut state, path, None, span)?
+                                }
+                                ExprKind::CompoundAssign(op, ..) => self.begin_async_assignment(
+                                    data,
+                                    &mut state,
+                                    path,
+                                    Some(*op),
+                                    span,
+                                )?,
                                 ExprKind::Binary(op, _, _) => {
                                     push(
                                         &mut state,
@@ -655,11 +682,21 @@ impl Realm {
                 ExprTask::MemberKey { base, action, span } => {
                     let key = state.current.take().expect("computed member key");
                     self.finish_async_member(
+                        data,
                         &mut state,
                         crate::Reference::Property { base, key },
                         action,
                         span,
                     )?;
+                }
+                ExprTask::AssignmentApply {
+                    reference,
+                    left,
+                    op,
+                    span,
+                } => {
+                    let right = state.current.take().expect("assignment RHS value");
+                    self.apply_async_assignment(&mut state, reference, left, op, right, span)?;
                 }
                 ExprTask::CheckString(span) => {
                     self.check_string(state.current.as_ref().expect("expression result"), span)?

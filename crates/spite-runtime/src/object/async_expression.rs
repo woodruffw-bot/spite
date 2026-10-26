@@ -1,8 +1,9 @@
 //! Owned value-expression continuations with safe paths into retained source AST.
 
 use super::async_execution::AsyncAwaitAction;
-use crate::{Value, function::CallTarget};
-use spite_core::Span;
+use crate::{Reference, Value, environment::EnvironmentHandle, function::CallTarget};
+use spite_core::{JsSymbol, Span};
+use spite_heap::Handle;
 use spite_parser::ast::{BinaryOp, UnaryOp};
 
 #[derive(Clone, Copy, Debug)]
@@ -56,8 +57,18 @@ impl InvocationTarget {
 #[derive(Debug)]
 pub(crate) enum MemberAction {
     Value,
-    Call { path: ExprPath, span: Span },
-    Delete { span: Span },
+    Assignment {
+        path: ExprPath,
+        op: Option<BinaryOp>,
+        span: Span,
+    },
+    Call {
+        path: ExprPath,
+        span: Span,
+    },
+    Delete {
+        span: Span,
+    },
 }
 
 #[derive(Debug)]
@@ -136,10 +147,23 @@ pub(crate) enum ExprTask {
         action: MemberAction,
         span: Span,
     },
+    AssignmentApply {
+        reference: Reference<'static>,
+        left: Option<Value>,
+        op: Option<BinaryOp>,
+        span: Span,
+    },
     CheckString(Span),
 }
 
 impl ExprTask {
+    fn reference(&self) -> Option<&Reference<'static>> {
+        match self {
+            Self::AssignmentApply { reference, .. } => Some(reference),
+            _ => None,
+        }
+    }
+
     fn values(&self) -> impl Iterator<Item = &Value> {
         let (value, target, arguments): (Option<&Value>, Option<&InvocationTarget>, &[Value]) =
             match self {
@@ -150,6 +174,7 @@ impl ExprTask {
                     (Some(array), None, &[])
                 }
                 Self::MemberKey { base, .. } => (Some(base), None, &[]),
+                Self::AssignmentApply { left, .. } => (left.as_ref(), None, &[]),
                 Self::ArgumentNext {
                     target, arguments, ..
                 }
@@ -162,6 +187,7 @@ impl ExprTask {
             .into_iter()
             .chain(target.into_iter().flat_map(InvocationTarget::values))
             .chain(arguments)
+            .chain(self.reference().into_iter().flat_map(Reference::values))
     }
 }
 
@@ -174,6 +200,27 @@ pub(crate) struct AsyncExpressionData {
 }
 
 impl AsyncExpressionData {
+    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+        self.tasks
+            .iter()
+            .filter_map(ExprTask::reference)
+            .flat_map(Reference::symbols)
+    }
+
+    pub(super) fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
+        self.tasks
+            .iter()
+            .filter_map(ExprTask::reference)
+            .filter_map(Reference::environment)
+    }
+
+    pub(super) fn objects(&self) -> impl Iterator<Item = &Handle> {
+        self.tasks
+            .iter()
+            .filter_map(ExprTask::reference)
+            .filter_map(Reference::object)
+    }
+
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
         self.current
             .iter()

@@ -42,16 +42,21 @@ impl Realm {
                     .environment_mut(&environment)
                     .expect("resolved environment")
                     .bindings;
-                if bindings.get(name).is_none_or(|binding| binding.deletable) {
-                    bindings.remove(name);
+                if bindings
+                    .get(name.as_ref())
+                    .is_none_or(|binding| binding.deletable)
+                {
+                    bindings.remove(name.as_ref());
                     true
                 } else {
                     false
                 }
             }
-            Reference::ObjectBinding { object, name } => {
-                self.delete_property_value(&Value::Object(object), &JsString::from(name), span)?
-            }
+            Reference::ObjectBinding { object, name } => self.delete_property_value(
+                &Value::Object(object),
+                &JsString::from(name.as_ref()),
+                span,
+            )?,
             Reference::Global { key, .. } => {
                 let object = Value::Object(self.global_object());
                 self.delete_property_value(&object, &key, span)?

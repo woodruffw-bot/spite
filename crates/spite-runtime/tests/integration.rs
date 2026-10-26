@@ -5,6 +5,9 @@ mod common;
 #[path = "cases/async_await_labels.rs"]
 mod async_await_labels;
 
+#[path = "cases/async_await_assignment.rs"]
+mod async_await_assignment;
+
 #[path = "cases/async_await_for.rs"]
 mod async_await_for;
 

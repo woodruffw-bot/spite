@@ -62,7 +62,7 @@ impl Realm {
                     if let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
                         let target = data.var_target.take().expect("resolved var target");
                         self.put(
-                            Reference::Lexical(target, name),
+                            Reference::Lexical(target, name.as_str().into()),
                             value,
                             binding.pattern.span,
                         )?;

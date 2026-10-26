@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including assignments/updates, optional/super calls, object literals,
+including updates, destructuring assignment, optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -487,6 +487,28 @@ after the arguments finish. Awaited member constructor values use ordinary
 GetValue without a call receiver. Optional argument lists, spread, storage limits
 and abrupt completion reuse the established algorithms. Constructor values and
 earlier arguments participate in tracing and the physical Symbol inventory.
+
+Simple and compound assignment support awaited member targets and RHS expressions
+(13.15.2). The Reference type is shared with ordinary evaluation: names borrow
+source during synchronous work and become owned only when an assignment saves
+its reference across suspension. Lexical/object/global resolution is retained;
+later scope or unscopables changes do not select a different target. Awaited
+ordinary/private member targets reuse member reference evaluation. Ordinary super
+references support suspended RHS evaluation, retaining their base and receiver;
+awaited computed super targets remain an explicit gap.
+
+Simple assignment retains its unconverted computed key and performs PutValue
+after the RHS. Compound assignment performs GetValue first, caches the converted
+key and retains the raw left value until RHS completion before binary coercion.
+Logical assignments short-circuit without RHS evaluation or PutValue. RHS forms
+without supported await reuse ordinary assignment/named evaluation, preserving
+class static-element timing and parenthesized-target rules. Private brand checks,
+strict/immutable/global writes and setter receivers use the existing operations.
+Saved reference values, object-binding handles and lexical environments are
+traced and validated, with each stored Symbol counted, including internal private
+name identities. Abrupt RHS completion
+releases abandoned references before handler/finalizer processing; host failures
+retain their cleanup isolation.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

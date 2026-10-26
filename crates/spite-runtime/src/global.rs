@@ -728,7 +728,7 @@ mod tests {
         assert_eq!(
             realm.get(
                 &mut Reference::Global {
-                    name: "x",
+                    name: "x".into(),
                     key: JsString::from("x"),
                 },
                 span,
@@ -739,7 +739,7 @@ mod tests {
         assert!(matches!(
             realm.get(
                 &mut Reference::Global {
-                    name: "x",
+                    name: "x".into(),
                     key: JsString::from("x"),
                 },
                 span,

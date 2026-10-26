@@ -213,6 +213,9 @@ fn object_symbols(
         for value in data.values() {
             visit(symbol(value))?;
         }
+        for symbol in data.symbols() {
+            visit(Some(symbol))?;
+        }
     }
     if let Some(data) = async_disposal {
         for value in data.values() {

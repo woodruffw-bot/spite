@@ -18,6 +18,7 @@ mod iterator_count;
 mod loop_limit_tests;
 mod optional_chain;
 mod private;
+mod reference;
 mod resource;
 mod super_property;
 mod time_zone;
@@ -40,6 +41,7 @@ pub use spite_heap::{Collection, Handle as ObjectHandle};
 pub use value::{ConversionError, Value};
 
 use realm_object::Hint;
+use reference::Reference;
 use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
 use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
@@ -165,58 +167,6 @@ pub struct Limits {
     pub max_heap_entries: Option<usize>,
     /// Optional maximum own properties in each ordinary object.
     pub max_properties: Option<usize>,
-}
-
-// Resolve references before evaluating assignment RHS expressions. GetValue and
-// PutValue are separate operations, including the unresolvable typeof case.
-enum Reference<'a> {
-    Value(Value),
-    Lexical(EnvironmentHandle, &'a str),
-    ObjectBinding {
-        object: ObjectHandle,
-        name: &'a str,
-    },
-    Global {
-        name: &'a str,
-        key: JsString,
-    },
-    Unresolvable(&'a str),
-    UnsupportedGlobal(&'a str),
-    Property {
-        base: Value,
-        // Edition 17 converts a computed name at GetValue/PutValue, not when
-        // creating the reference. GetValue caches the converted property key.
-        key: Value,
-    },
-    Private {
-        base: Value,
-        name: private::PrivateName,
-    },
-    SuperProperty {
-        base: Value,
-        key: Value,
-        this_value: Value,
-    },
-}
-
-impl Reference<'_> {
-    fn is_eval_environment_reference(&self) -> bool {
-        matches!(
-            self,
-            Self::Lexical(_, "eval")
-                | Self::ObjectBinding { name: "eval", .. }
-                | Self::Global { name: "eval", .. }
-        )
-    }
-    // ECMA-262 13.3.6.2 / 9.1.1.2.10: environment calls use WithBaseObject.
-    fn call_receiver(self) -> Value {
-        match self {
-            Self::Property { base, .. } | Self::Private { base, .. } => base,
-            Self::SuperProperty { this_value, .. } => this_value,
-            Self::ObjectBinding { object, .. } => Value::Object(object),
-            _ => Value::Undefined,
-        }
-    }
 }
 
 // Implemented statement completions. Throws already carry a non-empty value in
@@ -1299,7 +1249,7 @@ impl Realm {
                 .environment(&handle)
                 .expect("active environment");
             if scope.bindings.contains_key(name) {
-                return Ok(Reference::Lexical(handle, name));
+                return Ok(Reference::Lexical(handle, name.into()));
             }
             // Release the heap borrow before observable unscopables getters.
             let object = scope.binding_object.clone();
@@ -1307,18 +1257,24 @@ impl Realm {
             if let Some(object) = object
                 && self.with_has_binding(&object, name, span)?
             {
-                return Ok(Reference::ObjectBinding { object, name });
+                return Ok(Reference::ObjectBinding {
+                    object,
+                    name: name.into(),
+                });
             }
         }
         if self.unsupported_host_globals.contains(name) && self.global_own(name, span)?.is_none() {
-            return Ok(Reference::UnsupportedGlobal(name));
+            return Ok(Reference::UnsupportedGlobal(name.into()));
         }
         let object = self.global_object();
         let key = JsString::from(name);
         Ok(if self.has_property(&object, &key, span)? {
-            Reference::Global { name, key }
+            Reference::Global {
+                name: name.into(),
+                key,
+            }
         } else {
-            Reference::Unresolvable(name)
+            Reference::Unresolvable(name.into())
         })
     }
 
@@ -1372,16 +1328,16 @@ impl Realm {
                 .objects
                 .environment(handle)
                 .expect("resolved environment")
-                .bindings[*name]
-                .value
-                .clone()
-                .ok_or_else(|| {
-                    Self::exception(
-                        ExceptionKind::ReferenceError,
-                        span,
-                        format!("{name} is uninitialized"),
-                    )
-                }),
+                .bindings[name.as_ref()]
+            .value
+            .clone()
+            .ok_or_else(|| {
+                Self::exception(
+                    ExceptionKind::ReferenceError,
+                    span,
+                    format!("{name} is uninitialized"),
+                )
+            }),
             Reference::Global { name, key } => self.get_global(name, key, span),
             Reference::Unresolvable(name) => Err(Self::exception(
                 ExceptionKind::ReferenceError,
@@ -1411,7 +1367,7 @@ impl Realm {
                 }
             }
             Reference::ObjectBinding { object, name } => {
-                self.with_set_binding(&object, name, value, span)?
+                self.with_set_binding(&object, &name, value, span)?
             }
             Reference::SuperProperty {
                 base,
@@ -1439,7 +1395,7 @@ impl Realm {
                     .environment_mut(&handle)
                     .expect("resolved environment")
                     .bindings
-                    .get_mut(name)
+                    .get_mut(name.as_ref())
                     .expect("resolved binding exists");
                 if binding.value.is_none() {
                     return Err(Self::exception(
@@ -1467,9 +1423,9 @@ impl Realm {
                     format!("{name} is not defined"),
                 ));
             }
-            Reference::Global { name, key } => self.put_global(name, key, value, true, span)?,
+            Reference::Global { name, key } => self.put_global(&name, key, value, true, span)?,
             Reference::Unresolvable(name) => {
-                self.put_global(name, JsString::from(name), value, false, span)?;
+                self.put_global(&name, JsString::from(name.as_ref()), value, false, span)?;
             }
             Reference::UnsupportedGlobal(name) => {
                 return Err(Self::unsupported(

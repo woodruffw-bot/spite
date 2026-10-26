@@ -6,7 +6,7 @@ use crate::{
     environment::EnvironmentHandle,
     function::{IteratorRecord, PromiseCapability},
 };
-use spite_core::Span;
+use spite_core::{JsSymbol, Span};
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::ArrowBody;
 
@@ -215,6 +215,12 @@ pub(crate) struct AsyncExecutionData {
 }
 
 impl AsyncExecutionData {
+    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+        self.expression
+            .iter()
+            .flat_map(|expression| expression.symbols())
+    }
+
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
         self.capability
             .values()
@@ -228,12 +234,21 @@ impl AsyncExecutionData {
     }
 
     fn objects(&self) -> impl Iterator<Item = &Handle> {
-        self.frames.iter().filter_map(AsyncStatementFrame::object)
+        self.frames
+            .iter()
+            .filter_map(AsyncStatementFrame::object)
+            .chain(
+                self.expression
+                    .iter()
+                    .flat_map(|expression| expression.objects()),
+            )
     }
 
     fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
-        self.root_scope
+        self.expression
             .iter()
+            .flat_map(|expression| expression.environments())
+            .chain(self.root_scope.iter())
             .chain(&self.var_target)
             .chain(
                 self.frames

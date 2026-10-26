@@ -161,10 +161,14 @@ mod tests {
             realm.objects.environment(&current).unwrap().outer
         );
         realm
-            .put(Reference::Lexical(current, "i"), Value::Number(2.0), span)
+            .put(
+                Reference::Lexical(current, "i".into()),
+                Value::Number(2.0),
+                span,
+            )
             .unwrap();
         assert_eq!(
-            realm.get(&mut Reference::Lexical(old, "i"), span),
+            realm.get(&mut Reference::Lexical(old, "i".into()), span),
             Ok(Value::Number(1.0))
         );
         assert_eq!(realm.eval("i + outer"), Ok(Value::Number(11.0)));

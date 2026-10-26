@@ -420,19 +420,22 @@ mod tests {
         let span = Span::new(0, 0);
         realm
             .put(
-                Reference::Lexical(environment.clone(), "local"),
+                Reference::Lexical(environment.clone(), "local".into()),
                 Value::Number(1.0),
                 span,
             )
             .unwrap();
         assert_eq!(
-            realm.get(&mut Reference::Lexical(environment.clone(), "local"), span),
+            realm.get(
+                &mut Reference::Lexical(environment.clone(), "local".into()),
+                span
+            ),
             Ok(value.clone())
         );
         realm.strict = true;
         assert!(matches!(
             realm.put(
-                Reference::Lexical(environment.clone(), "local"),
+                Reference::Lexical(environment.clone(), "local".into()),
                 Value::Number(1.0),
                 span
             ),
@@ -442,7 +445,7 @@ mod tests {
             })
         ));
         assert_eq!(
-            realm.get(&mut Reference::Lexical(environment, "local"), span),
+            realm.get(&mut Reference::Lexical(environment, "local".into()), span),
             Ok(value)
         );
     }

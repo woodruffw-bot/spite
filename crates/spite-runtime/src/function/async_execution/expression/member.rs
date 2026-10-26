@@ -54,17 +54,30 @@ impl Realm {
             }
             PropertyName::Literal(literal) => {
                 let key = self.literal_value(literal, span)?;
-                self.finish_async_member(state, Reference::Property { base, key }, action, span)
+                self.finish_async_member(
+                    data,
+                    state,
+                    Reference::Property { base, key },
+                    action,
+                    span,
+                )
             }
             PropertyName::Private(name) => {
                 let name = self.resolve_private_name(&name.name, name.span)?;
-                self.finish_async_member(state, Reference::Private { base, name }, action, span)
+                self.finish_async_member(
+                    data,
+                    state,
+                    Reference::Private { base, name },
+                    action,
+                    span,
+                )
             }
         }
     }
 
     pub(super) fn finish_async_member(
         &mut self,
+        data: &AsyncExecutionData,
         state: &mut AsyncExpressionData,
         mut reference: Reference<'_>,
         action: MemberAction,
@@ -74,6 +87,9 @@ impl Realm {
         // GetValue/Delete performs coercion after both base and key evaluation.
         match action {
             MemberAction::Value => state.current = Some(self.get(&mut reference, span)?),
+            MemberAction::Assignment { path, op, span } => {
+                self.finish_async_assignment_target(data, state, reference, path, op, span)?
+            }
             MemberAction::Delete { span } => {
                 state.current = Some(Value::Boolean(self.delete_reference(reference, span)?));
             }

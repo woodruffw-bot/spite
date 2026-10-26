@@ -392,6 +392,22 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),step=0,f=async()=>{label:while(step++===0?true:await gate){key}};f();return gate})()",
         ),
         (
+            "async assignment raw reference base",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{key.x=await gate};f();return gate})()",
+        ),
+        (
+            "async assignment super receiver",
+            "(()=>{let gate=new Promise(()=>{});class B{set x(value){}}class C extends B{async f(){super.x=await gate}}C.prototype.f.call(key);return gate})()",
+        ),
+        (
+            "async assignment raw reference key",
+            "(()=>{let gate=new Promise(()=>{}),f=async()=>{({})[key]=await gate};f();return gate})()",
+        ),
+        (
+            "async compound assignment raw left value",
+            "(()=>{let gate=new Promise(()=>{}),object={x:key},f=async()=>{object.x+=await gate};f();object.x=0;return gate})()",
+        ),
+        (
             "async for loop value across awaited update",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>{let n=0;for(;n++===0;await gate){key}};f();return gate})()",
         ),
@@ -584,6 +600,40 @@ fn an_independent_thread_strong_owner_needs_no_heap_root_registration() {
     assert_eq!(weak.upgrade(), None);
     objects.collect([&map], usize::MAX).unwrap();
     stale(&objects, &value);
+}
+
+#[test]
+fn a_pending_private_assignment_counts_its_internal_name_without_creating_an_external_owner() {
+    let mut realm = Realm::default();
+    realm.eval("let map=new WeakMap(),holder=(()=>{let gate=new Promise(()=>{});class C{#x=0;async f(){this.#x=await gate}}const instance=new C();instance.f();return{gate,instance}})()").unwrap();
+    let map = object(realm.eval("map").unwrap());
+    let instance = object(realm.eval("holder.instance").unwrap());
+    let key = realm
+        .objects
+        .inspect(&instance)
+        .unwrap()
+        .private_elements
+        .first()
+        .unwrap()
+        .0
+        .symbol()
+        .clone();
+    let weak = key.downgrade();
+    let value = realm.objects.create(None).unwrap();
+    realm
+        .objects
+        .weak_map_set_symbol(&map, &key, Value::Object(value.clone()), &mut unlimited())
+        .unwrap();
+    drop(key);
+    drop(instance);
+    realm.collect(usize::MAX).unwrap();
+    assert!(weak.upgrade().is_some());
+    assert!(realm.objects.inspect(&value).is_ok());
+    realm.eval("holder=null").unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(weak.upgrade(), None);
+    stale(&realm.objects, &value);
+    assert_eq!(symbol_entries(&realm.objects, &map), 0);
 }
 
 #[test]

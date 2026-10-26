@@ -60,6 +60,22 @@ not an alternative language specification.
 
 
 
+## Suspended assignment expressions
+
+Eleven Runtime groups, four Symbol ownership controls and a private-name collection
+regression cover reference selection, nested assignments, deferred/cached keys, raw left coercion,
+logical short-circuiting, private/super writes, object environments, strict/global
+rules, rejection, collection and host abort. All 417 units and 2,024 non-RegExp
+integrations pass across 656 Runtime case files; strict Clippy and Rust 1.88 checks
+pass. Complete reviews retain 36 passing/8 Unsupported await variants; Array/adapter
+passes 160 and defers 102, with no other non-passing categories.
+
+Four complete unchanged Array.fromAsync originals add eight variants for custom
+constructor operations, read-only elements, constructor calls and non-constructor
+this-values. Pinned Git blob hashes and manifest SHA-256 digests were verified.
+Inventories contain 9,582 fixtures, twenty helpers, 9,563 reviewed sources, 18,574
+variants and 579 intrinsic entries. Helpers and quotas are unchanged.
+
 ## Suspended three-clause for
 
 Eleven Runtime groups and a Symbol ownership control cover all header/body phases,

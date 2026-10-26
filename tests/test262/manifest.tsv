@@ -9597,3 +9597,7 @@ script-pass	b3a9508f74ef11284cbe5a47ee73f6d6d91ffe2b6764f628ed8e4cfbb827b542	tes
 script-pass	1f4324ec4c9a20a5a84f7821d4b0da7520758bad5e437f714645869092decdde	test/built-ins/Array/fromAsync/non-iterable-input-does-not-use-array-prototype.js
 script-pass	c94b68b0ab2503cb332b9a1cac03da7fdc6245f383803f34bb44901c2c697931	test/built-ins/Array/fromAsync/asyncitems-asynciterator-not-callable.js
 script-pass	28eba6de702e134c527570eacf3e23663c3c66ca37f8f38bc71b23bc8383468c	test/built-ins/Array/fromAsync/asyncitems-iterator-not-callable.js
+script-pass	b144285fabadd5a8fd1c0a4441f14c2ee1252d5c011d95dabb8903ec2eccb987	test/built-ins/Array/fromAsync/this-constructor-operations.js
+script-pass	eaad92fe343411e4cf6af5e8fd52575bfaf11d96d1ab960e67b307185098f619	test/built-ins/Array/fromAsync/this-constructor-with-readonly-elements.js
+script-pass	0fab95719e6c37e8278be80b78b4fa9cc1a1fbbea79aaa2ac011a18b0a3a23bf	test/built-ins/Array/fromAsync/this-constructor.js
+script-pass	559a29e481802c508fd3829bbff801562ff04150837edeb51ea44287be5beecc	test/built-ins/Array/fromAsync/this-non-constructor.js

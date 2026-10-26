@@ -250,7 +250,7 @@ impl Realm {
                     .contains_key(&name.name);
                 if exists {
                     self.put(
-                        Reference::Lexical(variable.clone(), &name.name),
+                        Reference::Lexical(variable.clone(), name.name.as_str().into()),
                         value,
                         name.span,
                     )?;
