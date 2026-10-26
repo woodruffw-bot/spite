@@ -108,6 +108,14 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::GeneratorFunction) => {
+                    return self.dynamic_function(
+                        spite_parser::ast::FunctionKind::Generator,
+                        Some(new_target),
+                        arguments.into_iter(),
+                        span,
+                    );
+                }
                 Callable::Bound(bound) => {
                     let count = bound
                         .arguments

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 9837 unmodified test fixtures and twenty harness files come from
+These 9943 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Generator object/runtime review
+
+106 unchanged originals add 198 variants, including eight syntax negatives with
+exact reviewed rejection points. Twelve Runtime groups and four Symbol ownership
+controls cover lazy call scopes, completion, metadata, cleanup and collection;
+prior programs/groups/quotas are retained. The complete gate contains 9,943
+fixtures, twenty helpers, 9,924 reviewed sources and 19,234 variants. The intrinsic
+inventory is 585 entries.
+
+Generator-statement candidate review reports 114 passed/19 Unsupported variants;
+the built-in review reports 98 passed/70 Unsupported variants, with no failures,
+limits, setup failures or unverified negatives. The unchanged intrinsic-discovery
+helper still requires async generators, so its original remains wholly excluded.
+Yield suspension/delegation remains work; Unsupported outcomes earn no credit.
 
 ## Dynamic generator grammar review
 

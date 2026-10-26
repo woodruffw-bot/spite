@@ -155,12 +155,18 @@ fn default_source_sizes_are_unlimited_and_compiled_code_survives_collection() {
 
 #[test]
 fn unsupported_source_is_a_host_abort_after_all_observable_conversions() {
-    for body in ["function* g(){}", "async function* f(){}"] {
+    for (body, unsupported) in [("function* g(){}", false), ("async function* f(){}", true)] {
         let mut realm = Realm::default();
         realm.eval("let flag=0;").unwrap();
         let body = format!("'{body}'");
-        assert!(matches!(realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}})();}}catch{{flag=5;}}finally{{flag=6;}}")),Err(Error::Unsupported{..})));
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(4.0)));
+        let result = realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}})();}}catch{{flag=5;}}finally{{flag=6;}}"));
+        if unsupported {
+            assert!(matches!(result, Err(Error::Unsupported { .. })));
+            assert_eq!(realm.eval("flag"), Ok(Value::Number(4.0)));
+        } else {
+            result.unwrap();
+            assert_eq!(realm.eval("flag"), Ok(Value::Number(6.0)));
+        }
     }
 }
 

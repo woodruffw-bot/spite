@@ -1434,3 +1434,6 @@ mod generator_grammar;
 
 #[path = "cases/generator_methods.rs"]
 mod generator_methods;
+
+#[path = "cases/generator_objects.rs"]
+mod generator_objects;

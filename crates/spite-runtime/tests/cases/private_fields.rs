@@ -177,11 +177,14 @@ fn language_and_host_aborts_restore_private_scope_and_caller_state() {
     check(
         "let caught=false;try{class C{static #x=(()=>{throw 7;})();}}catch(e){caught=e===7;}after=8;caught && after===8",
     );
+    check(
+        "let flag=0;try{class C{static #x=eval('function* gap(){}')}}catch{flag=1}finally{flag=2}flag===2",
+    );
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{class C{static #x=eval('function* gap(){}');}}catch{flag=1;}finally{flag=2;}"
+            "try{class C{static #x=eval('async function* gap(){}');}}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

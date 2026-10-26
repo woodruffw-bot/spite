@@ -232,6 +232,19 @@ impl Realm {
                 arguments,
                 span,
             ),
+            Builtin::GeneratorFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Generator,
+                None,
+                arguments,
+                span,
+            ),
+            Builtin::GeneratorNext | Builtin::GeneratorReturn | Builtin::GeneratorThrow => self
+                .generator_resume(
+                    this,
+                    builtin,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

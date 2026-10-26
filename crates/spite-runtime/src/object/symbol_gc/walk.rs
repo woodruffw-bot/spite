@@ -129,6 +129,9 @@ fn object_symbols(
         disposable_stack: _,
         async_disposal,
         async_execution,
+        // Generator state owns handles and source AST only. Object tracing
+        // inventories its callee and every retained environment handle.
+        generator: _,
         array_from_async,
         disposable_resources,
         raw_json: _,

@@ -105,11 +105,15 @@ fn escaped_block_closures_keep_block_bindings_home_objects_and_this_alive() {
 #[test]
 fn static_language_and_host_failures_restore_the_caller() {
     check("let x=7;try{class C{static{throw 9;}}}catch(e){}after=8;x===7 && after===8");
+    check(
+        "let flag=0;try{class C{static{eval('function* gap(){}')}}}catch{flag=1}finally{flag=2}flag===2",
+    );
     let mut realm = Realm::default();
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm
-            .eval("try{class C{static{eval('function* gap(){}');}}}catch{flag=1;}finally{flag=2;}"),
+        realm.eval(
+            "try{class C{static{eval('async function* gap(){}');}}}catch{flag=1;}finally{flag=2;}"
+        ),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

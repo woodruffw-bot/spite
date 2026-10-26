@@ -60,6 +60,36 @@ not an alternative language specification.
 
 
 
+## Generator objects and lazy native body completion
+
+Twelve Runtime groups and four Symbol ownership controls cover intrinsic
+metadata/prototypes, non-constructibility, call-time parameters and binding errors,
+lazy bodies, arguments/this/new.target, initial/completed resumes, receiver/reentry
+checks, method home objects/private brands, dynamic construction ordering, normal
+and abrupt cleanup, host aborts, callee/environment collection and sync/async
+consumers. Prior creation-boundary programs now execute positively; reusable host
+controls use the remaining async-generator syntax gap. Every prior group and quota
+is retained. Shared context capture/restoration preserves existing async behavior.
+
+All 18 Parser units, 381 Parser integrations, 417 Runtime units and 2,189 non-RegExp
+Runtime integrations pass across 79 Parser and 678 Runtime case files; Clippy and
+Rust 1.88 checks pass. Six intrinsic objects increase the reviewed realm inventory
+from 579 to 585; existing collection checks validate that inventory.
+
+106 unchanged pinned originals add 198 variants: generator-statement and built-in
+coverage plus five newly passing await/Array.fromAsync/for-await originals. Eight
+syntax negatives have exact reviewed rejection spans/messages. The reviewed
+corpus contains 9,943 fixtures, twenty helpers, 9,924 reviewed sources and 19,234
+variants. Directory-root candidate reviews report 114 passed/19 Unsupported
+generator-statement variants and 98 passed/70 Unsupported generator built-in
+variants, with failures, limits, setup failures and unverified negatives at zero.
+The unchanged wellKnownIntrinsicObjects helper is used only in candidate review;
+its async-generator discovery leaves the requiring original excluded as a whole.
+
+Bodies complete natively when no yield executes. Yield suspension/delegation and
+suspended-yield resumes remain explicit gaps, with no negative-test credit for
+Unsupported outcomes. Helpers and default quotas are unchanged.
+
 ## Dynamic GeneratorFunction parser APIs
 
 Six Parser groups cover generator kind/name/source, retained yield forms,

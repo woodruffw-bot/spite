@@ -1,6 +1,6 @@
 //! Traced source async-function state between Await jobs (27.7.5.3).
 
-use super::{Budget, Error, Objects};
+use super::{Budget, Error, Objects, source_context::SourceExecutionContext};
 use crate::{
     Completion, Reference, Value,
     environment::EnvironmentHandle,
@@ -9,13 +9,6 @@ use crate::{
 use spite_core::{JsSymbol, Span};
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::ArrowBody;
-
-#[derive(Debug)]
-pub(crate) struct AsyncExecutionContext {
-    pub scopes: Vec<EnvironmentHandle>,
-    pub variable: Option<EnvironmentHandle>,
-    pub strict: bool,
-}
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum AsyncAwaitAction {
@@ -277,7 +270,7 @@ pub(crate) struct AsyncExecutionData {
     pub root_scope: Option<EnvironmentHandle>,
     pub var_target: Option<Reference<'static>>,
     pub iteration_value: Option<Value>,
-    pub context: Option<AsyncExecutionContext>,
+    pub context: Option<SourceExecutionContext>,
     pub span: Span,
 }
 

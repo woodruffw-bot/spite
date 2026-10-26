@@ -23,17 +23,13 @@ impl Realm {
         kind: PropertyKind,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
-            return Err(Self::unsupported(
-                span,
-                "generator method objects are not implemented",
-            ));
-        }
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
-        let prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {
-            intrinsic.async_function.prototype.clone()
-        } else {
-            intrinsic.function_prototype.clone()
+        let prototype = match syntax.kind {
+            spite_parser::ast::FunctionKind::Async => intrinsic.async_function.prototype.clone(),
+            spite_parser::ast::FunctionKind::Generator => {
+                intrinsic.generator.function_prototype.clone()
+            }
+            spite_parser::ast::FunctionKind::Ordinary => intrinsic.function_prototype.clone(),
         };
         let method = MethodFunction {
             code: ScriptFunction {
@@ -67,8 +63,11 @@ impl Realm {
             _ => unreachable!("method property kind"),
         };
         self.set_function_name(&function, key, prefix, span)?;
-        // OrdinaryFunctionCreate without MakeConstructor: no own prototype and
-        // no [[Construct]], independently of the method's public properties.
+        // Methods have no [[Construct]]. Generator methods additionally own a
+        // prototype for their generator instances.
+        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
+            self.define_generator_function_prototype(&function, span)?;
+        }
         Ok(function)
     }
 

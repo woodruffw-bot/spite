@@ -27,7 +27,7 @@ use super::{
 use crate::{
     Completion, CompletionKind, Error, ObjectHandle, Realm, Value,
     object::{
-        async_execution::{AsyncAwaitAction, AsyncExecutionContext, AsyncExecutionData},
+        async_execution::{AsyncAwaitAction, AsyncExecutionData},
         async_expression::ExprRoot,
     },
 };
@@ -145,7 +145,11 @@ impl Realm {
                 Err(error) => Err(error),
                 Ok(Step::Await(value, action, span)) => {
                     data.pending = action;
-                    data.context = match self.capture_async_execution_context(base, span) {
+                    data.context = match self.capture_source_execution_context(
+                        base,
+                        span,
+                        "async context allocation failed",
+                    ) {
                         Ok(context) => Some(context),
                         Err(error) => return self.finish_async_execution(data, Err(error), base),
                     };
@@ -367,27 +371,6 @@ impl Realm {
         }
     }
 
-    fn capture_async_execution_context(
-        &mut self,
-        base: usize,
-        span: Span,
-    ) -> Result<AsyncExecutionContext, Error> {
-        let count = self.scopes.len() - base + 1;
-        self.object_work(span, |_, budget| budget.charge(count))?;
-        let mut scopes = Vec::new();
-        scopes.try_reserve(count).map_err(|_| Error::Limit {
-            span,
-            message: "async context allocation failed".into(),
-        })?;
-        scopes.push(self.scopes.first().expect("global environment").clone());
-        scopes.extend(self.scopes[base..].iter().cloned());
-        Ok(AsyncExecutionContext {
-            scopes,
-            variable: self.variable_environment.clone(),
-            strict: self.strict,
-        })
-    }
-
     fn abort_async_execution(&mut self, base: usize, error: Error) -> Error {
         // Registration prepaid resource release. Host aborts clear captures even
         // at budget zero and never invoke JavaScript cleanup.
@@ -443,20 +426,14 @@ impl Realm {
         };
         let context = data.context.take().expect("suspended source context");
         let capability = data.capability.clone();
-        let caller = AsyncExecutionContext {
-            scopes: std::mem::replace(&mut self.scopes, context.scopes),
-            variable: std::mem::replace(&mut self.variable_environment, context.variable),
-            strict: std::mem::replace(&mut self.strict, context.strict),
-        };
         let completion = if fulfilled {
             Ok(value)
         } else {
             Err(Error::Thrown(value))
         };
-        let outcome = self.drive_async_execution(*data, Some(state), Some(completion), 1);
-        self.scopes = caller.scopes;
-        self.variable_environment = caller.variable;
-        self.strict = caller.strict;
+        let outcome = self.with_source_execution_context(context, |realm| {
+            realm.drive_async_execution(*data, Some(state), Some(completion), 1)
+        });
         match outcome {
             Ok(AsyncBodyOutcome::Suspended) => (),
             Ok(AsyncBodyOutcome::Complete(value)) => {

@@ -247,18 +247,14 @@ impl Realm {
         expression: bool,
         span: Span,
     ) -> Result<Value, Error> {
-        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
-            return Err(Self::unsupported(
-                span,
-                "generator function objects are not implemented",
-            ));
-        }
         self.ensure_object_intrinsics(span)?;
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
-        let function_prototype = if syntax.kind == spite_parser::ast::FunctionKind::Async {
-            intrinsics.async_function.prototype.clone()
-        } else {
-            intrinsics.function_prototype.clone()
+        let function_prototype = match syntax.kind {
+            spite_parser::ast::FunctionKind::Async => intrinsics.async_function.prototype.clone(),
+            spite_parser::ast::FunctionKind::Generator => {
+                intrinsics.generator.function_prototype.clone()
+            }
+            spite_parser::ast::FunctionKind::Ordinary => intrinsics.function_prototype.clone(),
         };
         let mut environment = self.scopes.last().expect("active environment").clone();
         // 15.2.5: a named expression captures a private immutable self binding.
@@ -342,6 +338,10 @@ impl Realm {
         self.check_string(&name, span)?;
         self.define_builtin_property(&function, "name", name, false, span)?;
         if syntax.kind == spite_parser::ast::FunctionKind::Async {
+            return Ok(Value::Object(function));
+        }
+        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
+            self.define_generator_function_prototype(&function, span)?;
             return Ok(Value::Object(function));
         }
         // 10.2.5 MakeConstructor: every ordinary function owns its prototype;

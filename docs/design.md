@@ -340,7 +340,7 @@ targets. Function heads and bodies each charge parser depth; declarations cannot
 bypass expression recursion limits. Ordinary functions instantiate; strict calls
 and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
 construction also executes; other primitive wrappers remain a runtime gap.
-Generator execution remains a separate step. Async declaration
+Generator execution retains call scopes for lazy body entry, as described below. Async declaration
 and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
@@ -362,10 +362,8 @@ and yield bindings. Declaration names inherit the enclosing Yield context;
 expression names use +Yield. Ordinary nested functions, arrows and methods reset
 their body context, while cover-cache keys distinguish parameter/body Yield
 contexts. Strict/private validation traverses the operand. Async generators
-remain parser boundaries. Creating a generator function object
-remains a runtime Unsupported boundary before body effects. Ordinary dynamic
-Function bodies can retain unexecuted generator definitions; invoking such a body
-reaches the same runtime boundary during declaration instantiation.
+remain parser boundaries. Ordinary dynamic Function bodies can retain generator
+definitions, whose function objects are created during declaration instantiation.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before
@@ -373,9 +371,40 @@ parameters switch to +Yield/~Await and bodies enable YieldExpression. Method
 parameters are unique even in sloppy objects; constructor/prototype/private-name
 rules remain class early errors. Names such as get, set, async and static retain
 their ordinary property-name meaning after the generator star. Source ranges
-include the star and exclude the class static modifier. Method-object creation
-remains an explicit runtime boundary after computed names and before body effects,
-including when an async object-literal key has resumed.
+include the star and exclude the class static modifier. Method objects are created
+after computed names without executing their bodies, including when an async
+object-literal key has resumed.
+
+Generator functions/methods and the hidden GeneratorFunction constructor install
+the 27.3/27.5 intrinsic graph. GeneratorFunction.prototype is a non-callable object
+inheriting Function.prototype; its prototype property points to GeneratorPrototype,
+which inherits Iterator.prototype. Per-function prototype objects inherit that
+GeneratorPrototype and have no own constructor. Generator functions/methods are
+callable and non-constructible. Their metadata, names and source use the shared
+function paths; dynamic construction shares ordered string conversion, separate
+grammar goals, newTarget prototype selection and global environment capture.
+
+EvaluateGeneratorBody performs parameter/default, var/function and body lexical
+instantiation at the call, before generator-object creation (15.5, 27.5.3). The
+object retains the actual callee, body/root environment, strictness, variable
+environment and global plus callee scope suffix. The callee remains a strong edge
+even if an arguments binding suppresses arguments.callee. Object tracing lists
+every physical handle, including repeated root/variable environment references;
+these slots contain handles/source AST rather than direct Symbol cells.
+
+The first next ignores its argument, marks the generator executing and installs
+its saved scopes through the same caller-restoration helper as source async
+functions. Native statements run to completion with ordinary return/throw,
+finally and root resource disposal. Completion releases captures and produces a
+fresh done-true iterator result; normal completion yields undefined. Executed
+YieldExpression remains an explicit Unsupported boundary before its operand.
+Host failures release cached resources and complete the generator without further
+JavaScript cleanup, including at budget exhaustion. Reentrant resumes throw
+TypeError. Return/throw before start skip the body; completed next returns
+undefined, completed return preserves its argument and completed throw preserves
+the thrown value. Yield suspension, delegation and suspended-yield abrupt resumes
+remain implementation work. No Promise, job, automatic Await or default quota is
+added to synchronous generator execution.
 
 Ordinary and arrow calls share their parameter/var setup and caller restoration
 with an internal body driver. The driver runs while the callee's scopes,
@@ -1978,7 +2007,7 @@ yield and allow ordinary await identifiers. The prescribed `function* anonymous`
 source includes the standard line feeds and preserves lone surrogates in both
 inputs. Strictness comes from the constructed body, with shared duplicate-name,
 non-simple parameter and lexical-conflict checks. These APIs prepare syntax for
-the generator constructor; generator function/method objects remain runtime work.
+the generator constructor and share its runtime compilation path.
 
 Source storage uses unchanged scalar UTF-8 text plus an ordered table of lone
 surrogate code points at their encoded byte positions. The scanner uses U+FFFD

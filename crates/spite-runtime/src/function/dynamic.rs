@@ -4,6 +4,7 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::{
     ast::FunctionKind, parse_dynamic_async_function_utf16, parse_dynamic_function_utf16,
+    parse_dynamic_generator_function_utf16,
 };
 
 impl Realm {
@@ -30,7 +31,11 @@ impl Realm {
             parameters.push(self.string(argument, span)?);
         }
         let body = self.string(body, span)?;
-        let overhead = if kind == FunctionKind::Async { 32 } else { 26 };
+        let overhead = match kind {
+            FunctionKind::Async => 32,
+            FunctionKind::Ordinary => 26,
+            FunctionKind::Generator => 27,
+        };
         let parameter_units = parameters
             .iter()
             .enumerate()
@@ -99,10 +104,10 @@ impl Realm {
             });
         }
         self.object_work(span, |_, budget| budget.charge(bytes))?;
-        let syntax = (if kind == FunctionKind::Async {
-            parse_dynamic_async_function_utf16(&joined, &body)
-        } else {
-            parse_dynamic_function_utf16(&joined, &body)
+        let syntax = (match kind {
+            FunctionKind::Async => parse_dynamic_async_function_utf16(&joined, &body),
+            FunctionKind::Ordinary => parse_dynamic_function_utf16(&joined, &body),
+            FunctionKind::Generator => parse_dynamic_generator_function_utf16(&joined, &body),
         })
         .map_err(|diagnostic| match diagnostic.kind {
             DiagnosticKind::Syntax => {
@@ -115,16 +120,19 @@ impl Realm {
             },
         })?;
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
-        let (constructor, fallback) = if kind == FunctionKind::Async {
-            (
+        let (constructor, fallback) = match kind {
+            FunctionKind::Async => (
                 &intrinsic.async_function.constructor,
                 &intrinsic.async_function.prototype,
-            )
-        } else {
-            (
+            ),
+            FunctionKind::Generator => (
+                &intrinsic.generator.constructor,
+                &intrinsic.generator.function_prototype,
+            ),
+            FunctionKind::Ordinary => (
                 &intrinsic.function_constructor,
                 &intrinsic.function_prototype,
-            )
+            ),
         };
         let new_target = new_target.unwrap_or_else(|| constructor.clone());
         let fallback = fallback.clone();

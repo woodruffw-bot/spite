@@ -9817,3 +9817,109 @@ test/language/statements/generators/rest-params-trailing-comma-early-error.js	17
 test/language/statements/generators/dflt-params-duplicates.js	1854	1855	duplicate lexical binding
 test/language/statements/generators/array-destructuring-param-strict-body.js	5234	5276	use strict directive with non-simple parameters
 test/language/statements/generators/object-destructuring-param-strict-body.js	5236	5279	use strict directive with non-simple parameters
+test/language/statements/generators/arguments-with-arguments-fn.js	-	-	-
+test/language/statements/generators/arguments-with-arguments-lex.js	-	-	-
+test/language/statements/generators/cptn-decl.js	-	-	-
+test/language/statements/generators/default-proto.js	-	-	-
+test/language/statements/generators/dflt-params-abrupt.js	-	-	-
+test/language/statements/generators/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/generators/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/generators/dflt-params-ref-later.js	-	-	-
+test/language/statements/generators/dflt-params-ref-prior.js	-	-	-
+test/language/statements/generators/dflt-params-ref-self.js	-	-	-
+test/language/statements/generators/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/generators/eval-var-scope-syntax-err.js	-	-	-
+test/language/statements/generators/generator-created-after-decl-inst.js	-	-	-
+test/language/statements/generators/has-instance.js	-	-	-
+test/language/statements/generators/invoke-as-constructor.js	-	-	-
+test/language/statements/generators/length-dflt.js	-	-	-
+test/language/statements/generators/length-property-descriptor.js	-	-	-
+test/language/statements/generators/name.js	-	-	-
+test/language/statements/generators/no-yield.js	-	-	-
+test/language/statements/generators/params-dflt-args-unmapped.js	-	-	-
+test/language/statements/generators/params-dflt-ref-arguments.js	-	-	-
+test/language/statements/generators/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/generators/params-trailing-comma-single.js	-	-	-
+test/language/statements/generators/prototype-own-properties.js	-	-	-
+test/language/statements/generators/prototype-property-descriptor.js	-	-	-
+test/language/statements/generators/prototype-relation-to-function.js	-	-	-
+test/language/statements/generators/prototype-typeof.js	-	-	-
+test/language/statements/generators/prototype-uniqueness.js	-	-	-
+test/language/statements/generators/prototype-value.js	-	-	-
+test/language/statements/generators/restricted-properties.js	-	-	-
+test/language/statements/generators/return.js	-	-	-
+test/language/statements/generators/scope-body-lex-distinct.js	-	-	-
+test/language/statements/generators/scope-param-elem-var-close.js	-	-	-
+test/language/statements/generators/scope-param-elem-var-open.js	-	-	-
+test/language/statements/generators/scope-param-rest-elem-var-close.js	-	-	-
+test/language/statements/generators/scope-param-rest-elem-var-open.js	-	-	-
+test/language/statements/generators/scope-paramsbody-var-close.js	-	-	-
+test/language/statements/generators/scope-paramsbody-var-open.js	-	-	-
+test/language/statements/generators/unscopables-with-in-nested-fn.js	-	-	-
+test/language/statements/generators/unscopables-with.js	-	-	-
+test/language/statements/generators/yield-as-function-expression-binding-identifier.js	-	-	-
+test/language/statements/generators/yield-as-identifier-in-nested-function.js	-	-	-
+test/language/statements/generators/yield-as-literal-property-name.js	-	-	-
+test/language/statements/generators/yield-as-property-name.js	-	-	-
+test/built-ins/GeneratorFunction/extensibility.js	-	-	-
+test/built-ins/GeneratorFunction/has-instance.js	-	-	-
+test/built-ins/GeneratorFunction/instance-construct-throws.js	-	-	-
+test/built-ins/GeneratorFunction/instance-length.js	-	-	-
+test/built-ins/GeneratorFunction/instance-name.js	-	-	-
+test/built-ins/GeneratorFunction/instance-prototype.js	-	-	-
+test/built-ins/GeneratorFunction/instance-restricted-properties.js	-	-	-
+test/built-ins/GeneratorFunction/instance-yield-expr-in-param.js	-	-	-
+test/built-ins/GeneratorFunction/invoked-as-constructor-no-arguments.js	-	-	-
+test/built-ins/GeneratorFunction/invoked-as-function-no-arguments.js	-	-	-
+test/built-ins/GeneratorFunction/length.js	-	-	-
+test/built-ins/GeneratorFunction/name.js	-	-	-
+test/built-ins/GeneratorPrototype/Symbol.toStringTag.js	-	-	-
+test/built-ins/GeneratorPrototype/constructor.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/Symbol.toStringTag.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/constructor.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/extensibility.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/not-callable.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/prop-desc.js	-	-	-
+test/built-ins/GeneratorFunction/prototype/prototype.js	-	-	-
+test/built-ins/GeneratorPrototype/next/context-method-invocation.js	-	-	-
+test/built-ins/GeneratorPrototype/next/from-state-executing.js	-	-	-
+test/built-ins/GeneratorPrototype/next/length.js	-	-	-
+test/built-ins/GeneratorPrototype/next/lone-return.js	-	-	-
+test/built-ins/GeneratorPrototype/next/name.js	-	-	-
+test/built-ins/GeneratorPrototype/next/no-control-flow.js	-	-	-
+test/built-ins/GeneratorPrototype/next/not-a-constructor.js	-	-	-
+test/built-ins/GeneratorPrototype/next/property-descriptor.js	-	-	-
+test/built-ins/GeneratorPrototype/next/result-prototype.js	-	-	-
+test/built-ins/GeneratorPrototype/next/this-val-not-generator.js	-	-	-
+test/built-ins/GeneratorPrototype/next/this-val-not-object.js	-	-	-
+test/built-ins/GeneratorPrototype/return/from-state-completed.js	-	-	-
+test/built-ins/GeneratorPrototype/return/from-state-executing.js	-	-	-
+test/built-ins/GeneratorPrototype/return/from-state-suspended-start.js	-	-	-
+test/built-ins/GeneratorPrototype/return/length.js	-	-	-
+test/built-ins/GeneratorPrototype/return/name.js	-	-	-
+test/built-ins/GeneratorPrototype/return/not-a-constructor.js	-	-	-
+test/built-ins/GeneratorPrototype/return/property-descriptor.js	-	-	-
+test/built-ins/GeneratorPrototype/return/this-val-not-generator.js	-	-	-
+test/built-ins/GeneratorPrototype/return/this-val-not-object.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/from-state-completed.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/from-state-executing.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/from-state-suspended-start.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/length.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/name.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/not-a-constructor.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/property-descriptor.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/this-val-not-generator.js	-	-	-
+test/built-ins/GeneratorPrototype/throw/this-val-not-object.js	-	-	-
+test/language/expressions/await/await-in-nested-generator.js	-	-	-
+test/built-ins/Array/fromAsync/sync-iterable-iteration-err.js	-	-	-
+test/language/statements/for-await-of/async-func-decl-dstr-array-elem-init-fn-name-gen.js	-	-	-
+test/language/statements/for-await-of/async-func-decl-dstr-obj-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for-await-of/async-func-decl-dstr-obj-prop-elem-init-fn-name-gen.js	-	-	-
+test/language/statements/generators/dflt-params-rest.js	1670	1671	expected )
+test/language/statements/generators/rest-param-strict-body.js	5243	5285	use strict directive with non-simple parameters
+test/language/statements/generators/use-strict-with-non-simple-param.js	589	627	use strict directive with non-simple parameters
+test/language/statements/generators/yield-as-logical-or-expression.js	347	348	expected an expression
+test/language/statements/generators/yield-identifier-spread-strict.js	873	878	invalid binding in strict mode
+test/language/statements/generators/yield-identifier-strict.js	719	724	invalid binding in strict mode
+test/language/statements/generators/yield-star-after-newline.js	361	362	expected an expression
+test/language/statements/generators/yield-weak-binding.js	328	333	yield cannot be an identifier in a generator context

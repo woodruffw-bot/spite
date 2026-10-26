@@ -464,6 +464,22 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),object={x:key};(async()=>{with(object){var[x=await gate]=[]}})();return gate})()",
         ),
         (
+            "generator suspended parameter",
+            "(function*(x){return x})(key)",
+        ),
+        (
+            "generator suspended strict receiver",
+            "(function*(){'use strict';return this}).call(key)",
+        ),
+        (
+            "generator suspended callee property",
+            "(()=>{let f=function*(arguments){};f.kept=key;let result=f(0);f=null;return result})()",
+        ),
+        (
+            "generator suspended private receiver",
+            "(new(class{#value=key;*g(){return this.#value}})).g()",
+        ),
+        (
             "async catch array cached next",
             "(()=>{let gate=new Promise(()=>{}),next=(()=>{let value=key;return()=>({done:false,value:(value,undefined)})})(),iterator={next,return(){return{}}};(async()=>{try{throw{[Symbol.iterator](){return iterator}}}catch([x=await gate]){}})();iterator.next=null;next=null;return gate})()",
         ),

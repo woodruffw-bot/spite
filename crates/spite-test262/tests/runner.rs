@@ -345,6 +345,10 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
     let cases = Runner::default()
         .run(&original, None, |_| Ok("function* f() {}".into()))
         .unwrap();
+    assert_eq!(cases[0].outcome, Outcome::Passed);
+    let cases = Runner::default()
+        .run(&original, None, |_| Ok("async function* f() {}".into()))
+        .unwrap();
     assert!(matches!(
         cases[0].outcome,
         Outcome::Unsupported {

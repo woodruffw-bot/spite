@@ -333,6 +333,7 @@ impl Objects {
                 | Builtin::RegExp
                 | Builtin::Function
                 | Builtin::AsyncFunction
+                | Builtin::GeneratorFunction
                 | Builtin::Iterator
                 | Builtin::Number
                 | Builtin::Array
