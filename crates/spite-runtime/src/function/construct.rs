@@ -108,6 +108,14 @@ impl Realm {
                         span,
                     );
                 }
+                Callable::Builtin(Builtin::AsyncGeneratorFunction) => {
+                    return self.dynamic_function(
+                        spite_parser::ast::FunctionKind::AsyncGenerator,
+                        Some(new_target),
+                        arguments.into_iter(),
+                        span,
+                    );
+                }
                 Callable::Builtin(Builtin::GeneratorFunction) => {
                     return self.dynamic_function(
                         spite_parser::ast::FunctionKind::Generator,

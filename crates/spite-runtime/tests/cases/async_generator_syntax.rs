@@ -1,6 +1,6 @@
-//! Parsed async generator syntax stays inert until function object creation.
+//! Async-generator declarations instantiate without executing their bodies.
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 #[test]
 fn unexecuted_async_generator_syntax_and_dynamic_bodies_compile_without_host_failure() {
@@ -9,7 +9,7 @@ fn unexecuted_async_generator_syntax_and_dynamic_bodies_compile_without_host_fai
 }
 
 #[test]
-fn async_generator_function_creation_is_an_uncatchable_host_boundary() {
+fn async_generator_function_creation_completes_without_entering_bodies() {
     for statement in [
         "(async function*g(){yield await 1})",
         "({async*g(){yield await 1}})",
@@ -19,22 +19,17 @@ fn async_generator_function_creation_is_an_uncatchable_host_boundary() {
     ] {
         let mut realm = Realm::default();
         realm.eval("let flag=0").unwrap();
-        assert!(
-            matches!(
-                realm.eval(&format!(
-                    "try{{flag=3;{statement};}}catch{{flag=1}}finally{{flag=2}}"
-                )),
-                Err(Error::Unsupported { .. })
-            ),
-            "{statement}"
-        );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)), "{statement}");
+        realm
+            .eval(&format!(
+                "try{{flag=3;{statement};}}catch{{flag=1}}finally{{flag=2}}"
+            ))
+            .unwrap();
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)), "{statement}");
     }
 }
 
 #[test]
-fn dynamic_function_constructors_compile_then_abort_when_async_generator_declarations_instantiate()
-{
+fn dynamic_function_constructors_compile_and_instantiate_nested_async_generator_declarations() {
     for expression in [
         "Function('async function*g(){}')",
         "new Function('async function*g(){}')",
@@ -50,13 +45,9 @@ fn dynamic_function_constructors_compile_then_abort_when_async_generator_declara
             Ok(Value::Boolean(true)),
             "{expression}"
         );
-        assert!(
-            matches!(
-                realm.eval("try{flag=3;compiled()}catch{flag=1}finally{flag=2}"),
-                Err(Error::Unsupported { .. })
-            ),
-            "{expression}"
-        );
-        assert_eq!(realm.eval("flag"), Ok(Value::Number(3.0)), "{expression}");
+        realm
+            .eval("try{flag=3;compiled()}catch{flag=1}finally{flag=2}")
+            .unwrap();
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)), "{expression}");
     }
 }

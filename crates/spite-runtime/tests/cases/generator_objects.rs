@@ -147,6 +147,7 @@ fn native_body_completions_run_finalizers_and_resource_disposal_once() {
 #[test]
 fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup() {
     let mut resumed = Realm::default();
+    resumed.reserve_unsupported_global("unsupportedHost");
     resumed.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{before++;yield(operand++)}catch{caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
     collect(&mut resumed);
     check(
@@ -160,6 +161,7 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
     collect(&mut resumed);
     check(&mut resumed, "weak.deref()===undefined");
     let mut delegated = Realm::default();
+    delegated.reserve_unsupported_global("unsupportedHost");
     delegated.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{before++;yield*(operand++)}catch(error){if(error instanceof TypeError)caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
     collect(&mut delegated);
     check(
@@ -171,12 +173,13 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
+        realm.reserve_unsupported_global("unsupportedHost");
         realm.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;function spin(){while(true){}}").unwrap();
         realm.eval("let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);").unwrap();
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')()"
+            "Function('unsupportedHost')()"
         };
         realm.eval(&format!("function*g(){{using r=resource;delete resource[Symbol.dispose];try{{before++;{tail}}}catch{{caught++}}finally{{finalized++}}}}let iterator=g()")).unwrap();
         let error = realm.eval("iterator.next()").unwrap_err();

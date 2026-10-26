@@ -56,10 +56,42 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Async generator grammar | Declarations/expressions and object/class/static/private methods, joint Await/Yield contexts, dynamic compilation and lossless source; function objects remain Unsupported |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19823 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async generator functions | Joint Await/Yield grammar, function/method objects and hidden constructor/prototype metadata, dynamic compilation, lossless source and parameter setup; instances remain Unsupported |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19853 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async-generator function objects and intrinsic graph
+
+Async-generator declarations, expressions and public/private methods now create
+non-constructible function objects with their own prototypes. The hidden
+constructor, function prototype and generator prototype share the existing
+generator builder and AsyncIteratorPrototype. Dynamic calls/construction reuse
+the shared source/conversion/newTarget pipeline. Calls perform parameter and
+declaration setup before the remaining instance-creation Unsupported boundary.
+Prototype next/return/throw reject unbranded receivers with fresh intrinsic
+Promises. Instance execution and its request queue remain implementation work.
+
+Six Runtime groups cover metadata, method/constructor distinctions, dynamic
+compilation order/source, invalid receiver Promises, parameter effects/errors and
+live/unreachable Symbol captures. Earlier function-creation controls are retained
+positively. Generic host-abort tests reserve an explicit unavailable host name;
+production realms gain no reserved names. CLI and runner/harness controls retain
+the earlier programs with their updated outcomes and separate remaining gaps.
+
+All 417 Runtime units, 2,232 existing non-RegExp integrations and six new groups
+pass, totaling 2,238 integrations across 685 Runtime files. Parser coverage remains
+eighteen units/434 integrations across 88 files; thirteen CLI groups, thirteen
+runner probes and eight harness groups pass. Clippy, Rust 1.88 and inventories pass.
+Six actual intrinsic objects change the initialized realm count from 585 to 591;
+existing quotas and allowances are unchanged.
+
+The scoped 23-original constructor/prototype review reports thirty passed/sixteen
+Unsupported variants with other outcomes zero. Fifteen complete originals add
+thirty variants, plus the unchanged wellKnownIntrinsicObjects.js dependency. Only
+its executed AsyncGeneratorFunction constructor path is credited. The corpus
+contains 10,327 fixtures, twenty-one helpers, 10,308 reviewed sources and 19,853
+variants. The full gate and all forty-three runner/package checks pass.
 
 ## Async-generator grammar and execution boundaries
 

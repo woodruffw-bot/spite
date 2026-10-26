@@ -182,8 +182,9 @@ fn cached_callables_and_sources_survive_collection_after_public_deletion() {
 #[test]
 fn host_failures_skip_handlers_and_recursive_next_restores_native_call_state() {
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm
-        .eval("let flag=0,w=Iterator.from({next:()=>Function('async function* gap(){}')(),return:()=>{flag=3;}})")
+        .eval("let flag=0,w=Iterator.from({next:()=>Function('unsupportedHost')(),return:()=>{flag=3;}})")
         .unwrap();
     assert!(matches!(
         realm.eval("try{w.next();}catch{flag=1;}finally{flag=2;}"),
@@ -194,6 +195,7 @@ fn host_failures_skip_handlers_and_recursive_next_restores_native_call_state() {
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
             let mut realm = Realm::default();
+            realm.reserve_unsupported_global("unsupportedHost");
             realm
                 .eval("let recurse=true,w=Iterator.from({next:()=>recurse?w.next():7}),flag=0")
                 .unwrap();

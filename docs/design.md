@@ -110,7 +110,7 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Async-generator function objects, module linking and evaluation remain
+are syntax errors. Async-generator instances, module linking and evaluation remain
 implementation work; no Module AST is accepted by Script execution APIs.
 
 Module::entries constructs the static records used by ParseModule (16.2).
@@ -407,7 +407,7 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. Async-generator function objects remain Unsupported; awaited body
+that context. Async-generator instances remain Unsupported; awaited body
 continuations use the shared source interpreter below. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
@@ -434,10 +434,17 @@ Methods use UniqueFormalParameters; declaration/expression duplicate simple
 parameters follow strictness as edition 17 specifies. Shared method/class checks
 cover super/private access, constructors and restricted async line terminators.
 Dynamic AsyncGeneratorFunction UTF-8/UTF-16 APIs use independent parameter/body
-goals and the standard async function* anonymous source. Unexecuted syntax and
-dynamic bodies compile; attempted function-object creation is a host Unsupported
-failure until the runtime objects are implemented. Host-abort controls invoke
-compiled bodies explicitly, and unused catch bodies retain normal execution.
+goals and the standard async function* anonymous source. Function and method
+objects share ordinary closure storage and the generator intrinsic builder.
+The hidden AsyncGeneratorFunction constructor, non-callable function prototype
+and async-generator prototype retain standard metadata and inherit the existing
+AsyncIteratorPrototype. Each function owns a prototype but has no [[Construct]].
+Dynamic calls/construction use the shared conversion, parsing and newTarget
+prototype pipeline. Calls perform parameter/declaration setup before the remaining
+instance-creation Unsupported boundary (15.6.2). Prototype methods reject
+unbranded receivers using fresh intrinsic Promises. Generic host-abort controls
+reserve an explicit unavailable host name, independently of partial language
+features; ordinary production realms reserve no extra names.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before

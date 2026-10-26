@@ -239,6 +239,13 @@ fn unsupported_and_limits_are_never_negative_passes() {
     ));
     assert!(matches!(
         negative("runtime", "TypeError", "async function* f() {}"),
+        Outcome::Failed {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative("runtime", "TypeError", "async function* f() {};f()"),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..
@@ -366,6 +373,10 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
     assert_eq!(cases[0].outcome, Outcome::Passed);
     let cases = Runner::default()
         .run(&original, None, |_| Ok("async function* f() {}".into()))
+        .unwrap();
+    assert_eq!(cases[0].outcome, Outcome::Passed);
+    let cases = Runner::default()
+        .run(&original, None, |_| Ok("print".into()))
         .unwrap();
     assert!(matches!(
         cases[0].outcome,

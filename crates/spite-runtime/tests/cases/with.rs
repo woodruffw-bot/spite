@@ -155,13 +155,14 @@ fn object_conversion_and_all_completion_paths_restore_the_outer_scope() {
 #[test]
 fn captured_binding_objects_are_traced_and_host_aborts_restore_scopes() {
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm
         .eval("let f;with({x:{value:7}}){f=function(){return x.value;};}")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("f()"), Ok(Value::Number(7.0)));
     assert!(matches!(
-        realm.eval("with({x:2})Function('async function* gap(){}')();"),
+        realm.eval("with({x:2})Function('unsupportedHost')();"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(
@@ -172,6 +173,7 @@ fn captured_binding_objects_are_traced_and_host_aborts_restore_scopes() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    limited.reserve_unsupported_global("unsupportedHost");
     limited.eval("let x=1,flag=0;").unwrap();
     assert!(matches!(
         limited.eval("try{with({x:2})while(true){x++;}}catch(e){flag=1;}finally{flag=2;}"),

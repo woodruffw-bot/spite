@@ -26,10 +26,7 @@ impl Realm {
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
         let prototype = match syntax.kind {
             spite_parser::ast::FunctionKind::AsyncGenerator => {
-                return Err(Self::unsupported(
-                    span,
-                    "async generator function objects are not implemented",
-                ));
+                intrinsic.async_generator.function_prototype.clone()
             }
             spite_parser::ast::FunctionKind::Async => intrinsic.async_function.prototype.clone(),
             spite_parser::ast::FunctionKind::Generator => {
@@ -71,8 +68,12 @@ impl Realm {
         self.set_function_name(&function, key, prefix, span)?;
         // Methods have no [[Construct]]. Generator methods additionally own a
         // prototype for their generator instances.
-        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
-            self.define_generator_function_prototype(&function, span)?;
+        if matches!(
+            syntax.kind,
+            spite_parser::ast::FunctionKind::Generator
+                | spite_parser::ast::FunctionKind::AsyncGenerator
+        ) {
+            self.define_generator_function_prototype(&function, syntax.kind, span)?;
         }
         Ok(function)
     }

@@ -181,13 +181,14 @@ fn delegate_host_failures_complete_and_release_state_without_cleanup() {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
+        realm.reserve_unsupported_global("unsupportedHost");
         realm
             .eval("let calls=0,closed=0,caught=0,finalized=0;function spin(){while(true){}}")
             .unwrap();
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')()"
+            "Function('unsupportedHost')()"
         };
         realm.eval(&format!(r#"
             let weak;function*g(){{let source={{[Symbol.iterator](){{return this}},next(){{if(calls++){{{tail}}}return{{done:false,value:1}}}},return(){{closed++;return{{}}}}}};weak=new WeakRef(source);try{{yield*source}}catch{{caught++}}finally{{finalized++}}}}let iterator=g();iterator.next()

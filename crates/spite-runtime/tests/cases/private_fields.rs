@@ -181,11 +181,11 @@ fn language_and_host_aborts_restore_private_scope_and_caller_state() {
         "let flag=0;try{class C{static #x=eval('function* gap(){}')}}catch{flag=1}finally{flag=2}flag===2",
     );
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval(
-            "try{class C{static #x=eval('async function* gap(){}');}}catch{flag=1;}finally{flag=2;}"
-        ),
+        realm
+            .eval("try{class C{static #x=eval('unsupportedHost');}}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

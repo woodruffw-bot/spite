@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10312 unmodified test fixtures and twenty harness files come from
+These 10327 unmodified test fixtures and twenty-one harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,24 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Async-generator function object review
+
+Fifteen unchanged constructor/prototype originals add thirty variants for function
+metadata, non-constructibility, the hidden constructor and its prototype graph.
+The scoped 23-original review reports thirty passed/sixteen Unsupported with all
+other outcomes zero. Originals requiring instance execution or another realm
+remain wholly excluded.
+
+The unchanged wellKnownIntrinsicObjects.js helper is now included for the passing
+is-a-constructor original; its executed target is the real hidden constructor.
+No helper bytes or unsupported paths are replaced. The inventory contains 10,327
+fixtures, twenty-one helpers, 10,308 reviewed sources and 19,853 variants.
+Six new Runtime groups cover objects, dynamic compilation, Promise brand errors,
+parameter timing and captures. Existing groups/quotas remain; the initialized
+realm has 591 entries after six real intrinsic objects are added. The full gate
+and all forty-three runner/package checks pass. Async-generator instances and
+their request queue remain implementation work.
 
 ## Async-generator syntax review
 

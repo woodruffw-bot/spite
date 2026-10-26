@@ -1,26 +1,20 @@
-//! Generator private methods create functions; async generators remain host gaps.
+//! Generator and async-generator private method objects share class early errors.
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Realm, Value};
 
 #[test]
-fn unsupported_private_function_kinds_are_distinct_from_early_errors() {
-    for (source, unsupported) in [
-        ("eval('class C{async *#m(){}}');", true),
-        ("eval('class C{*#m(){}}');", false),
-        ("eval('class C{static async *#m(){}}');", true),
+fn private_generator_function_kinds_instantiate_and_keep_early_errors() {
+    for source in [
+        "eval('class C{async *#m(){}}');",
+        "eval('class C{*#m(){}}');",
+        "eval('class C{static async *#m(){}}');",
     ] {
         let mut realm = Realm::default();
-        realm.eval("let flag=0;").unwrap();
-        let result = realm.eval(&format!(
-            "try{{{source}}}catch{{flag=1;}}finally{{flag=2;}}"
-        ));
-        if unsupported {
-            assert!(matches!(result, Err(Error::Unsupported { .. })), "{source}");
-            assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
-        } else {
-            result.unwrap();
-            assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
-        }
+        realm.eval("let flag=0").unwrap();
+        realm
+            .eval(&format!("try{{{source}}}catch{{flag=1}}finally{{flag=2}}"))
+            .unwrap();
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)), "{source}");
         assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
     }
     assert_eq!(

@@ -381,6 +381,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
 - [x] Parse synchronous generator declarations/expressions and yield/yield* with retained kind/source, Yield contexts and exact syntax boundaries before unimplemented runtime object creation.
 - [x] Parse async-generator declarations/expressions and object/class/static/private methods with joint Await/Yield contexts, shared early errors, independent dynamic parameter/body goals and lossless UTF-16 source; retain an explicit function-object creation boundary.
+- [x] Install async-generator function/method objects and hidden constructor/prototype metadata through shared closure/intrinsic builders, with dynamic compilation, call-time parameter setup, traced captures and Promise rejection of invalid prototype-method receivers.
 - [x] Parse synchronous generator object/class/static/private methods with enclosing computed-name contexts, unique parameters, super/private rules and constructor early errors.
 - [x] Parse dynamic GeneratorFunction parameter/body goals independently with combined early errors, standard anonymous source and lossless UTF-16 entry points.
 - [x] Install generator function/method objects and hidden constructor/prototypes, with call-time instantiation, traced lazy scopes, native completion, reentry checks and initial/completed next/return/throw.

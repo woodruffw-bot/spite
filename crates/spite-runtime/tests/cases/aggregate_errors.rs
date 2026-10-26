@@ -180,11 +180,13 @@ fn default_list_size_is_unrestricted_and_opted_in_host_failures_bypass_cleanup()
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,closed=false;").unwrap();
     assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){return {done:false,value:1};},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Limit {..})));
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,closed=false;").unwrap();
-    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){Function('async function* gap(){}')();},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){Function('unsupportedHost')();},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
 }

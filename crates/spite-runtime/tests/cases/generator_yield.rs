@@ -180,6 +180,7 @@ fn yielded_state_retains_callees_and_locals_and_releases_them_after_completion()
 #[test]
 fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
     let mut delegated = Realm::default();
+    delegated.reserve_unsupported_global("unsupportedHost");
     delegated.eval("let effects=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{yield 1;yield*(effects++)}catch(error){if(error instanceof TypeError)caught++}finally{finalized++}}let iterator=g();iterator.next();iterator.next()").unwrap();
     collect(&mut delegated);
     check(
@@ -192,6 +193,7 @@ fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
+        realm.reserve_unsupported_global("unsupportedHost");
         realm
             .eval("let effects=0,disposed=0,finalized=0,caught=0;function spin(){while(true){}}")
             .unwrap();
@@ -199,7 +201,7 @@ fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
         let tail = if limited {
             "spin()"
         } else {
-            "Function('async function* gap(){}')()"
+            "Function('unsupportedHost')()"
         };
         realm.eval(&format!("function*g(){{using r=resource;delete resource[Symbol.dispose];try{{yield 1;{tail}}}catch{{caught++}}finally{{finalized++}}}}let iterator=g();iterator.next()")).unwrap();
         let error = realm.eval("iterator.next()").unwrap_err();

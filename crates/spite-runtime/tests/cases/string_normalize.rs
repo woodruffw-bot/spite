@@ -185,6 +185,7 @@ fn long_default_inputs_work_and_opted_in_failures_bypass_cleanup() {
         max_string_units: Some(9),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval("try{'\\uFDFA'.normalize('NFKC');}catch{flag=1;}finally{flag=2;}"),
@@ -195,13 +196,15 @@ fn long_default_inputs_work_and_opted_in_failures_bypass_cleanup() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(realm.eval("try{String.prototype.normalize.call({toString(){while(true){}}});}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit {..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval("try{'x'.normalize({toString(){Function('async function* gap(){}')();}});}catch{flag=1;}finally{flag=2;}"),
+        realm.eval("try{'x'.normalize({toString(){Function('unsupportedHost')();}});}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

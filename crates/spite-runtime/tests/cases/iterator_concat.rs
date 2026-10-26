@@ -203,6 +203,7 @@ fn host_failures_complete_resumes_skip_handlers_and_do_not_run_cleanup() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,w=Iterator.concat({[Symbol.iterator]:()=>({next(){while(true){}},return(){flag=3;return {};}})})").unwrap();
     assert!(matches!(
         realm.eval("try{w.next();}catch{flag=1;}finally{flag=2;}"),
@@ -213,7 +214,8 @@ fn host_failures_complete_resumes_skip_handlers_and_do_not_run_cleanup() {
         Ok(Value::Boolean(true))
     );
     let mut realm = Realm::default();
-    realm.eval("let flag=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>Function('async function* gap(){}')(),return:()=>{flag=3;return {};}})})").unwrap();
+    realm.reserve_unsupported_global("unsupportedHost");
+    realm.eval("let flag=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>Function('unsupportedHost')(),return:()=>{flag=3;return {};}})})").unwrap();
     assert!(matches!(
         realm.eval("try{w.next();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

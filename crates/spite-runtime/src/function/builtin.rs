@@ -232,6 +232,15 @@ impl Realm {
                 arguments,
                 span,
             ),
+            Builtin::AsyncGeneratorFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::AsyncGenerator,
+                None,
+                arguments,
+                span,
+            ),
+            Builtin::AsyncGeneratorNext
+            | Builtin::AsyncGeneratorReturn
+            | Builtin::AsyncGeneratorThrow => self.reject_async_generator_receiver(span),
             Builtin::GeneratorFunction => self.dynamic_function(
                 spite_parser::ast::FunctionKind::Generator,
                 None,

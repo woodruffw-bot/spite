@@ -10292,3 +10292,18 @@ test/language/expressions/async-generator/yield-as-label-identifier.js	881	886	i
 test/language/expressions/async-generator/yield-identifier-strict.js	812	817	invalid binding in strict mode
 test/language/module-code/export-default-asyncgenerator-declaration-binding-exists.js	569	571	duplicate lexical binding
 test/language/expressions/import.meta/syntax/invalid-assignment-target-for-await-of-loop.js	770	781	invalid for-of assignment target
+test/built-ins/AsyncGeneratorFunction/extensibility.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/has-instance.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/instance-construct-throws.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/instance-length.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/instance-name.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/instance-prototype.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/is-a-constructor.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/length.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/name.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/Symbol.toStringTag.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/constructor.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/extensibility.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/not-callable.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/prop-desc.js	-	-	-
+test/built-ins/AsyncGeneratorFunction/prototype/prototype.js	-	-	-

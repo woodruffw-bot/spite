@@ -184,6 +184,7 @@ fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
         max_string_units: Some(1),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval("try{'ß'.toUpperCase();}catch{flag=1;}finally{flag=2;}"),
@@ -194,11 +195,13 @@ fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(realm.eval("try{String.prototype.toLowerCase.call({toString(){while(true){}}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Limit {..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
-    assert!(matches!(realm.eval("try{String.prototype.toUpperCase.call({toString(){Function('async function* gap(){}')();}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(realm.eval("try{String.prototype.toUpperCase.call({toString(){Function('unsupportedHost')();}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

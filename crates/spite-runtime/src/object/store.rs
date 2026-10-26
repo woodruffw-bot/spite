@@ -334,6 +334,7 @@ impl Objects {
                 | Builtin::Function
                 | Builtin::AsyncFunction
                 | Builtin::GeneratorFunction
+                | Builtin::AsyncGeneratorFunction
                 | Builtin::Iterator
                 | Builtin::Number
                 | Builtin::Array

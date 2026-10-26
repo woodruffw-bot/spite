@@ -251,10 +251,7 @@ impl Realm {
         let intrinsics = self.intrinsics.as_ref().expect("initialized");
         let function_prototype = match syntax.kind {
             spite_parser::ast::FunctionKind::AsyncGenerator => {
-                return Err(Self::unsupported(
-                    span,
-                    "async generator function objects are not implemented",
-                ));
+                intrinsics.async_generator.function_prototype.clone()
             }
             spite_parser::ast::FunctionKind::Async => intrinsics.async_function.prototype.clone(),
             spite_parser::ast::FunctionKind::Generator => {
@@ -346,8 +343,12 @@ impl Realm {
         if syntax.kind == spite_parser::ast::FunctionKind::Async {
             return Ok(Value::Object(function));
         }
-        if syntax.kind == spite_parser::ast::FunctionKind::Generator {
-            self.define_generator_function_prototype(&function, span)?;
+        if matches!(
+            syntax.kind,
+            spite_parser::ast::FunctionKind::Generator
+                | spite_parser::ast::FunctionKind::AsyncGenerator
+        ) {
+            self.define_generator_function_prototype(&function, syntax.kind, span)?;
             return Ok(Value::Object(function));
         }
         // 10.2.5 MakeConstructor: every ordinary function owns its prototype;

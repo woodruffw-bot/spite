@@ -109,11 +109,10 @@ fn static_language_and_host_failures_restore_the_caller() {
         "let flag=0;try{class C{static{eval('function* gap(){}')}}}catch{flag=1}finally{flag=2}flag===2",
     );
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval(
-            "try{class C{static{eval('async function* gap(){}');}}}catch{flag=1;}finally{flag=2;}"
-        ),
+        realm.eval("try{class C{static{eval('unsupportedHost');}}}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));

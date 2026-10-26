@@ -155,8 +155,9 @@ fn default_source_sizes_are_unlimited_and_compiled_code_survives_collection() {
 
 #[test]
 fn unsupported_source_is_a_host_abort_after_all_observable_conversions() {
-    for (body, unsupported) in [("function* g(){}", false), ("async function* f(){}", true)] {
+    for (body, unsupported) in [("function* g(){}", false), ("unsupportedHost", true)] {
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("unsupportedHost");
         realm.eval("let flag=0;").unwrap();
         let body = format!("'{body}'");
         let result = realm.eval(&format!("try{{Function({{toString(){{flag=3;return 'a';}}}},{{toString(){{flag=4;return {body};}}}})();}}catch{{flag=5;}}finally{{flag=6;}}"));

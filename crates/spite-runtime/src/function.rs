@@ -88,6 +88,10 @@ pub(crate) enum Builtin {
     Function,
     AsyncFunction,
     GeneratorFunction,
+    AsyncGeneratorFunction,
+    AsyncGeneratorNext,
+    AsyncGeneratorReturn,
+    AsyncGeneratorThrow,
     GeneratorNext,
     GeneratorReturn,
     GeneratorThrow,
@@ -412,6 +416,10 @@ impl Builtin {
             Self::Function => "Function",
             Self::AsyncFunction => "AsyncFunction",
             Self::GeneratorFunction => "GeneratorFunction",
+            Self::AsyncGeneratorFunction => "AsyncGeneratorFunction",
+            Self::AsyncGeneratorNext => "next",
+            Self::AsyncGeneratorReturn => "return",
+            Self::AsyncGeneratorThrow => "throw",
             Self::GeneratorNext => "next",
             Self::GeneratorReturn => "return",
             Self::GeneratorThrow => "throw",
@@ -762,6 +770,10 @@ impl Builtin {
             | Self::Function
             | Self::AsyncFunction
             | Self::GeneratorFunction
+            | Self::AsyncGeneratorFunction
+            | Self::AsyncGeneratorNext
+            | Self::AsyncGeneratorReturn
+            | Self::AsyncGeneratorThrow
             | Self::GeneratorNext
             | Self::GeneratorReturn
             | Self::GeneratorThrow
@@ -1032,6 +1044,7 @@ pub(super) struct Intrinsics {
     pub function_constructor: ObjectHandle,
     pub async_function: async_function::AsyncFunctionIntrinsics,
     pub generator: generator::GeneratorIntrinsics,
+    pub async_generator: generator::GeneratorIntrinsics,
     pub object_to_string: ObjectHandle,
     pub object_value_of: ObjectHandle,
     pub throw_type_error: ObjectHandle,
@@ -1090,6 +1103,7 @@ impl Intrinsics {
         .into_iter()
         .chain(self.async_function.roots())
         .chain(self.generator.roots())
+        .chain(self.async_generator.roots())
         .chain(self.boolean.roots())
         .chain(self.date.roots())
         .chain(self.data_view.roots())
@@ -1304,9 +1318,17 @@ impl Realm {
         let async_function =
             self.async_function_intrinsics(&function_constructor, &function_prototype, span)?;
         let generator = self.generator_intrinsics(
+            spite_parser::ast::FunctionKind::Generator,
             &function_constructor,
             &function_prototype,
             &iterator.prototype,
+            span,
+        )?;
+        let async_generator = self.generator_intrinsics(
+            spite_parser::ast::FunctionKind::AsyncGenerator,
+            &function_constructor,
+            &function_prototype,
+            &async_iterator.prototype,
             span,
         )?;
         // Publish only after the graph is fully initialized. A failed attempt
@@ -1326,6 +1348,7 @@ impl Realm {
             function_constructor,
             async_function,
             generator,
+            async_generator,
             object_to_string,
             object_value_of,
             throw_type_error,
@@ -1632,7 +1655,11 @@ impl Realm {
                     let Value::Object(callee) = function else {
                         unreachable!("callable object")
                     };
-                    if code.kind == spite_parser::ast::FunctionKind::Generator {
+                    if matches!(
+                        code.kind,
+                        spite_parser::ast::FunctionKind::Generator
+                            | spite_parser::ast::FunctionKind::AsyncGenerator
+                    ) {
                         return self.call_generator_ordinary(
                             ordinary::OrdinaryInvocation {
                                 code,
@@ -1676,7 +1703,11 @@ impl Realm {
                         derived_constructor: None,
                         class_field_initializer: false,
                     };
-                    if code.kind == spite_parser::ast::FunctionKind::Generator {
+                    if matches!(
+                        code.kind,
+                        spite_parser::ast::FunctionKind::Generator
+                            | spite_parser::ast::FunctionKind::AsyncGenerator
+                    ) {
                         return self.call_generator_ordinary(
                             ordinary::OrdinaryInvocation {
                                 code,

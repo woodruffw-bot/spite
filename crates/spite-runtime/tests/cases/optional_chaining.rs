@@ -157,6 +157,7 @@ fn opted_in_host_limits_and_unsupported_features_skip_javascript_handlers() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm
         .eval("let flag=0,o={get x(){while(true){};}};")
         .unwrap();
@@ -166,11 +167,10 @@ fn opted_in_host_limits_and_unsupported_features_skip_javascript_handlers() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
-        realm.eval(
-            "try{Function?.((flag=7,'async function* gap(){}'))();}catch{flag=1;}finally{flag=2;}"
-        ),
+        realm.eval("try{Function?.((flag=7,'unsupportedHost'))();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(7.0)));

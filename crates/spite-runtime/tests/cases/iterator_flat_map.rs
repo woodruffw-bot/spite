@@ -230,6 +230,7 @@ fn large_default_inputs_skip_empty_inners_iteratively_and_host_failures_skip_cle
             max_steps: Some(5000),
             ..Limits::default()
         });
+        realm.reserve_unsupported_global("unsupportedHost");
         realm.eval(&format!("let flag=0,h=Iterator.prototype.flatMap.call({{next:()=>({{done:false,value:7}}),return(){{flag=3;return {{}};}}}},{mapper});")).unwrap();
         assert!(matches!(
             realm.eval("try{h.next();}catch{flag=1;}finally{flag=2;}"),
@@ -241,11 +242,12 @@ fn large_default_inputs_skip_empty_inners_iteratively_and_host_failures_skip_cle
         );
     }
     for mapper in [
-        "()=>Function('async function* gap(){}')()",
-        "()=>({[Symbol.iterator]:()=>Function('async function* gap(){}')()})",
-        "()=>({next:()=>Function('async function* gap(){}')(),return(){flag=4;return {};}})",
+        "()=>Function('unsupportedHost')()",
+        "()=>({[Symbol.iterator]:()=>Function('unsupportedHost')()})",
+        "()=>({next:()=>Function('unsupportedHost')(),return(){flag=4;return {};}})",
     ] {
         let mut realm = Realm::default();
+        realm.reserve_unsupported_global("unsupportedHost");
         realm.eval(&format!("let flag=0,h=Iterator.prototype.flatMap.call({{next:()=>({{done:false,value:7}}),return(){{flag=3;return {{}};}}}},{mapper});")).unwrap();
         assert!(matches!(
             realm.eval("try{h.next();}catch{flag=1;}finally{flag=2;}"),
@@ -257,7 +259,8 @@ fn large_default_inputs_skip_empty_inners_iteratively_and_host_failures_skip_cle
         );
     }
     let mut realm = Realm::default();
-    realm.eval("let flag=0,h=Iterator.prototype.flatMap.call({next:()=>({done:false,value:7}),return(){flag=3;return {}; }},()=>({next:()=>({done:false,value:8}),return:()=>Function('async function* gap(){}')()}));h.next();").unwrap();
+    realm.reserve_unsupported_global("unsupportedHost");
+    realm.eval("let flag=0,h=Iterator.prototype.flatMap.call({next:()=>({done:false,value:7}),return(){flag=3;return {}; }},()=>({next:()=>({done:false,value:8}),return:()=>Function('unsupportedHost')()}));h.next();").unwrap();
     assert!(matches!(
         realm.eval("try{h.return();}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })

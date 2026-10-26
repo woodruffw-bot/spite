@@ -258,6 +258,7 @@ fn large_default_pipelines_and_filter_skips_work_while_host_aborts_complete_with
             max_steps: Some(5000),
             ..Limits::default()
         });
+        realm.reserve_unsupported_global("unsupportedHost");
         let next = if method == "map" {
             "()=>{while(true){};}"
         } else {
@@ -273,7 +274,8 @@ fn large_default_pipelines_and_filter_skips_work_while_host_aborts_complete_with
             Ok(Value::Boolean(true))
         );
         let mut realm = Realm::default();
-        realm.eval(&format!("let flag=0,h=Iterator.prototype.{method}.call({{next:()=>({{done:false,value:7}}),return:()=>{{flag=3;return {{}};}}}},()=>Function('async function* gap(){{}}')());")).unwrap();
+        realm.reserve_unsupported_global("unsupportedHost");
+        realm.eval(&format!("let flag=0,h=Iterator.prototype.{method}.call({{next:()=>({{done:false,value:7}}),return:()=>{{flag=3;return {{}};}}}},()=>Function('unsupportedHost')());")).unwrap();
         assert!(matches!(
             realm.eval("try{h.next();}catch{flag=1;}finally{flag=2;}"),
             Err(Error::Unsupported { .. })

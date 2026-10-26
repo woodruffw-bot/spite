@@ -126,12 +126,10 @@ impl Realm {
         })?;
         let intrinsic = self.intrinsics.as_ref().expect("initialized");
         let (constructor, fallback) = match kind {
-            FunctionKind::AsyncGenerator => {
-                return Err(Self::unsupported(
-                    span,
-                    "async generator constructors are not implemented",
-                ));
-            }
+            FunctionKind::AsyncGenerator => (
+                &intrinsic.async_generator.constructor,
+                &intrinsic.async_generator.function_prototype,
+            ),
             FunctionKind::Async => (
                 &intrinsic.async_function.constructor,
                 &intrinsic.async_function.prototype,

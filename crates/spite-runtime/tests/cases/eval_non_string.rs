@@ -53,7 +53,7 @@ fn declarations_preserve_the_intrinsic_and_assignment_can_replace_it() {
 }
 
 #[test]
-fn unsupported_eval_syntax_preserves_argument_effects_and_bypasses_handlers() {
+fn unavailable_host_names_in_eval_preserve_argument_effects_and_bypass_handlers() {
     for source in [
         "eval('function* gap(){}')",
         "(eval)('function* gap(){}')",
@@ -62,25 +62,25 @@ fn unsupported_eval_syntax_preserves_argument_effects_and_bypasses_handlers() {
         "with({eval:globalThis.eval}){eval('function* gap(){}');}",
     ] {
         assert!(Realm::default().eval(source).is_ok(), "{source}");
-        let unsupported = source.replace("function* gap()", "async function* gap()");
+        let supported = source.replace("function* gap()", "async function* gap()");
+        assert!(Realm::default().eval(&supported).is_ok(), "{supported}");
+        let unsupported = source.replace("function* gap(){}", "unsupportedHost");
+        let mut realm = Realm::default();
+        realm.reserve_unsupported_global("unsupportedHost");
         assert!(
-            matches!(
-                Realm::default().eval(&unsupported),
-                Err(Error::Unsupported { .. })
-            ),
+            matches!(realm.eval(&unsupported), Err(Error::Unsupported { .. })),
             "{source}"
         );
     }
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     realm
         .eval("try{eval((flag=7,'function* gap(){}'));}catch(e){flag=1;}finally{flag=2;}")
         .unwrap();
     assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)));
     assert!(matches!(
-        realm.eval(
-            "try{eval((flag=7,'async function* gap(){}'));}catch(e){flag=1;}finally{flag=2;}"
-        ),
+        realm.eval("try{eval((flag=7,'unsupportedHost'));}catch(e){flag=1;}finally{flag=2;}"),
         Err(Error::Unsupported { .. })
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(7.0)));

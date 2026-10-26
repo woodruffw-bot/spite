@@ -104,6 +104,7 @@ fn default_resource_lists_are_unrestricted_and_host_failures_skip_remaining_clea
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let s=new DisposableStack,called=false,flag=0;s.defer(()=>{called=true});s.defer(()=>{while(true){}});").unwrap();
     assert!(matches!(
         realm.eval("try{s.dispose()}catch{flag=1}finally{flag=2}"),
@@ -114,7 +115,8 @@ fn default_resource_lists_are_unrestricted_and_host_failures_skip_remaining_clea
         Ok(Value::Boolean(true))
     );
     let mut realm = Realm::default();
-    realm.eval("let s=new DisposableStack,called=false,flag=0;s.defer(()=>{called=true});s.defer(()=>{Function('async function* gap(){}')()});").unwrap();
+    realm.reserve_unsupported_global("unsupportedHost");
+    realm.eval("let s=new DisposableStack,called=false,flag=0;s.defer(()=>{called=true});s.defer(()=>{Function('unsupportedHost')()});").unwrap();
     assert!(matches!(
         realm.eval("try{s.dispose()}catch{flag=1}finally{flag=2}"),
         Err(Error::Unsupported { .. })

@@ -128,6 +128,7 @@ fn large_default_inputs_work_and_opted_in_host_aborts_bypass_cleanup() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
@@ -137,10 +138,11 @@ fn large_default_inputs_work_and_opted_in_host_aborts_bypass_cleanup() {
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
     assert!(matches!(
         realm.eval(
-            "try{'x'.localeCompare({toString(){Function('async function* gap(){}')();}});}catch{flag=1;}finally{flag=2;}"
+            "try{'x'.localeCompare({toString(){Function('unsupportedHost')();}});}catch{flag=1;}finally{flag=2;}"
         ),
         Err(Error::Unsupported { .. })
     ));

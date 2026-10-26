@@ -171,6 +171,7 @@ fn scopes_restore_on_binding_failure_finalizers_and_captured_closures_survive_gc
 #[test]
 fn unlimited_flat_patterns_and_opted_in_host_aborts_keep_distinct_semantics() {
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     let names = (0..12000)
         .map(|i| format!("p{i}"))
         .collect::<Vec<_>>()
@@ -185,6 +186,7 @@ fn unlimited_flat_patterns_and_opted_in_host_aborts_keep_distinct_semantics() {
         max_steps: Some(5000),
         ..Limits::default()
     });
+    limited.reserve_unsupported_global("unsupportedHost");
     limited.eval("let flag=0,closed=0,iterator={next(){return{done:false,value:1};},return(){closed++;return {};},[Symbol.iterator](){return this;}};").unwrap();
     assert!(matches!(
         limited.eval("try{try{throw iterator;}catch([...rest]){}}catch{flag=1;}finally{flag=2;}"),
@@ -195,8 +197,9 @@ fn unlimited_flat_patterns_and_opted_in_host_aborts_keep_distinct_semantics() {
         Ok(Value::Boolean(true))
     );
     let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,closed=0,iterator={next(){return{done:false,value:undefined};},return(){closed++;return {};},[Symbol.iterator](){return this;}};").unwrap();
-    assert!(matches!(realm.eval("try{try{throw iterator;}catch([x=Function('async function* gap(){}')()]){}}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{try{throw iterator;}catch([x=Function('unsupportedHost')()]){}}catch{flag=1;}finally{flag=2;}"),Err(Error::Unsupported{..})));
     assert_eq!(
         realm.eval("flag===0 && closed===0 && typeof x==='undefined'"),
         Ok(Value::Boolean(true))

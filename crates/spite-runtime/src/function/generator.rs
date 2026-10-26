@@ -30,13 +30,36 @@ impl GeneratorIntrinsics {
 impl Realm {
     pub(super) fn generator_intrinsics(
         &mut self,
+        kind: spite_parser::ast::FunctionKind,
         function_constructor: &ObjectHandle,
         function_prototype: &ObjectHandle,
         iterator_prototype: &ObjectHandle,
         span: Span,
     ) -> Result<GeneratorIntrinsics, Error> {
-        let constructor =
-            self.new_builtin(function_constructor, Builtin::GeneratorFunction, span)?;
+        let (constructor_kind, function_tag, instance_tag, methods) = match kind {
+            spite_parser::ast::FunctionKind::Generator => (
+                Builtin::GeneratorFunction,
+                "GeneratorFunction",
+                "Generator",
+                [
+                    Builtin::GeneratorNext,
+                    Builtin::GeneratorReturn,
+                    Builtin::GeneratorThrow,
+                ],
+            ),
+            spite_parser::ast::FunctionKind::AsyncGenerator => (
+                Builtin::AsyncGeneratorFunction,
+                "AsyncGeneratorFunction",
+                "AsyncGenerator",
+                [
+                    Builtin::AsyncGeneratorNext,
+                    Builtin::AsyncGeneratorReturn,
+                    Builtin::AsyncGeneratorThrow,
+                ],
+            ),
+            _ => unreachable!("generator intrinsic kind"),
+        };
+        let constructor = self.new_builtin(function_constructor, constructor_kind, span)?;
         let generator_function =
             self.object_work(span, |objects, _| objects.create(Some(function_prototype)))?;
         let prototype =
@@ -75,8 +98,8 @@ impl Realm {
             span,
         )?;
         for (object, tag) in [
-            (&generator_function, "GeneratorFunction"),
-            (&prototype, "Generator"),
+            (&generator_function, function_tag),
+            (&prototype, instance_tag),
         ] {
             self.define_property_or_throw(
                 object,
@@ -91,11 +114,7 @@ impl Realm {
                 span,
             )?;
         }
-        for (name, builtin) in [
-            ("next", Builtin::GeneratorNext),
-            ("return", Builtin::GeneratorReturn),
-            ("throw", Builtin::GeneratorThrow),
-        ] {
+        for (name, builtin) in ["next", "return", "throw"].into_iter().zip(methods) {
             let method = self.new_builtin(function_prototype, builtin, span)?;
             self.define_builtin_property(&prototype, name, Value::Object(method), true, span)?;
         }
@@ -109,15 +128,17 @@ impl Realm {
     pub(super) fn define_generator_function_prototype(
         &mut self,
         function: &ObjectHandle,
+        kind: spite_parser::ast::FunctionKind,
         span: Span,
     ) -> Result<(), Error> {
-        let intrinsic = self
-            .intrinsics
-            .as_ref()
-            .expect("initialized")
-            .generator
-            .prototype
-            .clone();
+        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        let intrinsic = if kind == spite_parser::ast::FunctionKind::AsyncGenerator {
+            &intrinsics.async_generator
+        } else {
+            &intrinsics.generator
+        }
+        .prototype
+        .clone();
         let prototype = self.object_work(span, |objects, _| objects.create(Some(&intrinsic)))?;
         self.define_property_or_throw(
             function,
@@ -138,12 +159,20 @@ impl Realm {
         invocation: OrdinaryInvocation,
         span: Span,
     ) -> Result<Value, Error> {
+        let asynchronous = invocation.code.kind == spite_parser::ast::FunctionKind::AsyncGenerator;
         let callee = invocation.callee.clone();
         let base = self.scopes.len();
         let (value, constructor) = self.with_ordinary_call(invocation, span, |realm, body| {
             // EvaluateGeneratorBody performs all declaration/parameter setup at
             // the call. Only the initialized body waits for the first next().
             let root = realm.prepare_function_body(body, span)?;
+            if asynchronous {
+                // 15.6.2 performs FDI before creating an async-generator instance.
+                return Err(Self::unsupported(
+                    span,
+                    "async generator instances are not implemented",
+                ));
+            }
             let prototype = realm.get_property(&callee, &JsString::from("prototype"), span)?;
             let prototype = match prototype {
                 Value::Object(prototype) => prototype,
@@ -178,6 +207,20 @@ impl Realm {
         })?;
         debug_assert!(constructor.is_none());
         Ok(value)
+    }
+
+    pub(super) fn reject_async_generator_receiver(&mut self, span: Span) -> Result<Value, Error> {
+        // Until instance creation is implemented, every exposed receiver lacks
+        // async-generator slots. AsyncGeneratorValidate rejects a fresh Promise.
+        let capability = self.intrinsic_promise_capability(span)?;
+        let error = Self::exception(
+            ExceptionKind::TypeError,
+            span,
+            "receiver is not a source async generator",
+        );
+        let reason = self.language_exception_value(error)?;
+        self.call(capability.reject, Value::Undefined, vec![reason], span)?;
+        Ok(capability.promise)
     }
 
     pub(super) fn generator_resume(
