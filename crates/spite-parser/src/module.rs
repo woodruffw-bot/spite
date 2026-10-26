@@ -2,12 +2,13 @@
 
 use super::*;
 
+mod exports;
 mod imports;
 
 /// Parses the supported Module body with strict code and top-level Await.
 ///
-/// Static imports retain module requests and bindings. Export declarations remain
-/// Unsupported; the returned AST cannot be passed to Script execution APIs.
+/// Static imports and named/star exports retain module records. Declaration and
+/// default exports remain Unsupported. The AST is separate from Script execution.
 pub fn parse_module(source: &str) -> Result<Module, Diagnostic> {
     let mut parser = Parser::new(source)?;
     let result = contents(&mut parser);
@@ -43,11 +44,13 @@ fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
     parser.await_context = AwaitContext::Body;
     let mut statements = Vec::new();
     let mut imports = Vec::new();
+    let mut exports = Vec::new();
     while parser.current().kind != Kind::Eof {
         // Declarations are ModuleItems only at this level. Nested declarations
         // remain Syntax errors; import() and import.meta are expressions.
         if parser.at("export") && !parser.current().escaped {
-            return Err(parser.unsupported("module export declarations are not implemented"));
+            exports.push(parser.export_declaration()?);
+            continue;
         }
         if parser.at("import")
             && !parser.current().escaped
@@ -74,8 +77,10 @@ fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
                 .map(|binding| (binding.local.as_str(), binding.span))
         }),
     )?;
+    exports::validate(&statements, &imports, &exports)?;
     Ok(Module {
         statements,
         imports,
+        exports,
     })
 }

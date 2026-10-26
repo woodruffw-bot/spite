@@ -96,9 +96,14 @@ strings preserve all UTF-16 code units. WithClause attributes have unique keys,
 string values and canonical UTF-16 key ordering. Imported local names seed the
 shared lexical-scope validator, so duplicates and var/lexical/function conflicts
 use the same checks as ordinary module declarations. Ordinary Script/function
-scopes supply an empty seed. Export declarations remain Unsupported; nested static
-declarations are syntax errors. No Module AST is accepted by Script execution APIs,
-and linking/evaluation remain separate implementation work.
+scopes supply an empty seed. Named local/indirect exports and star/namespace
+reexports retain names, aliases, requests and source ranges (16.2.3). Local export
+references must be identifiers declared in the Module, including imported names;
+global properties and nested lexical bindings do not qualify. Exported names must
+be unique across these forms; bare star exports contribute no explicit name.
+Declaration/default exports remain Unsupported, and nested static declarations
+are syntax errors. No Module AST is accepted by Script execution APIs, and
+linking/evaluation remain separate implementation work.
 
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a

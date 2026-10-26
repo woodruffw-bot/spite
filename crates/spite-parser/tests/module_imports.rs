@@ -187,8 +187,5 @@ fn static_imports_remain_module_items_and_dynamic_import_expressions_keep_their_
             .imports()
             .is_empty()
     );
-    assert_eq!(
-        parse_module("export {}").unwrap_err().kind,
-        DiagnosticKind::Unsupported
-    );
+    assert_eq!(parse_module("export {}").unwrap().exports().len(), 1);
 }

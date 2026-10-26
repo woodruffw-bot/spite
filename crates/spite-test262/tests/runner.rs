@@ -513,6 +513,7 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         "await 1",
         "using value=null",
         "import 'source'",
+        "export {}",
     ] {
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
@@ -530,7 +531,7 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
         ));
     }
     {
-        let body = "export {}";
+        let body = "export default 1";
         let text = source(
             "flags: [module]\nnegative:\n  phase: parse\n  type: SyntaxError",
             body,

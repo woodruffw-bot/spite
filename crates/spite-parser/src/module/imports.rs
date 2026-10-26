@@ -50,14 +50,9 @@ impl Parser {
                     !token.escaped && matches!(&token.kind, Kind::Word(name) if name == "as")
                 });
             if aliased {
-                let (name, span) = self.module_name()?;
-                if std::char::decode_utf16(name.code_units().iter().copied())
-                    .any(|unit| unit.is_err())
-                {
-                    return Err(early(span, "module export name is not well-formed Unicode"));
-                }
+                let name = self.module_export_name()?;
                 self.expect("as")?;
-                bindings.push(self.import_local(ImportName::Name(name))?);
+                bindings.push(self.import_local(ImportName::Name(name.value))?);
             } else {
                 let pattern = self.binding_identifier()?;
                 let BindingPatternKind::Identifier(local) = pattern.kind else {
@@ -91,13 +86,26 @@ impl Parser {
         })
     }
 
-    fn import_string(&mut self) -> Result<JsString, Diagnostic> {
+    pub(super) fn import_string(&mut self) -> Result<JsString, Diagnostic> {
         let token = self.bump();
         if let Kind::Literal(Literal::String(value)) = token.kind {
             Ok(value)
         } else {
             Err(early(token.span, "expected module string literal"))
         }
+    }
+
+    pub(super) fn module_export_name(&mut self) -> Result<ModuleExportName, Diagnostic> {
+        let quoted = matches!(self.current().kind, Kind::Literal(Literal::String(_)));
+        let (value, span) = self.module_name()?;
+        if std::char::decode_utf16(value.code_units().iter().copied()).any(|unit| unit.is_err()) {
+            return Err(early(span, "module export name is not well-formed Unicode"));
+        }
+        Ok(ModuleExportName {
+            value,
+            span,
+            quoted,
+        })
     }
 
     // IdentifierName includes reserved keywords and the tokens the scanner
@@ -116,7 +124,7 @@ impl Parser {
         Ok((value, token.span))
     }
 
-    fn import_attributes(&mut self) -> Result<Vec<ImportAttribute>, Diagnostic> {
+    pub(super) fn import_attributes(&mut self) -> Result<Vec<ImportAttribute>, Diagnostic> {
         let mut attributes = Vec::new();
         if !self.eat("with") {
             return Ok(attributes);

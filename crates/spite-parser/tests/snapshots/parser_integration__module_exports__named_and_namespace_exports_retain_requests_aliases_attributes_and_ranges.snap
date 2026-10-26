@@ -1,0 +1,140 @@
+---
+source: crates/spite-parser/tests/module_exports.rs
+expression: module
+---
+Module {
+    statements: [],
+    imports: [
+        ImportDeclaration {
+            request: ModuleRequest {
+                specifier: "first",
+                attributes: [],
+            },
+            bindings: [
+                ImportBinding {
+                    imported: Name(
+                        "default",
+                    ),
+                    local: "x",
+                    span: Span {
+                        start: 7,
+                        end: 8,
+                    },
+                },
+            ],
+            span: Span {
+                start: 0,
+                end: 22,
+            },
+        },
+    ],
+    exports: [
+        ExportDeclaration {
+            kind: Named {
+                specifiers: [
+                    ExportSpecifier {
+                        name: ModuleExportName {
+                            value: "x",
+                            span: Span {
+                                start: 30,
+                                end: 31,
+                            },
+                            quoted: false,
+                        },
+                        exported: ModuleExportName {
+                            value: "local",
+                            span: Span {
+                                start: 35,
+                                end: 40,
+                            },
+                            quoted: false,
+                        },
+                    },
+                ],
+                request: None,
+            },
+            span: Span {
+                start: 22,
+                end: 42,
+            },
+        },
+        ExportDeclaration {
+            kind: Named {
+                specifiers: [
+                    ExportSpecifier {
+                        name: ModuleExportName {
+                            value: "remote-name",
+                            span: Span {
+                                start: 50,
+                                end: 63,
+                            },
+                            quoted: true,
+                        },
+                        exported: ModuleExportName {
+                            value: "public-name",
+                            span: Span {
+                                start: 67,
+                                end: 80,
+                            },
+                            quoted: true,
+                        },
+                    },
+                ],
+                request: Some(
+                    ModuleRequest {
+                        specifier: "second",
+                        attributes: [
+                            ImportAttribute {
+                                key: "a",
+                                value: "first",
+                            },
+                            ImportAttribute {
+                                key: "z",
+                                value: "last",
+                            },
+                        ],
+                    },
+                ),
+            },
+            span: Span {
+                start: 42,
+                end: 122,
+            },
+        },
+        ExportDeclaration {
+            kind: Star {
+                exported: Some(
+                    ModuleExportName {
+                        value: "ns",
+                        span: Span {
+                            start: 134,
+                            end: 136,
+                        },
+                        quoted: false,
+                    },
+                ),
+                request: ModuleRequest {
+                    specifier: "third",
+                    attributes: [],
+                },
+            },
+            span: Span {
+                start: 122,
+                end: 150,
+            },
+        },
+        ExportDeclaration {
+            kind: Star {
+                exported: None,
+                request: ModuleRequest {
+                    specifier: "fourth",
+                    attributes: [],
+                },
+            },
+            span: Span {
+                start: 150,
+                end: 172,
+            },
+        },
+    ],
+}

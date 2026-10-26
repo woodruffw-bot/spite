@@ -10143,3 +10143,62 @@ test/language/module-code/parse-err-decl-pos-import-class-expr-meth-gen.js	356	3
 test/language/module-code/parse-err-decl-pos-import-class-expr-meth-static.js	339	345	reserved word cannot begin an expression
 test/language/module-code/parse-err-decl-pos-import-class-expr-meth.js	332	338	reserved word cannot begin an expression
 test/language/module-code/parse-err-decl-pos-import-do-while.js	314	320	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-expr-meth-gen.js	356	362	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-expr-meth-static.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-expr-meth.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-do-while.js	314	320	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-const.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-in-const.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-in-let.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-in-lhs.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-in-var.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-let.js	337	343	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-lhs.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-of-const.js	333	339	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-of-let.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-of-lhs.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-of-var.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-for-var.js	337	343	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-function-decl.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-function-expr.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-generator-decl.js	350	356	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-generator-expr.js	327	333	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-if-else.js	330	336	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-if-if.js	322	328	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-labeled.js	320	326	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-object-gen-method.js	345	351	reserved word cannot begin an expression
+test/language/export/escaped-from.js	823	832	expected a semicolon or line terminator
+test/language/module-code/early-dup-export-as-star-as.js	481	482	duplicate exported name
+test/language/module-code/early-dup-export-id-as.js	462	463	duplicate exported name
+test/language/module-code/early-dup-export-id.js	392	393	duplicate exported name
+test/language/module-code/early-export-global.js	570	576	exported binding is not declared in the module
+test/language/module-code/early-export-ill-formed-string.js	550	558	module export name is not well-formed Unicode
+test/language/module-code/export-expname-string-binding.js	553	558	local export name must be an IdentifierName
+test/language/module-code/export-expname-unpaired-surrogate.js	519	527	module export name is not well-formed Unicode
+test/language/module-code/parse-err-decl-pos-export-arrow-function.js	320	326	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-block-stmt-list.js	321	327	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-block-stmt.js	313	319	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-decl-meth-static.js	339	345	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-decl-meth.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-decl-method-gen-static.js	363	369	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-decl-method-gen.js	356	362	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-class-expr-meth-gen-static.js	363	369	reserved word cannot begin an expression
+test/language/module-code/early-export-unresolvable.js	480	492	exported binding is not declared in the module
+test/language/module-code/export-expname-from-as-unpaired-surrogate.js	521	529	module export name is not well-formed Unicode
+test/language/module-code/export-expname-from-unpaired-surrogate.js	512	520	module export name is not well-formed Unicode
+test/language/module-code/parse-err-decl-pos-export-object-getter.js	325	331	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-object-method.js	321	327	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-object-setter.js	326	332	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-switch-case-dflt.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-switch-case.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-switch-dftl.js	332	338	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-try-catch-finally.js	347	353	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-try-catch.js	335	341	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-try-finally.js	331	337	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-try-try.js	319	325	reserved word cannot begin an expression
+test/language/module-code/parse-err-decl-pos-export-while.js	325	331	reserved word cannot begin an expression
+test/language/module-code/import-attributes/early-dup-attribute-key-export.js	613	624	duplicate import attribute key
+test/language/module-code/early-import-arguments.js	986	995	invalid binding in strict mode
+test/language/module-code/early-import-as-arguments.js	978	987	invalid binding in strict mode
+test/language/module-code/early-import-as-eval.js	973	977	invalid binding in strict mode
+test/language/module-code/early-import-eval.js	976	980	invalid binding in strict mode

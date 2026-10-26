@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10163 unmodified test fixtures and twenty harness files come from
+These 10222 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,23 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Named and star export review
+
+Fifty-nine unchanged Module syntax negatives add 59 variants with exact reviewed
+rejection points for nested declarations, escaped terminals, duplicate exported
+names, unresolved local exports, ill-formed quoted names and duplicate attributes.
+Four newly reachable strict import binding errors are included. The 72-original
+export review reports 56 passed/sixteen Unsupported; the 67-original import review
+now reports 55 passed/twelve Unsupported. All other outcomes are zero. Originals
+requiring declaration/default exports or module linking/execution remain excluded.
+
+The inventory contains 10,222 fixtures, twenty helpers, 10,203 reviewed sources and
+19,665 variants. Seven Parser groups and a reviewed export-record snapshot cover
+named/star records, aliases, local binding resolution and shared attributes. Two
+prior snapshots add only empty exports fields. Existing programs/groups, helpers,
+quotas and intrinsic entries remain intact. The full gate and all forty-three
+runner/package checks pass.
 
 ## Static import declaration review
 

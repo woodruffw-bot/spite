@@ -56,9 +56,35 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19606 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19665 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Named and star export records
+
+Named local/indirect exports and star/namespace reexports retain decoded names,
+aliases, requests, attributes and source ranges. Shared Module checks reject
+duplicate exported names and unresolved local references, including globals or
+nested lexical declarations. Imported bindings qualify; bare stars add no
+explicit exported names. Quoted export names require well-formed Unicode.
+Declaration/default exports and module linking/execution remain Unsupported.
+
+Seven new Parser groups and a reviewed export-record snapshot cover these forms,
+binding resolution, malformed/escaped grammar, UTF-16 names, shared attributes and
+goal boundaries. Two prior Module snapshots add only empty exports fields. Prior
+programs/groups are retained, including the runner's valid-negative failure probe.
+All eighteen Parser units, 408 Parser integrations, 417 Runtime units, 2,229
+non-RegExp integrations, thirteen CLI groups and thirteen runner probes pass across
+84 Parser and 683 Runtime files. Strict Clippy, Rust 1.88, policy and inventories
+pass; helpers, quotas and the 585 intrinsic entries are unchanged.
+
+The scoped 72-original export review reports 56 passed/sixteen Unsupported; the
+67-original import review now reports 55 passed/twelve Unsupported. Other outcomes
+are zero. Fifty-nine newly admitted whole syntax negatives add 59 variants with
+exact reviewed rejection points, including four strict import binding errors now
+reachable past named exports. The corpus contains 10,222 fixtures, twenty helpers,
+10,203 reviewed sources and 19,665 variants. The full gate and all forty-three
+runner/package checks pass.
 
 ## Static import declarations and module requests
 

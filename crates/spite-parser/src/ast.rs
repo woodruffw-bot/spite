@@ -5,15 +5,21 @@ use std::{fmt, rc::Rc};
 
 /// A parsed Module body, distinct from Script execution input.
 ///
-/// All Module code is strict. Imports retain module requests and local bindings;
-/// exports, linking and execution remain separate implementation work.
+/// All Module code is strict. Imports and named/star exports retain module
+/// records; declaration/default exports, linking and execution remain work.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     pub(crate) statements: Vec<Statement>,
     pub(crate) imports: Vec<ImportDeclaration>,
+    pub(crate) exports: Vec<ExportDeclaration>,
 }
 
 impl Module {
+    /// Returns static export declarations in source order.
+    pub fn exports(&self) -> &[ExportDeclaration] {
+        &self.exports
+    }
+
     /// Returns static import declarations in source order.
     pub fn imports(&self) -> &[ImportDeclaration] {
         &self.imports
@@ -71,6 +77,54 @@ pub struct ImportBinding {
     /// Decoded local BindingIdentifier.
     pub local: String,
     /// Local BindingIdentifier source range.
+    pub span: Span,
+}
+
+/// An IdentifierName or well-formed StringLiteral used as a module export name.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ModuleExportName {
+    /// Decoded StringValue.
+    pub value: JsString,
+    /// Complete original name range.
+    pub span: Span,
+    /// Whether the syntax used a StringLiteral rather than an IdentifierName.
+    pub quoted: bool,
+}
+
+/// One local or indirect named export entry.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ExportSpecifier {
+    /// Local binding or requested module's export name.
+    pub name: ModuleExportName,
+    /// Name exposed by this module.
+    pub exported: ModuleExportName,
+}
+
+/// The supported static export forms; declarations/default exports remain work.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ExportKind {
+    /// Named local exports or named reexports from a module request.
+    Named {
+        /// Entries in source order.
+        specifiers: Vec<ExportSpecifier>,
+        /// Present for a reexport's FromClause.
+        request: Option<ModuleRequest>,
+    },
+    /// Star reexports, optionally exposing the namespace under one name.
+    Star {
+        /// Namespace export name; None means a bare star export.
+        exported: Option<ModuleExportName>,
+        /// Requested module and canonical import attributes.
+        request: ModuleRequest,
+    },
+}
+
+/// A static export declaration and its complete source range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ExportDeclaration {
+    /// Named or star export metadata.
+    pub kind: ExportKind,
+    /// Complete declaration range, including an explicit semicolon.
     pub span: Span,
 }
 
