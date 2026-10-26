@@ -19,6 +19,10 @@ pub(super) fn active_statement<'a>(
     for child in &location.children {
         statement = match (child, &statement.kind) {
             (StatementChild::Block(index), StatementKind::Block(body)) => &body[*index],
+            (
+                StatementChild::SwitchBody { clause, statement },
+                StatementKind::Switch { clauses, .. },
+            ) => &clauses[*clause].statements[*statement],
             (StatementChild::IfConsequent, StatementKind::If { consequent, .. }) => consequent,
             (
                 StatementChild::IfAlternate,

@@ -24,6 +24,8 @@ pub(crate) enum AsyncAwaitAction {
     Throw,
     Expression,
     IfTest,
+    SwitchDiscriminant,
+    SwitchSelector,
     LoopTest,
     ForHeader,
     IterationSource,
@@ -43,6 +45,7 @@ pub(crate) enum StatementChild {
     ForBody,
     ForInBody,
     LabelBody,
+    SwitchBody { clause: usize, statement: usize },
 }
 
 #[derive(Debug)]
@@ -125,8 +128,20 @@ pub(crate) struct AsyncForInCursor {
 }
 
 #[derive(Debug)]
+pub(crate) struct AsyncSwitchCursor {
+    pub location: StatementLocation,
+    pub environment: EnvironmentHandle,
+    pub clause: usize,
+    pub statement: usize,
+    pub default: Option<usize>,
+    pub input: Option<Value>,
+    pub value: Value,
+}
+
+#[derive(Debug)]
 pub(crate) enum AsyncStatementFrame {
     Block(AsyncBlockCursor),
+    Switch(AsyncSwitchCursor),
     If,
     Try(AsyncTryCursor),
     Scope {
@@ -146,6 +161,7 @@ impl AsyncStatementFrame {
     fn environment(&self) -> Option<&EnvironmentHandle> {
         match self {
             Self::Block(block) => Some(&block.environment),
+            Self::Switch(cursor) => Some(&cursor.environment),
             Self::If => None,
             Self::Try(_) => None,
             Self::Scope { environment, .. } => Some(environment),
@@ -160,6 +176,7 @@ impl AsyncStatementFrame {
     fn values(&self) -> impl Iterator<Item = &Value> {
         let value = match self {
             Self::Block(block) => block.normal.as_ref(),
+            Self::Switch(cursor) => Some(&cursor.value),
             Self::If => None,
             Self::Try(cursor) => match cursor.pending.as_ref() {
                 Some(Ok(completion)) => completion.value.as_ref(),
@@ -176,6 +193,7 @@ impl AsyncStatementFrame {
         };
         let next = match self {
             Self::ForOf(cursor) => Some(cursor.iterator.next_value()),
+            Self::Switch(cursor) => cursor.input.as_ref(),
             _ => None,
         };
         value.into_iter().chain(next)
@@ -186,6 +204,7 @@ impl AsyncStatementFrame {
             Self::ForOf(cursor) => Some(cursor.iterator.iterator_handle()),
             Self::ForIn(cursor) => cursor.iterator.object_handle(),
             Self::Block(_)
+            | Self::Switch(_)
             | Self::If
             | Self::Try(_)
             | Self::Scope { .. }

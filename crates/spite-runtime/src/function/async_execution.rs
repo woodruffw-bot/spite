@@ -13,6 +13,7 @@ mod iteration_head;
 mod labelled;
 mod protected;
 mod source;
+mod switch;
 
 use source::{active_statement, child_location};
 
@@ -235,6 +236,18 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_try(data, span);
         }
+        if let StatementKind::Switch { discriminant, .. } = &statement.kind {
+            self.tick(statement.span)?;
+            if expression::has_supported_await(discriminant) {
+                return self.start_async_expression(
+                    data,
+                    ExprRoot::SwitchDiscriminant,
+                    AsyncAwaitAction::SwitchDiscriminant,
+                );
+            }
+            let input = self.expression(discriminant)?;
+            return self.enter_async_switch(data, input);
+        }
         if let StatementKind::If { test, .. } = &statement.kind {
             self.tick(statement.span)?;
             if expression::has_supported_await(test) {
@@ -291,6 +304,8 @@ impl Realm {
                 target: None,
             })),
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
+            AsyncAwaitAction::SwitchDiscriminant => self.enter_async_switch(data, value),
+            AsyncAwaitAction::SwitchSelector => self.finish_async_switch_selector(data, value),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),
             AsyncAwaitAction::LoopTest => self.finish_async_loop_test(data, value),
             AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),

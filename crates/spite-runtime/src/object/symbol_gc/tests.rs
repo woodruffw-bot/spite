@@ -420,6 +420,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),f=async()=>({[key]:await gate});f();return gate})()",
         ),
         (
+            "async switch input",
+            "(()=>{let gate=new Promise(()=>{});(async()=>{switch(key){case await gate:break}})();return gate})()",
+        ),
+        (
+            "async switch statement value",
+            "(()=>{let gate=new Promise(()=>{});(async()=>{switch(0){case 0:key;await gate}})();return gate})()",
+        ),
+        (
             "async object repeated physical symbol key slots",
             "(()=>{let gate=new Promise(()=>{}),f=async()=>({[key]:1,[key]:await gate});f();return gate})()",
         ),

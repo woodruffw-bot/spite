@@ -40,6 +40,12 @@ impl Realm {
                     };
                     result = self.finish_async_block(block, result);
                 }
+                Some(AsyncStatementFrame::Switch(_)) => {
+                    match self.advance_async_switch(data, result) {
+                        FrameStep::Continue => return Ok(None),
+                        FrameStep::Complete(completion) => result = completion,
+                    }
+                }
                 Some(AsyncStatementFrame::If) => {
                     data.frames.pop();
                     result =

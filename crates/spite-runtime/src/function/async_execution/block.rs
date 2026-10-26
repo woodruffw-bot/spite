@@ -25,6 +25,8 @@ impl Realm {
     ) -> Result<Step, Error> {
         let location = if let Some(next) = data.next.take() {
             next
+        } else if matches!(data.frames.last(), Some(AsyncStatementFrame::Switch(_))) {
+            return self.async_switch_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForOf(_))) {
             return self.async_for_of_step(data);
         } else if matches!(data.frames.last(), Some(AsyncStatementFrame::ForIn(_))) {

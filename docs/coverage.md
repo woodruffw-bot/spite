@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Switch statements with awaited selection and bodies
+
+Nine Runtime groups and two Symbol ownership controls cover ordered selection,
+middle defaults, strict equality, shared lexical TDZs/functions, block disposal,
+labelled control, rejection/suppression, collection and host abort. All 417 units
+and 2,096 non-RegExp integrations pass across 666 Runtime case files; strict Clippy
+and Rust 1.88 checks pass. The discriminant precedes the shared case scope, and
+selected clauses fall through without evaluating further selectors.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Super calls with awaited arguments
 
 Seven Runtime groups and a Symbol ownership control cover early superclass

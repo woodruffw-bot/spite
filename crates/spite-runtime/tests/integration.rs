@@ -1398,3 +1398,6 @@ mod async_methods;
 mod dynamic_async_function;
 #[path = "cases/promise_any.rs"]
 mod promise_any;
+
+#[path = "cases/async_await_switch.rs"]
+mod async_await_switch;

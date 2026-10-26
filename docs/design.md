@@ -627,7 +627,19 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. Switch and with statements retain their explicit await boundaries.
+them. With statements retain their explicit await boundaries.
+
+Switch statements suspend in their discriminant, selectors and case statements
+(14.12.2–4). The discriminant completes before creating and instantiating the
+shared case-block environment; selectors therefore observe its lexical TDZs and
+hoisted functions. The cursor retains the input during selection, compares with
+ordinary strict equality, records default as a fallback, and drops the input
+after selecting a clause. Fall-through advances typed clause/statement locations
+without evaluating further selectors. The last nonempty statement value survives
+empty and abrupt completions; only unlabelled breaks are consumed. Normal and
+abrupt exits restore the case environment after nested finalizers and block
+disposal. Case-level using declarations still require explicit blocks. The input,
+completion value and environment participate in tracing and capture validation.
 
 If statements suspend in conditions and selected branches (14.6.2). A completed
 condition uses ordinary ToBoolean once; unselected branches remain unevaluated.

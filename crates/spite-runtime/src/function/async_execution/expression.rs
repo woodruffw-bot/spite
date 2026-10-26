@@ -119,6 +119,27 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("loop condition source"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::SwitchDiscriminant) => {
+            let StatementKind::Switch { discriminant, .. } =
+                &active_statement(&data.body, data.statement.as_ref()).kind
+            else {
+                unreachable!("switch discriminant")
+            };
+            discriminant
+        }
+        (ArrowBody::Block(_), ExprRoot::SwitchSelector) => {
+            let Some(crate::object::async_execution::AsyncStatementFrame::Switch(cursor)) =
+                data.frames.last()
+            else {
+                unreachable!("switch selector frame")
+            };
+            let StatementKind::Switch { clauses, .. } =
+                &active_statement(&data.body, Some(&cursor.location)).kind
+            else {
+                unreachable!("switch selector source")
+            };
+            clauses[cursor.clause].test.as_ref().expect("case selector")
+        }
         (ArrowBody::Block(_), ExprRoot::IfTest) => {
             let StatementKind::If { test, .. } =
                 &active_statement(&data.body, data.statement.as_ref()).kind
