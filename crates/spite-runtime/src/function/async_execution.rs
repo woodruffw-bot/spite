@@ -155,6 +155,35 @@ impl Realm {
         self.drive_async_execution(data, Some(state), None, 1)
     }
 
+    pub(crate) fn evaluate_module_body(
+        &mut self,
+        body: spite_parser::ast::FunctionBody,
+        root: crate::environment::EnvironmentHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let context = crate::object::source_context::SourceExecutionContext {
+            scopes: vec![
+                self.scopes.first().expect("global environment").clone(),
+                root.clone(),
+            ],
+            variable: Some(root.clone()),
+            strict: true,
+        };
+        self.with_source_execution_context(context, |realm| {
+            // Module functions are lexical and initialized before body entry.
+            realm.instantiate(body.statements().iter(), false, true)?;
+            realm.call_async_body(span, |realm, capability, _| {
+                let data = new_execution_data(
+                    ArrowBody::Block(body),
+                    SourceFunctionMode::Async(capability.clone()),
+                    Some(root),
+                    span,
+                );
+                realm.drive_async_execution(data, None, None, 1)
+            })
+        })
+    }
+
     pub(super) fn resume_generator_execution(
         &mut self,
         data: AsyncExecutionData,

@@ -65,6 +65,7 @@ fn parallel_reports_preserve_order_modes_isolation_and_non_passing_categories() 
         "@",
     );
     corpus.source("module.js", "flags: [module]", "1;");
+    corpus.source("host.js", "flags: [raw]", "print");
     corpus.source("metadata.js", "flags: [unknownFlag]", "1;");
     corpus.source("setup.js", "includes: [missing.js]", "1;");
     corpus.source(
@@ -80,6 +81,7 @@ fn parallel_reports_preserve_order_modes_isolation_and_non_passing_categories() 
          test/strict.js\t-\t-\t-\n\
          test/parse.js\t{start}\t{}\tunexpected character\n\
          test/module.js\t-\t-\t-\n\
+         test/host.js\t-\t-\t-\n\
          test/metadata.js\t-\t-\t-\n\
          test/setup.js\t-\t-\t-\n\
          test/unverified.js\t-\t-\t-\n\
@@ -88,10 +90,10 @@ fn parallel_reports_preserve_order_modes_isolation_and_non_passing_categories() 
     ));
 
     let serial = run_corpus(&corpus.0).unwrap();
-    assert_eq!(serial.tests.len(), 9);
+    assert_eq!(serial.tests.len(), 10);
     let counts = serial.counts();
     for (category, count) in [
-        ("passed", 8),
+        ("passed", 9),
         ("failed", 1),
         ("unsupported", 1),
         ("metadata-unsupported", 1),
@@ -111,6 +113,16 @@ fn parallel_reports_preserve_order_modes_isolation_and_non_passing_categories() 
     ));
     assert_eq!(strict[1].mode, Mode::StrictScript);
     assert_eq!(strict[1].outcome, Outcome::Passed);
+    let module = &serial.tests[4].result.as_ref().unwrap()[0];
+    assert_eq!(module.mode, Mode::Module);
+    assert_eq!(module.outcome, Outcome::Passed);
+    assert!(matches!(
+        serial.tests[5].result.as_ref().unwrap()[0].outcome,
+        Outcome::Unsupported {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
     for workers in [1, 2, 3] {
         let parallel =
             run_corpus_with_workers(&corpus.0, NonZeroUsize::new(workers).unwrap()).unwrap();

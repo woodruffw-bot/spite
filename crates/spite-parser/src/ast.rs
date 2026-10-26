@@ -6,7 +6,7 @@ use std::{fmt, rc::Rc};
 /// A parsed Module body, distinct from Script execution input.
 ///
 /// All Module code is strict. Imports and exports retain module records;
-/// linking and execution remain separate implementation work.
+/// runtime linking and evaluation use a distinct Module entry point.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     pub(crate) statements: Vec<Statement>,
@@ -28,6 +28,17 @@ impl Module {
     /// Returns retained top-level statements in source order.
     pub fn statements(&self) -> &[Statement] {
         &self.statements
+    }
+
+    /// Returns the strict statement list used by Module execution.
+    ///
+    /// Function and class static-block bodies share this statement-list storage.
+    /// The Module parser has already applied the Module grammar and early errors.
+    pub fn body(&self) -> FunctionBody {
+        FunctionBody {
+            statements: self.statements.clone().into(),
+            strict: true,
+        }
     }
 }
 
@@ -340,7 +351,7 @@ pub struct Function {
     pub source: FunctionSource,
 }
 
-/// A shared function statement list, excluding its surrounding braces.
+/// A shared statement list for functions, class static blocks and Modules.
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionBody {
     pub(crate) statements: Rc<[Statement]>,
@@ -352,7 +363,7 @@ impl FunctionBody {
     pub fn statements(&self) -> &[Statement] {
         &self.statements
     }
-    /// Returns whether this body's own directive prologue enables strict mode.
+    /// Returns the strictness recorded for this statement list.
     pub fn is_strict(&self) -> bool {
         self.strict
     }

@@ -18,6 +18,7 @@ pub(crate) struct BindingState {
 
 #[derive(Debug)]
 pub(crate) enum ThisBinding {
+    Module,
     Uninitialized,
     Initialized(Value),
 }
@@ -30,7 +31,7 @@ pub(crate) struct Environment {
     pub private_names: BTreeMap<String, crate::private::PrivateName>,
     // Some only for with environments; their properties are resolved live.
     pub binding_object: Option<Handle>,
-    // None for declarative/arrow environments; derived constructors start in TDZ.
+    // None for declarative/arrow environments; Modules supply undefined.
     pub this: Option<ThisBinding>,
     // None means undefined for ordinary calls; declarative environments ignore it.
     pub new_target: Option<Handle>,

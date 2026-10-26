@@ -469,13 +469,7 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
 
 #[test]
 fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
-    for flags in [
-        "[module]",
-        "[module, raw]",
-        "[async, raw]",
-        "[CanBlockIsTrue]",
-        "[CanBlockIsFalse]",
-    ] {
+    for flags in ["[async, raw]", "[CanBlockIsTrue]", "[CanBlockIsFalse]"] {
         let cases = Runner::default()
             .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {
                 panic!("unsupported host loaded harness")
@@ -486,6 +480,20 @@ fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
                 .iter()
                 .all(|case| matches!(case.outcome, Outcome::Unsupported { .. }))
         );
+    }
+    for flags in ["[module]", "[module, raw]"] {
+        let cases = Runner::default()
+            .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {
+                Ok("".into())
+            })
+            .unwrap();
+        assert!(cases.iter().all(|case| matches!(
+            case.outcome,
+            Outcome::Failed {
+                stage: Stage::Runtime,
+                ..
+            }
+        )));
     }
     for path in [
         "../secret.js",
@@ -601,13 +609,11 @@ fn valid_modules_and_unimplemented_declarations_never_satisfy_parse_negatives() 
     }
     let text = source("flags: [module]", "throw 7");
     let cases = Runner::default()
-        .run(&text, None, |_| {
-            panic!("unimplemented Module execution loaded harness")
-        })
+        .run(&text, None, |_| Ok("".into()))
         .unwrap();
     assert!(matches!(
         cases[0].outcome,
-        Outcome::Unsupported {
+        Outcome::Failed {
             stage: Stage::Runtime,
             ..
         }
@@ -652,4 +658,67 @@ fn module_source_limits_and_phase_mismatches_preserve_nonpassing_outcomes() {
             ..
         }
     ));
+}
+
+#[test]
+fn module_evaluation_checks_await_rejection_pending_jobs_and_async_completion() {
+    for (frontmatter, body, passes) in [
+        (
+            "flags: [module]",
+            "await Promise.resolve(1);export let x=2",
+            true,
+        ),
+        (
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: TypeError",
+            "await Promise.reject(new TypeError())",
+            true,
+        ),
+        ("flags: [module]", "await new Promise(()=>{})", false),
+        ("flags: [module, async]", "await 1;$DONE()", true),
+        ("flags: [module, async]", "await 1", false),
+        (
+            "flags: [module, async]",
+            "$DONE();await new Promise(()=>{})",
+            false,
+        ),
+    ] {
+        let cases = Runner::default().run(&source(frontmatter, body), None, |name| {
+            if name=="doneprintHandle.js" {
+                Ok("function $DONE(error){print(error ? 'Test262:AsyncTestFailure: '+error : 'Test262:AsyncTestComplete')}".into())
+            } else { Ok("".into()) }
+        }).unwrap();
+        assert_eq!(
+            cases[0].outcome == Outcome::Passed,
+            passes,
+            "{body}: {:?}",
+            cases[0].outcome
+        );
+    }
+    for body in [
+        "import 'other'",
+        "export default 1",
+        "import.meta",
+        "await print",
+    ] {
+        let cases = Runner::default()
+            .run(
+                &source(
+                    "flags: [module]\nnegative:\n  phase: runtime\n  type: TypeError",
+                    body,
+                ),
+                None,
+                |_| Ok("".into()),
+            )
+            .unwrap();
+        assert!(
+            matches!(
+                cases[0].outcome,
+                Outcome::Unsupported {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{body}"
+        );
+    }
 }

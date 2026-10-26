@@ -4,10 +4,14 @@ use super::{Budget, Error, Objects, OrdinaryObject};
 use crate::{Value, function::PromiseCapability};
 use spite_heap::{Handle, Trace};
 
+/// The current state of a branded Promise, inspected without invoking JavaScript.
 #[derive(Debug)]
-pub(crate) enum PromiseState {
+pub enum PromiseState {
+    /// Neither resolving function has settled the Promise.
     Pending,
+    /// The Promise fulfilled with this value.
     Fulfilled(Value),
+    /// The Promise rejected with this reason.
     Rejected(Value),
 }
 
@@ -63,7 +67,8 @@ impl PromiseData {
 }
 
 impl OrdinaryObject {
-    pub(crate) fn promise_state(&self) -> Option<&PromiseState> {
+    /// Borrows the native Promise state; returns None for other object brands.
+    pub fn promise_state(&self) -> Option<&PromiseState> {
         self.promise.as_ref().map(|data| &data.state)
     }
 }

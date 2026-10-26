@@ -56,10 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises; graph loading and synthetic default exports remain Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20391 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20435 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Standalone Module execution
+
+Realm::eval_module/evaluate_module create a fresh strict Module environment and
+return its intrinsic evaluation Promise. Var cells begin at undefined, lexical
+cells use TDZ, and direct functions initialize before body entry. Module this is
+undefined; direct eval preserves Module context without allowing new.target.
+Top-level Await and nested control flow reuse the existing source interpreter,
+restoring caller context on suspension, completion and failure. Native Promise
+inspection lets hosts observe completion without invoking JavaScript hooks.
+
+Six Runtime groups cover isolated/live local cells, declaration ordering, eval,
+awaits, language rejection, host-abort cleanup isolation and Symbol retention.
+All 417 units and 2,263 non-RegExp integrations pass across 688 files; Parser
+coverage stays eighteen/434 across 88 files. Thirteen CLI groups and fourteen
+runner probes pass. The runner uses Module parsing, checks the evaluation Promise
+and drains jobs; an unsettled Promise or missing/duplicate async completion fails.
+Dependencies, synthetic defaults and import.meta retain explicit Unsupported
+outcomes. Earlier Module boundary programs remain as positive/failure controls.
+
+The scoped eighty-original review reports 44 passed/37 Unsupported with every
+other outcome zero. Forty-four complete originals add forty-four Module variants,
+including one runtime negative. The unchanged fnGlobalObject.js helper is verified
+against the pinned Git blob. The inventory contains 10,652 fixtures, twenty-two
+helpers, 10,633 reviewed sources and 20,435 variants. The full gate and all
+forty-four runner/package checks pass, with Clippy, Rust 1.88 and inventories.
+Intrinsic entries remain 591; dependencies and resource allowances are unchanged.
 
 ## Async-generator yield delegation
 

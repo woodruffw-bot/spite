@@ -3,7 +3,12 @@ use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use spite_parser::{
     parse_module, parse_module_with_source_limit, parse_script, parse_script_with_source_limit,
 };
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value, object::PromiseState};
+
+enum ParsedSource {
+    Script(spite_parser::ast::Script),
+    Module(spite_parser::ast::Module),
+}
 
 mod async_completion;
 use async_completion::AsyncCompletion;
@@ -87,7 +92,7 @@ impl Runner {
     /// Parse-negative tests never evaluate harness code or test bodies. Async
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
     /// Promise jobs. Module parse negatives use the Module goal and the same exact
-    /// review checks; Module execution, raw async harness setup, and agent settings
+    /// review checks; module dependencies, synthetic default exports, raw async harness setup, and agent settings
     /// remain explicitly unsupported. Host helper names are reserved so missing helpers
     /// cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.
@@ -116,37 +121,22 @@ impl Runner {
         review: Option<&ParseExpectation>,
         load_harness: &mut impl FnMut(&str) -> Result<String, String>,
     ) -> Outcome {
-        if mode == Mode::Module {
-            let parsed = match self.limits.max_source_bytes {
+        let source = mode.prepare_source(original);
+        let parsed = if mode == Mode::Module {
+            match self.limits.max_source_bytes {
                 Some(limit) => parse_module_with_source_limit(original, limit),
                 None => parse_module(original),
-            };
-            return match parsed {
-                Err(diagnostic) => parse_result(diagnostic, metadata.negative.as_ref(), review, 0),
-                Ok(_)
-                    if metadata
-                        .negative
-                        .as_ref()
-                        .is_some_and(|negative| negative.phase == Phase::Parse) =>
-                {
-                    failed(
-                        Stage::Parse,
-                        "expected a parse exception, but parsing succeeded",
-                    )
-                }
-                Ok(_) => unsupported(
-                    Stage::Runtime,
-                    "module linking and execution are not implemented",
-                ),
-            };
-        }
-        let source = mode.prepare_source(original);
-        let parsed = match self.limits.max_source_bytes {
-            Some(limit) => parse_script_with_source_limit(&source, limit),
-            None => parse_script(&source),
+            }
+            .map(ParsedSource::Module)
+        } else {
+            match self.limits.max_source_bytes {
+                Some(limit) => parse_script_with_source_limit(&source, limit),
+                None => parse_script(&source),
+            }
+            .map(ParsedSource::Script)
         };
-        let script = match parsed {
-            Ok(script) => script,
+        let parsed = match parsed {
+            Ok(parsed) => parsed,
             Err(diagnostic) => {
                 return parse_result(
                     diagnostic,
@@ -215,8 +205,15 @@ impl Runner {
                     .unwrap_or_else(|| Outcome::SetupFailure(format!("{name}: {error}")));
             }
         }
-        let mut result = realm.evaluate(&script).map(|_| ());
-        if result.is_ok() && asynchronous {
+        let evaluated = match &parsed {
+            ParsedSource::Script(script) => realm.evaluate(script),
+            ParsedSource::Module(module) => realm.evaluate_module(module),
+        };
+        let (mut result, module_promise) = match evaluated {
+            Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),
+            Err(error) => (Err(error), None),
+        };
+        if result.is_ok() && (asynchronous || mode == Mode::Module) {
             loop {
                 match realm.run_next_promise_job() {
                     Ok(PromiseJobOutcome::NoJob) => break,
@@ -225,6 +222,22 @@ impl Runner {
                         result = Err(error);
                         break;
                     }
+                }
+            }
+        }
+        if result.is_ok()
+            && let Some(Value::Object(promise)) = module_promise
+        {
+            match realm
+                .inspect_object(&promise)
+                .expect("module evaluation Promise")
+                .promise_state()
+                .expect("module Promise brand")
+            {
+                PromiseState::Fulfilled(_) => (),
+                PromiseState::Rejected(reason) => result = Err(Error::Thrown(reason.clone())),
+                PromiseState::Pending => {
+                    return failed(Stage::Runtime, "module evaluation Promise did not settle");
                 }
             }
         }

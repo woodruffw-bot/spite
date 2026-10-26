@@ -10,6 +10,8 @@ use spite_parser::{
 #[test]
 fn module_ast_retains_import_meta_top_level_await_and_source_spans() {
     let module = parse_module("const meta=import.meta;await meta").unwrap();
+    assert!(module.body().is_strict());
+    assert_eq!(module.body().statements(), module.statements());
     let StatementKind::Lexical { bindings, .. } = &module.statements()[0].kind else {
         panic!("lexical")
     };

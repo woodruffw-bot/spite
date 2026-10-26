@@ -62,20 +62,21 @@ impl Realm {
             // GetThisEnvironment skips declarative/with/arrow environments.
             let mut next = self.scopes.last().cloned();
             while let Some(environment) = next {
-                let (function, method, derived, field, outer) =
+                let (has_this, module, method, derived, field, outer) =
                     self.object_work(span, |objects, budget| {
                         budget.charge(1)?;
                         let record = objects.environment(&environment)?;
                         Ok((
                             record.this.is_some(),
+                            matches!(record.this, Some(crate::environment::ThisBinding::Module)),
                             record.home_object.is_some(),
                             record.derived_constructor.is_some(),
                             record.class_field_initializer,
                             record.outer.clone(),
                         ))
                     })?;
-                if function {
-                    context.in_function = true;
+                if has_this {
+                    context.in_function = !module;
                     context.in_method = method;
                     context.in_derived_constructor = derived;
                     context.in_class_field_initializer = field;

@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10608 unmodified test fixtures and twenty-one harness files come from
+These 10652 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,21 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Standalone Module evaluation review
+
+The scoped eighty-original review reports 44 passed/37 Unsupported with every
+other outcome zero. Forty-four complete originals add forty-four Module variants,
+including one runtime negative. They cover local Module bindings, declaration
+instantiation, named defaults, strict this/eval, top-level Await/thenables and job
+timing. Dependencies and synthetic defaults remain whole-file exclusions.
+
+The unchanged fnGlobalObject.js helper comes from the same pinned revision and
+retains its Git blob/SHA-256 proof. The inventory contains 10,652 fixtures,
+twenty-two helpers, 10,633 reviewed sources and 20,435 variants. The full gate and
+all forty-four runner/package checks pass. Six Runtime groups and a runner probe
+cover environment identity, pending/rejected Promises, async completion and host
+failures. Intrinsic entries stay 591; resource defaults and allowances are unchanged.
 
 ## Async-generator delegation review
 

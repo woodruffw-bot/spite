@@ -211,6 +211,7 @@ impl Realm {
                     Ok(Some(value.clone()))
                 }
                 crate::environment::ThisBinding::Uninitialized => Ok(None),
+                crate::environment::ThisBinding::Module => Ok(Some(Value::Undefined)),
             }
         })?;
         value.ok_or_else(|| {

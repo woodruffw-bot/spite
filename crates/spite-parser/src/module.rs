@@ -8,8 +8,8 @@ mod records;
 
 /// Parses the supported Module body with strict code and top-level Await.
 ///
-/// Static imports and exports retain module records. Linking and execution remain
-/// separate implementation work; the AST is separate from Script execution.
+/// Static imports and exports retain module records for runtime linking and
+/// evaluation. The AST is separate from Script execution input.
 pub fn parse_module(source: &str) -> Result<Module, Diagnostic> {
     let mut parser = Parser::new(source)?;
     let result = contents(&mut parser);

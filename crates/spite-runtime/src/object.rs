@@ -48,6 +48,7 @@ pub(crate) use map::CollectionKey;
 mod private;
 mod promise;
 pub(crate) use promise::PromiseReaction;
+pub use promise::PromiseState;
 mod promise_aggregate;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};

@@ -94,7 +94,7 @@ pub(super) fn symbols(
             }
             visit(match this {
                 Some(ThisBinding::Initialized(value)) => symbol(value),
-                Some(ThisBinding::Uninitialized) | None => None,
+                Some(ThisBinding::Module | ThisBinding::Uninitialized) | None => None,
             })?;
         }
         Entry::Object(object) => object_symbols(object, mode, visit)?,

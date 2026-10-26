@@ -366,6 +366,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse exported variable, lexical, function, generator, async-function and class declarations through ordinary declaration nodes and shared binding/scope checks.
 - [x] Parse default function/generator/async-function/class declarations and assignment expressions, retaining named versus synthetic bindings, declaration lookahead, strict scope checks and unique default export names.
 - [x] Construct source-ordered deduplicated ModuleRequests and normalized import/local/indirect/star export entries, rewriting imported named and namespace reexports to their original requests.
+- [x] Evaluate standalone Modules with isolated strict var/lexical/function environments, undefined this, correct direct-eval context and top-level Await through the shared source interpreter and intrinsic evaluation Promise.
+- [ ] Evaluate synthetic default exports with anonymous function/class naming, declaration instantiation and awaited expressions.
+- [ ] Link host-provided Module graphs with stable records, live import bindings, cycles and namespace objects.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

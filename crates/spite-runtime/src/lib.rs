@@ -16,6 +16,7 @@ mod global;
 mod iterator_count;
 #[cfg(test)]
 mod loop_limit_tests;
+mod module;
 mod optional_chain;
 mod private;
 mod reference;
@@ -26,6 +27,7 @@ mod with;
 use environment::{BindingState, EnvironmentHandle};
 pub use time_zone::{TimeZone, TimeZoneError};
 pub mod object;
+pub use object::PromiseState;
 mod realm_finalization;
 mod realm_object;
 mod realm_proxy;

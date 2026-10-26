@@ -1464,3 +1464,6 @@ mod import_validation;
 
 #[path = "cases/async_generator_delegation.rs"]
 mod async_generator_delegation;
+
+#[path = "cases/module_evaluation.rs"]
+mod module_evaluation;

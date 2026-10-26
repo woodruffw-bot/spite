@@ -471,6 +471,21 @@ again as YieldExpression specifies. Awaited method rejection propagates to the
 outer body without being forwarded to the delegate's throw method. Iterator and
 cached-method captures use the existing object/Symbol tracing path.
 
+Standalone Modules use Realm::eval_module/evaluate_module and a fresh Module
+environment outside the global environment (16.2.1). Module var bindings start
+initialized to undefined; lexical/class bindings start in TDZ, and direct function
+declarations are initialized before evaluation. All code is strict. Module
+GetThisBinding returns undefined, while direct eval recognizes that the Module
+environment is not a function and rejects new.target. Closures and resumed awaits
+retain the same environment cells. The immutable Module statement list reuses
+the function/static-block body representation and shared source interpreter
+without creating a function or arguments object. Evaluation returns an intrinsic
+Promise, with explicit host job draining and native Promise-state inspection.
+Language failures reject; host failures bypass rejection and JavaScript cleanup.
+The caller's scopes/strictness/variable environment restore on every exit.
+Dependency requests and synthetic default exports stop before body effects.
+Module records, graph linking/caching, namespaces and import.meta remain work.
+
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before
 parameters switch to +Yield/~Await and bodies enable YieldExpression. Method
