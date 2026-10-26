@@ -10107,3 +10107,17 @@ parse-syntax-error	387e5780f4b54e698636d6bad657469a6aa983dccfb43a36204308912fc3a
 parse-syntax-error	c172b88994701362f4b3aec6fb95a46a193b31f40676bf24df85509c0ca5f7f2	test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-2-update-expression.js
 parse-syntax-error	80cf87513e55b2409a5b392054d642f163e84673cf012d6c21844481895554c3	test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-3-update-expression.js
 parse-syntax-error	eee37f72a0b75af8bfd170089b3c9b5ce1c295710723d92e9413110b41975b0e	test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-4-update-expression.js
+script-pass	a5010d6255cb6804c2353513419f54afff307d33039024d60ca7d7a8c796fd01	test/language/expressions/dynamic-import/import-attributes/2nd-param-trailing-comma-reject.js
+script-pass	9eaf1b965a1209e840768cf39c43fa1a4546201de53f66fb4a2e05dca347d042	test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-abrupt.js
+script-pass	02c1eb95c4c179e8fba169a69cbc3dca5f1202ee425491a966a5c7dff8b6f55a	test/language/expressions/dynamic-import/import-attributes/2nd-param-with-non-object.js
+script-pass	77df552ccacaeb6c725c67ad8deda5e7c3c08a4efba1548e13c694e34a22e84e	test/language/expressions/dynamic-import/import-attributes/2nd-param-with-value-abrupt.js
+script-pass	61d67ed8fe7ea23c15829ff96f2d6590a801f557980c6f6d3218f4cf2bb78b25	test/language/expressions/dynamic-import/import-attributes/2nd-param-with-value-non-string.js
+parse-syntax-error	9a59d601e13bcff394660be1e46bb9ff567780d6a3c404b837c43990a1f6e3c2	test/language/expressions/dynamic-import/import-attributes/2nd-param-yield-ident-invalid.js
+script-pass	4ceab6c267bea8f1adc3dd076eafe2a59628ce2ae667971dc5e43650c04407bb	test/language/expressions/dynamic-import/assignment-expression/yield-star.js
+script-pass	205a388341bbffc00f293a387ce078c16927d7d90cdac707ca6e88c637e9c439	test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-return.js
+script-pass	5e08087db48598651cbe0dc75e363c791029dc16dc91c5ea4587be0407c0c401	test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-throw.js
+script-pass	db226d9acddd240ced0391fa685f3a1201611846cb6322afe6d8b9ce018ee05c	test/language/expressions/dynamic-import/import-attributes/2nd-param-get-with-error.js
+script-pass	170ecb5d2b640bc43bc847e759c4d71fe840d031eff9ca5121c5a3cbbd010f8c	test/language/expressions/dynamic-import/import-attributes/2nd-param-non-object.js
+script-pass	24c8f6880e2562fb9efc353dacf303f24c819104198c8d225c150129563d1008	test/language/expressions/dynamic-import/import-attributes/trailing-comma-reject.js
+script-pass	e856975950b76ebdd1447bd273f4a7e07485333a6fe1d82e356582577f732b23	test/language/expressions/dynamic-import/assign-expr-get-value-abrupt-throws.js
+parse-syntax-error	144e19cd58f4843588295c4ba911a46cd3bce330f7c2204f5d27db6168a45b8c	test/language/expressions/dynamic-import/escape-sequence-import.js

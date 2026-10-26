@@ -38,6 +38,7 @@ mod dynamic;
 mod error;
 mod finalization_registry;
 mod global_metadata;
+mod import_call;
 mod instance;
 mod iterator;
 pub(crate) use iterator::IteratorRecord;

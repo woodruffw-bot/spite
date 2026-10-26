@@ -425,6 +425,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share rest Array collection and rest Object copying between binding and assignment patterns while preserving reference order and closing.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [x] Parse ImportCall specifiers/options with standard argument and new-expression grammar, retained source, strict/private validation and an execution-only module-loading boundary.
+- [x] Evaluate dynamic-import operands, including await/yield, and reject specifier/options/attribute-value language failures through fresh intrinsic Promises while preserving host-abort behavior.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 

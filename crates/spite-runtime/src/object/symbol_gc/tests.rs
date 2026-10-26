@@ -464,6 +464,14 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),object={x:key};(async()=>{with(object){var[x=await gate]=[]}})();return gate})()",
         ),
         (
+            "import specifier across options await",
+            "(()=>{let gate=new Promise(()=>{});(async()=>import(key,await gate))();return gate})()",
+        ),
+        (
+            "import specifier across options yield",
+            "(()=>{let iterator=(function*(){return import(key,yield 0)})();iterator.next();return iterator})()",
+        ),
+        (
             "generator delegated cached next",
             "(()=>{let next=(()=>{let value=key;return()=>({done:false,value:(value,0)})})(),source={next,[Symbol.iterator](){return this}},iterator=(function*(){yield*source})();iterator.next();source.next=null;next=null;return iterator})()",
         ),

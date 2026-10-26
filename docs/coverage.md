@@ -56,9 +56,38 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19518 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19545 reviewed Test262 variants, twenty pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Dynamic import operand validation and Promise rejection
+
+EvaluateImportCall now evaluates both operands before creating an intrinsic
+Promise, converts the specifier, and checks options/with and attribute value types.
+Operand failures throw synchronously; conversion, lookup and type failures reject
+that Promise. Shared EnumerableOwnProperties traversal completes all getters before
+type checks. Native and resumable expression paths share the same validation;
+await/yield options retain the original specifier. Host failures bypass rejection,
+handlers and disposal; valid requests still require unimplemented module loading.
+
+Ten Runtime groups cover fresh intrinsic capabilities, public-hook independence,
+evaluation/coercion order, synchronous versus asynchronous errors, getter ordering,
+Symbol-key filtering, awaited/yielded operands, host aborts and capture collection.
+Two Symbol ownership controls cover specifiers across options await/yield. The
+prior import host program remains and now observes both operand evaluations.
+
+All 417 Runtime units, 2,229 non-RegExp integrations and thirteen CLI groups pass
+across 683 Runtime files. Parser coverage remains eighteen units and 388 integrations
+across 81 files. Clippy, Rust 1.88, policy and inventories pass; helpers, quotas and
+the 585-entry intrinsic inventory are unchanged.
+
+Twelve unchanged runtime originals and two exact reviewed syntax negatives add
+27 variants. The scoped 54-original conversion/options/assignment-expression review
+reports 27 passed/76 Unsupported, with failures, limits, setup failures and
+unverified negatives at zero. Loading-dependent originals stay wholly excluded.
+The corpus contains 10,102 fixtures, twenty helpers, 10,083 reviewed sources and
+19,545 variants. The complete conformance gate and all forty runner/package
+checks pass. Attribute-support hooks and module loading remain work.
 
 ## Dynamic import grammar and retained calls
 

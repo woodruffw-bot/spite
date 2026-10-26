@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10088 unmodified test fixtures and twenty harness files come from
+These 10102 unmodified test fixtures and twenty harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,19 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Dynamic import validation review
+
+Twelve unchanged runtime originals and two syntax negatives with reviewed exact
+rejection points add 27 variants. The scoped 54-original conversion/options and
+assignment-expression review reports 27 passed/76 Unsupported; all other outcome
+counts are zero. Loading-dependent originals remain excluded as whole files.
+
+The inventory contains 10,102 fixtures, twenty helpers, 10,083 reviewed sources and
+19,545 variants. Ten Runtime groups and two Symbol ownership controls cover native
+and resumable operand evaluation, intrinsic rejection, getter order, host aborts
+and collection. Prior groups, helpers, quotas and intrinsic entries are retained.
+Attribute-support hooks and loading remain explicit implementation work.
 
 ## Dynamic import grammar review
 

@@ -35,6 +35,16 @@ impl Realm {
         kind: Builtin,
         span: Span,
     ) -> Result<Value, Error> {
+        let results = self.enumerable_own_property_list(value, kind, span)?;
+        self.create_array_from_list(results, span)
+    }
+
+    pub(in crate::function) fn enumerable_own_property_list(
+        &mut self,
+        value: Value,
+        kind: Builtin,
+        span: Span,
+    ) -> Result<Vec<Value>, Error> {
         let Value::Object(object) = self.box_primitive(value, span)? else {
             unreachable!("ToObject");
         };
@@ -66,6 +76,6 @@ impl Realm {
             };
             results.push(result);
         }
-        self.create_array_from_list(results, span)
+        Ok(results)
     }
 }

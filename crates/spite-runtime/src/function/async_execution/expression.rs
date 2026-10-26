@@ -25,6 +25,7 @@ use spite_parser::ast::{
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
         ExprKind::Await(_) | ExprKind::Yield { .. } => true,
+        ExprKind::ImportCall { specifier, options } => has_supported_await(specifier) || options.as_ref().is_some_and(|options| has_supported_await(options)),
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
         ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
@@ -208,6 +209,14 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 ExprChild::Right,
                 ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. },
             ) => value,
+            (ExprChild::ImportSpecifier, ExprKind::ImportCall { specifier, .. }) => specifier,
+            (
+                ExprChild::ImportOptions,
+                ExprKind::ImportCall {
+                    options: Some(options),
+                    ..
+                },
+            ) => options,
             (ExprChild::ChainHead, ExprKind::BinaryChain { head, .. }) => head,
             (ExprChild::ChainRight(index), ExprKind::BinaryChain { steps, .. }) => {
                 &steps[*index].right
@@ -448,6 +457,7 @@ impl Realm {
                         | ExprKind::Conditional(..)
                         | ExprKind::TaggedTemplate { .. }
                         | ExprKind::Call { .. }
+                        | ExprKind::ImportCall { .. }
                         | ExprKind::Array(_)
                         | ExprKind::Member(..)
                         | ExprKind::New { .. }
@@ -456,6 +466,25 @@ impl Realm {
                             self.tick(span)?;
                             push(&mut state, ExprTask::CheckString(span), span)?;
                             match &expression.kind {
+                                ExprKind::ImportCall { .. } => {
+                                    push(
+                                        &mut state,
+                                        ExprTask::ImportSpecifier {
+                                            path: path.clone(),
+                                            span,
+                                        },
+                                        span,
+                                    )?;
+                                    push(
+                                        &mut state,
+                                        ExprTask::Evaluate(child_path(
+                                            &path,
+                                            ExprChild::ImportSpecifier,
+                                            span,
+                                        )?),
+                                        span,
+                                    )?;
+                                }
                                 ExprKind::Yield {
                                     delegated,
                                     argument,
@@ -712,6 +741,33 @@ impl Realm {
                 ExprTask::Unary { op, span } => {
                     let value = state.current.take().expect("unary operand");
                     state.current = Some(self.unary_value(op, value, span)?);
+                }
+                ExprTask::ImportSpecifier { path, span } => {
+                    let specifier = state.current.take().expect("import specifier");
+                    let ExprKind::ImportCall { options, .. } =
+                        &expression_at(data, state.root, &path).kind
+                    else {
+                        unreachable!("import source path")
+                    };
+                    if options.is_some() {
+                        push(
+                            &mut state,
+                            ExprTask::ImportOptions { specifier, span },
+                            span,
+                        )?;
+                        push(
+                            &mut state,
+                            ExprTask::Evaluate(child_path(&path, ExprChild::ImportOptions, span)?),
+                            span,
+                        )?;
+                    } else {
+                        state.current =
+                            Some(self.import_call_values(specifier, Value::Undefined, span)?);
+                    }
+                }
+                ExprTask::ImportOptions { specifier, span } => {
+                    let options = state.current.take().expect("import options");
+                    state.current = Some(self.import_call_values(specifier, options, span)?);
                 }
                 ExprTask::DelegateYield(span) => {
                     let value = state.current.take().expect("yield delegation operand");

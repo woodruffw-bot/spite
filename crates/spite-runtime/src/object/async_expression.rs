@@ -35,6 +35,8 @@ pub(crate) enum ExprChild {
     No,
     Callee,
     Argument(usize),
+    ImportSpecifier,
+    ImportOptions,
     ArrayElement(usize),
     MemberBase,
     MemberKey,
@@ -131,6 +133,14 @@ pub(crate) enum ExprTask {
     Await(Span),
     Yield(Span),
     DelegateYield(Span),
+    ImportSpecifier {
+        path: ExprPath,
+        span: Span,
+    },
+    ImportOptions {
+        specifier: Value,
+        span: Span,
+    },
     BinaryLeft {
         op: BinaryOp,
         right: ExprPath,
@@ -281,6 +291,7 @@ impl ExprTask {
     fn values(&self) -> impl Iterator<Item = &Value> {
         let (value, target, arguments): (Option<&Value>, Option<&InvocationTarget>, &[Value]) =
             match self {
+                Self::ImportOptions { specifier, .. } => (Some(specifier), None, &[]),
                 Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
                     (Some(left), None, &[])
                 }

@@ -91,8 +91,15 @@ ImportCall nodes retain the specifier, optional options expression and full sour
 span (13.3.10). Their grammar accepts one or two AssignmentExpressions and optional
 trailing commas, rejects spread and direct new operands, and participates in the
 usual depth/strict/private validation. Parenthesized import results can be new
-operands. Unexecuted calls are ordinary retained syntax; executed calls report the
-host boundary before operand evaluation or Promise/job creation. Keyword-named
+operands. Unexecuted calls are ordinary retained syntax. Native and shared source
+execution evaluate the specifier before options, then create a fresh intrinsic
+Promise capability. Operand evaluation failures throw synchronously; specifier
+ToString, options/with access and attribute-value type failures reject the Promise.
+EnumerableOwnProperties shares the Object reflection traversal and completes all
+getters before any attribute type check. The source VM retains the specifier while
+options await or yield, including object/Symbol tracing. Host failures bypass
+rejection and JavaScript cleanup. Valid requests still report the module-loading
+host boundary; attribute-support hooks and loading/linking/evaluation remain work. Keyword-named
 ordinary properties and methods retain their existing grammar.
 
 Left-associated binary expression spines (13.6–13.13, 13.16) use an initial

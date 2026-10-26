@@ -13,7 +13,7 @@ fn unexecuted_imports_and_dynamic_function_source_are_available_without_a_loader
 }
 
 #[test]
-fn executing_an_import_aborts_handlers_before_unsupported_operands_or_jobs() {
+fn executing_an_import_evaluates_operands_then_aborts_handlers_without_jobs() {
     let mut realm = Realm::default();
     realm.eval("let effects=0,caught=0,finalized=0").unwrap();
     let error = realm
@@ -21,7 +21,7 @@ fn executing_an_import_aborts_handlers_before_unsupported_operands_or_jobs() {
         .unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
     assert_eq!(
-        realm.eval("effects===0&&caught===0&&finalized===0"),
+        realm.eval("effects===2&&caught===0&&finalized===0"),
         Ok(Value::Boolean(true))
     );
     assert!(matches!(

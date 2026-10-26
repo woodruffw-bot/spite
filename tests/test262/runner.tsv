@@ -10068,3 +10068,17 @@ test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttarget
 test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-2-update-expression.js	1162	1172	invalid update target
 test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-3-update-expression.js	1134	1144	invalid update target
 test/language/expressions/dynamic-import/syntax/invalid/invalid-assignmenttargettype-syntax-error-4-update-expression.js	1134	1144	invalid update target
+test/language/expressions/dynamic-import/import-attributes/2nd-param-trailing-comma-reject.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-abrupt.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-non-object.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-value-abrupt.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-value-non-string.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-yield-ident-invalid.js	677	682	reserved identifier in strict mode
+test/language/expressions/dynamic-import/assignment-expression/yield-star.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-return.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-abrupt-throw.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-get-with-error.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-non-object.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/trailing-comma-reject.js	-	-	-
+test/language/expressions/dynamic-import/assign-expr-get-value-abrupt-throws.js	-	-	-
+test/language/expressions/dynamic-import/escape-sequence-import.js	1021	1032	reserved word cannot be an identifier

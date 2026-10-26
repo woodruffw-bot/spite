@@ -1647,11 +1647,14 @@ impl Realm {
                     self.expression(no)?
                 }
             }
-            ExprKind::ImportCall { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "dynamic module loading is not implemented",
-                ));
+            ExprKind::ImportCall { specifier, options } => {
+                let specifier = self.expression(specifier)?;
+                let options = if let Some(options) = options {
+                    self.expression(options)?
+                } else {
+                    Value::Undefined
+                };
+                self.import_call_values(specifier, options, expr.span)?
             }
             ExprKind::Yield { .. } => {
                 return Err(Self::unsupported(
