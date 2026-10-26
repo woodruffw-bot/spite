@@ -164,6 +164,7 @@ pub(crate) enum ExprTask {
         index: usize,
         units: Vec<u16>,
     },
+    PrivateIn(ExprPath),
     DestructureApply(ExprPath),
     AssignmentApply {
         reference: Reference<'static>,

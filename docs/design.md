@@ -548,6 +548,14 @@ raw text, invalid cooked escapes and freezing across suspended invocations.
 Template arguments count toward existing argument limits; retained receivers and
 earlier substitutions use the established tracing and physical Symbol owners.
 
+PrivateIdentifier in expressions suspend in their RHS (13.10.2). A typed source
+path retains the operator until the complete value reaches the ordinary
+private-in operation. This preserves non-object TypeErrors, private environment
+resolution and direct brand lookup without coercion, accessor invocation or Proxy
+has traps. Await rejection bypasses the brand operation. The existing value and
+context owners retain the RHS and lexical private environment; no private-name
+identity is copied into the expression task.
+
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate
 statement indices. Body-level throw expressions can suspend and resume to a real

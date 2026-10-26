@@ -25,7 +25,9 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::Await(_) => true,
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
-        ExprKind::DestructuringAssign { value, .. } => has_supported_await(value),
+        ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
+            has_supported_await(value)
+        }
         ExprKind::Template { substitutions, .. } => substitutions.iter().any(has_supported_await),
         ExprKind::TaggedTemplate {
             tag, substitutions, ..
@@ -149,7 +151,10 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 | ExprKind::Assign(_, right)
                 | ExprKind::CompoundAssign(_, _, right),
             ) => right,
-            (ExprChild::Right, ExprKind::DestructuringAssign { value, .. }) => value,
+            (
+                ExprChild::Right,
+                ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. },
+            ) => value,
             (ExprChild::ChainHead, ExprKind::BinaryChain { head, .. }) => head,
             (ExprChild::ChainRight(index), ExprKind::BinaryChain { steps, .. }) => {
                 &steps[*index].right
@@ -321,6 +326,7 @@ impl Realm {
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
                         | ExprKind::Template { .. }
+                        | ExprKind::PrivateIn { .. }
                         | ExprKind::DestructuringAssign { .. }
                         | ExprKind::Update { .. }
                         | ExprKind::Assign(..)
@@ -387,6 +393,11 @@ impl Realm {
                                     },
                                     span,
                                 )?,
+                                ExprKind::PrivateIn { .. } => {
+                                    let value = child_path(&path, ExprChild::Right, span)?;
+                                    push(&mut state, ExprTask::PrivateIn(path), span)?;
+                                    push(&mut state, ExprTask::Evaluate(value), span)?;
+                                }
                                 ExprKind::DestructuringAssign { .. } => {
                                     let value = child_path(&path, ExprChild::Right, span)?;
                                     push(&mut state, ExprTask::DestructureApply(path), span)?;
@@ -782,6 +793,14 @@ impl Realm {
                 }
                 ExprTask::TemplateAppend { path, index, units } => {
                     self.async_template_append(data, &mut state, path, index, units)?
+                }
+                ExprTask::PrivateIn(path) => {
+                    let expression = expression_at(data, state.root, &path);
+                    let ExprKind::PrivateIn { name, .. } = &expression.kind else {
+                        unreachable!("private-in source path")
+                    };
+                    let value = state.current.take().expect("private-in RHS value");
+                    state.current = Some(self.private_in(&name.name, value, expression.span)?);
                 }
                 ExprTask::DestructureApply(path) => {
                     let value = state.current.take().expect("destructuring RHS value");

@@ -399,6 +399,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume destructuring assignment after awaited RHS evaluation with deferred target resolution, shared patterns/closing and original value identity.
 - [x] Resume untagged template substitutions with ordered ToString, shared cooked components, lossless UTF-16 buffers and existing string limits.
 - [x] Resume tagged templates through shared call/argument continuations with saved receivers, raw substitutions, frozen site caching and indirect eval.
+- [x] Resume private-in after awaited RHS evaluation with preserved lexical brands, direct lookup and shared primitive/error behavior.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

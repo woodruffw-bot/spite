@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Private-in with awaited RHS
+
+Four Runtime groups cover instance/static/method/accessor brands, inheritance,
+Proxy behavior, private-name shadowing, non-object failures, rejection, collection
+and host abort. All 417 units and 2,058 non-RegExp integrations pass across 661
+Runtime case files; strict Clippy and Rust 1.88 checks pass. The continuation
+stores an AST path and reuses ordinary brand lookup and existing value/context
+owners without copying a private-name identity into the task.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Tagged templates with awaited tags/substitutions
 
 Eight Runtime groups and two Symbol ownership controls cover callee/receiver
