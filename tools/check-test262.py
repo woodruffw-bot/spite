@@ -14,7 +14,7 @@ for line in (root / "manifest.tsv").read_text().splitlines():
         continue
     expectation, checksum, path = line.split("\t")
     if expectation not in {
-        "raw-pass", "raw-syntax-error", "parse-syntax-error", "identifier-tokens", "identifier-error", "parser-pass", "script-pass", "script-runtime-error", "harness"
+        "raw-pass", "raw-syntax-error", "parse-syntax-error", "identifier-tokens", "identifier-error", "parser-pass", "script-pass", "script-runtime-error", "module-fixture", "harness"
     }:
         raise SystemExit(f"unsupported fixture mode: {expectation}")
     relative = PurePosixPath(path)

@@ -1,5 +1,6 @@
 use crate::{CaseResult, MetadataError, MetadataErrorKind, Outcome, ParseExpectation, Runner};
 use spite_core::Span;
+mod modules;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs, io,
@@ -237,10 +238,16 @@ fn run_entry(root: &Path, entry: &Entry<'_>) -> io::Result<CorpusTest> {
             message: entry.review[2].into(),
         })
     };
-    let result = Runner::default().run(&source, review.as_ref(), |name| {
-        fs::read_to_string(root.join("upstream/harness").join(name))
-            .map_err(|error| error.to_string())
-    });
+    let result = Runner::default().run_with_module_loader(
+        &source,
+        review.as_ref(),
+        entry.path,
+        |name| {
+            fs::read_to_string(root.join("upstream/harness").join(name))
+                .map_err(|error| error.to_string())
+        },
+        |referrer, request| modules::load_source(root, referrer, request),
+    );
     Ok(CorpusTest {
         path: entry.path.into(),
         result,

@@ -3140,9 +3140,8 @@ results by phase and error type, keeping harness/setup failures separate from th
 test result. Module variants use the real Module parser and the same exact
 span/message review for parse negatives, without a Script strict-mode prefix.
 Valid parse negatives fail the gate; unsupported grammar and host limits never
-count as passes. Parsed Modules remain Unsupported for linking/execution and never
-enter Script evaluation or harness setup. Raw async setup and agent configuration
-also remain unsupported.
+count as passes. Modules use isolated Module records and never enter Script
+evaluation. Raw async setup and agent configuration remain unsupported.
 Async Script variants execute the original doneprintHandle.js and selected
 includes, then drain the explicit Promise queue. A private print capture requires
 exactly one completion, rejects failure or duplicate messages, and keeps reported
@@ -3154,6 +3153,22 @@ is an unverified result, not a conformance pass. Conformance realms reserve miss
 host helper globals, so reading or testing their type reports Unsupported rather
 than producing an accidental ReferenceError or undefined. Ordinary realms receive
 no Test262 globals. Parse-negative tests need no harness evaluation.
+
+Runner::run_with_module_loader accepts unmodified Module sources with stable host
+identifiers. It caches the root before traversing requests, reuses equal identities
+across aliases/cycles, and rejects source changes for an existing identifier.
+All records are prepared before loading/linking the graph. A separate Resolution
+stage ensures loading, dependency parsing and linking failures never satisfy a
+runtime-negative expectation. Scripts and parse negatives never request sources.
+Import attributes and asynchronous dependency evaluation remain Unsupported.
+
+The corpus host resolves relative source names by normalized path components
+under upstream/test. Canonical target checks also keep symlinks inside that
+source tree. File failures are setup failures, distinct from language exceptions;
+executed dependency body errors retain their runtime phase and original reason.
+ModuleHandle hashes use record identity, permitting efficient host maps. Imported
+support files have an explicit module-fixture manifest mode, exact hashes and
+Module syntax validation; they receive no independent execution variant credit.
 
 Use CI for formatting, Clippy, unit tests, integration tests, documentation tests,
 snapshot review, and a dependency-policy check. Keep production crates buildable

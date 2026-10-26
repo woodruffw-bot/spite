@@ -11,7 +11,10 @@ enum ParsedSource {
 }
 
 mod async_completion;
+mod modules;
 use async_completion::AsyncCompletion;
+use modules::ModuleLoader;
+pub use modules::ModuleSource;
 
 /// A runner stage, distinguishing harness setup from language phases.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -20,6 +23,8 @@ pub enum Stage {
     Parse,
     /// Host capabilities, harness loading, or harness evaluation.
     Harness,
+    /// Static dependency loading and linking, before evaluation.
+    Resolution,
     /// Test evaluation.
     Runtime,
 }
@@ -77,7 +82,7 @@ pub struct CaseResult {
     pub outcome: Outcome,
 }
 
-/// Script execution and reviewed Module syntax checks with explicit host boundaries.
+/// Script and Module execution with phase-aware conformance accounting.
 #[derive(Clone, Debug, Default)]
 pub struct Runner {
     /// Limits used for each Script evaluation in a fresh test realm.
@@ -102,12 +107,53 @@ impl Runner {
         review: Option<&ParseExpectation>,
         mut load_harness: impl FnMut(&str) -> Result<String, String>,
     ) -> Result<Vec<CaseResult>, MetadataError> {
+        self.run_variants(source, review, &mut load_harness, None)
+    }
+
+    /// Runs variants with host-provided static Module sources and identities.
+    ///
+    /// The root identifier and returned source identifiers determine shared
+    /// records and cycles. Dependency setup/linking failures never satisfy a
+    /// runtime-negative expectation. Import attributes and async dependency
+    /// evaluation remain explicit Unsupported outcomes.
+    pub fn run_with_module_loader(
+        &self,
+        source: &str,
+        review: Option<&ParseExpectation>,
+        root_identifier: &str,
+        mut load_harness: impl FnMut(&str) -> Result<String, String>,
+        mut load_module: impl FnMut(
+            &str,
+            &spite_parser::ast::ModuleRequest,
+        ) -> Result<ModuleSource, String>,
+    ) -> Result<Vec<CaseResult>, MetadataError> {
+        let mut loader = ModuleLoader {
+            root_identifier,
+            load: &mut load_module,
+        };
+        self.run_variants(source, review, &mut load_harness, Some(&mut loader))
+    }
+
+    fn run_variants(
+        &self,
+        source: &str,
+        review: Option<&ParseExpectation>,
+        load_harness: &mut impl FnMut(&str) -> Result<String, String>,
+        mut modules: Option<&mut ModuleLoader<'_>>,
+    ) -> Result<Vec<CaseResult>, MetadataError> {
         let metadata = Metadata::parse(source)?;
         Ok(metadata
             .modes()
             .into_iter()
             .map(|mode| {
-                let outcome = self.run_mode(source, &metadata, mode, review, &mut load_harness);
+                let outcome = self.run_mode(
+                    source,
+                    &metadata,
+                    mode,
+                    review,
+                    load_harness,
+                    modules.as_deref_mut(),
+                );
                 CaseResult { mode, outcome }
             })
             .collect())
@@ -120,6 +166,7 @@ impl Runner {
         mode: Mode,
         review: Option<&ParseExpectation>,
         load_harness: &mut impl FnMut(&str) -> Result<String, String>,
+        modules: Option<&mut ModuleLoader<'_>>,
     ) -> Outcome {
         let source = mode.prepare_source(original);
         let parsed = if mode == Mode::Module {
@@ -207,7 +254,27 @@ impl Runner {
         }
         let evaluated = match &parsed {
             ParsedSource::Script(script) => realm.evaluate(script),
-            ParsedSource::Module(module) => realm.evaluate_module(module),
+            ParsedSource::Module(module) => {
+                if let Some(loader) = modules {
+                    let loaded =
+                        loader
+                            .load_graph(&mut realm, module, original)
+                            .and_then(|record| {
+                                realm.link_module(&record)?;
+                                Ok(record)
+                            });
+                    let record = match loaded {
+                        Ok(record) => record,
+                        Err(error) => {
+                            return host_failure(&error, Stage::Resolution)
+                                .unwrap_or_else(|| failed(Stage::Resolution, error.to_string()));
+                        }
+                    };
+                    realm.evaluate_module_record(&record)
+                } else {
+                    realm.evaluate_module(module)
+                }
+            }
         };
         let (mut result, module_promise) = match evaluated {
             Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),

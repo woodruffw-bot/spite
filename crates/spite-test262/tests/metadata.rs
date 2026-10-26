@@ -211,6 +211,12 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
             continue;
         }
         let original = fs::read_to_string(root.join("upstream").join(fields[2])).unwrap();
+        if fields[0] == "module-fixture" {
+            spite_parser::parse_module(&original)
+                .unwrap_or_else(|error| panic!("{}: {error:?}", fields[2]));
+            count += 1;
+            continue;
+        }
         let meta =
             Metadata::parse(&original).unwrap_or_else(|error| panic!("{}: {error}", fields[2]));
         if fields[0].starts_with("raw-") {
@@ -254,6 +260,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 10663);
+    assert_eq!(count, 10676);
     assert_eq!(harness_count, 22);
 }

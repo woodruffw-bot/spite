@@ -10684,3 +10684,16 @@ script-pass	0f34657774e235c23530da54eb56c87e3576e3744789ca7751965cb407f76a55	tes
 script-pass	c89ed59d66c4c85396d1da2fa9c0f3d34f6392dd296226c28f58ce32521ddea6	test/language/expressions/import.meta/syntax/goal-async-generator-params-or-body.js
 script-pass	438ff4f1ed5818916721d5504ef7f625cb78edc2882225295efeccaa64b4c29a	test/language/expressions/import.meta/syntax/goal-module-nested-function.js
 script-pass	87cf3fe7e60f591aeb8c5a6ccbd2aeac7a5ea7c13ff82277043e3c3f8f8d3a74	test/language/expressions/import.meta/syntax/goal-module.js
+script-pass	aa9d5c379bff55735756c7f447ed368b56b0276277d97cca5a07c99b4cfc03d4	test/language/module-code/eval-export-dflt-cls-anon.js
+script-pass	176ca161854205b96d780b0a5568008c5f98d3e85224417d00c1f8a2d9a226e2	test/language/module-code/eval-export-dflt-cls-name-meth.js
+script-pass	5522ec499f121872a462cc2c4b79572c84b96215818c194726c818ffb8595213	test/language/module-code/eval-export-dflt-cls-named.js
+script-pass	b5fa8a12655de8b56d7a6c6c30c7686988acdc3b7f557052adb4d1ad9633c1d3	test/language/module-code/eval-export-dflt-expr-cls-anon.js
+script-pass	4ed56bab4263eeabf56ab0227931f34dac658bb3ed3fb6e9e611eb100719cfca	test/language/module-code/eval-export-dflt-expr-cls-name-meth.js
+script-pass	b36534c4e4484c30c69ed52957405dc77bb694168a100b9c2df8da21e11bc2e1	test/language/module-code/eval-export-dflt-expr-cls-named.js
+script-pass	8d2ce3104e20aca09591911a65ad881cdcea15473b855662813d82be496bb89b	test/language/module-code/eval-export-dflt-expr-fn-anon.js
+script-pass	e2d8ba24e84aa368887535e974ca4c06c65137b097edd48438e1a8df75995b6a	test/language/module-code/eval-export-dflt-expr-fn-named.js
+script-pass	aa8991077c498d490869ec8003ca322036bc8769017a3b3bf3a1da5aef2d01a2	test/language/module-code/eval-export-dflt-expr-gen-anon.js
+script-pass	8bc314bf83d82152cb9505999b881ce13ce581445072d924fdd47483b17cb770	test/language/module-code/eval-export-dflt-expr-gen-named.js
+script-pass	7551d897ea97bab6c708d0db6791c2da411bb16f279515758bcd14c6a5a45fba	test/language/module-code/eval-export-dflt-expr-in.js
+script-pass	22972363efdffc5fdf15259186f9512509d5ebb4d18d67007c8535a3c5dbf0e9	test/language/expressions/import.meta/distinct-for-each-module.js
+module-fixture	cd9a747a0c441cc452537cdd9c92943b07282c46d7bad34985d9a70fa20b6f10	test/language/expressions/import.meta/distinct-for-each-module_FIXTURE.js

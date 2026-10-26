@@ -1,9 +1,27 @@
 # Test262 regression fixtures
 
-These 10663 unmodified test fixtures and twenty-two harness files come from
+These 10676 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Static Module loading and dependency fixtures
+
+The conformance host loads relative Module sources by stable normalized identity
+inside upstream/test. Loading, dependency parsing and linking failures have a
+separate Resolution stage and never satisfy runtime-negative expectations.
+Imported body exceptions retain their runtime phase. Scripts and parse negatives
+never request sources; unsupported attributes and asynchronous dependencies keep
+explicit non-passing outcomes.
+
+Eleven unchanged default-export originals and distinct-for-each-module.js add
+twelve required Module variants. The unchanged distinct-for-each-module_FIXTURE.js
+is recorded as module-fixture: its hash and Module syntax are verified, while
+only importing roots receive execution credit. The existing pin and twenty-two
+harness files are unchanged. There are 10,676 fixtures, 10,656 reviewed sources
+and 20,459 variants. The wider eighty-source review now has sixty passing modes,
+fourteen missing dependency files and seven Unsupported modes; unready whole
+originals remain excluded.
 
 ## import.meta objects and syntax
 

@@ -58,9 +58,38 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous graph evaluation and cached cycle Promises; asynchronous dependencies remain Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20447 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20459 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Static Module sources in Test262
+
+The runner accepts host-resolved source text and stable identifiers, including
+shared dependencies, aliases and cycles. Existing identifiers require identical
+source bytes. The corpus host resolves relative paths inside upstream/test,
+normalizes dot components and rejects targets outside that tree. Sources retain
+their exact text. Loading, parsing dependencies and linking have a separate
+Resolution stage; these failures cannot satisfy runtime-negative expectations.
+Dependency body errors retain their runtime phase and original constructor.
+Scripts and parse negatives never request Module sources. Import attributes and
+asynchronous dependency scheduling remain explicit Unsupported outcomes.
+
+Six runner groups and three corpus groups cover identities, phases, changed
+sources, parse-negative isolation, resource failures, serial/parallel execution,
+filesystem failures and path confinement. All 52 package controls, strict Clippy, Rust 1.88, inventories and the full
+corpus pass. Runtime
+451-unit/2,275-integration and Parser 18/438 coverage retain their preceding
+results; only the public ModuleHandle identity hash is added to Runtime.
+
+Eleven whole default-export originals and the cross-module import.meta original
+add twelve passing Module variants. One unchanged imported support file receives
+an explicit module-fixture manifest role and no independent variant credit.
+All thirteen originals retain their Git blob and SHA-256 hashes at the existing
+pin. Counts are 10,676 fixtures, twenty-two helpers, 10,656 reviewed sources and
+20,459 variants. No existing fixture, harness, dependency, limit or worker count
+changes. In the broader eighty-original candidate review, sixty modes pass,
+fourteen require unretained dependency files and seven remain Unsupported;
+only complete passing originals enter the corpus.
 
 ## Synchronous Module graph evaluation
 

@@ -27,6 +27,12 @@ pub struct ModuleHandle {
     root: crate::object::Root,
 }
 
+impl std::hash::Hash for ModuleHandle {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(self.root.handle(), state);
+    }
+}
+
 impl Realm {
     /// Parses and evaluates a fresh Module, returning its evaluation Promise.
     ///

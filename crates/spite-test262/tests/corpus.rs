@@ -1,6 +1,6 @@
 //! Pinned corpus inventory and command-line failure semantics.
 
-use spite_test262::{run_corpus, run_corpus_with_workers};
+use spite_test262::{Outcome, run_corpus, run_corpus_with_workers};
 use std::{
     fs,
     num::NonZeroUsize,
@@ -11,6 +11,90 @@ use std::{
 
 fn pinned() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262")
+}
+
+fn empty_harness(root: &Path) {
+    fs::create_dir_all(root.join("upstream/harness")).unwrap();
+    for name in ["assert.js", "sta.js"] {
+        fs::write(root.join("upstream/harness").join(name), "").unwrap();
+    }
+}
+
+#[test]
+fn relative_module_sources_share_normalized_root_identity_and_run_in_serial_and_parallel_corpora() {
+    let corpus = TemporaryCorpus::new(
+        "/*---\nflags: [module]\n---*/\nimport * as self from './sub/../example.js';import{meta,getMeta}from'./dep.js';export function own(){return import.meta};if(self.own!==own||meta===import.meta||meta!==getMeta())throw 1",
+        "test/example.js\t-\t-\t-\n",
+    );
+    empty_harness(&corpus.0);
+    fs::write(
+        corpus.0.join("upstream/test/dep.js"),
+        "export const meta=import.meta;export function getMeta(){return import.meta}",
+    )
+    .unwrap();
+    let serial = run_corpus(&corpus.0).unwrap();
+    assert!(serial.is_success(), "{serial:#?}");
+    assert_eq!(
+        serial,
+        run_corpus_with_workers(&corpus.0, NonZeroUsize::new(3).unwrap()).unwrap()
+    );
+}
+
+#[test]
+fn module_filesystem_failures_and_escape_attempts_never_satisfy_runtime_negatives() {
+    for specifier in [
+        "../outside.js",
+        "/absolute.js",
+        "C:/outside.js",
+        "./missing.js",
+    ] {
+        let corpus = TemporaryCorpus::new(
+            &format!(
+                "/*---\nflags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError\n---*/\nimport {specifier:?}"
+            ),
+            "test/example.js\t-\t-\t-\n",
+        );
+        empty_harness(&corpus.0);
+        let report = run_corpus(&corpus.0).unwrap();
+        assert!(
+            matches!(
+                report.tests[0].result.as_ref().unwrap()[0].outcome,
+                Outcome::SetupFailure(_)
+            ),
+            "{specifier}: {report:#?}"
+        );
+    }
+    #[cfg(unix)]
+    {
+        let corpus = TemporaryCorpus::new(
+            "/*---\nflags: [module]\n---*/\nimport'./link.js'",
+            "test/example.js\t-\t-\t-\n",
+        );
+        empty_harness(&corpus.0);
+        let outside = corpus.0.join("outside.js");
+        fs::write(&outside, "throw 1").unwrap();
+        std::os::unix::fs::symlink(outside, corpus.0.join("upstream/test/link.js")).unwrap();
+        let report = run_corpus(&corpus.0).unwrap();
+        assert!(
+            matches!(&report.tests[0].result.as_ref().unwrap()[0].outcome,Outcome::SetupFailure(message) if message.contains("outside corpus"))
+        );
+    }
+}
+
+#[test]
+fn dependency_body_exceptions_retain_the_runtime_phase_and_original_constructor() {
+    let corpus = TemporaryCorpus::new(
+        "/*---\nflags: [module]\nnegative:\n  phase: runtime\n  type: TypeError\n---*/\nimport'./dep.js'",
+        "test/example.js\t-\t-\t-\n",
+    );
+    empty_harness(&corpus.0);
+    fs::write(
+        corpus.0.join("upstream/test/dep.js"),
+        "throw new TypeError()",
+    )
+    .unwrap();
+    let report = run_corpus(&corpus.0).unwrap();
+    assert!(report.is_success(), "{report:#?}");
 }
 fn command(root: &Path) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_spite-test262"))
@@ -47,8 +131,8 @@ fn pinned_corpus_runs_all_reviewed_variants() {
     let report = run_corpus_with_workers(&pinned(), NonZeroUsize::new(3).unwrap()).unwrap();
     assert!(report.is_success(), "{report:#?}");
     assert_eq!(report.revision, "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd");
-    assert_eq!(report.tests.len(), 10644);
-    assert_eq!(report.counts()["passed"], 20447);
+    assert_eq!(report.tests.len(), 10656);
+    assert_eq!(report.counts()["passed"], 20459);
     assert!(
         report
             .counts()
