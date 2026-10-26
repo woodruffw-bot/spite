@@ -1413,3 +1413,6 @@ mod for_await;
 
 #[path = "cases/async_iteration_targets.rs"]
 mod async_iteration_targets;
+
+#[path = "cases/async_array_binding.rs"]
+mod async_array_binding;

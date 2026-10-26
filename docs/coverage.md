@@ -60,6 +60,22 @@ not an alternative language specification.
 
 
 
+## Awaited defaults in lexical array bindings
+
+Ten Runtime groups and two Symbol ownership controls cover ordered defaults,
+partial TDZs, skipped awaits, nested arrays/rest/elisions, awaited RHS values,
+for-header closure environments, name inference, closing/error precedence,
+collection and host abort. All 417 units and 2,136 non-RegExp integrations pass
+across 671 Runtime case files; Clippy and Rust 1.88 checks pass. Lexical declaration
+lists and three-clause headers use owned array cursors with the shared native
+binding operations. Var, object and assignment-pattern defaults retain explicit
+Unsupported boundaries. Parser totals remain 18 units and 361 integrations across
+76 case files.
+
+Complete candidate reviews and inventories are unchanged: 9,825 fixtures, twenty
+helpers, 9,806 reviewed sources, 19,012 variants and 579 intrinsic entries. Helpers
+and quotas are unchanged.
+
 ## Shared binding operations for suspended defaults
 
 Ordinary BindingInitialization now calls shared default-value selection, iterator

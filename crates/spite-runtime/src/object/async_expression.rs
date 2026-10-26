@@ -18,6 +18,7 @@ pub(crate) enum ExprRoot {
     ForHeader,
     IterationSource,
     IterationTarget,
+    ArrayBindingDefault,
     Binding { element: usize },
 }
 

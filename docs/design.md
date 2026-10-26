@@ -446,7 +446,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including pattern defaults and control flow. Ordinary calls support awaited arguments and
+including class definitions and remaining pattern defaults. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
 argument. A later suspension retains that target and every preceding argument;
@@ -1017,6 +1017,22 @@ parameter, catch, and nested-var early conflicts; property keys are not names.
 Default-value selection, binding iterator acquisition and rest Array collection
 are separate shared operations. Ordinary initialization still resolves references
 before stepping, preserves default name inference and uses the same closing path.
+Lexical Array BindingPatterns in declaration lists and three-clause for headers
+can suspend in defaults. An owned cursor stack retains the binding environment,
+typed paths into the source pattern and actual IteratorRecords for nested arrays.
+Elisions skip values; rest uses the shared collector. Defined values skip defaults,
+and non-awaited defaults keep native name inference. Default results produced by
+await receive no additional name hint. Each default resumes before later elements
+or declarators. The expression and pattern drivers return to their common outer
+loop between steps, including when an await branch is unselected.
+
+Normal partial consumption closes the current iterator before advancing its
+parent. Rejection or nested initialization failure closes still-active iterators
+from inside out, preserving original throws; step errors retain their Done flags.
+Host abort abandons records without JavaScript closing or disposal. Cursor methods,
+iterator handles and the binding environment participate in tracing and capture
+validation. Var, object and assignment-pattern awaited defaults remain distinct
+Unsupported forms.
 Patterns require an initializer outside for-in/of declarations, and lexical
 BoundNames cannot contain let. Declaration instantiation creates all names before
 evaluating any initializer. Identifier initializers receive named evaluation;

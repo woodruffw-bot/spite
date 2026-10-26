@@ -1,6 +1,7 @@
 //! Direct source Await statements and returns (Await, sec-asyncblockstart).
 
 mod binding;
+mod binding_array;
 mod block;
 mod completion;
 mod conditional;
@@ -100,6 +101,7 @@ impl Realm {
             capability,
             body,
             expression: None,
+            array_binding: None,
             index: 0,
             statement: None,
             next: None,
@@ -181,6 +183,9 @@ impl Realm {
     }
 
     fn async_execution_step(&mut self, data: &mut AsyncExecutionData) -> Result<Step, Error> {
+        if data.array_binding.is_some() {
+            return self.advance_async_array_binding(data);
+        }
         match &data.body {
             ArrowBody::Expression(expression) => {
                 debug_assert_eq!(data.index, 0);
@@ -329,6 +334,7 @@ impl Realm {
                 .finish_async_for_await_close(data, Some(Ok(value)))
                 .map(Step::Complete),
             AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),
+            AsyncAwaitAction::ArrayBindingDefault => self.resume_async_array_default(data, value),
             AsyncAwaitAction::IterationBinding => {
                 data.iteration_value = None;
                 Ok(Step::Continue)

@@ -95,6 +95,9 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("expression statement root"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::ArrayBindingDefault) => {
+            super::binding_array::default_expression(data)
+        }
         (ArrowBody::Block(_), ExprRoot::IterationTarget) => {
             super::iteration_head::iteration_target(data)
         }

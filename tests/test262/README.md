@@ -30,6 +30,14 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Lexical array-default review
+
+Ten Runtime groups and two Symbol ownership controls cover suspended defaults,
+nested iterators, naming, closing and host isolation. Var, object and assignment
+pattern gaps remain explicit. Complete candidate reviews and inventories remain
+9,825 fixtures, twenty helpers, 9,806 reviewed sources and 19,012 variants;
+helpers, quotas and intrinsic entries are unchanged.
+
 ## Shared binding-operation review
 
 Default-value selection, binding iterator acquisition and rest collection now use

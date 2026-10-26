@@ -69,6 +69,9 @@ impl Realm {
                     // AddDisposableResource still precedes binding initialization.
                     self.initialize_using_value(&binding.pattern, value, &environment)?;
                 } else {
+                    if super::binding_array::has_array_binding_await(&binding.pattern) {
+                        return self.start_async_array_binding(data, element, value, environment);
+                    }
                     self.initialize_pattern(&binding.pattern, value, &environment)?;
                 }
             } else if binding
@@ -88,6 +91,13 @@ impl Realm {
                     ExprRoot::Binding { element },
                     AsyncAwaitAction::Binding { element },
                 );
+            } else if !var
+                && !using
+                && super::binding_array::has_array_binding_await(&binding.pattern)
+            {
+                self.tick(binding.pattern.span)?;
+                let value = self.binding_element_value(binding, Value::Undefined)?;
+                return self.start_async_array_binding(data, element, value, environment);
             } else if var {
                 self.evaluate_var_bindings(std::slice::from_ref(binding))?;
             } else if using {

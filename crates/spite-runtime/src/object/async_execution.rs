@@ -33,6 +33,7 @@ pub(crate) enum AsyncAwaitAction {
     ForAwaitClose,
     IterationSource,
     IterationBinding,
+    ArrayBindingDefault,
     Binding { element: usize },
 }
 
@@ -258,6 +259,7 @@ pub(crate) struct AsyncExecutionData {
     pub capability: PromiseCapability,
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
+    pub array_binding: Option<super::async_binding_array::AsyncArrayBinding>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -284,6 +286,7 @@ impl AsyncExecutionData {
             .values()
             .chain(&self.normal)
             .chain(&self.iteration_value)
+            .chain(self.array_binding.iter().flat_map(|state| state.values()))
             .chain(self.var_target.iter().flat_map(Reference::values))
             .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(
@@ -297,6 +300,7 @@ impl AsyncExecutionData {
         self.frames
             .iter()
             .filter_map(AsyncStatementFrame::object)
+            .chain(self.array_binding.iter().flat_map(|state| state.objects()))
             .chain(self.var_target.iter().filter_map(Reference::object))
             .chain(
                 self.expression
@@ -310,6 +314,7 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.environments())
             .chain(self.root_scope.iter())
+            .chain(self.array_binding.iter().map(|state| &state.environment))
             .chain(self.var_target.iter().filter_map(Reference::environment))
             .chain(
                 self.frames
