@@ -14,6 +14,7 @@ mod labelled;
 mod protected;
 mod source;
 mod switch;
+mod with;
 
 use source::{active_statement, child_location};
 
@@ -236,6 +237,18 @@ impl Realm {
             self.tick(span)?;
             return self.enter_async_try(data, span);
         }
+        if let StatementKind::With { object, .. } = &statement.kind {
+            self.tick(statement.span)?;
+            if expression::has_supported_await(object) {
+                return self.start_async_expression(
+                    data,
+                    ExprRoot::WithObject,
+                    AsyncAwaitAction::WithObject,
+                );
+            }
+            let value = self.expression(object)?;
+            return self.enter_async_with(data, value);
+        }
         if let StatementKind::Switch { discriminant, .. } = &statement.kind {
             self.tick(statement.span)?;
             if expression::has_supported_await(discriminant) {
@@ -304,6 +317,7 @@ impl Realm {
                 target: None,
             })),
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
+            AsyncAwaitAction::WithObject => self.enter_async_with(data, value),
             AsyncAwaitAction::SwitchDiscriminant => self.enter_async_switch(data, value),
             AsyncAwaitAction::SwitchSelector => self.finish_async_switch_selector(data, value),
             AsyncAwaitAction::IfTest => self.finish_async_if(data, value),

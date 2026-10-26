@@ -60,6 +60,22 @@ not an alternative language specification.
 
 
 
+## With statements and awaited object-binding var initializers
+
+Eight Runtime groups and a Symbol ownership control cover awaited objects/bodies,
+primitive boxing, live unscopables, saved var/assignment targets, deferred pattern
+targets, receivers/eval/dynamic functions, labelled control, finalization/disposal,
+escaped closures, collection and host abort. All 417 units and 2,104 non-RegExp
+integrations pass across 667 Runtime case files; strict Clippy and Rust 1.88 checks
+pass. Awaited var initializers retain the same Reference used by ordinary code,
+including object-environment bindings, with complete tracing and validation.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers and quotas
+are unchanged.
+
 ## Switch statements with awaited selection and bodies
 
 Nine Runtime groups and two Symbol ownership controls cover ordered selection,

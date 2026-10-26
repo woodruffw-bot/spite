@@ -2,7 +2,7 @@
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
 use crate::{
-    Completion, Error, Realm, Reference, Value,
+    Completion, Error, Realm, Value,
     object::{
         async_execution::{AsyncForPhase, AsyncStatementFrame, StatementLocation},
         async_expression::ExprRoot,
@@ -59,13 +59,9 @@ impl Realm {
         for (element, binding) in bindings.iter().enumerate().skip(first) {
             if let Some(value) = resumed.take() {
                 if var {
-                    if let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
+                    if let BindingPatternKind::Identifier(_) = &binding.pattern.kind {
                         let target = data.var_target.take().expect("resolved var target");
-                        self.put(
-                            Reference::Lexical(target, name.as_str().into()),
-                            value,
-                            binding.pattern.span,
-                        )?;
+                        self.put(target, value, binding.pattern.span)?;
                     } else {
                         self.assign_pattern(&binding.pattern, value)?;
                     }
@@ -82,15 +78,10 @@ impl Realm {
             {
                 self.tick(binding.pattern.span)?;
                 if var && let BindingPatternKind::Identifier(name) = &binding.pattern.kind {
-                    let Reference::Lexical(environment, _) =
+                    data.var_target = Some(
                         self.resolve(name, binding.pattern.span)?
-                    else {
-                        return Err(Self::unsupported(
-                            binding.pattern.span,
-                            "awaited var target requires a declarative reference",
-                        ));
-                    };
-                    data.var_target = Some(environment);
+                            .into_owned(binding.pattern.span)?,
+                    );
                 }
                 return self.start_async_expression(
                     data,

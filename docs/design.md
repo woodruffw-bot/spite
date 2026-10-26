@@ -422,11 +422,14 @@ pattern defaults retain their inference rules.
 
 The cursor advances once before suspending; ordinary statements and operands use
 existing evaluation. Body-level var declarations resolve Identifier targets before
-RHS evaluation and retain the declarative environment across suspension. The
-fulfilled value is stored through that saved reference, preserving parameter and
+RHS evaluation and retain the shared owned Reference across suspension. Declarative
+and object-environment bindings preserve their selected target even when a with
+object's properties or unscopables change. The fulfilled value is stored through
+that saved reference, preserving parameter and
 mapped-arguments aliases. Pattern var bindings initialize after the awaited RHS;
 non-awaited and absent initializers keep existing var evaluation and naming.
-Saved target environments participate in tracing and capture validation.
+Saved target values, environments, object handles and internal Symbol identities
+participate in tracing and capture validation through the Reference inventory.
 
 Unary, binary, flat binary-chain and conditional value expressions use an explicit
 task stack when their supported forms contain await. Typed root/child paths locate
@@ -627,7 +630,16 @@ Each disposal result is checked for host failure before another JavaScript
 cleanup can run. Host abort clears every owned scope's captures without cleanup,
 including at budget zero. Active block environments are traced and validated;
 exited scopes are absent from subsequent suspended contexts unless closures retain
-them. With statements retain their explicit await boundaries.
+them.
+
+With statements suspend in object expressions and bodies (14.11.2). Ordinary and
+suspended execution share ToObject and object-environment creation after the
+object expression completes. A frame restores the previous environment on normal
+and language-abrupt completion and applies UpdateEmpty(undefined). Nested blocks
+dispose their resources and run finalizers while the with environment is still
+active; host abort restores owned scopes without cleanup. Binding resolution uses
+the existing live HasProperty/unscopables operations, method receivers and direct
+eval rules. Escaped closures retain their with environment after frame exit.
 
 Switch statements suspend in their discriminant, selectors and case statements
 (14.12.2–4). The discriminant completes before creating and instantiating the

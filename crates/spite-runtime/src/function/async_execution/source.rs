@@ -54,6 +54,7 @@ pub(super) fn active_statement<'a>(
             (StatementChild::ForOfBody, StatementKind::ForOf { body, .. }) => body,
             (StatementChild::ForInBody, StatementKind::ForIn { body, .. }) => body,
             (StatementChild::LabelBody, StatementKind::Labelled { body, .. }) => body,
+            (StatementChild::WithBody, StatementKind::With { body, .. }) => body,
             _ => unreachable!("typed statement child path"),
         };
     }

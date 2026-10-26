@@ -30,6 +30,16 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited with/object-binding review
+
+Eight Runtime groups and a Symbol ownership control cover object evaluation,
+unscopables, saved var references, calls/eval, cleanup/control and collection.
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants. No additional
+unchanged original qualifies. Inventories remain 9,690 fixtures, twenty helpers,
+9,671 reviewed sources and 18,762 variants; helpers, quotas and intrinsic entries
+are unchanged.
+
 ## Awaited switch review
 
 Nine Runtime groups and two Symbol ownership controls cover selection, defaults,

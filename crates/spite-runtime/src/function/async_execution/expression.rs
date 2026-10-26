@@ -119,6 +119,14 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("loop condition source"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::WithObject) => {
+            let StatementKind::With { object, .. } =
+                &active_statement(&data.body, data.statement.as_ref()).kind
+            else {
+                unreachable!("with object source")
+            };
+            object
+        }
         (ArrowBody::Block(_), ExprRoot::SwitchDiscriminant) => {
             let StatementKind::Switch { discriminant, .. } =
                 &active_statement(&data.body, data.statement.as_ref()).kind

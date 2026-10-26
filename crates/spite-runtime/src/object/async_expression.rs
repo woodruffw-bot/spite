@@ -11,6 +11,7 @@ pub(crate) enum ExprRoot {
     Arrow,
     Statement,
     IfTest,
+    WithObject,
     SwitchDiscriminant,
     SwitchSelector,
     LoopTest,

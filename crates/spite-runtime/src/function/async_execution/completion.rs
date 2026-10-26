@@ -46,6 +46,15 @@ impl Realm {
                         FrameStep::Complete(completion) => result = completion,
                     }
                 }
+                Some(AsyncStatementFrame::With(_)) => {
+                    let Some(AsyncStatementFrame::With(environment)) = data.frames.pop() else {
+                        unreachable!("with completion frame")
+                    };
+                    let active = self.scopes.pop().expect("active with environment");
+                    debug_assert_eq!(active, environment);
+                    result =
+                        result.map(|completion| completion.update_empty(Some(Value::Undefined)));
+                }
                 Some(AsyncStatementFrame::If) => {
                     data.frames.pop();
                     result =

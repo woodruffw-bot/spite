@@ -2,7 +2,7 @@
 
 use super::{Budget, Error, Objects};
 use crate::{
-    Completion, Value,
+    Completion, Reference, Value,
     environment::EnvironmentHandle,
     function::{IteratorRecord, PromiseCapability},
 };
@@ -24,6 +24,7 @@ pub(crate) enum AsyncAwaitAction {
     Throw,
     Expression,
     IfTest,
+    WithObject,
     SwitchDiscriminant,
     SwitchSelector,
     LoopTest,
@@ -45,6 +46,7 @@ pub(crate) enum StatementChild {
     ForBody,
     ForInBody,
     LabelBody,
+    WithBody,
     SwitchBody { clause: usize, statement: usize },
 }
 
@@ -142,6 +144,7 @@ pub(crate) struct AsyncSwitchCursor {
 pub(crate) enum AsyncStatementFrame {
     Block(AsyncBlockCursor),
     Switch(AsyncSwitchCursor),
+    With(EnvironmentHandle),
     If,
     Try(AsyncTryCursor),
     Scope {
@@ -162,6 +165,7 @@ impl AsyncStatementFrame {
         match self {
             Self::Block(block) => Some(&block.environment),
             Self::Switch(cursor) => Some(&cursor.environment),
+            Self::With(environment) => Some(environment),
             Self::If => None,
             Self::Try(_) => None,
             Self::Scope { environment, .. } => Some(environment),
@@ -177,6 +181,7 @@ impl AsyncStatementFrame {
         let value = match self {
             Self::Block(block) => block.normal.as_ref(),
             Self::Switch(cursor) => Some(&cursor.value),
+            Self::With(_) => None,
             Self::If => None,
             Self::Try(cursor) => match cursor.pending.as_ref() {
                 Some(Ok(completion)) => completion.value.as_ref(),
@@ -205,6 +210,7 @@ impl AsyncStatementFrame {
             Self::ForIn(cursor) => cursor.iterator.object_handle(),
             Self::Block(_)
             | Self::Switch(_)
+            | Self::With(_)
             | Self::If
             | Self::Try(_)
             | Self::Scope { .. }
@@ -228,7 +234,7 @@ pub(crate) struct AsyncExecutionData {
     pub normal: Option<Value>,
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
-    pub var_target: Option<EnvironmentHandle>,
+    pub var_target: Option<Reference<'static>>,
     pub context: Option<AsyncExecutionContext>,
     pub span: Span,
 }
@@ -238,12 +244,14 @@ impl AsyncExecutionData {
         self.expression
             .iter()
             .flat_map(|expression| expression.symbols())
+            .chain(self.var_target.iter().flat_map(Reference::symbols))
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
         self.capability
             .values()
             .chain(&self.normal)
+            .chain(self.var_target.iter().flat_map(Reference::values))
             .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(
                 self.expression
@@ -256,6 +264,7 @@ impl AsyncExecutionData {
         self.frames
             .iter()
             .filter_map(AsyncStatementFrame::object)
+            .chain(self.var_target.iter().filter_map(Reference::object))
             .chain(
                 self.expression
                     .iter()
@@ -268,7 +277,7 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.environments())
             .chain(self.root_scope.iter())
-            .chain(&self.var_target)
+            .chain(self.var_target.iter().filter_map(Reference::environment))
             .chain(
                 self.frames
                     .iter()

@@ -1,6 +1,8 @@
 //! WithStatement and its Object Environment Record (14.11, 9.1.1.2).
 
-use crate::{Completion, Error, ExceptionKind, ObjectHandle, Realm, Value};
+use crate::{
+    Completion, Error, ExceptionKind, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
+};
 use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::ast::{Expr, Statement};
 
@@ -12,19 +14,29 @@ impl Realm {
         span: Span,
     ) -> Result<Completion, Error> {
         let value = self.expression(expression)?;
-        let Value::Object(object) = self.box_primitive(value, expression.span)? else {
+        self.enter_with_environment(value, expression.span, span)?;
+        // 14.11.2 restores the old environment on every completion, including
+        // host failures that bypass JavaScript catch/finally.
+        let result = self.statement(body);
+        self.scopes.pop();
+        result.map(|completion| completion.update_empty(Some(Value::Undefined)))
+    }
+
+    pub(crate) fn enter_with_environment(
+        &mut self,
+        value: Value,
+        expression_span: Span,
+        span: Span,
+    ) -> Result<EnvironmentHandle, Error> {
+        let Value::Object(object) = self.box_primitive(value, expression_span)? else {
             unreachable!("ToObject returns an object");
         };
         let outer = self.scopes.last().cloned();
         let environment = self.object_work(span, |objects, budget| {
             objects.create_with_environment(outer, object, budget)
         })?;
-        self.scopes.push(environment);
-        // 14.11.2 restores the old environment on every completion, including
-        // host failures that bypass JavaScript catch/finally.
-        let result = self.statement(body);
-        self.scopes.pop();
-        result.map(|completion| completion.update_empty(Some(Value::Undefined)))
+        self.scopes.push(environment.clone());
+        Ok(environment)
     }
 
     pub(super) fn with_has_binding(

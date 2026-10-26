@@ -1401,3 +1401,6 @@ mod promise_any;
 
 #[path = "cases/async_await_switch.rs"]
 mod async_await_switch;
+
+#[path = "cases/async_await_with.rs"]
+mod async_await_with;
