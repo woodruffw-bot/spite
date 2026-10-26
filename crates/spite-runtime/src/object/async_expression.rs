@@ -153,6 +153,7 @@ pub(crate) enum ExprTask {
         action: MemberAction,
         span: Span,
     },
+    DestructureApply(ExprPath),
     AssignmentApply {
         reference: Reference<'static>,
         left: Option<Value>,

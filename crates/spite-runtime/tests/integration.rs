@@ -8,6 +8,9 @@ mod async_await_labels;
 #[path = "cases/async_await_update.rs"]
 mod async_await_update;
 
+#[path = "cases/async_await_destructuring.rs"]
+mod async_await_destructuring;
+
 #[path = "cases/async_await_assignment.rs"]
 mod async_await_assignment;
 

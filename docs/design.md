@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including destructuring assignment, optional/super calls, object literals,
+including optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -519,6 +519,15 @@ the property key before numeric coercion, and existing writes preserve receivers
 private brands, strict failures and non-strict read-only behavior. Parentheses
 retain reference identity. Pending base/key ownership uses the established member
 state; the update action stores only its operator, prefix flag and source spans.
+
+Destructuring assignment supports awaited RHS values (13.15.5). The complete RHS
+precedes pattern reference resolution, computed names and property/iterator reads.
+The existing pattern evaluator performs nested/default/rest assignment and
+synchronous iterator closing, preserving default name inference, abrupt precedence
+and raw yielded Promise values. The expression returns its original RHS value.
+Its continuation stores an AST path; the existing expression value and statement
+completion owners retain the RHS through suspension. Awaits inside pattern keys,
+targets and defaults remain explicit gaps.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

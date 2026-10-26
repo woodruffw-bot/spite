@@ -60,6 +60,21 @@ not an alternative language specification.
 
 
 
+## Destructuring assignment with awaited RHS
+
+Eight Runtime groups cover nested array/object/rest patterns, RHS identity,
+post-RHS reference selection, computed names, default inference, iterator closing,
+raw yielded Promises, private/super/argument targets, completion-value collection
+and host abort. All 417 units and 2,039 non-RegExp integrations pass across 658
+Runtime case files; strict Clippy and Rust 1.88 checks pass. The continuation adds
+an AST path and reuses ordinary pattern evaluation and existing value owners.
+
+Complete reviews retain 36 passing/8 Unsupported await variants, 160 passing/102
+Unsupported Array/adapter variants and 188 passing update variants, with no other
+non-passing categories. No additional original qualifies. Inventories remain
+9,690 fixtures, twenty helpers, 9,671 reviewed sources, 18,762 variants and 579
+intrinsic entries. Helpers and quotas are unchanged.
+
 ## Suspended prefix/postfix updates
 
 Seven Runtime groups cover awaited targets, numeric postfix results, BigInt,

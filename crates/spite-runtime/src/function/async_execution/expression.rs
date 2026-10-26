@@ -24,6 +24,7 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::Await(_) => true,
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
+        ExprKind::DestructuringAssign { value, .. } => has_supported_await(value),
         ExprKind::Binary(_, left, right)
         | ExprKind::Assign(left, right)
         | ExprKind::CompoundAssign(_, left, right) => {
@@ -143,6 +144,7 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
                 | ExprKind::Assign(_, right)
                 | ExprKind::CompoundAssign(_, _, right),
             ) => right,
+            (ExprChild::Right, ExprKind::DestructuringAssign { value, .. }) => value,
             (ExprChild::ChainHead, ExprKind::BinaryChain { head, .. }) => head,
             (ExprChild::ChainRight(index), ExprKind::BinaryChain { steps, .. }) => {
                 &steps[*index].right
@@ -250,6 +252,7 @@ impl Realm {
                         ExprKind::Await(_)
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
+                        | ExprKind::DestructuringAssign { .. }
                         | ExprKind::Update { .. }
                         | ExprKind::Assign(..)
                         | ExprKind::CompoundAssign(..)
@@ -304,6 +307,11 @@ impl Realm {
                                         )?),
                                         span,
                                     )?;
+                                }
+                                ExprKind::DestructuringAssign { .. } => {
+                                    let value = child_path(&path, ExprChild::Right, span)?;
+                                    push(&mut state, ExprTask::DestructureApply(path), span)?;
+                                    push(&mut state, ExprTask::Evaluate(value), span)?;
                                 }
                                 ExprKind::Update {
                                     op,
@@ -713,6 +721,16 @@ impl Realm {
                         action,
                         span,
                     )?;
+                }
+                ExprTask::DestructureApply(path) => {
+                    let value = state.current.take().expect("destructuring RHS value");
+                    let ExprKind::DestructuringAssign { pattern, .. } =
+                        &expression_at(data, state.root, &path).kind
+                    else {
+                        unreachable!("destructuring source path")
+                    };
+                    self.destructuring_assignment(pattern, value.clone())?;
+                    state.current = Some(value);
                 }
                 ExprTask::AssignmentApply {
                     reference,

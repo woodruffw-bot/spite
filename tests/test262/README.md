@@ -30,6 +30,15 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited destructuring RHS review
+
+Eight Runtime groups cover deferred target selection, nested/default/rest patterns,
+original value identity, closing, context, collection and host abort. Complete
+reviews retain 36 passing/8 Unsupported await variants, 160 passing/102 Unsupported
+Array/adapter variants and 188 passing update variants. No additional unchanged
+original qualifies. Inventories remain 9,690 fixtures, twenty helpers, 9,671
+reviewed sources and 18,762 variants; helpers and quotas are unchanged.
+
 ## Shared prefix/postfix update fixtures
 
 All 108 complete positive originals from the four prefix/postfix increment and
