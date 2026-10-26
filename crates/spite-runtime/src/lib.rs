@@ -17,6 +17,7 @@ mod iterator_count;
 #[cfg(test)]
 mod loop_limit_tests;
 mod module;
+pub use module::ModuleHandle;
 mod optional_chain;
 mod private;
 mod reference;

@@ -1467,3 +1467,6 @@ mod async_generator_delegation;
 
 #[path = "cases/module_evaluation.rs"]
 mod module_evaluation;
+
+#[path = "cases/module_records.rs"]
+mod module_records;

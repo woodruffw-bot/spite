@@ -131,6 +131,7 @@ fn object_symbols(
         async_execution,
         generator,
         async_generator,
+        module_record,
         array_from_async,
         disposable_resources,
         raw_json: _,
@@ -207,6 +208,11 @@ fn object_symbols(
         }
     }
     if let Some(data) = array_from_async {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
+    if let Some(data) = module_record {
         for value in data.values() {
             visit(symbol(value))?;
         }

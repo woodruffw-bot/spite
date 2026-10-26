@@ -1,12 +1,22 @@
 //! Standalone Source Text Module environments and evaluation (16.2.1).
 
-use crate::{BindingState, Error, Realm, Value, environment::ThisBinding};
+use crate::{BindingState, Error, ObjectHandle, Realm, Value, environment::ThisBinding};
 use spite_core::Span;
 use spite_parser::{
     ast::{BindingPattern, BindingPatternKind, ExportKind, Module, StatementKind},
     parse_module, parse_module_with_source_limit,
 };
 use std::collections::BTreeMap;
+
+/// A retained Source Text Module record owned by one Realm.
+///
+/// Clones refer to the same record. The record, bindings and evaluation Promise
+/// remain reachable until the last handle is dropped. Dependency loading remains
+/// unsupported.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ModuleHandle {
+    root: crate::object::Root,
+}
 
 impl Realm {
     /// Parses and evaluates a fresh Module, returning its evaluation Promise.
@@ -18,18 +28,69 @@ impl Realm {
     ///
     /// Dependency loading remains unsupported.
     pub fn eval_module(&mut self, source: &str) -> Result<Value, Error> {
+        let module = self.create_module(source)?;
+        self.evaluate_module_record(&module)
+    }
+
+    /// Creates a retained Module record without executing its body.
+    pub fn create_module(&mut self, source: &str) -> Result<ModuleHandle, Error> {
         let module = match self.limits.max_source_bytes {
             Some(limit) => parse_module_with_source_limit(source, limit),
             None => parse_module(source),
         }
         .map_err(Error::Parse)?;
-        self.evaluate_module(&module)
+        self.create_module_from_ast(&module)
+    }
+
+    /// Creates a retained record from a validated Module, including UTF-16 input.
+    pub fn create_module_from_ast(&mut self, module: &Module) -> Result<ModuleHandle, Error> {
+        self.initialize_realm()?;
+        if !self.job_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
+        let root = self.object_work(Span::new(0, 0), |objects, budget| {
+            let record = objects.create_module_record(module.clone(), budget)?;
+            objects.root(&record, budget)
+        })?;
+        Ok(ModuleHandle { root })
     }
 
     /// Evaluates a fresh instance of a parsed Module in its own strict environment.
     ///
     /// See [`Self::eval_module`] for Promise handling and remaining boundaries.
     pub fn evaluate_module(&mut self, module: &Module) -> Result<Value, Error> {
+        let module = self.create_module_from_ast(module)?;
+        self.evaluate_module_record(&module)
+    }
+
+    /// Evaluates a retained record, reusing its original evaluation Promise.
+    ///
+    /// Repeated calls never replay its body, including after rejection or a host
+    /// abort. A host abort leaves the evaluation Promise unsettled. Object values
+    /// returned from this method remain unrooted; the Module handle retains the
+    /// Promise until its last clone is dropped.
+    pub fn evaluate_module_record(&mut self, module: &ModuleHandle) -> Result<Value, Error> {
+        let record = module.root.handle();
+        if let Some(promise) = self
+            .objects
+            .module_evaluation(record)
+            .map_err(Error::InvalidObject)?
+        {
+            return Ok(promise);
+        }
+        let source = self
+            .objects
+            .module_source(record)
+            .map_err(Error::InvalidObject)?
+            .clone();
+        self.evaluate_module_source(&source, record)
+    }
+
+    fn evaluate_module_source(
+        &mut self,
+        module: &Module,
+        record: &ObjectHandle,
+    ) -> Result<Value, Error> {
         if !module.imports().is_empty()
             || module.exports().iter().any(|export| {
                 matches!(
@@ -106,7 +167,7 @@ impl Realm {
             objects.environment_mut(&environment)?.this = Some(ThisBinding::Module);
             Ok(environment)
         })?;
-        self.evaluate_module_body(body, environment, default_export, span)
+        self.evaluate_module_body(body, environment, default_export, record, span)
     }
 
     pub(crate) fn prepare_module_default(

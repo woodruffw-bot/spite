@@ -30,6 +30,18 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Retained Module record verification
+
+Native Module handles now retain environment cells and the original evaluation
+Promise. Six Runtime groups verify identity, no body replay, rejection reasons,
+host aborts, host-root collection, foreign handles, lossless source and limits.
+Fresh source/AST evaluation remains independent. This host API increment adds no
+upstream files or execution credit.
+
+The inventory remains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources
+and 20,440 variants. The full gate and all forty-four runner/package checks pass.
+Existing originals, helpers, 591 intrinsic entries and resource allowances remain.
+
 ## Synthetic default Module export review
 
 The same eighty-original module review now reports 49 passed/32 Unsupported;

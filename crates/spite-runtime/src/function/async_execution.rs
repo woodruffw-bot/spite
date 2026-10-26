@@ -160,6 +160,7 @@ impl Realm {
         body: spite_parser::ast::FunctionBody,
         root: crate::environment::EnvironmentHandle,
         default_export: Option<usize>,
+        record: &ObjectHandle,
         span: Span,
     ) -> Result<Value, Error> {
         let context = crate::object::source_context::SourceExecutionContext {
@@ -174,7 +175,13 @@ impl Realm {
             // Module functions are lexical and initialized before body entry.
             realm.instantiate(body.statements().iter(), false, true)?;
             realm.prepare_module_default(&body, &root, default_export)?;
+            realm.object_work(span, |objects, budget| {
+                objects.store_module_environment(record, root.clone(), budget)
+            })?;
             realm.call_async_body(span, |realm, capability, _| {
+                realm.object_work(span, |objects, budget| {
+                    objects.begin_module_evaluation(record, capability.promise.clone(), budget)
+                })?;
                 let data = new_execution_data(
                     ArrowBody::Block(body),
                     SourceFunctionMode::Module {

@@ -484,7 +484,19 @@ Promise, with explicit host job draining and native Promise-state inspection.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Dependency requests stop before body effects.
-Module records, graph linking/caching, namespaces and import.meta remain work.
+Graph linking/caching, namespaces and import.meta remain work.
+
+ModuleHandle retains a realm-owned Source Text Module record through an ordinary
+host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
+without body evaluation. evaluate_module_record instantiates its environment and
+caches the intrinsic evaluation Promise before entering the body. Subsequent
+calls return that same Promise through pending, fulfillment and rejection, so
+effects and binding initialization do not repeat. Host aborts leave the cached
+Promise unsettled without replaying the body. eval_module/evaluate_module keep
+their fresh-instance behavior by creating a new record per call. Records trace
+their environment and Promise; cloned handles share a root token and dropping
+the last token permits ordinary collection. Handles from another realm are
+rejected. Heap fields store handles rather than host root tokens.
 
 Synthetic default exports retain a *default* Module binding (16.2.1, 16.2.3).
 Anonymous hoistable declarations initialize this cell during Module instantiation

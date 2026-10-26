@@ -56,11 +56,31 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises and synthetic default exports; graph loading remains Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports and retained record identity; graph loading remains Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20440 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Retained Source Text Module records
+
+ModuleHandle owns a host root for a realm-owned record. create_module and
+create_module_from_ast retain syntax without body evaluation; evaluate_module_record
+caches its environment and intrinsic evaluation Promise. Repeated calls return
+that same Promise and run the body once, including pending and rejected records.
+Host aborts keep an unsettled Promise and skip body replay. Existing eval_module
+and evaluate_module AST calls still create fresh records. Clones share retention;
+foreign-realm handles fail validation and the last dropped handle permits collection.
+
+Six Runtime groups cover identity/fresh records, pending/rejected reasons, host
+aborts, environment and rejection-value GC, UTF-16/ownership and source limits.
+All 421 units and 2,269 non-RegExp integrations pass across 689 case files, with
+thirteen CLI groups. Parser coverage remains 18/434 across 88 files. Clippy, Rust
+1.88 and inventories pass. No new upstream execution credit is claimed; the
+inventory remains 10,657 fixtures, twenty-two helpers, 10,638 reviewed sources and
+20,440 variants. The full gate and all forty-four runner/package checks pass.
+Intrinsic entries remain 591; helpers, dependencies and resource allowances stay
+unchanged. Dependency graphs and namespaces remain implementation work.
 
 ## Synthetic default Module exports
 
