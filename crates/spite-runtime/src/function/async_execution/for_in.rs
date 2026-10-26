@@ -5,7 +5,6 @@ use crate::{
     Completion, Error, Realm, Value,
     object::async_execution::{AsyncStatementFrame, StatementChild},
 };
-use spite_parser::ast::StatementKind;
 
 impl Realm {
     pub(super) fn async_for_in_step(
@@ -35,22 +34,8 @@ impl Realm {
             };
             return Ok(Step::Complete(Completion::normal(Some(cursor.value))));
         };
-        let Some(AsyncStatementFrame::ForIn(cursor)) = data.frames.last() else {
-            unreachable!("for-in binding frame")
-        };
-        let StatementKind::ForIn { binding, .. } =
-            &active_statement(&data.body, Some(&cursor.location)).kind
-        else {
-            unreachable!("for-in binding source")
-        };
-        self.initialize_async_iteration_binding(
-            &mut data.frames,
-            binding,
-            Value::String(key),
-            span,
-        )?;
         data.next = body;
-        Ok(Step::Continue)
+        self.initialize_async_iteration(data, Value::String(key), span)
     }
 
     pub(super) fn advance_async_for_in(

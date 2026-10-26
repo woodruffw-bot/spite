@@ -748,6 +748,15 @@ resource disposal precede closing. The iterator handle, cached next, loop value
 and pending return/throw values participate in tracing and the physical Symbol
 inventory. No expression or statement is replayed across an iterator Await.
 
+Assignment heads in for-of, for-in and for-await-of can await member bases and
+computed keys after acquiring each iteration value. They reuse the member
+Reference evaluator and PutValue without reading the target. One traced source
+state value retains the input until the reference completes; the root action
+clears it and continues into the body without replacing the loop's completion
+value. Abrupt target evaluation clears the input before catch/finally processing.
+Iterator closing, internal enumeration and private/super references retain their
+existing rules. Empty inputs do not evaluate their assignment targets.
+
 For-in loops support awaited RHS expressions and bodies (14.7.5.6–10). Ordinary
 and suspended execution share one internal enumeration state: the current object,
 its snapshotted own string keys and the visited names. Descriptors remain live

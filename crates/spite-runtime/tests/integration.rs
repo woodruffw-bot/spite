@@ -1410,3 +1410,6 @@ mod for_await_grammar;
 
 #[path = "cases/for_await.rs"]
 mod for_await;
+
+#[path = "cases/async_iteration_targets.rs"]
+mod async_iteration_targets;

@@ -32,6 +32,7 @@ pub(crate) enum AsyncAwaitAction {
     ForAwaitNext,
     ForAwaitClose,
     IterationSource,
+    IterationBinding,
     Binding { element: usize },
 }
 
@@ -265,6 +266,7 @@ pub(crate) struct AsyncExecutionData {
     pub pending: AsyncAwaitAction,
     pub root_scope: Option<EnvironmentHandle>,
     pub var_target: Option<Reference<'static>>,
+    pub iteration_value: Option<Value>,
     pub context: Option<AsyncExecutionContext>,
     pub span: Span,
 }
@@ -281,6 +283,7 @@ impl AsyncExecutionData {
         self.capability
             .values()
             .chain(&self.normal)
+            .chain(&self.iteration_value)
             .chain(self.var_target.iter().flat_map(Reference::values))
             .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(

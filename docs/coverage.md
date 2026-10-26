@@ -60,6 +60,24 @@ not an alternative language specification.
 
 
 
+## Awaited iteration assignment targets
+
+Seven Runtime groups and a Symbol ownership control cover value-before-target
+ordering, awaited bases/keys, key conversion, writes without reads, live for-in
+enumeration, raw async input values, private/super receivers, empty inputs,
+rejection/closing, collection and host abort. All 417 units and 2,126 non-RegExp
+integrations pass across 670 Runtime case files; Clippy and Rust 1.88 checks pass.
+The existing Reference evaluator handles targets; one traced input value is
+cleared before body execution or outer abrupt-completion handling. Parser totals
+remain 18 units and 361 integrations across 76 case files.
+
+Complete reviews remain core 28 passing/7 Unsupported, declaration patterns 214
+passing/8 Unsupported/9 unverified syntax, Array/adapter 168 passing/94 Unsupported,
+await 36 passing/8 Unsupported and update 188 passing variants. No additional
+whole original qualifies. Inventories remain 9,825 fixtures, twenty helpers,
+9,806 reviewed sources, 19,012 variants and 579 intrinsic entries. Helpers and
+quotas are unchanged.
+
 ## For-await-of execution and asynchronous iterator closing
 
 Thirteen Runtime groups and four Symbol ownership controls cover async/sync

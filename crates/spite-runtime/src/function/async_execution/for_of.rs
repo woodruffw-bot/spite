@@ -5,7 +5,6 @@ use crate::{
     Completion, CompletionKind, Error, Realm, Value,
     object::async_execution::{AsyncStatementFrame, StatementChild},
 };
-use spite_parser::ast::StatementKind;
 
 impl Realm {
     pub(super) fn async_for_of_step(
@@ -38,17 +37,8 @@ impl Realm {
             };
             return Ok(Step::Complete(Completion::normal(Some(cursor.value))));
         };
-        let Some(AsyncStatementFrame::ForOf(cursor)) = data.frames.last() else {
-            unreachable!("for-of binding frame");
-        };
-        let StatementKind::ForOf { binding, .. } =
-            &active_statement(&data.body, Some(&cursor.location)).kind
-        else {
-            unreachable!("for-of binding source");
-        };
-        self.initialize_async_iteration_binding(&mut data.frames, binding, value, span)?;
         data.next = body;
-        Ok(Step::Continue)
+        self.initialize_async_iteration(data, value, span)
     }
 
     pub(super) fn advance_async_for_of(

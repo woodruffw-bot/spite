@@ -17,6 +17,7 @@ pub(crate) enum ExprRoot {
     LoopTest,
     ForHeader,
     IterationSource,
+    IterationTarget,
     Binding { element: usize },
 }
 
@@ -81,6 +82,7 @@ impl InvocationTarget {
 
 #[derive(Debug)]
 pub(crate) enum MemberAction {
+    IterationAssignment,
     Value,
     OptionalBase {
         path: ExprPath,
@@ -119,6 +121,7 @@ pub(crate) struct OptionalCallCursor {
 #[derive(Debug)]
 pub(crate) enum ExprTask {
     Evaluate(ExprPath),
+    IterationTarget(ExprPath),
     Unary {
         op: UnaryOp,
         span: Span,

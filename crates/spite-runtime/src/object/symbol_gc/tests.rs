@@ -440,6 +440,10 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(()=>{let gate=new Promise(()=>{}),source={[Symbol.asyncIterator](){return this},next(){return{done:false,value:0}},return(){return gate}};(async()=>{for await(const x of source){throw key}})();return gate})()",
         ),
         (
+            "async iteration input across awaited target",
+            "(()=>{let gate=new Promise(()=>{}),values=[key],target={};(async()=>{for(target[await gate] of values){}})();values[0]=null;return gate})()",
+        ),
+        (
             "async switch input",
             "(()=>{let gate=new Promise(()=>{});(async()=>{switch(key){case await gate:break}})();return gate})()",
         ),

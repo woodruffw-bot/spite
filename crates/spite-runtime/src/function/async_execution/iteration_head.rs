@@ -12,7 +12,27 @@ use crate::{
     },
 };
 use spite_core::{Span, WellKnownSymbol};
-use spite_parser::ast::{ForBinding, StatementKind};
+use spite_parser::ast::{ArrowBody, Expr, ForBinding, StatementKind};
+
+fn iteration_binding<'a>(body: &'a ArrowBody, frames: &[AsyncStatementFrame]) -> &'a ForBinding {
+    let location = match frames.last() {
+        Some(AsyncStatementFrame::ForOf(cursor)) => &cursor.location,
+        Some(AsyncStatementFrame::ForIn(cursor)) => &cursor.location,
+        Some(AsyncStatementFrame::ForAwait(cursor)) => &cursor.location,
+        _ => unreachable!("iteration binding cursor"),
+    };
+    match &active_statement(body, Some(location)).kind {
+        StatementKind::ForOf { binding, .. } | StatementKind::ForIn { binding, .. } => binding,
+        _ => unreachable!("iteration binding source"),
+    }
+}
+
+pub(super) fn iteration_target(data: &AsyncExecutionData) -> &Expr {
+    let ForBinding::Assignment(target) = iteration_binding(&data.body, &data.frames) else {
+        unreachable!("awaited iteration assignment target")
+    };
+    target
+}
 
 impl Realm {
     pub(super) fn enter_async_iteration(
@@ -103,6 +123,27 @@ impl Realm {
         };
         // Popping the head reserved this slot before acquiring either iterator.
         data.frames.push(frame);
+        Ok(Step::Continue)
+    }
+
+    pub(super) fn initialize_async_iteration(
+        &mut self,
+        data: &mut AsyncExecutionData,
+        value: Value,
+        span: Span,
+    ) -> Result<Step, Error> {
+        let binding = iteration_binding(&data.body, &data.frames);
+        if let ForBinding::Assignment(target) = binding
+            && expression::has_supported_await(target)
+        {
+            data.iteration_value = Some(value);
+            return self.start_async_expression(
+                data,
+                ExprRoot::IterationTarget,
+                AsyncAwaitAction::IterationBinding,
+            );
+        }
+        self.initialize_async_iteration_binding(&mut data.frames, binding, value, span)?;
         Ok(Step::Continue)
     }
 

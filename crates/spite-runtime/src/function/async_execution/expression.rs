@@ -95,6 +95,9 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
                 _ => unreachable!("expression statement root"),
             }
         }
+        (ArrowBody::Block(_), ExprRoot::IterationTarget) => {
+            super::iteration_head::iteration_target(data)
+        }
         (ArrowBody::Block(_), ExprRoot::IterationSource) => {
             let Some(crate::object::async_execution::AsyncStatementFrame::IterationHead(head)) =
                 data.frames.last()
@@ -386,7 +389,12 @@ impl Realm {
             tasks: Vec::new(),
             current: None,
         };
-        push(&mut state, ExprTask::Evaluate(Vec::new()), span)?;
+        let task = if matches!(root, ExprRoot::IterationTarget) {
+            ExprTask::IterationTarget(Vec::new())
+        } else {
+            ExprTask::Evaluate(Vec::new())
+        };
+        push(&mut state, task, span)?;
         data.expression = Some(state);
         self.resume_async_expression(data, None)
     }
@@ -402,6 +410,12 @@ impl Realm {
         }
         while let Some(task) = state.tasks.pop() {
             match task {
+                ExprTask::IterationTarget(path) => self.begin_async_member(
+                    data,
+                    &mut state,
+                    path,
+                    MemberAction::IterationAssignment,
+                )?,
                 ExprTask::Evaluate(path) => {
                     let expression = expression_at(data, state.root, &path);
                     let span = expression.span;

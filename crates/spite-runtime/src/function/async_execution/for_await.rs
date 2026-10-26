@@ -9,7 +9,6 @@ use crate::{
     object::async_execution::{AsyncForAwaitPhase, AsyncStatementFrame, StatementChild},
 };
 use spite_core::{JsString, Span, WellKnownSymbol};
-use spite_parser::ast::StatementKind;
 
 impl Realm {
     pub(super) fn get_for_await_iterator(
@@ -96,17 +95,13 @@ impl Realm {
         // Async iterator values are raw. Only the sync adapter unwraps values.
         let value = self.get_property(&result, &JsString::from("value"), span)?;
         let body = child_location(&cursor.location, StatementChild::ForOfBody, span)?;
-        let StatementKind::ForOf { binding, .. } = &statement.kind else {
-            unreachable!("async for-of source")
-        };
         let Some(AsyncStatementFrame::ForAwait(cursor)) = data.frames.last_mut() else {
             unreachable!("async binding cursor")
         };
         // Binding failures close, unlike next/done/value failures.
         cursor.phase = AsyncForAwaitPhase::Body;
-        self.initialize_async_iteration_binding(&mut data.frames, binding, value, span)?;
         data.next = Some(body);
-        Ok(Step::Continue)
+        self.initialize_async_iteration(data, value, span)
     }
 
     pub(super) fn advance_async_for_await(

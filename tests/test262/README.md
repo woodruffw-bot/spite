@@ -30,6 +30,17 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Awaited iteration-target review
+
+Seven Runtime groups and a Symbol ownership control cover target evaluation,
+references, closing, collection and host isolation across all three iteration
+forms. Complete reviews remain core 28 passing/7 Unsupported, declaration patterns
+214 passing/8 Unsupported/9 unverified syntax, Array/adapter 168 passing/94
+Unsupported, await 36 passing/8 Unsupported and update 188 passing variants.
+No additional whole original qualifies. Inventories remain 9,825 fixtures, twenty
+helpers, 9,806 reviewed sources and 19,012 variants; helpers, quotas and intrinsic
+entries are unchanged.
+
 ## For-await-of execution review
 
 Admitted 131 byte-verified whole positive originals and 242 variants: ten core,

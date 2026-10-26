@@ -108,6 +108,7 @@ impl Realm {
             pending: AsyncAwaitAction::Discard,
             root_scope,
             var_target: None,
+            iteration_value: None,
             context: None,
             span,
         };
@@ -328,6 +329,10 @@ impl Realm {
                 .finish_async_for_await_close(data, Some(Ok(value)))
                 .map(Step::Complete),
             AsyncAwaitAction::ForHeader => self.finish_async_for_header(data, value),
+            AsyncAwaitAction::IterationBinding => {
+                data.iteration_value = None;
+                Ok(Step::Continue)
+            }
             AsyncAwaitAction::IterationSource => self.finish_async_iteration_source(data, value),
             AsyncAwaitAction::Binding { element } => {
                 self.async_binding_step(data, element, Some(value))

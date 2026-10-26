@@ -16,6 +16,7 @@ impl Realm {
             // and target environments through later completion handling.
             data.expression = None;
             data.var_target = None;
+            data.iteration_value = None;
             data.next = None;
         }
         loop {

@@ -108,6 +108,15 @@ impl Realm {
         // Edition 17 leaves computed keys unconverted in the Reference. Core
         // GetValue/Delete performs coercion after both base and key evaluation.
         match action {
+            MemberAction::IterationAssignment => {
+                let value = data
+                    .iteration_value
+                    .as_ref()
+                    .expect("pending iteration value")
+                    .clone();
+                self.put(reference, value, span)?;
+                state.current = Some(Value::Undefined);
+            }
             MemberAction::Value => state.current = Some(self.get(&mut reference, span)?),
             MemberAction::OptionalBase { path, action } => {
                 self.async_optional_step(data, state, path, 0, reference, *action)?
