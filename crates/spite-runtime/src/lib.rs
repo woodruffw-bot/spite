@@ -1647,6 +1647,12 @@ impl Realm {
                     self.expression(no)?
                 }
             }
+            ExprKind::ImportMeta => {
+                return Err(Self::unsupported(
+                    expr.span,
+                    "module import.meta evaluation is not implemented",
+                ));
+            }
             ExprKind::ImportCall { specifier, options } => {
                 let specifier = self.expression(specifier)?;
                 let options = if let Some(options) = options {

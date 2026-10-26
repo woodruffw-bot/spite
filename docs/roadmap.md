@@ -359,6 +359,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 ## 5. Modules and suspended execution
 
 - [ ] Add module parsing, linking, namespace objects, live bindings, and cycles.
+- [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

@@ -36,7 +36,7 @@ impl Parser {
                 return Err(early(token.span, "expected a class binding identifier"));
             };
             if reserved(&name)
-                || (name == "await" && !self.allow_await_identifier)
+                || (name == "await" && !self.await_identifier_allowed())
                 || (name == "yield" && !matches!(self.yield_context, YieldContext::None))
             {
                 return Err(early(token.span, "invalid class binding identifier"));

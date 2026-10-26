@@ -168,3 +168,6 @@ mod script_module_syntax;
 
 #[path = "import_call.rs"]
 mod import_call;
+
+#[path = "module_goal.rs"]
+mod module_goal;

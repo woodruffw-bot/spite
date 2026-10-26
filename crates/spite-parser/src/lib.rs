@@ -16,6 +16,7 @@ mod import_call;
 mod iteration;
 pub mod json;
 mod lexer;
+mod module;
 mod object;
 mod optional_chain;
 mod private;
@@ -29,6 +30,7 @@ pub use dynamic_function::{
     parse_dynamic_function_utf16, parse_dynamic_generator_function,
     parse_dynamic_generator_function_utf16,
 };
+pub use module::{parse_module, parse_module_utf16, parse_module_with_source_limit};
 pub use regexp::{
     RegExpNamedCapture, RegExpNamedReference, RegExpPatternMetadata, parse_regexp_pattern,
     validate_regexp_pattern,
@@ -228,6 +230,7 @@ struct Parser {
     allow_super_call: bool,
     allow_arguments: bool,
     allow_await_identifier: bool,
+    module_goal: bool,
     await_context: AwaitContext,
     yield_context: YieldContext,
     private_scopes: Vec<private::PrivateScope>,
@@ -270,10 +273,15 @@ impl Parser {
             allow_super_call: false,
             allow_arguments: true,
             allow_await_identifier: true,
+            module_goal: false,
             await_context: AwaitContext::None,
             yield_context: YieldContext::None,
             private_scopes: Vec::new(),
         })
+    }
+
+    fn await_identifier_allowed(&self) -> bool {
+        self.allow_await_identifier && !self.module_goal
     }
 
     fn current(&self) -> &Token {
@@ -732,7 +740,7 @@ impl Parser {
         match token.kind {
             Kind::Word(name)
                 if !reserved(&name)
-                    && (name != "await" || self.allow_await_identifier)
+                    && (name != "await" || self.await_identifier_allowed())
                     && (name != "yield" || matches!(self.yield_context, YieldContext::None)) =>
             {
                 Ok(Label {
@@ -752,6 +760,9 @@ impl Parser {
                 span,
                 "arguments is not allowed in class initialization",
             ));
+        }
+        if self.module_goal && matches!(&kind, ExprKind::Identifier(name) if name == "await") {
+            return Err(early(span, "await cannot be an identifier in Modules"));
         }
         if !self.allow_await_identifier
             && matches!(&kind, ExprKind::Identifier(name) if name == "await")
@@ -1410,8 +1421,16 @@ impl Parser {
                     Err(early(span, "super call requires a derived constructor"))
                 }
             }
-            Kind::Word(name) if name == "import" && self.at(".") => {
-                Err(early(span, "import.meta is only allowed in Modules"))
+            Kind::Word(name) if !token.escaped && name == "import" && self.at(".") => {
+                if !self.module_goal {
+                    return Err(early(span, "import.meta is only allowed in Modules"));
+                }
+                self.bump();
+                if !self.at("meta") || self.current().escaped {
+                    return Err(self.error("expected meta after import dot"));
+                }
+                let end = self.bump().span.end;
+                self.make_expr(ExprKind::ImportMeta, Span::new(span.start, end))
             }
             Kind::Word(_) => Err(early(span, "reserved word cannot begin an expression")),
             _ => Err(Diagnostic::new(
@@ -1476,6 +1495,7 @@ fn member_base(expr: &Expr) -> bool {
         ExprKind::Identifier(_)
             | ExprKind::This
             | ExprKind::NewTarget
+            | ExprKind::ImportMeta
             | ExprKind::Literal(_)
             | ExprKind::Object(_)
             | ExprKind::Array(_)
@@ -1671,6 +1691,7 @@ struct ControlContext {
 enum ScopeKind {
     Variable,
     Block,
+    Module,
 }
 
 // LexicallyDeclaredNames of a block includes its function declarations (8.2.6).
@@ -1703,7 +1724,9 @@ fn validate_scope<'a>(
     let mut var_names = BTreeSet::new();
     let mut declarations = Vec::new();
     for statement in statements {
-        if scope_kind == ScopeKind::Block || !matches!(statement.kind, StatementKind::Function(_)) {
+        if matches!(scope_kind, ScopeKind::Block | ScopeKind::Module)
+            || !matches!(statement.kind, StatementKind::Function(_))
+        {
             for (name, span) in block_lexical_names(statement) {
                 if !names.insert(name) {
                     return Err(early(span, "duplicate lexical binding"));

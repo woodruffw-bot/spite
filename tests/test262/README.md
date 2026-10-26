@@ -30,6 +30,16 @@ no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
 
+## Module parser goal foundation
+
+Distinct public Module parsing adds six Parser groups and a reviewed AST snapshot
+for strict module scope, nested contexts, await identifiers, ImportMeta, UTF-16 and
+source limits. The conformance runner still reports Module modes as Unsupported;
+this foundation adds no conformance credit. The inventory remains 10,102 fixtures,
+twenty helpers, 10,083 reviewed sources and 19,545 variants. Existing groups,
+helpers, quotas and intrinsic entries are unchanged. Static declarations, linking
+and Module execution remain separate implementation work.
+
 ## Dynamic import validation review
 
 Twelve unchanged runtime originals and two syntax negatives with reviewed exact

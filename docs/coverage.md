@@ -60,6 +60,29 @@ not an alternative language specification.
 
 
 
+## Public Module parser goal foundation
+
+The public Module AST is separate from Script execution input. UTF-8, lossless
+UTF-16 and opted-in source-limit entry points retain ordinary items, top-level
+Await and ImportMeta. Module code is strict, direct functions are lexical, and
+await remains reserved in identifiers and labels through nested ordinary code.
+Synchronous top-level using is permitted. Static import/export declarations stay
+Unsupported; nested static declarations are syntax errors.
+
+Six Parser groups and a reviewed AST snapshot cover goal-specific syntax, strict
+scope conflicts, nested contexts, await/property distinctions, declaration
+boundaries, UTF-16 preservation and source limits. All eighteen Parser units and
+394 Parser integrations pass across 82 Parser files. All 417 Runtime units, 2,229
+non-RegExp integrations and thirteen CLI groups pass across 683 Runtime files;
+Clippy, Rust 1.88, policy and inventories pass. Earlier Script behavior is retained.
+
+The conformance runner still rejects Module modes as Unsupported in this step.
+No Module result is credited through Script parsing. The inventory remains 10,102
+fixtures, twenty helpers, 10,083 reviewed sources and 19,545 variants; the full
+conformance gate and all forty runner/package checks pass. The 585-entry intrinsic
+inventory and all prior groups/quotas are unchanged. Static module
+records, linking, namespace/live bindings and execution remain implementation work.
+
 ## Dynamic import operand validation and Promise rejection
 
 EvaluateImportCall now evaluates both operands before creating an intrinsic

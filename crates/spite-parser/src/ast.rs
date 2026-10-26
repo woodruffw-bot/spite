@@ -3,6 +3,22 @@
 use spite_core::{JsString, Span};
 use std::{fmt, rc::Rc};
 
+/// A parsed Module body, distinct from Script execution input.
+///
+/// All Module code is strict. Static import/export declarations are an explicit
+/// parser boundary until their module records and binding semantics are added.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Module {
+    pub(crate) statements: Vec<Statement>,
+}
+
+impl Module {
+    /// Returns retained top-level statements in source order.
+    pub fn statements(&self) -> &[Statement] {
+        &self.statements
+    }
+}
+
 /// A parsed and validated Script. Constructed only by the parser.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Script {
@@ -885,6 +901,8 @@ pub enum ExprKind {
     This,
     /// The nearest non-arrow function environment's newTarget binding.
     NewTarget,
+    /// Module-context import.meta; the module host supplies its runtime object.
+    ImportMeta,
     /// An identifier reference.
     Identifier(String),
     /// A private brand check, whose right operand is a ShiftExpression (13.10).

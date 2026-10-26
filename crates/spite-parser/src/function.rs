@@ -27,13 +27,14 @@ impl Parser {
         } else {
             !generator
         };
-        let name_await_allowed = if require_name {
-            self.allow_await_identifier
-        } else {
-            !asynchronous
-        };
+        let name_await_allowed = !self.module_goal
+            && if require_name {
+                self.allow_await_identifier
+            } else {
+                !asynchronous
+            };
         if require_name
-            && !self.allow_await_identifier
+            && !self.await_identifier_allowed()
             && self
                 .token_at(name_index)
                 .is_some_and(|token| matches!(&token.kind, Kind::Word(name) if name == "await"))
@@ -212,7 +213,7 @@ impl Parser {
                 return Err(early(token.span, "invalid function parameter"));
             };
             if reserved(&name)
-                || (name == "await" && !self.allow_await_identifier)
+                || (name == "await" && !self.await_identifier_allowed())
                 || (name == "yield" && !matches!(self.yield_context, YieldContext::None))
             {
                 self.defer_cover_error(early(token.span, invalid_name))?;

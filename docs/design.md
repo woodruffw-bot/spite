@@ -82,6 +82,17 @@ tails. Preserve whether trivia contains a line terminator. Do not approximate AS
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
 
+Module parsing has a distinct public Module AST and UTF-8/lossless UTF-16 entry
+points (16.2). It validates strict code, treats direct functions as lexical names,
+retains top-level Await and ImportMeta, and permits synchronous top-level using.
+The immutable Module goal forbids await IdentifierReference/BindingIdentifier/labels
+even in nested non-async code (13.1.1). Function/arrow contexts still determine
+where AwaitExpression is permitted. ImportMeta inherits the source goal through
+nested functions; eval and dynamic constructors use their own Script goals.
+Static import/export ModuleItems remain explicit Unsupported boundaries; nested
+static declarations are syntax errors. No Module AST is accepted by Script
+execution APIs, and module linking/evaluation remain separate implementation work.
+
 Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a
 Module goal (13.3.1 early errors); direct eval and dynamic function source therefore
