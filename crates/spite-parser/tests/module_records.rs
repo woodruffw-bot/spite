@@ -4,6 +4,150 @@ use spite_core::JsString;
 use spite_parser::{ast::ImportName, parse_module};
 
 #[test]
+fn module_has_tla_finds_awaits_in_expressions_bindings_and_all_statement_positions() {
+    for source in [
+        "await 0",
+        "if(false){await 0}",
+        "while(false){await 0}",
+        "do{await 0}while(false)",
+        "for(await 0;false;){}",
+        "for(;await 0;){}",
+        "for(;;await 0){break}",
+        "for await(const x of []){}",
+        "for(const x of await source){}",
+        "for(const x in await source){}",
+        "for(value[await key] of []){}",
+        "for({x=value[await key]} of []){}",
+        "switch(await 0){}",
+        "switch(0){case await 0:break}",
+        "switch(0){default:await 0}",
+        "try{await 0}catch{}",
+        "try{}catch{await 0}",
+        "try{}finally{await 0}",
+        "throw await 0",
+        "label:{await 0}",
+        "let {x=await 0}=o",
+        "let {[await 0]:x}=o",
+        "let [,{x:[y=await 0]}]=o",
+        "({x=await 0}=o)",
+        "([obj[await 0]]=o)",
+        "({[await 0]:x}=o)",
+        "([...obj[await 0]]=o)",
+        "([{x=await 0}]=o)",
+        "({...obj[await 0]}=o)",
+        "(await value).x",
+        "obj[await key]",
+        "fn(await 0)",
+        "new C(await 0)",
+        "[...await source]",
+        "({...await source})",
+        "({[await key](){}})",
+        "`prefix${await 0}`",
+        "tag`${await 0}`",
+        "obj?.[await key]",
+        "obj?.(await 0)",
+        "import(await specifier)",
+        "import('m',await options)",
+        "false&&(await 0)",
+        "true?0:await 0",
+        "obj.x+=await 0",
+        "export default await 0",
+    ] {
+        assert!(
+            parse_module(source)
+                .unwrap_or_else(|error| panic!("{source}: {error:?}"))
+                .has_top_level_await(),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn module_has_tla_excludes_nested_functions_methods_arrows_and_textual_awaits() {
+    for source in [
+        "",
+        "'await 0';/* await 0 */",
+        "let awaitText='await';({await:1})",
+        "async function f(){await 0}",
+        "async function* f(){for await(let x of []){yield await x}}",
+        "const f=async()=>await 0",
+        "const f=async()=>{await 0}",
+        "function f(){return async()=>await 0}",
+        "export default async()=>await 0",
+        "({async f(){await 0},async *g(){yield await 0}})",
+        "class C{async f(){await 0};static async g(){await 0};x=async()=>await 0;static{async function f(){await 0}}}",
+        "export default async function(){await 0}",
+        "let {[async()=>await 0]:x}=o",
+        "import 'await' with {await:'await'};export * from 'await'",
+    ] {
+        assert!(
+            !parse_module(source)
+                .unwrap_or_else(|error| panic!("{source}: {error:?}"))
+                .has_top_level_await(),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn module_has_tla_checks_class_heritage_and_computed_names_without_entering_initializers() {
+    for source in [
+        "class C extends(await base){}",
+        "(class extends(await base){})",
+        "class C{[await key](){}}",
+        "class C{static [await key](){}}",
+        "class C{[await key]=async()=>await 0}",
+        "class C{static [await key]=0}",
+        "export default class{[await key](){}}",
+        "class C{[class{[await key](){}}](){}}",
+    ] {
+        assert!(
+            parse_module(source)
+                .unwrap_or_else(|error| panic!("{source}: {error:?}"))
+                .has_top_level_await(),
+            "{source}"
+        );
+    }
+    for source in [
+        "class C extends(async()=>await base){}",
+        "class C{[async()=>await key](){}}",
+        "class C{static x=class{async method(){await 0}}}",
+    ] {
+        assert!(
+            !parse_module(source).unwrap().has_top_level_await(),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn module_has_tla_handles_large_flat_trees_and_lossless_utf16_input_without_recursion() {
+    let expression = std::iter::repeat_n("0", 6000).collect::<Vec<_>>().join("+");
+    assert!(!parse_module(&expression).unwrap().has_top_level_await());
+    assert!(
+        parse_module(&format!("{expression}+await 0"))
+            .unwrap()
+            .has_top_level_await()
+    );
+    let statements = "void 0;".repeat(6000);
+    assert!(!parse_module(&statements).unwrap().has_top_level_await());
+    assert!(
+        parse_module(&format!("{statements}await 0"))
+            .unwrap()
+            .has_top_level_await()
+    );
+    let source = JsString::from("let text='\u{FFFD}';await 0");
+    let mut units = source.code_units().to_vec();
+    let position = units.iter().position(|unit| *unit == 0xfffd).unwrap();
+    units[position] = 0xd800;
+    assert!(
+        spite_parser::parse_module_utf16(&JsString::from_code_units(units))
+            .unwrap()
+            .has_top_level_await()
+    );
+}
+
+#[test]
 fn requests_follow_first_source_occurrence_and_compare_canonical_attributes() {
     let module = parse_module("export {} from 'b';import value from 'a';export * from 'c';import 'c';export {} from 'b' with {b:'2',a:'1'};import 'b' with {a:'1',b:'2'};export {} from 'b' with {a:'1',b:'3'};import('dynamic')").unwrap();
     let entries = module.entries();

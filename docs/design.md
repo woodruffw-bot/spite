@@ -113,6 +113,14 @@ validation and exported-name uniqueness still apply. Nested static declarations
 are syntax errors. Module dependency evaluation remains implementation work;
 no Module AST is accepted by Script execution APIs.
 
+Module::has_top_level_await implements Module Contains `await`, the HasTLA
+input to ParseModule and dependency evaluation (16.2.1). An explicit syntax stack
+includes for-await loops, unreachable statements, class heritage, computed names,
+and binding/assignment defaults. Functions/arrows and class bodies contribute
+only their specification-visible computed names. Field initializers and static
+blocks remain separate scopes. This query neither executes syntax nor changes
+parsing, AST identity, snapshots or execution behavior.
+
 Module::entries constructs the static records used by ParseModule (16.2).
 ModuleRequests are deduplicated by decoded specifier and canonical attributes in
 first source occurrence order across imports and reexports. Import entries retain

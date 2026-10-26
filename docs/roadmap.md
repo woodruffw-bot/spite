@@ -373,6 +373,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Load host-supplied dependency records through canonical source-ordered requests, iterative depth-first traversal, shared/cyclic record identities, atomic cache publication and traced dependency retention without body evaluation.
 - [x] Link host-provided Module graphs with stable records, live read-only imports, normalized namespace reexports, ambiguity checks and iterative cycle completion with active-group rollback.
 - [x] Cache one ordinary import.meta object per Module with default host hooks, defining-module identity across functions/classes and suspension, and traced record retention.
+- [x] Expose Module Contains await/HasTLA static semantics with iterative syntax traversal and the specification's function/class scope exclusions.
 - [ ] Evaluate linked Module graphs with dependency ordering, cycle completion, asynchronous dependencies and cached evaluation Promises.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.

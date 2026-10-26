@@ -62,6 +62,22 @@ not an alternative language specification.
 
 
 
+## Module top-level-await static semantics
+
+Module::has_top_level_await computes the Contains await result used by ParseModule
+for HasTLA. It includes for-await loops, unreachable code, class heritage,
+computed names and binding/assignment defaults. Nested functions/arrows, class
+initializers and static blocks are excluded. An explicit syntax stack handles
+large flat expression and statement lists without recursive native traversal.
+
+Four Parser groups cover expression/statement positions, scope exclusions,
+class semantics, lossless UTF-16 and large flat trees. Parser checks pass
+18 units and 438 integration groups across the existing 88 files, with unchanged
+snapshots. Workspace Clippy, Rust 1.88, 43 Test262 package controls and inventories
+pass. The query is not yet consumed by dependency evaluation; existing
+parse and execution paths are unchanged. The preceding full 20,447-variant gate
+remains the execution evidence; no new upstream credit is claimed.
+
 ## Per-record import.meta
 
 import.meta returns one cached ordinary object for each Module record. The
