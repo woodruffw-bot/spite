@@ -395,6 +395,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Suspend for-in RHS/body execution with shared live enumeration, lexical TDZ, fresh iteration bindings, labelled control and traced current objects.
 - [x] Suspend three-clause for headers/bodies with shared initializers, per-iteration let environments, labelled control and whole-loop using disposal.
 - [x] Resume simple/compound assignment with saved references, awaited member targets/RHS, logical short-circuiting, cached keys and shared PutValue.
+- [x] Resume prefix/postfix updates with awaited member targets and shared numeric conversion, key caching, BigInt arithmetic and writes.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.

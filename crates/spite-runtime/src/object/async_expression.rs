@@ -4,7 +4,7 @@ use super::async_execution::AsyncAwaitAction;
 use crate::{Reference, Value, environment::EnvironmentHandle, function::CallTarget};
 use spite_core::{JsSymbol, Span};
 use spite_heap::Handle;
-use spite_parser::ast::{BinaryOp, UnaryOp};
+use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum ExprRoot {
@@ -57,6 +57,12 @@ impl InvocationTarget {
 #[derive(Debug)]
 pub(crate) enum MemberAction {
     Value,
+    Update {
+        op: UpdateOp,
+        prefix: bool,
+        span: Span,
+        argument_span: Span,
+    },
     Assignment {
         path: ExprPath,
         op: Option<BinaryOp>,

@@ -23,6 +23,7 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
         ExprKind::Await(_) => true,
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
+        ExprKind::Update { argument, .. } => has_supported_await(argument),
         ExprKind::Binary(_, left, right)
         | ExprKind::Assign(left, right)
         | ExprKind::CompoundAssign(_, left, right) => {
@@ -123,7 +124,12 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
         expression = match (child, &expression.kind) {
             (
                 ExprChild::Inner,
-                ExprKind::Parenthesized(inner) | ExprKind::Await(inner) | ExprKind::Unary(_, inner),
+                ExprKind::Parenthesized(inner)
+                | ExprKind::Await(inner)
+                | ExprKind::Unary(_, inner)
+                | ExprKind::Update {
+                    argument: inner, ..
+                },
             ) => inner,
             (
                 ExprChild::Left,
@@ -244,6 +250,7 @@ impl Realm {
                         ExprKind::Await(_)
                         | ExprKind::Parenthesized(_)
                         | ExprKind::Unary(_, _)
+                        | ExprKind::Update { .. }
                         | ExprKind::Assign(..)
                         | ExprKind::CompoundAssign(..)
                         | ExprKind::Binary(..)
@@ -296,6 +303,24 @@ impl Realm {
                                             span,
                                         )?),
                                         span,
+                                    )?;
+                                }
+                                ExprKind::Update {
+                                    op,
+                                    argument,
+                                    prefix,
+                                } => {
+                                    let argument_path = child_path(&path, ExprChild::Inner, span)?;
+                                    self.begin_async_member(
+                                        data,
+                                        &mut state,
+                                        argument_path,
+                                        MemberAction::Update {
+                                            op: *op,
+                                            prefix: *prefix,
+                                            span,
+                                            argument_span: argument.span,
+                                        },
                                     )?;
                                 }
                                 ExprKind::Assign(..) => {

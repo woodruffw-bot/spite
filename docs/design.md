@@ -443,7 +443,7 @@ tasks and current results participate in object tracing and the physical Symbol 
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
 Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including updates, destructuring assignment, optional/super calls, object literals,
+including destructuring assignment, optional/super calls, object literals,
 pattern defaults and control flow. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
@@ -509,6 +509,16 @@ traced and validated, with each stored Symbol counted, including internal privat
 name identities. Abrupt RHS completion
 releases abandoned references before handler/finalizer processing; host failures
 retain their cleanup isolation.
+
+Prefix/postfix updates support awaited ordinary/private member bases and computed
+keys (13.4.2–5). Their continuations reuse member reference evaluation and share
+ordinary update execution: GetValue, ToNumeric, unit arithmetic and PutValue.
+Postfix returns the numeric old value, preserving BigInt and converting String
+inputs before selecting the result; prefix returns the new value. GetValue caches
+the property key before numeric coercion, and existing writes preserve receivers,
+private brands, strict failures and non-strict read-only behavior. Parentheses
+retain reference identity. Pending base/key ownership uses the established member
+state; the update action stores only its operator, prefix flag and source spans.
 
 The body cursor retains one active statement location. Expression and binding
 continuations locate their source through it instead of carrying duplicate

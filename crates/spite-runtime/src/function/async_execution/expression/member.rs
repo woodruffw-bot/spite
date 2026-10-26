@@ -87,6 +87,15 @@ impl Realm {
         // GetValue/Delete performs coercion after both base and key evaluation.
         match action {
             MemberAction::Value => state.current = Some(self.get(&mut reference, span)?),
+            MemberAction::Update {
+                op,
+                prefix,
+                span,
+                argument_span,
+            } => {
+                state.current =
+                    Some(self.update_reference(reference, op, prefix, span, argument_span)?)
+            }
             MemberAction::Assignment { path, op, span } => {
                 self.finish_async_assignment_target(data, state, reference, path, op, span)?
             }

@@ -1,10 +1,37 @@
 //! Unary value operations shared by synchronous and resumed expression evaluation.
 
 use crate::{Error, ExceptionKind, Realm, Reference, Value, value::to_uint32};
+use spite_bigint::BigInt;
 use spite_core::{JsString, Span};
-use spite_parser::ast::UnaryOp;
+use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};
 
 impl Realm {
+    pub(crate) fn update_reference(
+        &mut self,
+        mut reference: Reference<'_>,
+        op: UpdateOp,
+        prefix: bool,
+        span: Span,
+        argument_span: Span,
+    ) -> Result<Value, Error> {
+        // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
+        // PutValue. Postfix returns the numeric old value, not its input.
+        let old = self.get(&mut reference, argument_span)?;
+        let old = self.numeric(old, argument_span)?;
+        let one = if matches!(old, Value::BigInt(_)) {
+            Value::BigInt(BigInt::from(1))
+        } else {
+            Value::Number(1.0)
+        };
+        let operation = match op {
+            UpdateOp::Increment => BinaryOp::Add,
+            UpdateOp::Decrement => BinaryOp::Subtract,
+        };
+        let new = self.binary(operation, old.clone(), one, span)?;
+        self.put(reference, new.clone(), span)?;
+        Ok(if prefix { new } else { old })
+    }
+
     pub(crate) fn delete_reference(
         &mut self,
         reference: Reference<'_>,

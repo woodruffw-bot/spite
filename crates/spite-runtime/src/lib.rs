@@ -42,7 +42,7 @@ pub use value::{ConversionError, Value};
 
 use realm_object::Hint;
 use reference::Reference;
-use spite_bigint::{BigInt, BitwiseOp, Budget, Error as IntegerError};
+use spite_bigint::{BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
 use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
 use std::{
@@ -1632,23 +1632,8 @@ impl Realm {
                 argument,
                 prefix,
             } => {
-                // ECMA-262 13.4.2–13.4.5: GetValue and ToNumeric precede
-                // PutValue. Postfix returns the numeric old value, not its input.
-                let mut reference = self.reference(argument)?;
-                let old = self.get(&mut reference, argument.span)?;
-                let old = self.numeric(old, argument.span)?;
-                let one = if matches!(old, Value::BigInt(_)) {
-                    Value::BigInt(BigInt::from(1))
-                } else {
-                    Value::Number(1.0)
-                };
-                let operation = match op {
-                    UpdateOp::Increment => BinaryOp::Add,
-                    UpdateOp::Decrement => BinaryOp::Subtract,
-                };
-                let new = self.binary(operation, old.clone(), one, expr.span)?;
-                self.put(reference, new.clone(), expr.span)?;
-                if *prefix { new } else { old }
+                let reference = self.reference(argument)?;
+                self.update_reference(reference, *op, *prefix, expr.span, argument.span)?
             }
             ExprKind::Conditional(test, yes, no) => {
                 if self.expression(test)?.to_boolean() {

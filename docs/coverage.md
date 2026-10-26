@@ -60,6 +60,24 @@ not an alternative language specification.
 
 
 
+## Suspended prefix/postfix updates
+
+Seven Runtime groups cover awaited targets, numeric postfix results, BigInt,
+key caching, receiver/private behavior, read-only writes, for headers, collection
+and host abort. All 417 units and 2,031 non-RegExp integrations pass across 657
+Runtime case files; strict Clippy and Rust 1.88 checks pass. Updates reuse the existing member continuation owners and
+shared ordinary GetValue/ToNumeric/PutValue operation.
+
+All 108 complete positive originals from the four prefix/postfix increment and
+decrement directories pass all 188 required variants before and after extracting
+the shared operation. Their pinned Git blob hashes and manifest SHA-256 digests
+were verified. The 34 negative originals remain outside this positive review;
+eight are already in the reviewed corpus. Await and Array/adapter reviews remain
+at 36 passing/8 Unsupported and 160 passing/102 Unsupported variants respectively,
+with no other non-passing categories. Inventories contain 9,690 fixtures, twenty
+helpers, 9,671 reviewed sources, 18,762 variants and 579 intrinsic entries. Helpers
+and quotas are unchanged.
+
 ## Suspended assignment expressions
 
 Eleven Runtime groups, four Symbol ownership controls and a private-name collection
