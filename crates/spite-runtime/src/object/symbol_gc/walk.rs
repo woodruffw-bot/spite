@@ -130,6 +130,7 @@ fn object_symbols(
         async_disposal,
         async_execution,
         generator,
+        async_generator,
         array_from_async,
         disposable_resources,
         raw_json: _,
@@ -206,6 +207,11 @@ fn object_symbols(
         }
     }
     if let Some(data) = array_from_async {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
+    if let Some(data) = async_generator {
         for value in data.values() {
             visit(symbol(value))?;
         }

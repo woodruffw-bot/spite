@@ -8,6 +8,8 @@ pub(crate) enum AsyncResumeKind {
     DisposeResources,
     ArrayFromAsync,
     Execution,
+    AsyncGeneratorReturn,
+    AsyncGeneratorResumeReturn,
 }
 
 impl Realm {

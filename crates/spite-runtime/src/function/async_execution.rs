@@ -38,6 +38,8 @@ use spite_parser::ast::{ArrowBody, StatementKind};
 pub(super) enum AsyncBodyOutcome {
     Complete(Value),
     Suspended,
+    // Sync generators carry their iterator result; async generators carry the
+    // awaited value so CompleteStep creates its result after dequeuing.
     Yielded(Value),
 }
 
@@ -145,16 +147,11 @@ impl Realm {
         &mut self,
         body: spite_parser::ast::FunctionBody,
         root: crate::environment::EnvironmentHandle,
-        callee: ObjectHandle,
+        function: SourceFunctionMode,
         span: Span,
         state: ObjectHandle,
     ) -> Result<AsyncBodyOutcome, Error> {
-        let data = new_execution_data(
-            ArrowBody::Block(body),
-            SourceFunctionMode::Generator(callee),
-            Some(root),
-            span,
-        );
+        let data = new_execution_data(ArrowBody::Block(body), function, Some(root), span);
         self.drive_async_execution(data, Some(state), None, 1)
     }
 
@@ -219,7 +216,13 @@ impl Realm {
                     };
                     let generator = state.as_ref().expect("source generator state");
                     match self.object_work(span, |objects, budget| {
-                        objects.store_generator_execution(generator, Box::new(data), budget)
+                        if data.function.is_async_generator() {
+                            objects
+                                .store_async_execution(Some(generator), Box::new(data), budget)
+                                .map(|_| ())
+                        } else {
+                            objects.store_generator_execution(generator, Box::new(data), budget)
+                        }
                     }) {
                         Ok(()) => return Ok(AsyncBodyOutcome::Yielded(result)),
                         Err(error) => return Err(self.abort_async_execution(base, error)),
@@ -399,7 +402,8 @@ impl Realm {
                 Some(AsyncAwaitAction::Discard)
             }
             StatementKind::Return(Some(expression))
-                if expression::has_supported_await(expression) =>
+                if data.function.is_async_generator()
+                    || expression::has_supported_await(expression) =>
             {
                 Some(AsyncAwaitAction::Return)
             }
@@ -423,11 +427,25 @@ impl Realm {
     ) -> Result<Step, Error> {
         match action {
             AsyncAwaitAction::Discard => Ok(Step::Complete(Completion::normal(Some(value)))),
-            AsyncAwaitAction::Return => Ok(Step::Complete(Completion {
-                kind: CompletionKind::Return,
-                value: Some(value),
-                target: None,
-            })),
+            AsyncAwaitAction::Return if data.function.is_async_generator() => {
+                // ReturnStatement awaits its expression in async generators
+                // before finalizers run (14.10, GetGeneratorKind).
+                Ok(Step::Await(
+                    value,
+                    AsyncAwaitAction::AsyncGeneratorReturn,
+                    data.span,
+                ))
+            }
+            AsyncAwaitAction::AsyncGeneratorYield(span) => {
+                Ok(Step::Yield(value, AsyncAwaitAction::Expression, span))
+            }
+            AsyncAwaitAction::Return | AsyncAwaitAction::AsyncGeneratorReturn => {
+                Ok(Step::Complete(Completion {
+                    kind: CompletionKind::Return,
+                    value: Some(value),
+                    target: None,
+                }))
+            }
             AsyncAwaitAction::Throw => Err(Error::Thrown(value)),
             AsyncAwaitAction::WithObject => self.enter_async_with(data, value),
             AsyncAwaitAction::SwitchDiscriminant => self.enter_async_switch(data, value),
@@ -507,19 +525,20 @@ impl Realm {
             return Ok(Value::Undefined);
         };
         let context = data.context.take().expect("suspended source context");
-        let capability = data
-            .function
-            .promise()
-            .expect("async source capability")
-            .clone();
+        let asynchronous_generator = data.function.is_async_generator();
+        let capability = data.function.promise().cloned();
         let completion = if fulfilled {
             SourceResume::Value(value)
         } else {
             SourceResume::Throw(Error::Thrown(value))
         };
         let outcome = self.with_source_execution_context(context, |realm| {
-            realm.drive_async_execution(*data, Some(state), Some(completion), 1)
+            realm.drive_async_execution(*data, Some(state.clone()), Some(completion), 1)
         });
+        if asynchronous_generator {
+            return self.finish_async_generator_execution(state, outcome, span);
+        }
+        let capability = capability.expect("async source capability");
         match outcome {
             Ok(AsyncBodyOutcome::Yielded(_)) => unreachable!("async body cannot yield"),
             Ok(AsyncBodyOutcome::Suspended) => (),

@@ -12,6 +12,7 @@ mod array_buffer;
 mod arrow;
 mod async_execution;
 mod async_function;
+mod async_generator;
 mod async_iterator;
 pub(crate) mod async_native;
 mod atomics;
@@ -1616,6 +1617,13 @@ impl Realm {
                         async_native::AsyncResumeKind::Execution => {
                             self.resume_async_execution(state, fulfilled, value, span)
                         }
+                        async_native::AsyncResumeKind::AsyncGeneratorReturn => {
+                            self.resume_async_generator_return(state, fulfilled, value, span)
+                        }
+                        async_native::AsyncResumeKind::AsyncGeneratorResumeReturn => self
+                            .resume_async_generator_return_resumption(
+                                state, fulfilled, value, span,
+                            ),
                     };
                 }
                 Some(Callable::PromiseAggregateElement { fulfilled, .. }) => {

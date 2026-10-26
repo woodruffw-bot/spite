@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 10327 unmodified test fixtures and twenty-one harness files come from
+These 10424 unmodified test fixtures and twenty-one harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -29,6 +29,25 @@ with no new memory-limit or OOM events. Timed runs followed explicit prebuilds;
 no compiler activity was observed. No fixtures, assertions, profiles, native
 stacks, helpers, dependencies or JavaScript resource defaults change.
 
+
+## Async-generator instance review
+
+Ninety-seven unchanged originals add 170 variants for async-generator instances,
+ordinary yielded/awaited values, parameter/default/rest behavior, request ordering,
+language rejection and constructor paths. Eight syntax negatives retain exact
+reviewed original spans/messages for rest initializers, escaped async terminals
+and strict yield bindings. Every whole file passes all required modes.
+
+The scoped 92-original language review reports 158 passed/two Unsupported; the
+23-original constructor review reports 42 passed/four Unsupported. Other outcomes
+are zero. The three remaining originals need another realm and remain wholly
+excluded. Async yield delegation has no new execution credit in this increment.
+
+The inventory contains 10,424 fixtures, twenty-one helpers, 10,405 reviewed sources
+and 20,023 variants. Eleven Runtime groups and seven strong-owner controls cover
+queue/state behavior and capture release. Existing groups, helpers, 591 intrinsic
+entries and all resource defaults/allowances remain. The full gate and all
+forty-three runner/package checks pass.
 
 ## Async-generator function object review
 

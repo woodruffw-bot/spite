@@ -16,7 +16,7 @@ pub(crate) struct GeneratorStart {
 }
 
 impl GeneratorStart {
-    fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
+    pub(super) fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
         self.context
             .environments()
             .chain(std::iter::once(&self.root))

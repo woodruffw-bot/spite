@@ -110,8 +110,8 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Async-generator instances, module linking and evaluation remain
-implementation work; no Module AST is accepted by Script execution APIs.
+are syntax errors. Module linking and evaluation remain implementation work;
+no Module AST is accepted by Script execution APIs.
 
 Module::entries constructs the static records used by ParseModule (16.2).
 ModuleRequests are deduplicated by decoded specifier and canonical attributes in
@@ -407,7 +407,7 @@ and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
 declaration versus expression name rules, while ordinary nested functions,
 methods and arrows restore their own Await context. Cover-cache keys include
-that context. Async-generator instances remain Unsupported; awaited body
+that context. Async-generator instances retain call scopes and request queues; awaited body
 continuations use the shared source interpreter below. Async objects inherit the retained non-callable
 %AsyncFunction.prototype%, whose parent is %Function.prototype%. The hidden
 %AsyncFunction% constructor inherits %Function%. Constructor/prototype descriptors and the AsyncFunction
@@ -440,11 +440,25 @@ The hidden AsyncGeneratorFunction constructor, non-callable function prototype
 and async-generator prototype retain standard metadata and inherit the existing
 AsyncIteratorPrototype. Each function owns a prototype but has no [[Construct]].
 Dynamic calls/construction use the shared conversion, parsing and newTarget
-prototype pipeline. Calls perform parameter/declaration setup before the remaining
-instance-creation Unsupported boundary (15.6.2). Prototype methods reject
-unbranded receivers using fresh intrinsic Promises. Generic host-abort controls
+prototype pipeline. Calls perform parameter/declaration setup before creating a
+branded lazy instance (15.6.2). Prototype methods reject unbranded receivers using
+fresh intrinsic Promises. Generic host-abort controls
 reserve an explicit unavailable host name, independently of partial language
 features; ordinary production realms reserve no extra names.
+
+Async-generator requests serialize next/return/throw capabilities in a traced
+queue (27.6.3). Shared source contexts and the existing source interpreter retain
+body, binding, loop and protected-completion state. Async yields await their value;
+ReturnStatement awaits its expression before finalizers, and return resumptions
+await the supplied argument before injection. CompleteStep dequeues before
+creating/resolving the iterator result. The generator stays executing during the
+observable then lookup, so reentrant requests enqueue before execution continues.
+Initial/completed return requests use PromiseResolve and drain in order; initial
+throw skips the body. Await uses retained intrinsic Promises and internal reactions
+without species hooks. Host aborts clear source resources and request captures
+without JavaScript cleanup or rejection. Start contexts, request values/capabilities
+and shared VM state participate in object and Symbol tracing. Async yield
+delegation remains an explicit Unsupported boundary after operand evaluation.
 
 Synchronous generator methods share the method parser for object, class, static
 and private definitions. Computed names use the enclosing grammar context before

@@ -64,7 +64,10 @@ fn execution_work_limit_is_optional() {
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),
-        ("async function* gap(){};gap()", "Unsupported"),
+        (
+            "async function* gap(){yield*[]};gap().next()",
+            "Unsupported",
+        ),
         ("1n + 1", "TypeError"),
         ("1n / 0n", "RangeError"),
         ("throw 7", "uncaught 7"),
@@ -81,7 +84,7 @@ fn errors_have_a_failing_exit_status() {
         assert!(output.stdout.is_empty());
     }
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))
-        .args(["--eval", "async function* gap(){}"])
+        .args(["--eval", "async function* gap(){};gap();undefined"])
         .output()
         .unwrap();
     assert!(output.status.success());

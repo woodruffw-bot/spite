@@ -14,6 +14,8 @@ use spite_parser::ast::ArrowBody;
 pub(crate) enum AsyncAwaitAction {
     Discard,
     Return,
+    AsyncGeneratorReturn,
+    AsyncGeneratorYield(Span),
     Throw,
     Expression,
     IfTest,
@@ -259,18 +261,22 @@ impl AsyncStatementFrame {
 pub(crate) enum SourceFunctionMode {
     Async(PromiseCapability),
     Generator(Handle),
+    AsyncGenerator(Handle),
 }
 
 impl SourceFunctionMode {
+    pub(crate) fn is_async_generator(&self) -> bool {
+        matches!(self, Self::AsyncGenerator(_))
+    }
     pub(crate) fn promise(&self) -> Option<&PromiseCapability> {
         match self {
             Self::Async(capability) => Some(capability),
-            Self::Generator(_) => None,
+            Self::Generator(_) | Self::AsyncGenerator(_) => None,
         }
     }
     pub(crate) fn generator(&self) -> Option<&Handle> {
         match self {
-            Self::Generator(callee) => Some(callee),
+            Self::Generator(callee) | Self::AsyncGenerator(callee) => Some(callee),
             Self::Async(_) => None,
         }
     }

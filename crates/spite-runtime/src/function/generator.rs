@@ -166,25 +166,17 @@ impl Realm {
             // EvaluateGeneratorBody performs all declaration/parameter setup at
             // the call. Only the initialized body waits for the first next().
             let root = realm.prepare_function_body(body, span)?;
-            if asynchronous {
-                // 15.6.2 performs FDI before creating an async-generator instance.
-                return Err(Self::unsupported(
-                    span,
-                    "async generator instances are not implemented",
-                ));
-            }
             let prototype = realm.get_property(&callee, &JsString::from("prototype"), span)?;
             let prototype = match prototype {
                 Value::Object(prototype) => prototype,
                 _ => {
                     realm.check_function_realm(&callee, span)?;
-                    realm
-                        .intrinsics
-                        .as_ref()
-                        .expect("initialized")
-                        .generator
-                        .prototype
-                        .clone()
+                    let intrinsics = realm.intrinsics.as_ref().expect("initialized");
+                    if asynchronous {
+                        intrinsics.async_generator.prototype.clone()
+                    } else {
+                        intrinsics.generator.prototype.clone()
+                    }
                 }
             };
             let context = realm.capture_source_execution_context(
@@ -201,26 +193,16 @@ impl Realm {
             };
             realm
                 .object_work(span, |objects, budget| {
-                    objects.create_generator(&prototype, start, budget)
+                    if asynchronous {
+                        objects.create_async_generator(&prototype, start, budget)
+                    } else {
+                        objects.create_generator(&prototype, start, budget)
+                    }
                 })
                 .map(Value::Object)
         })?;
         debug_assert!(constructor.is_none());
         Ok(value)
-    }
-
-    pub(super) fn reject_async_generator_receiver(&mut self, span: Span) -> Result<Value, Error> {
-        // Until instance creation is implemented, every exposed receiver lacks
-        // async-generator slots. AsyncGeneratorValidate rejects a fresh Promise.
-        let capability = self.intrinsic_promise_capability(span)?;
-        let error = Self::exception(
-            ExceptionKind::TypeError,
-            span,
-            "receiver is not a source async generator",
-        );
-        let reason = self.language_exception_value(error)?;
-        self.call(capability.reject, Value::Undefined, vec![reason], span)?;
-        Ok(capability.promise)
     }
 
     pub(super) fn generator_resume(
@@ -274,7 +256,13 @@ impl Realm {
                 span: body_span,
             } = self.object_work(span, |objects, _| objects.take_generator_start(&generator))?;
             self.with_source_execution_context(context, |realm| {
-                realm.start_generator_execution(body, root, callee, body_span, generator.clone())
+                realm.start_generator_execution(
+                    body,
+                    root,
+                    crate::object::async_execution::SourceFunctionMode::Generator(callee),
+                    body_span,
+                    generator.clone(),
+                )
             })
         } else {
             let mut data = self.object_work(span, |objects, _| {

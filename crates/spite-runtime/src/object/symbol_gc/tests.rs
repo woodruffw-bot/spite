@@ -536,6 +536,34 @@ fn each_strong_holding_location_marks_when_live_and_is_counted_when_unreachable(
             "(new(class{#value=key;*g(){return this.#value}})).g()",
         ),
         (
+            "async generator suspended parameter",
+            "(async function*(x){return x})(key)",
+        ),
+        (
+            "async generator suspended strict receiver",
+            "(async function*(){'use strict';return this}).call(key)",
+        ),
+        (
+            "async generator suspended callee property",
+            "(()=>{let f=async function*(arguments){};f.kept=key;let result=f(0);f=null;return result})()",
+        ),
+        (
+            "async generator queued next value",
+            "(()=>{let iterator=(async function*(){})();iterator.return(new Promise(()=>{}));iterator.next(key);return iterator})()",
+        ),
+        (
+            "async generator queued return value",
+            "(()=>{let iterator=(async function*(){})();iterator.return(new Promise(()=>{}));iterator.return(key);return iterator})()",
+        ),
+        (
+            "async generator queued throw value",
+            "(()=>{let iterator=(async function*(){})();iterator.return(new Promise(()=>{}));iterator.throw(key);return iterator})()",
+        ),
+        (
+            "async generator awaiting parameter",
+            "(()=>{let iterator=(async function*(x){await new Promise(()=>{});return x})(key);iterator.next();return iterator})()",
+        ),
+        (
             "async catch array cached next",
             "(()=>{let gate=new Promise(()=>{}),next=(()=>{let value=key;return()=>({done:false,value:(value,undefined)})})(),iterator={next,return(){return{}}};(async()=>{try{throw{[Symbol.iterator](){return iterator}}}catch([x=await gate]){}})();iterator.next=null;next=null;return gate})()",
         ),

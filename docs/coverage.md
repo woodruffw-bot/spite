@@ -56,10 +56,40 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Async generator functions | Joint Await/Yield grammar, function/method objects and hidden constructor/prototype metadata, dynamic compilation, lossless source and parameter setup; instances remain Unsupported |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 19853 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions and traced scopes; async yield delegation remains Unsupported |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20023 reviewed Test262 variants, twenty-one pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async-generator instances and serialized requests
+
+Calls now create branded lazy instances after parameter/declaration setup.
+Next/return/throw requests carry fresh intrinsic Promise capabilities in a traced
+queue. The shared source interpreter handles awaits, yielded resumption values,
+binding/loop state, catch/finally and resource disposal. Yielded values and return
+expressions are awaited; return arguments await before entering finalizers.
+Dequeue precedes iterator-result resolution, and reentrant then getters enqueue
+while the generator stays executing. Initial/completed return requests await and
+drain in order; initial throw skips the body. Async yield delegation remains
+Unsupported after operand evaluation.
+
+Eleven Runtime groups cover lazy entry, FIFO values, initial/completed requests,
+return/finalizer timing, queued throws, language rejection, reentrant then lookup,
+private/this/super/binding contexts, async consumers/disposal, Symbol captures and
+host aborts. Seven strong-owner controls cover suspended parameter/receiver/callee
+and queued next/return/throw values, including unreachable cycles. All 417 Runtime
+units and 2,249 non-RegExp integrations pass across 686 files; thirteen CLI groups
+and thirteen runner probes pass. Clippy, Rust 1.88 and inventories pass. Parser
+coverage stays eighteen/434 across 88 files; intrinsic entries remain 591, with
+helpers and existing limits/allowances unchanged.
+
+The scoped 92-original language review reports 158 passed/two Unsupported, and the
+23-original constructor review reports 42 passed/four Unsupported. Other outcomes
+are zero. Ninety-seven complete originals add 170 variants, including eight exact
+syntax rejection reviews and six newly reachable constructor originals. The
+remaining three originals require another realm and stay wholly excluded. The
+corpus contains 10,424 fixtures, twenty-one helpers, 10,405 reviewed sources and
+20,023 variants. The full gate and all forty-three runner/package checks pass.
 
 ## Async-generator function objects and intrinsic graph
 

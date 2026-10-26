@@ -240,7 +240,12 @@ impl Realm {
             ),
             Builtin::AsyncGeneratorNext
             | Builtin::AsyncGeneratorReturn
-            | Builtin::AsyncGeneratorThrow => self.reject_async_generator_receiver(span),
+            | Builtin::AsyncGeneratorThrow => self.async_generator_resume(
+                this,
+                builtin,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Builtin::GeneratorFunction => self.dynamic_function(
                 spite_parser::ast::FunctionKind::Generator,
                 None,

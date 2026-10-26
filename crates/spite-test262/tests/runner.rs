@@ -246,6 +246,17 @@ fn unsupported_and_limits_are_never_negative_passes() {
     ));
     assert!(matches!(
         negative("runtime", "TypeError", "async function* f() {};f()"),
+        Outcome::Failed {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
+    assert!(matches!(
+        negative(
+            "runtime",
+            "TypeError",
+            "async function* f(){yield*[]};f().next()"
+        ),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..

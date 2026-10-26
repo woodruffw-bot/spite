@@ -1,6 +1,6 @@
 //! Async-generator function objects and hidden intrinsic metadata (15.6, 27.4–6).
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
+use spite_runtime::{PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
     assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
@@ -91,22 +91,21 @@ fn prototype_methods_reject_unbranded_receivers_with_fresh_intrinsic_promises() 
 }
 
 #[test]
-fn calls_perform_parameter_setup_before_the_remaining_instance_boundary() {
+fn calls_perform_parameter_setup_without_entering_the_body() {
     let mut realm = Realm::default();
     realm
         .eval("let effects=0,body=0,caught=0,finalized=0;async function*g(x=(effects=3)){body++}")
         .unwrap();
-    assert!(matches!(
-        realm.eval("try{g()}catch{caught++}finally{finalized++}"),
-        Err(Error::Unsupported { .. })
-    ));
+    realm
+        .eval("try{g()}catch{caught++}finally{finalized++}")
+        .unwrap();
     check(
         &mut realm,
-        "effects===3&&body===0&&caught===0&&finalized===0",
+        "effects===3&&body===0&&caught===0&&finalized===1",
     );
     check(
         &mut realm,
-        "async function*h({x}){body++}try{h({get x(){throw 7}})}catch(e){caught=e===7?1:2}finally{finalized++}caught===1&&finalized===1&&body===0",
+        "async function*h({x}){body++}try{h({get x(){throw 7}})}catch(e){caught=e===7?1:2}finally{finalized++}caught===1&&finalized===2&&body===0",
     );
 }
 

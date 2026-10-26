@@ -1444,6 +1444,9 @@ mod async_generator_syntax;
 #[path = "cases/async_generator_functions.rs"]
 mod async_generator_functions;
 
+#[path = "cases/async_generator_instances.rs"]
+mod async_generator_instances;
+
 #[path = "cases/generator_yield.rs"]
 mod generator_yield;
 

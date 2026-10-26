@@ -29,6 +29,7 @@ pub(crate) mod async_binding;
 mod async_dispose;
 pub(crate) mod async_execution;
 pub(crate) mod async_expression;
+pub(crate) mod async_generator;
 mod descriptor;
 mod disposable_stack;
 pub(crate) mod generator;
@@ -119,6 +120,7 @@ pub struct OrdinaryObject {
     async_disposal: Option<Box<async_dispose::AsyncDisposeData>>,
     async_execution: Option<Box<async_execution::AsyncExecutionData>>,
     generator: Option<Box<generator::GeneratorData>>,
+    async_generator: Option<Box<async_generator::AsyncGeneratorData>>,
     array_from_async: Option<Box<array_from_async::AsyncArrayData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
     raw_json: bool,
@@ -168,6 +170,7 @@ impl OrdinaryObject {
             async_disposal: None,
             async_execution: None,
             generator: None,
+            async_generator: None,
             array_from_async: None,
             disposable_resources: None,
             raw_json: false,
@@ -509,6 +512,7 @@ impl Trace for OrdinaryObject {
             .chain(self.async_disposal.iter().flat_map(|data| data.trace()))
             .chain(self.async_execution.iter().flat_map(|data| data.trace()))
             .chain(self.generator.iter().flat_map(|data| data.trace()))
+            .chain(self.async_generator.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
                 resources

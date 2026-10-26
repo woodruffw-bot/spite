@@ -771,6 +771,12 @@ impl Realm {
                 }
                 ExprTask::DelegateYield(span) => {
                     let value = state.current.take().expect("yield delegation operand");
+                    if data.function.is_async_generator() {
+                        return Err(Self::unsupported(
+                            span,
+                            "async generator yield delegation is not implemented",
+                        ));
+                    }
                     let iterator = self.binding_iterator(value, span)?;
                     state.delegation = Some(crate::object::async_expression::GeneratorDelegation {
                         iterator,
@@ -784,8 +790,15 @@ impl Realm {
                 }
                 ExprTask::Yield(span) => {
                     let value = state.current.take().expect("yield operand");
-                    let result = self.iterator_result(value, false, span)?;
                     data.expression = Some(state);
+                    if data.function.is_async_generator() {
+                        return Ok(Step::Await(
+                            value,
+                            AsyncAwaitAction::AsyncGeneratorYield(span),
+                            span,
+                        ));
+                    }
+                    let result = self.iterator_result(value, false, span)?;
                     return Ok(Step::Yield(result, AsyncAwaitAction::Expression, span));
                 }
                 ExprTask::Await(span) => {
