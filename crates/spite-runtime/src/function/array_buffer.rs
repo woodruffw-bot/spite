@@ -263,7 +263,7 @@ impl Realm {
         .map(Value::Object)
     }
 
-    fn array_buffer_work<T>(
+    pub(super) fn array_buffer_work<T>(
         &mut self,
         span: Span,
         work: impl FnOnce(&mut Objects, &mut Budget) -> Result<T, ArrayBufferError>,

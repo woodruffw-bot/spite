@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity and serialized monotonic grow; shared views and slicing remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow and TypedArray/DataView byte access; slicing and shared Atomics remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, pause's processor hint, and non-shared wait/waitAsync rejection |
@@ -59,9 +59,34 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20506 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20805 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Shared TypedArray and DataView access
+
+All twelve TypedArray constructors and DataView accept fixed/growable shared
+buffers. Indexed access, numeric codecs, iterators, callbacks, text conversions
+and raw copies reuse the ordinary-buffer algorithms. Fixed views keep their
+bounds, automatic views observe growth, and new bytes read as zero. Copies and
+overlapping moves preserve raw NaN payloads and shared backing identity.
+Shared Atomics, SharedArrayBuffer slicing and agents remain unsupported.
+
+Eight new integration groups cover element kinds, endianness, sparse-page
+boundaries, growth, overlapping set/copyWithin, species copies, codecs and
+integer-indexed integrity. Two new native groups verify concurrent cross-page
+access and failure recovery without poisoned locks or partial writes. All 490
+Runtime units and 2,289 non-RegExp integrations across 691 files pass; strict
+Clippy and Rust 1.88 checks pass with unchanged host limits.
+
+Seventy-four whole unchanged upstream originals add 148 required variants,
+including four shared-view cases deferred by the previous increment. All new
+Git blob/SHA-256 hashes match the existing pin. The 77-file candidate excludes
+three unsupported cross-realm host cases. Counts are 10,943 fixtures, twenty-two
+helpers, 10,862 reviewed sources and 20,805 variants. Existing originals, helpers,
+limits and worker counts are unchanged.
+The full corpus and all 62 package controls pass, together with CLI/raw smoke,
+Parser tests, formatting, dependency policy and fixture inventories.
 
 ## SharedArrayBuffer construction and growable lengths
 

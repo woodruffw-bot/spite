@@ -234,11 +234,11 @@ impl Realm {
             };
             let buffer = objects
                 .inspect(data.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray buffer");
             Ok(Some((
                 data.element_type(),
-                data.in_bounds_array_length(buffer).unwrap_or(0),
+                data.in_bounds_array_length(&buffer).unwrap_or(0),
             )))
         })?;
         let (element, length) = initial.ok_or_else(invalid)?;

@@ -103,9 +103,9 @@ impl Realm {
                 .expect("branded TypedArray");
             let buffer = objects
                 .inspect(&view.buffer)?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray buffer");
-            Ok(data.in_bounds_array_length(buffer))
+            Ok(data.in_bounds_array_length(&buffer))
         })?;
         length.ok_or_else(|| {
             Self::exception(
@@ -343,7 +343,9 @@ impl Realm {
             ));
         }
         let source_bytes = Self::typed_array_mutation_bytes(source.element, source_length, span)?;
-        let (source_buffer, source_start) = if source.buffer == target.buffer {
+        let (source_buffer, source_start) = if self.object_work(span, |objects, _| {
+            objects.same_buffer_data(&source.buffer, &target.buffer)
+        })? {
             // Snapshot the entire source view, for all same-buffer copies,
             // even nonoverlapping ranges or different element widths.
             let prototype = self

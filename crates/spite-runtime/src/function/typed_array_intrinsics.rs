@@ -469,13 +469,13 @@ impl Realm {
             };
             let buffer = objects
                 .inspect(data.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray's viewed buffer has ArrayBuffer slots");
             Ok(Some((
                 data.buffer().clone(),
                 data.element_type(),
                 data.byte_offset(),
-                data.in_bounds_array_length(buffer),
+                data.in_bounds_array_length(&buffer),
             )))
         })?;
         let Some((buffer, element, byte_offset, length)) = state else {

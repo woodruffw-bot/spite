@@ -460,7 +460,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 - [ ] Implement agents, SharedArrayBuffer, Atomics, and memory-model requirements.
 - [x] Construct branded SharedArrayBuffers with ordered conversion/prototype checks, fixed/growable length getters and serialized monotonic growth across shared backing identities.
-- [ ] Integrate shared byte storage with TypedArray/DataView, SharedArrayBuffer slicing, shared Atomics and agents.
+- [x] Integrate shared byte storage with TypedArray/DataView, live growable-buffer witnesses, numeric codecs and raw copies.
+- [ ] Implement SharedArrayBuffer slicing, shared Atomics and agents.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.

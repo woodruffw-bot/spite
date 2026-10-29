@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 10869 unmodified test fixtures and twenty-two harness files come from
+These 10943 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Shared TypedArray and DataView access
+
+Seventy-four whole unchanged originals add 148 required Script variants for
+shared-buffer constructor overloads, byte bounds, conversion order, prototype
+handling, shared identity and zero initialization. These include four files
+deferred by the previous increment. All Git blob/SHA-256 hashes match the same
+pin; three further candidate files need the unsupported cross-realm host.
+
+Counts are 10,943 fixtures, twenty-two helpers, 10,862 reviewed sources and
+20,805 variants. Existing sources, helpers, limits and worker counts are unchanged.
+Shared Atomics, slicing and agents remain implementation work.
 
 ## SharedArrayBuffer construction and growth
 

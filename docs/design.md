@@ -4266,9 +4266,9 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise reactions/combinators and SharedArrayBuffer construction run their
-algorithms. Shared buffer views and slicing retain explicit Unsupported results
-until shared byte access is available. Proxy algorithms are
+Promise reactions/combinators and SharedArrayBuffer construction and views run
+their algorithms. Shared slicing and shared Atomics retain explicit Unsupported
+results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4286,9 +4286,21 @@ is lost. JavaScript conversion finishes before locking, so reentrant growth is
 checked against the current length. Fixed buffers reject grow before conversion.
 The branded getters inspect no user properties, and the original intrinsic
 prototype survives global replacement. Poisoned native storage is a host failure.
-Shared TypedArray/DataView construction refuses before an ordinary-object
-fallback can create a misleading result. Shared bytes, slice, shared Atomics and
-agent integration remain implementation work. Multipebibyte eager-allocation
+Shared TypedArray/DataView construction uses the existing buffer algorithms and
+numeric codecs (23.2, 25.3, GetValueFromBuffer and SetValueInBuffer in 25.1).
+A buffer witness snapshots ordinary or shared length, detached state and
+resizability. Fixed views keep their bounds; automatic views observe growth and
+TypedArray lengths round down incomplete elements. Shared bytes use the same
+sparse data block as ordinary buffers, with byte operations and growth under one
+mutex. User conversion and callbacks run outside that lock. Numeric writes
+prepare all fallible page work before committing, and refusal releases the lock
+with existing bytes intact. Raw moves preserve overlap and NaN payloads. Copies
+between distinct stores snapshot the source range and release its lock before
+locking the target, preserving target changes outside the destination range.
+Backing identity detects aliasing even through cloned native shared handles.
+This serialized byte access does not implement shared Atomics or an agent host;
+shared Atomics explicitly refuse instead of composing separate reads and writes.
+Slice and agent integration remain implementation work. Multipebibyte eager-allocation
 assumptions do not define a default quota for the logical buffer domain.
 
 NewPromiseCapability (27.2.1.5) constructs through the supplied constructor and

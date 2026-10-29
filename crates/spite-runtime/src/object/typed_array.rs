@@ -5,8 +5,8 @@
 //! the normalized value is committed. Constructor algorithms live in the Realm.
 
 use super::{
-    ArrayBufferData, ArrayBufferError, Budget, DataProperty, DescriptorKind, Error, Objects,
-    Property, PropertyDescriptor,
+    ArrayBufferError, Budget, DataProperty, DescriptorKind, Error, Objects, Property,
+    PropertyDescriptor,
 };
 use crate::{Value, binary_data::ElementType, value::number_to_string};
 use spite_core::{JsString, PropertyKey, PropertyKeyRef};
@@ -41,7 +41,10 @@ impl TypedArrayData {
 
     /// IsTypedArrayOutOfBounds and TypedArrayLength from one live buffer state.
     /// Auto lengths round down; an incomplete trailing element is not exposed.
-    pub(crate) fn in_bounds_array_length(&self, buffer: &ArrayBufferData) -> Option<u64> {
+    pub(crate) fn in_bounds_array_length(
+        &self,
+        buffer: &impl super::array_buffer::BufferBounds,
+    ) -> Option<u64> {
         if buffer.is_detached() {
             return None;
         }
@@ -130,7 +133,7 @@ impl Objects {
         self.inspect(prototype)?;
         let buffer_data = self
             .inspect(buffer)?
-            .array_buffer_data()
+            .buffer_info()?
             .ok_or(Error::WrongKind)?;
         let data = TypedArrayData {
             buffer: buffer.clone(),
@@ -140,7 +143,7 @@ impl Objects {
         };
         if !byte_offset.is_multiple_of(element_type.size() as u64)
             || (array_length.is_none() && !buffer_data.is_resizable())
-            || data.in_bounds_array_length(buffer_data).is_none()
+            || data.in_bounds_array_length(&buffer_data).is_none()
         {
             return Err(Error::WrongKind);
         }
@@ -176,13 +179,13 @@ impl Objects {
             .ok_or(Error::WrongKind)?;
         let buffer = self
             .inspect(data.buffer())?
-            .array_buffer_data()
+            .buffer_info()?
             .ok_or(Error::WrongKind)?;
         Ok(index.is_finite()
             && index.trunc() == index
             && !index.is_sign_negative()
             && data
-                .in_bounds_array_length(buffer)
+                .in_bounds_array_length(&buffer)
                 .is_some_and(|length| index < length as f64))
     }
 
@@ -330,9 +333,9 @@ impl Objects {
         let data = record.typed_array_data().ok_or(Error::WrongKind)?;
         let buffer = self
             .inspect(data.buffer())?
-            .array_buffer_data()
+            .buffer_info()?
             .ok_or(Error::WrongKind)?;
-        let length = data.in_bounds_array_length(buffer).unwrap_or(0);
+        let length = data.in_bounds_array_length(&buffer).unwrap_or(0);
         let capacity = usize::try_from(length)
             .ok()
             .and_then(|length| length.checked_add(record.property_count()))

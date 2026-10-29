@@ -116,8 +116,12 @@ fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fall
 }
 
 #[test]
-fn shared_views_remain_host_failures_before_arraylike_fallbacks_or_language_cleanup() {
-    for operation in ["new Uint8Array(b)", "new DataView(b)", "b.slice(0,1)"] {
+fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
+    for operation in [
+        "Atomics.load(new Int32Array(b),0)",
+        "Atomics.wait(new Int32Array(b),0,0,0)",
+        "b.slice(0,1)",
+    ] {
         let mut realm = Realm::default();
         realm.eval("let b=new SharedArrayBuffer(4),flag=0,hits=0;Object.defineProperty(b,'length',{get(){hits++;throw 1}});Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}})").unwrap();
         let result = realm.eval(&format!(
@@ -136,4 +140,142 @@ fn shared_views_remain_host_failures_before_arraylike_fallbacks_or_language_clea
             ..
         })
     ));
+}
+
+#[test]
+fn shared_views_support_all_element_kinds_and_share_data_view_bytes() {
+    check(
+        r#"
+        for(let C of [Int8Array,Uint8Array,Uint8ClampedArray,Int16Array,Uint16Array,Int32Array,Uint32Array,Float16Array,Float32Array,Float64Array,BigInt64Array,BigUint64Array]){
+            let b=new SharedArrayBuffer(32),a=new C(b,0,2),zero=typeof a[0]==='bigint'?0n:0,one=typeof zero==='bigint'?1n:1;
+            if(a[0]!==zero||a[1]!==zero)throw C.name;
+            a[0]=one;
+            if(a[0]!==one||a.buffer!==b||a.byteLength!==2*C.BYTES_PER_ELEMENT||!ArrayBuffer.isView(a))throw 1;
+        }
+        let b=new SharedArrayBuffer(8),a=new Uint8Array(b),d=new DataView(b);
+        d.setUint16(0,0x1234);
+        if(a[0]!==0x12||a[1]!==0x34||d.getUint16(0,true)!==0x3412)throw 2;
+        a[2]=99;
+        d.getUint8(2)===99&&d.buffer===b&&ArrayBuffer.isView(d)
+    "#,
+    );
+}
+
+#[test]
+fn shared_growth_preserves_bytes_and_updates_auto_views_with_zero_filled_tails() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(4,{maxByteLength:16}),all=new Uint8Array(b);
+        all.set([3,4,5,6]);
+        let fixed=new Uint8Array(b,1,2),auto=new Uint8Array(b,1),df=new DataView(b,1,2),da=new DataView(b,1),words=new Uint16Array(b,2);
+        b.grow(11);
+        if(fixed.length!==2||auto.length!==10||df.byteLength!==2||da.byteLength!==10||words.length!==4)throw 1;
+        if(auto[0]!==4||auto[9]!==0||da.getUint8(9)!==0)throw 2;
+        b.grow(16);
+        if(all.length!==16||auto.length!==15||words.length!==7||da.byteLength!==15)throw 3;
+        all[15]=77;
+        auto[14]===77&&da.getUint8(14)===77&&Array.from(fixed).join(',')==='4,5'
+    "#,
+    );
+}
+
+#[test]
+fn shared_data_view_codecs_preserve_endianness_and_cross_sparse_page_boundaries() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(8192),d=new DataView(b);
+        for(let [kind,value] of [['Int8',-7],['Uint8',255],['Int16',-1234],['Uint16',54321],['Int32',-1234567],['Uint32',3456789],['Float16',1.5],['Float32',1.5],['Float64',1.5],['BigInt64',-7n],['BigUint64',255n]]){
+            for(let little of [false,true]){
+                d['set'+kind](4093,value,little);
+                if(d['get'+kind](4093,little)!==value)throw kind;
+            }
+        }
+        d.setFloat64(4093,-0,true);
+        if(!Object.is(d.getFloat64(4093,true),-0))throw 1;
+        d.setFloat64(4093,NaN,false);
+        Number.isNaN(d.getFloat64(4093,false))
+    "#,
+    );
+}
+
+#[test]
+fn shared_typed_arrays_support_iterators_callbacks_raw_moves_and_overlapping_set() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(16),a=new Uint8Array(b,0,4);a.set([4,1,3,2]);
+        if([...a].join(',')!=='4,1,3,2')throw 1;
+        if([...a.entries()].map(p=>p.join(':')).join(',')!=='0:4,1:1,2:3,3:2')throw 2;
+        a.reverse();a.sort();
+        if(a.join(',')!=='1,2,3,4'||a.map(x=>x*2).join(',')!=='2,4,6,8'||a.reduce((s,x)=>s+x,0)!==10)throw 3;
+        let sub=a.subarray(1,3);if(sub.buffer!==b||sub.join(',')!=='2,3')throw 4;
+        a.copyWithin(1,0,3);if(a.join(',')!=='1,1,2,3')throw 5;
+        a.set(a.subarray(0,3),1);
+        a.join(',')==='1,1,1,2'&&a.filter(x=>x===1).length===3
+    "#,
+    );
+}
+
+#[test]
+fn shared_raw_clones_and_species_copies_preserve_nan_payloads() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(8),d=new DataView(b),bits=0x7ff8000000000001n;
+        d.setBigUint64(0,bits,true);
+        let source=new Float64Array(b),clone=new Float64Array(source);
+        if(!(clone.buffer instanceof ArrayBuffer)||clone.buffer===b||new DataView(clone.buffer).getBigUint64(0,true)!==bits)throw 1;
+        if(new DataView(source.slice().buffer).getBigUint64(0,true)!==bits)throw 2;
+        source.constructor={[Symbol.species]:function(length){return new Float64Array(new SharedArrayBuffer(length*8))}};
+        let shared=source.slice();
+        shared.buffer instanceof SharedArrayBuffer&&shared.buffer!==b&&new DataView(shared.buffer).getBigUint64(0,true)===bits
+    "#,
+    );
+}
+
+#[test]
+fn shared_indexed_conversion_observes_growth_and_uint8_text_codecs_use_live_layouts() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(0,{maxByteLength:8}),a=new Uint8Array(b);
+        a[0]={valueOf(){b.grow(4);return 7}};
+        if(a[0]!==7||a.length!==4)throw 1;
+        b.grow(8);
+        let hex=a.setFromHex('0102030405060708');
+        if(hex.read!==16||hex.written!==8||a.toHex()!=='0102030405060708')throw 2;
+        let base=a.setFromBase64('CQoLDA==');
+        base.read===8&&base.written===4&&a.subarray(0,4).toBase64()==='CQoLDA=='&&a.toHex()==='090a0b0c05060708'
+    "#,
+    );
+}
+
+#[test]
+fn shared_views_ignore_arraylike_hooks_and_preserve_integer_indexed_integrity_rules() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(8,{maxByteLength:16}),hits=0;
+        Object.defineProperty(b,'length',{get(){hits++;throw 1}});
+        Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}});
+        let a=new Uint16Array(b),d=new DataView(b),fixed=new Uint8Array(b,0,1);
+        if(hits!==0||a.length!==4||d.byteLength!==8||Reflect.preventExtensions(a)||Reflect.preventExtensions(fixed))throw 3;
+        b.grow(16);if(a.length!==8||d.byteLength!==16)throw 4;
+        let f=new Uint8Array(new SharedArrayBuffer(4));
+        if(!Reflect.preventExtensions(f)||Object.isExtensible(f))throw 5;
+        f[0]=9;let desc=Object.getOwnPropertyDescriptor(f,'0');
+        desc.value===9&&desc.writable&&desc.enumerable&&desc.configurable&&!Reflect.deleteProperty(f,'0')
+    "#,
+    );
+}
+
+#[test]
+fn shared_and_ordinary_copy_directions_preserve_independent_values_and_conversion() {
+    check(
+        r#"
+        let source=new Uint8Array(new SharedArrayBuffer(8));source.set([1,2,3,4,5,6,7,8]);
+        let ordinary=new Uint8Array(source),target=new Uint8Array(new SharedArrayBuffer(8));
+        target.set(ordinary);if(target.join(',')!=='1,2,3,4,5,6,7,8')throw 1;
+        source[0]=9;target.set(source);
+        if(target[0]!==9||ordinary[0]!==1)throw 2;
+        let wider=new Uint16Array(source);
+        wider.length===8&&wider[0]===9&&wider.buffer instanceof ArrayBuffer&&wider[7]===8
+    "#,
+    );
 }

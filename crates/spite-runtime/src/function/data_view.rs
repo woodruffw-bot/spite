@@ -212,7 +212,7 @@ impl Realm {
         self.object_work(span, |objects, _| {
             Ok(objects
                 .inspect(buffer)?
-                .array_buffer_data()
+                .buffer_info()?
                 .map(|data| BufferState {
                     byte_length: data.byte_length(),
                     resizable: data.is_resizable(),
@@ -248,19 +248,6 @@ impl Realm {
         byte_length: Value,
         span: Span,
     ) -> Result<Value, Error> {
-        if let Value::Object(buffer) = &buffer
-            && self.object_work(span, |objects, _| {
-                Ok(objects
-                    .inspect(buffer)?
-                    .shared_array_buffer_data()
-                    .is_some())
-            })?
-        {
-            return Err(Self::unsupported(
-                span,
-                "shared-buffer DataView storage is not implemented",
-            ));
-        }
         let buffer = if let Value::Object(buffer) = buffer {
             if self.data_view_buffer_state(&buffer, span)?.is_some() {
                 buffer
@@ -352,10 +339,10 @@ impl Realm {
             let view = objects.inspect(view)?.data_view_data().expect("view slot");
             let buffer = objects
                 .inspect(view.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("viewed buffer slot");
             Ok(view
-                .in_bounds_byte_length(buffer)
+                .in_bounds_byte_length(&buffer)
                 .map(|length| ViewWitness {
                     buffer: view.buffer().clone(),
                     byte_offset: view.byte_offset(),

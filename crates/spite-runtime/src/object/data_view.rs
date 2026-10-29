@@ -1,6 +1,6 @@
 //! DataView internal slots and live buffer witnesses (25.3.1).
 
-use super::{ArrayBufferData, Error, Objects};
+use super::{Error, Objects};
 use spite_heap::Handle;
 
 #[derive(Debug)]
@@ -26,7 +26,10 @@ impl DataViewData {
 
     /// IsViewOutOfBounds and GetViewByteLength using a single live buffer state.
     /// Original slots remain intact so a view can recover after buffer growth.
-    pub(crate) fn in_bounds_byte_length(&self, buffer: &ArrayBufferData) -> Option<u64> {
+    pub(crate) fn in_bounds_byte_length(
+        &self,
+        buffer: &impl super::array_buffer::BufferBounds,
+    ) -> Option<u64> {
         if buffer.is_detached() {
             return None;
         }
@@ -50,7 +53,7 @@ impl Objects {
         self.inspect(prototype)?;
         let buffer_data = self
             .inspect(buffer)?
-            .array_buffer_data()
+            .buffer_info()?
             .ok_or(Error::WrongKind)?;
         let data = DataViewData {
             buffer: buffer.clone(),
@@ -60,7 +63,7 @@ impl Objects {
         // JavaScript performs its observable checks before calling storage. Keep
         // malformed internal records and foreign/stale edges out of the heap.
         if (byte_length.is_none() && !buffer_data.is_resizable())
-            || data.in_bounds_byte_length(buffer_data).is_none()
+            || data.in_bounds_byte_length(&buffer_data).is_none()
         {
             return Err(Error::WrongKind);
         }

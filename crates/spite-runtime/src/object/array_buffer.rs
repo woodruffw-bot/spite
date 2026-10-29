@@ -13,6 +13,74 @@ const MAX_BYTE_LENGTH: u64 = 9_007_199_254_740_991;
 const PAGE_SIZE: usize = 4096;
 const PAGE_SIZE_U64: u64 = 4096;
 
+pub(crate) trait BufferBounds {
+    fn byte_length(&self) -> u64;
+    fn is_detached(&self) -> bool;
+}
+
+/// One live length witness; shared buffers can grow after this snapshot.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct BufferInfo {
+    byte_length: u64,
+    detached: bool,
+    resizable: bool,
+    pub shared: bool,
+}
+
+impl BufferInfo {
+    pub(crate) fn byte_length(&self) -> u64 {
+        self.byte_length
+    }
+    pub(crate) fn is_detached(&self) -> bool {
+        self.detached
+    }
+    pub(crate) fn is_resizable(&self) -> bool {
+        self.resizable
+    }
+}
+
+impl BufferBounds for BufferInfo {
+    fn byte_length(&self) -> u64 {
+        self.byte_length
+    }
+    fn is_detached(&self) -> bool {
+        self.detached
+    }
+}
+
+impl BufferBounds for ArrayBufferData {
+    fn byte_length(&self) -> u64 {
+        self.byte_length()
+    }
+    fn is_detached(&self) -> bool {
+        self.is_detached()
+    }
+}
+
+impl super::OrdinaryObject {
+    pub(crate) fn buffer_info(&self) -> Result<Option<BufferInfo>, Error> {
+        if let Some(data) = self.array_buffer_data() {
+            return Ok(Some(BufferInfo {
+                byte_length: data.byte_length(),
+                detached: data.is_detached(),
+                resizable: data.is_resizable(),
+                shared: false,
+            }));
+        }
+        if let Some(data) = self.shared_array_buffer_data() {
+            let (byte_length, maximum) =
+                data.metadata().map_err(|_| Error::PoisonedSharedStorage)?;
+            return Ok(Some(BufferInfo {
+                byte_length,
+                detached: false,
+                resizable: maximum.is_some(),
+                shared: true,
+            }));
+        }
+        Ok(None)
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ArrayBufferError {
     Storage(Error),
@@ -213,7 +281,10 @@ pub(crate) struct ArrayBufferData {
 }
 
 impl ArrayBufferData {
-    fn new(byte_length: u64, max_byte_length: Option<u64>) -> Result<Self, ArrayBufferError> {
+    pub(super) fn new(
+        byte_length: u64,
+        max_byte_length: Option<u64>,
+    ) -> Result<Self, ArrayBufferError> {
         if byte_length > MAX_BYTE_LENGTH
             || max_byte_length.is_some_and(|max| max > MAX_BYTE_LENGTH || byte_length > max)
         {
@@ -246,183 +317,19 @@ impl ArrayBufferData {
         self.max_byte_length.is_some()
     }
 
-    fn block(&self) -> Result<&ByteDataBlock, ArrayBufferError> {
-        self.block.as_ref().ok_or(ArrayBufferError::Detached)
-    }
-
-    fn check_range(&self, start: u64, count: u64) -> Result<(), ArrayBufferError> {
+    pub(super) fn grow_shared(&mut self, new_length: u64) -> Result<(), ArrayBufferError> {
         self.block()?;
-        if start
-            .checked_add(count)
-            .is_none_or(|end| end > self.byte_length)
-        {
+        let maximum = self.max_byte_length.ok_or(ArrayBufferError::NotResizable)?;
+        if new_length < self.byte_length || new_length > maximum {
             return Err(ArrayBufferError::OutOfBounds);
         }
+        self.byte_length = new_length;
         Ok(())
-    }
-}
-
-impl Objects {
-    pub(crate) fn create_array_buffer(
-        &mut self,
-        prototype: &Handle,
-        byte_length: u64,
-        max_byte_length: Option<u64>,
-        budget: &mut Budget,
-    ) -> Result<Handle, ArrayBufferError> {
-        let data = ArrayBufferData::new(byte_length, max_byte_length)?;
-        budget.charge(1)?;
-        let buffer = self.create(Some(prototype))?;
-        self.object_mut(&buffer)?.array_buffer = Some(data);
-        Ok(buffer)
-    }
-
-    fn array_buffer(&self, buffer: &Handle) -> Result<&ArrayBufferData, ArrayBufferError> {
-        self.inspect(buffer)?
-            .array_buffer_data()
-            .ok_or(Error::WrongKind.into())
-    }
-
-    fn array_buffer_mut(
-        &mut self,
-        buffer: &Handle,
-    ) -> Result<&mut ArrayBufferData, ArrayBufferError> {
-        self.object_mut(buffer)?
-            .array_buffer
-            .as_mut()
-            .ok_or(Error::WrongKind.into())
-    }
-
-    pub(crate) fn resize_array_buffer(
-        &mut self,
-        buffer: &Handle,
-        new_length: u64,
-        budget: &mut Budget,
-    ) -> Result<(), ArrayBufferError> {
-        let data = self.array_buffer(buffer)?;
-        let max = data.max_byte_length.ok_or(ArrayBufferError::NotResizable)?;
-        let block = data.block()?;
-        if new_length > max {
-            return Err(ArrayBufferError::OutOfBounds);
-        }
-        budget.charge(1)?;
-        let retained = block
-            .pages
-            .partition_point(|page| page.index < new_length.div_ceil(PAGE_SIZE_U64));
-        let has_partial_page = retained.checked_sub(1).is_some_and(|last| {
-            !new_length.is_multiple_of(PAGE_SIZE_U64)
-                && block.pages[last].index == new_length / PAGE_SIZE_U64
-        });
-        budget.charge(block.pages.len() - retained)?;
-        if has_partial_page {
-            budget.charge(PAGE_SIZE - page_offset(new_length))?;
-        }
-        let data = self.array_buffer_mut(buffer)?;
-        let block = data.block.as_mut().expect("validated attached buffer");
-        block.pages.truncate(retained);
-        // Truncation must erase bytes in the partially retained page, too: they
-        // cannot reappear after subsequent growth (25.1.6.6).
-        if has_partial_page {
-            let page = block.pages.last_mut().expect("retained page");
-            page.bytes[page_offset(new_length)..].fill(0);
-        }
-        data.byte_length = new_length;
-        Ok(())
-    }
-
-    pub(crate) fn copy_array_buffer_bytes(
-        &mut self,
-        source: &Handle,
-        source_start: u64,
-        target: &Handle,
-        target_start: u64,
-        count: u64,
-        budget: &mut Budget,
-    ) -> Result<(), ArrayBufferError> {
-        let source_data = self.array_buffer(source)?;
-        source_data.check_range(source_start, count)?;
-        let target_data = self.array_buffer(target)?;
-        target_data.check_range(target_start, count)?;
-        if source == target {
-            return Err(ArrayBufferError::SameBuffer);
-        }
-        budget.charge(1)?;
-        if count == 0 {
-            return Ok(());
-        }
-        // All fallible work happens on a temporary block. Allocation or work
-        // failure leaves both existing buffers unchanged.
-        let mut copy = target_data.block()?.try_clone(budget)?;
-        source_data
-            .block()?
-            .copy_range(source_start, &mut copy, target_start, count, budget)?;
-        self.array_buffer_mut(target)?.block = Some(copy);
-        Ok(())
-    }
-
-    /// Moves raw bytes within one buffer with the overlap semantics required by
-    /// TypedArray.prototype.copyWithin (23.2.3.6). Finish every fallible step on
-    /// private sparse storage before replacing the buffer's original block.
-    pub(crate) fn move_array_buffer_bytes(
-        &mut self,
-        buffer: &Handle,
-        source_start: u64,
-        target_start: u64,
-        count: u64,
-        budget: &mut Budget,
-    ) -> Result<(), ArrayBufferError> {
-        let data = self.array_buffer(buffer)?;
-        data.check_range(source_start, count)?;
-        data.check_range(target_start, count)?;
-        // No-op ranges still require an attached buffer and valid endpoints.
-        if count == 0 || source_start == target_start {
-            return Ok(());
-        }
-        budget.charge(1)?;
-        let original = data.block()?;
-        let mut copy = original.try_clone(budget)?;
-        // Reading the immutable original preserves overlap in either direction.
-        // copy_range also clears destination bytes covered by source zero holes.
-        original.copy_range(source_start, &mut copy, target_start, count, budget)?;
-        self.array_buffer_mut(buffer)?.block = Some(copy);
-        Ok(())
-    }
-
-    /// CloneArrayBuffer (25.1.3.6): copy raw bytes into a fresh fixed buffer.
-    /// Sparse zero pages stay implicit, including for safe-integer-sized ranges.
-    /// Finish copying before allocating the heap entry so every failure leaves
-    /// the source and the existing heap graph unchanged.
-    pub(crate) fn clone_array_buffer(
-        &mut self,
-        prototype: &Handle,
-        source: &Handle,
-        offset: u64,
-        count: u64,
-        budget: &mut Budget,
-    ) -> Result<Handle, ArrayBufferError> {
-        self.inspect(prototype)?;
-        let source_data = self.array_buffer(source)?;
-        source_data.check_range(offset, count)?;
-        let mut data = ArrayBufferData::new(count, None)?;
-        budget.charge(1)?;
-        if count != 0 {
-            source_data.block()?.copy_range(
-                offset,
-                data.block.as_mut().expect("fresh attached buffer"),
-                0,
-                count,
-                budget,
-            )?;
-        }
-        let buffer = self.create(Some(prototype))?;
-        self.object_mut(&buffer)?.array_buffer = Some(data);
-        Ok(buffer)
     }
 
     /// Reads a single numeric element without allocating a temporary byte vector.
-    pub(crate) fn read_array_buffer_bytes(
+    pub(super) fn read_bytes(
         &self,
-        buffer: &Handle,
         index: u64,
         count: usize,
         budget: &mut Budget,
@@ -430,12 +337,11 @@ impl Objects {
         if count > 8 {
             return Err(ArrayBufferError::OutOfBounds);
         }
-        let data = self.array_buffer(buffer)?;
-        data.check_range(
+        self.check_range(
             index,
             u64::try_from(count).map_err(|_| ArrayBufferError::OutOfBounds)?,
         )?;
-        let block = data.block()?;
+        let block = self.block()?;
         let search_work = block
             .pages
             .len()
@@ -458,9 +364,8 @@ impl Objects {
     }
 
     /// Writes one numeric element atomically, touching at most two sparse pages.
-    pub(crate) fn write_array_buffer_bytes(
+    pub(super) fn write_bytes(
         &mut self,
-        buffer: &Handle,
         index: u64,
         bytes: &[u8],
         budget: &mut Budget,
@@ -468,12 +373,11 @@ impl Objects {
         if bytes.len() > 8 {
             return Err(ArrayBufferError::OutOfBounds);
         }
-        let data = self.array_buffer_mut(buffer)?;
-        data.check_range(
+        self.check_range(
             index,
             u64::try_from(bytes.len()).map_err(|_| ArrayBufferError::OutOfBounds)?,
         )?;
-        let block = data.block.as_mut().expect("validated attached buffer");
+        let block = self.block.as_mut().expect("validated attached buffer");
         let search_work = block
             .pages
             .len()
@@ -535,6 +439,314 @@ impl Objects {
             }
         }
         Ok(())
+    }
+
+    fn copy_bytes_to(
+        &self,
+        source_start: u64,
+        target: &mut Self,
+        target_start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        self.check_range(source_start, count)?;
+        target.check_range(target_start, count)?;
+        budget.charge(1)?;
+        if count == 0 {
+            return Ok(());
+        }
+        let mut copy = target.block()?.try_clone(budget)?;
+        self.block()?
+            .copy_range(source_start, &mut copy, target_start, count, budget)?;
+        target.block = Some(copy);
+        Ok(())
+    }
+
+    fn move_bytes(
+        &mut self,
+        source_start: u64,
+        target_start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        self.check_range(source_start, count)?;
+        self.check_range(target_start, count)?;
+        if count == 0 || source_start == target_start {
+            return Ok(());
+        }
+        budget.charge(1)?;
+        let original = self.block()?;
+        let mut copy = original.try_clone(budget)?;
+        original.copy_range(source_start, &mut copy, target_start, count, budget)?;
+        self.block = Some(copy);
+        Ok(())
+    }
+
+    fn clone_range(
+        &self,
+        offset: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<Self, ArrayBufferError> {
+        self.check_range(offset, count)?;
+        let mut data = Self::new(count, None)?;
+        budget.charge(1)?;
+        if count != 0 {
+            self.block()?.copy_range(
+                offset,
+                data.block.as_mut().expect("fresh attached buffer"),
+                0,
+                count,
+                budget,
+            )?;
+        }
+        Ok(data)
+    }
+
+    fn block(&self) -> Result<&ByteDataBlock, ArrayBufferError> {
+        self.block.as_ref().ok_or(ArrayBufferError::Detached)
+    }
+
+    fn check_range(&self, start: u64, count: u64) -> Result<(), ArrayBufferError> {
+        self.block()?;
+        if start
+            .checked_add(count)
+            .is_none_or(|end| end > self.byte_length)
+        {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        Ok(())
+    }
+}
+
+impl Objects {
+    pub(crate) fn create_array_buffer(
+        &mut self,
+        prototype: &Handle,
+        byte_length: u64,
+        max_byte_length: Option<u64>,
+        budget: &mut Budget,
+    ) -> Result<Handle, ArrayBufferError> {
+        let data = ArrayBufferData::new(byte_length, max_byte_length)?;
+        budget.charge(1)?;
+        let buffer = self.create(Some(prototype))?;
+        self.object_mut(&buffer)?.array_buffer = Some(data);
+        Ok(buffer)
+    }
+
+    fn array_buffer(&self, buffer: &Handle) -> Result<&ArrayBufferData, ArrayBufferError> {
+        self.inspect(buffer)?
+            .array_buffer_data()
+            .ok_or(Error::WrongKind.into())
+    }
+
+    fn array_buffer_mut(
+        &mut self,
+        buffer: &Handle,
+    ) -> Result<&mut ArrayBufferData, ArrayBufferError> {
+        self.object_mut(buffer)?
+            .array_buffer
+            .as_mut()
+            .ok_or(Error::WrongKind.into())
+    }
+
+    fn read_buffer_data<T>(
+        &self,
+        buffer: &Handle,
+        read: impl FnOnce(&ArrayBufferData) -> Result<T, ArrayBufferError>,
+    ) -> Result<T, ArrayBufferError> {
+        if let Some(shared) = self.inspect(buffer)?.shared_array_buffer_data() {
+            shared.with_data(read)
+        } else {
+            read(self.array_buffer(buffer)?)
+        }
+    }
+
+    fn write_buffer_data<T>(
+        &mut self,
+        buffer: &Handle,
+        write: impl FnOnce(&mut ArrayBufferData) -> Result<T, ArrayBufferError>,
+    ) -> Result<T, ArrayBufferError> {
+        let shared = self.inspect(buffer)?.shared_array_buffer_data().cloned();
+        if let Some(shared) = shared {
+            shared.with_data_mut(write)
+        } else {
+            write(self.array_buffer_mut(buffer)?)
+        }
+    }
+
+    pub(crate) fn same_buffer_data(&self, left: &Handle, right: &Handle) -> Result<bool, Error> {
+        let a = self.inspect(left)?;
+        let b = self.inspect(right)?;
+        Ok(left == right
+            || match (a.shared_array_buffer_data(), b.shared_array_buffer_data()) {
+                (Some(a), Some(b)) => a.same_backing(b),
+                _ => false,
+            })
+    }
+
+    pub(crate) fn resize_array_buffer(
+        &mut self,
+        buffer: &Handle,
+        new_length: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        let data = self.array_buffer(buffer)?;
+        let max = data.max_byte_length.ok_or(ArrayBufferError::NotResizable)?;
+        let block = data.block()?;
+        if new_length > max {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        budget.charge(1)?;
+        let retained = block
+            .pages
+            .partition_point(|page| page.index < new_length.div_ceil(PAGE_SIZE_U64));
+        let has_partial_page = retained.checked_sub(1).is_some_and(|last| {
+            !new_length.is_multiple_of(PAGE_SIZE_U64)
+                && block.pages[last].index == new_length / PAGE_SIZE_U64
+        });
+        budget.charge(block.pages.len() - retained)?;
+        if has_partial_page {
+            budget.charge(PAGE_SIZE - page_offset(new_length))?;
+        }
+        let data = self.array_buffer_mut(buffer)?;
+        let block = data.block.as_mut().expect("validated attached buffer");
+        block.pages.truncate(retained);
+        // Truncation must erase bytes in the partially retained page, too: they
+        // cannot reappear after subsequent growth (25.1.6.6).
+        if has_partial_page {
+            let page = block.pages.last_mut().expect("retained page");
+            page.bytes[page_offset(new_length)..].fill(0);
+        }
+        data.byte_length = new_length;
+        Ok(())
+    }
+
+    pub(crate) fn copy_array_buffer_bytes(
+        &mut self,
+        source: &Handle,
+        source_start: u64,
+        target: &Handle,
+        target_start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        let shared = self.inspect(source)?.shared_array_buffer_data().is_some()
+            || self.inspect(target)?.shared_array_buffer_data().is_some();
+        if shared {
+            self.read_buffer_data(source, |data| data.check_range(source_start, count))?;
+            self.read_buffer_data(target, |data| data.check_range(target_start, count))?;
+            if self.same_buffer_data(source, target)? {
+                return Err(ArrayBufferError::SameBuffer);
+            }
+            if count == 0 {
+                budget.charge(1)?;
+                return Ok(());
+            }
+            // Release the source lock before locking the target. Only the copied
+            // range is snapshotted; target mutations outside it remain intact.
+            let snapshot = self
+                .read_buffer_data(source, |data| data.clone_range(source_start, count, budget))?;
+            return self.write_buffer_data(target, |data| {
+                snapshot.copy_bytes_to(0, data, target_start, count, budget)
+            });
+        }
+        let source_data = self.array_buffer(source)?;
+        source_data.check_range(source_start, count)?;
+        let target_data = self.array_buffer(target)?;
+        target_data.check_range(target_start, count)?;
+        if source == target {
+            return Err(ArrayBufferError::SameBuffer);
+        }
+        budget.charge(1)?;
+        if count == 0 {
+            return Ok(());
+        }
+        // All fallible work happens on a temporary block. Allocation or work
+        // failure leaves both existing buffers unchanged.
+        let mut copy = target_data.block()?.try_clone(budget)?;
+        source_data
+            .block()?
+            .copy_range(source_start, &mut copy, target_start, count, budget)?;
+        self.array_buffer_mut(target)?.block = Some(copy);
+        Ok(())
+    }
+
+    /// Moves raw bytes within one buffer with the overlap semantics required by
+    /// TypedArray.prototype.copyWithin (23.2.3.6). Finish every fallible step on
+    /// private sparse storage before replacing the buffer's original block.
+    pub(crate) fn move_array_buffer_bytes(
+        &mut self,
+        buffer: &Handle,
+        source_start: u64,
+        target_start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        self.write_buffer_data(buffer, |data| {
+            data.move_bytes(source_start, target_start, count, budget)
+        })
+    }
+
+    /// CloneArrayBuffer (25.1.3.6): copy raw bytes into a fresh fixed buffer.
+    /// Sparse zero pages stay implicit, including for safe-integer-sized ranges.
+    /// Finish copying before allocating the heap entry so every failure leaves
+    /// the source and the existing heap graph unchanged.
+    pub(crate) fn clone_array_buffer(
+        &mut self,
+        prototype: &Handle,
+        source: &Handle,
+        offset: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<Handle, ArrayBufferError> {
+        self.inspect(prototype)?;
+        let data = self.read_buffer_data(source, |data| data.clone_range(offset, count, budget))?;
+        let buffer = self.create(Some(prototype))?;
+        self.object_mut(&buffer)?.array_buffer = Some(data);
+        Ok(buffer)
+    }
+
+    /// Reads one numeric element from either kind of buffer.
+    pub(crate) fn read_array_buffer_bytes(
+        &self,
+        buffer: &Handle,
+        index: u64,
+        count: usize,
+        budget: &mut Budget,
+    ) -> Result<[u8; 8], ArrayBufferError> {
+        if count > 8 {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        let object = self.inspect(buffer)?;
+        if let Some(shared) = object.shared_array_buffer_data() {
+            shared.with_data(|data| data.read_bytes(index, count, budget))
+        } else {
+            object
+                .array_buffer_data()
+                .ok_or(Error::WrongKind)?
+                .read_bytes(index, count, budget)
+        }
+    }
+
+    /// Writes one element after all fallible page work, including shared views.
+    pub(crate) fn write_array_buffer_bytes(
+        &mut self,
+        buffer: &Handle,
+        index: u64,
+        bytes: &[u8],
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        if bytes.len() > 8 {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        let shared = self.inspect(buffer)?.shared_array_buffer_data().cloned();
+        if let Some(shared) = shared {
+            shared.with_data_mut(|data| data.write_bytes(index, bytes, budget))
+        } else {
+            self.array_buffer_mut(buffer)?
+                .write_bytes(index, bytes, budget)
+        }
     }
 
     pub(crate) fn detach_array_buffer(

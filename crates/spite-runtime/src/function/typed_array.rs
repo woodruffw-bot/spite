@@ -12,8 +12,7 @@ const MAX_BYTE_LENGTH: u64 = 9_007_199_254_740_991;
 #[derive(Clone, Copy)]
 enum SourceKind {
     TypedArray,
-    ArrayBuffer,
-    SharedArrayBuffer,
+    Buffer,
     Ordinary,
 }
 
@@ -46,25 +45,17 @@ impl Realm {
             let record = objects.inspect(&source)?;
             Ok(if record.typed_array_data().is_some() {
                 SourceKind::TypedArray
-            } else if record.shared_array_buffer_data().is_some() {
-                SourceKind::SharedArrayBuffer
-            } else if record.array_buffer_data().is_some() {
-                SourceKind::ArrayBuffer
+            } else if record.buffer_info()?.is_some() {
+                SourceKind::Buffer
             } else {
                 SourceKind::Ordinary
             })
         })?;
         let result = match source_kind {
-            SourceKind::SharedArrayBuffer => {
-                return Err(Self::unsupported(
-                    span,
-                    "shared-buffer TypedArray storage is not implemented",
-                ));
-            }
             SourceKind::TypedArray => {
                 self.typed_array_from_typed_array(element, &prototype, &source, span)?
             }
-            SourceKind::ArrayBuffer => self.typed_array_from_buffer(
+            SourceKind::Buffer => self.typed_array_from_buffer(
                 element,
                 &prototype,
                 &source,
@@ -202,7 +193,7 @@ impl Realm {
         let resizable = self.object_work(span, |objects, _| {
             Ok(objects
                 .inspect(buffer)?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("ArrayBuffer source")
                 .is_resizable())
         })?;
@@ -214,7 +205,7 @@ impl Realm {
         let (detached, buffer_length) = self.object_work(span, |objects, _| {
             let data = objects
                 .inspect(buffer)?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("ArrayBuffer source");
             Ok((data.is_detached(), data.byte_length()))
         })?;
@@ -273,13 +264,13 @@ impl Realm {
                     .expect("TypedArray source");
                 let buffer = objects
                     .inspect(source.buffer())?
-                    .array_buffer_data()
+                    .buffer_info()?
                     .expect("TypedArray buffer");
                 Ok((
                     source.element_type(),
                     source.buffer().clone(),
                     source.byte_offset(),
-                    source.in_bounds_array_length(buffer),
+                    source.in_bounds_array_length(&buffer),
                 ))
             })?;
         let length = length.ok_or_else(|| {
@@ -537,9 +528,9 @@ impl Realm {
             };
             let buffer = objects
                 .inspect(data.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray buffer");
-            Ok(data.in_bounds_array_length(buffer))
+            Ok(data.in_bounds_array_length(&buffer))
         })?;
         if valid_length
             .is_none_or(|actual| minimum_length.is_some_and(|minimum| (actual as f64) < minimum))

@@ -53,6 +53,8 @@ pub enum Error {
     WrongKind,
     /// An exotic internal method needs the Realm to execute its JavaScript hooks.
     RequiresRuntime,
+    /// A shared backing store was poisoned by an interrupted native operation.
+    PoisonedSharedStorage,
     /// Array length has not been converted to an integral Number in the u32 range.
     /// JavaScript's two observable numeric conversions belong to the Realm layer.
     UnnormalizedArrayLength,
@@ -70,6 +72,7 @@ impl fmt::Display for Error {
             Self::NotCallable => f.write_str("function handle must be callable"),
             Self::WrongKind => f.write_str("heap entry has the wrong kind"),
             Self::RequiresRuntime => f.write_str("object internal method requires the Realm"),
+            Self::PoisonedSharedStorage => f.write_str("shared backing storage lock is poisoned"),
             Self::UnnormalizedArrayLength => {
                 f.write_str("array length requires a preconverted u32 Number")
             }
@@ -951,7 +954,7 @@ impl Objects {
         if let Some(data) = record.typed_array_data() {
             let buffer = self
                 .inspect(data.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .ok_or(Error::WrongKind)?;
             // 10.4.5.1 rejects even fixed-length views over resizable buffers.
             if buffer.is_resizable() {

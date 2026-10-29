@@ -616,6 +616,10 @@ impl Realm {
             object::Error::RequiresRuntime => {
                 Self::unsupported(span, "object internal method requires Realm dispatch")
             }
+            object::Error::PoisonedSharedStorage => Error::Host {
+                span,
+                message: "shared backing storage lock is poisoned".into(),
+            },
             object::Error::NotCallable | object::Error::WrongKind => {
                 unreachable!("realm operations validate function callability before storage")
             }

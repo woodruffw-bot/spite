@@ -29,9 +29,26 @@ impl Realm {
         );
         let witness =
             self.atomics_validate(arguments.next().unwrap_or(Value::Undefined), waitable, span)?;
+        let shared = self.object_work(span, |objects, _| {
+            let data = objects
+                .inspect(&witness.object)?
+                .typed_array_data()
+                .expect("validated TypedArray");
+            Ok(objects
+                .inspect(data.buffer())?
+                .buffer_info()?
+                .expect("typed buffer")
+                .shared)
+        })?;
+        if shared {
+            return Err(Self::unsupported(
+                span,
+                "shared-buffer Atomics are not implemented",
+            ));
+        }
         if matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync) {
             // DoWait (25.4.3.14) rejects ordinary buffers before converting
-            // index, value, or timeout. SharedArrayBuffer creation is deferred.
+            // index, value, or timeout (DoWait, 25.4.3.14).
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

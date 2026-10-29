@@ -209,10 +209,10 @@ impl Realm {
                 .expect("validated Uint8Array");
             let buffer = objects
                 .inspect(data.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray's buffer");
             Ok(data
-                .in_bounds_array_length(buffer)
+                .in_bounds_array_length(&buffer)
                 .map(|length| Uint8Layout {
                     buffer: data.buffer().clone(),
                     byte_offset: data.byte_offset(),

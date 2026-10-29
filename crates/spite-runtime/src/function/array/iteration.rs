@@ -60,9 +60,9 @@ impl Realm {
             };
             let buffer = objects
                 .inspect(view.buffer())?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray buffer slot");
-            Ok(Some(view.in_bounds_array_length(buffer)))
+            Ok(Some(view.in_bounds_array_length(&buffer)))
         })?;
         let length = match typed_length {
             Some(Some(length)) => length,

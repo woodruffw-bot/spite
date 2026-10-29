@@ -37,7 +37,7 @@ impl Realm {
                 .shared_array_buffer_prototype
                 .clone()
         };
-        self.object_work(span, |objects, budget| {
+        self.array_buffer_work(span, |objects, budget| {
             objects.create_shared_array_buffer(&prototype, byte_length, maximum, budget)
         })
         .map(Value::Object)
