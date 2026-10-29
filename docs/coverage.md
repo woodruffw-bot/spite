@@ -59,9 +59,28 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21113 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21395 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## TypedArray copies and asynchronous Array input audit
+
+The existing TypedArray.with/set algorithms pass 135 unchanged originals across
+Number/BigInt types, fixed/resizable/shared buffers, live getters, overlapping
+copies, coercion order and detachment. These cover all edition-17 tests in the
+two directories; two immutable-buffer proposal files remain excluded. The six
+remaining Array.fromAsync originals also pass, including async iterables/mappers,
+single-await timing and iteration errors. All 95 originals in that directory are
+now retained.
+
+The 141 whole sources add 282 required modes with existing helpers. All Git
+blob/SHA-256 hashes match the pin. Counts are 11,251 fixtures, twenty-four helpers,
+11,166 reviewed sources and 21,395 variants. Runtime code and case inventories
+remain unchanged at 697/88, as do existing sources, helpers, limits and worker
+counts.
+The full 21,395-variant corpus and all 62 package controls pass, along with
+formatting, strict Clippy, Rust 1.99, dependency policy and inventories. Runtime
+code retains its preceding 491-unit and 2,359 non-RegExp integration results.
 
 ## Global Script evaluation host
 

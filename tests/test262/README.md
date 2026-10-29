@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11110 unmodified test fixtures and twenty-four harness files come from
+These 11251 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## TypedArray copies and asynchronous Array inputs
+
+The existing algorithms pass 135 unchanged TypedArray.prototype.with/set
+originals, including BigInt, fixed/resizable/shared buffers, live source values,
+overlap, coercion order and detachment. Their 270 required modes use existing
+helpers. Two immutable-buffer proposal files are outside edition 17 and excluded.
+
+The six remaining unchanged Array.fromAsync originals pass their 12 required
+modes for async iterables, async mappers, single-await timing and iteration errors.
+All 95 originals in that directory are now retained. All source Git blob/SHA-256
+hashes match the pin. Counts are 11,251 fixtures, twenty-four helpers, 11,166
+reviewed sources and 21,395 variants. Runtime code, existing sources, helpers,
+limits and worker counts are unchanged.
 
 ## Global Script evaluation host
 
