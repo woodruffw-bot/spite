@@ -82,12 +82,16 @@ fn source_pattern<'a>(
     record: &AsyncAssignmentPattern,
     path: &[BindingChild],
 ) -> &'a AssignmentPattern {
-    let ExprKind::DestructuringAssign { pattern, .. } =
-        &expression_at(data, record.root, &record.source).kind
-    else {
-        unreachable!("destructuring source")
+    let mut pattern = if direct_iteration(record) {
+        super::super::iteration_head::iteration_pattern(data)
+    } else {
+        let ExprKind::DestructuringAssign { pattern, .. } =
+            &expression_at(data, record.root, &record.source).kind
+        else {
+            unreachable!("destructuring source")
+        };
+        pattern.as_ref()
     };
-    let mut pattern = pattern.as_ref();
     for child in path {
         let position = match child {
             BindingChild::Element(index) | BindingChild::Property(index) => {
@@ -103,6 +107,10 @@ fn source_pattern<'a>(
     pattern
 }
 
+fn direct_iteration(record: &AsyncAssignmentPattern) -> bool {
+    matches!(record.root, super::ExprRoot::IterationPattern) && record.source.is_empty()
+}
+
 fn expression_path(
     record: &AsyncAssignmentPattern,
     child: ExprChild,
@@ -113,13 +121,15 @@ fn expression_path(
         .source
         .len()
         .checked_add(cursor.path.len())
-        .and_then(|n| n.checked_add(2))
+        .and_then(|n| n.checked_add(if direct_iteration(record) { 1 } else { 2 }))
         .ok_or_else(|| allocation_error(span))?;
     let mut path = Vec::new();
     path.try_reserve_exact(length)
         .map_err(|_| allocation_error(span))?;
     path.extend_from_slice(&record.source);
-    path.push(ExprChild::AssignmentPattern);
+    if !direct_iteration(record) {
+        path.push(ExprChild::AssignmentPattern);
+    }
     path.extend(cursor.path.iter().map(|child| match child {
         BindingChild::Element(index) | BindingChild::Property(index) => {
             ExprChild::AssignmentTarget(*index)
@@ -152,7 +162,11 @@ impl Realm {
         path: ExprPath,
         value: Value,
     ) -> Result<(), Error> {
-        let span = expression_at(data, state.root, &path).span;
+        let span = if matches!(state.root, super::ExprRoot::IterationPattern) && path.is_empty() {
+            super::super::iteration_head::iteration_pattern(data).span
+        } else {
+            expression_at(data, state.root, &path).span
+        };
         data.assignment_patterns
             .try_reserve(1)
             .map_err(|_| allocation_error(span))?;

@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_iteration_pattern.rs"]
+mod async_iteration_pattern;
+
 #[path = "cases/async_assignment_pattern.rs"]
 mod async_assignment_pattern;
 

@@ -10914,3 +10914,17 @@ test/language/expressions/assignment/dstr/obj-prop-elem-init-yield-expr.js	-	-	-
 test/language/expressions/assignment/dstr/obj-prop-elem-target-yield-expr.js	-	-	-
 test/language/expressions/assignment/dstr/obj-prop-nested-array-yield-expr.js	-	-	-
 test/language/expressions/assignment/dstr/obj-prop-nested-obj-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-elem-init-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-elem-nested-array-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-elem-nested-obj-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-elem-target-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-rest-nested-array-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-rest-nested-obj-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/array-rest-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/obj-id-identifier-yield-expr.js	1232	1237	yield cannot be an identifier in a generator context
+test/language/statements/for-of/dstr/obj-id-init-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/obj-prop-elem-init-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/obj-prop-elem-target-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/obj-prop-nested-array-yield-expr.js	-	-	-
+test/language/statements/for-of/dstr/obj-prop-nested-obj-yield-expr.js	-	-	-
+test/language/statements/for-in/dstr/obj-id-identifier-yield-expr.js	1232	1237	yield cannot be an identifier in a generator context

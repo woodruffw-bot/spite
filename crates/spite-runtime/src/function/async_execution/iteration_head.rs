@@ -41,6 +41,15 @@ pub(super) fn iteration_target(data: &AsyncExecutionData) -> &Expr {
     target
 }
 
+pub(super) fn iteration_pattern(
+    data: &AsyncExecutionData,
+) -> &spite_parser::ast::AssignmentPattern {
+    let ForBinding::Pattern(pattern) = iteration_binding(&data.body, &data.frames) else {
+        unreachable!("suspended iteration assignment pattern")
+    };
+    pattern
+}
+
 impl Realm {
     pub(super) fn enter_async_iteration(
         &mut self,
@@ -140,6 +149,11 @@ impl Realm {
         span: Span,
     ) -> Result<Step, Error> {
         let binding = iteration_binding(&data.body, &data.frames);
+        if let ForBinding::Pattern(pattern) = binding
+            && expression::has_assignment_await(pattern)
+        {
+            return self.start_async_iteration_pattern(data, value);
+        }
         if let ForBinding::Assignment(target) = binding
             && expression::has_supported_await(target)
         {

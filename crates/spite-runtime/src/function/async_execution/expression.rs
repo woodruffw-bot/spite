@@ -87,6 +87,10 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
     }
 }
 
+pub(super) fn has_assignment_await(pattern: &spite_parser::ast::AssignmentPattern) -> bool {
+    pattern::has_pattern_await(pattern)
+}
+
 fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
     match (&data.body, root) {
         (ArrowBody::Expression(expression), ExprRoot::Arrow) => expression,
@@ -249,7 +253,11 @@ fn pattern_expression_child(
 }
 
 fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprChild]) -> &'a Expr {
-    let mut focus = PatternFocus::Expression(root_expression(data, root));
+    let mut focus = if matches!(root, ExprRoot::IterationPattern) {
+        PatternFocus::Pattern(super::iteration_head::iteration_pattern(data))
+    } else {
+        PatternFocus::Expression(root_expression(data, root))
+    };
     for child in path {
         if let PatternFocus::Pattern(pattern) = focus {
             focus = pattern_expression_child(pattern, *child);
@@ -457,6 +465,23 @@ fn short_circuit(op: BinaryOp, value: &Value) -> bool {
 }
 
 impl Realm {
+    pub(super) fn start_async_iteration_pattern(
+        &mut self,
+        data: &mut AsyncExecutionData,
+        value: Value,
+    ) -> Result<Step, Error> {
+        let mut state = AsyncExpressionData {
+            root: ExprRoot::IterationPattern,
+            action: AsyncAwaitAction::IterationBinding,
+            tasks: Vec::new(),
+            current: None,
+            delegation: None,
+        };
+        self.start_async_assignment_pattern(data, &mut state, Vec::new(), value)?;
+        data.expression = Some(state);
+        self.resume_async_expression(data, None)
+    }
+
     pub(super) fn begin_async_invocation_arguments(
         &mut self,
         data: &AsyncExecutionData,

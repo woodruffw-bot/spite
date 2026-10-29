@@ -11017,3 +11017,17 @@ script-pass	98f7bee9416d6949b7fd03b7c1fa6c25293a293e4e47d5da132c0a0d7d4e27d8	tes
 script-pass	e12448c272bad37f2172bdc6a1d630aa3ec7a2b7e2dc2e64a75fa2ade8a4a47b	test/language/expressions/assignment/dstr/obj-prop-elem-target-yield-expr.js
 script-pass	7322ff8f804ccc8c198cf6ea1b0f77b8ff4dd57b55dbfaf523663e2e8598c364	test/language/expressions/assignment/dstr/obj-prop-nested-array-yield-expr.js
 script-pass	53f2bdf8ccb3d5d524a6da263443f84b575e2b7173ea989279e05a4b0610e8d1	test/language/expressions/assignment/dstr/obj-prop-nested-obj-yield-expr.js
+script-pass	6d8f5845e1fe57439cdb2aa0c2b0bd766dce9df1754802fdf320e881e7f22f43	test/language/statements/for-of/dstr/array-elem-init-yield-expr.js
+script-pass	9b5e1912950feb380c529e0908a50c89295f89d64072ee07c6d7a6807efd6184	test/language/statements/for-of/dstr/array-elem-nested-array-yield-expr.js
+script-pass	6dd921bfec9356f1ac60d1cdad6a08b73088622a0069b3c925897c9f83d0d6c8	test/language/statements/for-of/dstr/array-elem-nested-obj-yield-expr.js
+script-pass	915c215c294b9ce68bda25e88f47d7dd789bd778e845c54ff9f2e89d43691cd6	test/language/statements/for-of/dstr/array-elem-target-yield-expr.js
+script-pass	2753c37aa702e4f07d637c33d7846ebd70dd17751c695e3573c28512a185c5ff	test/language/statements/for-of/dstr/array-rest-nested-array-yield-expr.js
+script-pass	bf0e9c976cc099cb8781550174c9c10cc16a69b32ad720d371b5e0a9a7ee105c	test/language/statements/for-of/dstr/array-rest-nested-obj-yield-expr.js
+script-pass	025fb19eb7b1e60519c411d6a0da5a0e8e41346351df94231f2152fe36f8cec8	test/language/statements/for-of/dstr/array-rest-yield-expr.js
+parse-syntax-error	fa2ac6e783d164c503b21cadf7a46911818c8cc851a52dd3b7bc639037557bca	test/language/statements/for-of/dstr/obj-id-identifier-yield-expr.js
+script-pass	f4370c2ea58d9e62aeb42f1186584fb60f2b6cb6e61f0ad2b6a203bda4ecabcc	test/language/statements/for-of/dstr/obj-id-init-yield-expr.js
+script-pass	a197431f62657e59ef9d2f696f64ee2599f16e659fb0b9b4c4588f2a1f83f57e	test/language/statements/for-of/dstr/obj-prop-elem-init-yield-expr.js
+script-pass	4af549da56b287caba5cc5859d1c3ae56e7f4c65656e39d74110f4451ebd90a5	test/language/statements/for-of/dstr/obj-prop-elem-target-yield-expr.js
+script-pass	63ce438e94468f413330c97ec68e4a684a38ec898f8dd215d8b5abb66b401fc2	test/language/statements/for-of/dstr/obj-prop-nested-array-yield-expr.js
+script-pass	8ce231cefc2216b7cbcb8547bdd45ebb1e04891ff628a66ea380580e91404c8f	test/language/statements/for-of/dstr/obj-prop-nested-obj-yield-expr.js
+parse-syntax-error	fba8c2fca9582e05034b04787d5e3d4a1a2f72291a0d17ecf176625825154796	test/language/statements/for-in/dstr/obj-id-identifier-yield-expr.js

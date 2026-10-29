@@ -59,9 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20906 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20932 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspended assignment-pattern iteration heads
+
+For-in/of/await-of assignment heads resume keys, defaults and references through
+the same pattern evaluator as assignment expressions. A direct source-pattern
+root preserves AST paths, including nested assignment defaults and class names.
+Body entry waits for initialization; rejection closes inner pattern iterators
+before the outer loop iterator, including asynchronous closing.
+
+Eight new integration groups cover all three loop kinds, body timing, nested
+patterns, labelled control, rejection, capture collection and host abort. An older
+unsupported oracle now checks successful resumption; existing explicit host-error
+controls remain. Twelve unchanged runtime originals add 24 required modes and two
+unchanged parse-negative originals add two reviewed modes. Counts are 11,010
+fixtures, twenty-two helpers, 10,929 reviewed sources and 20,932 variants. Runtime
+case inventory is 695 files; Parser inventory remains 88. Existing sources,
+helpers, limits and worker counts are unchanged.
+All 491 Runtime units, 2,335 non-RegExp integrations, the full corpus and all 62
+package controls pass. CLI/raw smoke, formatting, strict Clippy, Rust 1.99,
+dependency policy and inventories pass. Both the Rust-upgrade commit and the
+preceding assignment-pattern commit pass all 17 hosted CI jobs.
 
 ## Suspended destructuring assignment patterns
 

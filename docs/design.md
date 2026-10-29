@@ -1402,6 +1402,10 @@ target keys remain raw until PutValue. Defaults preserve identifier-only naming,
 including class names before static initialization. Completion returns the
 original RHS value. Nested assignment expressions retain independent cursor
 records while sharing the enclosing value-expression task stack.
+For-in, for-of and for-await-of assignment heads select the same evaluator with
+a direct pattern root (14.7.5). The loop retains its iteration value and delays
+body entry until initialization finishes. Source paths also support assignment
+expressions nested inside head defaults and computed keys.
 
 Each assignment record retains the enclosing class-expression depth. Abrupt
 completion first restores classes entered inside that pattern, then closes its
@@ -1439,8 +1443,7 @@ parent. Rejection or nested initialization failure closes still-active iterators
 from inside out, preserving original throws; step errors retain their Done flags.
 Host abort abandons records without JavaScript closing or disposal. Cursor methods,
 iterator handles and the binding environment participate in tracing and capture
-validation. Awaited targets, keys and defaults inside assignment patterns remain
-Unsupported forms.
+validation.
 Patterns require an initializer outside for-in/of declarations, and lexical
 BoundNames cannot contain let. Declaration instantiation creates all names before
 evaluating any initializer. Identifier initializers receive named evaluation;
