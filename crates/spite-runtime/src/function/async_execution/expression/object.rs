@@ -127,6 +127,11 @@ impl Realm {
         }
         if has_supported_await(&property.value) {
             let child = child_path(&path, ExprChild::ObjectValue(element), property.span)?;
+            let task = if property.kind == PropertyKind::Prototype {
+                ExprTask::Evaluate(child)
+            } else {
+                super::class::named_task(&property.value, child, key.clone())
+            };
             push(
                 state,
                 ExprTask::ObjectValue {
@@ -137,7 +142,7 @@ impl Realm {
                 },
                 property.span,
             )?;
-            push(state, ExprTask::Evaluate(child), property.span)
+            push(state, task, property.span)
         } else {
             let value = if property.kind == PropertyKind::Prototype {
                 self.expression(&property.value)?

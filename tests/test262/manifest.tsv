@@ -11000,3 +11000,7 @@ script-pass	a3ba20d7478fc3de5cb971d2a5ee0f17252e98e502421df70e80c4971111858d	tes
 script-pass	f6a67f5abc0692c5d717506c40102db1a7185f29c7a0275f7d2ea491d26d95b3	test/language/statements/class/cpn-class-decl-accessors-computed-property-name-from-yield-expression.js
 script-pass	f1f3149001db5e79006f186a6a6f5bcd4340f98c212671f42c01349fb3f6cca6	test/language/statements/class/cpn-class-decl-computed-property-name-from-await-expression.js
 script-pass	5d99a282bf39179a2641a53b691552bff2cbc7be2f97992b6e2c62d19034bb6e	test/language/statements/class/cpn-class-decl-computed-property-name-from-yield-expression.js
+script-pass	0ccb4e66c6e2075d668b24d0201a1b6627bcd1d126f599d64d9cf16df67c63be	test/language/statements/class/cpn-class-decl-fields-computed-property-name-from-await-expression.js
+script-pass	7025eee9fb1e1aa3d52d932669de7e70c1e12871710530d52dc143f4a886e2e9	test/language/statements/class/cpn-class-decl-fields-computed-property-name-from-yield-expression.js
+script-pass	b4ff6260b5c0c454f617045ce1ac382cb84dcc92326a259dbc8fa648ad453b32	test/language/statements/class/cpn-class-decl-fields-methods-computed-property-name-from-await-expression.js
+script-pass	33b145857788fcba71aba4ed1cd85ded30a0ec8600e6b4ab46d915c756f05744	test/language/statements/class/cpn-class-decl-fields-methods-computed-property-name-from-yield-expression.js

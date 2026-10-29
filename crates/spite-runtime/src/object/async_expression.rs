@@ -6,6 +6,33 @@ use spite_core::{JsSymbol, Span};
 use spite_heap::Handle;
 use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};
 
+#[derive(Debug)]
+pub(crate) struct AsyncClassExpression {
+    pub syntax: std::rc::Rc<spite_parser::ast::Class>,
+    pub context: crate::function::ClassDefinitionContext,
+    pub definition: Option<crate::function::ClassDefinitionState>,
+    pub name: Option<spite_core::PropertyKey>,
+}
+
+impl AsyncClassExpression {
+    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+        self.name
+            .iter()
+            .filter_map(spite_core::PropertyKey::as_symbol)
+            .chain(self.definition.iter().flat_map(|state| state.symbols()))
+    }
+    pub(super) fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
+        std::iter::once(&self.context.environment).chain(
+            self.definition
+                .iter()
+                .flat_map(|state| state.environments()),
+        )
+    }
+    pub(super) fn objects(&self) -> impl Iterator<Item = &Handle> {
+        self.definition.iter().flat_map(|state| state.objects())
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum ExprRoot {
     Arrow,
@@ -46,6 +73,8 @@ pub(crate) enum ExprChild {
     ObjectKey(usize),
     ObjectValue(usize),
     ObjectSpread(usize),
+    ClassHeritage,
+    ClassKey(usize),
     SuperKey,
     OptionalBase,
     OptionalKey(usize),
@@ -127,6 +156,21 @@ pub(crate) struct OptionalCallCursor {
 #[derive(Debug)]
 pub(crate) enum ExprTask {
     Evaluate(ExprPath),
+    EvaluateNamed {
+        path: ExprPath,
+        name: Value,
+    },
+    ClassHeritage {
+        path: ExprPath,
+    },
+    ClassNext {
+        path: ExprPath,
+        element: usize,
+    },
+    ClassKey {
+        path: ExprPath,
+        element: usize,
+    },
     IterationTarget(ExprPath),
     Unary {
         op: UnaryOp,
@@ -293,6 +337,7 @@ impl ExprTask {
     fn values(&self) -> impl Iterator<Item = &Value> {
         let (value, target, arguments): (Option<&Value>, Option<&InvocationTarget>, &[Value]) =
             match self {
+                Self::EvaluateNamed { name, .. } => (Some(name), None, &[]),
                 Self::ImportOptions { specifier, .. } => (Some(specifier), None, &[]),
                 Self::BinaryApply { left, .. } | Self::ChainApply { left, .. } => {
                     (Some(left), None, &[])

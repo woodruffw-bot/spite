@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_class_expression.rs"]
+mod async_class_expression;
+
 #[path = "cases/async_class_heritage.rs"]
 mod async_class_heritage;
 

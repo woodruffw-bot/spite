@@ -317,6 +317,7 @@ pub(crate) struct AsyncExecutionData {
     pub pattern_binding: Option<super::async_binding::AsyncPatternBinding>,
     pub class_context: Option<crate::function::ClassDefinitionContext>,
     pub class_definition: Option<crate::function::ClassDefinitionState>,
+    pub expression_classes: Vec<super::async_expression::AsyncClassExpression>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -335,6 +336,11 @@ impl AsyncExecutionData {
         self.expression
             .iter()
             .flat_map(|expression| expression.symbols())
+            .chain(
+                self.expression_classes
+                    .iter()
+                    .flat_map(|state| state.symbols()),
+            )
             .chain(
                 self.class_definition
                     .iter()
@@ -371,6 +377,11 @@ impl AsyncExecutionData {
             .into_iter()
             .chain(self.function.module_record())
             .chain(
+                self.expression_classes
+                    .iter()
+                    .flat_map(|state| state.objects()),
+            )
+            .chain(
                 self.class_definition
                     .iter()
                     .flat_map(|state| state.objects()),
@@ -398,6 +409,11 @@ impl AsyncExecutionData {
         self.expression
             .iter()
             .flat_map(|expression| expression.environments())
+            .chain(
+                self.expression_classes
+                    .iter()
+                    .flat_map(|state| state.environments()),
+            )
             .chain(
                 self.class_definition
                     .iter()

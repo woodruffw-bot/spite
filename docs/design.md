@@ -3405,8 +3405,7 @@ environment across suspension. Completion unwinds through that environment's
 identity, so captured source contexts can move between different caller depths.
 Rejection, generator return/throw and host abort restore the enclosing context
 before completion handling; host errors bypass JavaScript handlers. Default
-exports preserve their inferred name before static initialization. Suspension in
-class expressions remains separate implementation work.
+exports preserve their inferred name before static initialization.
 
 The common class builder prepares a constructor/prototype pair, defines one
 element at a time, and finishes the class binding and static initialization.
@@ -3418,6 +3417,18 @@ environment, defining Module and Symbol/private-name identity held by those
 records. Static initialization waits for all names to complete. Abrupt key
 evaluation releases the partial definition and restores the strict/name context
 before normal completion handling; host abort invokes no JavaScript cleanup.
+
+Class expressions use the same builder through heritage/key tasks on the active
+value-expression stack. Nested class records retain their own name environments,
+partial definitions and inferred names; each record traces its owned object,
+environment and Symbol edges. Abrupt completion unwinds those records in reverse
+order before any enclosing class-declaration context. NamedEvaluation propagates
+through parentheses for identifier bindings, binding defaults, literal property
+values, identifier assignments and default exports. The inferred name reaches
+SetFunctionName before static initialization. Parenthesized assignment targets,
+property assignments, prototype-setter literal values and an intervening Await
+do not infer a class name. A computed `['__proto__']` data property follows the
+ordinary property-value naming rule.
 
 ClassHeritage evaluates in the strict class-name environment (15.7.14). Null gives
 instances a null prototype while the constructor inherits Function.prototype.

@@ -59,9 +59,32 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20875 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20881 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspended class expressions and inferred names
+
+Class expressions suspend in heritage and computed names through the common
+class builder while retaining outer value-expression tasks. Nested class records
+trace their environments, partial definitions and inferred names. Abrupt
+completion unwinds those records before an enclosing declaration context.
+Names are inferred before static initialization for identifier bindings and
+defaults, object literal values, identifier assignments and default exports.
+Parenthesized targets, property assignments and intervening Await preserve the
+ordinary non-inference behavior.
+
+Eight new integration groups cover these naming contexts, nested heritage/keys,
+TDZs, default exports, generator return/throw, rejection and host-abort capture
+release during collection. The four previously excluded class-expression
+originals now pass their six required variants, with unchanged whole-source
+Git blob/SHA-256 hashes at the same pin. Counts are 10,983 fixtures, twenty-two
+helpers, 10,902 reviewed sources and 20,881 variants. Existing originals, helpers,
+limits and worker counts are unchanged.
+All 491 Runtime units, 2,316 non-RegExp integrations, the full corpus and all 62
+package controls pass. CLI/raw smoke, formatting, strict Clippy, Rust 1.88,
+dependency policy and inventories pass; case inventories are 693/88. The final
+checks include prototype-setter values versus computed `['__proto__']` naming.
 
 ## Suspended computed class-declaration names
 

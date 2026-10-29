@@ -88,8 +88,22 @@ impl Realm {
         }
         // Simple assignment retains a raw computed key until PutValue. Compound
         // GetValue has already cached its converted key before RHS evaluation.
+        let name = if op.is_none()
+            || matches!(op, Some(BinaryOp::And | BinaryOp::Or | BinaryOp::Nullish))
+        {
+            match &target.kind {
+                ExprKind::Identifier(name) => Some(name.as_str().into()),
+                _ => None,
+            }
+        } else {
+            None
+        };
         let reference = reference.into_owned(span)?;
-        let right = child_path(&path, ExprChild::Right, span)?;
+        let child = child_path(&path, ExprChild::Right, span)?;
+        let task = match name {
+            Some(name) => super::class::named_task(right, child, name),
+            None => ExprTask::Evaluate(child),
+        };
         push(
             state,
             ExprTask::AssignmentApply {
@@ -100,7 +114,7 @@ impl Realm {
             },
             span,
         )?;
-        push(state, ExprTask::Evaluate(right), span)
+        push(state, task, span)
     }
 
     pub(super) fn apply_async_assignment(

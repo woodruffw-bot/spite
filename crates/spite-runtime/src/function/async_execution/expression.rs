@@ -1,6 +1,7 @@
 //! Value expression continuations; source nodes stay in the retained function AST.
 
 mod assignment;
+mod class;
 mod member;
 mod object;
 mod optional;
@@ -25,6 +26,7 @@ use spite_parser::ast::{
 pub(super) fn has_supported_await(expression: &Expr) -> bool {
     match &expression.kind {
         ExprKind::Await(_) | ExprKind::Yield { .. } => true,
+        ExprKind::Class(class) => super::class_definition::has_class_await(class),
         ExprKind::ImportCall { specifier, options } => has_supported_await(specifier) || options.as_ref().is_some_and(|options| has_supported_await(options)),
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
@@ -199,6 +201,15 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
     let mut expression = root_expression(data, root);
     for child in path {
         expression = match (child, &expression.kind) {
+            (ExprChild::ClassHeritage, ExprKind::Class(class)) => {
+                class.heritage.as_ref().expect("class heritage")
+            }
+            (ExprChild::ClassKey(element), ExprKind::Class(class)) => {
+                let Some(PropertyName::Computed(key)) = class.elements[*element].name() else {
+                    unreachable!("computed class name")
+                };
+                key
+            }
             (
                 ExprChild::Inner,
                 ExprKind::Parenthesized(inner)
@@ -429,7 +440,38 @@ impl Realm {
         let task = if matches!(root, ExprRoot::IterationTarget) {
             ExprTask::IterationTarget(Vec::new())
         } else {
-            ExprTask::Evaluate(Vec::new())
+            let name = match root {
+                ExprRoot::Binding { element } => {
+                    let pattern = &super::binding::binding_source(
+                        &data.body,
+                        super::binding::binding_location(data),
+                    )
+                    .0[element]
+                        .pattern;
+                    match &pattern.kind {
+                        spite_parser::ast::BindingPatternKind::Identifier(name) => {
+                            Some(name.as_str().into())
+                        }
+                        _ => None,
+                    }
+                }
+                ExprRoot::BindingDefault => {
+                    match &super::binding_pattern::default_element(data).pattern.kind {
+                        spite_parser::ast::BindingPatternKind::Identifier(name) => {
+                            Some(name.as_str().into())
+                        }
+                        _ => None,
+                    }
+                }
+                ExprRoot::Statement if matches!(action, AsyncAwaitAction::ModuleDefault) => {
+                    Some("default".into())
+                }
+                _ => None,
+            };
+            match name {
+                Some(name) => class::named_task(root_expression(data, root), Vec::new(), name),
+                None => ExprTask::Evaluate(Vec::new()),
+            }
         };
         push(&mut state, task, span)?;
         data.expression = Some(state);
@@ -447,6 +489,20 @@ impl Realm {
         }
         while let Some(task) = state.tasks.pop() {
             match task {
+                ExprTask::EvaluateNamed { path, name } => {
+                    self.async_named_class(data, &mut state, path, name)?;
+                }
+                ExprTask::ClassHeritage { path } => {
+                    let superclass = state.current.take().expect("class heritage value");
+                    self.prepare_async_class_expression(data, &mut state, path, Some(superclass))?;
+                }
+                ExprTask::ClassNext { path, element } => {
+                    self.advance_async_class_expression(data, &mut state, path, element)?;
+                }
+                ExprTask::ClassKey { path, element } => {
+                    let value = state.current.take().expect("class key value");
+                    self.finish_async_class_expression_key(data, &mut state, path, element, value)?;
+                }
                 ExprTask::IterationTarget(path) => self.begin_async_member(
                     data,
                     &mut state,
@@ -466,6 +522,7 @@ impl Realm {
                         | ExprKind::SuperProperty(_)
                         | ExprKind::OptionalChain { .. }
                         | ExprKind::Object(_)
+                        | ExprKind::Class(_)
                         | ExprKind::PrivateIn { .. }
                         | ExprKind::DestructuringAssign { .. }
                         | ExprKind::Update { .. }
@@ -485,6 +542,11 @@ impl Realm {
                             self.tick(span)?;
                             push(&mut state, ExprTask::CheckString(span), span)?;
                             match &expression.kind {
+                                ExprKind::Class(_) => {
+                                    self.begin_async_class_expression(
+                                        data, &mut state, path, None,
+                                    )?;
+                                }
                                 ExprKind::ImportCall { .. } => {
                                     push(
                                         &mut state,

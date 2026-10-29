@@ -98,7 +98,7 @@ pub(super) fn pattern_at<'a>(
     pattern
 }
 
-pub(super) fn default_expression(data: &AsyncExecutionData) -> &Expr {
+pub(super) fn default_element(data: &AsyncExecutionData) -> &spite_parser::ast::BindingElement {
     let state = data
         .pattern_binding
         .as_ref()
@@ -112,14 +112,20 @@ pub(super) fn default_expression(data: &AsyncExecutionData) -> &Expr {
         &cursor.path,
     );
     let index = state.pending_index.expect("pending default index");
-    let element = match &pattern.kind {
+    match &pattern.kind {
         BindingPatternKind::Array { elements, .. } => {
             elements[index].as_ref().expect("default element")
         }
         BindingPatternKind::Object { properties, .. } => &properties[index].element,
         BindingPatternKind::Identifier(_) => unreachable!("binding default source"),
-    };
-    element.initializer.as_ref().expect("default initializer")
+    }
+}
+
+pub(super) fn default_expression(data: &AsyncExecutionData) -> &Expr {
+    default_element(data)
+        .initializer
+        .as_ref()
+        .expect("default initializer")
 }
 
 pub(super) fn key_expression(data: &AsyncExecutionData) -> &Expr {
