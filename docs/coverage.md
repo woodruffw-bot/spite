@@ -56,11 +56,40 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous graph evaluation and cached cycle Promises; asynchronous dependencies remain Unsupported |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20506 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Asynchronous Module graphs
+
+The existing iterative Module evaluator now handles top-level Await dependencies
+and cycles. Synchronous siblings continue while a dependency is suspended; parent
+bodies wait for initialized imports. Pending counts, traced parent edges and
+AsyncEvaluationOrder schedule available ancestors in specification order. Imports
+from a separate async cycle wait for its cycle root. Rejections preserve the
+original reason and skip dependent bodies while independent ready branches run.
+
+Twelve new Runtime groups cover sibling progress, shared diamonds, cyclic root
+waiting, rejection fanout, independently started host evaluations, deep graphs,
+initial/resumed/ancestor host aborts, queued graph/Symbol retention and work
+refusals during both body and completion jobs. The earlier unsupported-graph
+control now verifies delayed successful evaluation. Host aborts leave evaluation
+Promises pending, cancel waiting bodies and bypass catch/finally. Preflight job
+refusals keep the queue intact; started refusals release Module state even before
+native callback entry. Completed independent dependencies remain successful.
+
+Eleven unchanged upstream Module roots add eleven variants, covering sibling
+progress, DFS ordering, async-cycle waiting, resolution ticks, self imports,
+unwrapped Promise exports and runtime rejection types. Fifteen support files
+receive no independent variant credit. Counts are 10,774 fixtures, twenty-two
+helpers, 10,714 reviewed sources and 20,517 variants at the same verified pin.
+
+All 469 Runtime units, 2,275 non-RegExp integrations across 690 files, 56 runner
+package controls and the full corpus pass. CLI/raw smoke targets, strict Clippy,
+Rust 1.88, policy and fixture inventories pass. Parser coverage remains 18/438
+across 88 files, with 591 intrinsic entries and unchanged default host limits.
 
 ## Standalone top-level Await completion jobs
 

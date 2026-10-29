@@ -133,7 +133,7 @@ fn scripts_and_parse_negatives_never_request_module_sources() {
 }
 
 #[test]
-fn import_attributes_and_asynchronous_graphs_keep_explicit_unsupported_outcomes() {
+fn unsupported_import_attributes_stay_separate_from_supported_asynchronous_dependencies() {
     assert!(matches!(
         outcome(
             "import'leaf' with {type:'json'}",
@@ -150,10 +150,7 @@ fn import_attributes_and_asynchronous_graphs_keep_explicit_unsupported_outcomes(
             identifier: "leaf".into(),
             source: "await 0".into()
         })),
-        Outcome::Unsupported {
-            stage: Stage::Runtime,
-            ..
-        }
+        Outcome::Passed
     ));
 }
 

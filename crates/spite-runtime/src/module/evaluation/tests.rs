@@ -199,7 +199,7 @@ fn host_aborts_leave_pending_promises_skip_catches_and_finally_and_never_replay_
 }
 
 #[test]
-fn asynchronous_graphs_are_refused_before_body_entry_even_for_unreachable_awaits() {
+fn unreachable_await_dependencies_defer_parent_bodies_until_the_completion_job() {
     let mut realm = Realm::default();
     realm.eval("let effects=0").unwrap();
     let modules = graph(
@@ -209,25 +209,15 @@ fn asynchronous_graphs_are_refused_before_body_entry_even_for_unreachable_awaits
             ("leaf", "effects++;if(false){await 0}"),
         ],
     );
+    let promise = realm.evaluate_module_record(&modules[0]).unwrap();
+    assert!(matches!(state(&realm, &promise), PromiseState::Pending));
+    check(&mut realm, "effects===1");
     assert!(matches!(
-        realm.evaluate_module_record(&modules[0]),
-        Err(Error::Unsupported { .. })
+        realm.run_next_promise_job().unwrap(),
+        crate::PromiseJobOutcome::Completed
     ));
-    check(&mut realm, "effects===0");
-    assert!(
-        realm
-            .objects
-            .module_execution(modules[0].root.handle())
-            .unwrap()
-            .is_none()
-    );
-    assert!(
-        realm
-            .objects
-            .module_execution(modules[1].root.handle())
-            .unwrap()
-            .is_none()
-    );
+    fulfilled(&realm, &promise);
+    check(&mut realm, "effects===2");
 }
 
 #[test]

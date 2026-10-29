@@ -19,6 +19,9 @@ pub(crate) struct ModuleExecution {
     // Only host failures enter this slot; owning language values use error.
     pub host_failure: Option<crate::Error>,
     pub capability: Option<PromiseCapability>,
+    pub async_order: Option<usize>,
+    pub pending_async_dependencies: usize,
+    pub async_parents: Vec<Handle>,
 }
 
 impl ModuleExecution {
@@ -74,6 +77,9 @@ impl Objects {
             error: None,
             host_failure: None,
             capability: None,
+            async_order: None,
+            pending_async_dependencies: 0,
+            async_parents: Vec::new(),
         }));
         Ok(())
     }
@@ -102,6 +108,9 @@ impl Objects {
                 error: None,
                 host_failure: None,
                 capability: None,
+                async_order: None,
+                pending_async_dependencies: 0,
+                async_parents: Vec::new(),
             })
         });
         data.evaluation = Some(capability.promise.clone());

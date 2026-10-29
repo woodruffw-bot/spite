@@ -659,6 +659,27 @@ impl Realm {
             // A host-aborted await may still own an already registered reaction.
             return Ok(Value::Undefined);
         };
+        if let Some(record) = data.function.module_record()
+            && self
+                .objects
+                .module_execution(record)
+                .map_err(Error::InvalidObject)?
+                .is_some_and(|execution| {
+                    execution.status == crate::object::ModuleExecutionStatus::Aborted
+                })
+        {
+            for environment in &data
+                .context
+                .as_ref()
+                .expect("suspended source context")
+                .scopes[1..]
+            {
+                self.objects
+                    .take_environment_disposable_resources(environment)
+                    .map_err(Error::InvalidObject)?;
+            }
+            return Ok(Value::Undefined);
+        }
         let context = data.context.take().expect("suspended source context");
         let asynchronous_generator = data.function.is_async_generator();
         let module = data.function.module_record().cloned();

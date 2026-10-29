@@ -49,6 +49,12 @@ impl ModuleData {
             .chain(
                 self.execution
                     .iter()
+                    .flat_map(|execution| execution.async_parents.iter())
+                    .map(Some),
+            )
+            .chain(
+                self.execution
+                    .iter()
                     .filter_map(|execution| execution.cycle_root.as_ref())
                     .map(Some),
             )

@@ -407,6 +407,15 @@ impl AsyncExecutionData {
 }
 
 impl Objects {
+    pub(crate) fn async_execution_module(&self, state: &Handle) -> Result<Option<Handle>, Error> {
+        Ok(self
+            .inspect(state)?
+            .async_execution
+            .as_ref()
+            .and_then(|data| data.function.module_record())
+            .cloned())
+    }
+
     pub(crate) fn store_async_execution(
         &mut self,
         state: Option<&Handle>,

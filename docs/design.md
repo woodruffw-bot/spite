@@ -110,8 +110,7 @@ with optional declaration names, or the AssignmentExpression parser with ASI
 *default* binding of anonymous declarations and expressions. Parenthesized named
 function/class expressions introduce no Module binding. Shared strict/scope
 validation and exported-name uniqueness still apply. Nested static declarations
-are syntax errors. Asynchronous Module dependency evaluation remains implementation work;
-no Module AST is accepted by Script execution APIs.
+are syntax errors. No Module AST is accepted by Script execution APIs.
 
 Module::has_top_level_await implements Module Contains `await`, the HasTLA
 input to ParseModule and dependency evaluation (16.2.1). An explicit syntax stack
@@ -498,9 +497,8 @@ constructor, species or then properties. Suspended execution retains its owning
 Module record, and host failures mark it aborted without settling its Promise.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
-Synchronous graphs execute dependencies before parent bodies. Graphs containing
-top-level await remain unsupported before body effects until asynchronous
-dependency scheduling is implemented.
+Graphs execute dependencies before their dependent bodies; pending top-level
+Await defers those bodies while unrelated siblings continue evaluating.
 
 ModuleHandle retains a realm-owned Source Text Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
@@ -560,15 +558,15 @@ a distinct marker and preserve the target's cached identity, including imported
 namespace reexports normalized by edition 17 ParseModule. Namespace construction
 can precede a cycle ancestor's environment initialization without reading values.
 Import maps, namespace targets and suspended import references trace record edges
-through ordinary collection. Dependency evaluation remains an explicit boundary;
-evaluating a linked graph stops before any body effect.
+through ordinary collection. Linking prepares cells without entering bodies;
+evaluation remains a separate host operation.
 
-Synchronous InnerModuleEvaluation uses an explicit DFS and active component stack
+InnerModuleEvaluation uses an explicit DFS and active component stack
 (16.2.1.6.2). Dependencies execute in source order, shared records run once, and
 successful components retain their cycle root. Evaluating any member of a
 successful cycle returns that root's exact top-level Promise. A language failure
-marks only the active stack with the original reason; completed independent
-components remain successful. Failed components without a cycle root keep their
+marks the active stack and asynchronous ancestors with the original reason;
+completed independent components remain successful. Failed components without a cycle root keep their
 own later-created rejected Promises while sharing the original reason.
 
 The existing source interpreter has a synchronous Module mode, preserving strict
@@ -576,9 +574,22 @@ environments, synthetic defaults, import.meta and disposal without allocating a
 body Promise for each synchronous dependency. Top-level capability, evaluation
 errors and cycle-root edges participate in normal tracing. Host failures leave
 pending cached Promises, bypass cleanup and preserve aborted state without body
-replay; bookkeeping release needs no work allowance. Graph preflight refuses
-any HasTLA module before body entry. Standalone top-level Await retains its
-existing evaluation path; asynchronous dependency scheduling remains work.
+replay; bookkeeping release needs no work allowance.
+
+HasTLA modules and modules waiting on asynchronous dependencies receive monotonic
+AsyncEvaluationOrder values and retain pending dependency counts and traced
+AsyncParentModules edges. A completed dependency outside the active DFS component
+is normalized to its cycle root before registering an ancestor. ExecuteAsyncModule
+starts a HasTLA body only when its pending count is zero; synchronous siblings
+continue during the initial traversal. Completion reactions gather available
+ancestors iteratively, sort by AsyncEvaluationOrder, and run synchronous bodies
+or start their asynchronous bodies in that order. Fulfillment settles each
+available top-level capability before its ancestors; rejection propagates the
+exact original value without executing dependent bodies. Host aborts cancel
+waiting ancestors and suspended bodies, release bookkeeping even at zero work,
+and preserve completed independent dependencies. Started reaction jobs refused
+before native callback entry use the same abort path; preflight refusals retain
+the queued job for a later host attempt.
 
 import.meta caches one ordinary null-prototype object per Source Text Module
 record (13.3.12). The default HostGetImportMetaProperties returns no properties
@@ -3167,7 +3178,8 @@ across aliases/cycles, and rejects source changes for an existing identifier.
 All records are prepared before loading/linking the graph. A separate Resolution
 stage ensures loading, dependency parsing and linking failures never satisfy a
 runtime-negative expectation. Scripts and parse negatives never request sources.
-Import attributes and asynchronous dependency evaluation remain Unsupported.
+Import attributes remain Unsupported. Asynchronous dependencies use the shared
+Module scheduler and explicit host Promise-job draining.
 
 Resolution negatives stop after loading and linking, without harness or body
 evaluation (Test262 INTERPRETING.md). Only an actual language exception from

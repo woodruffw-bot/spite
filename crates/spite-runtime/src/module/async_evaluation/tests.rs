@@ -176,3 +176,5 @@ fn resumed_host_aborts_mark_the_record_aborted_and_never_settle_its_top_level_pr
         PromiseJobOutcome::NoJob
     ));
 }
+
+mod graph;

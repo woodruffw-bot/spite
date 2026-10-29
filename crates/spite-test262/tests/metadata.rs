@@ -230,6 +230,13 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         if fields[0] == "script-runtime-error" {
             assert!(!meta.has_flag("raw"));
             let error_type = match fields[2] {
+                "test/language/module-code/top-level-await/module-import-rejection-body.js"
+                | "test/language/module-code/top-level-await/module-import-rejection.js" => {
+                    "TypeError"
+                }
+                "test/language/module-code/top-level-await/module-import-rejection-tick.js" => {
+                    "RangeError"
+                }
                 "test/language/module-code/eval-self-abrupt.js"
                 | "test/language/module-code/eval-export-dflt-expr-err-eval.js" => "Test262Error",
                 "test/language/module-code/eval-export-dflt-expr-err-get-value.js"
@@ -273,6 +280,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 10748);
+    assert_eq!(count, 10774);
     assert_eq!(harness_count, 22);
 }

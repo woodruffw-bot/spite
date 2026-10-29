@@ -1,9 +1,19 @@
 # Test262 regression fixtures
 
-These 10748 unmodified test fixtures and twenty-two harness files come from
+These 10774 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Asynchronous Module dependency graphs
+
+Eleven unchanged Module originals add eleven required variants for sibling
+progress, DFS completion order, waiting on an async cycle root, resolution ticks,
+self imports, unwrapped Promise exports and runtime rejection types. Fifteen
+unchanged support sources receive no independent variant credit. Git blob and
+SHA-256 hashes are verified at the existing pin. There are 10,774 fixtures,
+twenty-two helpers, 10,714 reviewed sources and 20,517 variants. Existing sources,
+harness files, limits and worker counts are unchanged.
 
 ## Resolution negatives and ambiguous export graphs
 
@@ -37,8 +47,8 @@ The conformance host loads relative Module sources by stable normalized identity
 inside upstream/test. Loading, dependency parsing and linking failures have a
 separate Resolution stage and never satisfy runtime-negative expectations.
 Imported body exceptions retain their runtime phase. Scripts and parse negatives
-never request sources; unsupported attributes and asynchronous dependencies keep
-explicit non-passing outcomes.
+never request sources; unsupported attributes keep explicit non-passing outcomes.
+Asynchronous dependencies use the shared Module scheduler.
 
 Eleven unchanged default-export originals and distinct-for-each-module.js add
 twelve required Module variants. The unchanged distinct-for-each-module_FIXTURE.js

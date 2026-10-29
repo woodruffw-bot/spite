@@ -590,6 +590,7 @@ impl Realm {
                     }
                 }
                 PromiseJob::Reaction { reaction, argument } => {
+                    let handler = reaction.handler.clone();
                     let completion = if matches!(reaction.handler, Value::Undefined) {
                         if reaction.fulfill {
                             Ok(argument)
@@ -604,6 +605,11 @@ impl Realm {
                         // Specification-internal handlers consume their own
                         // language completions. Host failures still reach the
                         // job outcome and never become JavaScript rejections.
+                        if let Err(error) = &completion
+                            && !error.is_language_exception()
+                        {
+                            self.abort_native_module_reaction(&handler, error)?;
+                        }
                         return completion.map(|_| ());
                     };
                     let (method, value) = match completion {

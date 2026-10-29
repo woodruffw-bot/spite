@@ -251,6 +251,7 @@ pub struct Realm {
     // One host job is one execution sequence and one work allowance.
     job_active: bool,
     promise_jobs: VecDeque<function::PromiseJob>,
+    module_async_order: usize,
     time_zone: Option<TimeZone>,
 }
 
@@ -279,6 +280,7 @@ impl Realm {
             kept_alive: Vec::new(),
             job_active: false,
             promise_jobs: VecDeque::new(),
+            module_async_order: 0,
             time_zone: None,
         }
     }

@@ -10702,3 +10702,14 @@ test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-exp
 test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-export-star-as-from.js	-	-	-
 test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-import-star-as-and-export.js	-	-	-
 test/language/module-code/ambiguous-export-bindings/omitted-from-namespace.js	-	-	-
+test/language/module-code/top-level-await/async-module-does-not-block-sibling-modules.js	-	-	-
+test/language/module-code/top-level-await/dfs-invariant.js	-	-	-
+test/language/module-code/top-level-await/module-async-import-async-resolution-ticks.js	-	-	-
+test/language/module-code/top-level-await/module-import-rejection-body.js	-	-	-
+test/language/module-code/top-level-await/module-import-rejection-tick.js	-	-	-
+test/language/module-code/top-level-await/module-import-rejection.js	-	-	-
+test/language/module-code/top-level-await/module-import-resolution.js	-	-	-
+test/language/module-code/top-level-await/module-import-unwrapped.js	-	-	-
+test/language/module-code/top-level-await/module-self-import-async-resolution-ticks.js	-	-	-
+test/language/module-code/top-level-await/module-sync-import-async-resolution-ticks.js	-	-	-
+test/language/module-code/top-level-await/pending-async-dep-from-cycle.js	-	-	-

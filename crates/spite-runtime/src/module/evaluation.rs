@@ -1,4 +1,4 @@
-//! Synchronous InnerModuleEvaluation with persistent cycle roots (16.2.1.6.2).
+//! InnerModuleEvaluation with persistent cycle roots and async dependencies (16.2.1.6.2).
 
 use super::*;
 use crate::object::ModuleExecutionStatus;
@@ -27,36 +27,49 @@ impl Realm {
         error: &Error,
     ) -> Result<(), Error> {
         debug_assert!(!error.is_language_exception());
-        let execution = self
-            .objects
-            .module_execution_mut(record)
-            .map_err(Error::InvalidObject)?;
-        execution.status = ModuleExecutionStatus::Aborted;
-        execution.error = None;
-        execution.host_failure = Some(error.clone());
+        // Abort bookkeeping is unmetered: a refused job must leave no waiting
+        // ancestor able to resume its body, even with its work allowance at zero.
+        let mut pending = vec![record.clone()];
+        let mut seen = std::collections::HashSet::new();
+        while let Some(current) = pending.pop() {
+            if !seen.insert(current.clone()) {
+                continue;
+            }
+            let pending_promise = match self
+                .objects
+                .module_evaluation(&current)
+                .map_err(Error::InvalidObject)?
+            {
+                Some(Value::Object(promise)) => matches!(
+                    self.objects
+                        .inspect(&promise)
+                        .map_err(Error::InvalidObject)?
+                        .promise_state(),
+                    Some(crate::PromiseState::Pending)
+                ),
+                _ => false,
+            };
+            let execution = self
+                .objects
+                .module_execution_mut(&current)
+                .map_err(Error::InvalidObject)?;
+            pending.extend(execution.async_parents.iter().cloned());
+            if pending_promise || execution.status != ModuleExecutionStatus::Evaluated {
+                execution.status = ModuleExecutionStatus::Aborted;
+                execution.error = None;
+                execution.host_failure = Some(error.clone());
+                execution.async_order = None;
+            }
+        }
         Ok(())
     }
 
-    pub(super) fn evaluate_sync_module_graph(
+    pub(super) fn evaluate_module_graph(
         &mut self,
         root: &ObjectHandle,
         span: Span,
     ) -> Result<Value, Error> {
         let catalog = self.module_catalog(root, span)?;
-        // Async dependency scheduling is a separate boundary. Refuse before
-        // allocating evaluation state or entering any graph body.
-        for node in &catalog.nodes {
-            let asynchronous = self.object_work(span, |objects, budget| {
-                budget.charge(1)?;
-                Ok(objects.module_source(&node.record)?.has_top_level_await())
-            })?;
-            if asynchronous {
-                return Err(Self::unsupported(
-                    span,
-                    "asynchronous module dependency evaluation is not implemented",
-                ));
-            }
-        }
         let count = catalog.nodes.len();
         let mut indices = reserved(count, span)?;
         indices.resize(count, None);
@@ -107,13 +120,12 @@ impl Realm {
                 self.tick(span)?;
                 let node = frame.node;
                 if let Some(&child) = catalog.nodes[node].dependencies.get(frame.next) {
-                    frame.next += 1;
                     let record = &catalog.nodes[child].record;
-                    match self
+                    let previous = self
                         .objects
                         .module_execution(record)
-                        .map_err(Error::InvalidObject)?
-                    {
+                        .map_err(Error::InvalidObject)?;
+                    let dependency = match previous {
                         None => {
                             self.object_work(span, |objects, budget| {
                                 objects.start_module_execution(record, budget)
@@ -126,46 +138,59 @@ impl Realm {
                                 node: child,
                                 next: 0,
                             });
+                            continue;
                         }
                         Some(execution)
                             if execution.status == ModuleExecutionStatus::Evaluating =>
                         {
-                            ancestors[node] = ancestors[node].min(ancestors[child])
+                            ancestors[node] = ancestors[node].min(ancestors[child]);
+                            record.clone()
                         }
-                        Some(execution) => {
-                            let root = execution.cycle_root.as_ref().unwrap_or(record);
-                            let execution = self
-                                .objects
-                                .module_execution(root)
-                                .map_err(Error::InvalidObject)?
-                                .expect("completed dependency");
-                            if let Some(error) = &execution.host_failure {
-                                return Err(error.clone());
-                            }
-                            if let Some(reason) = &execution.error {
-                                return Err(Error::Thrown(reason.clone()));
-                            }
-                        }
+                        Some(execution) => execution
+                            .cycle_root
+                            .clone()
+                            .unwrap_or_else(|| record.clone()),
+                    };
+                    let execution = self
+                        .objects
+                        .module_execution(&dependency)
+                        .map_err(Error::InvalidObject)?
+                        .expect("visited dependency");
+                    if let Some(error) = &execution.host_failure {
+                        return Err(error.clone());
                     }
+                    if let Some(reason) = &execution.error {
+                        return Err(Error::Thrown(reason.clone()));
+                    }
+                    if execution.async_order.is_some() {
+                        self.add_async_module_parent(
+                            &dependency,
+                            &catalog.nodes[node].record,
+                            span,
+                        )?;
+                    }
+                    frames.last_mut().expect("current evaluation frame").next += 1;
                     continue;
                 }
                 let record = &catalog.nodes[node].record;
-                let source = self
-                    .objects
-                    .module_source(record)
-                    .map_err(Error::InvalidObject)?
-                    .clone();
-                let environment = self
-                    .objects
-                    .module_environment(record)
-                    .map_err(Error::InvalidObject)?
-                    .expect("linked module");
-                self.execute_sync_module_body(
-                    source.body(),
-                    environment,
-                    module_default_index(&source),
-                    span,
-                )?;
+                let (has_tla, pending) = self.object_work(span, |objects, budget| {
+                    budget.charge(1)?;
+                    Ok((
+                        objects.module_source(record)?.has_top_level_await(),
+                        objects
+                            .module_execution(record)?
+                            .expect("visited module")
+                            .pending_async_dependencies,
+                    ))
+                })?;
+                if has_tla || pending > 0 {
+                    self.assign_module_async_order(record, span)?;
+                    if pending == 0 {
+                        self.execute_module_record(record, true, span)?;
+                    }
+                } else {
+                    self.execute_module_record(record, false, span)?;
+                }
                 if ancestors[node] == indices[node].expect("visited module") {
                     let start = stack
                         .iter()
@@ -176,7 +201,11 @@ impl Realm {
                         for member in &stack[start..] {
                             let execution =
                                 objects.module_execution_mut(&catalog.nodes[*member].record)?;
-                            execution.status = ModuleExecutionStatus::Evaluated;
+                            execution.status = if execution.async_order.is_some() {
+                                ModuleExecutionStatus::EvaluatingAsync
+                            } else {
+                                ModuleExecutionStatus::Evaluated
+                            };
                             execution.cycle_root = Some(record.clone());
                         }
                         Ok(())
@@ -184,21 +213,21 @@ impl Realm {
                     stack.truncate(start);
                 }
                 frames.pop();
-                if let Some(parent) = frames.last()
-                    && self
-                        .objects
-                        .module_execution(record)
-                        .map_err(Error::InvalidObject)?
-                        .expect("visited module")
-                        .status
-                        == ModuleExecutionStatus::Evaluating
-                {
-                    ancestors[parent.node] = ancestors[parent.node].min(ancestors[node]);
-                }
             }
             Ok(())
         })();
-        let settled = match result {
+        let settled = (|| match result {
+            Ok(())
+                if self
+                    .objects
+                    .module_execution(root)
+                    .map_err(Error::InvalidObject)?
+                    .expect("evaluated root")
+                    .status
+                    == ModuleExecutionStatus::EvaluatingAsync =>
+            {
+                Ok(())
+            }
             Ok(()) => self
                 .call(
                     capability.resolve,
@@ -211,12 +240,25 @@ impl Realm {
                 match self.language_exception_value(error) {
                     Ok(reason) => {
                         for member in &stack {
+                            let record = &catalog.nodes[*member].record;
+                            if self
+                                .objects
+                                .module_execution(record)
+                                .map_err(Error::InvalidObject)?
+                                .expect("active module")
+                                .async_order
+                                .is_some()
+                            {
+                                self.reject_async_module_execution(record, reason.clone(), span)?;
+                                continue;
+                            }
                             let execution = self
                                 .objects
-                                .module_execution_mut(&catalog.nodes[*member].record)
+                                .module_execution_mut(record)
                                 .map_err(Error::InvalidObject)?;
                             execution.status = ModuleExecutionStatus::Evaluated;
                             execution.error = Some(reason.clone());
+                            execution.async_order = None;
                         }
                         self.call(capability.reject, Value::Undefined, vec![reason], span)
                             .map(|_| ())
@@ -225,17 +267,24 @@ impl Realm {
                 }
             }
             Err(error) => Err(error),
-        };
+        })();
         if let Err(error) = settled {
             // Host aborts must release bookkeeping even with no budget and
             // preserve an unsettled cached Promise without replaying bodies.
-            for record in stack
-                .iter()
-                .map(|node| &catalog.nodes[*node].record)
-                .chain(std::iter::once(root))
-            {
-                self.abort_module_evaluation(record, &error)?;
+            for (index, node) in catalog.nodes.iter().enumerate() {
+                if indices[index].is_some()
+                    && self
+                        .objects
+                        .module_execution(&node.record)
+                        .map_err(Error::InvalidObject)?
+                        .is_some_and(|execution| {
+                            execution.status != ModuleExecutionStatus::Evaluated
+                        })
+                {
+                    self.abort_module_evaluation(&node.record, &error)?;
+                }
             }
+            self.abort_module_evaluation(root, &error)?;
             return Err(error);
         }
         Ok(capability.promise)

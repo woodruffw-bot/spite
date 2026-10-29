@@ -22,7 +22,7 @@ use std::collections::BTreeMap;
 ///
 /// Clones refer to the same record. The record, bindings and evaluation Promise
 /// remain reachable until the last handle is dropped. Loaded graphs support
-/// linking and synchronous dependency evaluation.
+/// linking and dependency evaluation, including top-level Await.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ModuleHandle {
     root: crate::object::Root,
@@ -42,8 +42,7 @@ impl Realm {
     /// Promise. Returned values are unrooted; retain them with [`Self::root_value`]
     /// across collection. Evaluation never collects.
     ///
-    /// Use retained records to load dependencies. Dependency graphs containing
-    /// top-level await still require asynchronous scheduling.
+    /// Use retained records to load dependencies before evaluation.
     pub fn eval_module(&mut self, source: &str) -> Result<Value, Error> {
         let module = self.create_module(source)?;
         self.evaluate_module_record(&module)
@@ -105,23 +104,8 @@ impl Realm {
         if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
         }
-        let source = self
-            .objects
-            .module_source(record)
-            .map_err(Error::InvalidObject)?
-            .clone();
         self.link_module_record(record, Span::new(0, 0))?;
-        if !source.has_top_level_await() || !source.requested_modules().is_empty() {
-            return self.evaluate_sync_module_graph(record, Span::new(0, 0));
-        }
-        let span = Span::new(
-            0,
-            source
-                .statements()
-                .last()
-                .map_or(0, |statement| statement.span.end),
-        );
-        self.evaluate_async_standalone_module(&source, record, span)
+        self.evaluate_module_graph(record, Span::new(0, 0))
     }
 
     fn initialize_module_record(
