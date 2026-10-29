@@ -1,5 +1,6 @@
 //! ForStatement header phases, iteration environments and source suspension.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -190,7 +191,7 @@ fn for_headers_and_bodies_preserve_private_eval_this_and_arguments() {
 #[test]
 fn for_host_abort_releases_header_resources_without_handlers_or_disposal_at_budget_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -204,7 +205,7 @@ fn for_host_abort_releases_header_resources_without_handlers_or_disposal_at_budg
         let tail = if limited {
             "while(true){}"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{for(using header=resource;true;){read=()=>header;await 0;TAIL}}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

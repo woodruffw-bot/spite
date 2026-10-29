@@ -1,5 +1,6 @@
 //! Lexical Array BindingInitialization with suspended defaults (14.3.3, Await).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -135,7 +136,7 @@ fn pending_defaults_keep_cached_next_and_its_environment_live_then_release_them(
 #[test]
 fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -144,7 +145,7 @@ fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         realm.eval(&format!("async function f(){{using r=resource;try{{let [x=(await gate,{tail})]=source}}catch{{caught=true}}finally{{finalized++}}}}f().catch(()=>{{caught=true}})")).unwrap();
         realm.eval("delete resource[dispose];proceed()").unwrap();

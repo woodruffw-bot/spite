@@ -1,5 +1,6 @@
 //! Suspended var Array BindingInitialization and pre-step References (14.3.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 fn check(realm: &mut Realm, source: &str) {
     assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
@@ -146,7 +147,7 @@ fn default_rejection_closes_each_nested_iterator_before_entering_outer_handlers(
 #[test]
 fn host_abort_in_var_defaults_skips_iterator_close_disposal_and_handlers() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -155,7 +156,7 @@ fn host_abort_in_var_defaults_skips_iterator_close_disposal_and_handlers() {
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         realm.eval(&format!("async function f(){{using r=resource;try{{var [x=(await gate,{tail})]=source}}catch{{caught=true}}finally{{finalized++}}}}f().catch(()=>{{caught=true}})")).unwrap();
         realm.eval("delete resource[dispose];proceed()").unwrap();

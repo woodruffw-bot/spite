@@ -248,6 +248,19 @@ impl Realm {
         byte_length: Value,
         span: Span,
     ) -> Result<Value, Error> {
+        if let Value::Object(buffer) = &buffer
+            && self.object_work(span, |objects, _| {
+                Ok(objects
+                    .inspect(buffer)?
+                    .shared_array_buffer_data()
+                    .is_some())
+            })?
+        {
+            return Err(Self::unsupported(
+                span,
+                "shared-buffer DataView storage is not implemented",
+            ));
+        }
         let buffer = if let Value::Object(buffer) = buffer {
             if self.data_view_buffer_state(&buffer, span)?.is_some() {
                 buffer

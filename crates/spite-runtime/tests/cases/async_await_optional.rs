@@ -1,5 +1,6 @@
 //! Suspended ChainEvaluation and retained final References (13.3.10).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -23,10 +24,10 @@ fn collect(realm: &mut Realm) {
 
 #[test]
 fn optional_nullish_steps_skip_awaited_keys_arguments_and_the_entire_ungrouped_suffix() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval(r#"
         let operand=0,result,n=null,missing;
-        async function f(){return[(await n)?.[await(++operand)],n?.method(await(++operand)).x,n?.[new SharedArrayBuffer(0)](await(++operand)),missing?.(await(++operand)),n?.[await missing].x]}
+        async function f(){return[(await n)?.[await(++operand)],n?.method(await(++operand)).x,n?.[spiteUnavailableHost()](await(++operand)),missing?.(await(++operand)),n?.[await missing].x]}
         f().then(value=>{result=value});
     "#).unwrap();
     drain(&mut realm);
@@ -162,7 +163,7 @@ fn optional_keys_and_calls_trace_bases_receivers_and_earlier_arguments_then_rele
 
 #[test]
 fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_cleanup() {
-    let mut realm = Realm::new(Limits {
+    let mut realm = Realm::with_unavailable_host_limits(Limits {
         max_arguments: Some(2),
         ..Default::default()
     });
@@ -188,7 +189,7 @@ fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_clea
         "effects===3&&called===0&&disposed===0&&finalized===0&&!caught",
     );
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -203,7 +204,7 @@ fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_clea
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{return object?.method(await 0,TAIL)}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

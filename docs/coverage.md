@@ -39,6 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity and serialized monotonic grow; shared views and slicing remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, pause's processor hint, and non-shared wait/waitAsync rejection |
@@ -61,6 +62,33 @@ not an alternative language specification.
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20506 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## SharedArrayBuffer construction and growable lengths
+
+SharedArrayBuffer now constructs branded fixed/growable instances with ordered
+ToIndex/options/prototype handling, intrinsic prototype fallback, length getters
+and monotonic grow. One reference-counted backing identity preserves length
+across clones; serialized racing grows cannot shrink or lose updates. Reentrant
+conversion precedes current-length validation, and fixed buffers reject before
+conversion. Logical regions use implicit zeros without eager large allocation.
+Shared views, slicing, shared Atomics and agent integration remain unsupported.
+
+Six Runtime integration groups and one native concurrent-backing group cover
+construction/brands, conversion order, reentrant growth, safe-index boundaries,
+subclasses/fallback/frozen objects and explicit shared-view refusal. Existing
+host-abort controls use a test-only unavailable host name with unchanged limits
+and catch/finally/rejection assertions, independent of newly implemented globals.
+
+Sixty-five whole unchanged upstream originals add 130 required Script variants.
+The 72-file candidate also contains four shared-view-dependent cases, one
+cross-realm host case and two cases assuming eager multipebibyte allocation;
+none of those seven files is admitted. Counts are 10,869 fixtures, twenty-two
+helpers, 10,788 reviewed sources and 20,657 variants, at the same verified pin.
+
+All 488 Runtime units and 2,281 non-RegExp integrations across 691 files pass.
+The full corpus and 62 package controls pass, as do CLI/raw smoke targets, strict
+Clippy, Rust 1.88, policy and inventories. Parser coverage remains 18/438 across
+88 files, with 591 intrinsic entries and unchanged default limits/helpers.
 
 ## Dynamic-import conformance host and ordering
 

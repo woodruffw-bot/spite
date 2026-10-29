@@ -1,5 +1,6 @@
 //! DestructuringAssignmentEvaluation after an awaited RHS (13.15.5).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -153,7 +154,7 @@ fn destructuring_rhs_and_its_completion_value_remain_live_until_replaced() {
 #[test]
 fn host_abort_in_a_post_await_default_skips_iterator_close_put_handlers_and_disposal() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -169,7 +170,7 @@ fn host_abort_in_a_post_await_default_skips_iterator_close_put_handlers_and_disp
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{[object.x=TAIL]=await source}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

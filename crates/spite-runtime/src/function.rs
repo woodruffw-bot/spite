@@ -22,6 +22,7 @@ mod bound;
 mod builtin;
 mod call;
 mod generator;
+mod shared_array_buffer;
 mod source_context;
 pub(crate) use call::CallTarget;
 mod class;

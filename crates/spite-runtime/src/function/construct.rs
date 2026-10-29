@@ -246,11 +246,16 @@ impl Realm {
                         span,
                     );
                 }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(constructor)) => {
-                    return Err(Self::unsupported(
+                Callable::Builtin(Builtin::GlobalMetadataConstructor(
+                    super::global_metadata::Constructor::SharedArrayBuffer,
+                )) => {
+                    let mut arguments = arguments.into_iter();
+                    return self.shared_array_buffer_constructor(
+                        new_target,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        arguments.next().unwrap_or(Value::Undefined),
                         span,
-                        format!("{} is not implemented", constructor.name()),
-                    ));
+                    );
                 }
                 Callable::Builtin(Builtin::Object) => {
                     return self.object_constructor(

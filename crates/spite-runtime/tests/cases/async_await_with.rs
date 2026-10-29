@@ -1,5 +1,6 @@
 //! WithStatement suspension and Object Environment references (14.11, 9.1.1.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -148,7 +149,7 @@ fn pending_with_environments_and_escaped_closures_keep_objects_live_until_releas
 #[test]
 fn host_abort_restores_with_scope_and_skips_disposal_catch_and_finally() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -157,7 +158,7 @@ fn host_abort_restores_with_scope_and_skips_disposal_catch_and_finally() {
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){try{with(await {x:9}){using r=resource;await gate;TAIL}}catch{caught=true}finally{finalized++}}f().catch(()=>{caught=true})".replace("TAIL",tail);
         realm.eval(&code).unwrap();

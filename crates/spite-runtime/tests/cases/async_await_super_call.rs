@@ -1,5 +1,6 @@
 //! EvaluateSuperCall with suspended arguments in lexical async arrows (13.3.7.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -138,7 +139,7 @@ fn pending_super_arguments_remain_live_and_rejection_releases_them_without_const
 
 #[test]
 fn super_argument_limits_and_host_abort_skip_construction_fields_handlers_and_disposal() {
-    let mut realm = Realm::new(Limits {
+    let mut realm = Realm::with_unavailable_host_limits(Limits {
         max_arguments: Some(2),
         ..Default::default()
     });
@@ -164,7 +165,7 @@ fn super_argument_limits_and_host_abort_skip_construction_fields_handlers_and_di
         "effects===3&&calls===0&&fields===0&&disposed===0&&finalized===0&&!caught",
     );
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -181,7 +182,7 @@ fn super_argument_limits_and_host_abort_skip_construction_fields_handlers_and_di
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="class Derived extends Base{field=(fields++,1);constructor(){return(async()=>{using root=resource;try{return super(await 0,TAIL)}finally{finalized++}})()}}new Derived().catch(()=>{caught=true})".replace("TAIL",tail);
         realm.eval(&code).unwrap();

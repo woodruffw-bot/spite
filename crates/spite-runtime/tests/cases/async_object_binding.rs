@@ -1,5 +1,6 @@
 //! Suspended object BindingInitialization, keyed bindings and rest (14.3.3).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 fn check(realm: &mut Realm, source: &str) {
     assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
@@ -174,7 +175,7 @@ fn defined_values_and_ordinary_defaults_keep_skipping_and_name_inference() {
 fn host_failure_in_keys_or_defaults_skips_parent_close_disposal_and_handlers() {
     for limited in [false, true] {
         for key in [false, true] {
-            let mut realm = Realm::new(Limits {
+            let mut realm = Realm::with_unavailable_host_limits(Limits {
                 max_steps: limited.then_some(10_000),
                 ..Default::default()
             });
@@ -183,7 +184,7 @@ fn host_failure_in_keys_or_defaults_skips_parent_close_disposal_and_handlers() {
             let tail = if limited {
                 "spin()"
             } else {
-                "new SharedArrayBuffer(0)"
+                "spiteUnavailableHost()"
             };
             let pattern = if key {
                 format!("{{[(await gate,{tail})]:x}}")

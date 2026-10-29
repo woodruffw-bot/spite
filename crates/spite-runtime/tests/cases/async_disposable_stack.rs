@@ -1,5 +1,6 @@
 //! Async resource registration, native suspension, suppression and collection.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn drain(realm: &mut Realm) {
@@ -277,15 +278,15 @@ fn resources_and_suppressed_failures_are_traced_across_suspension_and_released()
 
 #[test]
 fn host_failures_abort_initial_and_resumed_cleanup_without_js_rejection() {
-    let mut realm = Realm::default();
-    realm.eval("let flag=0,s=new AsyncDisposableStack;s.defer(()=>{flag=3});s.defer(()=>new SharedArrayBuffer(0))").unwrap();
+    let mut realm = Realm::with_unavailable_host();
+    realm.eval("let flag=0,s=new AsyncDisposableStack;s.defer(()=>{flag=3});s.defer(()=>spiteUnavailableHost())").unwrap();
     assert!(matches!(
         realm.eval("try{s.disposeAsync()}catch(e){flag=1}finally{flag=2}"),
         Err(Error::Unsupported { .. })
     ));
     check(&mut realm, "flag===0&&s.disposed");
-    let mut realm = Realm::default();
-    realm.eval("let flag=0,s=new AsyncDisposableStack;s.defer(()=>{flag=3});s.defer(()=>new SharedArrayBuffer(0));s.defer(()=>undefined);let result=s.disposeAsync();result.catch(()=>{flag=1})").unwrap();
+    let mut realm = Realm::with_unavailable_host();
+    realm.eval("let flag=0,s=new AsyncDisposableStack;s.defer(()=>{flag=3});s.defer(()=>spiteUnavailableHost());s.defer(()=>undefined);let result=s.disposeAsync();result.catch(()=>{flag=1})").unwrap();
     assert!(matches!(
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))

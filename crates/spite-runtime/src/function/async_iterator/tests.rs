@@ -123,8 +123,9 @@ fn intrinsic_await_ignores_public_then_species_and_replaced_promise_bindings() {
     drain(&mut realm);
     check(&mut realm, "done");
     let mut realm = new_realm();
+    realm.reserve_unsupported_global("spiteUnavailableHost");
     realm.eval("let flag=0").unwrap();
-    assert!(matches!(realm.eval("try{ap[Symbol.asyncDispose].call({return(){return new SharedArrayBuffer(0)}})}catch(e){flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{ap[Symbol.asyncDispose].call({return(){return spiteUnavailableHost()}})}catch(e){flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
     check(&mut realm, "flag===0");
 }
 

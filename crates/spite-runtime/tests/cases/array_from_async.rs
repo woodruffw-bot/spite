@@ -1,5 +1,6 @@
 //! Sequential Array.fromAsync conversion, awaiting, and cleanup (23.1.2.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -186,8 +187,8 @@ fn pending_native_state_survives_gc_and_releases_source_after_completion() {
 
 #[test]
 fn host_failures_bypass_rejection_and_iterator_close() {
-    let mut realm = Realm::default();
-    realm.eval("let caught=false,closed=false,source={[Symbol.asyncIterator](){return this},next(){return{value:1,done:false}},return(){closed=true;return{}}};Array.fromAsync(source,()=>new SharedArrayBuffer(0)).catch(()=>{caught=true})").unwrap();
+    let mut realm = Realm::with_unavailable_host();
+    realm.eval("let caught=false,closed=false,source={[Symbol.asyncIterator](){return this},next(){return{value:1,done:false}},return(){closed=true;return{}}};Array.fromAsync(source,()=>spiteUnavailableHost()).catch(()=>{caught=true})").unwrap();
     let mut reported = false;
     loop {
         match realm.run_next_promise_job().unwrap() {

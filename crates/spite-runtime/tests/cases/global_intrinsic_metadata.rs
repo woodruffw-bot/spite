@@ -148,14 +148,11 @@ fn deferred_constructors_require_new_with_ordinary_type_error_completion() {
 
 #[test]
 fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
-    // Each operation reaches a deferred algorithm or intrinsic constructor.
+    // Each operation reaches a deferred shared-buffer algorithm.
     // Reading its metadata must not stand in for executing that dependency.
     let operations = [
-        "new SharedArrayBuffer({valueOf(){hits++;return 0;}})",
-        "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'byteLength').get.call({})",
-        "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'growable').get.call({})",
-        "Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'maxByteLength').get.call({})",
-        "SharedArrayBuffer.prototype.grow.call({},0)",
+        "new Uint8Array(new SharedArrayBuffer(4))",
+        "new DataView(new SharedArrayBuffer(4))",
         "SharedArrayBuffer.prototype.slice.call({},0,0)",
     ];
     let mut realm = Realm::default();
@@ -174,16 +171,13 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
             "{operation}"
         );
     }
-    // The deferred body cannot inspect newTarget.prototype or create a fake
-    // instance. Ordinary evaluation of arguments still precedes construction.
+    // The implemented constructor converts length and reads newTarget.prototype.
+    // The getter's language error runs catch/finally in the normal order.
     realm.eval("order=0").unwrap();
     let result=realm.eval("try{Reflect.construct(SharedArrayBuffer,[(order++,0)],bound);}catch{flag=1;}finally{flag=2;}");
-    assert!(
-        matches!(&result, Err(Error::Unsupported { .. })),
-        "{result:?}"
-    );
+    assert!(result.is_ok(), "{result:?}");
     assert_eq!(
-        realm.eval("order===1 && flag===0 && hits===0"),
+        realm.eval("order===101 && flag===2 && hits===0"),
         Ok(Value::Boolean(true))
     );
     // Proxy is implemented now: construction itself does not invoke handler

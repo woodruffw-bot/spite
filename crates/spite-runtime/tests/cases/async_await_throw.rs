@@ -1,5 +1,6 @@
 //! Real source throw completions after Await and expression continuation.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -82,13 +83,13 @@ fn completed_throw_expressions_reject_raw_thenables_and_preserve_symbol_identity
 
 #[test]
 fn host_failure_in_resumed_throw_operands_bypasses_rejection_and_releases_cached_disposers() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm
         .eval(
             r#"
         let state={},disposed=0,caught=false,read,resource={[Symbol.dispose](){disposed++}};
         state.weak=new WeakRef(resource[Symbol.dispose]);
-        async function f(){using r=resource;read=()=>r;throw(await 0,new SharedArrayBuffer(0))}
+        async function f(){using r=resource;read=()=>r;throw(await 0,spiteUnavailableHost())}
         f().catch(()=>{caught=true});delete resource[Symbol.dispose];
     "#,
         )

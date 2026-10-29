@@ -1,5 +1,6 @@
 //! Ordered Promise.all aggregation, guarded callbacks and traced result lists.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
@@ -124,14 +125,14 @@ fn pending_aggregate_values_and_symbols_survive_collection_and_release_after_com
 
 #[test]
 fn host_failures_skip_rejection_closing_and_language_handlers() {
-    let mut realm = Realm::default();
-    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>new SharedArrayBuffer(0);try{Promise.all.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
+    let mut realm = Realm::with_unavailable_host();
+    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>spiteUnavailableHost();try{Promise.all.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
     assert!(
         matches!(result, Err(Error::Unsupported { .. })),
         "{result:?}"
     );
     assert_eq!(realm.eval("closed+rejected+caught"), Ok(Value::Number(0.0)));
-    let mut limited = Realm::new(Limits {
+    let mut limited = Realm::with_unavailable_host_limits(Limits {
         max_steps: Some(100_000),
         ..Limits::default()
     });

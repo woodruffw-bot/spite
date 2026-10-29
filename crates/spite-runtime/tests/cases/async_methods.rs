@@ -1,5 +1,6 @@
 //! Async method metadata, receivers, home objects, private brands and collection.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 fn drain(realm: &mut Realm) {
     loop {
@@ -79,12 +80,12 @@ fn async_method_captures_and_home_objects_survive_collection_and_release() {
 
 #[test]
 fn dynamic_source_supports_async_methods_and_host_failures_skip_handlers() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval("let AF=(async function(){}).constructor,result;AF('return {async m(){return 5}}')().then(o=>o.m()).then(v=>{result=v})").unwrap();
     drain(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(5.0)));
     realm
-        .eval("let flag=0,o={async m(){return new SharedArrayBuffer(0)}}")
+        .eval("let flag=0,o={async m(){return spiteUnavailableHost()}}")
         .unwrap();
     assert!(matches!(
         realm.eval("try{o.m()}catch(e){flag=1}finally{flag=2}"),

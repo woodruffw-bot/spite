@@ -1,5 +1,6 @@
 //! Awaited update targets share ordinary ToNumeric and PutValue (13.4.2–5).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -120,7 +121,7 @@ fn awaited_key_update_retains_its_base_until_write_then_releases_it() {
 #[test]
 fn host_abort_during_awaited_key_update_skips_get_put_handlers_and_disposal() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -133,7 +134,7 @@ fn host_abort_during_awaited_key_update_skips_get_put_handlers_and_disposal() {
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{object[(await 0,TAIL)]++}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

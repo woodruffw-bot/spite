@@ -1,5 +1,6 @@
 //! Promise.any fulfillment, ordered intrinsic AggregateErrors and guarded rejections.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
@@ -120,8 +121,8 @@ fn iterator_language_errors_reject_directly_and_host_failures_skip_cleanup() {
     check(
         "let original={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=v=>v;Promise.any.call(C,{[Symbol.iterator](){return{next(){throw original},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
-    let mut realm = Realm::default();
-    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>new SharedArrayBuffer(0);try{Promise.any.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
+    let mut realm = Realm::with_unavailable_host();
+    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>spiteUnavailableHost();try{Promise.any.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
     assert!(
         matches!(result, Err(Error::Unsupported { .. })),
         "{result:?}"

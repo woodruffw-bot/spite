@@ -54,6 +54,8 @@ mod promise;
 pub(crate) use promise::PromiseReaction;
 pub use promise::PromiseState;
 mod module_import;
+mod shared_array_buffer;
+pub(crate) use shared_array_buffer::{SharedArrayBufferData, SharedBufferError};
 mod promise_aggregate;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
@@ -116,6 +118,7 @@ pub struct OrdinaryObject {
     primitive_data: Option<PrimitiveData>,
     date_value: Option<Box<f64>>,
     array_buffer: Option<ArrayBufferData>,
+    shared_array_buffer: Option<SharedArrayBufferData>,
     data_view: Option<DataViewData>,
     typed_array: Option<TypedArrayData>,
     regexp: Option<Box<RegExpData>>,
@@ -169,6 +172,7 @@ impl OrdinaryObject {
             primitive_data: None,
             date_value: None,
             array_buffer: None,
+            shared_array_buffer: None,
             data_view: None,
             typed_array: None,
             regexp: None,
@@ -322,6 +326,10 @@ impl OrdinaryObject {
 
     pub(crate) fn array_buffer_data(&self) -> Option<&ArrayBufferData> {
         self.array_buffer.as_ref()
+    }
+
+    pub(crate) fn shared_array_buffer_data(&self) -> Option<&SharedArrayBufferData> {
+        self.shared_array_buffer.as_ref()
     }
 
     pub(crate) fn data_view_data(&self) -> Option<&DataViewData> {

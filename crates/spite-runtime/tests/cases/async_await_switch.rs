@@ -1,5 +1,6 @@
 //! Suspended SwitchStatement selection, fall-through and scope disposal (14.12).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -176,7 +177,7 @@ fn selection_retains_the_input_then_releases_it_while_case_lexicals_stay_live() 
 #[test]
 fn host_abort_skips_switch_disposal_handlers_and_pending_finalizers() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -185,7 +186,7 @@ fn host_abort_skips_switch_disposal_handlers_and_pending_finalizers() {
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){try{switch(await 0){case 0:{using r=resource;await gate;TAIL}}}catch{caught=true}finally{finalized++}}f().catch(()=>{caught=true})".replace("TAIL",tail);
         realm.eval(&code).unwrap();

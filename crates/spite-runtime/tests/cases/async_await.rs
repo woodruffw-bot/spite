@@ -1,5 +1,6 @@
 //! Source Await continuation timing, contexts and cleanup.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -212,14 +213,14 @@ fn promise_resolve_getter_failure_rejects_without_suspending_and_runs_lexical_cl
 fn resumed_host_failures_skip_rejection_and_disposal_and_release_cached_methods_even_at_budget_zero()
  {
     for limited in [false, true] {
-        let mut realm = Realm::new(spite_runtime::Limits {
+        let mut realm = Realm::with_unavailable_host_limits(spite_runtime::Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
         let tail = if limited {
             "while(true){}"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         realm.eval("let resource={[Symbol.dispose](){disposed++}},disposed=0,flag=0,read,weak=new WeakRef(resource[Symbol.dispose]);").unwrap();
         realm

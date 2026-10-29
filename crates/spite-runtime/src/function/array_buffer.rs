@@ -196,7 +196,7 @@ impl Realm {
     }
 
     // ToIndex (7.1.22) truncates before checking the inclusive safe-index range.
-    fn array_buffer_index(&mut self, value: Value, span: Span) -> Result<u64, Error> {
+    pub(super) fn array_buffer_index(&mut self, value: Value, span: Span) -> Result<u64, Error> {
         let number = self.number(value, span)?;
         let integer = if number.is_nan() { 0.0 } else { number.trunc() };
         if !(0.0..=9_007_199_254_740_991.0).contains(&integer) {
@@ -209,17 +209,14 @@ impl Realm {
         Ok(integer as u64)
     }
 
-    pub(super) fn array_buffer_constructor(
+    // GetArrayBufferMaxByteLengthOption (25.1.3.7), shared by both buffer kinds.
+    // Primitive options are ignored rather than boxed.
+    pub(super) fn array_buffer_max_byte_length_option(
         &mut self,
-        new_target: ObjectHandle,
-        length: Value,
         options: Value,
         span: Span,
-    ) -> Result<Value, Error> {
-        let byte_length = self.array_buffer_index(length, span)?;
-        // GetArrayBufferMaxByteLengthOption (25.1.3.7) ignores primitives;
-        // it does not box them or read inherited primitive-wrapper properties.
-        let max_byte_length = if let Value::Object(options) = options {
+    ) -> Result<Option<u64>, Error> {
+        Ok(if let Value::Object(options) = options {
             let maximum = self.get_property(&options, &JsString::from("maxByteLength"), span)?;
             if matches!(maximum, Value::Undefined) {
                 None
@@ -228,7 +225,18 @@ impl Realm {
             }
         } else {
             None
-        };
+        })
+    }
+
+    pub(super) fn array_buffer_constructor(
+        &mut self,
+        new_target: ObjectHandle,
+        length: Value,
+        options: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let byte_length = self.array_buffer_index(length, span)?;
+        let max_byte_length = self.array_buffer_max_byte_length_option(options, span)?;
         // AllocateArrayBuffer rejects this range before newTarget.prototype.
         if max_byte_length.is_some_and(|maximum| byte_length > maximum) {
             return Err(Self::exception(

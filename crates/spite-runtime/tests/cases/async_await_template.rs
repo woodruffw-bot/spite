@@ -1,5 +1,6 @@
 //! Untagged template substitutions with Await and immediate ToString (13.2.8.6).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -145,7 +146,7 @@ fn string_limits_abort_before_an_await_operand_and_after_resumed_concatenation()
 #[test]
 fn template_host_abort_skips_later_substitutions_handlers_and_disposal_at_budget_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -160,7 +161,7 @@ fn template_host_abort_skips_later_substitutions_handlers_and_disposal_at_budget
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{return`${await 0}${TAIL}${later++}`}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

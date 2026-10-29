@@ -1,5 +1,6 @@
 //! Async lexical closures, intrinsic metadata and Promise-returning arrow calls.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn drain(realm: &mut Realm) {
@@ -69,12 +70,12 @@ fn captured_objects_and_symbols_survive_collection_and_release_with_the_closure(
 
 #[test]
 fn dynamic_source_can_create_async_arrows_and_host_failures_bypass_rejection() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval("let AF=(async function(){}).constructor,result;AF('return async x=>x+1')().then(fn=>fn(4)).then(v=>{result=v})").unwrap();
     drain(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(5.0)));
     realm
-        .eval("let flag=0,f=async()=>new SharedArrayBuffer(0)")
+        .eval("let flag=0,f=async()=>spiteUnavailableHost()")
         .unwrap();
     assert!(matches!(
         realm.eval("try{f()}catch(e){flag=1}finally{flag=2}"),

@@ -13,6 +13,7 @@ const MAX_BYTE_LENGTH: u64 = 9_007_199_254_740_991;
 enum SourceKind {
     TypedArray,
     ArrayBuffer,
+    SharedArrayBuffer,
     Ordinary,
 }
 
@@ -45,6 +46,8 @@ impl Realm {
             let record = objects.inspect(&source)?;
             Ok(if record.typed_array_data().is_some() {
                 SourceKind::TypedArray
+            } else if record.shared_array_buffer_data().is_some() {
+                SourceKind::SharedArrayBuffer
             } else if record.array_buffer_data().is_some() {
                 SourceKind::ArrayBuffer
             } else {
@@ -52,6 +55,12 @@ impl Realm {
             })
         })?;
         let result = match source_kind {
+            SourceKind::SharedArrayBuffer => {
+                return Err(Self::unsupported(
+                    span,
+                    "shared-buffer TypedArray storage is not implemented",
+                ));
+            }
             SourceKind::TypedArray => {
                 self.typed_array_from_typed_array(element, &prototype, &source, span)?
             }

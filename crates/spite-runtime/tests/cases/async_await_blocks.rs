@@ -1,5 +1,6 @@
 //! Lexical BlockStatement suspension, disposal and collection.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -137,14 +138,14 @@ fn class_private_eval_this_and_arguments_survive_nested_block_awaits() {
 #[test]
 fn host_abort_clears_all_block_disposers_without_running_them_even_at_budget_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
         let tail = if limited {
             "while(true){}"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         // Each setup turn uses the same allowance as the resumed execution.
         realm.eval("let state={},disposed=0,caught=false,read;const dispose=Symbol.dispose;state.weaks=[];").unwrap();

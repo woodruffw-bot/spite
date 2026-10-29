@@ -1,5 +1,6 @@
 //! Synchronous ForOf acquisition, binding and closing through source awaits.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -191,7 +192,7 @@ fn synchronous_close_accepts_a_promise_object_without_reading_then_or_awaiting_i
 #[test]
 fn host_abort_skips_iterator_close_finally_and_using_disposal_even_at_budget_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -206,7 +207,7 @@ fn host_abort_skips_iterator_close_finally_and_using_disposal_even_at_budget_zer
         let tail = if limited {
             "while(true){}"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{for(using value of source){read=()=>value;await 0;TAIL}}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

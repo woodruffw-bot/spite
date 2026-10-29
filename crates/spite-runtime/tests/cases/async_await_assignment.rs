@@ -1,5 +1,6 @@
 //! Assignment references and GetValue/PutValue order across Await (13.15.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -216,7 +217,7 @@ fn assignments_in_for_updates_and_named_rhs_evaluation_keep_existing_semantics()
 #[test]
 fn abandoned_assignment_references_skip_put_handlers_and_disposal_on_host_abort() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -231,7 +232,7 @@ fn abandoned_assignment_references_skip_put_handlers_and_disposal_on_host_abort(
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{object.x=(await 0,TAIL)}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

@@ -1,9 +1,10 @@
-//! Edition-17 intrinsic metadata for deferred globals and generic species getters.
+//! Edition-17 global intrinsic metadata and generic species/getter dispatch.
 //!
 //! Ordinary metadata objects expose the specified reflection graph. The
 //! Generic species getters, Proxy and weak-reference operations, and ordinary
-//! buffer Atomics run their algorithms. Deferred constructors and methods report
-//! host Unsupported and cannot create unbranded fake instances.
+//! buffer Atomics run their algorithms. SharedArrayBuffer constructors and length
+//! operations retain branded backing state; shared byte access and slicing still
+//! report host Unsupported.
 
 use super::Builtin;
 use crate::{
@@ -169,6 +170,7 @@ pub(crate) struct GlobalMetadataIntrinsics {
     pub promise_prototype: ObjectHandle,
     pub proxy: ObjectHandle,
     pub shared_array_buffer: ObjectHandle,
+    pub shared_array_buffer_prototype: ObjectHandle,
     pub weak_ref: ObjectHandle,
     // Already rooted in objects; retain this exact fallback independently of globals.
     pub weak_ref_prototype: ObjectHandle,
@@ -401,6 +403,7 @@ impl Realm {
             promise_prototype,
             proxy,
             shared_array_buffer,
+            shared_array_buffer_prototype,
             weak_ref,
             weak_ref_prototype,
             finalization_registry,
@@ -490,6 +493,15 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match member {
+            Member::SharedArrayBufferByteLength
+            | Member::SharedArrayBufferGrowable
+            | Member::SharedArrayBufferMaxByteLength
+            | Member::SharedArrayBufferGrow => self.shared_array_buffer_method(
+                member,
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             // sec-get-promise-%symbol.species% / the SharedArrayBuffer species
             // getter: these generic accessors return this without
             // receiver branding, coercion, allocation, or species recursion.

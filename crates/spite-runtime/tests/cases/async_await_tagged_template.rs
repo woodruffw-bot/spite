@@ -1,5 +1,6 @@
 //! Tagged evaluation with awaited tags/substitutions (13.3.11.1).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -148,7 +149,7 @@ fn tagged_calls_trace_receivers_and_earlier_arguments_then_release_them_after_in
 
 #[test]
 fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup() {
-    let mut realm = Realm::new(Limits {
+    let mut realm = Realm::with_unavailable_host_limits(Limits {
         max_arguments: Some(2),
         ..Default::default()
     });
@@ -175,7 +176,7 @@ fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup
     );
 
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -190,7 +191,7 @@ fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{return tag`${await 0}${TAIL}`}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

@@ -1,5 +1,6 @@
 //! Conditional statement suspension and selection of awaited branches.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -55,10 +56,10 @@ fn nested_else_if_paths_keep_block_scope_tdz_and_hoisted_functions() {
 
 #[test]
 fn unselected_awaits_and_remaining_unsupported_forms_are_never_evaluated() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval(r#"
         let result;
-        async function f(){if(await true)await 0;else return{x:await missing};if(await false)await missing;if(false){new SharedArrayBuffer(0);await missing}return 7}
+        async function f(){if(await true)await 0;else return{x:await missing};if(await false)await missing;if(false){spiteUnavailableHost();await missing}return 7}
         f().then(value=>{result=value});
     "#).unwrap();
     drain(&mut realm);

@@ -1,5 +1,6 @@
 //! Awaited ForIn/Of assignment references after each iteration value (14.7.5).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -125,7 +126,7 @@ fn pending_input_is_traced_then_released_before_an_outer_catch_suspends() {
 fn host_abort_in_an_awaited_target_skips_all_iterator_close_and_javascript_cleanup() {
     for kind in ["of", "in", "await"] {
         for limited in [false, true] {
-            let mut realm = Realm::new(Limits {
+            let mut realm = Realm::with_unavailable_host_limits(Limits {
                 max_steps: limited.then_some(10_000),
                 ..Default::default()
             });
@@ -134,7 +135,7 @@ fn host_abort_in_an_awaited_target_skips_all_iterator_close_and_javascript_clean
             let tail = if limited {
                 "spin()"
             } else {
-                "new SharedArrayBuffer(0)"
+                "spiteUnavailableHost()"
             };
             let header = match kind {
                 "of" => format!("for(holder[(await gate,{tail})] of source)"),

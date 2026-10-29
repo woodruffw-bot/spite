@@ -1,5 +1,6 @@
 //! Awaited SuperProperty keys and live MakeSuperPropertyReference (13.3.7.1/3).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -111,7 +112,7 @@ fn super_reads_this_before_the_key_and_rejection_skips_later_super_getters() {
 
 #[test]
 fn pending_super_keys_do_not_retain_old_prototypes_and_host_abort_releases_resource_captures() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval(r#"
         let release,gate=new Promise(resolve=>{release=resolve}),proto={x:7},weak=new WeakRef(proto),result,home={__proto__:proto,async f(){return super[await gate]}};
         home.f().then(value=>{result=value});Object.setPrototypeOf(home,{x:8});proto=null;
@@ -122,7 +123,7 @@ fn pending_super_keys_do_not_retain_old_prototypes_and_host_abort_releases_resou
     drain(&mut realm);
     check(&mut realm, "result===8");
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -139,7 +140,7 @@ fn pending_super_keys_do_not_retain_old_prototypes_and_host_abort_releases_resou
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="let home={async f(){using root=resource;try{return super[(await 0,TAIL)]}finally{finalized++}}};home.f().catch(()=>{caught=true})".replace("TAIL",tail);
         realm.eval(&code).unwrap();

@@ -1,5 +1,6 @@
 //! Lexical resource lifetimes, abrupt completions and iterator cleanup.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -191,9 +192,9 @@ fn finalizers_follow_inner_disposal_and_stacks_share_the_disposal_protocol() {
 
 #[test]
 fn host_aborts_skip_disposal_but_release_cached_methods_from_escaped_environments() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm.eval("let state={value:{[Symbol.dispose](){throw 1}}},flag=0;state.weak=new WeakRef(state.value[Symbol.dispose])").unwrap();
-    assert!(matches!(realm.eval("try{{using r=state.value;state.read=()=>r;r[Symbol.dispose]=null;new SharedArrayBuffer(0)}}catch(e){flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
+    assert!(matches!(realm.eval("try{{using r=state.value;state.read=()=>r;r[Symbol.dispose]=null;spiteUnavailableHost()}}catch(e){flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(

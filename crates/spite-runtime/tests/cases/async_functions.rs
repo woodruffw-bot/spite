@@ -1,5 +1,6 @@
 //! Non-suspending async functions, intrinsic metadata and Promise-returning calls.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
@@ -112,9 +113,9 @@ fn closures_results_and_hidden_intrinsics_survive_collection() {
 
 #[test]
 fn host_failures_bypass_rejection_and_nested_await_remains_explicitly_unsupported() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm
-        .eval("let flag=0;async function f(){return new SharedArrayBuffer(0)}")
+        .eval("let flag=0;async function f(){return spiteUnavailableHost()}")
         .unwrap();
     assert!(matches!(
         realm.eval("try{f()}catch(e){flag=1}finally{flag=2}"),
@@ -127,13 +128,13 @@ fn host_failures_bypass_rejection_and_nested_await_remains_explicitly_unsupporte
     ] {
         assert!(
             matches!(
-                Realm::default().eval(source),
+                Realm::with_unavailable_host().eval(source),
                 Err(Error::Unsupported { .. })
             ),
             "{source}"
         );
     }
-    let mut limited = Realm::new(Limits {
+    let mut limited = Realm::with_unavailable_host_limits(Limits {
         max_steps: Some(100_000),
         ..Limits::default()
     });

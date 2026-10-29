@@ -1,5 +1,6 @@
 //! Catch parameter Array BindingInitialization across Await (14.15.3).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -114,7 +115,7 @@ fn suspension_retains_cached_next_then_releases_it_while_escaped_catch_bindings_
 #[test]
 fn host_abort_in_parameters_skips_close_disposal_finally_body_and_rejection_handlers() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -123,7 +124,7 @@ fn host_abort_in_parameters_skips_close_disposal_finally_body_and_rejection_hand
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         realm.eval(&format!("async function f(){{using r=resource;try{{throw source}}catch([x=(await gate,{tail})]){{entered++}}finally{{finalized++}}}}f().catch(()=>{{caught=true}})")).unwrap();
         realm.eval("delete resource[dispose];proceed()").unwrap();

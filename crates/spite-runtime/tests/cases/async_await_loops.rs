@@ -1,5 +1,6 @@
 //! Awaited while/do-while control, completions and per-iteration blocks.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -42,12 +43,12 @@ fn while_conditions_and_bodies_await_once_in_order_for_each_iteration() {
 
 #[test]
 fn while_skips_a_false_body_and_do_while_runs_its_body_before_the_first_test() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::with_unavailable_host();
     realm
         .eval(
             r#"
         let events=[],first,second;
-        async function f(){while(await false){new SharedArrayBuffer(0);await missing}return 1}
+        async function f(){while(await false){spiteUnavailableHost();await missing}return 1}
         async function g(){do{events.push('body');await 0}while(await false);return 2}
         f().then(value=>{first=value});g().then(value=>{second=value});
     "#,
@@ -157,7 +158,7 @@ fn loop_bodies_preserve_private_eval_arguments_and_var_parameter_aliases() {
 #[test]
 fn host_failures_in_loop_bodies_bypass_finally_and_release_resources_at_budget_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -171,7 +172,7 @@ fn host_failures_in_loop_bodies_bypass_finally_and_release_resources_at_budget_z
         let tail = if limited {
             "while(true){}"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let source="async function f(){using root=resource;try{while(true){using inner=resource;read=()=>inner;await 0;TAIL}}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&source).unwrap();

@@ -1,5 +1,6 @@
 //! PrivateIdentifier in ShiftExpression after Await (13.10.2).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -69,7 +70,7 @@ fn private_in_after_await_resolves_the_innermost_private_environment_and_survive
 #[test]
 fn private_in_host_failure_after_await_skips_handlers_disposal_and_resource_captures_at_zero() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -86,7 +87,7 @@ fn private_in_host_failure_after_await_skips_handlers_disposal_and_resource_capt
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="class C{#x=0;async f(){using root=resource;try{return #x in(await 0,TAIL)}finally{finalized++}}}new C().f().catch(()=>{caught=true})".replace("TAIL",tail);
         realm.eval(&code).unwrap();

@@ -1,5 +1,6 @@
 //! Try/Catch/Finally execution through source suspension.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -161,27 +162,23 @@ fn pending_normal_return_and_throw_values_remain_live_until_an_overriding_finali
 #[test]
 fn host_failures_in_try_catch_and_finally_bypass_remaining_handlers_and_release_captures() {
     for phase in 0..3 {
-        let mut realm = Realm::default();
+        let mut realm = Realm::with_unavailable_host();
         realm.eval(r#"
             let state={},disposed=0,caught=0,finalized=0,observed=false,read,marker={},resource={[Symbol.dispose](){disposed++}};
             state.weakMethod=new WeakRef(resource[Symbol.dispose]);
             function make(){const value={x:7};state.weakValue=new WeakRef(value);return value}
         "#).unwrap();
         let (body, handler, finalizer) = match phase {
-            0 => (
-                "await 0;new SharedArrayBuffer(0)",
-                "caught++",
-                "finalized++",
-            ),
+            0 => ("await 0;spiteUnavailableHost()", "caught++", "finalized++"),
             1 => (
                 "throw marker",
-                "caught++;await 0;new SharedArrayBuffer(0)",
+                "caught++;await 0;spiteUnavailableHost()",
                 "finalized++",
             ),
             _ => (
                 "return make()",
                 "caught++",
-                "finalized++;await 0;new SharedArrayBuffer(0)",
+                "finalized++;await 0;spiteUnavailableHost()",
             ),
         };
         let source="async function f(){using r=resource;read=()=>r;try{BODY}catch(error){HANDLER}finally{FINALIZER}}f().catch(()=>{observed=true});delete resource[Symbol.dispose];".replace("BODY",body).replace("HANDLER",handler).replace("FINALIZER",finalizer);

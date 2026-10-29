@@ -1,5 +1,6 @@
 //! Promise.race subscription ordering, iterator cleanup and host failures.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
@@ -56,14 +57,14 @@ fn body_errors_close_but_step_errors_do_not_and_original_throws_win() {
 
 #[test]
 fn host_failures_bypass_rejection_iterator_return_and_language_handlers() {
-    let mut realm = Realm::default();
-    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>new SharedArrayBuffer(0);let iterable={[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}};try{Promise.race.call(C,iterable)}catch(e){caught++}finally{caught++}");
+    let mut realm = Realm::with_unavailable_host();
+    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>spiteUnavailableHost();let iterable={[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}};try{Promise.race.call(C,iterable)}catch(e){caught++}finally{caught++}");
     assert!(
         matches!(result, Err(Error::Unsupported { .. })),
         "{result:?}"
     );
     assert_eq!(realm.eval("closed+rejected+caught"), Ok(Value::Number(0.0)));
-    let mut limited = Realm::new(Limits {
+    let mut limited = Realm::with_unavailable_host_limits(Limits {
         max_steps: Some(100_000),
         ..Limits::default()
     });

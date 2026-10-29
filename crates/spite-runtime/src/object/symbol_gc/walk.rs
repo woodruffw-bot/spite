@@ -122,6 +122,7 @@ fn object_symbols(
         primitive_data,
         date_value: _,
         array_buffer: _,
+        shared_array_buffer: _,
         data_view: _,
         typed_array: _,
         regexp: _,

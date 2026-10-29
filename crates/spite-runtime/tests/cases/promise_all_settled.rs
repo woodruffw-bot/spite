@@ -1,5 +1,6 @@
 //! Ordered settlement snapshots, shared callback guards and intrinsic allocation.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
@@ -114,8 +115,8 @@ fn iteration_failures_reject_without_snapshots_and_host_failures_bypass_cleanup(
     check(
         "let original={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=v=>v;Promise.allSettled.call(C,{[Symbol.iterator](){return{next(){throw original},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
-    let mut realm = Realm::default();
-    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>new SharedArrayBuffer(0);try{Promise.allSettled.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
+    let mut realm = Realm::with_unavailable_host();
+    let result=realm.eval("let closed=0,rejected=0,caught=0;function C(executor){executor(()=>{},()=>{rejected++})}C.resolve=()=>spiteUnavailableHost();try{Promise.allSettled.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;return{}}}}})}catch(e){caught++}finally{caught++}");
     assert!(
         matches!(result, Err(Error::Unsupported { .. })),
         "{result:?}"

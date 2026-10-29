@@ -73,7 +73,7 @@ fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() 
         );
     }
     for body in [
-        "verifyProperty(new Proxy(Array,{ownKeys(){new SharedArrayBuffer(0);}}),'of',{enumerable:false});",
+        "verifyProperty(new Proxy(Array,{ownKeys(){import('missing-host-module');}}),'of',{enumerable:false});",
         "verifyProperty({get x(){print;}},'x',{value:1});",
         "assert.throws(TypeError,()=>Function('print')());",
     ] {

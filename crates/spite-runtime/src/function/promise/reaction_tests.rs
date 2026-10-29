@@ -113,7 +113,8 @@ fn pending_and_queued_internal_reactions_trace_and_release_objects_and_symbols()
 fn internal_job_preflight_rollback_and_host_failures_preserve_later_jobs() {
     let mut realm = Realm::default();
     let promise = object(&mut realm, "let calls=0,p=Promise.resolve();p");
-    let bad = realm.eval("()=>new SharedArrayBuffer(0)").unwrap();
+    realm.reserve_unsupported_global("spiteUnavailableHost");
+    let bad = realm.eval("()=>spiteUnavailableHost()").unwrap();
     let good = realm.eval("()=>{calls++}").unwrap();
     subscribe(&mut realm, &promise, bad, Value::Undefined);
     subscribe(&mut realm, &promise, good, Value::Undefined);

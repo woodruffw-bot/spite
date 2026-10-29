@@ -1473,3 +1473,6 @@ mod module_records;
 
 #[path = "cases/module_graph_load.rs"]
 mod module_graph_load;
+
+#[path = "cases/shared_array_buffer.rs"]
+mod shared_array_buffer;

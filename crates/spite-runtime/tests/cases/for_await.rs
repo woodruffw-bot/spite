@@ -1,5 +1,6 @@
 //! Asynchronous ForIn/OfBodyEvaluation and AsyncIteratorClose (14.7.5, 7.4).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -224,7 +225,7 @@ fn pending_iteration_retains_the_iterator_and_cached_next_then_releases_both() {
 fn host_abort_during_next_body_or_close_bypasses_handlers_finalizers_and_disposal() {
     for phase in ["next", "body", "close"] {
         for limited in [false, true] {
-            let mut realm = Realm::new(Limits {
+            let mut realm = Realm::with_unavailable_host_limits(Limits {
                 max_steps: limited.then_some(10_000),
                 ..Default::default()
             });
@@ -233,7 +234,7 @@ fn host_abort_during_next_body_or_close_bypasses_handlers_finalizers_and_disposa
             let tail = if limited {
                 "spin()"
             } else {
-                "new SharedArrayBuffer(0)"
+                "spiteUnavailableHost()"
             };
             let next = if phase == "next" {
                 tail

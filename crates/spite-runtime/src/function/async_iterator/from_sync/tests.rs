@@ -165,7 +165,8 @@ fn invalid_results_and_receivers_reject_while_host_failures_bypass_handlers() {
     realm.eval("let errors=0;ai.next().catch(e=>{if(e instanceof TypeError)errors++});ai.next.call({}).catch(e=>{if(e instanceof TypeError)errors++})").unwrap();
     drain(&mut realm);
     check(&mut realm, "errors===2");
-    let mut realm = new_realm("let source={next(){return new SharedArrayBuffer(0)}};source");
+    let mut realm = new_realm("let source={next(){return spiteUnavailableHost()}};source");
+    realm.reserve_unsupported_global("spiteUnavailableHost");
     realm.eval("let caught=false").unwrap();
     assert!(matches!(
         realm.eval("try{ai.next()}catch(e){caught=true}"),

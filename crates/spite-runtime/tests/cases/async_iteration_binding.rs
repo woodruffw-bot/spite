@@ -1,5 +1,6 @@
 //! Suspended lexical array bindings in ForIn/Of heads (14.7.5, 14.3.3).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -136,7 +137,7 @@ fn object_iteration_bindings_execute_and_assignment_patterns_remain_host_boundar
 fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
     for kind in ["of", "in", "await"] {
         for limited in [false, true] {
-            let mut realm = Realm::new(Limits {
+            let mut realm = Realm::with_unavailable_host_limits(Limits {
                 max_steps: limited.then_some(10_000),
                 ..Default::default()
             });
@@ -145,7 +146,7 @@ fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
             let tail = if limited {
                 "spin()"
             } else {
-                "new SharedArrayBuffer(0)"
+                "spiteUnavailableHost()"
             };
             let header = match kind {
                 "of" => format!("for(const [x=(await gate,{tail})] of outer)"),

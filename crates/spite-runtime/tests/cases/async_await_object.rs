@@ -1,5 +1,6 @@
 //! PropertyDefinitionEvaluation with suspended keys, values and spread (13.2.5.5).
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
@@ -162,7 +163,7 @@ fn partial_objects_retain_earlier_values_but_converted_keys_release_their_input_
 #[test]
 fn object_literal_host_abort_releases_partial_state_and_resource_captures_without_cleanup() {
     for limited in [false, true] {
-        let mut realm = Realm::new(Limits {
+        let mut realm = Realm::with_unavailable_host_limits(Limits {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
@@ -179,7 +180,7 @@ fn object_literal_host_abort_releases_partial_state_and_resource_captures_withou
         let tail = if limited {
             "spin()"
         } else {
-            "new SharedArrayBuffer(0)"
+            "spiteUnavailableHost()"
         };
         let code="async function f(){using root=resource;try{return{a:await 0,b:TAIL}}finally{finalized++}}".replace("TAIL",tail);
         realm.eval(&code).unwrap();

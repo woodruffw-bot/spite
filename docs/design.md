@@ -4266,15 +4266,30 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
-Promise reactions/combinators and SharedArrayBuffer construction retain
-explicit Unsupported results for their deferred bodies after ordinary argument
-evaluation and the specified call/new prefix checks. Proxy algorithms are
+Promise reactions/combinators and SharedArrayBuffer construction run their
+algorithms. Shared buffer views and slicing retain explicit Unsupported results
+until shared byte access is available. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
 accessors return their original receiver. The
 metadata adds 46 rooted intrinsic objects; global mutation or deletion cannot
 unroot them.
+
+SharedArrayBuffer construction converts length, reads object-only maxByteLength
+options, checks their range, then obtains newTarget.prototype before allocation
+(25.2.2.1/AllocateSharedArrayBuffer). The native slot retains one reference-counted
+backing identity and an implicit-zero logical region. Length and optional maximum
+are protected by a shared mutex. HostGrowSharedArrayBuffer serializes racing
+grows, rejects a smaller or excessive length, and allows equal lengths; no grow
+is lost. JavaScript conversion finishes before locking, so reentrant growth is
+checked against the current length. Fixed buffers reject grow before conversion.
+The branded getters inspect no user properties, and the original intrinsic
+prototype survives global replacement. Poisoned native storage is a host failure.
+Shared TypedArray/DataView construction refuses before an ordinary-object
+fallback can create a misleading result. Shared bytes, slice, shared Atomics and
+agent integration remain implementation work. Multipebibyte eager-allocation
+assumptions do not define a default quota for the logical buffer domain.
 
 NewPromiseCapability (27.2.1.5) constructs through the supplied constructor and
 uses a native executor with standard empty-name/length-two metadata. Its private
