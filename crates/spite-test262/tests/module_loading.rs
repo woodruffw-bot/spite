@@ -187,3 +187,183 @@ fn dependency_source_limits_remain_resource_failures_before_evaluation() {
         }
     ));
 }
+
+fn resolution(
+    body: &str,
+    error_type: &str,
+    mut load: impl FnMut(&str) -> Result<ModuleSource, String>,
+) -> Outcome {
+    let metadata = format!("flags: [module]\nnegative:\n  phase: resolution\n  type: {error_type}");
+    Runner::default()
+        .run_with_module_loader(
+            &source(&metadata, body),
+            None,
+            "root",
+            |_| panic!("resolution negative evaluated harness"),
+            |_, request| load(&String::from_utf16(request.specifier.code_units()).unwrap()),
+        )
+        .unwrap()
+        .remove(0)
+        .outcome
+}
+
+#[test]
+fn resolution_negatives_match_missing_and_ambiguous_exports_without_evaluating_harness_or_bodies() {
+    for body in [
+        "import{missing}from'leaf';$DONOTEVALUATE()",
+        "export{missing}from'leaf';$DONOTEVALUATE()",
+    ] {
+        assert_eq!(
+            resolution(body, "SyntaxError", |_| Ok(ModuleSource {
+                identifier: "leaf".into(),
+                source: "export const present=1".into()
+            })),
+            Outcome::Passed
+        );
+    }
+    assert_eq!(
+        resolution(
+            "import{x}from'stars';$DONOTEVALUATE()",
+            "SyntaxError",
+            |name| Ok(ModuleSource {
+                identifier: name.into(),
+                source: match name {
+                    "stars" => "export * from'first';export * from'second'",
+                    _ => "export const x=1",
+                }
+                .into()
+            })
+        ),
+        Outcome::Passed
+    );
+}
+
+#[test]
+fn successful_linking_never_evaluates_a_resolution_negative_body_to_obtain_its_exception() {
+    assert!(matches!(
+        resolution("throw new SyntaxError()", "SyntaxError", |_| panic!(
+            "source requested"
+        )),
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert!(matches!(
+        resolution(
+            "import{present}from'leaf';throw new SyntaxError()",
+            "SyntaxError",
+            |_| Ok(ModuleSource {
+                identifier: "leaf".into(),
+                source: "export const present=1".into()
+            })
+        ),
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert!(matches!(
+        resolution("import{missing}from'leaf'", "TypeError", |_| Ok(
+            ModuleSource {
+                identifier: "leaf".into(),
+                source: String::new()
+            }
+        )),
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn resolution_negatives_reject_parse_failures_and_preserve_missing_or_unsupported_source_outcomes()
+{
+    assert!(matches!(
+        resolution("import.meta=1", "SyntaxError", |_| panic!(
+            "invalid root loaded sources"
+        )),
+        Outcome::Failed {
+            stage: Stage::Parse,
+            ..
+        }
+    ));
+    assert!(matches!(
+        resolution("import'leaf'", "SyntaxError", |_| Ok(ModuleSource {
+            identifier: "leaf".into(),
+            source: "@".into()
+        })),
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert!(matches!(
+        resolution("import'leaf'", "SyntaxError", |_| Ok(ModuleSource {
+            identifier: "leaf".into(),
+            source: "await using x=null".into()
+        })),
+        Outcome::Unsupported {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert!(matches!(
+        resolution("import'leaf'", "SyntaxError", |_| Err(
+            "missing source".into()
+        )),
+        Outcome::SetupFailure(_)
+    ));
+    let case = Runner::default()
+        .run(
+            &source(
+                "flags: [module]\nnegative:\n  phase: resolution\n  type: SyntaxError",
+                "import'leaf'",
+            ),
+            None,
+            |_| panic!("resolution negative loaded harness"),
+        )
+        .unwrap();
+    assert!(matches!(
+        case[0].outcome,
+        Outcome::Unsupported {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn resolution_negative_resource_refusals_never_count_as_language_exceptions() {
+    let root = source(
+        "flags: [module]\nnegative:\n  phase: resolution\n  type: SyntaxError",
+        "import'leaf'",
+    );
+    let cases = Runner {
+        limits: Limits {
+            max_source_bytes: Some(root.len()),
+            ..Limits::default()
+        },
+    }
+    .run_with_module_loader(
+        &root,
+        None,
+        "root",
+        |_| panic!("resolution negative loaded harness"),
+        |_, _| {
+            Ok(ModuleSource {
+                identifier: "leaf".into(),
+                source: " ".repeat(root.len() + 1),
+            })
+        },
+    )
+    .unwrap();
+    assert!(matches!(
+        cases[0].outcome,
+        Outcome::Limit {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+}

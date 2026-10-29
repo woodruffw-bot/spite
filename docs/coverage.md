@@ -58,9 +58,40 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous graph evaluation and cached cycle Promises; asynchronous dependencies remain Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20497 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20506 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Legacy raw-fixture reader compatibility
+
+The raw-script smoke suite recognizes the module-fixture and
+script-resolution-error manifest roles as inputs owned by the full conformance
+host. Its existing eleven raw originals still execute unchanged. The exact
+smoke target, strict Clippy, Rust 1.88 and policy checks pass. This fixes the
+four hosted jobs that rejected the imported support-file role after static
+Module loading was added; corpus and Runtime checks had passed in that run.
+
+## Module resolution negatives and ambiguous exports
+
+Resolution negatives load and link accepted Module syntax, then match only the
+linking exception's constructor name. They execute neither harness nor bodies.
+Successful linking fails immediately; a later body throw cannot supply the
+expected exception. Root/dependency parse errors, missing sources, unsupported
+syntax and opted-in resource refusals retain non-passing outcomes.
+
+Four new runner groups cover missing/ambiguous imports and reexports, phase/type
+mismatches, skipped harness/body execution, missing/unsupported sources and host
+limits. Nine whole upstream Module originals add nine variants: four resolution
+negatives and five positives for binding propagation, ambiguous namespace omission
+and edition-17 namespace reexport normalization. Seventeen unchanged support
+files retain their explicit non-executable fixture role. Four source-phase-import
+proposal files are excluded from the edition-17 baseline.
+
+Counts are 10,748 fixtures, twenty-two helpers, 10,703 reviewed sources and 20,506
+variants. All twenty-six admitted originals retain their Git blob/SHA-256 hashes.
+The 56 package controls, full corpus, strict Clippy, Rust 1.88 and inventories
+pass. Runtime/Parser code and their preceding 451/2,275 and 18/438
+results are unchanged, with 591 intrinsic entries, no helper or quota changes.
 
 ## Module namespace conformance fixtures
 

@@ -249,6 +249,19 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
                 fields[2]
             );
         }
+        if fields[0] == "script-resolution-error" {
+            assert_eq!(meta.modes(), [Mode::Module]);
+            assert!(!meta.has_flag("raw"));
+            assert_eq!(
+                meta.negative,
+                Some(Negative {
+                    phase: Phase::Resolution,
+                    error_type: "SyntaxError".into()
+                }),
+                "{}",
+                fields[2]
+            );
+        }
         if fields[0] == "raw-syntax-error" {
             assert_eq!(
                 meta.negative,
@@ -260,6 +273,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 10722);
+    assert_eq!(count, 10748);
     assert_eq!(harness_count, 22);
 }

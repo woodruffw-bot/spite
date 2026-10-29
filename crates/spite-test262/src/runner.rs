@@ -94,7 +94,7 @@ impl Runner {
     /// Runs all metadata-selected variants in independent realms.
     ///
     /// `load_harness` provides unchanged UTF-8 harness files by safe relative name.
-    /// Parse-negative tests never evaluate harness code or test bodies. Async
+    /// Parse and resolution negatives never evaluate harness code or test bodies. Async
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
     /// Promise jobs. Module parse negatives use the Module goal and the same exact
     /// review checks; module dependencies, raw async harness setup, and agent settings
@@ -202,6 +202,14 @@ impl Runner {
                 Stage::Parse,
                 "expected a parse exception, but parsing succeeded",
             );
+        }
+        if let Some(negative) = metadata.negative.as_ref()
+            && negative.phase == Phase::Resolution
+        {
+            let ParsedSource::Module(module) = &parsed else {
+                unreachable!("resolution negatives require Module metadata")
+            };
+            return self.run_module_resolution(module, original, negative, modules);
         }
         let asynchronous = metadata.has_flag("async");
         if asynchronous && metadata.has_flag("raw") {

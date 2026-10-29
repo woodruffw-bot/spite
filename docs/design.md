@@ -3162,6 +3162,14 @@ stage ensures loading, dependency parsing and linking failures never satisfy a
 runtime-negative expectation. Scripts and parse negatives never request sources.
 Import attributes and asynchronous dependency evaluation remain Unsupported.
 
+Resolution negatives stop after loading and linking, without harness or body
+evaluation (Test262 INTERPRETING.md). Only an actual language exception from
+linking may satisfy the expected constructor name. Root/dependency parse errors,
+missing files, unsupported syntax and host limits remain non-passing outcomes.
+Successful linking fails the negative immediately, even if its body would throw
+the requested error. A script-resolution-error manifest role retains the Module
+phase/type evidence and exact source hashes separately from runtime negatives.
+
 The corpus host resolves relative source names by normalized path components
 under upstream/test. Canonical target checks also keep symlinks inside that
 source tree. File failures are setup failures, distinct from language exceptions;

@@ -10693,3 +10693,12 @@ test/language/module-code/namespace/internals/set-prototype-of.js	-	-	-
 test/language/module-code/namespace/internals/set.js	-	-	-
 test/language/module-code/namespace/internals/super-access-to-tdz-binding.js	-	-	-
 test/language/module-code/namespace/internals/super-set-to-tdz-binding-with-accessor.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/error-export-from-named-as.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/error-export-from-named.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/error-import-named-as.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/error-import-named.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/import-and-export-propagates-binding.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-export-star-as-from-and-import-star-as-and-export.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-export-star-as-from.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/namespace-unambiguous-if-import-star-as-and-export.js	-	-	-
+test/language/module-code/ambiguous-export-bindings/omitted-from-namespace.js	-	-	-

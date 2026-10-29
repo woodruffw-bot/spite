@@ -121,3 +121,62 @@ impl ModuleLoader<'_> {
         Ok(root)
     }
 }
+
+impl Runner {
+    // Test262 INTERPRETING.md: a resolution negative must fail during linking,
+    // after all relevant Module syntax has been accepted. Neither dependency
+    // parsing nor a later body throw can supply its expected exception.
+    pub(super) fn run_module_resolution(
+        &self,
+        module: &Module,
+        source: &str,
+        negative: &Negative,
+        loader: Option<&mut ModuleLoader<'_>>,
+    ) -> Outcome {
+        let mut realm = Realm::new(self.limits);
+        let loaded = match loader {
+            Some(loader) => loader.load_graph(&mut realm, module, source),
+            None => realm.create_module_from_ast(module),
+        };
+        let record = match loaded {
+            Ok(record) => record,
+            Err(error) => {
+                return host_failure(&error, Stage::Resolution).unwrap_or_else(|| {
+                    failed(
+                        Stage::Resolution,
+                        format!("dependency preparation failed before linking: {error}"),
+                    )
+                });
+            }
+        };
+        match realm.link_module(&record) {
+            Ok(()) => failed(
+                Stage::Resolution,
+                "expected a resolution exception, but linking completed normally",
+            ),
+            Err(error) => {
+                if let Some(outcome) = host_failure(&error, Stage::Resolution) {
+                    return outcome;
+                }
+                match exception_constructor_name(&mut realm, &error) {
+                    Ok(Some(name)) if name == JsString::from(negative.error_type.as_str()) => {
+                        Outcome::Passed
+                    }
+                    Ok(name) => failed(
+                        Stage::Resolution,
+                        format!(
+                            "resolution exception with constructor name {name:?} does not match {}",
+                            negative.error_type
+                        ),
+                    ),
+                    Err(error) => host_failure(&error, Stage::Resolution).unwrap_or_else(|| {
+                        failed(
+                            Stage::Resolution,
+                            format!("resolution exception inspection failed: {error}"),
+                        )
+                    }),
+                }
+            }
+        }
+    }
+}

@@ -376,6 +376,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Expose Module Contains await/HasTLA static semantics with iterative syntax traversal and the specification's function/class scope exclusions.
 - [x] Evaluate synchronous Module graphs with source-ordered dependencies, shared/cyclic execution, cycle-root Promise identity, cached abrupt completions and host-abort preservation.
 - [x] Load Test262 static Module sources through stable host identities and relative corpus paths, preserving setup/resolution/runtime failures and imported support-file accounting.
+- [x] Match Test262 resolution negatives only against linking exceptions, excluding parse/setup/resource failures and all harness/body execution.
 - [ ] Schedule asynchronous Module dependencies and cycle completion with top-level Await.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.

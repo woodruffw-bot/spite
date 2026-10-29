@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 10722 unmodified test fixtures and twenty-two harness files come from
+These 10748 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Resolution negatives and ambiguous export graphs
+
+Nine whole unchanged Module originals add four resolution negatives and five
+positive graph cases. The negatives match only linking exceptions after syntax
+is accepted, with no harness/body evaluation. Parse/setup failures, unsupported
+features and resource refusals never satisfy them. Positive cases verify binding
+propagation, ambiguous namespace omission and edition-17 normalization of imported
+namespace reexports. Seventeen unchanged support files receive no independent
+variant credit. Four source-phase-import proposal files remain outside the target.
+
+The script-resolution-error manifest mode records the phase separately from
+runtime negatives. Every admitted byte/hash is verified at the existing pin.
+There are 10,748 fixtures, twenty-two helpers, 10,703 reviewed sources and 20,506
+variants. Existing sources, harness files and execution limits are unchanged.
 
 ## Module namespace exotic fixtures
 
