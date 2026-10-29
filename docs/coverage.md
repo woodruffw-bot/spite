@@ -58,9 +58,24 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous graph evaluation and cached cycle Promises; asynchronous dependencies remain Unsupported |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20459 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20497 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Module namespace conformance fixtures
+
+Thirty-eight whole unchanged originals exercise Module namespace exotic methods:
+live and uninitialized exports, reflection, presence/deletion, compatible property
+definitions, rejected writes, prototype/extensibility rules, key ordering,
+Symbol metadata, nested namespace reexports and super access. Eight unchanged
+support modules cover nested graphs and cyclic star reexports; these retain the
+module-fixture role and receive no independent execution credit.
+
+All thirty-eight required Module variants pass before admission. Every source
+retains its Git blob and SHA-256 digest at the existing pin. Counts become
+10,722 fixtures, twenty-two helpers, 10,694 reviewed sources and 20,497 variants.
+The full corpus, 52 package controls, Clippy, Rust 1.88 and inventories pass. Runtime/Parser code, snapshots, helpers, dependencies,
+resource defaults and worker counts are unchanged.
 
 ## Static Module sources in Test262
 

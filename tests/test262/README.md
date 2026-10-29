@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 10676 unmodified test fixtures and twenty-two harness files come from
+These 10722 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Module namespace exotic fixtures
+
+Thirty-eight unchanged namespace originals add thirty-eight required Module
+variants. They cover live/TDZ cells, descriptors, writes/deletion/presence, null
+prototype and extensibility, UTF-16 key order, Symbol metadata, nested namespace
+exports and super operations. Eight unchanged support files exercise shared and
+cyclic graphs; their module-fixture role gives them no independent variant credit.
+All forty-six source bytes and hashes are verified at the existing pin. The
+inventory contains 10,722 fixtures, twenty-two helpers, 10,694 reviewed sources
+and 20,497 variants. Existing sources and harness files are unchanged.
 
 ## Static Module loading and dependency fixtures
 
