@@ -1,4 +1,4 @@
-//! Static host loading retains phase, identity and explicit unsupported outcomes.
+//! Static and dynamic loading retain phase, identity and unsupported outcomes.
 
 use spite_runtime::Limits;
 use spite_test262::{ModuleSource, Outcome, Runner, Stage};
@@ -105,7 +105,7 @@ fn repeated_host_identifiers_must_retain_exact_source_text() {
 }
 
 #[test]
-fn scripts_and_parse_negatives_never_request_module_sources() {
+fn scripts_without_import_calls_and_parse_negatives_never_request_module_sources() {
     let cases = Runner::default()
         .run_with_module_loader(
             &source("", "1"),
@@ -352,6 +352,222 @@ fn resolution_negative_resource_refusals_never_count_as_language_exceptions() {
             Ok(ModuleSource {
                 identifier: "leaf".into(),
                 source: " ".repeat(root.len() + 1),
+            })
+        },
+    )
+    .unwrap();
+    assert!(matches!(
+        cases[0].outcome,
+        Outcome::Limit {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn static_and_dynamic_aliases_share_records_namespaces_and_one_body_execution() {
+    assert_eq!(
+        outcome(
+            "import{value}from'leaf';const a=await import('leaf');const b=await import('alias');if(a!==b||a.value!==value||globalThis.runs!==1)throw 1",
+            "flags: [module]",
+            |_| Ok(ModuleSource {
+                identifier: "shared".into(),
+                source: "globalThis.runs=(globalThis.runs||0)+1;export const value=42".into()
+            }),
+        ),
+        Outcome::Passed
+    );
+}
+
+#[test]
+fn dynamic_script_variants_use_fresh_realms_and_source_caches() {
+    let mut loads = 0;
+    let cases = Runner::default()
+        .run_with_module_loader(
+            &source(
+                "flags: [async]",
+                "import('leaf').then(ns=>{if(ns.value!==42)throw 1}).then($DONE,$DONE)",
+            ),
+            None,
+            "root",
+            |name| {
+                std::fs::read_to_string(
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("../../tests/test262/upstream/harness")
+                        .join(name),
+                )
+                .map_err(|error| error.to_string())
+            },
+            |referrer, _| {
+                assert_eq!(referrer, "root");
+                loads += 1;
+                Ok(ModuleSource {
+                    identifier: "leaf".into(),
+                    source: "export const value=42".into(),
+                })
+            },
+        )
+        .unwrap();
+    assert_eq!(cases.len(), 2);
+    assert!(
+        cases.iter().all(|case| case.outcome == Outcome::Passed),
+        "{cases:?}"
+    );
+    assert_eq!(loads, 2);
+}
+
+#[test]
+fn dynamic_referrers_use_the_defining_cached_module_even_for_global_environment_functions() {
+    for first in [
+        "export async function go(){const ns=await import('./second');if(ns.value!==42)throw 1}",
+        "export const go=Function(\"return import('./second').then(ns=>{if(ns.value!==42)throw 1})\")",
+        "export const go=(0,eval)(\"(async function(){const ns=await import('./second');if(ns.value!==42)throw 1})\")",
+    ] {
+        let mut requests = Vec::new();
+        let cases = Runner::default()
+            .run_with_module_loader(
+                &source(
+                    "flags: [module]",
+                    "const {go}=await import('first');await go()",
+                ),
+                None,
+                "root",
+                |_| Ok(String::new()),
+                |referrer, request| {
+                    let specifier = String::from_utf16(request.specifier.code_units()).unwrap();
+                    requests.push((referrer.to_owned(), specifier.clone()));
+                    Ok(if specifier == "first" {
+                        ModuleSource {
+                            identifier: "first".into(),
+                            source: first.into(),
+                        }
+                    } else {
+                        ModuleSource {
+                            identifier: "second".into(),
+                            source: "export const value=42".into(),
+                        }
+                    })
+                },
+            )
+            .unwrap();
+        assert_eq!(cases[0].outcome, Outcome::Passed, "{first}");
+        assert_eq!(
+            requests,
+            [
+                ("root".into(), "first".into()),
+                ("first".into(), "./second".into())
+            ]
+        );
+    }
+}
+
+#[test]
+fn dynamic_body_and_linking_rejections_remain_language_runtime_failures() {
+    assert_eq!(
+        outcome(
+            "await import('leaf');throw new RangeError()",
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: TypeError",
+            |_| Ok(ModuleSource {
+                identifier: "leaf".into(),
+                source: "await 0;throw new TypeError()".into()
+            }),
+        ),
+        Outcome::Passed
+    );
+    assert_eq!(
+        outcome(
+            "await import('leaf');throw new RangeError()",
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError",
+            |specifier| Ok(if specifier == "leaf" {
+                ModuleSource {
+                    identifier: "leaf".into(),
+                    source: "import{missing}from'other'".into(),
+                }
+            } else {
+                ModuleSource {
+                    identifier: "other".into(),
+                    source: "export const present=1".into(),
+                }
+            }),
+        ),
+        Outcome::Passed
+    );
+}
+
+#[test]
+fn dynamic_preparation_and_source_identity_failures_never_satisfy_runtime_negatives() {
+    let metadata = "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError";
+    assert!(matches!(
+        outcome("await import('leaf')", metadata, |_| Err("missing".into())),
+        Outcome::SetupFailure(_)
+    ));
+    assert!(matches!(
+        outcome("await import('leaf')", metadata, |_| Ok(ModuleSource {
+            identifier: "leaf".into(),
+            source: "export const = 1".into(),
+        })),
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert!(matches!(
+        outcome("await import('leaf')", metadata, |_| Ok(ModuleSource {
+            identifier: "leaf".into(),
+            source: "await using resource = null;".into(),
+        })),
+        Outcome::Unsupported {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    let mut version = 0;
+    assert!(matches!(
+        outcome(
+            "await import('first');await import('second')",
+            metadata,
+            |_| {
+                version += 1;
+                Ok(ModuleSource {
+                    identifier: "same".into(),
+                    source: format!("export const value={version}"),
+                })
+            }
+        ),
+        Outcome::SetupFailure(_)
+    ));
+}
+
+#[test]
+fn dynamic_attributes_and_source_limits_preserve_explicit_nonpassing_host_outcomes() {
+    assert!(matches!(
+        outcome(
+            "await import('leaf',{with:{type:'json'}})",
+            "flags: [module]",
+            |_| panic!("unsupported attributes requested source")
+        ),
+        Outcome::Unsupported {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    let root = source("flags: [module]", "await import('leaf')");
+    let cases = Runner {
+        limits: Limits {
+            max_source_bytes: Some(root.len()),
+            ..Limits::default()
+        },
+    }
+    .run_with_module_loader(
+        &root,
+        None,
+        "root",
+        |_| Ok(String::new()),
+        |_, _| {
+            Ok(ModuleSource {
+                identifier: "leaf".into(),
+                source: format!("export const value='{}'", "a".repeat(root.len() + 100)),
             })
         },
     )

@@ -62,6 +62,31 @@ not an alternative language specification.
 
 
 
+## Dynamic-import conformance host and ordering
+
+The generic Test262 loader services dynamic-import requests between Promise jobs.
+Static and dynamic requests share source/record identities within each execution
+variant, including aliases, cycles, already-evaluating records and functions whose
+defining Module differs from their lexical environment. Source caches are fresh
+for each Realm. Missing sources, changed source identities, unsupported syntax,
+unsupported attributes and resource refusals retain non-passing setup/resolution
+outcomes. Actual dynamic linking/body rejections remain language runtime failures.
+
+Six new loader groups cover shared static/dynamic records, both Script variants,
+dynamic function/eval referrers, deferred linking/body rejection, preparation and
+identity failures, attributes and opted-in source limits. Nine unchanged upstream
+roots add ten required variants for dynamic resolution/rejection, concurrent
+imports of a waiting module, async-cycle loading, fulfillment/rejection order and
+the unobservable global evaluation counter. Twenty-one new support sources
+receive no independent variant credit; all thirty originals retain verified Git
+blob and SHA-256 hashes at the existing pin. Counts are 10,804 fixtures,
+twenty-two helpers, 10,723 reviewed sources and 20,527 variants.
+
+The full corpus and all 62 package controls pass, as do CLI/raw smoke targets,
+strict Clippy, Rust 1.88, policy and inventories. Runtime/Parser implementations
+retain their preceding 487-unit/2,275-integration and 18/438 results. No intrinsic,
+helper, existing source, limit or worker-count changes are made.
+
 ## Dynamic-import embedding requests and active Module contexts
 
 Opted-in realms expose FIFO HostLoadImportedModule requests for JavaScript
@@ -82,7 +107,7 @@ fresh Promise/cached namespace identity, attribute getter order and validation,
 cross-caller origin restoration, dynamic functions/eval/classes/suspension,
 queued builtin origins, exact language rejection, async graphs, foreign-handle
 refusal and request/job/capability/Symbol collection. The generic Test262 source
-loader is not yet connected to the opt-in request service.
+loader now services these requests through its source cache.
 
 All 487 Runtime units, 2,275 non-RegExp integrations across 690 files, the full
 20,517-variant corpus and 56 package controls pass. CLI/raw smoke targets, strict
@@ -97,7 +122,7 @@ identity remain cached. Native evaluation reactions deliver the namespace in
 a distinct job without public Promise constructor, then or species hooks.
 Namespace then exports participate in ordinary Promise assimilation. Linking
 and evaluation exceptions reject; host failures bypass rejection and cleanup.
-JavaScript import() still requires a loading hook to reach this completion.
+Explicit host requests connect JavaScript import() to this completion.
 
 Eight Runtime unit groups cover cached/live namespace identity, distinct import
 Promises, async dependency timing, cycle-member namespaces, link/runtime rejection, poisoned Promise
@@ -213,8 +238,8 @@ normalizes dot components and rejects targets outside that tree. Sources retain
 their exact text. Loading, parsing dependencies and linking have a separate
 Resolution stage; these failures cannot satisfy runtime-negative expectations.
 Dependency body errors retain their runtime phase and original constructor.
-Scripts and parse negatives never request Module sources. Import attributes and
-asynchronous dependency scheduling remain explicit Unsupported outcomes.
+Parse negatives and Scripts without import calls never request Module sources.
+Import attributes retain explicit Unsupported outcomes.
 
 Six runner groups and three corpus groups cover identities, phases, changed
 sources, parse-negative isolation, resource failures, serial/parallel execution,

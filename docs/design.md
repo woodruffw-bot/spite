@@ -3205,13 +3205,21 @@ than producing an accidental ReferenceError or undefined. Ordinary realms receiv
 no Test262 globals. Parse-negative tests need no harness evaluation.
 
 Runner::run_with_module_loader accepts unmodified Module sources with stable host
-identifiers. It caches the root before traversing requests, reuses equal identities
+identifiers. It caches Module roots before traversing requests, reuses equal identities
 across aliases/cycles, and rejects source changes for an existing identifier.
 All records are prepared before loading/linking the graph. A separate Resolution
-stage ensures loading, dependency parsing and linking failures never satisfy a
-runtime-negative expectation. Scripts and parse negatives never request sources.
+stage keeps source preparation and static linking failures from satisfying a
+runtime-negative expectation. Parse negatives never request sources; Scripts may
+request them through evaluated import calls.
 Import attributes remain Unsupported. Asynchronous dependencies use the shared
-Module scheduler and explicit host Promise-job draining.
+Module scheduler and explicit host Promise-job draining. Static and dynamic
+requests share a source/record cache for each execution variant. New dynamic
+records expand their static dependencies before atomic graph publication; cached
+identities require byte-identical sources. Host requests are serviced between
+Promise jobs, with referrers mapped from their defining Module records. Source
+preparation failures leave their non-passing setup/resolution category; deferred
+linking/evaluation exceptions propagate through the import Promise as language
+runtime failures. A fresh cache per Realm keeps Script variants independent.
 
 Resolution negatives stop after loading and linking, without harness or body
 evaluation (Test262 INTERPRETING.md). Only an actual language exception from

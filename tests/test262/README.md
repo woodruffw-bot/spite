@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 10774 unmodified test fixtures and twenty-two harness files come from
+These 10804 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Dynamic-import completion and ordering
+
+Nine whole unchanged originals add ten required variants. They cover dynamic
+resolution/rejection, concurrent imports of a waiting module, async-cycle loading,
+fulfillment/rejection ordering and global async evaluation-counter behavior.
+Twenty-one new unchanged support files receive no independent variant credit.
+The host shares source/record identities across static and dynamic imports and
+creates a fresh cache for each execution variant. Loading, parsing, unsupported
+and resource failures never satisfy runtime negatives; actual deferred linking
+and body errors retain their language runtime phase.
+
+All thirty new originals retain their Git blob/SHA-256 hashes at the existing
+pin. Counts are 10,804 fixtures, twenty-two helpers, 10,723 reviewed sources and
+20,527 variants. Existing sources, helpers, limits and worker counts are unchanged.
 
 ## Asynchronous Module dependency graphs
 
@@ -46,8 +61,9 @@ and 20,497 variants. Existing sources and harness files are unchanged.
 The conformance host loads relative Module sources by stable normalized identity
 inside upstream/test. Loading, dependency parsing and linking failures have a
 separate Resolution stage and never satisfy runtime-negative expectations.
-Imported body exceptions retain their runtime phase. Scripts and parse negatives
-never request sources; unsupported attributes keep explicit non-passing outcomes.
+Imported body exceptions retain their runtime phase. Parse negatives and Scripts
+without import calls never request sources; unsupported attributes keep explicit
+non-passing outcomes.
 Asynchronous dependencies use the shared Module scheduler.
 
 Eleven unchanged default-export originals and distinct-for-each-module.js add

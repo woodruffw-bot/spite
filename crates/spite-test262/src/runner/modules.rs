@@ -1,4 +1,4 @@
-//! Host-provided static sources, with identity caching before graph publication.
+//! Host-provided sources, with shared static/dynamic identity caches per Realm.
 
 use super::*;
 use spite_parser::ast::{Module, ModuleRequest};
@@ -28,6 +28,15 @@ struct Node {
     next: usize,
 }
 
+// Each execution variant creates a fresh Realm and therefore a fresh cache.
+#[derive(Default)]
+pub(super) struct ModuleCache {
+    nodes: Vec<Node>,
+    identifiers: HashMap<String, usize>,
+    records: HashMap<ModuleHandle, usize>,
+    expanded: usize,
+}
+
 fn capacity() -> Error {
     Error::Limit {
         span: Span::new(0, 0),
@@ -40,6 +49,54 @@ fn host(message: String) -> Error {
         message,
     }
 }
+fn supported_attributes(request: &ModuleRequest) -> Result<(), Error> {
+    if request.attributes.is_empty() {
+        return Ok(());
+    }
+    Err(Error::Unsupported {
+        span: Span::new(0, 0),
+        message: "Test262 module import attributes are not implemented".into(),
+    })
+}
+
+impl ModuleCache {
+    fn insert(
+        &mut self,
+        realm: &mut Realm,
+        source: ModuleSource,
+        parsed: Option<&Module>,
+    ) -> Result<usize, Error> {
+        if let Some(&index) = self.identifiers.get(&source.identifier) {
+            if self.nodes[index].source != source.source {
+                return Err(host(format!(
+                    "module identity changed source: {}",
+                    source.identifier
+                )));
+            }
+            return Ok(index);
+        }
+        let handle = match parsed {
+            Some(module) => realm.create_module_from_ast(module)?,
+            None => realm.create_module(&source.source)?,
+        };
+        let requests = realm.module_requests(&handle)?;
+        self.nodes.try_reserve(1).map_err(|_| capacity())?;
+        self.identifiers.try_reserve(1).map_err(|_| capacity())?;
+        self.records.try_reserve(1).map_err(|_| capacity())?;
+        let index = self.nodes.len();
+        self.identifiers.insert(source.identifier.clone(), index);
+        self.records.insert(handle.clone(), index);
+        self.nodes.push(Node {
+            identifier: source.identifier,
+            source: source.source,
+            handle,
+            requests,
+            dependencies: Vec::new(),
+            next: 0,
+        });
+        Ok(index)
+    }
+}
 
 impl ModuleLoader<'_> {
     pub fn load_graph(
@@ -47,78 +104,75 @@ impl ModuleLoader<'_> {
         realm: &mut Realm,
         module: &Module,
         source: &str,
+        cache: &mut ModuleCache,
     ) -> Result<ModuleHandle, Error> {
-        let root = realm.create_module_from_ast(module)?;
-        let mut nodes = vec![Node {
-            identifier: self.root_identifier.into(),
-            source: source.into(),
-            handle: root.clone(),
-            requests: realm.module_requests(&root)?,
-            dependencies: Vec::new(),
-            next: 0,
-        }];
-        let mut identifiers = HashMap::new();
-        identifiers.try_reserve(1).map_err(|_| capacity())?;
-        identifiers.insert(self.root_identifier.to_owned(), 0usize);
-        let mut index = 0;
-        while index < nodes.len() {
-            let requests = nodes[index].requests.clone();
-            nodes[index]
+        let root = cache.insert(
+            realm,
+            ModuleSource {
+                identifier: self.root_identifier.into(),
+                source: source.into(),
+            },
+            Some(module),
+        )?;
+        self.publish_graph(realm, root, cache)
+    }
+
+    fn publish_graph(
+        &mut self,
+        realm: &mut Realm,
+        root: usize,
+        cache: &mut ModuleCache,
+    ) -> Result<ModuleHandle, Error> {
+        while cache.expanded < cache.nodes.len() {
+            let index = cache.expanded;
+            let requests = cache.nodes[index].requests.clone();
+            cache.nodes[index]
                 .dependencies
                 .try_reserve_exact(requests.len())
                 .map_err(|_| capacity())?;
             for request in requests {
-                if !request.attributes.is_empty() {
-                    return Err(Error::Unsupported {
-                        span: Span::new(0, 0),
-                        message: "Test262 module import attributes are not implemented".into(),
-                    });
-                }
-                let loaded = (self.load)(&nodes[index].identifier, &request).map_err(host)?;
-                let target = if let Some(target) = identifiers.get(&loaded.identifier) {
-                    let target = *target;
-                    if nodes[target].source != loaded.source {
-                        return Err(host(format!(
-                            "module identity changed source: {}",
-                            loaded.identifier
-                        )));
-                    }
-                    target
-                } else {
-                    let handle = realm.create_module(&loaded.source)?;
-                    let requests = realm.module_requests(&handle)?;
-                    nodes.try_reserve(1).map_err(|_| capacity())?;
-                    identifiers.try_reserve(1).map_err(|_| capacity())?;
-                    let target = nodes.len();
-                    identifiers.insert(loaded.identifier.clone(), target);
-                    nodes.push(Node {
-                        identifier: loaded.identifier,
-                        source: loaded.source,
-                        handle,
-                        requests,
-                        dependencies: Vec::new(),
-                        next: 0,
-                    });
-                    target
-                };
-                let dependency = nodes[target].handle.clone();
-                nodes[index].dependencies.push(dependency);
+                supported_attributes(&request)?;
+                let loaded = (self.load)(&cache.nodes[index].identifier, &request).map_err(host)?;
+                let target = cache.insert(realm, loaded, None)?;
+                let dependency = cache.nodes[target].handle.clone();
+                cache.nodes[index].dependencies.push(dependency);
             }
-            index += 1;
+            cache.expanded += 1;
         }
-        let mut records = HashMap::new();
-        records.try_reserve(nodes.len()).map_err(|_| capacity())?;
-        for (index, node) in nodes.iter().enumerate() {
-            records.insert(node.handle.clone(), index);
-        }
+        let root = cache.nodes[root].handle.clone();
         realm.load_module_graph(&root, |referrer, request| {
-            let node = &mut nodes[records[referrer]];
+            let node = &mut cache.nodes[cache.records[referrer]];
             debug_assert_eq!(&node.requests[node.next], request);
             let target = node.dependencies[node.next].clone();
             node.next += 1;
             Ok(target)
         })?;
         Ok(root)
+    }
+
+    pub fn service_requests(
+        &mut self,
+        realm: &mut Realm,
+        cache: &mut ModuleCache,
+    ) -> Result<(), Error> {
+        while let Some(request) = realm.take_module_import_request() {
+            supported_attributes(request.request())?;
+            let referrer = match request.referrer() {
+                None => self.root_identifier,
+                Some(record) => {
+                    &cache.nodes[*cache
+                        .records
+                        .get(record)
+                        .ok_or_else(|| host("unknown dynamic import referrer".into()))?]
+                    .identifier
+                }
+            };
+            let loaded = (self.load)(referrer, request.request()).map_err(host)?;
+            let target = cache.insert(realm, loaded, None)?;
+            let target = self.publish_graph(realm, target, cache)?;
+            realm.finish_module_import(request, Ok(target))?;
+        }
+        Ok(())
     }
 }
 
@@ -135,7 +189,9 @@ impl Runner {
     ) -> Outcome {
         let mut realm = Realm::new(self.limits);
         let loaded = match loader {
-            Some(loader) => loader.load_graph(&mut realm, module, source),
+            Some(loader) => {
+                loader.load_graph(&mut realm, module, source, &mut ModuleCache::default())
+            }
             None => realm.create_module_from_ast(module),
         };
         let record = match loaded {

@@ -13,8 +13,8 @@ enum ParsedSource {
 mod async_completion;
 mod modules;
 use async_completion::AsyncCompletion;
-use modules::ModuleLoader;
 pub use modules::ModuleSource;
+use modules::{ModuleCache, ModuleLoader};
 
 /// A runner stage, distinguishing harness setup from language phases.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -110,12 +110,12 @@ impl Runner {
         self.run_variants(source, review, &mut load_harness, None)
     }
 
-    /// Runs variants with host-provided static Module sources and identities.
+    /// Runs variants with host-provided static and dynamic Module sources.
     ///
     /// The root identifier and returned source identifiers determine shared
-    /// records and cycles. Dependency setup/linking failures never satisfy a
-    /// runtime-negative expectation. Import attributes and async dependency
-    /// evaluation remain explicit Unsupported outcomes.
+    /// records and cycles in one cache per execution variant. Source preparation
+    /// failures never satisfy runtime negatives. Dynamic imports complete through
+    /// explicit host requests and Promise jobs. Import attributes remain Unsupported.
     pub fn run_with_module_loader(
         &self,
         source: &str,
@@ -166,7 +166,7 @@ impl Runner {
         mode: Mode,
         review: Option<&ParseExpectation>,
         load_harness: &mut impl FnMut(&str) -> Result<String, String>,
-        modules: Option<&mut ModuleLoader<'_>>,
+        mut modules: Option<&mut ModuleLoader<'_>>,
     ) -> Outcome {
         let source = mode.prepare_source(original);
         let parsed = if mode == Mode::Module {
@@ -260,17 +260,20 @@ impl Runner {
                     .unwrap_or_else(|| Outcome::SetupFailure(format!("{name}: {error}")));
             }
         }
+        let mut module_cache = ModuleCache::default();
+        if modules.is_some() {
+            realm.enable_module_imports();
+        }
         let evaluated = match &parsed {
             ParsedSource::Script(script) => realm.evaluate(script),
             ParsedSource::Module(module) => {
-                if let Some(loader) = modules {
-                    let loaded =
-                        loader
-                            .load_graph(&mut realm, module, original)
-                            .and_then(|record| {
-                                realm.link_module(&record)?;
-                                Ok(record)
-                            });
+                if let Some(loader) = modules.as_deref_mut() {
+                    let loaded = loader
+                        .load_graph(&mut realm, module, original, &mut module_cache)
+                        .and_then(|record| {
+                            realm.link_module(&record)?;
+                            Ok(record)
+                        });
                     let record = match loaded {
                         Ok(record) => record,
                         Err(error) => {
@@ -288,8 +291,18 @@ impl Runner {
             Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),
             Err(error) => (Err(error), None),
         };
-        if result.is_ok() && (asynchronous || mode == Mode::Module) {
+        if result.is_ok() && (asynchronous || mode == Mode::Module || modules.is_some()) {
             loop {
+                if let Some(loader) = modules.as_deref_mut()
+                    && let Err(error) = loader.service_requests(&mut realm, &mut module_cache)
+                {
+                    return host_failure(&error, Stage::Resolution).unwrap_or_else(|| {
+                        failed(
+                            Stage::Resolution,
+                            format!("dynamic source preparation failed: {error}"),
+                        )
+                    });
+                }
                 match realm.run_next_promise_job() {
                     Ok(PromiseJobOutcome::NoJob) => break,
                     Ok(PromiseJobOutcome::Completed) => {}

@@ -230,7 +230,8 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         if fields[0] == "script-runtime-error" {
             assert!(!meta.has_flag("raw"));
             let error_type = match fields[2] {
-                "test/language/module-code/top-level-await/module-import-rejection-body.js"
+                "test/language/module-code/top-level-await/await-dynamic-import-rejection.js"
+                | "test/language/module-code/top-level-await/module-import-rejection-body.js"
                 | "test/language/module-code/top-level-await/module-import-rejection.js" => {
                     "TypeError"
                 }
@@ -280,6 +281,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 10774);
+    assert_eq!(count, 10804);
     assert_eq!(harness_count, 22);
 }

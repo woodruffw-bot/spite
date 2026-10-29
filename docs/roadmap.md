@@ -381,6 +381,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Schedule asynchronous Module dependencies and cycle completion with top-level Await, ordered available ancestors, cycle-root waiting and rejection/host-abort propagation.
 - [x] Complete host-provided loaded-record imports with fresh namespace Promises, intrinsic evaluation reactions, live namespace identity and exported-then assimilation.
 - [x] Expose explicit dynamic-import host requests with canonical attributes, rooted capabilities, deferred completion and defining Module identity across functions, eval, class initialization and Promise jobs.
+- [x] Service Test262 dynamic imports with one source/record cache per execution variant, shared static/dynamic identities and explicit non-passing preparation failures.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.
@@ -452,7 +453,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Complete await expressions and suspended control-flow continuations.
 - [x] Parse ImportCall specifiers/options with standard argument and new-expression grammar, retained source, strict/private validation and an execution-only module-loading boundary.
 - [x] Evaluate dynamic-import operands, including await/yield, and reject specifier/options/attribute-value language failures through fresh intrinsic Promises while preserving host-abort behavior.
-- [ ] Implement dynamic import, import.meta, and top-level await through host hooks.
+- [x] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [ ] Implement explicit resource management where required by the baseline.
 
 ## 6. Completion and hardening

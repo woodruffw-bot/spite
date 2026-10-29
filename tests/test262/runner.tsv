@@ -10713,3 +10713,12 @@ test/language/module-code/top-level-await/module-import-unwrapped.js	-	-	-
 test/language/module-code/top-level-await/module-self-import-async-resolution-ticks.js	-	-	-
 test/language/module-code/top-level-await/module-sync-import-async-resolution-ticks.js	-	-	-
 test/language/module-code/top-level-await/pending-async-dep-from-cycle.js	-	-	-
+test/language/module-code/top-level-await/await-dynamic-import-rejection.js	-	-	-
+test/language/module-code/top-level-await/await-dynamic-import-resolution.js	-	-	-
+test/language/module-code/top-level-await/dynamic-import-of-waiting-module.js	-	-	-
+test/language/module-code/top-level-await/dynamic-import-rejection.js	-	-	-
+test/language/module-code/top-level-await/dynamic-import-resolution.js	-	-	-
+test/language/module-code/top-level-await/fulfillment-order.js	-	-	-
+test/language/module-code/top-level-await/rejection-order.js	-	-	-
+test/language/module-code/top-level-await/module-graphs-does-not-hang.js	-	-	-
+test/language/module-code/top-level-await/unobservable-global-async-evaluation-count-reset.js	-	-	-
