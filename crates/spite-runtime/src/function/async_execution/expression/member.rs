@@ -108,6 +108,13 @@ impl Realm {
         // Edition 17 leaves computed keys unconverted in the Reference. Core
         // GetValue/Delete performs coercion after both base and key evaluation.
         match action {
+            MemberAction::PatternReference => {
+                push(
+                    state,
+                    ExprTask::PatternReference(reference.into_owned(span)?),
+                    span,
+                )?;
+            }
             MemberAction::IterationAssignment => {
                 let value = data
                     .iteration_value

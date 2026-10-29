@@ -1,9 +1,19 @@
 # Test262 regression fixtures
 
-These 10983 unmodified test fixtures and twenty-two harness files come from
+These 10996 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Suspended destructuring assignment patterns
+
+Twelve whole unchanged yield-expression originals add 24 required Script modes
+for array/object defaults, targets and nested/rest patterns. One noStrict
+parse-negative original adds one mode with an exact Syntax diagnostic review at
+bytes 858..863 (`yield cannot be an identifier in a generator context`). All Git
+blob/SHA-256 hashes match the same pin. Counts are 10,996 fixtures, twenty-two
+helpers, 10,915 reviewed sources and 20,906 variants. Existing sources, helpers,
+limits and worker counts are unchanged.
 
 ## Suspended class expressions
 

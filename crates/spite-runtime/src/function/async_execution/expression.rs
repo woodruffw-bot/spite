@@ -5,6 +5,7 @@ mod class;
 mod member;
 mod object;
 mod optional;
+mod pattern;
 mod template;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
@@ -30,9 +31,8 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
         ExprKind::ImportCall { specifier, options } => has_supported_await(specifier) || options.as_ref().is_some_and(|options| has_supported_await(options)),
         ExprKind::Parenthesized(inner) | ExprKind::Unary(_, inner) => has_supported_await(inner),
         ExprKind::Update { argument, .. } => has_supported_await(argument),
-        ExprKind::DestructuringAssign { value, .. } | ExprKind::PrivateIn { value, .. } => {
-            has_supported_await(value)
-        }
+        ExprKind::DestructuringAssign { value, pattern: target } => has_supported_await(value) || pattern::has_pattern_await(target),
+        ExprKind::PrivateIn { value, .. } => has_supported_await(value),
         ExprKind::SuperCall(arguments) => arguments.iter().any(|argument| has_supported_await(argument.expression())),
         ExprKind::SuperProperty(PropertyName::Computed(key)) => has_supported_await(key),
         ExprKind::OptionalChain {base, steps} => has_supported_await(base) || steps.iter().any(|step| match &step.kind {
@@ -197,10 +197,75 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
     }
 }
 
+enum PatternFocus<'a> {
+    Expression(&'a Expr),
+    Pattern(&'a spite_parser::ast::AssignmentPattern),
+}
+
+fn pattern_expression_child(
+    pattern: &spite_parser::ast::AssignmentPattern,
+    child: ExprChild,
+) -> PatternFocus<'_> {
+    use spite_parser::ast::{AssignmentPatternKind, AssignmentTarget};
+    let element = |index: usize| match &pattern.kind {
+        AssignmentPatternKind::Array { elements, .. } => {
+            elements[index].as_ref().expect("assignment element")
+        }
+        AssignmentPatternKind::Object { properties, .. } => &properties[index].element,
+    };
+    fn target(target: &AssignmentTarget) -> PatternFocus<'_> {
+        match target {
+            AssignmentTarget::Reference(expression) => PatternFocus::Expression(expression),
+            AssignmentTarget::Pattern(pattern) => PatternFocus::Pattern(pattern),
+        }
+    }
+    match child {
+        ExprChild::AssignmentTarget(index) => target(&element(index).target),
+        ExprChild::AssignmentDefault(index) => PatternFocus::Expression(
+            element(index)
+                .initializer
+                .as_ref()
+                .expect("assignment default"),
+        ),
+        ExprChild::AssignmentKey(index) => {
+            let AssignmentPatternKind::Object { properties, .. } = &pattern.kind else {
+                unreachable!("object assignment")
+            };
+            let PropertyName::Computed(key) = &properties[index].key else {
+                unreachable!("computed assignment key")
+            };
+            PatternFocus::Expression(key)
+        }
+        ExprChild::AssignmentRest => match &pattern.kind {
+            AssignmentPatternKind::Array { rest, .. } => {
+                target(rest.as_ref().expect("array rest target"))
+            }
+            AssignmentPatternKind::Object { rest, .. } => {
+                PatternFocus::Expression(rest.as_ref().expect("object rest target"))
+            }
+        },
+        _ => unreachable!("pattern path child"),
+    }
+}
+
 fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprChild]) -> &'a Expr {
-    let mut expression = root_expression(data, root);
+    let mut focus = PatternFocus::Expression(root_expression(data, root));
     for child in path {
-        expression = match (child, &expression.kind) {
+        if let PatternFocus::Pattern(pattern) = focus {
+            focus = pattern_expression_child(pattern, *child);
+            continue;
+        }
+        let PatternFocus::Expression(expression) = focus else {
+            unreachable!("expression focus")
+        };
+        if matches!(child, ExprChild::AssignmentPattern) {
+            let ExprKind::DestructuringAssign { pattern, .. } = &expression.kind else {
+                unreachable!("destructuring source")
+            };
+            focus = PatternFocus::Pattern(pattern);
+            continue;
+        }
+        focus = PatternFocus::Expression(match (child, &expression.kind) {
             (ExprChild::ClassHeritage, ExprKind::Class(class)) => {
                 class.heritage.as_ref().expect("class heritage")
             }
@@ -320,8 +385,11 @@ fn expression_at<'a>(data: &'a AsyncExecutionData, root: ExprRoot, path: &[ExprC
             (ExprChild::MemberBase, ExprKind::Member(base, _)) => base,
             (ExprChild::MemberKey, ExprKind::Member(_, PropertyName::Computed(key))) => key,
             _ => unreachable!("typed expression path"),
-        };
+        });
     }
+    let PatternFocus::Expression(expression) = focus else {
+        unreachable!("expression path ends at pattern")
+    };
     expression
 }
 
@@ -489,6 +557,26 @@ impl Realm {
         }
         while let Some(task) = state.tasks.pop() {
             match task {
+                ExprTask::PatternNext => self.advance_async_assignment_pattern(data, &mut state)?,
+                ExprTask::PatternKey => {
+                    let value = state.current.take().expect("computed assignment key");
+                    self.finish_async_assignment_key(data, &mut state, value)?;
+                }
+                ExprTask::PatternReference(reference) => {
+                    data.assignment_patterns
+                        .last_mut()
+                        .expect("assignment record")
+                        .cursors
+                        .last_mut()
+                        .expect("assignment cursor")
+                        .reference = Some(reference);
+                    self.read_async_assignment_pattern(data, &mut state)?;
+                }
+                ExprTask::PatternRead => self.read_async_assignment_pattern(data, &mut state)?,
+                ExprTask::PatternWrite => {
+                    let value = state.current.take().expect("assignment element value");
+                    self.write_async_assignment_pattern(data, &mut state, value)?;
+                }
                 ExprTask::EvaluateNamed { path, name } => {
                     self.async_named_class(data, &mut state, path, name)?;
                 }
@@ -1243,8 +1331,12 @@ impl Realm {
                     else {
                         unreachable!("destructuring source path")
                     };
-                    self.destructuring_assignment(pattern, value.clone())?;
-                    state.current = Some(value);
+                    if pattern::has_pattern_await(pattern) {
+                        self.start_async_assignment_pattern(data, &mut state, path, value)?;
+                    } else {
+                        self.destructuring_assignment(pattern, value.clone())?;
+                        state.current = Some(value);
+                    }
                 }
                 ExprTask::AssignmentApply {
                     reference,

@@ -1,15 +1,16 @@
 //! Resource early errors and remaining await-using host boundaries.
 
+use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Realm, Value};
 
 #[test]
 fn await_using_boundaries_abort_handlers_for_statements_and_loops() {
     for source in [
         "async function f(){await using x=null;}f();",
-        "async function f(){let value;using x=([value=await p]=[]);}f();",
+        "async function f(){let value;using x=([value=await spiteUnavailableHost()]=[]);}f();",
         "async function f(){for await(await using x of []){}}f();",
     ] {
-        let mut realm = Realm::default();
+        let mut realm = Realm::with_unavailable_host();
         realm.eval("let flag=0").unwrap();
         assert!(
             matches!(

@@ -165,6 +165,51 @@ pub(super) fn child_path(
 }
 
 impl Realm {
+    #[allow(clippy::mutable_key_type)]
+    pub(super) fn new_pattern_cursor(
+        &mut self,
+        path: Vec<BindingChild>,
+        value: Value,
+        layout: crate::object::async_binding::PatternLayout,
+        span: Span,
+    ) -> Result<BindingCursor, Error> {
+        use crate::object::async_binding::PatternLayout;
+        self.tick(span)?;
+        let (kind, rest_pending) = match layout {
+            PatternLayout::Array { rest } => (
+                BindingCursorKind::Array(self.binding_iterator(value, span)?),
+                rest,
+            ),
+            PatternLayout::Object { properties, rest } => {
+                Self::require_object_coercible(&value, span)?;
+                let mut excluded = std::collections::HashSet::new();
+                if rest {
+                    excluded.try_reserve(properties).map_err(|_| Error::Limit {
+                        span,
+                        message: "binding property capacity exceeded".into(),
+                    })?;
+                }
+                (
+                    BindingCursorKind::Object(ObjectBindingCursor {
+                        value,
+                        key: None,
+                        excluded,
+                        phase: ObjectBindingPhase::Key,
+                    }),
+                    rest,
+                )
+            }
+        };
+        Ok(BindingCursor {
+            path,
+            kind,
+            index: 0,
+            rest_pending,
+            span,
+            reference: None,
+        })
+    }
+
     pub(super) fn start_async_pattern_binding(
         &mut self,
         data: &mut AsyncExecutionData,
@@ -216,39 +261,21 @@ impl Realm {
             span,
             message: "array binding cursor allocation failed".into(),
         })?;
-        self.tick(span)?;
-        let kind = match &pattern.kind {
+        let layout = match &pattern.kind {
             BindingPatternKind::Array { .. } => {
-                BindingCursorKind::Array(self.binding_iterator(value, span)?)
+                crate::object::async_binding::PatternLayout::Array { rest: rest_pending }
             }
             BindingPatternKind::Object { properties, .. } => {
-                Self::require_object_coercible(&value, span)?;
-                let mut excluded = std::collections::HashSet::new();
-                if rest_pending {
-                    excluded
-                        .try_reserve(properties.len())
-                        .map_err(|_| Error::Limit {
-                            span,
-                            message: "binding property capacity exceeded".into(),
-                        })?;
+                crate::object::async_binding::PatternLayout::Object {
+                    properties: properties.len(),
+                    rest: rest_pending,
                 }
-                BindingCursorKind::Object(ObjectBindingCursor {
-                    value,
-                    key: None,
-                    excluded,
-                    phase: ObjectBindingPhase::Key,
-                })
             }
             BindingPatternKind::Identifier(_) => unreachable!("pattern binding entry"),
         };
-        state.cursors.push(BindingCursor {
-            path,
-            kind,
-            index: 0,
-            rest_pending,
-            span,
-            reference: None,
-        });
+        state
+            .cursors
+            .push(self.new_pattern_cursor(path, value, layout, span)?);
         Ok(())
     }
 
@@ -450,13 +477,21 @@ impl Realm {
     pub(super) fn close_async_pattern_binding(
         &mut self,
         data: &mut AsyncExecutionData,
-        mut result: Result<Completion, Error>,
+        result: Result<Completion, Error>,
     ) -> Result<Completion, Error> {
-        let mut state = data
+        let state = data
             .pattern_binding
             .take()
             .expect("abandoned pattern binding");
-        while let Some(mut cursor) = state.cursors.pop() {
+        self.close_pattern_cursors(state.cursors, result)
+    }
+
+    pub(super) fn close_pattern_cursors(
+        &mut self,
+        mut cursors: Vec<BindingCursor>,
+        mut result: Result<Completion, Error>,
+    ) -> Result<Completion, Error> {
+        while let Some(mut cursor) = cursors.pop() {
             cursor.reference = None;
             if result
                 .as_ref()

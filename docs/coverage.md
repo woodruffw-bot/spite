@@ -59,9 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20881 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20906 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspended destructuring assignment patterns
+
+Array/object assignment expressions resume awaited/yielded keys, defaults and
+reference targets through the existing value-expression task stack. Shared
+binding cursors preserve target-before-source access, raw keys until PutValue,
+rest exclusion, default naming and original RHS identity. Nested patterns close
+inner iterators first, interleaved with nested class-context restoration.
+Host failures release captures without JavaScript cleanup.
+
+Eleven new integration groups cover timing, nesting, exhausted arrays/rest,
+rejection/return precedence, class names, queued async-generator requests,
+collection of saved references and excluded Symbol keys, and host abort.
+Earlier unsupported-pattern tests now verify normal resumption/finalization;
+host controls use the explicit unavailable-host trigger with unchanged limits.
+Shared cursor tracing fixes a debug-stack overflow exposed by the new collection
+test, without increasing the native stack allowance.
+
+Twelve whole unchanged runtime originals add 24 required variants. One further
+unchanged noStrict parse-negative original adds one mode with exact Syntax
+diagnostic review at bytes 858..863. All Git blob/SHA-256 hashes match the same pin.
+Counts are 10,996 fixtures, twenty-two helpers, 10,915 reviewed sources and 20,906
+variants. Runtime case inventory is 694 files; Parser inventory remains 88.
+Existing originals, helpers, limits and worker counts are unchanged.
+All 491 Runtime units, 2,327 non-RegExp integrations, the full corpus and all 62
+package controls pass. CLI/raw smoke, formatting, strict Clippy, Rust 1.99,
+dependency policy and inventories pass. The 43 CI-driver tests pass with the new
+minimum compiler; older execution evidence below retains its original toolchain.
 
 ## Suspended class expressions and inferred names
 

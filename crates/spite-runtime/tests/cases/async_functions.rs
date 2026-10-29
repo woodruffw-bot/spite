@@ -112,7 +112,7 @@ fn closures_results_and_hidden_intrinsics_survive_collection() {
 }
 
 #[test]
-fn host_failures_bypass_rejection_and_nested_await_remains_explicitly_unsupported() {
+fn host_failures_bypass_rejection_in_direct_and_dynamic_async_functions() {
     let mut realm = Realm::with_unavailable_host();
     realm
         .eval("let flag=0;async function f(){return spiteUnavailableHost()}")
@@ -123,8 +123,8 @@ fn host_failures_bypass_rejection_and_nested_await_remains_explicitly_unsupporte
     ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     for source in [
-        "(async function(){}).constructor('let x;return ([x=await p]=[])')()",
-        "new (async function(){}).constructor('let x;return ([x=await p]=[])')()",
+        "(async function(){}).constructor('let x;return ([x=await spiteUnavailableHost()]=[])')()",
+        "new (async function(){}).constructor('let x;return ([x=await spiteUnavailableHost()]=[])')()",
     ] {
         assert!(
             matches!(
@@ -162,15 +162,19 @@ fn unexecuted_await_bodies_and_dynamic_async_compilation_preserve_source_and_met
 }
 
 #[test]
-fn unsupported_pattern_default_await_skips_operand_rejection_and_pending_finalizers() {
+fn pattern_default_await_runs_operands_once_and_defers_finalizers() {
     let mut realm = Realm::default();
-    realm.eval("let before=0,operand=0,handled=0;async function f(){let x;before++;try{return ([x=await (operand++)]=[])}catch(e){handled=1}finally{handled=2}}").unwrap();
-    assert!(matches!(
-        realm.eval("try{f().catch(()=>{handled=3})}catch(e){handled=4}finally{handled=5}"),
-        Err(Error::Unsupported { .. })
-    ));
+    realm.eval("let before=0,operand=0,handled=0,settled=false;async function f(){let x;before++;try{return ([x=await (operand++)]=[])}catch(e){handled=1}finally{handled=2}}").unwrap();
+    realm
+        .eval("f().then(()=>{settled=true},()=>{handled=3})")
+        .unwrap();
     assert_eq!(
-        realm.eval("before===1&&operand===0&&handled===0"),
+        realm.eval("before===1&&operand===1&&handled===0&&!settled"),
+        Ok(Value::Boolean(true))
+    );
+    drain(&mut realm);
+    assert_eq!(
+        realm.eval("before===1&&operand===1&&handled===2&&settled"),
         Ok(Value::Boolean(true))
     );
 }

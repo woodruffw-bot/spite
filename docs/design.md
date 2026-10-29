@@ -1393,6 +1393,26 @@ patterns. Object rest uses the same intrinsic creation, live property copying an
 exclusion accounting as native BindingInitialization. Each physical Symbol key
 slot participates in the internal Symbol inventory, including a key simultaneously
 held as the current property and in the exclusion set.
+Destructuring assignment expressions (13.15.5) can suspend in computed keys,
+defaults and reference targets. Their cursor stacks reuse binding iterator and
+object state, cursor creation, rest collection and iterator closing. Typed paths
+traverse the retained expression/pattern AST without cloning it. References are
+evaluated before IteratorStepValue or GetV, even for exhausted iterators; computed
+target keys remain raw until PutValue. Defaults preserve identifier-only naming,
+including class names before static initialization. Completion returns the
+original RHS value. Nested assignment expressions retain independent cursor
+records while sharing the enclosing value-expression task stack.
+
+Each assignment record retains the enclosing class-expression depth. Abrupt
+completion first restores classes entered inside that pattern, then closes its
+iterators, before unwinding outer patterns or surrounding class/statement scopes.
+Language throws retain IteratorClose error precedence; return completions can be
+overridden by close errors. Host failures release captures without JavaScript
+closing or finalization. Cursor references, source values, pending keys and
+exclusion sets all participate in tracing. Binding and assignment cursors share
+one trace traversal, avoiding duplicated large concrete trace iterators on the
+collector's debug stack; no stack allowance or host quota is increased.
+
 Bindings and destructuring assignments share rest Array collection, intrinsic
 rest Object creation and excluded-key work accounting. Callers retain their
 reference-before-access order, iterator records, closing policy and capacity

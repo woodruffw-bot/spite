@@ -77,6 +77,7 @@ fn new_execution_data(
         class_context: None,
         class_definition: None,
         expression_classes: Vec::new(),
+        assignment_patterns: Vec::new(),
         index: 0,
         statement: None,
         next: None,

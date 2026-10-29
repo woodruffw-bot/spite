@@ -431,6 +431,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume simple/compound assignment with saved references, awaited member targets/RHS, logical short-circuiting, cached keys and shared PutValue.
 - [x] Resume prefix/postfix updates with awaited member targets and shared numeric conversion, key caching, BigInt arithmetic and writes.
 - [x] Resume destructuring assignment after awaited RHS evaluation with deferred target resolution, shared patterns/closing and original value identity.
+- [x] Resume array/object assignment-pattern keys, defaults and targets through Await/Yield with saved references, shared cursors/rest helpers, original RHS identity and ordered iterator closing.
 - [x] Resume untagged template substitutions with ordered ToString, shared cooked components, lossless UTF-16 buffers and existing string limits.
 - [x] Resume tagged templates through shared call/argument continuations with saved receivers, raw substitutions, frozen site caching and indirect eval.
 - [x] Resume private-in after awaited RHS evaluation with preserved lexical brands, direct lookup and shared primitive/error behavior.

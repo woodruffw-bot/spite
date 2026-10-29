@@ -25,6 +25,7 @@ pub(crate) use data_view::DataViewData;
 mod typed_array;
 pub(crate) use typed_array::{TypedArrayData, TypedArrayDefineAction, TypedArraySetAction};
 pub(crate) mod array_from_async;
+pub(crate) mod async_assignment;
 pub(crate) mod async_binding;
 mod async_dispose;
 pub(crate) mod async_execution;

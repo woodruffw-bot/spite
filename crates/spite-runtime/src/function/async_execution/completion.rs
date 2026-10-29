@@ -12,6 +12,16 @@ impl Realm {
         mut result: Result<Completion, Error>,
     ) -> Result<Option<Completion>, Error> {
         if !matches!(&result, Ok(completion) if completion.kind == CompletionKind::Normal) {
+            while let Some(pattern) = data.assignment_patterns.pop() {
+                while data.expression_classes.len() > pattern.class_depth {
+                    let class = data
+                        .expression_classes
+                        .pop()
+                        .expect("inner class expression");
+                    self.leave_class_definition(&class.context);
+                }
+                result = self.close_pattern_cursors(pattern.cursors, result);
+            }
             while let Some(class) = data.expression_classes.pop() {
                 self.leave_class_definition(&class.context);
             }

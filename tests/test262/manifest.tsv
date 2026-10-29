@@ -11004,3 +11004,16 @@ script-pass	0ccb4e66c6e2075d668b24d0201a1b6627bcd1d126f599d64d9cf16df67c63be	tes
 script-pass	7025eee9fb1e1aa3d52d932669de7e70c1e12871710530d52dc143f4a886e2e9	test/language/statements/class/cpn-class-decl-fields-computed-property-name-from-yield-expression.js
 script-pass	b4ff6260b5c0c454f617045ce1ac382cb84dcc92326a259dbc8fa648ad453b32	test/language/statements/class/cpn-class-decl-fields-methods-computed-property-name-from-await-expression.js
 script-pass	33b145857788fcba71aba4ed1cd85ded30a0ec8600e6b4ab46d915c756f05744	test/language/statements/class/cpn-class-decl-fields-methods-computed-property-name-from-yield-expression.js
+script-pass	32b7d48f689c10217fc00b0765c8c4d243d5a405c69145c052043bc0764e09a8	test/language/expressions/assignment/dstr/array-elem-init-yield-expr.js
+script-pass	c70c0098a6f9e26fdb91dac1625f0d0c5dd9f09bac5bf9a23d3ade81d22d1193	test/language/expressions/assignment/dstr/array-elem-nested-array-yield-expr.js
+script-pass	d187a8f4a83c64bb22a01e9afb46b29a67b19941520fb3ce3ec89e4659859c0a	test/language/expressions/assignment/dstr/array-elem-nested-obj-yield-expr.js
+script-pass	0b56904420e6078052934337384d37565b53aeb06be09fe759fc7aba8f400d9a	test/language/expressions/assignment/dstr/array-elem-target-yield-expr.js
+script-pass	45c5a42605f3d32ee4c22de67c2464fe1c48807df219a79b54b8e63f4e23c33e	test/language/expressions/assignment/dstr/array-rest-nested-array-yield-expr.js
+script-pass	176c15ab566c716756ada6c12d6ad05bf9aea372b8340d2b5d7c393b35101734	test/language/expressions/assignment/dstr/array-rest-nested-obj-yield-expr.js
+script-pass	b00917a813c1b6fc1841e036966e66afcd22040abfcf998e4ef5572b1b167a24	test/language/expressions/assignment/dstr/array-rest-yield-expr.js
+parse-syntax-error	29be31499d331b3b9a83a0cc9c1e5313ec0a48083f48129f5d7995d058a98784	test/language/expressions/assignment/dstr/obj-id-identifier-yield-expr.js
+script-pass	fe61bbf61936e691dad810cf9148d68f4014ba0a0a3e2e6dbdf68560776780da	test/language/expressions/assignment/dstr/obj-id-init-yield-expr.js
+script-pass	98f7bee9416d6949b7fd03b7c1fa6c25293a293e4e47d5da132c0a0d7d4e27d8	test/language/expressions/assignment/dstr/obj-prop-elem-init-yield-expr.js
+script-pass	e12448c272bad37f2172bdc6a1d630aa3ec7a2b7e2dc2e64a75fa2ade8a4a47b	test/language/expressions/assignment/dstr/obj-prop-elem-target-yield-expr.js
+script-pass	7322ff8f804ccc8c198cf6ea1b0f77b8ff4dd57b55dbfaf523663e2e8598c364	test/language/expressions/assignment/dstr/obj-prop-nested-array-yield-expr.js
+script-pass	53f2bdf8ccb3d5d524a6da263443f84b575e2b7173ea989279e05a4b0610e8d1	test/language/expressions/assignment/dstr/obj-prop-nested-obj-yield-expr.js

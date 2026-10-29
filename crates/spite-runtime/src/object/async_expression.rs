@@ -75,6 +75,11 @@ pub(crate) enum ExprChild {
     ObjectSpread(usize),
     ClassHeritage,
     ClassKey(usize),
+    AssignmentPattern,
+    AssignmentTarget(usize),
+    AssignmentDefault(usize),
+    AssignmentKey(usize),
+    AssignmentRest,
     SuperKey,
     OptionalBase,
     OptionalKey(usize),
@@ -118,6 +123,7 @@ impl InvocationTarget {
 #[derive(Debug)]
 pub(crate) enum MemberAction {
     IterationAssignment,
+    PatternReference,
     Value,
     OptionalBase {
         path: ExprPath,
@@ -156,6 +162,11 @@ pub(crate) struct OptionalCallCursor {
 #[derive(Debug)]
 pub(crate) enum ExprTask {
     Evaluate(ExprPath),
+    PatternNext,
+    PatternKey,
+    PatternRead,
+    PatternWrite,
+    PatternReference(Reference<'static>),
     EvaluateNamed {
         path: ExprPath,
         name: Value,
@@ -329,7 +340,9 @@ impl ExprTask {
 
     fn reference(&self) -> Option<&Reference<'static>> {
         match self {
-            Self::AssignmentApply { reference, .. } => Some(reference),
+            Self::AssignmentApply { reference, .. } | Self::PatternReference(reference) => {
+                Some(reference)
+            }
             _ => None,
         }
     }

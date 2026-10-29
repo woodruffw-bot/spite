@@ -318,6 +318,7 @@ pub(crate) struct AsyncExecutionData {
     pub class_context: Option<crate::function::ClassDefinitionContext>,
     pub class_definition: Option<crate::function::ClassDefinitionState>,
     pub expression_classes: Vec<super::async_expression::AsyncClassExpression>,
+    pub assignment_patterns: Vec<super::async_assignment::AsyncAssignmentPattern>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -332,6 +333,17 @@ pub(crate) struct AsyncExecutionData {
 }
 
 impl AsyncExecutionData {
+    fn pattern_cursors(&self) -> impl Iterator<Item = &super::async_binding::BindingCursor> {
+        self.pattern_binding
+            .iter()
+            .flat_map(|state| &state.cursors)
+            .chain(
+                self.assignment_patterns
+                    .iter()
+                    .flat_map(|state| &state.cursors),
+            )
+    }
+
     pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
         self.expression
             .iter()
@@ -347,11 +359,7 @@ impl AsyncExecutionData {
                     .flat_map(|state| state.symbols()),
             )
             .chain(self.var_target.iter().flat_map(Reference::symbols))
-            .chain(
-                self.pattern_binding
-                    .iter()
-                    .flat_map(|state| state.symbols()),
-            )
+            .chain(self.pattern_cursors().flat_map(|cursor| cursor.symbols()))
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
@@ -361,7 +369,8 @@ impl AsyncExecutionData {
             .flat_map(PromiseCapability::values)
             .chain(&self.normal)
             .chain(&self.iteration_value)
-            .chain(self.pattern_binding.iter().flat_map(|state| state.values()))
+            .chain(self.assignment_patterns.iter().map(|state| &state.original))
+            .chain(self.pattern_cursors().flat_map(|cursor| cursor.values()))
             .chain(self.var_target.iter().flat_map(Reference::values))
             .chain(self.frames.iter().flat_map(AsyncStatementFrame::values))
             .chain(
@@ -392,11 +401,7 @@ impl AsyncExecutionData {
                     .filter_map(|context| context.module.as_ref()),
             )
             .chain(self.frames.iter().filter_map(AsyncStatementFrame::object))
-            .chain(
-                self.pattern_binding
-                    .iter()
-                    .flat_map(|state| state.objects()),
-            )
+            .chain(self.pattern_cursors().flat_map(|cursor| cursor.objects()))
             .chain(self.var_target.iter().filter_map(Reference::object))
             .chain(
                 self.expression
@@ -428,7 +433,12 @@ impl AsyncExecutionData {
             .chain(
                 self.pattern_binding
                     .iter()
-                    .flat_map(|state| state.environments()),
+                    .flat_map(|state| state.environment.iter()),
+            )
+            .chain(
+                self.pattern_cursors().filter_map(|cursor| {
+                    cursor.reference.as_ref().and_then(Reference::environment)
+                }),
             )
             .chain(self.var_target.iter().filter_map(Reference::environment))
             .chain(

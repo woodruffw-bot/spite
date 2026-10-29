@@ -77,7 +77,7 @@ fn native_await_ignores_public_then_species_and_replaced_promise_names() {
 }
 
 #[test]
-fn unreachable_await_is_skipped_and_pattern_defaults_remain_explicit_gaps() {
+fn unreachable_await_is_skipped_and_assignment_defaults_suspend() {
     let mut realm = Realm::default();
     realm
         .eval(
@@ -87,13 +87,12 @@ fn unreachable_await_is_skipped_and_pattern_defaults_remain_explicit_gaps() {
     drain(&mut realm);
     check(&mut realm, "result===3");
     realm
-        .eval("let flag=0;async function g(){let x;return ([x=await (flag=1)]=[])}")
+        .eval("let flag=0,completed=false;async function g(){let x;return ([x=await (flag=1)]=[])}")
         .unwrap();
-    assert!(matches!(
-        realm.eval("try{g()}catch(e){flag=2}finally{flag=3}"),
-        Err(Error::Unsupported { .. })
-    ));
-    check(&mut realm, "flag===0");
+    realm.eval("try{g().then(v=>{completed=Array.isArray(v)&&v.length===0})}catch(e){flag=2}finally{flag=3}").unwrap();
+    check(&mut realm, "flag===3&&!completed");
+    drain(&mut realm);
+    check(&mut realm, "flag===3&&completed");
 }
 
 #[test]

@@ -173,21 +173,26 @@ fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
 }
 
 #[test]
-fn object_bindings_execute_and_assignment_pattern_awaits_remain_host_boundaries() {
-    for declaration in ["var {x=await(operand++)}={}", "let {x=await(operand++)}={}"] {
-        let mut realm = Realm::default();
-        realm.eval("let before=0,operand=0,handled=0").unwrap();
-        realm.eval(&format!("async function f(){{before++;try{{{declaration}}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "before===1&&operand===1&&handled===2");
-    }
+fn object_bindings_and_assignment_defaults_resume_operands_and_finalizers() {
     for declaration in [
+        "var {x=await(operand++)}={}",
+        "let {x=await(operand++)}={}",
         "let x;([x=await(operand++)]=[])",
         "let x;({x=await(operand++)}={})",
     ] {
         let mut realm = Realm::default();
-        realm.eval("let before=0,operand=0,handled=0").unwrap();
-        assert!(matches!(realm.eval(&format!("async function f(){{before++;try{{{declaration}}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")),Err(Error::Unsupported{..})),"{declaration}");
-        check(&mut realm, "before===1&&operand===0&&handled===0");
+        realm
+            .eval("let before=0,operand=0,handled=0,observed=-1")
+            .unwrap();
+        realm.eval(&format!("async function f(){{before++;try{{{declaration};observed=x}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")).unwrap();
+        check(
+            &mut realm,
+            "before===1&&operand===1&&handled===0&&observed===-1",
+        );
+        drain(&mut realm);
+        check(
+            &mut realm,
+            "before===1&&operand===1&&handled===2&&observed===0",
+        );
     }
 }
