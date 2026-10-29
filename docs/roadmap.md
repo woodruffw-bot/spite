@@ -459,6 +459,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse ImportCall specifiers/options with standard argument and new-expression grammar, retained source, strict/private validation and an execution-only module-loading boundary.
 - [x] Evaluate dynamic-import operands, including await/yield, and reject specifier/options/attribute-value language failures through fresh intrinsic Promises while preserving host-abort behavior.
 - [x] Implement dynamic import, import.meta, and top-level await through host hooks.
+- [x] Validate import attribute keys against a fixed host list before loading, with static SyntaxError and dynamic Promise TypeError behavior.
 - [ ] Implement explicit resource management where required by the baseline.
 
 ## 6. Completion and hardening

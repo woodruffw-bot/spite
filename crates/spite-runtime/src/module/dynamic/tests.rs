@@ -86,7 +86,10 @@ fn host_completion_defers_linking_and_body_entry_and_imports_keep_fresh_promises
 
 #[test]
 fn enabling_is_idempotent_and_requests_preserve_fifo_and_canonical_attributes() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::new_with_supported_import_attributes(
+        crate::Limits::default(),
+        [JsString::from("a"), JsString::from("z")],
+    );
     realm.enable_module_imports();
     realm
         .eval("import('first',{with:{z:'last',a:'first'}})")
@@ -111,7 +114,10 @@ fn enabling_is_idempotent_and_requests_preserve_fifo_and_canonical_attributes() 
 
 #[test]
 fn operand_conversion_and_attribute_getters_finish_before_type_validation_or_host_requests() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::new_with_supported_import_attributes(
+        crate::Limits::default(),
+        [JsString::from("a"), JsString::from("z")],
+    );
     realm.enable_module_imports();
     let imported = realm.eval("let log='';import({toString(){log+='s';return'x'}},{get with(){log+='w';return{get z(){log+='z';return'last'},get a(){log+='a';return'first'}}}})").unwrap();
     pending(&realm, &imported);

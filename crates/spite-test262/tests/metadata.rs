@@ -259,7 +259,12 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         if fields[0] == "script-resolution-error" {
             assert_eq!(meta.modes(), [Mode::Module]);
-            assert!(!meta.has_flag("raw"));
+            assert_eq!(
+                meta.has_flag("raw"),
+                fields[2] == "test/language/module-code/import-attributes/allow-nlt-before-with.js",
+                "{}",
+                fields[2]
+            );
             assert_eq!(
                 meta.negative,
                 Some(Negative {
@@ -281,6 +286,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 11010);
+    assert_eq!(count, 11024);
     assert_eq!(harness_count, 22);
 }

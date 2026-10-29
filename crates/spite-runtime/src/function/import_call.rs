@@ -74,6 +74,7 @@ impl Realm {
                 };
                 attributes.push(ImportAttribute { key, value });
             }
+            self.check_import_attributes(&attributes, ExceptionKind::TypeError, span)?;
             attributes.sort_unstable_by(|left, right| left.key.cmp(&right.key));
             Ok(ModuleRequest {
                 specifier,

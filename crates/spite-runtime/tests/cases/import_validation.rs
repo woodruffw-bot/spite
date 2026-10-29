@@ -160,7 +160,10 @@ fn host_failures_during_conversion_bypass_rejection_handlers_and_disposal() {
 
 #[test]
 fn valid_requests_run_validation_before_the_module_loading_host_boundary() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::new_with_supported_import_attributes(
+        Limits::default(),
+        [spite_core::JsString::from("type")],
+    );
     realm.eval("let events=[],caught=0,finalized=0").unwrap();
     let error=realm.eval(r#"
         try{import((events.push('specifier'),{toString(){events.push('string');return'source'}}),(events.push('options'),{get with(){events.push('with');return{get type(){events.push('value');return'json'}}}}))}catch{caught++}finally{finalized++}

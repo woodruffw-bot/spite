@@ -115,7 +115,9 @@ impl Runner {
     /// The root identifier and returned source identifiers determine shared
     /// records and cycles in one cache per execution variant. Source preparation
     /// failures never satisfy runtime negatives. Dynamic imports complete through
-    /// explicit host requests and Promise jobs. Import attributes remain Unsupported.
+    /// explicit host requests and Promise jobs. The host supports no import
+    /// attribute keys: static requests fail with SyntaxError during resolution,
+    /// while dynamic requests reject with TypeError during evaluation.
     pub fn run_with_module_loader(
         &self,
         source: &str,
@@ -270,6 +272,7 @@ impl Runner {
                 if let Some(loader) = modules.as_deref_mut() {
                     let loaded = loader
                         .load_graph(&mut realm, module, original, &mut module_cache)
+                        .map_err(modules::ModuleLoadError::into_error)
                         .and_then(|record| {
                             realm.link_module(&record)?;
                             Ok(record)

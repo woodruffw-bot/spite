@@ -260,6 +260,13 @@ impl Realm {
                     objects.module_dependencies(record)?.map(<[_]>::to_vec),
                 ))
             })?;
+            for request in &entries.requested_modules {
+                self.check_import_attributes(
+                    &request.attributes,
+                    crate::ExceptionKind::SyntaxError,
+                    span,
+                )?;
+            }
             let dependencies = match dependencies {
                 Some(dependencies) => dependencies,
                 None if entries.requested_modules.is_empty() => Vec::new(),

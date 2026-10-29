@@ -69,6 +69,12 @@ impl Realm {
             let request = nodes[index].requests[nodes[index].next].clone();
             nodes[index].next += 1;
             self.tick(span)?;
+            // InnerModuleLoading rejects unknown keys before calling the host.
+            self.check_import_attributes(
+                &request.attributes,
+                crate::ExceptionKind::SyntaxError,
+                span,
+            )?;
             let dependency = resolve(&nodes[index].module, &request)?;
             let record = dependency.root.handle();
             // Validate ownership before installing any graph edge.

@@ -1,6 +1,7 @@
 //! Source Text Module records, linking and standalone evaluation (16.2.1).
 
 mod async_evaluation;
+mod attributes;
 mod binding;
 mod dynamic;
 pub use dynamic::ModuleImportRequest;

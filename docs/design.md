@@ -135,7 +135,7 @@ Script parsing and dynamic Function/AsyncFunction/GeneratorFunction goals reject
 static import/export declarations as syntax errors. ImportMeta also requires a
 Module goal (13.3.1 early errors); direct eval and dynamic function source therefore
 report catchable SyntaxErrors. Valid dynamic import retains its distinct
-Unsupported host boundary until module loading is implemented.
+Unsupported host boundary unless the embedding enables module loading.
 ImportCall nodes retain the specifier, optional options expression and full source
 span (13.3.10). Their grammar accepts one or two AssignmentExpressions and optional
 trailing commas, rejects spread and direct new operands, and participates in the
@@ -147,9 +147,21 @@ ToString, options/with access and attribute-value type failures reject the Promi
 EnumerableOwnProperties shares the Object reflection traversal and completes all
 getters before any attribute type check. The source VM retains the specifier while
 options await or yield, including object/Symbol tracing. Host failures bypass
-rejection and JavaScript cleanup. Valid requests still report the module-loading
-host boundary; attribute-support hooks and loading/linking/evaluation remain work. Keyword-named
-ordinary properties and methods retain their existing grammar.
+rejection and JavaScript cleanup. Keyword-named ordinary properties and methods
+retain their existing grammar.
+
+HostGetSupportedImportAttributes uses a fixed key set chosen at Realm creation.
+Default constructors use the specified empty list; the embedding can configure
+keys with Realm::new_with_supported_import_attributes. Exact UTF-16 keys are
+compared without normalization, and values remain host-interpreted strings.
+AllImportAttributesSupported runs after dynamic attribute enumeration and value
+validation, before sorting and host requests: unknown keys reject the intrinsic
+Promise with TypeError (sec-import-call-runtime-semantics-evaluation). Static
+InnerModuleLoading rejects them with SyntaxError before calling the resolver
+(sec-InnerModuleLoading). Linking an unloaded record checks the same keys before
+reporting missing dependencies. Successful graph links remain cached; failed
+loads publish no partial edges. These are language errors, while host and resource
+failures preserve their separate completion paths.
 
 Left-associated binary expression spines (13.6–13.13, 13.16) use an initial
 operand and an ordered vector of operator/right-operand steps. Each step retains
@@ -3237,11 +3249,15 @@ All records are prepared before loading/linking the graph. A separate Resolution
 stage keeps source preparation and static linking failures from satisfying a
 runtime-negative expectation. Parse negatives never request sources; Scripts may
 request them through evaluated import calls.
-Import attributes remain Unsupported. Asynchronous dependencies use the shared
+The conformance host uses the default empty supported-attribute list. Static
+unknown keys are resolution SyntaxErrors, and dynamic unknown keys reject with
+TypeError during evaluation. Asynchronous dependencies use the shared
 Module scheduler and explicit host Promise-job draining. Static and dynamic
 requests share a source/record cache for each execution variant. New dynamic
-records expand their static dependencies before atomic graph publication; cached
-identities require byte-identical sources. Host requests are serviced between
+records expand their reachable static dependencies before atomic graph
+publication; cached identities require byte-identical sources. Attribute failures
+are retained per record and reject the current import without blocking an
+unrelated graph. Host requests are serviced between
 Promise jobs, with referrers mapped from their defining Module records. Source
 preparation failures leave their non-passing setup/resolution category; deferred
 linking/evaluation exceptions propagate through the import Promise as language
@@ -3249,7 +3265,8 @@ runtime failures. A fresh cache per Realm keeps Script variants independent.
 
 Resolution negatives stop after loading and linking, without harness or body
 evaluation (Test262 INTERPRETING.md). Only an actual language exception from
-linking may satisfy the expected constructor name. Root/dependency parse errors,
+attribute validation during loading or from linking may satisfy the expected
+constructor name. Root/dependency parse errors,
 missing files, unsupported syntax and host limits remain non-passing outcomes.
 Successful linking fails the negative immediately, even if its body would throw
 the requested error. A script-resolution-error manifest role retains the Module

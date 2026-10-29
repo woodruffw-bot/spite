@@ -133,14 +133,33 @@ fn scripts_without_import_calls_and_parse_negatives_never_request_module_sources
 }
 
 #[test]
-fn unsupported_import_attributes_stay_separate_from_supported_asynchronous_dependencies() {
+fn unsupported_static_import_attributes_are_resolution_syntax_errors() {
     assert!(matches!(
         outcome(
             "import'leaf' with {type:'json'}",
             "flags: [module]",
             |_| panic!("unsupported attributes loaded source")
         ),
-        Outcome::Unsupported {
+        Outcome::Failed {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+    assert_eq!(
+        outcome(
+            "import'leaf' with {type:'json'}",
+            "flags: [module]\nnegative:\n  phase: resolution\n  type: SyntaxError",
+            |_| panic!("unsupported attributes loaded source")
+        ),
+        Outcome::Passed
+    );
+    assert!(matches!(
+        outcome(
+            "import'leaf' with {type:'json'}",
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError",
+            |_| panic!("unsupported attributes loaded source")
+        ),
+        Outcome::Failed {
             stage: Stage::Resolution,
             ..
         }
@@ -540,18 +559,55 @@ fn dynamic_preparation_and_source_identity_failures_never_satisfy_runtime_negati
 }
 
 #[test]
-fn dynamic_attributes_and_source_limits_preserve_explicit_nonpassing_host_outcomes() {
+fn dynamic_attributes_reject_at_runtime_and_source_limits_remain_host_failures() {
+    let mut requests = Vec::new();
+    assert_eq!(
+        outcome(
+            "for(const name of ['bad','good','bad','good']){try{let module=await import(name);if(name==='bad'||module.x!==7)throw 0}catch(e){if(name!=='bad'||!(e instanceof SyntaxError))throw e}}",
+            "flags: [module]",
+            |name| {
+                requests.push(name.to_owned());
+                Ok(ModuleSource {
+                    identifier: name.to_owned(),
+                    source: match name {
+                        "bad" => "import 'blocked' with {unknown:'x'}",
+                        "good" => "export const x=7",
+                        _ => panic!("unsupported dependency reached host"),
+                    }
+                    .into(),
+                })
+            }
+        ),
+        Outcome::Passed
+    );
+    assert_eq!(requests, ["bad", "good", "bad", "good"]);
     assert!(matches!(
         outcome(
             "await import('leaf',{with:{type:'json'}})",
             "flags: [module]",
             |_| panic!("unsupported attributes requested source")
         ),
-        Outcome::Unsupported {
-            stage: Stage::Resolution,
+        Outcome::Failed {
+            stage: Stage::Runtime,
             ..
         }
     ));
+    assert_eq!(
+        outcome(
+            "await import('leaf',{with:{type:'json'}})",
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: TypeError",
+            |_| panic!("unsupported attributes requested source")
+        ),
+        Outcome::Passed
+    );
+    assert_eq!(
+        outcome(
+            "try{await import('leaf',{with:{type:'json'}});throw 1}catch(e){if(!(e instanceof TypeError))throw e}",
+            "flags: [module]",
+            |_| panic!("unsupported attributes requested source")
+        ),
+        Outcome::Passed
+    );
     let root = source("flags: [module]", "await import('leaf')");
     let cases = Runner {
         limits: Limits {

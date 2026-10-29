@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 11010 unmodified test fixtures and twenty-two harness files come from
+These 11024 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Import attribute support validation
+
+The host uses HostGetSupportedImportAttributes' default empty key list. Unknown
+static keys produce loading-time SyntaxErrors in the Resolution stage; unknown
+dynamic keys reject with TypeError during evaluation. Dependency parse failures
+remain separate from resolution exceptions. A failed dynamic graph does not block
+later unrelated imports.
+
+Ten whole unchanged Module originals add ten required modes for empty clauses,
+key/value spelling, line terminators, multiple keys and trailing commas. Four
+unchanged support Modules receive no independent execution credit. All Git
+blob/SHA-256 hashes match the same pin. Counts are 11,024 fixtures, twenty-two
+helpers, 10,939 reviewed sources and 20,942 variants. Existing sources, helpers,
+limits and worker counts are unchanged.
 
 ## Suspended assignment-pattern iteration heads
 

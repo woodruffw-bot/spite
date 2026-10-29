@@ -57,11 +57,40 @@ not an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20932 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20942 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Import attribute support validation
+
+Realms use the specified empty supported-key list by default. Embeddings can set
+a fixed list at construction with new_with_supported_import_attributes. Dynamic
+imports complete enumeration and value validation before rejecting unsupported
+keys with TypeError; static loading rejects with SyntaxError before the resolver.
+Configured keys use exact UTF-16 equality and preserve string values for the host.
+
+Seven new Runtime groups cover Promise timing, getter precedence, fixed support,
+canonical order, surrogate keys, ignored Symbol/non-enumerable keys, static
+imports/re-exports, graph rollback and independent subsequent imports. Existing
+attribute tests configure their supported keys explicitly. The loader retains
+preparation versus resolution errors and expands only the current reachable
+graph, so failed attributes do not block unrelated dynamic loads. The existing
+loader controls verify language-error phases and preserve parse/host/limit cases.
+
+Ten unchanged Module originals add ten modes, with four unchanged support Modules
+and no independent support credit. Git blob/SHA-256 hashes match the same pin.
+Counts are 11,024 fixtures, twenty-two helpers, 10,939 reviewed sources and 20,942
+variants. Runtime case inventory is 696 files; Parser inventory remains 88.
+Existing sources, helpers, limits and worker counts are unchanged.
+One upstream resolution negative intentionally uses the raw flag to preserve its
+line terminators; the metadata inventory checks that exact exception.
+All 491 Runtime units, 2,342 non-RegExp integrations, the full 20,942-variant
+corpus and all 62 package controls pass. The package controls were rerun after
+the metadata correction. CLI/raw smoke, formatting, strict Clippy, Rust 1.99,
+dependency policy and inventories pass. The preceding loop-head commit passes
+all 17 hosted CI jobs.
 
 ## Suspended assignment-pattern iteration heads
 

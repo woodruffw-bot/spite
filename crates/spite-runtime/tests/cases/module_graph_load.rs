@@ -80,7 +80,14 @@ fn aliases_and_cycles_preserve_record_identity_without_entering_module_bodies() 
 
 #[test]
 fn canonical_attributes_deduplicate_equal_requests_and_keep_distinct_requests_separate() {
-    let mut realm = Realm::default();
+    let mut realm = Realm::new_with_supported_import_attributes(
+        spite_runtime::Limits::default(),
+        [
+            JsString::from("a"),
+            JsString::from("b"),
+            JsString::from_code_units(vec![0xdc00]),
+        ],
+    );
     let root=realm.create_module("import 'same' with {b:'2',a:'1'};import 'same' with {a:'1',b:'2'};import 'same' with {a:'1',b:'3'}").unwrap();
     let one = realm.create_module("export const value=1").unwrap();
     let two = realm.create_module("export const value=2").unwrap();

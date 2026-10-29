@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/import_attributes.rs"]
+mod import_attributes;
+
 #[path = "cases/async_iteration_pattern.rs"]
 mod async_iteration_pattern;
 
