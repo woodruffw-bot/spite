@@ -19,6 +19,7 @@ No milestone implies full conformance until the final audit passes.
 - [x] Evaluate primitive expressions and lexical bindings with correct errors.
 - [x] Add a command-line host.
 - [x] Supply explicit Test262 global identity and native buffer detachment while keeping unavailable host facilities separate from language errors.
+- [x] Evaluate Test262 global Scripts with lossless source, independent grammar/strictness, caller restoration and shared job allowances.
 
 Milestones 0 and 1 are implemented. See [coverage](coverage.md) for exact limits.
 

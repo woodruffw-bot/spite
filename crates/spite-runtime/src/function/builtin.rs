@@ -47,6 +47,9 @@ impl Realm {
                 self.global_metadata_method(member, this, arguments, span)
             }
             Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
+            Builtin::EvalScript => {
+                unreachable!("Script evaluation dispatched without a native-algorithm frame")
+            }
             Builtin::DetachArrayBuffer => self.host_detach_array_buffer(arguments, span),
             Builtin::UnavailableHost(name) => Err(Self::unsupported(
                 span,

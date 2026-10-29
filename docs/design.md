@@ -3241,13 +3241,23 @@ is an unverified result, not a conformance pass. Conformance realms reserve miss
 host helper globals, so reading or testing their type reports Unsupported rather
 than producing an accidental ReferenceError or undefined. The explicit
 Realm::install_test262_host API installs a partial $262 object with its actual
-global object and native detachArrayBuffer. The detacher validates ordinary
+global object, native detachArrayBuffer and global evalScript. The detacher validates ordinary
 ArrayBuffer slots and the undefined detach key, then uses DetachArrayBuffer
-without public transfer/species hooks. Unavailable createRealm, evalScript, gc,
-agent and IsHTMLDDA properties have getters that report Unsupported on access,
+without public transfer/species hooks. Unavailable createRealm, gc, agent,
+IsHTMLDDA and AbstractModuleSource properties have getters that report Unsupported on access,
 including typeof. Ordinary realms receive no Test262 globals unless requested.
 Host setup respects the same optional work allowance; no quota is enlarged to
 initialize these helpers. Parse-negative tests need no harness evaluation.
+
+The String-taking evalScript host uses lossless ParseScript and ScriptEvaluation
+(Test262 INTERPRETING.md), with the normal encoded source/work limits. Syntax
+diagnostics become catchable SyntaxErrors; unsupported grammar and resource
+failures retain host categories. A global-only SourceExecutionContext gives each
+Script its own strictness and no caller private, new.target, super or Module
+privileges. Shared context restoration preserves the caller on every completion.
+The native call bypasses the large algorithm dispatch frame and marks re-entry as
+part of the existing job, preventing nested Scripts from resetting its work
+allowance. New functions and Promise jobs retain their global Script ownership.
 
 Runner::run_with_module_loader accepts unmodified Module sources with stable host
 identifiers. It caches Module roots before traversing requests, reuses equal identities

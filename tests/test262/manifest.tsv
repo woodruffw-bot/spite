@@ -11120,3 +11120,16 @@ script-pass	5c664229a0af296773d92c149da6df7b13167a565438cbd8ac2a1f852f1338d0	tes
 script-pass	5b081cd0e8c161da43cae65322d368214c2f8aa75a1dfbd365d80dcbecea836d	test/built-ins/Atomics/notify/null-bufferdata-throws.js
 script-pass	a2c1496315008a4170b3fb7183d01d903fc266eedaa4ae2054cc4dbfad187a62	test/built-ins/Atomics/notify/bigint/null-bufferdata-throws.js
 harness	d487a9c3c7d51b7e9d66c5fce89929ab3d09a6341d21a833e38f9caba6bf2e0e	harness/detachArrayBuffer.js
+script-pass	7c5897c62f2916aed46989424cc28b5bda3e0b9fab550b3da942779b01800946	test/language/global-code/script-decl-lex-deletion.js
+script-pass	3f8fd90578781cd2c3b00fd48629af707d69c68c063074054ad4daf73005cfd3	test/language/global-code/script-decl-var-err.js
+script-pass	eace74ee337b4c8bb9aae2744afa57d3741f656976990f0ea9707ce7277ac779	test/language/global-code/script-decl-func-err-non-extensible.js
+script-pass	162e4bfb833c09827a3deddb4a88d84a0b37a6dd36174e52b8afa5a7043c56f2	test/language/global-code/script-decl-func-dups.js
+script-pass	7e2539d5d96b1dd324a4f29c3f2da21c9a5dfd3e04b2baebc0ce108a04f4d016	test/language/global-code/script-decl-lex.js
+script-pass	205b0ad0f244c474a6804570e3e5dae00899bb5f2352ce3e7e162341e89cc8be	test/language/global-code/script-decl-func-err-non-configurable.js
+script-pass	8298350054f1c67d698bb1c7bc92a44516a9f64145fb87895328229c7c658e8c	test/language/global-code/script-decl-lex-lex.js
+script-pass	ce9644b3e5a41836f50e358710331e62782ddab5d3f29481d79acfa00393352c	test/language/global-code/script-decl-lex-var-declared-via-eval.js
+script-pass	7d4c31f6fb7f804323bae8a2f5fce25e1193a5bd1c5a7c815fea322cec1f2e8a	test/language/global-code/script-decl-var-collision.js
+script-pass	7d618dee98fc04c52c30607dd626afa7faf34501bb19dc59bca6b52f76d3bb93	test/language/global-code/script-decl-func.js
+script-pass	800b58a1e21e17e02de259c52d075bde3bb84fec0bab2cd703b4ca74b6392ff0	test/language/global-code/script-decl-lex-var.js
+script-pass	8436eaf4133096c5ca3c3c89c606d05f747271e4c8c8285dfcf8bc07b8fc2296	test/language/global-code/script-decl-lex-restricted-global.js
+script-pass	19af374aa2596b892fa98d4c2a0fceb162947a0feca40eb9000d365ea67e67b8	test/language/global-code/script-decl-var.js

@@ -11011,3 +11011,16 @@ test/language/expressions/await/for-await-of-interleaved.js	-	-	-
 test/built-ins/Atomics/notify/retrieve-length-before-index-coercion-non-shared-detached.js	-	-	-
 test/built-ins/Atomics/notify/null-bufferdata-throws.js	-	-	-
 test/built-ins/Atomics/notify/bigint/null-bufferdata-throws.js	-	-	-
+test/language/global-code/script-decl-lex-deletion.js	-	-	-
+test/language/global-code/script-decl-var-err.js	-	-	-
+test/language/global-code/script-decl-func-err-non-extensible.js	-	-	-
+test/language/global-code/script-decl-func-dups.js	-	-	-
+test/language/global-code/script-decl-lex.js	-	-	-
+test/language/global-code/script-decl-func-err-non-configurable.js	-	-	-
+test/language/global-code/script-decl-lex-lex.js	-	-	-
+test/language/global-code/script-decl-lex-var-declared-via-eval.js	-	-	-
+test/language/global-code/script-decl-var-collision.js	-	-	-
+test/language/global-code/script-decl-func.js	-	-	-
+test/language/global-code/script-decl-lex-var.js	-	-	-
+test/language/global-code/script-decl-lex-restricted-global.js	-	-	-
+test/language/global-code/script-decl-var.js	-	-	-

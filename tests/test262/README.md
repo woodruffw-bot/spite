@@ -1,9 +1,19 @@
 # Test262 regression fixtures
 
-These 11097 unmodified test fixtures and twenty-four harness files come from
+These 11110 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Global Script evaluation host
+
+Native $262.evalScript parses and evaluates a global Script, preserving UTF-16
+source, independent strictness, caller restoration and the current work allowance.
+Thirteen whole unchanged global-declaration originals add 25 required modes for
+var/function/lexical binding creation, conflicts, deletion and restricted globals.
+All Git blob/SHA-256 hashes match the same pin. Counts are 11,110 fixtures,
+twenty-four helpers, 11,025 reviewed sources and 21,113 variants. Existing sources,
+helpers, limits and worker counts are unchanged.
 
 ## Native buffer detachment host
 

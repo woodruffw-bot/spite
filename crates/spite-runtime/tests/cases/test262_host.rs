@@ -1,6 +1,6 @@
 //! Explicit host capabilities invoke native detachment, without public hooks.
 
-use spite_runtime::{Error, ExceptionKind, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Limits, PromiseJobOutcome, Realm, Value};
 
 fn host() -> Realm {
     let mut realm = Realm::default();
@@ -78,7 +78,13 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
 
 #[test]
 fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_cleanup() {
-    for member in ["createRealm", "evalScript", "gc", "agent", "IsHTMLDDA"] {
+    for member in [
+        "createRealm",
+        "gc",
+        "agent",
+        "IsHTMLDDA",
+        "AbstractModuleSource",
+    ] {
         let mut realm = host();
         realm
             .eval(
@@ -126,4 +132,146 @@ fn installing_over_a_restricted_global_returns_a_language_error() {
         "{error}"
     );
     check(&mut realm, "$262===7");
+}
+
+#[test]
+fn scripts_use_the_global_environment_and_restore_strict_callers_and_local_bindings() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        var count=1;
+        function f(){'use strict';let count=99;
+            let result=$262.evalScript('var count=7;let added=11;function readAdded(){return added};globalThis.scriptThis=this;count+added');
+            let strict=false;try{unresolvableAfterScript=1}catch(e){strict=e instanceof ReferenceError}
+            return count===99&&result===18&&this===undefined&&strict;
+        }
+        f()&&count===7&&added===11&&readAdded()===11&&scriptThis===globalThis
+    "#,
+    );
+}
+
+#[test]
+fn script_parse_and_runtime_errors_are_catchable_without_inheriting_eval_privileges() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        let marker={},same=false,errors=0;globalThis.eval=()=>{throw 'public eval'};
+        try{$262.evalScript('throw marker')}catch(e){same=e===marker}
+        for(const code of ['return 1','new.target','super.x','this.#x']){
+            try{$262.evalScript(code)}catch(e){if(e instanceof SyntaxError)errors++}
+        }
+        $262.evalScript('let retained=7');
+        try{$262.evalScript('let retained=8')}catch(e){if(e instanceof SyntaxError)errors++}
+        function strictCaller(){'use strict';return $262.evalScript('with({value:3}){value}')}
+        same&&errors===5&&retained===7&&strictCaller()===3&&$262.evalScript('({value:4})').value===4
+    "#,
+    );
+}
+
+#[test]
+fn script_source_preserves_utf16_and_requires_a_string_without_coercion() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        let lone=String.fromCharCode(0xd800),source="(function(){return '"+lone+"'})",method=$262.evalScript(source),calls=0,errors=0;
+        for(const value of [undefined,null,1,{},new String('4'),{toString(){calls++;return '4'}}]){
+            try{$262.evalScript(value)}catch(e){if(e instanceof TypeError)errors++}
+        }
+        method()===lone&&Function.prototype.toString.call(method).includes(lone)&&calls===0&&errors===6
+    "#,
+    );
+    // The caller supplies a validated AST; the host must independently bound
+    // the newly compiled Script using its lossless encoded byte length.
+    let mut limited = Realm::new(Limits {
+        max_source_bytes: Some(4),
+        ..Limits::default()
+    });
+    limited.install_test262_host().unwrap();
+    let large =
+        spite_parser::parse_script(r#"$262.evalScript('"'+String.fromCharCode(0xd800)+'"')"#)
+            .unwrap();
+    assert!(matches!(limited.evaluate(&large), Err(Error::Limit { .. })));
+    let small = spite_parser::parse_script(r#"$262.evalScript('"a"')"#).unwrap();
+    assert_eq!(
+        limited.evaluate(&small),
+        Ok(Value::String(spite_core::JsString::from("a")))
+    );
+}
+
+#[test]
+fn nested_scripts_and_modules_preserve_their_distinct_import_referrers() {
+    let mut realm = host();
+    realm.enable_module_imports();
+    let record=realm.create_module("$262.evalScript('globalThis.scriptImport=function(){return import(\"later\")};import(\"script\")');import('module');export const x=7").unwrap();
+    realm.evaluate_module_record(&record).unwrap();
+    let from_script = realm.take_module_import_request().unwrap();
+    assert!(from_script.referrer().is_none());
+    assert_eq!(
+        from_script.request().specifier,
+        spite_core::JsString::from("script")
+    );
+    let from_module = realm.take_module_import_request().unwrap();
+    assert_eq!(from_module.referrer(), Some(&record));
+    realm.eval("scriptImport()").unwrap();
+    assert!(
+        realm
+            .take_module_import_request()
+            .unwrap()
+            .referrer()
+            .is_none()
+    );
+}
+
+#[test]
+fn jobs_created_by_global_scripts_keep_their_context_after_caller_restoration() {
+    let mut realm = host();
+    realm.eval(r#"
+        let results=[];
+        async function caller(){let local=7;
+            $262.evalScript('async function scriptJob(){await 0;return [this===globalThis,typeof local]}scriptJob().then(v=>results.push(v.join(",")))');
+            await 0;results.push(local);
+        }
+        caller();
+    "#).unwrap();
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            PromiseJobOutcome::NoJob => break,
+            PromiseJobOutcome::Completed => (),
+            PromiseJobOutcome::Reported(error) => panic!("{error}"),
+        }
+    }
+    check(
+        &mut realm,
+        "results.includes('true,undefined')&&results.includes(7)",
+    );
+}
+
+#[test]
+fn script_host_failures_restore_context_and_bypass_caller_cleanup() {
+    let mut realm = host();
+    realm.eval("let caught=0,finalized=0,disposed=0;var entered=0;let resource={[Symbol.dispose](){disposed++}}").unwrap();
+    let error=realm.eval("function f(){using r=resource;let entered=99;try{$262.evalScript('entered++;$262.createRealm')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    assert!(matches!(error, Error::Unsupported { .. }), "{error}");
+    check(
+        &mut realm,
+        "entered===1&&caught===0&&finalized===0&&disposed===0",
+    );
+}
+
+#[test]
+fn nested_script_calls_share_the_current_work_allowance() {
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(10_000),
+        ..Limits::default()
+    });
+    realm.install_test262_host().unwrap();
+    realm
+        .eval("let entered=false,caught=0,finalized=0")
+        .unwrap();
+    let error=realm.eval("function f(){entered=true;try{for(let i=0;i<1000;i++)$262.evalScript('0')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    assert!(matches!(error, Error::Limit { .. }), "{error}");
+    check(&mut realm, "entered&&caught===0&&finalized===0");
 }

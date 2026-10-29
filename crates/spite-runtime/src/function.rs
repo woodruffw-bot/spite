@@ -85,6 +85,7 @@ pub(crate) use bound::BoundFunction;
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
     DetachArrayBuffer,
+    EvalScript,
     UnavailableHost(&'static str),
     DisposableStack(crate::object::DisposableStackKind),
     DisposableStackMember(crate::object::DisposableStackKind, disposable_stack::Member),
@@ -417,6 +418,7 @@ impl Builtin {
     fn initial_name(self) -> &'static str {
         match self {
             Self::DetachArrayBuffer => "detachArrayBuffer",
+            Self::EvalScript => "evalScript",
             Self::UnavailableHost(name) => name,
             Self::GlobalMetadataConstructor(constructor) => constructor.name(),
             Self::GlobalMetadataMember(member) => member.name(),
@@ -729,6 +731,7 @@ impl Builtin {
     fn length(self) -> f64 {
         match self {
             Self::DetachArrayBuffer => 1.0,
+            Self::EvalScript => 1.0,
             Self::UnavailableHost(_) => 0.0,
             Self::GlobalMetadataConstructor(constructor) => constructor.length(),
             Self::GlobalMetadataMember(member) => member.length(),
@@ -1788,6 +1791,9 @@ impl Realm {
                 // the large native-algorithm dispatch frame during re-entry.
                 Builtin::Eval => {
                     self.perform_eval(arguments.next().unwrap_or(Value::Undefined), false, span)
+                }
+                Builtin::EvalScript => {
+                    self.host_eval_script(arguments.next().unwrap_or(Value::Undefined), span)
                 }
                 Builtin::FunctionCall => {
                     // 20.2.3.3 is a tail call. Transfer ownership of the receiver and

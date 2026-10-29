@@ -59,9 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21088 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21113 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Global Script evaluation host
+
+Native $262.evalScript uses ParseScript and ScriptEvaluation with lossless UTF-16
+source and an independent global context. It does not inherit caller strictness,
+private names, new.target, super or Module ownership. Parse syntax errors are
+catchable; unsupported grammar and quotas remain host failures. Context and job
+state restore on every completion. Nested Script calls share the current work
+allowance, and new functions/jobs retain global Script ownership. The optional
+AbstractModuleSource host facility has an explicit unavailable-property barrier.
+
+Seven new Runtime groups cover global binding behavior, strict caller restoration,
+parse/runtime failures, poisoned public eval, exact UTF-16/source-byte limits,
+Module referrers, queued jobs, host abort and a bounded budget-reset regression.
+Thirteen unchanged originals add 25 modes with existing helpers and matching
+Git blob/SHA-256 hashes at the pin. Counts are 11,110 fixtures, twenty-four helpers,
+11,025 reviewed sources and 21,113 variants. Runtime/Parser case inventories stay
+697/88. Existing sources, helpers, limits and worker counts are unchanged.
+All 491 Runtime units, 2,359 non-RegExp integrations, the full 21,113-variant
+corpus and all 62 package controls pass. CLI/raw smoke, formatting, strict Clippy,
+Rust 1.99, dependency policy and inventories pass.
 
 ## Native buffer detachment host
 

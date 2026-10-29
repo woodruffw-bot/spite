@@ -430,7 +430,7 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
         "$262.createRealm",
         "typeof print",
         "typeof $262.createRealm",
-        "$262.evalScript",
+        "$262.AbstractModuleSource",
         "$262.agent",
         "$262.gc",
         "$262.IsHTMLDDA",
