@@ -432,7 +432,7 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
         "typeof $262.createRealm",
         "$262.AbstractModuleSource",
         "$262.agent",
-        "$262.gc",
+        "typeof $262.agent",
         "$262.IsHTMLDDA",
         "delete print",
         "print = 1",

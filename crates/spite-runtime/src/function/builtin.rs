@@ -51,6 +51,7 @@ impl Realm {
                 unreachable!("Script evaluation dispatched without a native-algorithm frame")
             }
             Builtin::DetachArrayBuffer => self.host_detach_array_buffer(arguments, span),
+            Builtin::RequestGc => self.request_host_gc(span),
             Builtin::UnavailableHost(name) => Err(Self::unsupported(
                 span,
                 format!("{name} is not implemented"),

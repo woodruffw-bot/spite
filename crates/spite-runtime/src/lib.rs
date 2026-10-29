@@ -254,6 +254,7 @@ pub struct Realm {
     active_module: Option<ObjectHandle>,
     module_async_order: usize,
     module_import_requests: Option<VecDeque<ModuleImportRequest>>,
+    gc_requests: VecDeque<function::GcRequest>,
     supported_import_attributes: BTreeSet<JsString>,
     time_zone: Option<TimeZone>,
 }
@@ -286,6 +287,7 @@ impl Realm {
             active_module: None,
             module_async_order: 0,
             module_import_requests: None,
+            gc_requests: VecDeque::new(),
             supported_import_attributes: BTreeSet::new(),
             time_zone: None,
         }

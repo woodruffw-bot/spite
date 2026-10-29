@@ -78,13 +78,7 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
 
 #[test]
 fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_cleanup() {
-    for member in [
-        "createRealm",
-        "gc",
-        "agent",
-        "IsHTMLDDA",
-        "AbstractModuleSource",
-    ] {
+    for member in ["createRealm", "agent", "IsHTMLDDA", "AbstractModuleSource"] {
         let mut realm = host();
         realm
             .eval(

@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/test262_gc.rs"]
+mod test262_gc;
+
 #[path = "cases/test262_host.rs"]
 mod test262_host;
 

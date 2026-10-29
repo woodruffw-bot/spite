@@ -3241,9 +3241,9 @@ is an unverified result, not a conformance pass. Conformance realms reserve miss
 host helper globals, so reading or testing their type reports Unsupported rather
 than producing an accidental ReferenceError or undefined. The explicit
 Realm::install_test262_host API installs a partial $262 object with its actual
-global object, native detachArrayBuffer and global evalScript. The detacher validates ordinary
+global object, native detachArrayBuffer, global evalScript and requested gc. The detacher validates ordinary
 ArrayBuffer slots and the undefined detach key, then uses DetachArrayBuffer
-without public transfer/species hooks. Unavailable createRealm, gc, agent,
+without public transfer/species hooks. Unavailable createRealm and agent,
 IsHTMLDDA and AbstractModuleSource properties have getters that report Unsupported on access,
 including typeof. Ordinary realms receive no Test262 globals unless requested.
 Host setup respects the same optional work allowance; no quota is enlarged to
@@ -3258,6 +3258,22 @@ privileges. Shared context restoration preserves the caller on every completion.
 The native call bypasses the large algorithm dispatch frame and marks re-entry as
 part of the existing job, preventing nested Scripts from resetting its work
 allowance. New functions and Promise jobs retain their global Script ownership.
+
+The gc hook returns a fresh intrinsic Promise and queues a collection request.
+Three explicit root guards protect each response capability until collection and
+settlement. It never collects on a JavaScript stack. Realm::run_requested_gc runs
+only at an idle execution boundary, clears the completed sequence's kept objects,
+performs real collection, and then fulfills responses without invoking user code.
+Its maintenance job uses the configured optional allowance, debits actual collector
+work, and respects the embedding's explicit collection bound. Refusal before
+sweeping preserves pending requests; host failures never reject the response.
+Evaluation and allocation still never collect automatically.
+
+The runner services these requests and FinalizationRegistry cleanup at execution
+boundaries, before the next Promise job. Cleanup callbacks run in separate host
+jobs and may request further collection. Module evaluation Promises are rooted
+across these checkpoints even without a source loader. This preserves values
+held by the embedding without requiring collection of live interpreter temporaries.
 
 Runner::run_with_module_loader accepts unmodified Module sources with stable host
 identifiers. It caches Module roots before traversing requests, reuses equal identities

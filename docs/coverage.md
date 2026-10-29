@@ -63,6 +63,34 @@ not an alternative language specification.
 
 
 
+## Requested collection and cleanup jobs
+
+The explicit Test262 gc hook returns a fresh intrinsic Promise and queues a real
+collection request. An idle host job clears kept objects, collects, then fulfills
+responses; three root guards protect each capability. No collection occurs while
+JavaScript executes. The collector's work and response settlement share the
+configured optional maintenance-job allowance, with an additional explicit
+collection bound. Resource failures remain host failures and never reject the
+response; pre-sweep refusal retains requests.
+
+The runner services collection and FinalizationRegistry cleanup at boundaries,
+including synchronous scripts with requests. Cleanup runs in separate jobs and
+can request another collection. Module evaluation Promises remain rooted through
+collection even without a loader. Eight new Runtime groups cover deferred/FIFO
+responses, poisoned public Promise hooks, kept objects and Symbols, resource
+refusal, async/generator capture retention and release, cleanup separation and
+Module result roots. Five runner controls cover actual weak retirement, async
+completion, reentrant cleanup and faithful runtime/host error reporting.
+
+No upstream fixtures or conformance credit are added. Counts remain 11,251
+fixtures, twenty-four helpers, 11,166 reviewed sources and 21,395 variants. Case
+inventories are 698 Runtime/88 Parser files; package controls increase to 67.
+Existing source bytes, limits and worker counts are unchanged.
+All 491 Runtime units, 2,367 non-RegExp integrations, the full 21,395-variant
+corpus and all 67 package controls pass. CLI/raw smoke, formatting, strict Clippy,
+Rust 1.99, dependency policy and inventories pass. The preceding fixture audit
+passes all 17 hosted CI jobs.
+
 ## TypedArray copies and asynchronous Array input audit
 
 The existing TypedArray.with/set algorithms pass 135 unchanged originals across

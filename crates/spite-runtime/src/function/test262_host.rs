@@ -13,7 +13,9 @@ use spite_parser::parse_script_utf16;
 impl Realm {
     /// Installs a fresh partial Test262 `$262` host object in this realm.
     ///
-    /// The object exposes `global`, `detachArrayBuffer` and global `evalScript`. Accessing
+    /// The object exposes `global`, `detachArrayBuffer`, global `evalScript` and
+    /// requested collection through `gc`. Service collection requests with
+    /// [`Self::run_requested_gc`] after JavaScript returns. Accessing
     /// unavailable host facilities reports Unsupported, including through typeof;
     /// they cannot masquerade as missing values or catchable JavaScript errors.
     /// Ordinary realms have no Test262 host unless this method is called.
@@ -30,6 +32,7 @@ impl Realm {
         for (name, builtin) in [
             ("detachArrayBuffer", Builtin::DetachArrayBuffer),
             ("evalScript", Builtin::EvalScript),
+            ("gc", Builtin::RequestGc),
         ] {
             let method = self.new_builtin(&function_prototype, builtin, span)?;
             self.define_builtin_property(&host, name, Value::Object(method), true, span)?;
@@ -43,7 +46,6 @@ impl Realm {
         )?;
         for (name, getter_name) in [
             ("createRealm", "get createRealm"),
-            ("gc", "get gc"),
             ("agent", "get agent"),
             ("IsHTMLDDA", "get IsHTMLDDA"),
             ("AbstractModuleSource", "get AbstractModuleSource"),

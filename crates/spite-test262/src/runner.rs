@@ -3,7 +3,10 @@ use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use spite_parser::{
     parse_module, parse_module_with_source_limit, parse_script, parse_script_with_source_limit,
 };
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value, object::PromiseState};
+use spite_runtime::{
+    Error, FinalizationCleanupOutcome, Limits, PromiseJobOutcome, Realm, Value,
+    object::PromiseState,
+};
 
 enum ParsedSource {
     Script(spite_parser::ast::Script),
@@ -297,8 +300,36 @@ impl Runner {
             Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),
             Err(error) => (Err(error), None),
         };
-        if result.is_ok() && (asynchronous || mode == Mode::Module || modules.is_some()) {
+        let module_promise = match module_promise {
+            Some(value) => match realm.root_value(value, usize::MAX) {
+                Ok(root) => Some(root),
+                Err(error) => {
+                    return Outcome::SetupFailure(format!("module Promise root: {error}"));
+                }
+            },
+            None => None,
+        };
+        if result.is_ok()
+            && (asynchronous
+                || mode == Mode::Module
+                || modules.is_some()
+                || realm.has_requested_gc())
+        {
             loop {
+                if let Err(error) =
+                    realm.run_requested_gc(self.limits.max_steps.unwrap_or(usize::MAX))
+                {
+                    result = Err(error);
+                    break;
+                }
+                match realm.run_finalization_cleanup_job() {
+                    Ok(FinalizationCleanupOutcome::NoJob) => (),
+                    Ok(FinalizationCleanupOutcome::Completed) => continue,
+                    Ok(FinalizationCleanupOutcome::Reported(error)) | Err(error) => {
+                        result = Err(error);
+                        break;
+                    }
+                }
                 if let Some(loader) = modules.as_deref_mut()
                     && let Err(error) = loader.service_requests(&mut realm, &mut module_cache)
                 {
@@ -321,9 +352,11 @@ impl Runner {
         }
         if result.is_ok()
             && let Some(Value::Object(promise)) = module_promise
+                .as_ref()
+                .map(spite_runtime::RootedValue::value)
         {
             match realm
-                .inspect_object(&promise)
+                .inspect_object(promise)
                 .expect("module evaluation Promise")
                 .promise_state()
                 .expect("module Promise brand")

@@ -5,6 +5,20 @@ These 11251 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Requested collection and cleanup jobs
+
+The explicit host gc hook returns an intrinsic Promise. The runner performs real
+collection after JavaScript returns, then fulfills the response and schedules
+FinalizationRegistry cleanup in separate jobs. Live interpreter temporaries are
+never collected. Module results remain rooted through these checkpoints.
+
+Eight Runtime groups and five runner controls cover weak object/Symbol retirement,
+kept objects, suspended captures, response ordering, resource refusal, Module
+roots and cleanup reporting. No new upstream fixtures or conformance credit are
+claimed in this increment. The inventory remains 11,251 fixtures, twenty-four
+helpers, 11,166 reviewed sources and 21,395 variants. Existing source bytes, limits
+and worker counts are unchanged.
+
 ## TypedArray copies and asynchronous Array inputs
 
 The existing algorithms pass 135 unchanged TypedArray.prototype.with/set
