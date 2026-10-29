@@ -4,6 +4,7 @@ use super::{ScriptFunction, class_field::ClassField};
 use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::Span;
 
+#[derive(Debug)]
 pub(super) enum StaticElement {
     Field(ClassField),
     Block {

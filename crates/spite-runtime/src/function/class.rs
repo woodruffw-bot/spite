@@ -21,6 +21,87 @@ pub(crate) struct ClassDefinitionContext {
     previous_strict: bool,
 }
 
+/// Partially defined elements retained across computed-name suspension.
+#[derive(Debug)]
+pub(crate) struct ClassDefinitionState {
+    function: crate::ObjectHandle,
+    prototype: crate::ObjectHandle,
+    environment: crate::environment::EnvironmentHandle,
+    instance_fields: Vec<super::ClassField>,
+    instance_methods: Vec<crate::private::PrivateMethod>,
+    static_methods: Vec<crate::private::PrivateMethod>,
+    static_elements: Vec<super::class_static::StaticElement>,
+}
+
+impl ClassDefinitionState {
+    fn fields(&self) -> impl Iterator<Item = &super::ClassField> {
+        self.instance_fields
+            .iter()
+            .chain(
+                self.static_elements
+                    .iter()
+                    .filter_map(|element| match element {
+                        super::class_static::StaticElement::Field(field) => Some(field),
+                        _ => None,
+                    }),
+            )
+    }
+
+    fn blocks(&self) -> impl Iterator<Item = (&super::ScriptFunction, &crate::ObjectHandle)> {
+        self.static_elements
+            .iter()
+            .filter_map(|element| match element {
+                super::class_static::StaticElement::Block {
+                    code, home_object, ..
+                } => Some((code, home_object)),
+                _ => None,
+            })
+    }
+
+    fn private_methods(&self) -> impl Iterator<Item = &crate::private::PrivateMethod> {
+        self.instance_methods.iter().chain(&self.static_methods)
+    }
+
+    pub(crate) fn symbols(&self) -> impl Iterator<Item = &spite_core::JsSymbol> {
+        self.fields()
+            .filter_map(super::ClassField::symbol_name)
+            .chain(self.private_methods().map(|method| method.name.symbol()))
+    }
+
+    pub(crate) fn environments(
+        &self,
+    ) -> impl Iterator<Item = &crate::environment::EnvironmentHandle> {
+        std::iter::once(&self.environment)
+            .chain(
+                self.fields()
+                    .filter_map(|field| field.initializer.as_ref())
+                    .map(|initializer| &initializer.environment),
+            )
+            .chain(self.blocks().map(|(code, _)| &code.environment))
+    }
+
+    pub(crate) fn objects(&self) -> impl Iterator<Item = &crate::ObjectHandle> {
+        [&self.function, &self.prototype]
+            .into_iter()
+            .chain(
+                self.fields()
+                    .filter_map(|field| field.initializer.as_ref())
+                    .flat_map(|initializer| {
+                        std::iter::once(&initializer.home_object).chain(initializer.module.iter())
+                    }),
+            )
+            .chain(
+                self.blocks()
+                    .flat_map(|(code, home)| std::iter::once(home).chain(code.module.iter())),
+            )
+            .chain(
+                self.private_methods()
+                    .flat_map(|method| method.kind.trace())
+                    .flatten(),
+            )
+    }
+}
+
 impl Realm {
     pub(crate) fn class_definition(
         &mut self,
@@ -89,218 +170,287 @@ impl Realm {
         context: ClassDefinitionContext,
         superclass: Option<Value>,
     ) -> Result<Value, Error> {
-        let span = syntax.source.span();
         let result = (|| {
-            let mut private_names = BTreeMap::new();
+            let mut state = self.prepare_class_definition(syntax, inferred_name, superclass)?;
             for element in &syntax.elements {
-                if let Some(PropertyName::Private(name)) = element.name() {
-                    self.object_work(name.span, |_, budget| budget.charge(name.name.len() + 1))?;
-                    private_names
-                        .entry(name.name.clone())
-                        .or_insert_with(|| crate::private::PrivateName::new(&name.name));
-                }
+                self.tick(element.span())?;
+                let name = self.class_element_name(element)?;
+                self.define_class_element(&mut state, syntax, element, name)?;
             }
-            let (function_prototype, prototype_parent) = if let Some(heritage) = &syntax.heritage {
-                let superclass = superclass.expect("evaluated heritage");
-                if matches!(superclass, Value::Null) {
-                    (
-                        self.intrinsics
-                            .as_ref()
-                            .expect("initialized")
-                            .function_prototype
-                            .clone(),
-                        None,
-                    )
-                } else {
-                    if !self.is_constructor(&superclass, heritage.span)? {
+            Ok(state)
+        })();
+        match result {
+            Ok(state) => self.finish_class_definition(syntax, context, state),
+            Err(error) => {
+                self.leave_class_definition(&context);
+                Err(error)
+            }
+        }
+    }
+
+    pub(super) fn prepare_class_definition(
+        &mut self,
+        syntax: &Class,
+        inferred_name: Option<PropertyKey>,
+        superclass: Option<Value>,
+    ) -> Result<ClassDefinitionState, Error> {
+        let span = syntax.source.span();
+        let mut private_names = BTreeMap::new();
+        for element in &syntax.elements {
+            if let Some(PropertyName::Private(name)) = element.name() {
+                self.object_work(name.span, |_, budget| budget.charge(name.name.len() + 1))?;
+                private_names
+                    .entry(name.name.clone())
+                    .or_insert_with(|| crate::private::PrivateName::new(&name.name));
+            }
+        }
+        let (function_prototype, prototype_parent) = if let Some(heritage) = &syntax.heritage {
+            let superclass = superclass.expect("evaluated heritage");
+            if matches!(superclass, Value::Null) {
+                (
+                    self.intrinsics
+                        .as_ref()
+                        .expect("initialized")
+                        .function_prototype
+                        .clone(),
+                    None,
+                )
+            } else {
+                if !self.is_constructor(&superclass, heritage.span)? {
+                    return Err(Self::exception(
+                        crate::ExceptionKind::TypeError,
+                        heritage.span,
+                        "class superclass is not a constructor",
+                    ));
+                }
+                let Value::Object(superclass) = superclass else {
+                    unreachable!("constructor object")
+                };
+                let prototype =
+                    self.get_property(&superclass, &JsString::from("prototype"), heritage.span)?;
+                let prototype = match prototype {
+                    Value::Object(prototype) => Some(prototype),
+                    Value::Null => None,
+                    _ => {
                         return Err(Self::exception(
                             crate::ExceptionKind::TypeError,
                             heritage.span,
-                            "class superclass is not a constructor",
+                            "class superclass prototype is not an object or null",
                         ));
                     }
-                    let Value::Object(superclass) = superclass else {
-                        unreachable!("constructor object")
-                    };
-                    let prototype = self.get_property(
-                        &superclass,
-                        &JsString::from("prototype"),
-                        heritage.span,
-                    )?;
-                    let prototype = match prototype {
-                        Value::Object(prototype) => Some(prototype),
-                        Value::Null => None,
-                        _ => {
-                            return Err(Self::exception(
-                                crate::ExceptionKind::TypeError,
-                                heritage.span,
-                                "class superclass prototype is not an object or null",
-                            ));
-                        }
-                    };
-                    (superclass, prototype)
-                }
-            } else {
-                let intrinsics = self.intrinsics.as_ref().expect("initialized");
-                (
-                    intrinsics.function_prototype.clone(),
-                    Some(intrinsics.object_prototype.clone()),
-                )
-            };
-            // Heritage runs with the outer private environment (15.7.14).
-            // Use a separate child record so heritage closures cannot later
-            // acquire the class body's shadowing private names.
-            if !private_names.is_empty() {
-                self.push_scope(BTreeMap::new(), span)?;
-                let environment = self.scopes.last().expect("class private environment");
-                self.objects
-                    .environment_mut(environment)
-                    .expect("class private environment")
-                    .private_names = private_names;
+                };
+                (superclass, prototype)
             }
-            let environment = self.scopes.last().expect("class body environment").clone();
-            let Value::Object(function) = self.allocate_ordinary_function(
-                &syntax.constructor,
-                environment.clone(),
-                &function_prototype,
-                true,
-                span,
-            )?
-            else {
-                unreachable!("ordinary function object")
-            };
-            let Value::Object(prototype) =
-                self.get_property(&function, &JsString::from("prototype"), span)?
-            else {
-                unreachable!("new constructor prototype");
-            };
-            let changed = self.object_work(span, |objects, budget| {
-                let changed =
-                    objects.set_prototype(&prototype, prototype_parent.as_ref(), budget)?;
-                debug_assert!(changed, "fresh class prototype");
-                objects.make_class_constructor(
-                    &function,
-                    &prototype,
-                    syntax.heritage.is_some(),
-                    syntax.default_constructor,
-                )?;
-                objects.define(
-                    &function,
-                    JsString::from("prototype"),
-                    DataDescriptor {
-                        writable: Some(false),
-                        ..Default::default()
+        } else {
+            let intrinsics = self.intrinsics.as_ref().expect("initialized");
+            (
+                intrinsics.function_prototype.clone(),
+                Some(intrinsics.object_prototype.clone()),
+            )
+        };
+        // Heritage runs with the outer private environment (15.7.14).
+        // Use a separate child record so heritage closures cannot later
+        // acquire the class body's shadowing private names.
+        if !private_names.is_empty() {
+            self.push_scope(BTreeMap::new(), span)?;
+            let environment = self.scopes.last().expect("class private environment");
+            self.objects
+                .environment_mut(environment)
+                .expect("class private environment")
+                .private_names = private_names;
+        }
+        let environment = self.scopes.last().expect("class body environment").clone();
+        let Value::Object(function) = self.allocate_ordinary_function(
+            &syntax.constructor,
+            environment.clone(),
+            &function_prototype,
+            true,
+            span,
+        )?
+        else {
+            unreachable!("ordinary function object")
+        };
+        let Value::Object(prototype) =
+            self.get_property(&function, &JsString::from("prototype"), span)?
+        else {
+            unreachable!("new constructor prototype");
+        };
+        let changed = self.object_work(span, |objects, budget| {
+            let changed = objects.set_prototype(&prototype, prototype_parent.as_ref(), budget)?;
+            debug_assert!(changed, "fresh class prototype");
+            objects.make_class_constructor(
+                &function,
+                &prototype,
+                syntax.heritage.is_some(),
+                syntax.default_constructor,
+            )?;
+            objects.define(
+                &function,
+                JsString::from("prototype"),
+                DataDescriptor {
+                    writable: Some(false),
+                    ..Default::default()
+                },
+                budget,
+            )
+        })?;
+        debug_assert!(changed, "new constructor prototype is writable");
+        let name = syntax
+            .name
+            .as_ref()
+            .map(|name| PropertyKey::from(name.name.as_str()))
+            .or(inferred_name)
+            .unwrap_or_else(|| PropertyKey::from(""));
+        // SetFunctionName precedes every computed name and static method.
+        self.set_function_name(&function, name, None, span)?;
+        Ok(ClassDefinitionState {
+            function,
+            prototype,
+            environment,
+            instance_fields: Vec::new(),
+            instance_methods: Vec::new(),
+            static_methods: Vec::new(),
+            static_elements: Vec::new(),
+        })
+    }
+
+    pub(super) fn class_element_name(
+        &mut self,
+        element: &ClassElement,
+    ) -> Result<Option<super::class_field::ClassFieldName>, Error> {
+        if matches!(element, ClassElement::StaticBlock { .. }) {
+            return Ok(None);
+        }
+        let span = element.span();
+        let name = match element.name().expect("field or method key") {
+            PropertyName::Private(name) => super::class_field::ClassFieldName::Private(
+                self.resolve_private_name(&name.name, name.span)?,
+            ),
+            name => {
+                let key = match name {
+                    PropertyName::Literal(literal) => self.literal_value(literal, span)?,
+                    PropertyName::Computed(expression) => self.expression(expression)?,
+                    PropertyName::Private(_) => unreachable!("private name handled"),
+                };
+                super::class_field::ClassFieldName::Public(self.property_key(key, span)?)
+            }
+        };
+        Ok(Some(name))
+    }
+
+    pub(super) fn define_class_element(
+        &mut self,
+        state: &mut ClassDefinitionState,
+        syntax: &Class,
+        element: &ClassElement,
+        name: Option<super::class_field::ClassFieldName>,
+    ) -> Result<(), Error> {
+        let span = element.span();
+        if let ClassElement::StaticBlock { body, .. } = element {
+            state
+                .static_elements
+                .try_reserve(1)
+                .map_err(|_| Error::Limit {
+                    span,
+                    message: "static initialization allocation capacity exceeded".into(),
+                })?;
+            state
+                .static_elements
+                .push(super::class_static::StaticElement::Block {
+                    code: super::ScriptFunction {
+                        kind: spite_parser::ast::FunctionKind::Ordinary,
+                        module: self.active_module.clone(),
+                        environment: state.environment.clone(),
+                        parameters: Rc::from([]),
+                        body: spite_parser::ast::ArrowBody::Block(body.clone()),
+                        source: syntax.source.clone(),
+                        strict: true,
                     },
+                    home_object: state.function.clone(),
+                    span,
+                });
+            return Ok(());
+        }
+        let name = name.expect("field or method key");
+        let home = if element.is_static() {
+            &state.function
+        } else {
+            &state.prototype
+        };
+        match element {
+            ClassElement::Method { property, .. } => match name {
+                super::class_field::ClassFieldName::Public(key) => {
+                    self.define_method_property(home, key, property, false)?
+                }
+                super::class_field::ClassFieldName::Private(name) => {
+                    let container = if element.is_static() {
+                        &mut state.static_methods
+                    } else {
+                        &mut state.instance_methods
+                    };
+                    self.private_method_definition(home, name, property, container)?;
+                }
+            },
+            ClassElement::Field { initializer, .. } => {
+                let field = super::ClassField {
+                    name,
+                    initializer: initializer.as_ref().map(|expression| {
+                        super::class_field::FieldInitializer {
+                            expression: expression.clone(),
+                            module: self.active_module.clone(),
+                            environment: state.environment.clone(),
+                            home_object: home.clone(),
+                        }
+                    }),
+                    span,
+                };
+                self.object_work(span, |_, budget| budget.charge(1))?;
+                if element.is_static() {
+                    state
+                        .static_elements
+                        .try_reserve(1)
+                        .map_err(|_| Error::Limit {
+                            span,
+                            message: "static initialization allocation capacity exceeded".into(),
+                        })?;
+                    state
+                        .static_elements
+                        .push(super::class_static::StaticElement::Field(field));
+                } else {
+                    state
+                        .instance_fields
+                        .try_reserve(1)
+                        .map_err(|_| Error::Limit {
+                            span,
+                            message: "class field allocation capacity exceeded".into(),
+                        })?;
+                    state.instance_fields.push(field);
+                }
+            }
+            ClassElement::StaticBlock { .. } => unreachable!("static block handled"),
+        }
+        Ok(())
+    }
+
+    pub(super) fn finish_class_definition(
+        &mut self,
+        syntax: &Class,
+        context: ClassDefinitionContext,
+        state: ClassDefinitionState,
+    ) -> Result<Value, Error> {
+        let span = syntax.source.span();
+        let result = (|| {
+            self.object_work(span, |objects, budget| {
+                objects.set_class_fields(&state.function, state.instance_fields.into(), budget)
+            })?;
+            self.object_work(span, |objects, budget| {
+                objects.set_class_private_methods(
+                    &state.function,
+                    state.instance_methods.into(),
                     budget,
                 )
             })?;
-            debug_assert!(changed, "new constructor prototype is writable");
-            let name = syntax
-                .name
-                .as_ref()
-                .map(|name| PropertyKey::from(name.name.as_str()))
-                .or(inferred_name)
-                .unwrap_or_else(|| PropertyKey::from(""));
-            // SetFunctionName precedes every computed name and static method.
-            self.set_function_name(&function, name, None, span)?;
-            let mut instance_fields = Vec::new();
-            let mut instance_methods = Vec::new();
-            let mut static_methods = Vec::new();
-            let mut static_elements = Vec::new();
-            for element in &syntax.elements {
-                let span = element.span();
-                self.tick(span)?;
-                if let ClassElement::StaticBlock { body, .. } = element {
-                    static_elements.try_reserve(1).map_err(|_| Error::Limit {
-                        span,
-                        message: "static initialization allocation capacity exceeded".into(),
-                    })?;
-                    static_elements.push(super::class_static::StaticElement::Block {
-                        code: super::ScriptFunction {
-                            kind: spite_parser::ast::FunctionKind::Ordinary,
-                            module: self.active_module.clone(),
-                            environment: environment.clone(),
-                            parameters: Rc::from([]),
-                            body: spite_parser::ast::ArrowBody::Block(body.clone()),
-                            source: syntax.source.clone(),
-                            strict: true,
-                        },
-                        home_object: function.clone(),
-                        span,
-                    });
-                    continue;
-                }
-                let name = match element.name().expect("field or method key") {
-                    PropertyName::Private(name) => super::class_field::ClassFieldName::Private(
-                        self.resolve_private_name(&name.name, name.span)?,
-                    ),
-                    name => {
-                        let key = match name {
-                            PropertyName::Literal(literal) => self.literal_value(literal, span)?,
-                            PropertyName::Computed(expression) => self.expression(expression)?,
-                            PropertyName::Private(_) => unreachable!("private name handled"),
-                        };
-                        super::class_field::ClassFieldName::Public(self.property_key(key, span)?)
-                    }
-                };
-                let home = if element.is_static() {
-                    &function
-                } else {
-                    &prototype
-                };
-                match element {
-                    ClassElement::Method { property, .. } => match name {
-                        super::class_field::ClassFieldName::Public(key) => {
-                            self.define_method_property(home, key, property, false)?
-                        }
-                        super::class_field::ClassFieldName::Private(name) => {
-                            let container = if element.is_static() {
-                                &mut static_methods
-                            } else {
-                                &mut instance_methods
-                            };
-                            self.private_method_definition(home, name, property, container)?;
-                        }
-                    },
-                    ClassElement::Field { initializer, .. } => {
-                        let field = super::ClassField {
-                            name,
-                            initializer: initializer.as_ref().map(|expression| {
-                                super::class_field::FieldInitializer {
-                                    expression: expression.clone(),
-                                    module: self.active_module.clone(),
-                                    environment: environment.clone(),
-                                    home_object: home.clone(),
-                                }
-                            }),
-                            span,
-                        };
-                        self.object_work(span, |_, budget| budget.charge(1))?;
-                        if element.is_static() {
-                            static_elements.try_reserve(1).map_err(|_| Error::Limit {
-                                span,
-                                message: "static initialization allocation capacity exceeded"
-                                    .into(),
-                            })?;
-                            static_elements.push(super::class_static::StaticElement::Field(field));
-                        } else {
-                            instance_fields.try_reserve(1).map_err(|_| Error::Limit {
-                                span,
-                                message: "class field allocation capacity exceeded".into(),
-                            })?;
-                            instance_fields.push(field);
-                        }
-                    }
-                    ClassElement::StaticBlock { .. } => unreachable!("static block handled"),
-                }
-            }
-            self.object_work(span, |objects, budget| {
-                objects.set_class_fields(&function, instance_fields.into(), budget)
-            })?;
-            self.object_work(span, |objects, budget| {
-                objects.set_class_private_methods(&function, instance_methods.into(), budget)
-            })?;
-            Ok((function, static_methods, static_elements))
+            Ok((state.function, state.static_methods, state.static_elements))
         })();
         self.leave_class_definition(&context);
         let (function, static_methods, static_elements) = result?;

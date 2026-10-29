@@ -1,4 +1,4 @@
-//! ClassDeclaration heritage continuations through Await and Yield (15.7.14).
+//! ClassDeclaration heritage and computed-name continuations (15.7.14).
 
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value, object::PromiseState};
 
@@ -147,4 +147,147 @@ fn heritage_host_failure_skips_language_handlers_and_restores_embedding_context(
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
     check(&mut realm, "flag===0&&(heritageEmbeddingSloppy=7)===7");
+}
+
+#[test]
+fn computed_names_preserve_order_and_defer_static_elements_until_all_keys_finish() {
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let events=[],result,read;
+        async function f(){
+            class C extends (events.push('base'),Object){
+                static first=events.push('static:first');
+                [(events.push('key:first'),'a')]=1;
+                [await {then(resolve){events.push('then');resolve({[Symbol.toPrimitive](hint){events.push('convert:'+hint);return 'm'}})}}](){return 7}
+                [(read=()=>C,events.push('key:last'),'b')]=2;
+                static{events.push('static:block')}
+            }
+            return C;
+        }
+        f().then(C=>result=C);
+    "#).unwrap();
+    check(&mut realm, "events.join(',')==='base,key:first'");
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "events.join(',')==='base,key:first,then,convert:string,key:last,static:first,static:block'&&new result().m()===7&&new result().a===1&&new result().b===2&&read()===result",
+    );
+}
+
+#[test]
+fn partial_definition_traces_symbol_fields_private_methods_and_static_captures() {
+    let mut realm = Realm::default();
+    realm
+        .eval(
+            r#"
+        let release,weak,result,events=[];let gate=new Promise(r=>release=r);
+        async function f(){
+            let key=Symbol('field');weak=new WeakRef(key);
+            class C{
+                [key]=1;
+                #m(){return 2}
+                static #s(){return 3}
+                static #a=5;
+                static first=this.#s();
+                static{events.push(this.#a,this.first)}
+                [(key=null,await gate)](){return this.#m()}
+            }
+            return C;
+        }
+        f().then(C=>result=C);
+    "#,
+        )
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weak.deref()!==undefined&&events.length===0");
+    realm.eval("release('m')").unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "new result().m()===2&&new result()[weak.deref()]===1&&events.join(',')==='5,3'",
+    );
+    realm.eval("result=null").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weak.deref()===undefined");
+}
+
+#[test]
+fn rejected_or_throwing_computed_keys_restore_context_and_skip_static_initialization() {
+    let mut realm = Realm::default();
+    realm
+        .eval(
+            r#"
+        let marker={},events=[];
+        async function f(value){
+            try{class C{static side=events.push('wrong');[await value](){}}}
+            catch(e){computedSloppy=7;events.push(e===marker,typeof C==='undefined')}
+            finally{events.push(computedSloppy===7)}
+        }
+        f(Promise.reject(marker));
+        f({[Symbol.toPrimitive](){throw marker}});
+    "#,
+        )
+        .unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "events.length===6&&events.every(Boolean)&&computedSloppy===7",
+    );
+}
+
+#[test]
+fn yielded_computed_names_preserve_tdz_and_clean_up_on_generator_return_or_throw() {
+    let mut realm = Realm::default();
+    check(
+        &mut realm,
+        r#"
+        let read,events=[],marker={};
+        function* g(){try{class C{static field=events.push('static');[(read=()=>C,yield 'key')](){return 8}}return C}
+        catch(e){events.push(e===marker)}finally{computedGeneratorSloppy=4;events.push('finally')}}
+        let success=g();if(success.next().value!=='key')throw 1;
+        try{read();throw 2}catch(e){if(!(e instanceof ReferenceError))throw e}
+        let C=success.next('m').value;if(new C().m()!==8||read()!==C)throw 3;
+        let returned=g();returned.next();let end=returned.return(99);if(!end.done||end.value!==99)throw 4;
+        let thrown=g();thrown.next();thrown.throw(marker);
+        events.join(',')==='static,finally,finally,true,finally'&&computedGeneratorSloppy===4
+    "#,
+    );
+}
+
+#[test]
+fn module_default_computed_names_finish_before_static_initialization_and_body_entry() {
+    let mut realm = Realm::default();
+    realm.eval("let observed=[]").unwrap();
+    let promise=realm.eval_module("export default class{[await 'm'](){return 7}static record=observed.push(this.name,new this().m())};observed.push('body')").unwrap();
+    let Value::Object(promise) = promise else {
+        panic!("evaluation promise")
+    };
+    check(&mut realm, "observed.length===0");
+    drain(&mut realm);
+    assert!(matches!(
+        realm.inspect_object(&promise).unwrap().promise_state(),
+        Some(PromiseState::Fulfilled(Value::Undefined))
+    ));
+    check(&mut realm, "observed.join(',')==='default,7,body'");
+}
+
+#[test]
+fn computed_name_host_failure_releases_partial_definition_without_language_cleanup() {
+    let mut realm = Realm::default();
+    realm.eval("let weak,flag=0;async function f(){let key=Symbol();weak=new WeakRef(key);try{class C{[key]=1;[(key=null,await 0,import('unavailable'))](){}}}catch{flag=1}finally{flag=2}}let pending=f()").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weak.deref()!==undefined&&flag===0");
+    assert!(matches!(
+        realm.run_next_promise_job(),
+        Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
+    ));
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(
+        &mut realm,
+        "weak.deref()===undefined&&flag===0&&(computedEmbeddingSloppy=7)===7",
+    );
 }

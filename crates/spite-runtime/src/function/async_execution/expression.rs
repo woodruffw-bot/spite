@@ -96,6 +96,17 @@ fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
             };
             class.heritage.as_ref().expect("suspended heritage")
         }
+        (ArrowBody::Block(_), ExprRoot::ClassElement { element }) => {
+            let StatementKind::Class(class) =
+                &active_statement(&data.body, data.statement.as_ref()).kind
+            else {
+                unreachable!("class declaration source")
+            };
+            let Some(PropertyName::Computed(key)) = class.elements[element].name() else {
+                unreachable!("computed class name")
+            };
+            key
+        }
         (ArrowBody::Block(_), ExprRoot::Statement) => {
             match &active_statement(&data.body, data.statement.as_ref()).kind {
                 StatementKind::Expression(expression)

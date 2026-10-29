@@ -1,9 +1,18 @@
 # Test262 regression fixtures
 
-These 10975 unmodified test fixtures and twenty-two harness files come from
+These 10979 unmodified test fixtures and twenty-two harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Suspended computed class-declaration names
+
+Four whole unchanged originals add six required variants for awaited/yielded
+instance and static method/accessor names. Git blob/SHA-256 hashes match the same
+pin. Four further candidate files contain class expressions despite their paths;
+they remain unsupported and excluded. Counts are 10,979 fixtures, twenty-two
+helpers, 10,898 reviewed sources and 20,875 variants. Existing sources, helpers,
+limits and worker counts are unchanged.
 
 ## SharedArrayBuffer slicing
 

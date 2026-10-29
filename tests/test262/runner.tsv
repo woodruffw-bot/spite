@@ -10893,3 +10893,7 @@ test/built-ins/SharedArrayBuffer/prototype/slice/start-exceeds-length.js	-	-	-
 test/built-ins/SharedArrayBuffer/prototype/slice/this-is-arraybuffer.js	-	-	-
 test/built-ins/SharedArrayBuffer/prototype/slice/tointeger-conversion-end.js	-	-	-
 test/built-ins/SharedArrayBuffer/prototype/slice/tointeger-conversion-start.js	-	-	-
+test/language/statements/class/cpn-class-decl-accessors-computed-property-name-from-await-expression.js	-	-	-
+test/language/statements/class/cpn-class-decl-accessors-computed-property-name-from-yield-expression.js	-	-	-
+test/language/statements/class/cpn-class-decl-computed-property-name-from-await-expression.js	-	-	-
+test/language/statements/class/cpn-class-decl-computed-property-name-from-yield-expression.js	-	-	-

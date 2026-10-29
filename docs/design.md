@@ -3406,7 +3406,18 @@ identity, so captured source contexts can move between different caller depths.
 Rejection, generator return/throw and host abort restore the enclosing context
 before completion handling; host errors bypass JavaScript handlers. Default
 exports preserve their inferred name before static initialization. Suspension in
-class expressions and computed class names remains separate implementation work.
+class expressions remains separate implementation work.
+
+The common class builder prepares a constructor/prototype pair, defines one
+element at a time, and finishes the class binding and static initialization.
+Class declarations can suspend at computed names between element definitions;
+key evaluation and ToPropertyKey happen once in source order. A native partial
+definition retains the instance fields, private methods and static fields/blocks
+until completion. Its tracing accounts for every constructor, home object,
+environment, defining Module and Symbol/private-name identity held by those
+records. Static initialization waits for all names to complete. Abrupt key
+evaluation releases the partial definition and restores the strict/name context
+before normal completion handling; host abort invokes no JavaScript cleanup.
 
 ClassHeritage evaluates in the strict class-name environment (15.7.14). Null gives
 instances a null prototype while the constructor inherits Function.prototype.

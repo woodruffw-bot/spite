@@ -12,9 +12,10 @@ impl Realm {
         mut result: Result<Completion, Error>,
     ) -> Result<Option<Completion>, Error> {
         if !matches!(&result, Ok(completion) if completion.kind == CompletionKind::Normal) {
-            if let Some(context) = data.class_heritage.take() {
+            if let Some(context) = data.class_context.take() {
                 self.leave_class_definition(&context);
             }
+            data.class_definition = None;
             // An abandoned expression or initializer must not retain operands
             // and target environments through later completion handling.
             data.expression = None;

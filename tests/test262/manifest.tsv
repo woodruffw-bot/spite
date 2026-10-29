@@ -10996,3 +10996,7 @@ script-pass	72219c1e96d13d45e678142b02a49f4d020e17a69f6371ce13728aa6a3c6d345	tes
 script-pass	86438089eb46cce21d7fa30bee975bd3042cb5ce9f5af6ab6c46c27b94ef1fc8	test/built-ins/SharedArrayBuffer/prototype/slice/this-is-arraybuffer.js
 script-pass	c43a434d319d70e4d42293bf6810d35ffd8fc5f06f23ca04e999f522ba792a78	test/built-ins/SharedArrayBuffer/prototype/slice/tointeger-conversion-end.js
 script-pass	b60e1ccfcc6bac72fbc3e2c5a505ddd7993591c72942656d837ddd96cc2052e7	test/built-ins/SharedArrayBuffer/prototype/slice/tointeger-conversion-start.js
+script-pass	a3ba20d7478fc3de5cb971d2a5ee0f17252e98e502421df70e80c4971111858d	test/language/statements/class/cpn-class-decl-accessors-computed-property-name-from-await-expression.js
+script-pass	f6a67f5abc0692c5d717506c40102db1a7185f29c7a0275f7d2ea491d26d95b3	test/language/statements/class/cpn-class-decl-accessors-computed-property-name-from-yield-expression.js
+script-pass	f1f3149001db5e79006f186a6a6f5bcd4340f98c212671f42c01349fb3f6cca6	test/language/statements/class/cpn-class-decl-computed-property-name-from-await-expression.js
+script-pass	5d99a282bf39179a2641a53b691552bff2cbc7be2f97992b6e2c62d19034bb6e	test/language/statements/class/cpn-class-decl-computed-property-name-from-yield-expression.js

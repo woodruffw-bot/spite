@@ -18,6 +18,7 @@ pub(crate) enum AsyncAwaitAction {
     AsyncGeneratorYield(Span),
     ModuleDefault,
     ClassHeritage,
+    ClassElement { element: usize },
     DelegationResult(super::async_expression::DelegationOperation),
     Throw,
     Expression,
@@ -314,7 +315,8 @@ pub(crate) struct AsyncExecutionData {
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub pattern_binding: Option<super::async_binding::AsyncPatternBinding>,
-    pub class_heritage: Option<crate::function::ClassDefinitionContext>,
+    pub class_context: Option<crate::function::ClassDefinitionContext>,
+    pub class_definition: Option<crate::function::ClassDefinitionState>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -333,6 +335,11 @@ impl AsyncExecutionData {
         self.expression
             .iter()
             .flat_map(|expression| expression.symbols())
+            .chain(
+                self.class_definition
+                    .iter()
+                    .flat_map(|state| state.symbols()),
+            )
             .chain(self.var_target.iter().flat_map(Reference::symbols))
             .chain(
                 self.pattern_binding
@@ -364,6 +371,11 @@ impl AsyncExecutionData {
             .into_iter()
             .chain(self.function.module_record())
             .chain(
+                self.class_definition
+                    .iter()
+                    .flat_map(|state| state.objects()),
+            )
+            .chain(
                 self.context
                     .iter()
                     .filter_map(|context| context.module.as_ref()),
@@ -386,9 +398,14 @@ impl AsyncExecutionData {
         self.expression
             .iter()
             .flat_map(|expression| expression.environments())
+            .chain(
+                self.class_definition
+                    .iter()
+                    .flat_map(|state| state.environments()),
+            )
             .chain(self.root_scope.iter())
             .chain(
-                self.class_heritage
+                self.class_context
                     .iter()
                     .map(|context| &context.environment),
             )

@@ -26,7 +26,7 @@ mod shared_array_buffer;
 mod source_context;
 pub(crate) use call::CallTarget;
 mod class;
-pub(crate) use class::{ClassConstructor, ClassDefinitionContext};
+pub(crate) use class::{ClassConstructor, ClassDefinitionContext, ClassDefinitionState};
 mod class_field;
 pub(crate) use class_field::ClassField;
 mod async_dispose;

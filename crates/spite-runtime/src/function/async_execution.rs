@@ -4,7 +4,7 @@ mod binding;
 mod binding_object;
 mod binding_pattern;
 mod block;
-mod class_heritage;
+mod class_definition;
 mod completion;
 mod conditional;
 mod delegation;
@@ -74,7 +74,8 @@ fn new_execution_data(
         body,
         expression: None,
         pattern_binding: None,
-        class_heritage: None,
+        class_context: None,
+        class_definition: None,
         index: 0,
         statement: None,
         next: None,
@@ -424,11 +425,7 @@ impl Realm {
         let value = match &statement.kind {
             StatementKind::Function(_) => return Ok(Step::Complete(Completion::normal(None))),
             StatementKind::Class(class) => {
-                if class
-                    .heritage
-                    .as_ref()
-                    .is_some_and(expression::has_supported_await)
-                {
+                if class_definition::has_class_await(class) {
                     return self.start_class_heritage(data);
                 }
                 self.class_definition(class, Some(spite_core::JsString::from("default").into()))?
@@ -461,10 +458,7 @@ impl Realm {
         }
         let statement = active_statement(&data.body, data.statement.as_ref());
         if let StatementKind::Class(class) = &statement.kind
-            && class
-                .heritage
-                .as_ref()
-                .is_some_and(expression::has_supported_await)
+            && class_definition::has_class_await(class)
         {
             self.tick(statement.span)?;
             return self.start_class_heritage(data);
@@ -581,6 +575,9 @@ impl Realm {
         match action {
             AsyncAwaitAction::Discard => Ok(Step::Complete(Completion::normal(Some(value)))),
             AsyncAwaitAction::ClassHeritage => self.finish_class_heritage(data, value),
+            AsyncAwaitAction::ClassElement { element } => {
+                self.finish_async_class_key(data, element, value)
+            }
             AsyncAwaitAction::ModuleDefault => {
                 let environment = data.root_scope.as_ref().expect("module environment");
                 let span = active_statement(&data.body, data.statement.as_ref()).span;

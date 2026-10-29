@@ -11,6 +11,7 @@ pub(crate) enum ExprRoot {
     Arrow,
     Statement,
     ClassHeritage,
+    ClassElement { element: usize },
     IfTest,
     WithObject,
     SwitchDiscriminant,
