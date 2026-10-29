@@ -1225,8 +1225,11 @@ its whole range and source-order optional capture ranges. Undefined captures rem
 distinct from defined empty captures. Original Patterns are compiled directly,
 without source projections, capture-head rewriting or pattern-shape dispatch.
 The pinned upstream revision, local patches and licenses live under
-`vendor/regress`; `SPITE-PATCHES.md` records the integration changes. Rust 1.88
-is the minimum supported compiler.
+`vendor/regress`; `SPITE-PATCHES.md` records the integration changes. Rust 1.99
+is the minimum supported compiler. The Windows Rust 1.88 debug linker reaches
+MSVC's PDB limit for long generic symbols in native continuation tracing;
+current Rust builds pass the same tests. The CI matrix exercises the minimum
+and current stable compiler on Linux and Windows.
 
 Ordinary-mode Pattern and input strings use UTF-16 code units (UCS-2 matching).
 Unicode `u`/`v` Patterns decode valid pairs while retaining lone surrogates, and

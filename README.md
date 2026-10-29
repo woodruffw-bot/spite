@@ -12,7 +12,7 @@ only for tests.
 
 ## Run
 
-Rust 1.88 or later is required.
+Rust 1.99 or later is required.
 
 ```sh
 cargo run -p spite -- --eval 'let x = 6; x * 7'

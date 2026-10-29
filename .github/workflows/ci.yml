@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        toolchain: [stable, '1.88.0']
+        toolchain: [stable, '1.99.0']
         # Keep the full corpus independent of workspace compilation and tests.
         suite: [workspace-core, workspace-rest, test262]
         # Windows runs the two Runtime halves separately from other REST tests.
@@ -31,13 +31,13 @@ jobs:
             toolchain: stable
             suite: runtime-integration
           - os: windows-latest
-            toolchain: '1.88.0'
+            toolchain: '1.99.0'
             suite: runtime-integration
           - os: windows-latest
             toolchain: stable
             suite: runtime-second-half
           - os: windows-latest
-            toolchain: '1.88.0'
+            toolchain: '1.99.0'
             suite: runtime-second-half
     runs-on: ${{ matrix.os }}
     permissions:
@@ -52,12 +52,12 @@ jobs:
           TOOLCHAIN: ${{ matrix.toolchain }}
         run: rustup toolchain install "$TOOLCHAIN" --profile minimal
       - name: Disable incremental compilation for cold MSRV Runtime build
-        if: matrix.os == 'windows-latest' && matrix.toolchain == '1.88.0' && matrix.suite == 'runtime-second-half'
+        if: matrix.os == 'windows-latest' && matrix.toolchain == '1.99.0' && matrix.suite == 'runtime-second-half'
         shell: bash
         run: echo 'CARGO_INCREMENTAL=0' >> "$GITHUB_ENV"
       - name: Prepare trusted main build cache
         id: build-cache-key
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.88.0' && (matrix.suite == 'runtime-integration' || matrix.suite == 'workspace-rest' || matrix.suite == 'runtime-second-half')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'woodruffw-bot/spite' && matrix.os == 'windows-latest' && matrix.toolchain == '1.99.0' && (matrix.suite == 'runtime-integration' || matrix.suite == 'workspace-rest' || matrix.suite == 'runtime-second-half')
         shell: bash
         env:
           TOOLCHAIN: ${{ matrix.toolchain }}
@@ -85,7 +85,7 @@ jobs:
                   raise ValueError("Unsupported cache suite")
               expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                           "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
-                          "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.88.0",
+                          "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.99.0",
                           "CACHE_SUITE": suite}
               if any(os.environ.get(k) != v for k, v in expected.items()):
                   raise ValueError("Unsupported cache context")
@@ -129,8 +129,8 @@ jobs:
                   raise ValueError("Missing hosted image identity")
               inputs = required + manifests + [root / name for name in ("rust-toolchain", "rust-toolchain.toml")] + configs
               hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None for p in inputs}
-              rustc = subprocess.check_output(["rustc", "+1.88.0", "-vV"], cwd=root, text=True)
-              cargo_version = subprocess.check_output(["cargo", "+1.88.0", "-vV"], cwd=root, text=True)
+              rustc = subprocess.check_output(["rustc", "+1.99.0", "-vV"], cwd=root, text=True)
+              cargo_version = subprocess.check_output(["cargo", "+1.99.0", "-vV"], cwd=root, text=True)
               if not re.search(r"^host: x86_64-pc-windows-msvc$", rustc, re.MULTILINE) or not re.search(r"^commit-hash: [0-9a-f]{40}$", rustc, re.MULTILINE):
                   raise ValueError("Unsupported compiler identity")
               if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.88\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: 873a0649350c486caf67be772828a4f36bb4734c$", cargo_version, re.MULTILINE):
@@ -222,7 +222,7 @@ jobs:
               raise ValueError("Unsupported cache suite")
           expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                       "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
-                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.88.0",
+                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.99.0",
                       "CACHE_SUITE": suite}
           if any(os.environ.get(k) != v for k, v in expected.items()):
               raise ValueError("Unsupported cache context")
@@ -263,10 +263,10 @@ jobs:
               raise ValueError("Unsupported registry dependency context")
 
           if debug.exists():
-              cargo_version = subprocess.check_output(["cargo", "+1.88.0", "-vV"], cwd=root, text=True)
+              cargo_version = subprocess.check_output(["cargo", "+1.99.0", "-vV"], cwd=root, text=True)
               if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.88\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: 873a0649350c486caf67be772828a4f36bb4734c$", cargo_version, re.MULTILINE):
                   raise ValueError("Unsupported Cargo identity after restore")
-              command = ["cargo", "+1.88.0", "clean", "--locked", "--profile", "dev",
+              command = ["cargo", "+1.99.0", "clean", "--locked", "--profile", "dev",
                          "--manifest-path", str(root / "Cargo.toml"), "--target-dir", str(target)]
               for package in packages:
                   command += ["-p", package]
@@ -338,7 +338,7 @@ jobs:
               raise ValueError("Unsupported cache suite")
           expected = {"GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
                       "GITHUB_REPOSITORY": "woodruffw-bot/spite", "RUNNER_OS": "Windows",
-                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.88.0",
+                      "RUNNER_ARCH": "X64", "TOOLCHAIN": "1.99.0",
                       "CACHE_SUITE": suite}
           if any(os.environ.get(k) != v for k, v in expected.items()):
               raise ValueError("Unsupported cache context")
@@ -379,10 +379,10 @@ jobs:
               raise ValueError("Unsupported registry dependency context")
 
           if debug.exists():
-              cargo_version = subprocess.check_output(["cargo", "+1.88.0", "-vV"], cwd=root, text=True)
+              cargo_version = subprocess.check_output(["cargo", "+1.99.0", "-vV"], cwd=root, text=True)
               if not re.search(r"^host: x86_64-pc-windows-msvc$", cargo_version, re.MULTILINE) or not re.search(r"^release: 1\.88\.0$", cargo_version, re.MULTILINE) or not re.search(r"^commit-hash: 873a0649350c486caf67be772828a4f36bb4734c$", cargo_version, re.MULTILINE):
                   raise ValueError("Unsupported Cargo identity after restore")
-              command = ["cargo", "+1.88.0", "clean", "--locked", "--profile", "dev",
+              command = ["cargo", "+1.99.0", "clean", "--locked", "--profile", "dev",
                          "--manifest-path", str(root / "Cargo.toml"), "--target-dir", str(target)]
               for package in packages:
                   command += ["-p", package]
@@ -401,7 +401,7 @@ jobs:
       - name: Install Rust checks
         run: |
           rustup toolchain install stable --profile minimal --component rustfmt --component clippy
-          rustup toolchain install 1.88.0 --profile minimal
+          rustup toolchain install 1.99.0 --profile minimal
       - run: cargo +stable fmt --all --check
       - run: cargo +stable clippy --workspace --all-targets --locked -- -D warnings
       - run: python3 tools/test-cargo-workspace-tests.py
