@@ -1,4 +1,4 @@
-//! Ordinary-buffer Atomics, ordered coercion, and revalidation (25.4).
+//! Atomics, ordered coercion, revalidation and empty waiter lists (25.4).
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
@@ -346,6 +346,76 @@ fn ordinary_buffer_notify_converts_count_and_skips_revalidation() {
             ExceptionKind::TypeError,
         );
     }
+}
+
+#[test]
+fn shared_notify_returns_positive_zero_for_empty_fixed_and_growable_waiter_lists() {
+    for name in ["Int32Array", "BigInt64Array"] {
+        for options in ["", ",{maxByteLength:32}"] {
+            for count in [
+                "undefined",
+                "NaN",
+                "-1",
+                "0",
+                "1.9",
+                "Infinity",
+                "-Infinity",
+            ] {
+                check(&format!(
+                    "let buffer=new SharedArrayBuffer(16{options}),view=new {name}(buffer);Object.is(Atomics.notify(view,0,{count}),0)&&Object.is(Atomics.notify(view,1),0)"
+                ));
+            }
+        }
+        for count in ["Symbol()", "1n"] {
+            exception(
+                &format!("Atomics.notify(new {name}(new SharedArrayBuffer(16)),0,{count})"),
+                ExceptionKind::TypeError,
+            );
+        }
+    }
+}
+
+#[test]
+fn shared_notify_snapshots_length_before_index_and_converts_count_after_validating_it() {
+    for name in ["Int32Array", "BigInt64Array"] {
+        check(&format!(
+            "let buffer=new SharedArrayBuffer(8,{{maxByteLength:32}}),view=new {name}(buffer),log='';Atomics.notify(view,{{valueOf(){{log+='i';buffer.grow(16);return 0}}}},{{valueOf(){{log+='c';buffer.grow(24);return 1}}}})===0&&log==='ic'&&buffer.byteLength===24"
+        ));
+        check(&format!(
+            "let buffer=new SharedArrayBuffer(8,{{maxByteLength:32}}),view=new {name}(buffer),length=view.length,count=0,caught=false;try{{Atomics.notify(view,{{valueOf(){{buffer.grow(16);return length}}}},{{valueOf(){{count++;return 1}}}})}}catch(e){{caught=e instanceof RangeError}}caught&&count===0&&buffer.byteLength===16"
+        ));
+        check(&format!(
+            "let view=new {name}(new SharedArrayBuffer(16)),reason={{}},same=false,log='';try{{Atomics.notify(view,{{valueOf(){{log+='i';return 0}}}},{{valueOf(){{log+='c';throw reason}}}})}}catch(e){{same=e===reason}}same&&log==='ic'"
+        ));
+    }
+    for name in [
+        "Int8Array",
+        "Uint8Array",
+        "Int16Array",
+        "Uint16Array",
+        "Uint32Array",
+        "BigUint64Array",
+        "Float16Array",
+        "Float32Array",
+        "Float64Array",
+    ] {
+        check(&format!(
+            "let calls=0,index={{valueOf(){{calls++;return 0}}}},caught=false;try{{Atomics.notify(new {name}(new SharedArrayBuffer(16)),index,index)}}catch(e){{caught=e instanceof TypeError}}caught&&calls===0"
+        ));
+    }
+}
+
+#[test]
+fn shared_notify_host_failures_bypass_handlers_and_resource_disposal() {
+    let mut realm = Realm::default();
+    realm.reserve_unsupported_global("unavailableHost");
+    realm.eval("let disposed=0,caught=0,finalized=0;let resource={[Symbol.dispose](){disposed++}},view=new Int32Array(new SharedArrayBuffer(8));").unwrap();
+    let error=realm.eval("function f(){using r=resource;try{Atomics.notify(view,0,{valueOf(){return unavailableHost()}})}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    assert!(matches!(error, Error::Unsupported { .. }), "{error}");
+    assert_eq!(
+        realm.eval("disposed===0&&caught===0&&finalized===0"),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

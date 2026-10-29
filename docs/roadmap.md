@@ -468,6 +468,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Construct branded SharedArrayBuffers with ordered conversion/prototype checks, fixed/growable length getters and serialized monotonic growth across shared backing identities.
 - [x] Integrate shared byte storage with TypedArray/DataView, live growable-buffer witnesses, numeric codecs and raw copies.
 - [x] Implement SharedArrayBuffer slicing with ordered species construction, shared-brand/backing validation and raw byte copies.
+- [x] Support shared Atomics.notify with ordered brand/index/count validation and empty waiter lists while waiting and agents remain unavailable.
 - [ ] Implement shared Atomics and agents.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.

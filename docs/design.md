@@ -4527,7 +4527,7 @@ Configured host reservations still report explicit host gaps and install no
 properties. Names outside the selected edition receive no implicit reservation.
 The incomplete Array constructor retains its separate fromAsync barrier.
 
-## Atomics on ordinary buffers
+## Atomics and empty shared waiter lists
 
 Atomics implements the ordinary ArrayBuffer paths of 25.4 for all eight
 unclamped integer and BigInt TypedArray kinds. ValidateIntegerTypedArray and
@@ -4547,11 +4547,17 @@ No JavaScript executes between the final buffer read and write. Optional work,
 BigInt, and backing-page allocation failures remain host failures.
 
 Notify accepts Int32Array and BigInt64Array, converts index and count, and returns
-positive zero for ordinary buffers without post-conversion revalidation. Wait
-and waitAsync reject those buffers before index, value, or timeout conversion.
+positive zero for ordinary buffers without post-conversion revalidation. Shared
+buffers follow the same argument validation and original-length witness, then
+return positive zero for their empty waiter lists (sec-atomics.notify). No waiters
+can register while waiting operations and agents remain Unsupported. This path
+does not read or modify buffer bytes. Count coercion can grow a shared buffer;
+growth during index coercion does not extend the captured valid index range.
+Wait and waitAsync reject ordinary buffers before index, value, or timeout conversion.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Shared buffers,
-wait queues, agents, and their memory-model events remain deferred.
+for widths one, two, and eight; width four always returns true. Shared memory
+operations, nonempty wait queues, agents and their memory-model events remain
+deferred; four-byte read-modify-write operations require actual lock-free storage.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
 ([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,

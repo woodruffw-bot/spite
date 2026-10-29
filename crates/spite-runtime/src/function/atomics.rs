@@ -40,7 +40,7 @@ impl Realm {
                 .expect("typed buffer")
                 .shared)
         })?;
-        if shared {
+        if shared && !matches!(method, Member::AtomicsNotify) {
             return Err(Self::unsupported(
                 span,
                 "shared-buffer Atomics are not implemented",
@@ -58,8 +58,10 @@ impl Realm {
         let index =
             self.atomics_index(&witness, arguments.next().unwrap_or(Value::Undefined), span)?;
         if matches!(method, Member::AtomicsNotify) {
-            // Atomics.notify (25.4.15) converts count before the ordinary-buffer +0 return.
-            // It deliberately performs no post-conversion revalidation.
+            // Atomics.notify (25.4.15) converts count before the ordinary-buffer
+            // +0 return or the shared wait-list lookup. Waiting and agents are
+            // still unavailable, so no backing can have registered waiters.
+            // Notify deliberately performs no post-conversion revalidation.
             let count = arguments.next().unwrap_or(Value::Undefined);
             if !matches!(count, Value::Undefined) {
                 self.atomics_integer(count, span)?;

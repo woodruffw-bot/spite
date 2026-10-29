@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 11024 unmodified test fixtures and twenty-two harness files come from
+These 11044 unmodified test fixtures and twenty-three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Shared Atomics notification with empty waiter lists
+
+Twenty whole unchanged originals add 40 required Script modes for shared notify
+argument validation, range checks, count coercion, waitable brands and reflection,
+including BigInt64 views. The unchanged testAtomics.js helper is retained with its
+original Git blob/SHA-256 hashes. Three further originals require buffer detachment
+and two selected originals require agents; they remain wholly excluded.
+
+Counts are 11,044 fixtures, twenty-three helpers, 10,959 reviewed sources and
+20,982 variants. Existing sources, helpers, limits and worker counts are unchanged.
 
 ## Import attribute support validation
 

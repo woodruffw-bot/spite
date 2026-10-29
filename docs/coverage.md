@@ -39,10 +39,10 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; shared Atomics and agents remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; shared atomic memory operations and agents remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
-| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary notify, pause's processor hint, and non-shared wait/waitAsync rejection |
+| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary/shared notify with empty waiter lists, pause's processor hint, and non-shared wait/waitAsync rejection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
@@ -59,9 +59,29 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20942 reviewed Test262 variants, twenty-two pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20982 reviewed Test262 variants, twenty-three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Shared Atomics notification with empty waiter lists
+
+Shared Int32Array and BigInt64Array notify calls use the existing brand,
+original-length index and count validation, returning positive zero for empty
+waiter lists. Waiting and agents remain unavailable, so no waiter can register.
+This operation does not read or modify buffer bytes. Shared atomic memory
+operations remain Unsupported and require real lock-free four-byte storage.
+
+Three new Runtime groups cover fixed/growable buffers, count conversions and
+throws, growth during index/count coercion, invalid element kinds and host abort.
+Twenty unchanged originals add 40 required modes, with the unchanged
+testAtomics.js helper. All Git blob/SHA-256 hashes match the same pin. Three
+detachment cases and two agent cases remain wholly excluded. Counts are 11,044
+fixtures, twenty-three helpers, 10,959 reviewed sources and 20,982 variants.
+Runtime/Parser case inventories remain 696/88. Existing sources, helpers, limits
+and worker counts are unchanged.
+All 491 Runtime units, 2,345 non-RegExp integrations, the full 20,982-variant
+corpus and all 62 package controls pass. CLI/raw smoke, formatting, strict Clippy,
+Rust 1.99, dependency policy and inventories pass.
 
 ## Import attribute support validation
 
