@@ -1,9 +1,22 @@
 # Test262 regression fixtures
 
-These 11044 unmodified test fixtures and twenty-three harness files come from
+These 11094 unmodified test fixtures and twenty-three harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Async-generator requests and Promise interleaving
+
+All 48 unchanged AsyncGeneratorPrototype originals now cover prototype metadata,
+next/return/throw receiver checks, request ordering, rejected returns, completed
+and suspended states, iterator results and finally behavior. Two further whole
+Await originals check async-generator and for-await-of interleaving with Promise
+jobs. They add 100 required Script modes with existing harnesses and unchanged
+Git blob/SHA-256 hashes at the same pin.
+
+Counts are 11,094 fixtures, twenty-three helpers, 11,009 reviewed sources and
+21,082 variants. Runtime code, existing sources, helpers, limits and worker counts
+are unchanged.
 
 ## Shared Atomics notification with empty waiter lists
 

@@ -59,9 +59,26 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 20982 reviewed Test262 variants, twenty-three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21082 reviewed Test262 variants, twenty-three pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Async-generator requests and Promise interleaving audit
+
+The existing source interpreter passes all 48 unchanged AsyncGeneratorPrototype
+originals: prototype metadata, receiver brands, FIFO requests, Promise-valued
+returns and throws, completed/suspended states, iterator-result prototypes and
+finally overrides. Two further unchanged Await originals verify async-generator
+and for-await-of interleaving with Promise jobs. These add 100 required modes
+without Runtime changes or new harnesses.
+
+All Git blob/SHA-256 hashes match the same pin. Counts are 11,094 fixtures,
+twenty-three helpers, 11,009 reviewed sources and 21,082 variants. Runtime/Parser
+case inventories remain 696/88. Existing sources, helpers, limits and worker
+counts are unchanged.
+The full 21,082-variant corpus and all 62 package controls pass, as do formatting,
+strict Clippy, Rust 1.99, dependency policy and inventories. Runtime code retains
+the preceding 491-unit and 2,345 non-RegExp integration results.
 
 ## Shared Atomics notification with empty waiter lists
 
