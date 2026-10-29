@@ -21,7 +21,7 @@ fn reserved<T>(count: usize, span: Span) -> Result<Vec<T>, Error> {
 }
 
 impl Realm {
-    fn abort_module_evaluation(
+    pub(crate) fn abort_module_evaluation(
         &mut self,
         record: &ObjectHandle,
         error: &Error,

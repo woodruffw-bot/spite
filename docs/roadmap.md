@@ -375,6 +375,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Cache one ordinary import.meta object per Module with default host hooks, defining-module identity across functions/classes and suspension, and traced record retention.
 - [x] Expose Module Contains await/HasTLA static semantics with iterative syntax traversal and the specification's function/class scope exclusions.
 - [x] Evaluate synchronous Module graphs with source-ordered dependencies, shared/cyclic execution, cycle-root Promise identity, cached abrupt completions and host-abort preservation.
+- [x] Separate standalone top-level Await body completion from evaluation Promise settlement through intrinsic completion jobs, with cached identity and host-abort preservation.
 - [x] Load Test262 static Module sources through stable host identities and relative corpus paths, preserving setup/resolution/runtime failures and imported support-file accounting.
 - [x] Match Test262 resolution negatives only against linking exceptions, excluding parse/setup/resource failures and all harness/body execution.
 - [ ] Schedule asynchronous Module dependencies and cycle completion with top-level Await.

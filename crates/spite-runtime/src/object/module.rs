@@ -285,29 +285,4 @@ impl Objects {
         data.environment = Some(environment);
         Ok(())
     }
-
-    pub(crate) fn begin_module_evaluation(
-        &mut self,
-        record: &Handle,
-        promise: Value,
-        budget: &mut Budget,
-    ) -> Result<(), Error> {
-        budget.value(&promise)?;
-        let Value::Object(handle) = &promise else {
-            return Err(Error::WrongKind);
-        };
-        if self.inspect(handle)?.promise_state().is_none() {
-            return Err(Error::WrongKind);
-        };
-        let data = self
-            .object_mut(record)?
-            .module_record
-            .as_mut()
-            .ok_or(Error::WrongKind)?;
-        if data.evaluation.is_some() || data.environment.is_none() {
-            return Err(Error::WrongKind);
-        };
-        data.evaluation = Some(promise);
-        Ok(())
-    }
 }

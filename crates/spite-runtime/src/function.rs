@@ -1617,6 +1617,9 @@ impl Realm {
                         async_native::AsyncResumeKind::Execution => {
                             self.resume_async_execution(state, fulfilled, value, span)
                         }
+                        async_native::AsyncResumeKind::ModuleExecution => {
+                            self.resume_module_execution(state, fulfilled, value, span)
+                        }
                         async_native::AsyncResumeKind::AsyncGeneratorReturn => {
                             self.resume_async_generator_return(state, fulfilled, value, span)
                         }

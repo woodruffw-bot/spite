@@ -489,6 +489,13 @@ retain the same environment cells. The immutable Module statement list reuses
 the function/static-block body representation and shared source interpreter
 without creating a function or arguments object. Evaluation returns an intrinsic
 Promise, with explicit host job draining and native Promise-state inspection.
+For HasTLA Modules, ExecuteAsyncModule retains a separate internal body Promise
+and installs intrinsic fulfillment/rejection reactions before running the body
+(16.2.1.6.2). The body's completion queues a distinct job that settles the cached
+top-level evaluation Promise; even an unreachable await requires this job.
+Internal reactions use PerformPromiseThen directly, without reading public
+constructor, species or then properties. Suspended execution retains its owning
+Module record, and host failures mark it aborted without settling its Promise.
 Language failures reject; host failures bypass rejection and JavaScript cleanup.
 The caller's scopes/strictness/variable environment restore on every exit.
 Synchronous graphs execute dependencies before parent bodies. Graphs containing

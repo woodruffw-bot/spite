@@ -62,6 +62,25 @@ not an alternative language specification.
 
 
 
+## Standalone top-level Await completion jobs
+
+ExecuteAsyncModule now uses a separate body Promise and installs intrinsic
+reactions before body entry. Even unreachable await leaves the cached evaluation
+Promise pending until the completion reaction runs. Resuming a body and settling
+the evaluation Promise occupy distinct jobs; internal reactions read neither
+public Promise constructor nor then properties.
+
+Six new Runtime unit groups cover job order, cached identity, synchronous Module
+timing, exact Symbol rejection reasons and queued/rooted collection, poisoned
+public Promise properties, and initial/resumed host aborts that bypass catch and
+finally while retaining pending evaluation identity. Static dependency graphs
+containing top-level Await still require asynchronous dependency scheduling.
+
+All 457 Runtime units and 2,275 non-RegExp integrations pass across 690 files.
+The full 20,506-variant Test262 corpus and all 56 package controls pass, as do
+the CLI/raw smoke targets, strict Clippy, Rust 1.88, policy and inventories.
+Fixture/helper counts, intrinsic entries and default host limits are unchanged.
+
 ## Legacy raw-fixture reader compatibility
 
 The raw-script smoke suite recognizes the module-fixture and

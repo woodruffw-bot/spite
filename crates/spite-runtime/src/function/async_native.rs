@@ -10,6 +10,7 @@ pub(crate) enum AsyncResumeKind {
     Execution,
     AsyncGeneratorReturn,
     AsyncGeneratorResumeReturn,
+    ModuleExecution,
 }
 
 impl Realm {
@@ -32,6 +33,16 @@ impl Realm {
         else {
             unreachable!("intrinsic PromiseResolve returns a Promise");
         };
+        self.react_to_native_promise(&promise, state, kind, span)
+    }
+
+    pub(crate) fn react_to_native_promise(
+        &mut self,
+        promise: &ObjectHandle,
+        state: &ObjectHandle,
+        kind: AsyncResumeKind,
+        span: Span,
+    ) -> Result<(), Error> {
         let prototype = self
             .intrinsics
             .as_ref()
@@ -50,11 +61,16 @@ impl Realm {
                 false,
                 span,
             )?;
-            self.define_builtin_property(&handler, "length", Value::Number(1.0), false, span)?;
+            let length = if matches!(kind, AsyncResumeKind::ModuleExecution) {
+                0.0
+            } else {
+                1.0
+            };
+            self.define_builtin_property(&handler, "length", Value::Number(length), false, span)?;
             *slot = Value::Object(handler);
         }
         let [fulfilled, rejected] = handlers;
-        self.perform_promise_then(&promise, fulfilled, rejected, None, span)?;
+        self.perform_promise_then(promise, fulfilled, rejected, None, span)?;
         Ok(())
     }
 }

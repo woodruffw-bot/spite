@@ -265,6 +265,7 @@ pub(crate) enum SourceFunctionMode {
     Module {
         capability: PromiseCapability,
         default_export: Option<usize>,
+        record: Handle,
     },
     SyncModule {
         default_export: Option<usize>,
@@ -274,6 +275,12 @@ pub(crate) enum SourceFunctionMode {
 }
 
 impl SourceFunctionMode {
+    pub(crate) fn module_record(&self) -> Option<&Handle> {
+        match self {
+            Self::Module { record, .. } => Some(record),
+            _ => None,
+        }
+    }
     pub(crate) fn module_default(&self) -> Option<usize> {
         match self {
             Self::Module { default_export, .. } | Self::SyncModule { default_export } => {
@@ -353,6 +360,7 @@ impl AsyncExecutionData {
         self.function
             .generator()
             .into_iter()
+            .chain(self.function.module_record())
             .chain(self.frames.iter().filter_map(AsyncStatementFrame::object))
             .chain(
                 self.pattern_binding

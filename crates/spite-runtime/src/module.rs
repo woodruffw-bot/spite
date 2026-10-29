@@ -1,5 +1,6 @@
 //! Source Text Module records, linking and standalone evaluation (16.2.1).
 
+mod async_evaluation;
 mod binding;
 mod evaluation;
 mod graph;
@@ -113,12 +114,6 @@ impl Realm {
         if !source.has_top_level_await() || !source.requested_modules().is_empty() {
             return self.evaluate_sync_module_graph(record, Span::new(0, 0));
         }
-        let environment = self
-            .objects
-            .module_environment(record)
-            .map_err(Error::InvalidObject)?
-            .expect("linked standalone module");
-        let body = source.body();
         let span = Span::new(
             0,
             source
@@ -126,13 +121,7 @@ impl Realm {
                 .last()
                 .map_or(0, |statement| statement.span.end),
         );
-        self.evaluate_module_body(
-            body,
-            environment,
-            module_default_index(&source),
-            record,
-            span,
-        )
+        self.evaluate_async_standalone_module(&source, record, span)
     }
 
     fn initialize_module_record(

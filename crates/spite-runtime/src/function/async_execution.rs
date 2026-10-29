@@ -188,30 +188,39 @@ impl Realm {
         })
     }
 
-    pub(crate) fn evaluate_module_body(
+    pub(crate) fn execute_async_module_body(
         &mut self,
         body: spite_parser::ast::FunctionBody,
         root: crate::environment::EnvironmentHandle,
         default_export: Option<usize>,
         record: &ObjectHandle,
         span: Span,
-    ) -> Result<Value, Error> {
+    ) -> Result<(), Error> {
         self.with_module_context(root.clone(), |realm| {
-            realm.call_async_body(span, |realm, capability, _| {
-                realm.object_work(span, |objects, budget| {
-                    objects.begin_module_evaluation(record, capability.promise.clone(), budget)
-                })?;
-                let data = new_execution_data(
-                    ArrowBody::Block(body),
-                    SourceFunctionMode::Module {
-                        capability: capability.clone(),
-                        default_export,
-                    },
-                    Some(root),
-                    span,
-                );
-                realm.drive_async_execution(data, None, None, 1)
-            })
+            realm
+                .call_async_body(span, |realm, capability, _| {
+                    let Value::Object(promise) = &capability.promise else {
+                        unreachable!("intrinsic module body Promise")
+                    };
+                    realm.react_to_native_promise(
+                        promise,
+                        record,
+                        super::async_native::AsyncResumeKind::ModuleExecution,
+                        span,
+                    )?;
+                    let data = new_execution_data(
+                        ArrowBody::Block(body),
+                        SourceFunctionMode::Module {
+                            capability: capability.clone(),
+                            default_export,
+                            record: record.clone(),
+                        },
+                        Some(root),
+                        span,
+                    );
+                    realm.drive_async_execution(data, None, None, 1)
+                })
+                .map(|_| ())
         })
     }
 
@@ -652,6 +661,7 @@ impl Realm {
         };
         let context = data.context.take().expect("suspended source context");
         let asynchronous_generator = data.function.is_async_generator();
+        let module = data.function.module_record().cloned();
         let capability = data.function.promise().cloned();
         let completion = if fulfilled {
             SourceResume::Value(value)
@@ -665,17 +675,22 @@ impl Realm {
             return self.finish_async_generator_execution(state, outcome, span);
         }
         let capability = capability.expect("async source capability");
-        match outcome {
+        let result = match outcome {
             Ok(AsyncBodyOutcome::Yielded(_)) => unreachable!("async body cannot yield"),
-            Ok(AsyncBodyOutcome::Suspended) => (),
+            Ok(AsyncBodyOutcome::Suspended) => Ok(Value::Undefined),
             Ok(AsyncBodyOutcome::Complete(value)) => {
-                self.call(capability.resolve, Value::Undefined, vec![value], span)?;
+                self.call(capability.resolve, Value::Undefined, vec![value], span)
             }
-            Err(error) => {
-                let reason = self.language_exception_value(error)?;
-                self.call(capability.reject, Value::Undefined, vec![reason], span)?;
-            }
+            Err(error) => self.language_exception_value(error).and_then(|reason| {
+                self.call(capability.reject, Value::Undefined, vec![reason], span)
+            }),
+        };
+        if let (Some(record), Err(error)) = (&module, &result)
+            && !error.is_language_exception()
+        {
+            self.abort_module_evaluation(record, error)?;
         }
+        result?;
         Ok(Value::Undefined)
     }
 }
