@@ -52,6 +52,7 @@ impl AsyncGeneratorData {
             .flat_map(Trace::trace)
             .chain(self.start.iter().flat_map(|start| {
                 std::iter::once(Some(&start.callee))
+                    .chain(start.context.module.iter().map(Some))
                     .chain(start.environments().map(|environment| Some(&environment.0)))
             }))
     }
@@ -66,6 +67,9 @@ impl Objects {
     ) -> Result<Handle, Error> {
         budget.charge(1)?;
         self.inspect(&start.callee)?;
+        if let Some(module) = &start.context.module {
+            self.module_source(module)?;
+        }
         for environment in start.environments() {
             self.environment(environment)?;
         }

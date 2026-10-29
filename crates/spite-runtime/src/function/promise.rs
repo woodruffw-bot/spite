@@ -27,22 +27,33 @@ pub(crate) enum PromiseJob {
         promise: ObjectHandle,
         thenable: ObjectHandle,
         then: ObjectHandle,
+        module: Option<ObjectHandle>,
     },
     Reaction {
         reaction: PromiseReaction,
         argument: Value,
+        module: Option<ObjectHandle>,
     },
 }
 
 impl PromiseJob {
+    fn module(&self) -> Option<&ObjectHandle> {
+        match self {
+            Self::Thenable { module, .. } | Self::Reaction { module, .. } => module.as_ref(),
+        }
+    }
+
     pub(crate) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
         let roots = match self {
             Self::Thenable {
                 promise,
                 thenable,
                 then,
+                ..
             } => [Some(promise), Some(thenable), Some(then), None, None],
-            Self::Reaction { reaction, argument } => {
+            Self::Reaction {
+                reaction, argument, ..
+            } => {
                 fn object(value: &Value) -> Option<&ObjectHandle> {
                     if let Value::Object(value) = value {
                         Some(value)
@@ -60,7 +71,7 @@ impl PromiseJob {
                 ]
             }
         };
-        roots.into_iter().flatten()
+        roots.into_iter().flatten().chain(self.module())
     }
 }
 
@@ -299,7 +310,14 @@ impl Realm {
         if let Some((reaction, argument)) = self.object_work(span, |objects, budget| {
             objects.add_promise_reactions(promise, fulfill, reject, budget)
         })? {
-            self.enqueue_promise_job(PromiseJob::Reaction { reaction, argument }, span)?;
+            self.enqueue_promise_job(
+                PromiseJob::Reaction {
+                    reaction,
+                    argument,
+                    module: self.active_module.clone(),
+                },
+                span,
+            )?;
         }
         Ok(result)
     }
@@ -318,7 +336,14 @@ impl Realm {
             let argument = self.object_work(span, |objects, budget| {
                 objects.promise_result(promise, budget)
             })?;
-            self.enqueue_promise_job(PromiseJob::Reaction { reaction, argument }, span)?;
+            self.enqueue_promise_job(
+                PromiseJob::Reaction {
+                    reaction,
+                    argument,
+                    module: self.active_module.clone(),
+                },
+                span,
+            )?;
         }
         Ok(())
     }
@@ -473,6 +498,7 @@ impl Realm {
                 promise,
                 thenable,
                 then,
+                module: self.active_module.clone(),
             },
             span,
         )?;
@@ -570,6 +596,7 @@ impl Realm {
         let caller_variable = self.variable_environment.replace(global);
         let caller_strict = std::mem::replace(&mut self.strict, false);
         let caller_scope_depth = self.scopes.len();
+        let caller_module = std::mem::replace(&mut self.active_module, job.module().cloned());
         self.job_active = true;
         let result = (|| -> Result<(), Error> {
             match job {
@@ -589,7 +616,9 @@ impl Realm {
                         )?;
                     }
                 }
-                PromiseJob::Reaction { reaction, argument } => {
+                PromiseJob::Reaction {
+                    reaction, argument, ..
+                } => {
                     let handler = reaction.handler.clone();
                     let completion = if matches!(reaction.handler, Value::Undefined) {
                         if reaction.fulfill {
@@ -621,6 +650,7 @@ impl Realm {
             }
             Ok(())
         })();
+        self.active_module = caller_module;
         self.job_active = false;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;

@@ -168,6 +168,7 @@ impl Realm {
                     static_elements.push(super::class_static::StaticElement::Block {
                         code: super::ScriptFunction {
                             kind: spite_parser::ast::FunctionKind::Ordinary,
+                            module: self.active_module.clone(),
                             environment: environment.clone(),
                             parameters: Rc::from([]),
                             body: spite_parser::ast::ArrowBody::Block(body.clone()),
@@ -217,6 +218,7 @@ impl Realm {
                             initializer: initializer.as_ref().map(|expression| {
                                 super::class_field::FieldInitializer {
                                     expression: expression.clone(),
+                                    module: self.active_module.clone(),
                                     environment: environment.clone(),
                                     home_object: home.clone(),
                                 }

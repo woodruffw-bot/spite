@@ -12,6 +12,7 @@ pub(crate) enum AsyncResumeKind {
     AsyncGeneratorResumeReturn,
     ModuleExecution,
     ModuleNamespace,
+    ModuleImportLoad,
 }
 
 impl Realm {
@@ -76,7 +77,8 @@ impl Realm {
         let length = if matches!(
             kind,
             AsyncResumeKind::ModuleExecution | AsyncResumeKind::ModuleNamespace
-        ) {
+        ) || (fulfilled && matches!(kind, AsyncResumeKind::ModuleImportLoad))
+        {
             0.0
         } else {
             1.0

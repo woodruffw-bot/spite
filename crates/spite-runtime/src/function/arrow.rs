@@ -14,6 +14,7 @@ use std::{
 pub(crate) struct ScriptFunction {
     pub kind: spite_parser::ast::FunctionKind,
     pub environment: EnvironmentHandle,
+    pub module: Option<crate::ObjectHandle>,
     pub parameters: Rc<[Parameter]>,
     pub body: ArrowBody,
     pub source: FunctionSource,
@@ -38,6 +39,7 @@ impl Realm {
         };
         let arrow = ScriptFunction {
             kind,
+            module: self.active_module.clone(),
             environment: self.scopes.last().expect("active environment").clone(),
             parameters: parameters.clone(),
             body: body.clone(),
@@ -105,6 +107,7 @@ impl Realm {
         let environment = self.object_work(span, |objects, budget| {
             objects.create_environment(Some(arrow.environment), bindings, budget)
         })?;
+        let caller_module = std::mem::replace(&mut self.active_module, arrow.module);
         let caller_strict = self.strict;
         let caller_depth = self.scopes.len();
         let caller_variable = self.variable_environment.replace(environment.clone());
@@ -119,6 +122,7 @@ impl Realm {
             self.instantiate_function_vars(&arrow.parameters, &arrow.body, span)?;
             evaluate_body(self, arrow.body)
         })();
+        self.active_module = caller_module;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);

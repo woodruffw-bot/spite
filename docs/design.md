@@ -600,7 +600,28 @@ its own job, avoids public Promise constructor/then/species hooks, and honors an
 exported then binding's thenable assimilation. The reaction retains the record
 until delivery, and fulfilled namespace Promises retain its live export cells.
 An internal record evaluation entry shares the active host work allowance.
-JavaScript import() still needs a host loading hook connected to this completion.
+JavaScript import() reaches this completion through explicit embedding requests.
+
+Realm::enable_module_imports opts into HostLoadImportedModule requests; ordinary
+realms retain Unsupported for valid loads when no host participates. Operand
+evaluation and string/attribute validation precede request creation. Requests
+retain canonical attributes, the defining Module when present, and a rooted
+intrinsic capability. The embedding takes requests in FIFO order, supplies loaded
+records through finish_module_import, and owns resolution and attribute support.
+Success queues the linking/evaluation continuation rather than entering bodies
+inline; a host-supplied language rejection preserves its original value. Foreign
+handles fail at the public boundary. Native import state traces capabilities and
+target records across collection. Dropping an unfinished request leaves its
+Promise pending.
+
+Functions and field initializers retain their defining Module separately from
+their lexical environment (GetActiveScriptOrModule and OrdinaryFunctionCreate,
+9.4.1/10.2.3). This matters for indirect eval and dynamic Function constructors,
+whose global environments do not identify their originating Module. Source
+contexts restore this identity across ordinary calls, class initialization and
+async/generator suspension. Promise jobs retain the identity active when they
+were enqueued, including jobs invoking builtin eval. Module handles in these
+contexts, functions and jobs participate in ordinary heap tracing.
 
 import.meta caches one ordinary null-prototype object per Source Text Module
 record (13.3.12). The default HostGetImportMetaProperties returns no properties

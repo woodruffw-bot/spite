@@ -361,6 +361,11 @@ impl AsyncExecutionData {
             .generator()
             .into_iter()
             .chain(self.function.module_record())
+            .chain(
+                self.context
+                    .iter()
+                    .filter_map(|context| context.module.as_ref()),
+            )
             .chain(self.frames.iter().filter_map(AsyncStatementFrame::object))
             .chain(
                 self.pattern_binding

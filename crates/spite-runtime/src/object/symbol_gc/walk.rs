@@ -134,6 +134,7 @@ fn object_symbols(
         generator,
         async_generator,
         module_record,
+        module_import,
         // Only record handles and immutable String names; no owning Symbols.
         module_namespace: _,
         array_from_async,
@@ -217,6 +218,11 @@ fn object_symbols(
         }
     }
     if let Some(data) = module_record {
+        for value in data.values() {
+            visit(symbol(value))?;
+        }
+    }
+    if let Some(data) = module_import {
         for value in data.values() {
             visit(symbol(value))?;
         }

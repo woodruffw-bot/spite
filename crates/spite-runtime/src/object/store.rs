@@ -481,6 +481,9 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         self.environment(&arrow.environment)?;
+        if let Some(module) = &arrow.module {
+            self.module_source(module)?;
+        }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Arrow(arrow));
@@ -494,6 +497,9 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(prototype)?;
         self.environment(&function.environment)?;
+        if let Some(module) = &function.module {
+            self.module_source(module)?;
+        }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.constructible = function.kind == spite_parser::ast::FunctionKind::Ordinary;
@@ -509,6 +515,9 @@ impl Objects {
         self.inspect(prototype)?;
         self.inspect(&method.home_object)?;
         self.environment(&method.code.environment)?;
+        if let Some(module) = &method.code.module {
+            self.module_source(module)?;
+        }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.callable = Some(Callable::Method(Box::new(method)));
@@ -556,6 +565,9 @@ impl Objects {
             if let Some(initializer) = &field.initializer {
                 self.environment(&initializer.environment)?;
                 self.inspect(&initializer.home_object)?;
+                if let Some(module) = &initializer.module {
+                    self.module_source(module)?;
+                }
             }
         }
         let Some(Callable::ClassConstructor(class)) = &mut self.object_mut(function)?.callable

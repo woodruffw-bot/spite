@@ -2,6 +2,8 @@
 
 mod async_evaluation;
 mod binding;
+mod dynamic;
+pub use dynamic::ModuleImportRequest;
 mod evaluation;
 mod graph;
 mod import;

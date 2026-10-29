@@ -12,6 +12,7 @@ mod symbol_gc_tests;
 pub(crate) struct FieldInitializer {
     pub expression: Rc<Expr>,
     pub environment: EnvironmentHandle,
+    pub module: Option<ObjectHandle>,
     pub home_object: ObjectHandle,
 }
 
@@ -60,6 +61,7 @@ mod tests {
                 name: ClassFieldName::Public(PropertyKey::from("wrong")),
                 initializer: Some(FieldInitializer {
                     expression: original.expression.clone(),
+                    module: original.module.clone(),
                     environment,
                     home_object,
                 }),
@@ -262,6 +264,7 @@ impl Realm {
                 budget,
             )
         })?;
+        let caller_module = std::mem::replace(&mut self.active_module, initializer.module.clone());
         let caller_depth = self.scopes.len();
         let caller_strict = std::mem::replace(&mut self.strict, true);
         let caller_variable = self.variable_environment.replace(environment.clone());
@@ -270,6 +273,7 @@ impl Realm {
         // and performs NamedEvaluation of anonymous functions/classes (15.2.3).
         let result = self.named_expression(&initializer.expression, name);
         self.scopes.truncate(caller_depth);
+        self.active_module = caller_module;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         result

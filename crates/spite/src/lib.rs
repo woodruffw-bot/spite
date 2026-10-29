@@ -20,6 +20,6 @@ pub use spite_parser::{
     parse_script_with_source_limit,
 };
 pub use spite_runtime::{
-    Collection, ConversionError, Error, ExceptionKind, Limits, ModuleHandle, ObjectHandle,
-    PromiseState, Realm, RootedValue, TimeZone, TimeZoneError, Value,
+    Collection, ConversionError, Error, ExceptionKind, Limits, ModuleHandle, ModuleImportRequest,
+    ObjectHandle, PromiseState, Realm, RootedValue, TimeZone, TimeZoneError, Value,
 };

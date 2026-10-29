@@ -139,6 +139,7 @@ impl Realm {
             objects.create_function_environment(code.environment, bindings, this, context, budget)
         })?;
         let caller_depth = self.scopes.len();
+        let caller_module = std::mem::replace(&mut self.active_module, code.module);
         let caller_strict = self.strict;
         let caller_variable = self.variable_environment.replace(environment.clone());
         let constructor_environment = derived.then(|| environment.clone());
@@ -173,6 +174,7 @@ impl Realm {
             self.instantiate_function_vars(&code.parameters, &code.body, span)?;
             evaluate_body(self, body)
         })();
+        self.active_module = caller_module;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
         self.scopes.truncate(caller_depth);
@@ -315,6 +317,7 @@ impl Realm {
             .clone();
         let code = ScriptFunction {
             kind: syntax.kind,
+            module: self.active_module.clone(),
             environment,
             parameters: syntax.parameters.clone(),
             body: ArrowBody::Block(syntax.body.clone()),

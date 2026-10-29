@@ -1623,6 +1623,9 @@ impl Realm {
                         async_native::AsyncResumeKind::ModuleNamespace => {
                             self.module_namespace_record(&state, span)
                         }
+                        async_native::AsyncResumeKind::ModuleImportLoad => {
+                            self.resume_module_import(state, fulfilled, value, span)
+                        }
                         async_native::AsyncResumeKind::AsyncGeneratorReturn => {
                             self.resume_async_generator_return(state, fulfilled, value, span)
                         }

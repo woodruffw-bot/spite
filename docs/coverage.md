@@ -62,6 +62,33 @@ not an alternative language specification.
 
 
 
+## Dynamic-import embedding requests and active Module contexts
+
+Opted-in realms expose FIFO HostLoadImportedModule requests for JavaScript
+import(). Converted specifiers, canonical attributes, defining Module identity
+and Promise capabilities survive explicit collection. Host completion queues
+linking/evaluation; namespace delivery reuses the existing intrinsic continuation.
+Rejection reasons retain exact value identity, and foreign completion handles
+return host failures before entering trusted object operations. Ordinary realms
+continue to report Unsupported for valid loads without a participating host.
+
+Defining Module identity is independent of lexical scope. Functions created by
+indirect eval or dynamic constructors retain their origin despite global lexical
+environments. Ordinary calls, fields, async/generator resumptions and queued
+builtin eval callbacks restore the correct active context and trace its record.
+
+Ten new Runtime groups cover FIFO/idempotent enabling, deferred body entry,
+fresh Promise/cached namespace identity, attribute getter order and validation,
+cross-caller origin restoration, dynamic functions/eval/classes/suspension,
+queued builtin origins, exact language rejection, async graphs, foreign-handle
+refusal and request/job/capability/Symbol collection. The generic Test262 source
+loader is not yet connected to the opt-in request service.
+
+All 487 Runtime units, 2,275 non-RegExp integrations across 690 files, the full
+20,517-variant corpus and 56 package controls pass. CLI/raw smoke targets, strict
+Clippy, Rust 1.88, policy and inventories pass. Fixture/helper counts, Parser
+coverage, intrinsic entries and default host limits are unchanged.
+
 ## Loaded-record import namespace completion
 
 Realm::import_module_record completes host imports of already-loaded records.

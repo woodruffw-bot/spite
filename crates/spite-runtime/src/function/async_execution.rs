@@ -167,6 +167,15 @@ impl Realm {
             ],
             variable: Some(root.clone()),
             strict: true,
+            module: match &self
+                .objects
+                .environment(&root)
+                .map_err(Error::InvalidObject)?
+                .this
+            {
+                Some(crate::environment::ThisBinding::Module(record)) => Some(record.clone()),
+                _ => unreachable!("Module environment"),
+            },
         };
         self.with_source_execution_context(context, execute)
     }

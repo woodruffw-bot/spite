@@ -23,6 +23,7 @@ impl Realm {
             scopes,
             variable: self.variable_environment.clone(),
             strict: self.strict,
+            module: self.active_module.clone(),
         })
     }
 
@@ -35,11 +36,13 @@ impl Realm {
             scopes: std::mem::replace(&mut self.scopes, context.scopes),
             variable: std::mem::replace(&mut self.variable_environment, context.variable),
             strict: std::mem::replace(&mut self.strict, context.strict),
+            module: std::mem::replace(&mut self.active_module, context.module),
         };
         let result = execute(self);
         self.scopes = caller.scopes;
         self.variable_environment = caller.variable;
         self.strict = caller.strict;
+        self.active_module = caller.module;
         result
     }
 }

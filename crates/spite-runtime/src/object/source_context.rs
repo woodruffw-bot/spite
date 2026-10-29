@@ -7,6 +7,7 @@ pub(crate) struct SourceExecutionContext {
     pub scopes: Vec<EnvironmentHandle>,
     pub variable: Option<EnvironmentHandle>,
     pub strict: bool,
+    pub module: Option<spite_heap::Handle>,
 }
 
 impl SourceExecutionContext {

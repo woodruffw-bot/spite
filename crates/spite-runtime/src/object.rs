@@ -53,6 +53,7 @@ mod private;
 mod promise;
 pub(crate) use promise::PromiseReaction;
 pub use promise::PromiseState;
+mod module_import;
 mod promise_aggregate;
 mod proxy;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
@@ -127,6 +128,7 @@ pub struct OrdinaryObject {
     generator: Option<Box<generator::GeneratorData>>,
     async_generator: Option<Box<async_generator::AsyncGeneratorData>>,
     module_record: Option<Box<module::ModuleData>>,
+    module_import: Option<Box<module_import::ModuleImportData>>,
     module_namespace: Option<Box<module_namespace::NamespaceData>>,
     array_from_async: Option<Box<array_from_async::AsyncArrayData>>,
     disposable_resources: Option<Box<disposable_stack::DisposableResourceList>>,
@@ -179,6 +181,7 @@ impl OrdinaryObject {
             generator: None,
             async_generator: None,
             module_record: None,
+            module_import: None,
             module_namespace: None,
             array_from_async: None,
             disposable_resources: None,
@@ -495,6 +498,12 @@ impl Trace for OrdinaryObject {
             Some(Callable::ClassConstructor(class)) => Some(&class.method.home_object),
             _ => None,
         };
+        let defining_module = match &self.callable {
+            Some(Callable::Arrow(code) | Callable::Ordinary(code)) => code.module.as_ref(),
+            Some(Callable::Method(method)) => method.code.module.as_ref(),
+            Some(Callable::ClassConstructor(class)) => class.method.code.module.as_ref(),
+            _ => None,
+        };
         std::iter::once(self.prototype.as_ref())
             .chain(self.proxy.iter().flat_map(|proxy| {
                 proxy
@@ -523,6 +532,7 @@ impl Trace for OrdinaryObject {
             .chain(self.generator.iter().flat_map(|data| data.trace()))
             .chain(self.async_generator.iter().flat_map(|data| data.trace()))
             .chain(self.module_record.iter().flat_map(|data| data.trace()))
+            .chain(self.module_import.iter().flat_map(|data| data.trace()))
             .chain(self.module_namespace.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
             .chain(self.disposable_resources.iter().flat_map(|resources| {
@@ -543,6 +553,7 @@ impl Trace for OrdinaryObject {
             .chain(self.weak_set.iter().flat_map(|data| data.trace()))
             .chain(std::iter::once(capture))
             .chain(home_object.map(Some))
+            .chain(defining_module.map(Some))
             .chain(self.callable.iter().flat_map(|callable| {
                 let fields = match callable {
                     Callable::ClassConstructor(class) => class.elements.fields.as_ref(),
@@ -555,6 +566,7 @@ impl Trace for OrdinaryObject {
                         [
                             Some(&initializer.environment.0),
                             Some(&initializer.home_object),
+                            initializer.module.as_ref(),
                         ]
                     })
             }))

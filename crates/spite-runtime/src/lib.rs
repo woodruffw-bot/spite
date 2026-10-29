@@ -17,7 +17,7 @@ mod iterator_count;
 #[cfg(test)]
 mod loop_limit_tests;
 mod module;
-pub use module::ModuleHandle;
+pub use module::{ModuleHandle, ModuleImportRequest};
 mod optional_chain;
 mod private;
 mod reference;
@@ -251,7 +251,9 @@ pub struct Realm {
     // One host job is one execution sequence and one work allowance.
     job_active: bool,
     promise_jobs: VecDeque<function::PromiseJob>,
+    active_module: Option<ObjectHandle>,
     module_async_order: usize,
+    module_import_requests: Option<VecDeque<ModuleImportRequest>>,
     time_zone: Option<TimeZone>,
 }
 
@@ -280,7 +282,9 @@ impl Realm {
             kept_alive: Vec::new(),
             job_active: false,
             promise_jobs: VecDeque::new(),
+            active_module: None,
             module_async_order: 0,
+            module_import_requests: None,
             time_zone: None,
         }
     }
@@ -315,6 +319,7 @@ impl Realm {
         self.initialize_realm()?;
         let caller_variable =
             std::mem::replace(&mut self.variable_environment, self.scopes.first().cloned());
+        let caller_module = self.active_module.take();
         let caller_strict = self.strict;
         if !self.job_active {
             self.remaining_steps = self.limits.max_steps;
@@ -331,6 +336,7 @@ impl Realm {
             self.variable_environment = caller_variable;
             self.strict = caller_strict;
         }
+        self.active_module = caller_module;
         result
     }
 

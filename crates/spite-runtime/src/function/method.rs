@@ -37,6 +37,7 @@ impl Realm {
         let method = MethodFunction {
             code: ScriptFunction {
                 kind: syntax.kind,
+                module: self.active_module.clone(),
                 environment: self.scopes.last().expect("active environment").clone(),
                 parameters: syntax.parameters.clone(),
                 body: ArrowBody::Block(syntax.body.clone()),

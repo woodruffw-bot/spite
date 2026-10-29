@@ -110,7 +110,7 @@ pub struct ModuleRequest {
     pub attributes: Vec<ImportAttribute>,
 }
 
-/// One statically specified import attribute.
+/// One string-valued import attribute.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ImportAttribute {
     /// IdentifierName or StringLiteral key value.

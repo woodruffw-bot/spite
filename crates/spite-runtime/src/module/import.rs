@@ -21,17 +21,17 @@ impl Realm {
         }
         let span = Span::new(0, 0);
         let capability = self.intrinsic_promise_capability(span)?;
-        self.continue_module_import(module, capability.clone(), span)?;
+        self.continue_module_import(module.root.handle(), capability.clone(), span)?;
         Ok(capability.promise)
     }
 
-    fn continue_module_import(
+    pub(super) fn continue_module_import(
         &mut self,
-        module: &ModuleHandle,
+        record: &ObjectHandle,
         capability: PromiseCapability,
         span: Span,
     ) -> Result<(), Error> {
-        let evaluation = match self.evaluate_module_record_handle(module.root.handle()) {
+        let evaluation = match self.evaluate_module_record_handle(record) {
             Ok(evaluation) => evaluation,
             Err(error) => {
                 let reason = self.language_exception_value(error)?;
@@ -42,12 +42,8 @@ impl Realm {
         let Value::Object(evaluation) = evaluation else {
             unreachable!("Module evaluation Promise")
         };
-        let handler = self.native_promise_handler(
-            module.root.handle(),
-            AsyncResumeKind::ModuleNamespace,
-            true,
-            span,
-        )?;
+        let handler =
+            self.native_promise_handler(record, AsyncResumeKind::ModuleNamespace, true, span)?;
         self.perform_promise_then(
             &evaluation,
             handler,

@@ -558,6 +558,7 @@ impl Realm {
             .scopes
             .len()
             .checked_add(1)
+            .and_then(|count| count.checked_add(self.active_module.iter().count()))
             .and_then(|count| {
                 count.checked_add(
                     self.intrinsics
@@ -578,6 +579,7 @@ impl Realm {
         let roots = self
             .global_object
             .iter()
+            .chain(self.active_module.iter())
             .chain(self.scopes.iter().map(|scope| &scope.0))
             .chain(
                 self.intrinsics
