@@ -26,6 +26,8 @@ fn pinned_test262_raw_scripts() {
                 | "parse-syntax-error"
                 | "script-pass"
                 | "script-runtime-error"
+                | "script-resolution-error"
+                | "module-fixture"
                 | "harness"
         ) {
             continue;
