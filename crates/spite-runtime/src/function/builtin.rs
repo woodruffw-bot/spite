@@ -47,6 +47,11 @@ impl Realm {
                 self.global_metadata_method(member, this, arguments, span)
             }
             Builtin::Eval => unreachable!("eval dispatched without a native-algorithm frame"),
+            Builtin::DetachArrayBuffer => self.host_detach_array_buffer(arguments, span),
+            Builtin::UnavailableHost(name) => Err(Self::unsupported(
+                span,
+                format!("{name} is not implemented"),
+            )),
             Builtin::Date => self.date_format_local(
                 super::date::Method::ToString,
                 super::date::current_time_value(),

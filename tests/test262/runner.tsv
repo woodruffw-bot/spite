@@ -11008,3 +11008,6 @@ test/built-ins/AsyncGeneratorPrototype/constructor.js	-	-	-
 test/built-ins/AsyncGeneratorPrototype/Symbol.toStringTag.js	-	-	-
 test/language/expressions/await/async-generator-interleaved.js	-	-	-
 test/language/expressions/await/for-await-of-interleaved.js	-	-	-
+test/built-ins/Atomics/notify/retrieve-length-before-index-coercion-non-shared-detached.js	-	-	-
+test/built-ins/Atomics/notify/null-bufferdata-throws.js	-	-	-
+test/built-ins/Atomics/notify/bigint/null-bufferdata-throws.js	-	-	-

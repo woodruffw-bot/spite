@@ -300,7 +300,8 @@ fn unsupported_and_limits_are_never_negative_passes() {
     assert!(matches!(
         runner.run(&original, None, |_| unreachable!()).unwrap()[0].outcome,
         Outcome::Limit {
-            stage: Stage::Runtime,
+            // The same small allowance now expires during native host setup.
+            stage: Stage::Harness,
             ..
         }
     ));
@@ -426,9 +427,13 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
     for body in [
         "print",
         "$DONE",
-        "$262",
+        "$262.createRealm",
         "typeof print",
-        "typeof $262",
+        "typeof $262.createRealm",
+        "$262.evalScript",
+        "$262.agent",
+        "$262.gc",
+        "$262.IsHTMLDDA",
         "delete print",
         "print = 1",
         "var print",
@@ -446,6 +451,10 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
     }
     assert_eq!(
         raw("let print = 1; let $262 = 2; if (print + $262 !== 3) throw 0;"),
+        Outcome::Passed
+    );
+    assert_eq!(
+        raw("if($262.global!==globalThis||typeof $262.detachArrayBuffer!=='function')throw 1"),
         Outcome::Passed
     );
     assert!(matches!(
@@ -519,7 +528,7 @@ fn outcome_snapshot_keeps_non_passing_categories_visible() {
     let outcomes = [
         raw("1"),
         raw("throw 1"),
-        negative("runtime", "ReferenceError", "$262"),
+        negative("runtime", "ReferenceError", "print"),
         negative("parse", "SyntaxError", "@"),
     ];
     insta::assert_debug_snapshot!(outcomes);

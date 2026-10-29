@@ -227,7 +227,10 @@ impl Runner {
             );
         }
         let mut realm = Realm::new(self.limits);
-        realm.reserve_unsupported_global("$262");
+        if let Err(error) = realm.install_test262_host() {
+            return host_failure(&error, Stage::Harness)
+                .unwrap_or_else(|| Outcome::SetupFailure(format!("Test262 host: {error}")));
+        }
         let completion = if asynchronous {
             match AsyncCompletion::install(&mut realm) {
                 Ok(completion) => Some(completion),

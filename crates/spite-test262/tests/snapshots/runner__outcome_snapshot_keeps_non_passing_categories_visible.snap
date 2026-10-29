@@ -10,7 +10,7 @@ expression: outcomes
     },
     Unsupported {
         stage: Runtime,
-        message: "Unsupported at 75..79: $262 is not implemented",
+        message: "Unsupported at 75..80: print is not implemented",
     },
     UnverifiedSyntax(
         Diagnostic {

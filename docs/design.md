@@ -3239,8 +3239,15 @@ grammar is partial, parse-negative passes additionally
 require a reviewed expected diagnostic span and message; an arbitrary syntax error
 is an unverified result, not a conformance pass. Conformance realms reserve missing
 host helper globals, so reading or testing their type reports Unsupported rather
-than producing an accidental ReferenceError or undefined. Ordinary realms receive
-no Test262 globals. Parse-negative tests need no harness evaluation.
+than producing an accidental ReferenceError or undefined. The explicit
+Realm::install_test262_host API installs a partial $262 object with its actual
+global object and native detachArrayBuffer. The detacher validates ordinary
+ArrayBuffer slots and the undefined detach key, then uses DetachArrayBuffer
+without public transfer/species hooks. Unavailable createRealm, evalScript, gc,
+agent and IsHTMLDDA properties have getters that report Unsupported on access,
+including typeof. Ordinary realms receive no Test262 globals unless requested.
+Host setup respects the same optional work allowance; no quota is enlarged to
+initialize these helpers. Parse-negative tests need no harness evaluation.
 
 Runner::run_with_module_loader accepts unmodified Module sources with stable host
 identifiers. It caches Module roots before traversing requests, reuses equal identities

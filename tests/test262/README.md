@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 11094 unmodified test fixtures and twenty-three harness files come from
+These 11097 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Native buffer detachment host
+
+The explicit partial $262 host exposes global identity and native
+detachArrayBuffer. Unavailable facilities still report Unsupported on property
+access. Ordinary runtime realms acquire no test globals by default.
+
+Three whole unchanged Atomics.notify originals now pass their six required modes
+with the unchanged detachArrayBuffer.js helper. They cover detached buffers and
+length capture before index coercion. All Git blob/SHA-256 hashes match the pin.
+Counts are 11,097 fixtures, twenty-four helpers, 11,012 reviewed sources and
+21,088 variants. Existing sources, helpers, limits and worker counts are unchanged.
 
 ## Async-generator requests and Promise interleaving
 

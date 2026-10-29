@@ -64,6 +64,7 @@ mod spread;
 mod string;
 mod symbol;
 mod template;
+mod test262_host;
 mod typed_array;
 mod typed_array_copy;
 mod typed_array_intrinsics;
@@ -83,6 +84,8 @@ pub(crate) use bound::BoundFunction;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Builtin {
+    DetachArrayBuffer,
+    UnavailableHost(&'static str),
     DisposableStack(crate::object::DisposableStackKind),
     DisposableStackMember(crate::object::DisposableStackKind, disposable_stack::Member),
     GlobalMetadataConstructor(global_metadata::Constructor),
@@ -413,6 +416,8 @@ impl Builtin {
     // [[InitialName]] does not change when the public name property is altered.
     fn initial_name(self) -> &'static str {
         match self {
+            Self::DetachArrayBuffer => "detachArrayBuffer",
+            Self::UnavailableHost(name) => name,
             Self::GlobalMetadataConstructor(constructor) => constructor.name(),
             Self::GlobalMetadataMember(member) => member.name(),
             Self::Function => "Function",
@@ -723,6 +728,8 @@ impl Builtin {
 
     fn length(self) -> f64 {
         match self {
+            Self::DetachArrayBuffer => 1.0,
+            Self::UnavailableHost(_) => 0.0,
             Self::GlobalMetadataConstructor(constructor) => constructor.length(),
             Self::GlobalMetadataMember(member) => member.length(),
             Self::Date | Self::DateUtc => 7.0,
