@@ -88,6 +88,14 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
 fn root_expression(data: &AsyncExecutionData, root: ExprRoot) -> &Expr {
     match (&data.body, root) {
         (ArrowBody::Expression(expression), ExprRoot::Arrow) => expression,
+        (ArrowBody::Block(_), ExprRoot::ClassHeritage) => {
+            let StatementKind::Class(class) =
+                &active_statement(&data.body, data.statement.as_ref()).kind
+            else {
+                unreachable!("class declaration source")
+            };
+            class.heritage.as_ref().expect("suspended heritage")
+        }
         (ArrowBody::Block(_), ExprRoot::Statement) => {
             match &active_statement(&data.body, data.statement.as_ref()).kind {
                 StatementKind::Expression(expression)

@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/async_class_heritage.rs"]
+mod async_class_heritage;
+
 #[path = "cases/async_await_labels.rs"]
 mod async_await_labels;
 

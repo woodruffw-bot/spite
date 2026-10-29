@@ -3396,6 +3396,18 @@ to replace it without creating an internal binding for the inferred name.
 
 ## Class heritage and derived constructors
 
+Class declarations can suspend in heritage expressions through Await or Yield
+(15.7.14). Ordinary and suspended evaluation share class-context entry and the
+post-heritage builder. The class name's immutable uninitialized binding and
+strict context precede heritage; body private names remain outside that
+expression's lexical environment. The native continuation traces its class
+environment across suspension. Completion unwinds through that environment's
+identity, so captured source contexts can move between different caller depths.
+Rejection, generator return/throw and host abort restore the enclosing context
+before completion handling; host errors bypass JavaScript handlers. Default
+exports preserve their inferred name before static initialization. Suspension in
+class expressions and computed class names remains separate implementation work.
+
 ClassHeritage evaluates in the strict class-name environment (15.7.14). Null gives
 instances a null prototype while the constructor inherits Function.prototype.
 Other values must be constructors before their prototype property is read; that

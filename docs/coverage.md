@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Suspended class-declaration heritage
+
+Class declarations now await or yield their heritage without replaying effects.
+The common class builder preserves the internal name TDZ, outer private-name
+lookup, superclass/prototype validation, field/static initialization and default
+export naming. Abrupt suspension completion restores scopes and strictness before
+handlers or finalizers. Seven new integration groups include collection while
+suspended, mutable outer versus immutable inner names, generator return/throw,
+module defaults and host-abort isolation. Class-expression and computed-name
+suspension remain deferred.
+
+All 491 Runtime units and 2,302 non-RegExp integrations across 692 files pass.
+The reviewed corpus remains 10,975 fixtures, twenty-two helpers, 10,894 reviewed
+sources and 20,869 variants; this increment adds no upstream originals.
+The full corpus and 62 package controls pass, as do CLI/raw smoke, formatting,
+strict Clippy, Rust 1.88, dependency policy and inventories. Parser case coverage
+remains 88 files, and the host limits remain unchanged.
+
 ## SharedArrayBuffer slicing
 
 Shared slices capture length before start/end conversion and species hooks,

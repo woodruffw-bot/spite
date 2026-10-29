@@ -10,6 +10,7 @@ use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};
 pub(crate) enum ExprRoot {
     Arrow,
     Statement,
+    ClassHeritage,
     IfTest,
     WithObject,
     SwitchDiscriminant,

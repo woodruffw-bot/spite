@@ -4,6 +4,7 @@ mod binding;
 mod binding_object;
 mod binding_pattern;
 mod block;
+mod class_heritage;
 mod completion;
 mod conditional;
 mod delegation;
@@ -73,6 +74,7 @@ fn new_execution_data(
         body,
         expression: None,
         pattern_binding: None,
+        class_heritage: None,
         index: 0,
         statement: None,
         next: None,
@@ -422,6 +424,13 @@ impl Realm {
         let value = match &statement.kind {
             StatementKind::Function(_) => return Ok(Step::Complete(Completion::normal(None))),
             StatementKind::Class(class) => {
+                if class
+                    .heritage
+                    .as_ref()
+                    .is_some_and(expression::has_supported_await)
+                {
+                    return self.start_class_heritage(data);
+                }
                 self.class_definition(class, Some(spite_core::JsString::from("default").into()))?
             }
             StatementKind::Expression(expression)
@@ -451,6 +460,15 @@ impl Realm {
             return self.async_module_default_step(data);
         }
         let statement = active_statement(&data.body, data.statement.as_ref());
+        if let StatementKind::Class(class) = &statement.kind
+            && class
+                .heritage
+                .as_ref()
+                .is_some_and(expression::has_supported_await)
+        {
+            self.tick(statement.span)?;
+            return self.start_class_heritage(data);
+        }
         if matches!(statement.kind, StatementKind::Block(_)) {
             let span = statement.span;
             self.tick(span)?;
@@ -562,6 +580,7 @@ impl Realm {
     ) -> Result<Step, Error> {
         match action {
             AsyncAwaitAction::Discard => Ok(Step::Complete(Completion::normal(Some(value)))),
+            AsyncAwaitAction::ClassHeritage => self.finish_class_heritage(data, value),
             AsyncAwaitAction::ModuleDefault => {
                 let environment = data.root_scope.as_ref().expect("module environment");
                 let span = active_statement(&data.body, data.statement.as_ref()).span;

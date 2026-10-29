@@ -14,12 +14,39 @@ pub(crate) struct ClassConstructor {
     pub elements: super::class_field::InstanceElements,
 }
 
+/// A class name's TDZ and strict context survive a suspended heritage expression.
+#[derive(Debug)]
+pub(crate) struct ClassDefinitionContext {
+    pub environment: crate::environment::EnvironmentHandle,
+    previous_strict: bool,
+}
+
 impl Realm {
     pub(crate) fn class_definition(
         &mut self,
         syntax: &Class,
         inferred_name: Option<PropertyKey>,
     ) -> Result<Value, Error> {
+        let context = self.begin_class_definition(syntax)?;
+        let superclass = match syntax
+            .heritage
+            .as_ref()
+            .map(|heritage| self.expression(heritage))
+            .transpose()
+        {
+            Ok(superclass) => superclass,
+            Err(error) => {
+                self.leave_class_definition(&context);
+                return Err(error);
+            }
+        };
+        self.class_definition_from_heritage(syntax, inferred_name, context, superclass)
+    }
+
+    pub(super) fn begin_class_definition(
+        &mut self,
+        syntax: &Class,
+    ) -> Result<ClassDefinitionContext, Error> {
         let span = syntax.source.span();
         self.ensure_object_intrinsics(span)?;
         let mut bindings = BTreeMap::new();
@@ -35,11 +62,34 @@ impl Realm {
                 },
             );
         }
-        let scope_depth = self.scopes.len();
         self.push_scope(bindings, span)?;
-        let class_environment = self.scopes.last().expect("class environment").clone();
+        let environment = self.scopes.last().expect("class environment").clone();
         let previous_strict = self.strict;
         self.strict = true;
+        Ok(ClassDefinitionContext {
+            environment,
+            previous_strict,
+        })
+    }
+
+    pub(super) fn leave_class_definition(&mut self, context: &ClassDefinitionContext) {
+        while let Some(environment) = self.scopes.pop() {
+            if environment == context.environment {
+                self.strict = context.previous_strict;
+                return;
+            }
+        }
+        unreachable!("active class environment")
+    }
+
+    pub(super) fn class_definition_from_heritage(
+        &mut self,
+        syntax: &Class,
+        inferred_name: Option<PropertyKey>,
+        context: ClassDefinitionContext,
+        superclass: Option<Value>,
+    ) -> Result<Value, Error> {
+        let span = syntax.source.span();
         let result = (|| {
             let mut private_names = BTreeMap::new();
             for element in &syntax.elements {
@@ -51,7 +101,7 @@ impl Realm {
                 }
             }
             let (function_prototype, prototype_parent) = if let Some(heritage) = &syntax.heritage {
-                let superclass = self.expression(heritage)?;
+                let superclass = superclass.expect("evaluated heritage");
                 if matches!(superclass, Value::Null) {
                     (
                         self.intrinsics
@@ -252,15 +302,14 @@ impl Realm {
             })?;
             Ok((function, static_methods, static_elements))
         })();
-        self.strict = previous_strict;
-        self.scopes.truncate(scope_depth);
+        self.leave_class_definition(&context);
         let (function, static_methods, static_elements) = result?;
         let value = Value::Object(function);
         // The name remains uninitialized during *all* computed names. Methods
         // capture this immutable binding, not the mutable declaration binding.
         if let Some(name) = &syntax.name {
             self.objects
-                .environment_mut(&class_environment)
+                .environment_mut(&context.environment)
                 .expect("class environment")
                 .bindings
                 .get_mut(&name.name)

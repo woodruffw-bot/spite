@@ -17,6 +17,7 @@ pub(crate) enum AsyncAwaitAction {
     AsyncGeneratorReturn,
     AsyncGeneratorYield(Span),
     ModuleDefault,
+    ClassHeritage,
     DelegationResult(super::async_expression::DelegationOperation),
     Throw,
     Expression,
@@ -313,6 +314,7 @@ pub(crate) struct AsyncExecutionData {
     pub body: ArrowBody,
     pub expression: Option<super::async_expression::AsyncExpressionData>,
     pub pattern_binding: Option<super::async_binding::AsyncPatternBinding>,
+    pub class_heritage: Option<crate::function::ClassDefinitionContext>,
     pub index: usize,
     pub statement: Option<StatementLocation>,
     pub next: Option<StatementLocation>,
@@ -385,6 +387,11 @@ impl AsyncExecutionData {
             .iter()
             .flat_map(|expression| expression.environments())
             .chain(self.root_scope.iter())
+            .chain(
+                self.class_heritage
+                    .iter()
+                    .map(|context| &context.environment),
+            )
             .chain(
                 self.pattern_binding
                     .iter()
