@@ -265,7 +265,7 @@ impl Realm {
     // PerformPromiseThen (27.2.5.4.1) also serves specification-internal
     // continuations. Without a capability it creates no derived Promise and
     // performs no visible then, constructor or species lookup.
-    pub(super) fn perform_promise_then(
+    pub(crate) fn perform_promise_then(
         &mut self,
         promise: &ObjectHandle,
         on_fulfilled: Value,

@@ -379,6 +379,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Load Test262 static Module sources through stable host identities and relative corpus paths, preserving setup/resolution/runtime failures and imported support-file accounting.
 - [x] Match Test262 resolution negatives only against linking exceptions, excluding parse/setup/resource failures and all harness/body execution.
 - [x] Schedule asynchronous Module dependencies and cycle completion with top-level Await, ordered available ancestors, cycle-root waiting and rejection/host-abort propagation.
+- [x] Complete host-provided loaded-record imports with fresh namespace Promises, intrinsic evaluation reactions, live namespace identity and exported-then assimilation.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

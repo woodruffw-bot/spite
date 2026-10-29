@@ -591,6 +591,17 @@ and preserve completed independent dependencies. Started reaction jobs refused
 before native callback entry use the same abort path; preflight refusals retain
 the queued job for a later host attempt.
 
+Realm::import_module_record completes imports of host-provided loaded records.
+It reuses the cached evaluator and returns a fresh intrinsic Promise for each
+request. Linking exceptions reject that Promise; host failures escape. A native
+reaction on the evaluation Promise supplies the cached namespace using ordinary
+Promise resolution (ContinueDynamicImport, 13.3.10). Thus namespace delivery has
+its own job, avoids public Promise constructor/then/species hooks, and honors an
+exported then binding's thenable assimilation. The reaction retains the record
+until delivery, and fulfilled namespace Promises retain its live export cells.
+An internal record evaluation entry shares the active host work allowance.
+JavaScript import() still needs a host loading hook connected to this completion.
+
 import.meta caches one ordinary null-prototype object per Source Text Module
 record (13.3.12). The default HostGetImportMetaProperties returns no properties
 and HostFinalizeImportMeta does nothing, so the initial object is empty and

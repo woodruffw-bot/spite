@@ -4,6 +4,7 @@ mod async_evaluation;
 mod binding;
 mod evaluation;
 mod graph;
+mod import;
 mod link;
 mod meta;
 mod resolution;
@@ -86,7 +87,16 @@ impl Realm {
     /// returned from this method remain unrooted; the Module handle retains the
     /// Promise until its last clone is dropped.
     pub fn evaluate_module_record(&mut self, module: &ModuleHandle) -> Result<Value, Error> {
-        let record = module.root.handle();
+        if !self.job_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
+        self.evaluate_module_record_handle(module.root.handle())
+    }
+
+    pub(crate) fn evaluate_module_record_handle(
+        &mut self,
+        record: &ObjectHandle,
+    ) -> Result<Value, Error> {
         let record = self
             .objects
             .module_execution(record)
@@ -100,9 +110,6 @@ impl Realm {
             .map_err(Error::InvalidObject)?
         {
             return Ok(promise);
-        }
-        if !self.job_active {
-            self.remaining_steps = self.limits.max_steps;
         }
         self.link_module_record(record, Span::new(0, 0))?;
         self.evaluate_module_graph(record, Span::new(0, 0))

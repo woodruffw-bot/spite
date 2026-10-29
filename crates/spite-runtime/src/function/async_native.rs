@@ -11,6 +11,7 @@ pub(crate) enum AsyncResumeKind {
     AsyncGeneratorReturn,
     AsyncGeneratorResumeReturn,
     ModuleExecution,
+    ModuleNamespace,
 }
 
 impl Realm {
@@ -43,34 +44,44 @@ impl Realm {
         kind: AsyncResumeKind,
         span: Span,
     ) -> Result<(), Error> {
+        let fulfilled = self.native_promise_handler(state, kind, true, span)?;
+        let rejected = self.native_promise_handler(state, kind, false, span)?;
+        self.perform_promise_then(promise, fulfilled, rejected, None, span)?;
+        Ok(())
+    }
+
+    pub(crate) fn native_promise_handler(
+        &mut self,
+        state: &ObjectHandle,
+        kind: AsyncResumeKind,
+        fulfilled: bool,
+        span: Span,
+    ) -> Result<Value, Error> {
         let prototype = self
             .intrinsics
             .as_ref()
             .expect("initialized")
             .function_prototype
             .clone();
-        let mut handlers = [Value::Undefined, Value::Undefined];
-        for (slot, fulfilled) in handlers.iter_mut().zip([true, false]) {
-            let handler = self.object_work(span, |objects, _| {
-                objects.create_async_resume(&prototype, state, kind, fulfilled)
-            })?;
-            self.define_builtin_property(
-                &handler,
-                "name",
-                Value::String(JsString::from("")),
-                false,
-                span,
-            )?;
-            let length = if matches!(kind, AsyncResumeKind::ModuleExecution) {
-                0.0
-            } else {
-                1.0
-            };
-            self.define_builtin_property(&handler, "length", Value::Number(length), false, span)?;
-            *slot = Value::Object(handler);
-        }
-        let [fulfilled, rejected] = handlers;
-        self.perform_promise_then(promise, fulfilled, rejected, None, span)?;
-        Ok(())
+        let handler = self.object_work(span, |objects, _| {
+            objects.create_async_resume(&prototype, state, kind, fulfilled)
+        })?;
+        self.define_builtin_property(
+            &handler,
+            "name",
+            Value::String(JsString::from("")),
+            false,
+            span,
+        )?;
+        let length = if matches!(
+            kind,
+            AsyncResumeKind::ModuleExecution | AsyncResumeKind::ModuleNamespace
+        ) {
+            0.0
+        } else {
+            1.0
+        };
+        self.define_builtin_property(&handler, "length", Value::Number(length), false, span)?;
+        Ok(Value::Object(handler))
     }
 }

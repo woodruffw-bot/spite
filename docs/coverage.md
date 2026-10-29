@@ -62,6 +62,27 @@ not an alternative language specification.
 
 
 
+## Loaded-record import namespace completion
+
+Realm::import_module_record completes host imports of already-loaded records.
+Each call returns a fresh intrinsic Promise while evaluation and namespace
+identity remain cached. Native evaluation reactions deliver the namespace in
+a distinct job without public Promise constructor, then or species hooks.
+Namespace then exports participate in ordinary Promise assimilation. Linking
+and evaluation exceptions reject; host failures bypass rejection and cleanup.
+JavaScript import() still requires a loading hook to reach this completion.
+
+Eight Runtime unit groups cover cached/live namespace identity, distinct import
+Promises, async dependency timing, cycle-member namespaces, link/runtime rejection, poisoned Promise
+properties, callable/non-callable then exports, queued/fulfilled Symbol retention
+and host-aborted bodies that never replay. Internal record evaluation preserves
+one work allowance across the enclosing host operation.
+
+All 477 Runtime units and 2,275 non-RegExp integrations pass, along with the
+20,517-variant corpus, 56 package controls, CLI/raw smoke targets, strict Clippy,
+Rust 1.88 and inventories. Fixtures, helpers, intrinsic entries and default host
+limits are unchanged.
+
 ## Asynchronous Module graphs
 
 The existing iterative Module evaluator now handles top-level Await dependencies
