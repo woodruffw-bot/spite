@@ -1,4 +1,4 @@
-//! SharedArrayBuffer construction, branded lengths and grow (25.2).
+//! SharedArrayBuffer construction, branded lengths, growth and slicing (25.2).
 
 use super::global_metadata::Member;
 use crate::{
@@ -8,6 +8,67 @@ use crate::{
 use spite_core::{JsString, Span};
 
 impl Realm {
+    pub(super) fn shared_array_buffer_slice(
+        &mut self,
+        receiver: Value,
+        start: Value,
+        end: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // 25.2.5.6 snapshots length before conversion or species hooks. Shared
+        // buffers cannot shrink, so later growth does not change the copy range.
+        let data = self.shared_buffer_data(receiver.clone(), span)?;
+        let Value::Object(source) = receiver else {
+            unreachable!("branded shared buffer")
+        };
+        let (original_length, _) = data
+            .metadata()
+            .map_err(|error| Self::shared_buffer_error(error, span))?;
+        let first = self.array_buffer_relative_index(start, original_length, span)?;
+        let end = if matches!(end, Value::Undefined) {
+            original_length
+        } else {
+            self.array_buffer_relative_index(end, original_length, span)?
+        };
+        let length = end.saturating_sub(first);
+        let default = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .global_metadata
+            .shared_array_buffer
+            .clone();
+        let constructor = self.buffer_species_constructor(&source, default, span)?;
+        let result = self.construct(constructor, vec![Value::Number(length as f64)], span)?;
+        let data = self.shared_buffer_data(result.clone(), span)?;
+        let Value::Object(result) = result else {
+            unreachable!("branded shared result")
+        };
+        if self.object_work(span, |objects, _| {
+            objects.same_buffer_data(&source, &result)
+        })? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "SharedArrayBuffer slice species returned its source backing",
+            ));
+        }
+        let (result_length, _) = data
+            .metadata()
+            .map_err(|error| Self::shared_buffer_error(error, span))?;
+        if result_length < length {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "SharedArrayBuffer slice species returned a short buffer",
+            ));
+        }
+        self.array_buffer_work(span, |objects, budget| {
+            objects.copy_array_buffer_bytes(&source, first, &result, 0, length, budget)
+        })?;
+        Ok(Value::Object(result))
+    }
+
     pub(super) fn shared_array_buffer_constructor(
         &mut self,
         new_target: ObjectHandle,

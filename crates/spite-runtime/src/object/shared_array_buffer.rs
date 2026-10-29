@@ -97,6 +97,31 @@ mod tests {
     }
 
     #[test]
+    fn distinct_wrappers_with_one_shared_backing_refuse_raw_self_copy() {
+        let mut objects = Objects::with_limits(None, None);
+        let prototype = objects.create(None).unwrap();
+        let left = objects
+            .create_shared_array_buffer(&prototype, 8, None, &mut unlimited())
+            .unwrap();
+        let data = objects
+            .inspect(&left)
+            .unwrap()
+            .shared_array_buffer_data()
+            .unwrap()
+            .clone();
+        let right = objects.create(Some(&prototype)).unwrap();
+        objects.object_mut(&right).unwrap().shared_array_buffer = Some(data);
+        assert_ne!(left, right);
+        assert!(objects.same_buffer_data(&left, &right).unwrap());
+        for count in [0, 8] {
+            assert_eq!(
+                objects.copy_array_buffer_bytes(&left, 0, &right, 0, count, &mut unlimited()),
+                Err(ArrayBufferError::SameBuffer)
+            );
+        }
+    }
+
+    #[test]
     fn concurrent_cross_page_elements_do_not_tear_and_growth_retains_zero_tail() {
         let data = SharedArrayBufferData::new(8192, Some(16384)).unwrap();
         let threads: Vec<_> = (1..=4u8)

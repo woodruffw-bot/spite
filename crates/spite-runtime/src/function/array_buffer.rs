@@ -376,7 +376,12 @@ impl Realm {
         }
     }
 
-    fn array_buffer_species(&mut self, buffer: &ObjectHandle, span: Span) -> Result<Value, Error> {
+    pub(super) fn buffer_species_constructor(
+        &mut self,
+        buffer: &ObjectHandle,
+        default: ObjectHandle,
+        span: Span,
+    ) -> Result<Value, Error> {
         // SpeciesConstructor (7.3.22) rejects primitive constructors before
         // reading species, and defaults to the intrinsic rather than a binding.
         let constructor = self.get_property(buffer, &JsString::from("constructor"), span)?;
@@ -389,31 +394,24 @@ impl Realm {
                 return Err(Self::exception(
                     ExceptionKind::TypeError,
                     span,
-                    "ArrayBuffer constructor property must be an Object or undefined",
+                    "buffer constructor property must be an Object or undefined",
                 ));
             }
         };
         if matches!(species, Value::Undefined | Value::Null) {
-            return Ok(Value::Object(
-                self.intrinsics
-                    .as_ref()
-                    .expect("initialized")
-                    .array_buffer
-                    .constructor
-                    .clone(),
-            ));
+            return Ok(Value::Object(default));
         }
         if !self.is_constructor(&species, span)? {
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,
-                "ArrayBuffer species must be a constructor",
+                "buffer species must be a constructor",
             ));
         }
         Ok(species)
     }
 
-    fn array_buffer_relative_index(
+    pub(super) fn array_buffer_relative_index(
         &mut self,
         value: Value,
         length: u64,
@@ -444,7 +442,14 @@ impl Realm {
             self.array_buffer_relative_index(end, original.byte_length, span)?
         };
         let length = end.saturating_sub(first);
-        let constructor = self.array_buffer_species(&source, span)?;
+        let default = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .array_buffer
+            .constructor
+            .clone();
+        let constructor = self.buffer_species_constructor(&source, default, span)?;
         let result = self.construct(constructor, vec![Value::Number(length as f64)], span)?;
         let (result, result_state) = self.array_buffer_receiver(result, span)?;
         Self::array_buffer_attached(result_state, span)?;

@@ -153,7 +153,7 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     let operations = [
         "Atomics.load(new Int32Array(new SharedArrayBuffer(4)),0)",
         "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)",
-        "SharedArrayBuffer.prototype.slice.call({},0,0)",
+        "Atomics.exchange(new Int32Array(new SharedArrayBuffer(4)),0,1)",
     ];
     let mut realm = Realm::default();
     realm.eval("let flag=0,hits=0,order=0;function NewTarget(){}let bound=NewTarget.bind(null);Object.defineProperty(bound,'prototype',{get(){order+=100;throw 7;}})").unwrap();

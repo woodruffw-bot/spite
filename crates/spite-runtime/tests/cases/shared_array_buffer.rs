@@ -120,7 +120,7 @@ fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
     for operation in [
         "Atomics.load(new Int32Array(b),0)",
         "Atomics.wait(new Int32Array(b),0,0,0)",
-        "b.slice(0,1)",
+        "Atomics.exchange(new Int32Array(b),0,1)",
     ] {
         let mut realm = Realm::default();
         realm.eval("let b=new SharedArrayBuffer(4),flag=0,hits=0;Object.defineProperty(b,'length',{get(){hits++;throw 1}});Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}})").unwrap();
@@ -278,4 +278,119 @@ fn shared_and_ordinary_copy_directions_preserve_independent_values_and_conversio
         wider.length===8&&wider[0]===9&&wider.buffer instanceof ArrayBuffer&&wider[7]===8
     "#,
     );
+}
+
+#[test]
+fn slice_clamps_indices_copies_independently_and_returns_fixed_buffers() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(8,{maxByteLength:16}),a=new Uint8Array(b);a.set([1,2,3,4,5,6,7,8]);
+        for(let [start,end,expected] of [[undefined,undefined,'1,2,3,4,5,6,7,8'],[-3,-1,'6,7'],[-Infinity,2,'1,2'],[2,Infinity,'3,4,5,6,7,8'],[6,2,''],[Infinity,undefined,''],[NaN,2.9,'1,2']]){
+            let result=b.slice(start,end);
+            if(result===b||result.growable||result.maxByteLength!==result.byteLength||new Uint8Array(result).join(',')!==expected)throw 1;
+            if(result.byteLength)new Uint8Array(result)[0]=99;
+        }
+        a[0]===1&&b.byteLength===8&&b.growable
+    "#,
+    );
+}
+
+#[test]
+fn slice_snapshots_length_before_hooks_and_reads_bytes_after_species_effects() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(4,{maxByteLength:16}),a=new Uint8Array(b);a.set([1,2,3,4]);
+        let order=[],target=new SharedArrayBuffer(8,{maxByteLength:16});new Uint8Array(target).fill(99);
+        Object.defineProperty(b,'constructor',{get(){order.push('constructor');return {[Symbol.species]:function(length){order.push('species:'+length);b.grow(16);a[2]=77;return target}}}});
+        let result=b.slice({valueOf(){order.push('start');b.grow(8);return -2}},{valueOf(){order.push('end');b.grow(12);return Infinity}});
+        result===target&&result.growable&&new Uint8Array(result).join(',')==='77,4,99,99,99,99,99,99'&&
+        order.join(',')==='start,end,constructor,species:2'&&b.byteLength===16
+    "#,
+    );
+}
+
+#[test]
+fn slice_brands_receivers_before_conversion_and_rejects_invalid_species_results() {
+    check(
+        r#"
+        let hits=0,argument={valueOf(){hits++;throw 1}},slice=SharedArrayBuffer.prototype.slice;
+        for(let receiver of [undefined,null,0,{},new ArrayBuffer(4),new Proxy(new SharedArrayBuffer(4),{})]){
+            let threw=false;try{slice.call(receiver,argument,argument)}catch(e){threw=e instanceof TypeError}if(!threw||hits)throw 2;
+        }
+        let b=new SharedArrayBuffer(4);
+        for(let bad of [{},new ArrayBuffer(4),new SharedArrayBuffer(1),b,new Proxy(new SharedArrayBuffer(4),{})]){
+            b.constructor={[Symbol.species]:function(){return bad}};
+            let threw=false;try{b.slice(0,2)}catch(e){threw=e instanceof TypeError}if(!threw)throw 3;
+        }
+        for(let constructor of [null,1,'x']){
+            b.constructor=constructor;
+            let threw=false;try{b.slice()}catch(e){threw=e instanceof TypeError}if(!threw)throw 4;
+        }
+        for(let species of [1,{},()=>{}]){
+            b.constructor={[Symbol.species]:species};
+            let threw=false;try{b.slice()}catch(e){threw=e instanceof TypeError}if(!threw)throw 5;
+        }
+        true
+    "#,
+    );
+}
+
+#[test]
+fn slice_preserves_abrupt_values_and_defaults_to_captured_intrinsic_constructor() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(4),original=SharedArrayBuffer,marker={},order='';
+        Object.defineProperty(b,'constructor',{configurable:true,get(){order+='c';throw marker}});
+        try{b.slice({valueOf(){order+='s';return 0}},{valueOf(){order+='e';return 1}})}catch(e){if(e!==marker)throw e}
+        if(order!=='sec')throw 1;
+        Object.defineProperty(b,'constructor',{value:{get [Symbol.species](){throw marker}},writable:true});
+        let threw=false;try{b.slice()}catch(e){threw=e===marker}if(!threw)throw 2;
+        SharedArrayBuffer=function(){throw 3};
+        for(let constructor of [undefined,{[Symbol.species]:undefined},{[Symbol.species]:null}]){
+            b.constructor=constructor;let result=b.slice(1,3);
+            if(Object.getPrototypeOf(result)!==original.prototype||result.byteLength!==2||result.growable)throw 4;
+        }
+        true
+    "#,
+    );
+}
+
+#[test]
+fn slice_keeps_raw_payloads_sparse_pages_and_safe_integer_offsets() {
+    check(
+        r#"
+        let b=new SharedArrayBuffer(8192),d=new DataView(b),bits=0x7ff8000000000001n;
+        d.setBigUint64(4093,bits,true);
+        let copy=b.slice(4093,4101);
+        if(new DataView(copy).getBigUint64(0,true)!==bits)throw 1;
+        let huge=new SharedArrayBuffer(9007199254740991),tail=new DataView(huge,9007199254740987,4);tail.setUint32(0,0x12345678);
+        let small=huge.slice(-4);
+        small.byteLength===4&&new DataView(small).getUint32(0)===0x12345678&&huge.slice(9007199254740991).byteLength===0
+    "#,
+    );
+}
+
+#[test]
+fn slice_host_failures_bypass_language_handlers_and_preserve_existing_buffers() {
+    for hook in [
+        "b.slice({valueOf(){import('unavailable');return 0}})",
+        "b.constructor={get [Symbol.species](){import('unavailable')}};b.slice()",
+        "b.constructor={[Symbol.species]:function(){import('unavailable');return b}};b.slice()",
+    ] {
+        let mut realm = Realm::default();
+        realm
+            .eval("let b=new SharedArrayBuffer(4),a=new Uint8Array(b),flag=0;a[0]=7")
+            .unwrap();
+        assert!(
+            matches!(
+                realm.eval(&format!("try{{{hook}}}catch{{flag=1}}finally{{flag=2}}")),
+                Err(Error::Unsupported { .. })
+            ),
+            "{hook}"
+        );
+        assert_eq!(
+            realm.eval("flag===0&&b.byteLength===4&&a[0]===7"),
+            Ok(Value::Boolean(true))
+        );
+    }
 }

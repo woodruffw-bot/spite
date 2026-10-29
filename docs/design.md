@@ -4267,7 +4267,7 @@ and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
 Promise reactions/combinators and SharedArrayBuffer construction and views run
-their algorithms. Shared slicing and shared Atomics retain explicit Unsupported
+their algorithms. Shared Atomics retain explicit Unsupported
 results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
@@ -4300,8 +4300,18 @@ locking the target, preserving target changes outside the destination range.
 Backing identity detects aliasing even through cloned native shared handles.
 This serialized byte access does not implement shared Atomics or an agent host;
 shared Atomics explicitly refuse instead of composing separate reads and writes.
-Slice and agent integration remain implementation work. Multipebibyte eager-allocation
+Agent integration remains implementation work. Multipebibyte eager-allocation
 assumptions do not define a default quota for the logical buffer domain.
+
+SharedArrayBuffer.prototype.slice (25.2.5.6) snapshots source length before
+converting start/end and invoking SpeciesConstructor. It shares the ordinary
+buffer index and species helpers, with the retained SharedArrayBuffer intrinsic
+as default. The species result must have a shared-buffer brand, a distinct
+backing identity and sufficient current length, even for an empty copy. Growth
+inside conversion or species hooks does not expand the initial copy range;
+byte mutations made by hooks are observed when copying. Longer/growable species
+results keep bytes outside the destination range. No user callback runs while a
+shared storage lock is held. Host failure remains distinct from JS exceptions.
 
 NewPromiseCapability (27.2.1.5) constructs through the supplied constructor and
 uses a native executor with standard empty-name/length-two metadata. Its private

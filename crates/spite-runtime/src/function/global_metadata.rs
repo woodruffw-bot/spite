@@ -493,6 +493,12 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match member {
+            Member::SharedArrayBufferSlice => self.shared_array_buffer_slice(
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Member::SharedArrayBufferByteLength
             | Member::SharedArrayBufferGrowable
             | Member::SharedArrayBufferMaxByteLength
