@@ -11556,3 +11556,10 @@ parse-syntax-error	4205d9d761df7d9a78d777358bad735d021ef635878237f11e07ead31a841
 parse-syntax-error	f5b1c2cc48d85d787d13658f8f7c01cf6472851971e1cc0b11bfba59ea05f09b	test/language/asi/S7.9_A9_T8.js
 script-pass	c83527ee42067da8a139a474beb2781a612abb9a7cd8f9ee939bc18eaeb21ecc	test/language/asi/S7.9_A9_T9.js
 script-pass	453063be6be63f9182e9c4b77391e6621a9c36c48b7a5acac4e7264b8dcdfb9b	test/language/asi/do-while-same-line.js
+script-pass	459f488c29885d2b5b9e8ae5d8506ac1b76654be41a1cb9109016160b007ab6e	test/built-ins/Atomics/wait/false-for-timeout.js
+script-pass	8e54e4d26098da74a16f0a87ebe0166da7c5f139088600cbcfefe843b55a2bfb	test/built-ins/Atomics/wait/negative-timeout.js
+script-pass	74cd4a05501ced70d81d297bdb726732e554738a45f60c3ae079173c3bd1375b	test/built-ins/Atomics/wait/null-for-timeout.js
+script-pass	3e7fccb90cd4932270f729322bde5da5efce8e91165827fe7853c5c6b80f4329	test/built-ins/Atomics/wait/object-for-timeout.js
+script-pass	f3f60f9182f295f3dbb3faf4e77c1af6862b3910c444b42c6bfa7746fccbc3f8	test/built-ins/Atomics/wait/true-for-timeout.js
+script-pass	0bf627f3b7354bbb37d02abc8c3ca4774873fe3cf87472849920c3572a434b39	test/built-ins/Atomics/wait/bigint/false-for-timeout.js
+script-pass	bf49f8eb232a16c35d2f4f1b1942e71658ded2de87eb086648c9a5bd089d3d6c	test/built-ins/Atomics/wait/bigint/negative-timeout.js

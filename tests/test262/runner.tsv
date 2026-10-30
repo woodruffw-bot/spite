@@ -11447,3 +11447,10 @@ test/language/asi/S7.9_A9_T7.js	362	362	expected an expression
 test/language/asi/S7.9_A9_T8.js	351	352	expected while
 test/language/asi/S7.9_A9_T9.js	-	-	-
 test/language/asi/do-while-same-line.js	-	-	-
+test/built-ins/Atomics/wait/false-for-timeout.js	-	-	-
+test/built-ins/Atomics/wait/negative-timeout.js	-	-	-
+test/built-ins/Atomics/wait/null-for-timeout.js	-	-	-
+test/built-ins/Atomics/wait/object-for-timeout.js	-	-	-
+test/built-ins/Atomics/wait/true-for-timeout.js	-	-	-
+test/built-ins/Atomics/wait/bigint/false-for-timeout.js	-	-	-
+test/built-ins/Atomics/wait/bigint/negative-timeout.js	-	-	-

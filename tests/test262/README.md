@@ -1,9 +1,22 @@
 # Test262 regression fixtures
 
-These 11533 unmodified test fixtures and twenty-four harness files come from
+These 11540 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## CanBlockIsTrue host configuration
+
+CanBlockIsTrue now selects a real suspending Realm per variant; unflagged tests
+and CanBlockIsFalse retain the default policy. One runner control verifies
+Script/raw/Module behavior, genuine runtime negatives and unavailable agent-host
+operations remaining non-passing host failures. Seven whole unchanged originals
+pass all fourteen modes with Git blob/SHA-256 verification before admission.
+They cover Int32/BigInt64 timeout conversions without requiring worker hosting.
+
+Counts are 11,540 fixtures, twenty-four helpers, 11,455 reviewed sources, 21,973
+variants and 73 controls; native case files remain 698/88. No source rewrites,
+helper changes, worker counts, default quotas or test allowances are introduced.
 
 ## Explicit suspending runtime agents
 

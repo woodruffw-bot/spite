@@ -59,9 +59,28 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21959 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21973 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspending Test262 host configuration
+
+CanBlockIsTrue now creates a real suspending Realm for each selected variant.
+CanBlockIsFalse and unflagged tests retain the nonsuspending default; contradictory
+flags remain metadata errors. Both configurations use the same optional limits.
+A new runner control covers Script, raw and Module execution, genuine TypeError
+negatives, normal wait results that must fail a negative expectation, and the
+still-unavailable agent host bypassing catch/finally instead of faking an error.
+
+Seven whole unchanged originals pass all fourteen required modes before admission
+and retain their verified Git blob and SHA-256 hashes. They exercise false, null,
+negative, true and object timeout conversions for Int32 and BigInt64 waits.
+No upstream source, metadata, harness files, worker counts or quotas change.
+Counts are 11,540 fixtures, twenty-four helpers, 11,455 reviewed sources, 21,973
+variants and 73 runner controls; native case files remain 698 Runtime/88 Parser.
+The full 21,973-variant corpus and all 73 runner controls pass. Formatting, strict
+workspace Clippy, Rust 1.99 all-targets checking, CLI/raw checks and all
+dependency/inventory gates pass.
 
 ## Explicit suspending agents and synchronous waits
 

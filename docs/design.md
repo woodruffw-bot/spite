@@ -4715,7 +4715,8 @@ capture avoids JavaScript callbacks or repeated execution-budget charges during
 idle polling. Once $DONE is recorded, unrelated future timers do not delay test
 completion. Timer expiration cannot stand in for $DONE, and real reaction throws
 retain their runtime phase and constructor identity. Test262 CanBlockIsFalse runs against this
-actual host policy; CanBlockIsTrue remains an unsupported host configuration.
+actual host policy. CanBlockIsTrue constructs a fresh suspending Realm; each
+case keeps its policy throughout Script or Module execution.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
 for widths one, two, and eight; width four always returns true. Test262 agent
 hosting remains deferred. Native thread
@@ -4744,8 +4745,11 @@ failure without canceling unrelated asynchronous jobs. Failures bypass JS catch,
 finally and disposal and never fabricate a normal wait result; an aborted
 notifier may leave another agent's infinite wait suspended. The embedding still
 controls agent lifetime and services asynchronous jobs at idle boundaries.
-The default Test262 runner remains nonsuspending, so CanBlockIsTrue and the
-Test262 agent host remain unavailable pending their host adapter.
+The Test262 runner selects this explicit policy for CanBlockIsTrue, while
+CanBlockIsFalse and unflagged cases keep the nonsuspending default. Contradictory
+flags remain metadata errors. The same optional limits apply to both policies;
+there is no reset inside a blocking call. The Test262 agent host is still
+unavailable and never turns a negative case into a pass.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
 ([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,

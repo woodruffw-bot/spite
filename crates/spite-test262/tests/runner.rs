@@ -518,19 +518,71 @@ fn nonsuspending_agent_flag_runs_real_wait_validation_and_exception_checks() {
 }
 
 #[test]
-fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
-    for flags in ["[async, raw]", "[CanBlockIsTrue]"] {
-        let cases = Runner::default()
-            .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {
-                panic!("unsupported host loaded harness")
-            })
-            .unwrap();
+fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
+    let run = |metadata: &str, body: &str| {
+        Runner::default()
+            .run(&source(metadata, body), None, |_| Ok("".into()))
+            .unwrap()
+    };
+    for flags in [
+        "[CanBlockIsTrue]",
+        "[CanBlockIsTrue, module]",
+        "[CanBlockIsTrue, raw]",
+    ] {
+        let cases = run(
+            &format!("flags: {flags}"),
+            "let a=new Int32Array(new SharedArrayBuffer(8)),b=new BigInt64Array(a.buffer);if(Atomics.wait(a,0,1,1)!=='not-equal'||Atomics.wait(a,0,0,0)!=='timed-out'||Atomics.wait(b,0,0n,true)!=='timed-out')throw 7",
+        );
         assert!(
             cases
                 .iter()
-                .all(|case| matches!(case.outcome, Outcome::Unsupported { .. }))
+                .all(|case| matches!(case.outcome, Outcome::Passed)),
+            "{cases:?}"
         );
     }
+    for (body, passed) in [
+        ("Atomics.wait(new Int32Array(4),0,0,0)", true),
+        (
+            "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)",
+            false,
+        ),
+    ] {
+        let cases = run(
+            "flags: [CanBlockIsTrue]\nnegative:\n  phase: runtime\n  type: TypeError",
+            body,
+        );
+        assert_eq!(
+            cases
+                .iter()
+                .all(|case| matches!(case.outcome, Outcome::Passed)),
+            passed,
+            "{cases:?}"
+        );
+    }
+    let cases = run(
+        "flags: [CanBlockIsTrue]\nnegative:\n  phase: runtime\n  type: TypeError",
+        "try{$262.agent}catch(e){throw new TypeError()}finally{throw new TypeError()}",
+    );
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::Unsupported { .. })),
+        "{cases:?}"
+    );
+}
+
+#[test]
+fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
+    let cases = Runner::default()
+        .run(&source("flags: [async, raw]", "throw 7"), None, |_| {
+            panic!("unsupported host loaded harness")
+        })
+        .unwrap();
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::Unsupported { .. }))
+    );
     for flags in ["[module]", "[module, raw]"] {
         let cases = Runner::default()
             .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {

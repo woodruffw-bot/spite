@@ -100,7 +100,8 @@ impl Runner {
     /// Parse and resolution negatives never evaluate harness code or test bodies. Async
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
     /// Promise jobs. Module parse negatives use the Module goal and the same exact
-    /// review checks; module dependencies, raw async harness setup, and agent settings
+    /// review checks. CanBlockIsTrue selects a real suspending agent; other cases
+    /// use the nonsuspending default. Raw async harness setup and agent hosting
     /// remain explicitly unsupported. Host helper names are reserved so missing helpers
     /// cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.
@@ -223,13 +224,11 @@ impl Runner {
                 "raw asynchronous Test262 harness setup is not implemented",
             );
         }
-        if metadata.has_flag("CanBlockIsTrue") {
-            return unsupported(
-                Stage::Harness,
-                "Test262 agent configuration is not implemented",
-            );
-        }
-        let mut realm = Realm::new(self.limits);
+        let mut realm = if metadata.has_flag("CanBlockIsTrue") {
+            Realm::new_suspending(self.limits)
+        } else {
+            Realm::new(self.limits)
+        };
         if let Err(error) = realm.install_test262_host() {
             return host_failure(&error, Stage::Harness)
                 .unwrap_or_else(|| Outcome::SetupFailure(format!("Test262 host: {error}")));
