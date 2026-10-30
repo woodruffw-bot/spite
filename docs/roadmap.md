@@ -475,7 +475,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prepare shared page ownership with safe standard-library types and implement native atomic load/store, exchange, compareExchange and arithmetic/bitwise memory steps.
 - [x] Validate waiting arguments for the nonsuspending host and return immediate asynchronous mismatch/zero-timeout records with faithful Test262 CanBlockIsFalse handling.
 - [x] Register rooted infinite asynchronous waits by backing/byte offset, notify them in FIFO order with inline native settlement and retire Realm-owned waiters.
-- [ ] Implement timed asynchronous waits, inter-agent notification, suspending agents and agent hosting.
+- [x] Service finite asynchronous wait timeouts at idle host boundaries with overflow-safe monotonic deadlines, rooted responses and Test262 timer progress.
+- [ ] Implement inter-agent notification, suspending agents and agent hosting.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.

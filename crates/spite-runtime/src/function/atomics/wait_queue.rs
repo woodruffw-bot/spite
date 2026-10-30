@@ -4,6 +4,10 @@ use super::super::PromiseCapability;
 use crate::{Error, Realm, Value, object};
 use spite_core::{JsString, Span};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
+
+mod timeout;
+use timeout::WaitTimeout;
 
 #[derive(Debug)]
 struct PendingWait {
@@ -11,6 +15,7 @@ struct PendingWait {
     backing: object::SharedArrayBufferData,
     capability: PromiseCapability,
     _roots: [object::Root; 3],
+    timeout: Option<WaitTimeout>,
 }
 
 #[derive(Debug)]
@@ -31,6 +36,10 @@ impl Drop for WaitRegistry {
 }
 
 impl Realm {
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "validated storage, capability and timeout"
+    )]
     pub(super) fn register_atomic_wait(
         &mut self,
         backing: object::SharedArrayBufferData,
@@ -38,6 +47,7 @@ impl Realm {
         access: &object::shared_page::PreparedAtomic,
         expected: u64,
         capability: PromiseCapability,
+        timeout: f64,
         span: Span,
     ) -> Result<bool, Error> {
         let roots = [
@@ -81,6 +91,9 @@ impl Realm {
             backing,
             capability,
             _roots: roots,
+            timeout: timeout
+                .is_finite()
+                .then(|| WaitTimeout::new(timeout, Instant::now())),
         });
         Ok(true)
     }
@@ -124,11 +137,140 @@ impl Realm {
         }
         Ok(count)
     }
+
+    /// Returns a scheduling hint for the next finite asynchronous wait timeout.
+    ///
+    /// Infinite waits have no deadline. This query does not initialize a Realm
+    /// or run JavaScript; evaluation never sleeps or starts background timers.
+    pub fn next_atomics_wait_delay(&self) -> Option<Duration> {
+        let now = Instant::now();
+        self.atomic_waits
+            .as_ref()?
+            .pending
+            .iter()
+            .filter_map(|wait| wait.timeout.map(|timeout| timeout.remaining(now)))
+            .min()
+    }
+
+    /// Services one expired asynchronous wait as an idle host job.
+    ///
+    /// Resolving its Promise queues reactions without calling JavaScript.
+    /// No due timer returns false without changing execution state. Active
+    /// execution is rejected. The job uses the configured optional work budget;
+    /// failure before removal preserves the waiter, while later host failures
+    /// can leave the Promise unsettled and never become JavaScript rejections.
+    pub fn run_next_atomics_wait_job(&mut self) -> Result<bool, Error> {
+        let span = Span::new(0, 0);
+        if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
+            return Err(Error::Host {
+                span,
+                message: "cannot service an Atomics timeout during active execution".into(),
+            });
+        }
+        let now = Instant::now();
+        let Some((id, backing, owner, work)) = self.atomic_waits.as_ref().and_then(|waits| {
+            waits
+                .pending
+                .iter()
+                .find(|wait| wait.timeout.is_some_and(|timeout| timeout.expired(now)))
+                .map(|wait| {
+                    (
+                        wait.id,
+                        wait.backing.clone(),
+                        waits.owner.clone(),
+                        waits.pending.len(),
+                    )
+                })
+        }) else {
+            return Ok(false);
+        };
+        self.clear_kept_objects()?;
+        let caller_work = self.remaining_steps;
+        self.remaining_steps = self.limits.max_steps;
+        self.job_active = true;
+        let result = (|| {
+            self.object_work(span, |_, budget| budget.charge(work + 1))?;
+            let mut batch = self.buffer_value_work(span, |_, budget| {
+                backing.take_timed_waiter(id, &owner, budget)
+            })?;
+            let removed = !batch.take_ids().is_empty();
+            let waits = self.atomic_waits.as_mut().expect("timed wait registry");
+            let position = waits
+                .pending
+                .iter()
+                .position(|wait| wait.id == id)
+                .expect("selected timed waiter");
+            let wait = waits.pending.remove(position);
+            // A previous aborted notification may already have removed the
+            // native entry. Retiring that record must not invent a resolution.
+            if removed {
+                self.call(
+                    wait.capability.resolve.clone(),
+                    Value::Undefined,
+                    vec![Value::String(JsString::from("timed-out"))],
+                    span,
+                )?;
+            }
+            Ok(true)
+        })();
+        self.job_active = false;
+        self.remaining_steps = caller_work;
+        result
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn timer_jobs_are_inert_without_due_work_and_reject_active_execution() {
+        let mut realm = Realm::new(crate::Limits {
+            max_steps: Some(0),
+            ..crate::Limits::default()
+        });
+        assert!(realm.next_atomics_wait_delay().is_none());
+        assert!(!realm.run_next_atomics_wait_job().unwrap());
+        assert!(realm.intrinsics.is_none());
+        assert_eq!(realm.remaining_steps, Some(0));
+        realm.call_depth = 1;
+        assert!(matches!(
+            realm.run_next_atomics_wait_job(),
+            Err(Error::Host { .. })
+        ));
+        realm.call_depth = 0;
+        realm.evaluation_depth = 1;
+        assert!(matches!(
+            realm.run_next_atomics_wait_job(),
+            Err(Error::Host { .. })
+        ));
+        realm.evaluation_depth = 0;
+        realm.job_active = true;
+        assert!(matches!(
+            realm.run_next_atomics_wait_job(),
+            Err(Error::Host { .. })
+        ));
+    }
+
+    #[test]
+    fn timer_job_work_refusal_preserves_waiter_and_restores_caller_allowance() {
+        let mut realm = Realm::default();
+        realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),result='';Atomics.waitAsync(a,0,0,1).value.then(v=>result=v);").unwrap();
+        std::thread::sleep(Duration::from_millis(2));
+        realm.limits.max_steps = Some(0);
+        realm.remaining_steps = Some(77);
+        assert!(matches!(
+            realm.run_next_atomics_wait_job(),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(realm.remaining_steps, Some(77));
+        assert!(!realm.job_active);
+        realm.limits.max_steps = None;
+        assert_eq!(realm.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+        assert!(realm.next_atomics_wait_delay().is_none());
+        realm.run_next_promise_job().unwrap();
+        assert_eq!(realm.eval("result==='ok'"), Ok(Value::Boolean(true)));
+    }
 
     #[test]
     fn dropping_the_realm_retires_its_native_waiters() {

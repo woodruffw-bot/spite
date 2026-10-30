@@ -4379,7 +4379,7 @@ Proxy has no prototype property; Atomics is a namespace, not a function.
 Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
 immediate asynchronous results and current-agent notification queues are supported;
-timed waits and inter-agent notification retain Unsupported results. Proxy algorithms are
+inter-agent notification and agent hosting retain Unsupported results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4642,14 +4642,37 @@ returns { async: false, value: "not-equal" }; an equal value with a normalized z
 timeout returns { async: false, value: "timed-out" }. The properties are created
 in that order with writable/enumerable/configurable attributes, bypassing
 inherited setters and poisoned global constructors. Mismatch precedes timeout.
-An equal value with an infinite timeout (including omitted/NaN timeouts) returns
-{ async: true, value: promise } and registers a real rooted waiter. The result's
-properties and registry capacity are prepared before registration. Matching finite
-positive waits remain Unsupported; no timer or substitute response is registered. Test262 CanBlockIsFalse runs against this
+An equal value with a positive timeout returns { async: true, value: promise }
+and registers a real rooted waiter. Omitted/NaN/infinite timeouts have no deadline.
+The result's properties and registry capacity are prepared before registration.
+Finite positive delays use the standard monotonic clock, starting after native
+registration, rounded upward to whole milliseconds as nonnegative implementation
+padding. A saturating u128 millisecond interval represents huge finite Numbers
+without Instant addition or early expiration; only the host scheduling hint is
+bounded to Duration's range.
+
+Evaluation starts no background timer and never sleeps. The explicit idle host
+API run_next_atomics_wait_job services one expired request, removes its native
+record under the waiter-list critical section and resolves with "timed-out";
+reactions run as ordinary Promise jobs. next_atomics_wait_delay supplies the next
+scheduling hint. A notification that removes the record before the timeout job
+wins, even if the clock deadline has passed. Empty/not-due service is inert;
+active execution is rejected. Each started job clears kept objects before its
+new configured optional work allowance. Refusal before removal preserves the
+waiter, and every exit restores caller work/job state. Later host failure may
+leave an unsettled response, as for other aborted host jobs.
+
+The Test262 host services due timer jobs at idle checkpoints. With no Promise
+jobs it waits in short intervals only while asynchronous completion or Module
+evaluation is pending. A private physical inspection of its original print
+capture avoids JavaScript callbacks or repeated execution-budget charges during
+idle polling. Once $DONE is recorded, unrelated future timers do not delay test
+completion. Timer expiration cannot stand in for $DONE, and real reaction throws
+retain their runtime phase and constructor identity. Test262 CanBlockIsFalse runs against this
 actual host policy; CanBlockIsTrue remains an unsupported host configuration.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Finite timed waits, inter-agent
-notification, suspending agents and agent hosting remain deferred. Native thread
+for widths one, two, and eight; width four always returns true. Inter-agent notification, suspending agents
+and agent hosting remain deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined

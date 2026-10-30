@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 11430 unmodified test fixtures and twenty-four harness files come from
+These 11431 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Finite asynchronous wait timeout jobs
+
+Finite positive waitAsync timeouts use overflow-safe monotonic deadlines and
+explicit idle host jobs. The runner services timers while async completion or
+Module evaluation remains pending, and stops waiting on unrelated future timers
+after $DONE. Five Runtime units, two integration groups and three runner controls
+cover deadlines, actual expiration, notification/cancellation, job resources,
+Module/GC roots and faithful completion/error reporting. Agent hosting remains
+Unsupported. No background timer threads or new dependencies are introduced.
+
+One whole unchanged original adds two required modes, passed and Git blob/SHA-256
+verified before admission. Counts are 11,431 fixtures, twenty-four helpers,
+11,346 reviewed sources, 21,755 variants and 71 runner controls. Case files stay
+698/88. Existing source bytes, quotas, allowances and worker counts are unchanged.
 
 ## Notified asynchronous wait queues
 

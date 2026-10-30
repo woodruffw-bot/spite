@@ -147,9 +147,8 @@ fn deferred_constructors_require_new_with_ordinary_type_error_completion() {
 }
 
 #[test]
-fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
-    // Each operation reaches a deferred shared-buffer algorithm.
-    // Reading its metadata must not stand in for executing that dependency.
+fn shared_algorithms_execute_and_operand_host_failures_skip_language_handlers() {
+    // Execute the materialized shared algorithms, including real timed waits.
     let operations = [
         "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0,2)",
         "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0,1)",
@@ -158,18 +157,18 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     realm.eval("let flag=0,hits=0,order=0;function NewTarget(){}let bound=NewTarget.bind(null);Object.defineProperty(bound,'prototype',{get(){order+=100;throw 7;}})").unwrap();
     for operation in operations {
         let result = realm.eval(&format!(
-            "try{{{operation};flag=3;}}catch{{flag=1;}}finally{{flag=2;}}"
+            "{{let result;try{{result={operation};flag=3;}}catch{{flag=1;}}finally{{flag=2;}}result.async===true&&result.value instanceof Promise&&flag===2&&hits===0}}"
         ));
-        assert!(
-            matches!(result, Err(Error::Unsupported { .. })),
-            "{operation}: {result:?}"
-        );
-        assert_eq!(
-            realm.eval("flag===0 && hits===0"),
-            Ok(Value::Boolean(true)),
-            "{operation}"
-        );
+        assert_eq!(result, Ok(Value::Boolean(true)), "{operation}");
     }
+    realm.reserve_unsupported_global("unavailableHost");
+    realm.eval("flag=0").unwrap();
+    let result = realm.eval("try{Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),{valueOf(){return unavailableHost()}},0,1);flag=3}catch{flag=1}finally{flag=2}");
+    assert!(
+        matches!(result, Err(Error::Unsupported { .. })),
+        "{result:?}"
+    );
+    assert_eq!(realm.eval("flag===0&&hits===0"), Ok(Value::Boolean(true)));
     // Shared memory accesses complete normally; queued waiting is still deferred.
     for operation in [
         "Atomics.load(new Int32Array(new SharedArrayBuffer(4)),0)",

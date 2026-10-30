@@ -578,21 +578,32 @@ fn wait_async_uses_original_bounds_but_reads_after_value_and_timeout_effects() {
 }
 
 #[test]
-fn finite_wait_async_timers_remain_a_host_boundary_without_registering_fake_waiters() {
+fn finite_wait_async_timers_settle_only_when_the_idle_host_services_them() {
     for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
         for timeout in ["1", "2.5"] {
             let mut realm = Realm::default();
-            realm.eval(&format!("let a=new {name}(new SharedArrayBuffer(16)),caught=0,finalized=0,disposed=0,r={{[Symbol.dispose](){{disposed++}}}};")).unwrap();
-            let source = "function f(){using x=r;try{Atomics.waitAsync(a,0,0$N,$TIMEOUT)}catch(e){caught++}finally{finalized++}}f()";
-            let result = realm.eval(&source.replace("$N", suffix).replace("$TIMEOUT", timeout));
-            assert!(
-                matches!(result, Err(Error::Unsupported { .. })),
-                "{result:?}"
-            );
+            let source = r#"let a=new $TYPE(new SharedArrayBuffer(16)),log='',caught=0,finalized=0,disposed=0,r={[Symbol.dispose](){disposed++}};
+                function f(){using x=r;try{return Atomics.waitAsync(a,0,0$N,$TIMEOUT)}catch(e){caught++}finally{finalized++}}
+                let result=f();result.value.then(v=>log=v);result.async===true&&result.value instanceof Promise&&log===''&&caught===0&&finalized===1&&disposed===1"#;
             assert_eq!(
-                realm.eval("caught===0&&finalized===0&&disposed===0&&Atomics.notify(a,0)===0"),
+                realm.eval(
+                    &source
+                        .replace("$TYPE", name)
+                        .replace("$N", suffix)
+                        .replace("$TIMEOUT", timeout)
+                ),
                 Ok(Value::Boolean(true))
             );
+            std::thread::sleep(std::time::Duration::from_millis(5));
+            assert!(realm.run_next_atomics_wait_job().unwrap());
+            assert!(realm.next_atomics_wait_delay().is_none());
+            assert_eq!(
+                realm.eval("log===''&&Atomics.notify(a,0)===0"),
+                Ok(Value::Boolean(true))
+            );
+            realm.run_next_promise_job().unwrap();
+            assert_eq!(realm.eval("log==='timed-out'"), Ok(Value::Boolean(true)));
+            assert!(!realm.run_next_atomics_wait_job().unwrap());
         }
     }
 }
@@ -677,6 +688,31 @@ fn notify_fulfills_wait_promises_before_later_promise_jobs_are_enqueued() {
         realm.run_next_promise_job().unwrap();
     }
     assert_eq!(realm.eval("log==='awb'"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn huge_finite_timeouts_do_not_overflow_or_expire_before_notification() {
+    for timeout in ["Number.MAX_VALUE", "2**64", "Number.MAX_SAFE_INTEGER"] {
+        let mut realm = Realm::default();
+        assert_eq!(realm.eval(&format!("let a=new Int32Array(new SharedArrayBuffer(8)),r=Atomics.waitAsync(a,0,0,{timeout}),log='';r.value.then(v=>log=v);r.async===true&&r.value instanceof Promise")), Ok(Value::Boolean(true)));
+        assert!(realm.next_atomics_wait_delay().is_some());
+        assert!(!realm.run_next_atomics_wait_job().unwrap());
+        assert_eq!(realm.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+        assert!(realm.next_atomics_wait_delay().is_none());
+        realm.run_next_promise_job().unwrap();
+        assert_eq!(realm.eval("log==='ok'"), Ok(Value::Boolean(true)));
+    }
+}
+
+#[test]
+fn notification_can_win_after_the_deadline_before_the_timeout_job_runs() {
+    let mut realm = Realm::default();
+    realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),log='';Atomics.waitAsync(a,0,0,1).value.then(v=>log=v);").unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(2));
+    assert_eq!(realm.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+    assert!(!realm.run_next_atomics_wait_job().unwrap());
+    realm.run_next_promise_job().unwrap();
+    assert_eq!(realm.eval("log==='ok'"), Ok(Value::Boolean(true)));
 }
 
 #[test]

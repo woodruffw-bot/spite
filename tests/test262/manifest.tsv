@@ -11453,3 +11453,4 @@ script-pass	992334b8086da70aee9608414e8d05b6927bed0cb98f5a1f8cb0bd30c3449670	tes
 script-pass	9b4f6e19f803fc71ced02bc4552d03fc0b53b1620df2abcaee04d96bdc5b9660	test/built-ins/Atomics/waitAsync/implicit-infinity-for-timeout.js
 script-pass	622a73ebd0ac150e34db60884fd248a17465c354048b8517d4c9c75fa4172468	test/built-ins/Atomics/waitAsync/undefined-for-timeout.js
 script-pass	7897b990dcfcdddd91fd3214aa809b7b233cb24e03adafbccc814b9edef013f7	test/built-ins/Atomics/waitAsync/bigint/undefined-for-timeout.js
+script-pass	9e8f704f386e0adaa5fe3c35f6560b45bb00bd19358f2dd30f7837586690a52c	test/built-ins/Atomics/waitAsync/returns-result-object-value-is-promise-resolves-to-ok.js

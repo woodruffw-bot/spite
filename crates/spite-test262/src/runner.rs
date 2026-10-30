@@ -322,6 +322,14 @@ impl Runner {
                     result = Err(error);
                     break;
                 }
+                match realm.run_next_atomics_wait_job() {
+                    Ok(true) => continue,
+                    Ok(false) => (),
+                    Err(error) => {
+                        result = Err(error);
+                        break;
+                    }
+                }
                 match realm.run_finalization_cleanup_job() {
                     Ok(FinalizationCleanupOutcome::NoJob) => (),
                     Ok(FinalizationCleanupOutcome::Completed) => continue,
@@ -341,7 +349,35 @@ impl Runner {
                     });
                 }
                 match realm.run_next_promise_job() {
-                    Ok(PromiseJobOutcome::NoJob) => break,
+                    Ok(PromiseJobOutcome::NoJob) => {
+                        let Some(delay) = realm.next_atomics_wait_delay() else {
+                            break;
+                        };
+                        let completion_pending = if let Some(completion) = completion.as_ref() {
+                            match completion.has_completion(&realm) {
+                                Ok(complete) => !complete,
+                                Err(outcome) => return outcome,
+                            }
+                        } else {
+                            false
+                        };
+                        let module_pending = module_promise.as_ref().is_some_and(|root| {
+                            let Value::Object(promise) = root.value() else {
+                                unreachable!("module promise")
+                            };
+                            matches!(
+                                realm
+                                    .inspect_object(promise)
+                                    .expect("rooted module Promise")
+                                    .promise_state(),
+                                Some(PromiseState::Pending)
+                            )
+                        });
+                        if !completion_pending && !module_pending {
+                            break;
+                        }
+                        std::thread::sleep(delay.min(std::time::Duration::from_millis(10)));
+                    }
                     Ok(PromiseJobOutcome::Completed) => {}
                     Ok(PromiseJobOutcome::Reported(error)) | Err(error) => {
                         result = Err(error);

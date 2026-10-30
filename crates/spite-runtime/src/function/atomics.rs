@@ -304,19 +304,14 @@ impl Realm {
             "not-equal"
         } else if timeout == 0.0 {
             "timed-out"
-        } else if timeout.is_infinite() {
+        } else {
             self.atomic_wait_record(&result, true, capability.promise.clone(), span)?;
-            if self
-                .register_atomic_wait(backing, byte_index, &access, expected, capability, span)?
-            {
+            if self.register_atomic_wait(
+                backing, byte_index, &access, expected, capability, timeout, span,
+            )? {
                 return Ok(Value::Object(result));
             }
             "not-equal"
-        } else {
-            return Err(Self::unsupported(
-                span,
-                "asynchronous Atomics wait queues are not implemented",
-            ));
         };
         self.atomic_wait_record(
             &result,

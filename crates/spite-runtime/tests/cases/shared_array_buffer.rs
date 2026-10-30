@@ -116,7 +116,7 @@ fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fall
 }
 
 #[test]
-fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
+fn shared_wait_records_ignore_public_buffer_hooks_and_keep_brand_errors() {
     for operation in [
         "Atomics.waitAsync(new Int32Array(b),0,0,2)",
         "Atomics.waitAsync(new Int32Array(b),0,0,1)",
@@ -124,13 +124,9 @@ fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
         let mut realm = Realm::default();
         realm.eval("let b=new SharedArrayBuffer(4),flag=0,hits=0;Object.defineProperty(b,'length',{get(){hits++;throw 1}});Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}})").unwrap();
         let result = realm.eval(&format!(
-            "try{{{operation};flag=3}}catch{{flag=1}}finally{{flag=2}}"
+            "{{let result;try{{result={operation};flag=3}}catch{{flag=1}}finally{{flag=2}}result.async===true&&result.value instanceof Promise&&flag===2&&hits===0}}"
         ));
-        assert!(
-            matches!(result, Err(Error::Unsupported { .. })),
-            "{operation}: {result:?}"
-        );
-        assert_eq!(realm.eval("flag===0&&hits===0"), Ok(Value::Boolean(true)));
+        assert_eq!(result, Ok(Value::Boolean(true)), "{operation}");
     }
     assert!(matches!(
         Realm::default().eval("SharedArrayBuffer.prototype.grow.call({},0)"),

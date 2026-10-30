@@ -83,4 +83,47 @@ impl AsyncCompletion {
         }
         Ok(())
     }
+
+    /// Inspect the private, null-prototype print record without invoking JS or
+    /// spending an execution allowance while the idle host waits for a timer.
+    pub(super) fn has_completion(&self, realm: &Realm) -> Result<bool, Outcome> {
+        let Value::Object(handle) = self.messages.value() else {
+            unreachable!("private print record")
+        };
+        let object = realm
+            .inspect_object(handle)
+            .map_err(|error| Outcome::SetupFailure(format!("async capture inspection: {error}")))?;
+        for index in 0..object.property_count() {
+            let key = JsString::from(index.to_string().as_str());
+            let Some(data) = object
+                .own_property(&key)
+                .and_then(|property| property.as_data())
+            else {
+                return Err(Outcome::SetupFailure(
+                    "async capture was not contiguous data".into(),
+                ));
+            };
+            let Value::String(message) = &data.value else {
+                return Err(Outcome::SetupFailure(
+                    "async print capture was not a String".into(),
+                ));
+            };
+            let failure = "Test262:AsyncTestFailure:";
+            if message
+                .code_units()
+                .iter()
+                .copied()
+                .eq("Test262:AsyncTestComplete".encode_utf16())
+                || message
+                    .code_units()
+                    .iter()
+                    .copied()
+                    .take(failure.len())
+                    .eq(failure.encode_utf16())
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
 }

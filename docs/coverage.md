@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and current-agent notifications; timed waiting and agents remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and current-agent notifications; finite timeout jobs; inter-agent notification and agent hosting remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
@@ -59,9 +59,46 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21753 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21755 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Finite asynchronous wait timeout jobs
+
+Finite positive waitAsync requests now register real timers using the standard
+monotonic clock. Delays round upward to milliseconds; saturating u128 intervals
+retain huge finite Numbers without overflowing Instant addition or expiring
+early. Only scheduling hints are bounded to a native Duration. Evaluation
+starts no background thread and never sleeps. An explicit idle host job clears
+kept objects, uses the configured optional job allowance, removes an expired
+native waiter under its critical section and resolves with "timed-out". Reactions
+run as ordinary Promise jobs. Notification can win before the timeout job runs,
+even after the deadline. Pre-removal refusal preserves the waiter and every
+exit restores caller work/job state; later host failures remain host failures.
+
+The runner services due timers and waits in short idle intervals only while
+asynchronous completion or Module evaluation remains pending. Physical inspection
+of its private print record avoids callbacks and repeated execution-allowance
+charges. Already recorded $DONE prevents waiting on unrelated future timers;
+timeout alone never satisfies completion. Real reaction errors retain their
+runtime constructor/phase, and unavailable host operations never pass negatives.
+Inter-agent notification, suspending agents and agent hosting remain Unsupported.
+
+Five new Runtime units and two integration groups cover deadline rounding and
+huge values, backwards-clock saturation, idle/reentry guards, job refusal and
+state restoration, real expiration, cancellation and notification/timeout order.
+Three runner controls cover $DONE, missing/spoofed completion, huge pending timers,
+rooted Module awaits/GC, actual exceptions and host failures. All 507 Runtime
+units and 2,383 non-RegExp integrations pass, as do focused controls, strict
+Clippy, Rust 1.99 and CLI/raw smoke.
+
+One additional unchanged original passes both required modes before admission,
+with original Git blob/SHA-256 verification. The inventory is 11,431 fixtures,
+twenty-four helpers, 11,346 reviewed sources and 21,755 variants; case files stay
+698 Runtime/88 Parser and package controls increase to 71. No source rewrites,
+helpers, worker counts, default quotas or test allowances change. The full
+21,755-variant corpus and all 71 package controls pass, along with CLI/raw smoke,
+formatting, strict Clippy, Rust 1.99, dependency policy and inventories.
 
 ## Notified asynchronous wait queues
 

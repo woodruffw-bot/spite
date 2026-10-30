@@ -11344,3 +11344,4 @@ test/built-ins/Atomics/waitAsync/bigint/value-not-equal.js	-	-	-
 test/built-ins/Atomics/waitAsync/implicit-infinity-for-timeout.js	-	-	-
 test/built-ins/Atomics/waitAsync/undefined-for-timeout.js	-	-	-
 test/built-ins/Atomics/waitAsync/bigint/undefined-for-timeout.js	-	-	-
+test/built-ins/Atomics/waitAsync/returns-result-object-value-is-promise-resolves-to-ok.js	-	-	-

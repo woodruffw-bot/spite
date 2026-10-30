@@ -201,6 +201,37 @@ impl SharedArrayBufferData {
             state.waiters.retain(|waiter| !owner.ptr_eq(&waiter.owner));
         }
     }
+
+    pub(crate) fn take_timed_waiter(
+        &self,
+        id: usize,
+        owner: &Arc<()>,
+        budget: &mut Budget,
+    ) -> Result<WaiterBatch<'_>, ArrayBufferError> {
+        let mut state = self.0.lock().map_err(|_| Error::PoisonedSharedStorage)?;
+        budget.charge(state.waiters.len() + 1)?;
+        let owner = Arc::downgrade(owner);
+        let Some(position) = state
+            .waiters
+            .iter()
+            .position(|waiter| waiter.id == id && owner.ptr_eq(&waiter.owner))
+        else {
+            return Ok(WaiterBatch {
+                ids: Vec::new(),
+                _critical: None,
+            });
+        };
+        let mut ids = Vec::new();
+        ids.try_reserve_exact(1)
+            .map_err(|_| ArrayBufferError::Capacity)?;
+        budget.charge(state.waiters.len() - position)?;
+        state.waiters.remove(position);
+        ids.push(id);
+        Ok(WaiterBatch {
+            ids,
+            _critical: Some(state),
+        })
+    }
 }
 
 impl Objects {
