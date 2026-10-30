@@ -59,9 +59,27 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21395 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21613 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Shared Atomics memory operation audit
+
+All nine memory-operation directories and their bigint subdirectories now
+retain every edition-17 original: 109 newly admitted whole sources plus 27
+existing ordinary-buffer sources. Eight immutable-buffer proposal sources are
+outside the published baseline. The additions cover shared Number/BigInt views,
+indices, coercions, returned values, native-endian bytes, descriptors and
+constructibility. Each original passed both required modes before admission;
+Git blob and SHA-256 hashes match the pin.
+
+Counts are 11,360 fixtures, twenty-four helpers, 11,275 reviewed sources and
+21,613 variants. No production code, helpers, quotas, workers or native case
+files change. The preceding native validation remains 498 Runtime units and
+2,372 non-RegExp integrations across 698 Runtime files; Parser files remain 88
+and package controls remain 67. The full 21,613-variant corpus and all 67
+controls pass, along with CLI/raw smoke, formatting, strict Clippy, Rust 1.99,
+dependency policy and inventories.
 
 ## Safe shared storage and native atomic memory steps
 

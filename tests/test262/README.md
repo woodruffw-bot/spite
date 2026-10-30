@@ -1,9 +1,25 @@
 # Test262 regression fixtures
 
-These 11251 unmodified test fixtures and twenty-four harness files come from
+These 11360 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Shared Atomics memory operation audit
+
+The safe standard-library backend passes 109 additional unchanged originals
+for add/sub/and/or/xor/exchange/compareExchange/load/store. These include shared
+Number and BigInt views, in/out-of-bounds indices, native-endian bytes, converted
+return values, coercion ordering, method descriptors and constructibility. With
+the 27 retained non-shared originals, every edition-17 source in these nine
+method directories and their bigint subdirectories is retained. Eight
+immutable-buffer proposal sources remain excluded.
+
+All 218 required modes passed before admission, with original Git blob and
+SHA-256 verification. No helper, source rewrite, quota or worker changes are
+needed. The inventory is 11,360 fixtures, twenty-four helpers, 11,275 reviewed
+sources and 21,613 variants. Runtime/Parser case files remain 698/88 and runner
+controls remain 67.
 
 ## Safe shared storage and native atomics
 
