@@ -223,7 +223,7 @@ impl Runner {
                 "raw asynchronous Test262 harness setup is not implemented",
             );
         }
-        if metadata.has_flag("CanBlockIsTrue") || metadata.has_flag("CanBlockIsFalse") {
+        if metadata.has_flag("CanBlockIsTrue") {
             return unsupported(
                 Stage::Harness,
                 "Test262 agent configuration is not implemented",

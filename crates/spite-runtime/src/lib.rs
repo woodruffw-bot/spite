@@ -228,6 +228,8 @@ impl Completion {
 ///
 /// Only the documented subset is implemented. The ordinary global object exposes
 /// implemented standard bindings; host extensions are not installed.
+/// The single-agent host cannot suspend: `Atomics.wait` validates its arguments
+/// and throws TypeError. Only immediate `Atomics.waitAsync` results are supported.
 /// Execution uses bounded Rust recursion and requires a native thread stack of
 /// at least 2 MiB. Call re-entry is capped at 32 until explicit execution frames
 /// replace native recursion.

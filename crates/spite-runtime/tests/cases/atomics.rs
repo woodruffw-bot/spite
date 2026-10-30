@@ -509,6 +509,116 @@ fn ordinary_buffer_wait_and_wait_async_reject_before_any_conversion() {
 }
 
 #[test]
+fn nonsuspending_wait_converts_index_value_and_timeout_before_rejecting() {
+    for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
+        for initial in ["0", "1"] {
+            for timeout in ["undefined", "0", "NaN", "Infinity"] {
+                let source = r#"let a=new $TYPE(new SharedArrayBuffer(16)),log='',caught=false;a[0]=$INITIAL$N;
+                    try{Atomics.wait(a,{valueOf(){log+='i';return 0}},{valueOf(){log+='v';return 0$N}},{valueOf(){log+='t';return $TIMEOUT}})}catch(e){caught=e instanceof TypeError}
+                    caught&&log==='ivt'"#;
+                check(
+                    &source
+                        .replace("$TYPE", name)
+                        .replace("$INITIAL", initial)
+                        .replace("$TIMEOUT", timeout)
+                        .replace("$N", suffix),
+                );
+            }
+        }
+        let source = r#"let a=new $TYPE(new SharedArrayBuffer(16)),reason={},same=false;
+            try{Atomics.wait(a,0,0$N,{valueOf(){throw reason}})}catch(e){same=e===reason}same"#;
+        check(&source.replace("$TYPE", name).replace("$N", suffix));
+    }
+}
+
+#[test]
+fn wait_async_immediate_results_preserve_comparison_and_timeout_precedence() {
+    for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
+        for timeout in ["undefined", "NaN", "Infinity", "0", "-Infinity"] {
+            let source = "let a=new $TYPE(new SharedArrayBuffer(16));a[0]=1$N;let r=Atomics.waitAsync(a,0,0$N,$TIMEOUT);r.async===false&&r.value==='not-equal'";
+            check(
+                &source
+                    .replace("$TYPE", name)
+                    .replace("$TIMEOUT", timeout)
+                    .replace("$N", suffix),
+            );
+        }
+        for timeout in ["0", "-0", "-0.1", "-Infinity", "false", "null"] {
+            let source = "let a=new $TYPE(new SharedArrayBuffer(16)),r=Atomics.waitAsync(a,0,0$N,$TIMEOUT);r.async===false&&r.value==='timed-out'";
+            check(
+                &source
+                    .replace("$TYPE", name)
+                    .replace("$TIMEOUT", timeout)
+                    .replace("$N", suffix),
+            );
+        }
+    }
+    check(
+        r#"let O=Object,p=O.prototype,a=new Int32Array(new SharedArrayBuffer(8));
+        O.defineProperty(p,'async',{set(){throw 1},configurable:true});O.defineProperty(p,'value',{set(){throw 2},configurable:true});
+        Promise=new Proxy(function(){},{construct(){throw 3},get(){throw 4}});Object=function(){throw 5};
+        let r=Atomics.waitAsync(a,0,0,0),s=Atomics.waitAsync(a,0,0,0),d=O.getOwnPropertyDescriptors(r);
+        r!==s&&O.getPrototypeOf(r)===p&&O.keys(r).join(',')==='async,value'&&r.async===false&&r.value==='timed-out'&&
+        d.async.writable&&d.async.enumerable&&d.async.configurable&&d.value.writable&&d.value.enumerable&&d.value.configurable"#,
+    );
+}
+
+#[test]
+fn wait_async_uses_original_bounds_but_reads_after_value_and_timeout_effects() {
+    for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
+        let source = r#"let b=new SharedArrayBuffer(16,{maxByteLength:32}),a=new $TYPE(b),length=a.length,hits=0,caught=false;
+            try{Atomics.waitAsync(a,{valueOf(){b.grow(32);return length}},{valueOf(){hits++;return 0$N}},0)}catch(e){caught=e instanceof RangeError}
+            caught&&hits===0&&b.byteLength===32"#;
+        check(&source.replace("$TYPE", name).replace("$N", suffix));
+        let source = r#"let a=new $TYPE(new SharedArrayBuffer(16)),log='';
+            let r=Atomics.waitAsync(a,{valueOf(){log+='i';return 0}},{valueOf(){log+='v';a[0]=0$N;return 0$N}},{valueOf(){log+='t';a[0]=1$N;return 0}});
+            log==='ivt'&&r.async===false&&r.value==='not-equal'&&a[0]===1$N"#;
+        check(&source.replace("$TYPE", name).replace("$N", suffix));
+    }
+}
+
+#[test]
+fn queued_wait_async_remains_a_host_boundary_without_registering_fake_waiters() {
+    for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
+        for timeout in ["undefined", "1", "Infinity", "NaN"] {
+            let mut realm = Realm::default();
+            realm.eval(&format!("let a=new {name}(new SharedArrayBuffer(16)),caught=0,finalized=0,disposed=0,r={{[Symbol.dispose](){{disposed++}}}};")).unwrap();
+            let source = "function f(){using x=r;try{Atomics.waitAsync(a,0,0$N,$TIMEOUT)}catch(e){caught++}finally{finalized++}}f()";
+            let result = realm.eval(&source.replace("$N", suffix).replace("$TIMEOUT", timeout));
+            assert!(
+                matches!(result, Err(Error::Unsupported { .. })),
+                "{result:?}"
+            );
+            assert_eq!(
+                realm.eval("caught===0&&finalized===0&&disposed===0&&Atomics.notify(a,0)===0"),
+                Ok(Value::Boolean(true))
+            );
+        }
+    }
+}
+
+#[test]
+fn wait_operand_host_failures_precede_policy_rejection_and_skip_language_cleanup() {
+    for method in ["wait", "waitAsync"] {
+        let mut realm = Realm::default();
+        realm.reserve_unsupported_global("unavailableHost");
+        realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),caught=0,finalized=0,disposed=0,r={[Symbol.dispose](){disposed++}};").unwrap();
+        let source = format!(
+            "function f(){{using x=r;try{{Atomics.{method}(a,0,{{valueOf(){{return unavailableHost()}}}},0)}}catch(e){{caught++}}finally{{finalized++}}}}f()"
+        );
+        let result = realm.eval(&source);
+        assert!(
+            matches!(result, Err(Error::Unsupported { .. })),
+            "{result:?}"
+        );
+        assert_eq!(
+            realm.eval("caught===0&&finalized===0&&disposed===0"),
+            Ok(Value::Boolean(true))
+        );
+    }
+}
+
+#[test]
 fn is_lock_free_converts_once_and_reports_consistent_agent_flags() {
     for size in [
         "undefined",

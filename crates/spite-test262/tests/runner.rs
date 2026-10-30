@@ -477,8 +477,49 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
 }
 
 #[test]
+fn nonsuspending_agent_flag_runs_real_wait_validation_and_exception_checks() {
+    let body = "let caught=false;try{Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)}catch(e){caught=e instanceof TypeError}if(!caught)throw 7";
+    let cases = Runner::default()
+        .run(&source("flags: [CanBlockIsFalse]", body), None, |_| {
+            Ok("".into())
+        })
+        .unwrap();
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::Passed)),
+        "{cases:?}"
+    );
+    for (body, passed) in [
+        (
+            "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)",
+            true,
+        ),
+        ("throw new RangeError()", false),
+    ] {
+        let cases = Runner::default()
+            .run(
+                &source(
+                    "flags: [CanBlockIsFalse]\nnegative:\n  phase: runtime\n  type: TypeError",
+                    body,
+                ),
+                None,
+                |_| Ok("".into()),
+            )
+            .unwrap();
+        assert_eq!(
+            cases
+                .iter()
+                .all(|case| matches!(case.outcome, Outcome::Passed)),
+            passed,
+            "{cases:?}"
+        );
+    }
+}
+
+#[test]
 fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
-    for flags in ["[async, raw]", "[CanBlockIsTrue]", "[CanBlockIsFalse]"] {
+    for flags in ["[async, raw]", "[CanBlockIsTrue]"] {
         let cases = Runner::default()
             .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {
                 panic!("unsupported host loaded harness")

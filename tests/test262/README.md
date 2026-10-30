@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11360 unmodified test fixtures and twenty-four harness files come from
+These 11427 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Nonsuspending waits and immediate asynchronous results
+
+The host cannot suspend its single execution agent. Synchronous wait validates
+index, expected value and timeout before its standard TypeError. WaitAsync
+returns fresh immediate mismatch or zero-timeout records; actual queued waits,
+timers and agent hosting remain Unsupported. CanBlockIsFalse executes real host
+behavior, while CanBlockIsTrue remains an unsupported configuration.
+
+The 67 unchanged originals add 134 required modes, all passed and Git blob/SHA-256
+verified before admission. The other 107 examined originals still require agents
+or queued waiting and remain excluded in full. No helpers, quotas or workers
+change. Counts are 11,427 fixtures, twenty-four helpers, 11,342 reviewed sources,
+21,747 variants and 68 runner controls. Runtime/Parser case files remain 698/88.
 
 ## Shared Atomics memory operation audit
 

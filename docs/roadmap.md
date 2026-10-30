@@ -473,7 +473,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement SharedArrayBuffer slicing with ordered species construction, shared-brand/backing validation and raw byte copies.
 - [x] Support shared Atomics.notify with ordered brand/index/count validation and empty waiter lists while waiting and agents remain unavailable.
 - [x] Prepare shared page ownership with safe standard-library types and implement native atomic load/store, exchange, compareExchange and arithmetic/bitwise memory steps.
-- [ ] Implement shared waiting, asynchronous wait queues and agents.
+- [x] Validate waiting arguments for the nonsuspending host and return immediate asynchronous mismatch/zero-timeout records with faithful Test262 CanBlockIsFalse handling.
+- [ ] Implement asynchronous wait queues, suspending agents and agent hosting.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.

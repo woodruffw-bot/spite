@@ -40,13 +40,8 @@ impl Realm {
                 .expect("typed buffer")
                 .shared)
         })?;
-        if shared && matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync) {
-            return Err(Self::unsupported(
-                span,
-                "shared-buffer Atomics waiting is not implemented",
-            ));
-        }
-        if matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync) {
+        let waiting = matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync);
+        if waiting && !shared {
             // DoWait (25.4.3.14) rejects ordinary buffers before converting
             // index, value, or timeout (DoWait, 25.4.3.14).
             return Err(Self::exception(
@@ -57,6 +52,9 @@ impl Realm {
         }
         let index =
             self.atomics_index(&witness, arguments.next().unwrap_or(Value::Undefined), span)?;
+        if waiting {
+            return self.atomics_wait(method, witness, index, arguments, span);
+        }
         if matches!(method, Member::AtomicsNotify) {
             // Atomics.notify (25.4.15) converts count before the ordinary-buffer
             // +0 return or the shared wait-list lookup. Waiting and agents are
@@ -204,6 +202,107 @@ impl Realm {
             objects.write_array_buffer_bytes(&buffer, byte_index, &updated[..size], budget)
         })?;
         Ok(old)
+    }
+
+    fn atomics_wait(
+        &mut self,
+        method: Member,
+        witness: TypedArrayWitness,
+        index: u64,
+        mut arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // DoWait (25.4.3.14): value and timeout conversions precede the
+        // AgentCanSuspend check, even for mismatches and zero timeouts.
+        let value = self.atomics_numeric(
+            witness.element,
+            arguments.next().unwrap_or(Value::Undefined),
+            span,
+        )?;
+        let little_endian = cfg!(target_endian = "little");
+        let size = witness.element.size();
+        let mut expected = self.integer_work(span, |budget| {
+            witness.element.encode(value, little_endian, budget)
+        })?;
+        if !little_endian {
+            expected[..size].reverse();
+        }
+        let expected = u64::from_le_bytes(expected);
+        let timeout = self.number(arguments.next().unwrap_or(Value::Undefined), span)?;
+        let timeout = if timeout.is_nan() {
+            f64::INFINITY
+        } else {
+            timeout.max(0.0)
+        };
+        if matches!(method, Member::AtomicsWait) {
+            // The current single-agent host cannot suspend its execution thread.
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "this agent cannot suspend for Atomics.wait",
+            ));
+        }
+        if size > crate::object::shared_page::WORD_BYTES {
+            return Err(Self::unsupported(
+                span,
+                "shared atomics of this width require native target support",
+            ));
+        }
+        let access = self.buffer_value_work(span, |objects, budget| {
+            let data = objects
+                .inspect(&witness.object)?
+                .typed_array_data()
+                .expect("validated waitable view");
+            let index = data.byte_offset() + index * size as u64;
+            objects
+                .inspect(data.buffer())?
+                .shared_array_buffer_data()
+                .expect("shared waitable buffer")
+                .prepare_atomic(index, size, budget)
+        })?;
+        // DoWait creates the intrinsic capability and result before its shared
+        // memory read, including immediate results. Neither invokes public hooks.
+        let _capability = self.intrinsic_promise_capability(span)?;
+        let prototype = self
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .object_prototype
+            .clone();
+        let result = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
+        let observed = access.update(|old| {
+            self.tick(span)?;
+            Ok((None, old))
+        })?;
+        let value = if observed != expected {
+            "not-equal"
+        } else if timeout == 0.0 {
+            "timed-out"
+        } else {
+            return Err(Self::unsupported(
+                span,
+                "asynchronous Atomics wait queues are not implemented",
+            ));
+        };
+        self.object_work(span, |objects, budget| {
+            for (key, value) in [
+                ("async", Value::Boolean(false)),
+                ("value", Value::String(spite_core::JsString::from(value))),
+            ] {
+                objects.define(
+                    &result,
+                    key,
+                    crate::object::DataDescriptor {
+                        value: Some(value),
+                        writable: Some(true),
+                        enumerable: Some(true),
+                        configurable: Some(true),
+                    },
+                    budget,
+                )?;
+            }
+            Ok(Value::Object(result))
+        })
     }
 
     #[expect(

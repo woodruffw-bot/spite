@@ -4377,7 +4377,8 @@ and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
 Promise reactions/combinators and SharedArrayBuffer construction and views run
-their algorithms. Shared Atomics memory accesses run native atomic steps; waiting retains explicit Unsupported
+their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
+immediate asynchronous results are supported; queued waiting retains Unsupported
 results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
@@ -4610,13 +4611,29 @@ Notify accepts Int32Array and BigInt64Array, converts index and count, and retur
 positive zero for ordinary buffers without post-conversion revalidation. Shared
 buffers follow the same argument validation and original-length witness, then
 return positive zero for their empty waiter lists (sec-atomics.notify). No waiters
-can register while waiting operations and agents remain Unsupported. This path
+can register while asynchronous wait queues and agents remain Unsupported. This path
 does not read or modify buffer bytes. Count coercion can grow a shared buffer;
 growth during index coercion does not extend the captured valid index range.
-Wait and waitAsync reject ordinary buffers before index, value, or timeout conversion.
+Wait and waitAsync reject ordinary buffers before index, value or timeout
+conversion. The current single-agent host selects AgentCanSuspend=false (9.7).
+DoWait converts the original-length index, ToInt32/ToBigInt64 value and numeric
+timeout in order before the synchronous wait TypeError, even for a mismatching
+value or zero timeout. Language coercion exceptions retain their identity;
+unsupported and resource failures bypass JavaScript handlers.
+
+Asynchronous DoWait prepares owned storage and creates its retained intrinsic
+Promise capability and ordinary result object before the SeqCst read. A mismatch
+returns { async: false, value: "not-equal" }; an equal value with a normalized zero
+timeout returns { async: false, value: "timed-out" }. The properties are created
+in that order with writable/enumerable/configurable attributes, bypassing
+inherited setters and poisoned global constructors. Mismatch precedes timeout.
+Matching positive/infinite waits reach an explicit Unsupported boundary; no
+waiter, timer or substitute Promise response is registered. Consequently notify
+still observes empty waiter lists. Test262 CanBlockIsFalse runs against this
+actual host policy; CanBlockIsTrue remains an unsupported host configuration.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
 for widths one, two, and eight; width four always returns true. Nonempty wait
-queues, waiting operations, and agent hosting remain deferred. Native thread
+queues, suspending agents and agent hosting remain deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
