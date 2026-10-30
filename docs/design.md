@@ -4377,7 +4377,7 @@ and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
 Promise reactions/combinators and SharedArrayBuffer construction and views run
-their algorithms. Shared Atomics retain explicit Unsupported
+their algorithms. Shared Atomics memory accesses run native atomic steps; waiting retains explicit Unsupported
 results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
@@ -4400,17 +4400,36 @@ Shared TypedArray/DataView construction uses the existing buffer algorithms and
 numeric codecs (23.2, 25.3, GetValueFromBuffer and SetValueInBuffer in 25.1).
 A buffer witness snapshots ordinary or shared length, detached state and
 resizability. Fixed views keep their bounds; automatic views observe growth and
-TypedArray lengths round down incomplete elements. Shared bytes use the same
-sparse data block as ordinary buffers, with byte operations and growth under one
-mutex. User conversion and callbacks run outside that lock. Numeric writes
+TypedArray lengths round down incomplete elements. Ordinary pages contain byte vectors; shared pages contain native atomic words
+owned by Arc. Both use the same sparse page directory and copy algorithms.
+Shared directory preparation, ordinary view operations and growth use one mutex. User conversion and callbacks run outside that lock. Numeric writes
 prepare all fallible page work before committing, and refusal releases the lock
 with existing bytes intact. Raw moves preserve overlap and NaN payloads. Copies
 between distinct stores snapshot the source range and release its lock before
 locking the target, preserving target changes outside the destination range.
 Backing identity detects aliasing even through cloned native shared handles.
-This serialized byte access does not implement shared Atomics or an agent host;
-shared Atomics explicitly refuse instead of composing separate reads and writes.
-Agent integration remains implementation work. Multipebibyte eager-allocation
+Shared Atomics resolve an aligned page and clone its Arc under the directory
+lock, then release the lock before performing a native sequentially consistent
+atomic access. A prepared access retains its page independently of directory
+allocation and backing wrappers. It owns no raw pointer or directory guard.
+The distinction is between storage preparation and the atomic memory step in
+[Atomics.isLockFree](https://tc39.es/ecma262/#sec-atomics.islockfree): sparse page
+lookup/allocation can block; the prepared atomic memory step uses only native
+atomic words and never acquires the storage mutex. The directory itself is not
+claimed to be lock-free. No external synchronization crate or unsafe project
+code is required.
+
+Raw views and Atomics share the same authoritative words. Aligned numeric view
+accesses read/write a native word once; unaligned fragments use masked word
+updates. Subword compare-and-swap preserves neighboring bytes under contention.
+Private copies remain ordinary byte snapshots. Before a shared copy or move
+commits, all work and allocations finish, new shared pages are prepared, and
+existing page contents are updated only inside the destination range. Existing
+Arc identities survive copies and moves; concurrent atomic writes outside the
+range are preserved. A failure before commit changes no logical bytes.
+On targets with native 64-bit atomics the word is AtomicU64; otherwise it is
+AtomicU32. Shared 8-byte Atomics require native 64-bit support and explicitly
+refuse on other targets. Agent integration remains implementation work. Multipebibyte eager-allocation
 assumptions do not define a default quota for the logical buffer domain.
 
 SharedArrayBuffer.prototype.slice (25.2.5.6) snapshots source length before
@@ -4562,8 +4581,8 @@ The incomplete Array constructor retains its separate fromAsync barrier.
 
 ## Atomics and empty shared waiter lists
 
-Atomics implements the ordinary ArrayBuffer paths of 25.4 for all eight
-unclamped integer and BigInt TypedArray kinds. ValidateIntegerTypedArray and
+Atomics implements ordinary and shared ArrayBuffer memory paths of 25.4 for all
+eight unclamped integer and BigInt TypedArray kinds on native 64-bit targets. ValidateIntegerTypedArray and
 ValidateAtomicAccess require real internal slots, capture the original length,
 and convert the index before converting values. RevalidateAtomicAccess checks
 the live buffer only after every operand conversion, including both operands of
@@ -4576,8 +4595,16 @@ existing native-endian element codecs and checked sparse-buffer access. Modular
 fixed-width arithmetic preserves all 64 BigInt bits. Read-modify-write methods
 return the old element; store returns ToIntegerOrInfinity or ToBigInt before
 element-width truncation, without reading or decoding the overwritten element.
-No JavaScript executes between the final buffer read and write. Optional work,
-BigInt, and backing-page allocation failures remain host failures.
+Ordinary read-modify-write uses the non-shared buffer's exclusive execution.
+Shared access prepares all observable operand conversions and encoded bits,
+then resolves owned page storage before its atomic memory step. SeqCst loads and
+masked compare-and-swap implement memory operations. A failed comparison
+returns the SeqCst-loaded old value without writing. Every CAS attempt charges
+optional execution work and prepares the decoded return value before changing
+bytes, so BigInt or work refusal cannot happen after that update. Store returns
+its converted value without decoding the old word. No JavaScript executes in
+storage preparation or the atomic step. Optional work, BigInt and backing-page
+allocation failures remain host failures.
 
 Notify accepts Int32Array and BigInt64Array, converts index and count, and returns
 positive zero for ordinary buffers without post-conversion revalidation. Shared
@@ -4588,9 +4615,9 @@ does not read or modify buffer bytes. Count coercion can grow a shared buffer;
 growth during index coercion does not extend the captured valid index range.
 Wait and waitAsync reject ordinary buffers before index, value, or timeout conversion.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Shared memory
-operations, nonempty wait queues, agents and their memory-model events remain
-deferred; four-byte read-modify-write operations require actual lock-free storage.
+for widths one, two, and eight; width four always returns true. Nonempty wait
+queues, waiting operations, and agent hosting remain deferred. Native thread
+tests exercise the shared backing independently of the future agent host.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
 ([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,

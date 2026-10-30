@@ -151,9 +151,8 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // Each operation reaches a deferred shared-buffer algorithm.
     // Reading its metadata must not stand in for executing that dependency.
     let operations = [
-        "Atomics.load(new Int32Array(new SharedArrayBuffer(4)),0)",
         "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)",
-        "Atomics.exchange(new Int32Array(new SharedArrayBuffer(4)),0,1)",
+        "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0,0)",
     ];
     let mut realm = Realm::default();
     realm.eval("let flag=0,hits=0,order=0;function NewTarget(){}let bound=NewTarget.bind(null);Object.defineProperty(bound,'prototype',{get(){order+=100;throw 7;}})").unwrap();
@@ -170,6 +169,14 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
             Ok(Value::Boolean(true)),
             "{operation}"
         );
+    }
+    // Shared memory accesses now complete normally; waiting is still deferred.
+    for operation in [
+        "Atomics.load(new Int32Array(new SharedArrayBuffer(4)),0)",
+        "Atomics.exchange(new Int32Array(new SharedArrayBuffer(4)),0,1)",
+    ] {
+        realm.eval("flag=0").unwrap();
+        assert_eq!(realm.eval(&format!("{{let result;try{{result={operation};flag=3}}catch{{flag=1}}finally{{flag=2}}result===0&&flag===2}}")), Ok(Value::Boolean(true)));
     }
     // The implemented constructor converts length and reads newTarget.prototype.
     // The getter's language error runs catch/finally in the normal order.

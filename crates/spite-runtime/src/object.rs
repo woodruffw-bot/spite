@@ -59,6 +59,7 @@ mod shared_array_buffer;
 pub(crate) use shared_array_buffer::{SharedArrayBufferData, SharedBufferError};
 mod promise_aggregate;
 mod proxy;
+pub(crate) mod shared_page;
 pub(crate) use proxy::{ProxySnapshot, ProxyState};
 mod regexp;
 pub(crate) use regexp::{RegExpData, RegExpMatcher, RegExpNamedGroup};

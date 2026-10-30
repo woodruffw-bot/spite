@@ -5,6 +5,7 @@
 //! host even after `Vec::try_reserve` succeeds. Stored pages and their sorted index
 //! use fallible allocation; logical byte offsets stay in the ToIndex range.
 
+use super::shared_page::{PageBytes, PreparedAtomic, WORD_BYTES};
 use super::{Budget, Error, Objects};
 use spite_heap::Handle;
 use std::fmt;
@@ -115,25 +116,26 @@ impl From<Error> for ArrayBufferError {
 #[derive(Debug)]
 struct Page {
     index: u64,
-    bytes: Vec<u8>,
+    bytes: PageBytes,
 }
 
 impl Page {
     fn new(index: u64) -> Result<Self, ArrayBufferError> {
-        let mut bytes = Vec::new();
-        bytes
-            .try_reserve_exact(PAGE_SIZE)
-            .map_err(|_| ArrayBufferError::Capacity)?;
-        // The capacity is already reserved; initializing one small page performs
-        // no further allocation.
-        bytes.resize(PAGE_SIZE, 0);
-        Ok(Self { index, bytes })
+        Self::new_for(index, false)
+    }
+
+    fn new_for(index: u64, shared: bool) -> Result<Self, ArrayBufferError> {
+        Ok(Self {
+            index,
+            bytes: PageBytes::new(shared)?,
+        })
     }
 }
 
 #[derive(Debug, Default)]
 struct ByteDataBlock {
     pages: Vec<Page>,
+    shared: bool,
 }
 
 impl ByteDataBlock {
@@ -158,7 +160,10 @@ impl ByteDataBlock {
         for page in &self.pages {
             budget.charge(PAGE_SIZE)?;
             let mut new_page = Page::new(page.index)?;
-            new_page.bytes.copy_from_slice(&page.bytes);
+            let PageBytes::Ordinary(bytes) = &mut new_page.bytes else {
+                unreachable!()
+            };
+            page.bytes.read(0, bytes);
             copy.pages.push(new_page);
         }
         Ok(copy)
@@ -178,13 +183,13 @@ impl ByteDataBlock {
             budget.charge(count)?;
             match self.pages.binary_search_by_key(&index, |page| page.index) {
                 Ok(position) => {
-                    self.pages[position].bytes[offset..offset + count].copy_from_slice(fragment);
+                    self.pages[position].bytes.write(offset, fragment);
                 }
                 Err(position) if fragment.iter().any(|byte| *byte != 0) => {
                     budget.charge(PAGE_SIZE)?;
                     budget.charge(self.pages.len() - position)?;
-                    let mut page = Page::new(index)?;
-                    page.bytes[offset..offset + count].copy_from_slice(fragment);
+                    let mut page = Page::new_for(index, self.shared)?;
+                    page.bytes.write(offset, fragment);
                     self.reserve_pages(1, budget)?;
                     self.pages.insert(position, page);
                 }
@@ -220,7 +225,7 @@ impl ByteDataBlock {
                 let count = usize::try_from(last - page_start)
                     .map_err(|_| ArrayBufferError::OutOfBounds)?;
                 budget.charge(count - first)?;
-                page.bytes[first..count].fill(0);
+                page.bytes.clear(first, count);
             }
         }
         Ok(())
@@ -259,7 +264,9 @@ impl ByteDataBlock {
                 let destination = target_start
                     .checked_add(first - start)
                     .ok_or(ArrayBufferError::OutOfBounds)?;
-                target.write(destination, &page.bytes[offset..offset + length], budget)?;
+                let mut bytes = [0; PAGE_SIZE];
+                page.bytes.read(offset, &mut bytes[..length]);
+                target.write(destination, &bytes[..length], budget)?;
             }
         }
         Ok(())
@@ -281,6 +288,15 @@ pub(crate) struct ArrayBufferData {
 }
 
 impl ArrayBufferData {
+    pub(super) fn new_shared(
+        byte_length: u64,
+        max_byte_length: Option<u64>,
+    ) -> Result<Self, ArrayBufferError> {
+        let mut data = Self::new(byte_length, max_byte_length)?;
+        data.block.as_mut().expect("new backing").shared = true;
+        Ok(data)
+    }
+
     pub(super) fn new(
         byte_length: u64,
         max_byte_length: Option<u64>,
@@ -327,6 +343,120 @@ impl ArrayBufferData {
         Ok(())
     }
 
+    /// Resolve stable owned storage before the atomic memory event. The caller
+    /// releases the shared directory lock before using the prepared access.
+    pub(super) fn prepare_atomic(
+        &mut self,
+        index: u64,
+        width: usize,
+        budget: &mut Budget,
+    ) -> Result<PreparedAtomic, ArrayBufferError> {
+        if !matches!(width, 1 | 2 | 4 | 8)
+            || width > WORD_BYTES
+            || !index.is_multiple_of(width as u64)
+        {
+            return Err(ArrayBufferError::OutOfBounds);
+        }
+        self.check_range(index, width as u64)?;
+        let block = self.block.as_mut().expect("attached shared backing");
+        assert!(block.shared);
+        let page_index = index / PAGE_SIZE_U64;
+        budget.charge(
+            1 + block
+                .pages
+                .len()
+                .checked_ilog2()
+                .map_or(1, |log| log as usize + 2),
+        )?;
+        let position = match block
+            .pages
+            .binary_search_by_key(&page_index, |page| page.index)
+        {
+            Ok(position) => position,
+            Err(position) => {
+                budget.charge(PAGE_SIZE)?;
+                budget.charge(block.pages.len() - position)?;
+                let page = Page::new_for(page_index, true)?;
+                block.reserve_pages(1, budget)?;
+                block.pages.insert(position, page);
+                position
+            }
+        };
+        Ok(block.pages[position]
+            .bytes
+            .prepare(page_offset(index), width))
+    }
+
+    /// Commit a private copy while preserving shared page identity and writes
+    /// outside the destination range. Every fallible step precedes publication.
+    fn commit_copy(
+        &mut self,
+        copy: ByteDataBlock,
+        start: u64,
+        count: u64,
+        budget: &mut Budget,
+    ) -> Result<(), ArrayBufferError> {
+        let original = self.block()?;
+        if !original.shared {
+            self.block = Some(copy);
+            return Ok(());
+        }
+        let end = start + count;
+        budget.charge(original.pages.len())?;
+        budget.charge(copy.pages.len())?;
+        let mut additional = Vec::new();
+        for page in &copy.pages {
+            let first = page.index * PAGE_SIZE_U64;
+            let last = first + PAGE_SIZE_U64;
+            if first >= end || last <= start {
+                continue;
+            }
+            // The final pass does only prepared, infallible byte updates.
+            budget.charge(
+                usize::try_from(end.min(last) - start.max(first)).expect("page fragment"),
+            )?;
+            if original
+                .pages
+                .binary_search_by_key(&page.index, |page| page.index)
+                .is_err()
+            {
+                budget.charge(PAGE_SIZE)?;
+                budget.charge(original.pages.len() + additional.len())?;
+                additional
+                    .try_reserve(1)
+                    .map_err(|_| ArrayBufferError::Capacity)?;
+                let mut new_page = Page::new_for(page.index, true)?;
+                new_page.bytes.write(0, page.bytes.ordinary());
+                additional.push(new_page);
+            }
+        }
+        let block = self.block.as_mut().expect("attached shared backing");
+        block.reserve_pages(additional.len(), budget)?;
+        for page in additional {
+            let position = block
+                .pages
+                .binary_search_by_key(&page.index, |existing| existing.index)
+                .expect_err("new page");
+            block.pages.insert(position, page);
+        }
+        for page in &mut block.pages {
+            let first = page.index * PAGE_SIZE_U64;
+            let last = first + PAGE_SIZE_U64;
+            if first >= end || last <= start {
+                continue;
+            }
+            let source = copy
+                .pages
+                .binary_search_by_key(&page.index, |source| source.index)
+                .expect("snapshot retains existing pages");
+            let offset = usize::try_from(start.max(first) - first).expect("page offset");
+            let limit = usize::try_from(end.min(last) - first).expect("page offset");
+            page.bytes
+                .write(offset, &copy.pages[source].bytes.ordinary()[offset..limit]);
+        }
+        Ok(())
+    }
+
     /// Reads a single numeric element without allocating a temporary byte vector.
     pub(super) fn read_bytes(
         &self,
@@ -349,16 +479,20 @@ impl ArrayBufferData {
             .map_or(1, |log| log as usize + 2);
         budget.charge(1 + count * search_work)?;
         let mut result = [0; 8];
-        for (offset, byte) in result.iter_mut().take(count).enumerate() {
-            let position = index
-                .checked_add(u64::try_from(offset).map_err(|_| ArrayBufferError::OutOfBounds)?)
-                .ok_or(ArrayBufferError::OutOfBounds)?;
+        let mut done = 0;
+        while done < count {
+            let position = index + done as u64;
+            let offset = page_offset(position);
+            let chunk = (PAGE_SIZE - offset).min(count - done);
             if let Ok(page) = block
                 .pages
                 .binary_search_by_key(&(position / PAGE_SIZE_U64), |page| page.index)
             {
-                *byte = block.pages[page].bytes[page_offset(position)];
+                block.pages[page]
+                    .bytes
+                    .read(offset, &mut result[done..done + chunk]);
             }
+            done += chunk;
         }
         Ok(result)
     }
@@ -407,7 +541,7 @@ impl ArrayBufferData {
                         .checked_add(additional)
                         .ok_or(Error::WorkLimit)?,
                 )?;
-                *staged_page = Some(Page::new(page_index)?);
+                *staged_page = Some(Page::new_for(page_index, block.shared)?);
                 additional += 1;
             }
             current = current
@@ -425,18 +559,24 @@ impl ArrayBufferData {
                 .expect_err("staged pages have distinct absent indices");
             block.pages.insert(position, page);
         }
-        for (offset, byte) in bytes.iter().enumerate() {
+        let mut done = 0;
+        while done < bytes.len() {
             // check_range proved every numeric element position is below the
             // buffer length, and the length is at most MAX_BYTE_LENGTH.
             let position = index
-                .checked_add(u64::try_from(offset).expect("a numeric element offset fits u64"))
+                .checked_add(u64::try_from(done).expect("a numeric element offset fits u64"))
                 .expect("validated numeric element range");
+            let offset = page_offset(position);
+            let chunk = (PAGE_SIZE - offset).min(bytes.len() - done);
             if let Ok(page) = block
                 .pages
                 .binary_search_by_key(&(position / PAGE_SIZE_U64), |page| page.index)
             {
-                block.pages[page].bytes[page_offset(position)] = *byte;
+                block.pages[page]
+                    .bytes
+                    .write(offset, &bytes[done..done + chunk]);
             }
+            done += chunk;
         }
         Ok(())
     }
@@ -458,8 +598,7 @@ impl ArrayBufferData {
         let mut copy = target.block()?.try_clone(budget)?;
         self.block()?
             .copy_range(source_start, &mut copy, target_start, count, budget)?;
-        target.block = Some(copy);
-        Ok(())
+        target.commit_copy(copy, target_start, count, budget)
     }
 
     fn move_bytes(
@@ -478,8 +617,7 @@ impl ArrayBufferData {
         let original = self.block()?;
         let mut copy = original.try_clone(budget)?;
         original.copy_range(source_start, &mut copy, target_start, count, budget)?;
-        self.block = Some(copy);
-        Ok(())
+        self.commit_copy(copy, target_start, count, budget)
     }
 
     fn clone_range(
@@ -616,7 +754,7 @@ impl Objects {
         // cannot reappear after subsequent growth (25.1.6.6).
         if has_partial_page {
             let page = block.pages.last_mut().expect("retained page");
-            page.bytes[page_offset(new_length)..].fill(0);
+            page.bytes.clear(page_offset(new_length), PAGE_SIZE);
         }
         data.byte_length = new_length;
         Ok(())
@@ -803,7 +941,13 @@ mod tests {
                     .pages
                     .binary_search_by_key(&(index / PAGE_SIZE_U64), |page| page.index)
                 {
-                    Ok(position) => block.pages[position].bytes[page_offset(index)],
+                    Ok(position) => {
+                        let mut byte = [0];
+                        block.pages[position]
+                            .bytes
+                            .read(page_offset(index), &mut byte);
+                        byte[0]
+                    }
                     Err(_) => 0,
                 }
             })

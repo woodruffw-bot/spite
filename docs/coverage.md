@@ -39,10 +39,10 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; shared atomic memory operations and agents remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations; waiting and agents remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
-| Atomics | Ordinary-buffer load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary/shared notify with empty waiter lists, pause's processor hint, and non-shared wait/waitAsync rejection |
+| Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary/shared notify with empty waiter lists, pause's processor hint, and non-shared wait/waitAsync rejection |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
@@ -62,6 +62,38 @@ not an alternative language specification.
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21395 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Safe shared storage and native atomic memory steps
+
+Shared pages now use Arc ownership and standard native atomic words. A short
+mutex-protected preparation resolves or allocates the sparse page; an owning
+prepared access then performs its atomic step without the directory lock. The
+page directory itself can block. There is no raw-pointer publication, new
+production dependency, or exception to the unsafe-code policy.
+
+TypedArray and DataView use the same atomic words as shared Atomics. Staged raw
+copies/moves preserve shared page identity, commit only destination bytes and
+retain concurrent atomic updates outside that range. Optional work, BigInt and
+allocation failures remain host failures; conversions finish before access, and
+return decoding precedes successful CAS. Shared waiting and agents remain
+Unsupported; shared 8-byte Atomics require native 64-bit support.
+
+Seven new Runtime units cover retained page ownership, steps under a held
+directory lock, concurrent first touch and adjacent updates, raw/atomic
+non-tearing access, copy/move identity, destination isolation, resource refusal
+and sequential consistency. Five new integration groups cover all eight integer
+kinds and nine memory methods, wraparound, converted store results, coercion and
+growth order, safe-integer-sized sparse buffers and host-limit propagation.
+Existing constructor/view/waiting checks remain exercised.
+
+No upstream sources or conformance credit are added. The inventory remains
+11,251 fixtures, twenty-four helpers, 11,166 reviewed sources and 21,395 variants;
+Runtime/Parser case files remain 698/88 and package controls remain 67.
+All 498 Runtime units, 2,372 non-RegExp integrations, the complete 21,395-variant
+corpus and all 67 package controls pass. CLI/raw smoke, formatting, strict
+Clippy, Rust 1.99, dependency policy and fixture inventories pass. The new
+shared-Atomics candidates also pass 218 required modes in an isolated corpus;
+they are not yet retained or included in the inventory above.
 
 ## Requested collection and cleanup jobs
 

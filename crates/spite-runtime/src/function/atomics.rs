@@ -1,4 +1,4 @@
-//! Atomics on ordinary ArrayBuffer-backed integer TypedArrays (25.4).
+//! Atomics on ordinary and shared integer TypedArrays (25.4).
 
 use super::{global_metadata::Member, typed_array_methods::TypedArrayWitness};
 use crate::{Error, ExceptionKind, Realm, Value, binary_data::ElementType};
@@ -40,10 +40,10 @@ impl Realm {
                 .expect("typed buffer")
                 .shared)
         })?;
-        if shared && !matches!(method, Member::AtomicsNotify) {
+        if shared && matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync) {
             return Err(Self::unsupported(
                 span,
-                "shared-buffer Atomics are not implemented",
+                "shared-buffer Atomics waiting is not implemented",
             ));
         }
         if matches!(method, Member::AtomicsWait | Member::AtomicsWaitAsync) {
@@ -109,12 +109,24 @@ impl Realm {
         let byte_length = self.object_work(span, |objects, _| {
             Ok(objects
                 .inspect(&buffer)?
-                .array_buffer_data()
+                .buffer_info()?
                 .expect("TypedArray buffer")
                 .byte_length())
         })?;
         if byte_index >= byte_length {
             return Err(Self::atomics_range(span));
+        }
+
+        if shared {
+            return self.atomics_shared(
+                method,
+                witness.element,
+                &buffer,
+                byte_index,
+                value,
+                replacement,
+                span,
+            );
         }
 
         let little_endian = cfg!(target_endian = "little");
@@ -192,6 +204,93 @@ impl Realm {
             objects.write_array_buffer_bytes(&buffer, byte_index, &updated[..size], budget)
         })?;
         Ok(old)
+    }
+
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "converted atomic operands and immutable layout"
+    )]
+    fn atomics_shared(
+        &mut self,
+        method: Member,
+        element: ElementType,
+        buffer: &spite_heap::Handle,
+        index: u64,
+        value: Option<Value>,
+        replacement: Option<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let size = element.size();
+        if size > crate::object::shared_page::WORD_BYTES {
+            return Err(Self::unsupported(
+                span,
+                "shared atomics of this width require native target support",
+            ));
+        }
+        let little_endian = cfg!(target_endian = "little");
+        let bits = |mut bytes: [u8; 8]| {
+            if !little_endian {
+                bytes[..size].reverse();
+            }
+            u64::from_le_bytes(bytes)
+        };
+        let operand = value
+            .as_ref()
+            .map(|value| {
+                self.integer_work(span, |budget| {
+                    element.encode(value.clone(), little_endian, budget)
+                })
+            })
+            .transpose()?
+            .map(bits);
+        let replacement = replacement
+            .map(|value| {
+                self.integer_work(span, |budget| element.encode(value, little_endian, budget))
+            })
+            .transpose()?
+            .map(bits);
+        let store = matches!(method, Member::AtomicsStore);
+        if store {
+            self.object_work(span, |_, budget| {
+                budget.value(value.as_ref().expect("store value"))
+            })?;
+        }
+        // Storage preparation can allocate or lock the sparse directory. It
+        // returns an owning Arc and releases that lock before the atomic step
+        // described by Atomics.isLockFree (25.4.11). No JS runs in either step.
+        let access = self.buffer_value_work(span, |objects, budget| {
+            objects
+                .inspect(buffer)?
+                .shared_array_buffer_data()
+                .expect("shared buffer")
+                .prepare_atomic(index, size, budget)
+        })?;
+        access.update(|old_bits| {
+            self.tick(span)?;
+            if store {
+                return Ok((operand, value.clone().expect("store value")));
+            }
+            let mut bytes = old_bits.to_le_bytes();
+            if !little_endian {
+                bytes[..size].reverse();
+            }
+            // Prepare the fallible BigInt return before a successful update.
+            let old =
+                self.integer_work(span, |budget| element.decode(bytes, little_endian, budget))?;
+            let next = operand.and_then(|operand| match method {
+                Member::AtomicsAdd => Some(old_bits.wrapping_add(operand)),
+                Member::AtomicsSub => Some(old_bits.wrapping_sub(operand)),
+                Member::AtomicsAnd => Some(old_bits & operand),
+                Member::AtomicsOr => Some(old_bits | operand),
+                Member::AtomicsXor => Some(old_bits ^ operand),
+                Member::AtomicsExchange => Some(operand),
+                Member::AtomicsCompareExchange => {
+                    (old_bits == operand).then_some(replacement.expect("replacement value"))
+                }
+                _ => unreachable!("atomic method"),
+            });
+            Ok((next, old))
+        })
     }
 
     fn atomics_validate(

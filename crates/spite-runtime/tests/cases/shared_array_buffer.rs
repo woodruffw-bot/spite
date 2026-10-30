@@ -118,9 +118,8 @@ fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fall
 #[test]
 fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
     for operation in [
-        "Atomics.load(new Int32Array(b),0)",
         "Atomics.wait(new Int32Array(b),0,0,0)",
-        "Atomics.exchange(new Int32Array(b),0,1)",
+        "Atomics.waitAsync(new Int32Array(b),0,0,0)",
     ] {
         let mut realm = Realm::default();
         realm.eval("let b=new SharedArrayBuffer(4),flag=0,hits=0;Object.defineProperty(b,'length',{get(){hits++;throw 1}});Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}})").unwrap();

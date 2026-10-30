@@ -5,6 +5,16 @@ These 11251 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Safe shared storage and native atomics
+
+Shared storage uses standard native atomics in Arc-owned sparse pages. Storage
+preparation holds a directory mutex, which is released before the prepared atomic
+memory step. Raw copies/moves preserve live page identities and destination
+bounds. Seven new Runtime units and five integration groups exercise concurrency,
+all integer atomic methods, coercions, growth and host failures. Waiting and agents
+remain Unsupported. No new upstream fixtures or conformance credit are claimed;
+existing sources, limits and worker counts are unchanged.
+
 ## Requested collection and cleanup jobs
 
 The explicit host gc hook returns an intrinsic Promise. The runner performs real

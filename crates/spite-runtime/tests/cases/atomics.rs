@@ -62,6 +62,85 @@ fn all_integer_kinds_support_load_store_and_read_modify_write() {
 }
 
 #[test]
+fn shared_integer_kinds_use_the_same_bytes_for_all_atomic_methods_and_views() {
+    for (name, bigint) in INTEGER_KINDS {
+        let n = if bigint { "n" } else { "" };
+        check(&format!(
+            "let b=new SharedArrayBuffer(32),a=new {name}(b,8,2);a[1]=23{n};a[0]=10{n};Atomics.load(a,0)===10{n}&&Atomics.add(a,0,3{n})===10{n}&&a[0]===13{n}&&Atomics.sub(a,0,2{n})===13{n}&&Atomics.and(a,0,6{n})===11{n}&&Atomics.or(a,0,8{n})===2{n}&&Atomics.xor(a,0,3{n})===10{n}&&Atomics.exchange(a,0,7{n})===9{n}&&Atomics.compareExchange(a,0,8{n},12{n})===7{n}&&a[0]===7{n}&&Atomics.compareExchange(a,0,7{n},12{n})===7{n}&&Atomics.store(a,0,4{n})===4{n}&&new {name}(b,8,2)[0]===4{n}&&a[1]===23{n}"
+        ));
+    }
+}
+
+#[test]
+fn shared_atomic_arithmetic_and_comparisons_truncate_at_element_width() {
+    for (name, max, min, n) in [
+        ("Int8Array", "127", "-128", ""),
+        ("Uint8Array", "255", "0", ""),
+        ("Int16Array", "32767", "-32768", ""),
+        ("Uint16Array", "65535", "0", ""),
+        ("Int32Array", "2147483647", "-2147483648", ""),
+        ("Uint32Array", "4294967295", "0", ""),
+        (
+            "BigInt64Array",
+            "9223372036854775807",
+            "-9223372036854775808",
+            "n",
+        ),
+        ("BigUint64Array", "18446744073709551615", "0", "n"),
+    ] {
+        check(&format!(
+            "let a=new {name}(new SharedArrayBuffer(16));a[0]={max}{n};Atomics.add(a,0,1{n})==={max}{n}&&a[0]==={min}{n}&&Atomics.sub(a,0,1{n})==={min}{n}&&a[0]==={max}{n}"
+        ));
+    }
+    check(
+        "let a=new Int8Array(new SharedArrayBuffer(8));a[0]=-1;Atomics.compareExchange(a,0,255,257)===-1&&a[0]===1&&Atomics.store(a,0,258.9)===258&&a[0]===2&&Object.is(Atomics.store(a,0,-0),0)",
+    );
+    check(
+        "let a=new BigUint64Array(new SharedArrayBuffer(8));Atomics.store(a,0,-1n)===-1n&&Atomics.compareExchange(a,0,-1n,18446744073709551617n)===18446744073709551615n&&a[0]===1n",
+    );
+}
+
+#[test]
+fn shared_atomic_coercions_finish_before_reading_and_keep_original_index_bounds() {
+    for (name, bigint) in INTEGER_KINDS {
+        let n = if bigint { "n" } else { "" };
+        check(&format!(
+            "let b=new SharedArrayBuffer(16,{{maxByteLength:32}}),a=new {name}(b),log='';let old=Atomics.compareExchange(a,{{valueOf(){{log+='i';b.grow(24);return 0}}}},{{valueOf(){{log+='v';a[0]=10{n};return 20{n}}}}},{{valueOf(){{log+='r';a[0]=20{n};return 7{n}}}}});old===20{n}&&a[0]===7{n}&&log==='ivr'&&b.byteLength===24"
+        ));
+        check(&format!(
+            "let b=new SharedArrayBuffer(16,{{maxByteLength:32}}),a=new {name}(b),length=a.length,calls=0,caught=false;try{{Atomics.store(a,{{valueOf(){{b.grow(32);return length}}}},{{valueOf(){{calls++;return 1{n}}}}})}}catch(e){{caught=e instanceof RangeError}}caught&&calls===0&&b.byteLength===32"
+        ));
+    }
+    check(
+        "let a=new Int32Array(new SharedArrayBuffer(8)),reason={},log='',same=false;try{Atomics.compareExchange(a,0,{valueOf(){log+='v';throw reason}},{valueOf(){log+='r';return 1}})}catch(e){same=e===reason}same&&log==='v'&&a[0]===0",
+    );
+}
+
+#[test]
+fn shared_atomic_access_preserves_sparse_safe_integer_sized_buffers() {
+    check(
+        "let max=2**53-1,b=new SharedArrayBuffer(0,{maxByteLength:max});b.grow(max);let a=new Uint32Array(b,max-7,1);Atomics.load(a,0)===0&&Atomics.store(a,0,4294967295)===4294967295&&a[0]===4294967295&&Atomics.add(a,0,1)===4294967295&&a[0]===0&&b.byteLength===max",
+    );
+}
+
+#[test]
+fn shared_atomic_bigint_return_refusal_leaves_bytes_and_skips_language_handlers() {
+    let mut realm = Realm::new(Limits {
+        max_bigint_bits: Some(4),
+        ..Limits::default()
+    });
+    realm.eval("let b=new SharedArrayBuffer(8),bytes=new Uint8Array(b),a=new BigUint64Array(b),caught=0,finalized=0,disposed=0;bytes[0]=255;let r={[Symbol.dispose](){disposed++}}").unwrap();
+    let result = realm.eval(
+        "function f(){using x=r;try{Atomics.add(a,0,1n)}catch(e){caught++}finally{finalized++}}f()",
+    );
+    assert!(matches!(result, Err(Error::Limit { .. })), "{result:?}");
+    assert_eq!(
+        realm.eval("bytes[0]===255&&caught===0&&finalized===0&&disposed===0"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
 fn read_modify_write_wraps_at_every_signed_and_unsigned_boundary() {
     for (name, max, next, one) in [
         ("Int8Array", "127", "-128", "1"),
