@@ -382,4 +382,80 @@ mod tests {
         assert!(receiver.next_atomics_wait_delay().is_none());
         assert!(!receiver.run_next_atomics_wait_job().unwrap());
     }
+    #[test]
+    fn suspending_agents_return_immediate_results_without_promise_hooks() {
+        let mut realm = Realm::new_suspending(crate::Limits::default());
+        assert!(!Realm::default().can_suspend);
+        assert!(realm.can_suspend);
+        assert_eq!(realm.eval("let a=new Int32Array(new SharedArrayBuffer(16)),b=new BigInt64Array(a.buffer),log='';a[0]=7;Promise=function(){throw 1};Object.defineProperty(Object.prototype,'async',{set(){throw 2},configurable:true});Atomics.wait(a,0,8,Infinity)==='not-equal'&&Atomics.wait(a,0,4294967303,0)==='timed-out'&&Atomics.wait(b,1,1n,NaN)==='not-equal'&&Atomics.wait(b,1,0n,-Infinity)==='timed-out'&&Atomics.wait(a,{valueOf(){log+='i';return 0}},{valueOf(){log+='v';return 7}},{valueOf(){log+='t';return 0}})==='timed-out'&&log==='ivt'&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
+        assert!(realm.next_atomics_wait_delay().is_none());
+    }
+
+    #[test]
+    fn finite_blocking_timeouts_retire_their_native_entries() {
+        let mut realm = Realm::new_suspending(crate::Limits::default());
+        realm
+            .eval("let a=new Int32Array(new SharedArrayBuffer(8))")
+            .unwrap();
+        assert_eq!(realm.eval("Atomics.wait(a,0,0,1.1)==='timed-out'&&Atomics.wait(a,1,0,2)==='timed-out'&&Atomics.notify(a,0)===0&&Atomics.notify(a,1)===0"), Ok(Value::Boolean(true)));
+        assert!(!realm.run_next_atomics_wait_job().unwrap());
+        assert!(realm.next_atomics_wait_delay().is_none());
+    }
+
+    #[test]
+    fn blocked_native_agents_preserve_queued_async_jobs_when_notified() {
+        use std::time::{Duration, Instant};
+        let mut sender = Realm::default();
+        let shared = export(
+            &mut sender,
+            "let b=new SharedArrayBuffer(8),a=new Int32Array(b);b",
+        );
+        let (ready, started) = std::sync::mpsc::channel();
+        let thread = std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(move || {
+            let mut receiver = Realm::new_suspending(crate::Limits::default());
+            receiver.bind_shared_array_buffer("buffer", &shared).unwrap();
+            receiver.eval("let a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0).value.then(v=>log=v)").unwrap();
+            ready.send(()).unwrap();
+            assert_eq!(receiver.eval("Atomics.wait(a,0,0,5000)"), Ok(Value::String("ok".into())));
+            assert_eq!(receiver.eval("log===''"), Ok(Value::Boolean(true)));
+            assert_eq!(receiver.next_atomics_wait_delay(), Some(Duration::ZERO));
+            assert!(receiver.run_next_atomics_wait_job().unwrap());
+            receiver.run_next_promise_job().unwrap();
+            assert_eq!(receiver.eval("log==='ok'&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
+        }).unwrap();
+        started.recv_timeout(Duration::from_secs(5)).unwrap();
+        // The first registered waiter is asynchronous, even if the synchronous
+        // caller has already entered suspension. Deliver its generic job first.
+        assert_eq!(sender.eval("Atomics.notify(a,0,1)"), Ok(Value::Number(1.0)));
+        let deadline = Instant::now() + Duration::from_secs(10);
+        let notified = loop {
+            let result = sender.eval("Atomics.notify(a,0,1)").unwrap();
+            if result == Value::Number(1.0) {
+                break true;
+            }
+            if Instant::now() >= deadline {
+                break false;
+            }
+            std::thread::yield_now();
+        };
+        thread.join().unwrap();
+        assert!(notified, "synchronous registration was never observed");
+    }
+
+    #[test]
+    fn blocking_work_refusals_bypass_handlers_and_leave_no_native_registration() {
+        let mut realm = Realm::new_suspending(crate::Limits::default());
+        realm
+            .eval("let a=new Int32Array(new SharedArrayBuffer(8)),caught=0,finalized=0")
+            .unwrap();
+        realm.limits.max_steps = Some(1000);
+        let result = realm.eval("try{for(let i=0;i<1000;i++)Atomics.wait(a,0,0,0)}catch(e){caught++}finally{finalized++}");
+        assert!(matches!(result, Err(Error::Limit { .. })), "{result:?}");
+        realm.limits.max_steps = None;
+        assert_eq!(
+            realm.eval("caught===0&&finalized===0&&Atomics.notify(a,0)===0"),
+            Ok(Value::Boolean(true))
+        );
+        assert!(realm.next_atomics_wait_delay().is_none());
+    }
 }

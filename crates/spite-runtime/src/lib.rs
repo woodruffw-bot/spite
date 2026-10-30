@@ -230,8 +230,9 @@ impl Completion {
 ///
 /// Only the documented subset is implemented. The ordinary global object exposes
 /// implemented standard bindings; host extensions are not installed.
-/// This agent cannot suspend: `Atomics.wait` validates its arguments
-/// and throws TypeError. `Atomics.waitAsync` supports immediate results and
+/// By default this agent cannot suspend: `Atomics.wait` validates its arguments
+/// and throws TypeError. [`Self::new_suspending`] permits synchronous waiting.
+/// `Atomics.waitAsync` supports immediate results and
 /// notifications from agents sharing native backing. Foreign notifications and
 /// finite timeouts progress through [`Self::run_next_atomics_wait_job`] at idle
 /// host boundaries.
@@ -263,6 +264,7 @@ pub struct Realm {
     module_import_requests: Option<VecDeque<ModuleImportRequest>>,
     gc_requests: VecDeque<function::GcRequest>,
     atomic_waits: Option<function::WaitRegistry>,
+    can_suspend: bool,
     supported_import_attributes: BTreeSet<JsString>,
     time_zone: Option<TimeZone>,
 }
@@ -297,9 +299,21 @@ impl Realm {
             module_import_requests: None,
             gc_requests: VecDeque::new(),
             atomic_waits: None,
+            can_suspend: false,
             supported_import_attributes: BTreeSet::new(),
             time_zone: None,
         }
+    }
+
+    /// Creates an agent allowed to suspend its calling thread for `Atomics.wait`.
+    ///
+    /// The policy is fixed for this Realm. Notifications can arrive from other
+    /// agents sharing its native backing. This constructor starts no thread;
+    /// [`Self::new`] and [`Self::default`] create nonsuspending agents.
+    pub fn new_suspending(limits: Limits) -> Self {
+        let mut realm = Self::new(limits);
+        realm.can_suspend = true;
+        realm
     }
 
     /// Marks an unavailable host global so access reports Unsupported, not a

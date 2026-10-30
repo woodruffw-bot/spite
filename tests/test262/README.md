@@ -5,6 +5,17 @@ These 11533 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Explicit suspending runtime agents
+
+An embedding can create a suspending Realm for real synchronous Atomics.wait.
+Native condition-variable signals reuse the waiter-ID queue, preserving pending
+async jobs and choosing timeout/notification results under the backing critical
+section. Seven native units cover defaults, conversions, blocking, notification,
+timeouts, FIFO and resource cleanup. The default Test262 host remains
+nonsuspending; CanBlockIsTrue and the agent host remain Unsupported until adapted.
+No upstream credit is added. Counts stay 21,959 variants and 72 controls; native
+case files stay 698/88. No dependencies or unsafe exception are introduced.
+
 ## Automatic semicolon insertion and EOF reviews
 
 All 102 whole unchanged originals in language/asi pass both required modes before

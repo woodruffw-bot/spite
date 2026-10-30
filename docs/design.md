@@ -4388,7 +4388,8 @@ Proxy has no prototype property; Atomics is a namespace, not a function.
 Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
 immediate asynchronous results, local notification and foreign notification jobs
-are supported; suspending agents and agent hosting retain Unsupported results. Proxy algorithms are
+are supported; explicit suspending agents use native condition variables. Test262
+agent hosting retains Unsupported results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4674,7 +4675,8 @@ job. No failure is turned into a JavaScript rejection, and no host thread is
 created by this queue.
 
 Wait and waitAsync reject ordinary buffers before index, value or timeout
-conversion. Each Realm currently selects AgentCanSuspend=false (9.7).
+conversion. Ordinary Realms select AgentCanSuspend=false (9.7); an explicit new_suspending
+constructor fixes the policy to true for its agent.
 DoWait converts the original-length index, ToInt32/ToBigInt64 value and numeric
 timeout in order before the synchronous wait TypeError, even for a mismatching
 value or zero timeout. Language coercion exceptions retain their identity;
@@ -4715,9 +4717,35 @@ completion. Timer expiration cannot stand in for $DONE, and real reaction throws
 retain their runtime phase and constructor identity. Test262 CanBlockIsFalse runs against this
 actual host policy; CanBlockIsTrue remains an unsupported host configuration.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Suspending agents
-and agent hosting remain deferred. Native thread
+for widths one, two, and eight; width four always returns true. Test262 agent
+hosting remains deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
+
+Suspending agents perform synchronous DoWait without allocating a Promise
+capability or result object (25.4.3.14). Expected-value comparison and registration
+share the waiter-list critical section. A matching zero timeout also registers
+and competes with notification; only asynchronous zero timeouts take the special
+fast path. Mismatches return "not-equal" after the usual value/timeout conversions.
+
+SuspendThisAgent uses the native owner's existing ID queue and a standard
+condition variable (25.4.3.13). A signal delivered between registration and
+parking cannot be lost. The blocked call consumes only its matching wake ID;
+queued asynchronous jobs retain FIFO order and run after synchronous execution.
+Spurious wakeups and notifications for other IDs never return a wait result.
+The backing mutex is released during suspension; no JavaScript heap or Promise
+capability crosses threads. No helper thread is started by the constructor.
+
+Finite waits retain the same overflow-safe logical timeout as waitAsync. Bounded
+native sleep slices avoid oversized OS deadlines without shortening the logical
+timeout. On timeout the original critical section decides whether native removal
+or notification won. Every successful wake reacquires that section before JS
+resumes. A native registration guard retires its own list/queue entry on host
+failure without canceling unrelated asynchronous jobs. Failures bypass JS catch,
+finally and disposal and never fabricate a normal wait result; an aborted
+notifier may leave another agent's infinite wait suspended. The embedding still
+controls agent lifetime and services asynchronous jobs at idle boundaries.
+The default Test262 runner remains nonsuspending, so CanBlockIsTrue and the
+Test262 agent host remain unavailable pending their host adapter.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
 ([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,

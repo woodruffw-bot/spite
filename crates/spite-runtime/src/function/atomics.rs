@@ -256,7 +256,7 @@ impl Realm {
         } else {
             timeout.max(0.0)
         };
-        if matches!(method, Member::AtomicsWait) {
+        if matches!(method, Member::AtomicsWait) && !self.can_suspend {
             // This agent cannot suspend its execution thread.
             return Err(Self::exception(
                 ExceptionKind::TypeError,
@@ -286,6 +286,10 @@ impl Realm {
         let access = self.buffer_value_work(span, |_, budget| {
             backing.prepare_atomic(byte_index, size, budget)
         })?;
+        if matches!(method, Member::AtomicsWait) {
+            return self
+                .blocking_atomic_wait(backing, byte_index, &access, expected, timeout, span);
+        }
         // DoWait creates the intrinsic capability and result before its shared
         // memory read, including immediate results. Neither invokes public hooks.
         let capability = self.intrinsic_promise_capability(span)?;

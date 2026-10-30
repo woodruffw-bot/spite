@@ -6,8 +6,8 @@ use spite_core::{JsString, Span};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-mod timeout;
-use timeout::WaitTimeout;
+mod blocking;
+use object::WaitTimeout;
 
 #[derive(Debug)]
 struct PendingWait {

@@ -189,6 +189,15 @@ impl SharedArrayBufferData {
         }
     }
 
+    pub(crate) fn cancel_waiter(&self, id: usize, owner: &Arc<WaitOwner>) {
+        if let Ok(mut state) = self.0.lock() {
+            let owner = Arc::downgrade(owner);
+            state
+                .waiters
+                .retain(|waiter| waiter.id != id || !owner.ptr_eq(&waiter.owner));
+        }
+    }
+
     pub(crate) fn take_timed_waiter(
         &self,
         id: usize,

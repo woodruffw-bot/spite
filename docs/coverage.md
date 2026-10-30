@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; suspending agents and agent hosting remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; explicit host-configured synchronous waits; Test262 agent hosting remains Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
@@ -62,6 +62,35 @@ not an alternative language specification.
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21959 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Explicit suspending agents and synchronous waits
+
+Realm::new_suspending fixes AgentCanSuspend=true for an explicitly configured
+agent; ordinary constructors retain false. Synchronous DoWait performs ordered
+coercions, comparison and registration without Promise/result-object allocation.
+It returns real mismatch, timeout or notification results. Matching zero timeouts
+register and compete with notify as required by the synchronous algorithm.
+
+The existing native waiter-ID queue now also carries condition-variable wake
+signals. A blocked call consumes only its matching ID, preserving queued async
+jobs; spurious or unrelated wakeups never complete the call. Registration-before-
+parking notifications cannot be lost. Finite waits retain overflow-safe logical
+deadlines, and the waiter-list critical section chooses the winner and precedes
+resumed JS. A native guard cancels only its own entry after a host failure. No
+foreign heap access, dependencies, unsafe code, threads, default quotas or test
+allowances are introduced. An aborted notifier may leave an infinite wait
+suspended; host errors never become normal wait results or language exceptions.
+
+Seven additional Runtime units cover nonsuspending defaults, Int32/BigInt64
+coercions and immediate results, real finite timeouts, actual native-thread
+notification with pending asynchronous jobs, pre-park signals, FIFO preservation,
+work refusal and registration cleanup. Test262's default runner still selects
+AgentCanSuspend=false; CanBlockIsTrue and the agent host remain unavailable.
+No upstream credit is added: counts remain 21,959 retained variants and 72 runner
+controls, with case files at 698 Runtime/88 Parser. All 526 Runtime units, 2,384
+non-RegExp integrations, 21,959 retained variants and 72 runner controls pass.
+Formatting, strict workspace Clippy, Rust 1.99 all-targets checking, CLI/raw checks
+and all dependency/inventory gates pass.
 
 ## Automatic semicolon insertion audit and reviewed EOF diagnostics
 

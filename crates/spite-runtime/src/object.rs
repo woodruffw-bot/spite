@@ -59,6 +59,8 @@ mod shared_array_buffer;
 pub(crate) use shared_array_buffer::{SharedArrayBufferData, SharedBufferError};
 mod wait_owner;
 pub(crate) use wait_owner::WaitOwner;
+mod wait_timeout;
+pub(crate) use wait_timeout::WaitTimeout;
 mod promise_aggregate;
 mod proxy;
 pub(crate) mod shared_page;

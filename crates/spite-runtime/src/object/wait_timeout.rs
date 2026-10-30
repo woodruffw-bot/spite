@@ -1,16 +1,16 @@
-//! Positive finite timeouts without overflowing the native monotonic clock.
+//! Finite wait timeouts without overflowing the native monotonic clock.
 
 use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, Debug)]
-pub(super) struct WaitTimeout {
+pub(crate) struct WaitTimeout {
     started: Instant,
     millis: u128,
 }
 
 impl WaitTimeout {
-    pub(super) fn new(millis: f64, started: Instant) -> Self {
-        debug_assert!(millis.is_finite() && millis > 0.0);
+    pub(crate) fn new(millis: f64, started: Instant) -> Self {
+        debug_assert!(millis.is_finite() && millis >= 0.0);
         // Round up, providing nonnegative implementation padding (DoWait).
         // Saturation is beyond Duration's entire elapsed range, so even huge
         // finite JS Numbers cannot expire early or overflow Instant addition.
@@ -20,11 +20,11 @@ impl WaitTimeout {
         }
     }
 
-    pub(super) fn expired(self, now: Instant) -> bool {
+    pub(crate) fn expired(self, now: Instant) -> bool {
         now.saturating_duration_since(self.started).as_millis() >= self.millis
     }
 
-    pub(super) fn remaining(self, now: Instant) -> Duration {
+    pub(crate) fn remaining(self, now: Instant) -> Duration {
         let millis = self
             .millis
             .saturating_sub(now.saturating_duration_since(self.started).as_millis());
