@@ -4378,8 +4378,8 @@ Proxy has no prototype property; Atomics is a namespace, not a function.
 
 Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
-immediate asynchronous results and current-agent notification queues are supported;
-inter-agent notification and agent hosting retain Unsupported results. Proxy algorithms are
+immediate asynchronous results, local notification and foreign notification jobs
+are supported; suspending agents and agent hosting retain Unsupported results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4448,7 +4448,8 @@ live growth and alias checks. Existing global lexical bindings keep their
 ordinary precedence. Isolated Realms can execute native atomic operations on the
 same backing concurrently without sharing their interpreters or object heaps.
 This host transfer API creates no agent threads or JavaScript extensions;
-inter-agent notification and Test262 agent hosting remain Unsupported.
+foreign notifications progress through explicit idle jobs; Test262 agent hosting
+remains Unsupported.
 
 SharedArrayBuffer.prototype.slice (25.2.5.6) snapshots source length before
 converting start/end and invoking SpeciesConstructor. It shares the ordinary
@@ -4637,17 +4638,34 @@ Promise capabilities remain in a Realm-owned registry with three heap root guard
 Compare-and-register occurs under the list critical section after all fallible
 result/registry preparation. Rechecking the expected value prevents registration
 against a value that changed during preparation. Notify preflights its selection
-before removing records; a foreign live owner reports Unsupported without partial
-removal. A retained batch guard keeps the critical section through same-agent
-NotifyWaiter resolution. Its private intrinsic resolving functions receive the
+before removing records and retains the selected native owners. A retained batch
+guard keeps the critical section through same-agent NotifyWaiter resolution. Its private intrinsic resolving functions receive the
 primitive string "ok", so they cannot execute JavaScript or reenter the backing
 mutex. They enqueue Promise reactions before notify returns, with no extra
 fulfillment job. Host failure after removal can leave responses unsettled, as
 with other aborted host/job operations; failures are never Promise rejections.
 Dropping the Realm cancels its native waiters. Completed notification drops the
 root guards while already queued reactions retain their normal strong roots.
+
+Foreign NotifyWaiter calls enqueue integer IDs into the owning agent's native
+Mutex/VecDeque queue (EnqueueResolveInAgentJob, 25.4.3.15). They never access
+foreign Promise capabilities or JavaScript heap values. The queue preserves
+enqueue order across backing stores and byte offsets. Only its owning Realm
+consumes it. Idle jobs resolve these rooted capabilities with "ok" before
+servicing due timers; reactions still run through ordinary Promise jobs. A ready
+foreign job makes next_atomics_wait_delay return zero, including for an infinite
+wait. Queue locks are released before any backing lock or heap operation;
+notification takes the backing lock before briefly taking a target queue lock.
+
+If native notification wins after timeout job selection, the missing list entry
+cancels that deadline while retaining the capability for its queued delivery.
+An aborted host notification may instead leave that capability unsettled until
+Realm retirement. A resource refusal before consuming a ready ID preserves its
+job. No failure is turned into a JavaScript rejection, and no host thread is
+created by this queue.
+
 Wait and waitAsync reject ordinary buffers before index, value or timeout
-conversion. The current single-agent host selects AgentCanSuspend=false (9.7).
+conversion. Each Realm currently selects AgentCanSuspend=false (9.7).
 DoWait converts the original-length index, ToInt32/ToBigInt64 value and numeric
 timeout in order before the synchronous wait TypeError, even for a mismatching
 value or zero timeout. Language coercion exceptions retain their identity;
@@ -4688,7 +4706,7 @@ completion. Timer expiration cannot stand in for $DONE, and real reaction throws
 retain their runtime phase and constructor identity. Test262 CanBlockIsFalse runs against this
 actual host policy; CanBlockIsTrue remains an unsupported host configuration.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Inter-agent notification, suspending agents
+for widths one, two, and eight; width four always returns true. Suspending agents
 and agent hosting remain deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
 

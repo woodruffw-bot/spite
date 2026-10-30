@@ -1,4 +1,4 @@
-//! Rooted asynchronous waits in the current agent (25.4.3.14, NotifyWaiter).
+//! Rooted asynchronous waits and native notification jobs (25.4.3.14–15).
 
 use super::super::PromiseCapability;
 use crate::{Error, Realm, Value, object};
@@ -20,9 +20,14 @@ struct PendingWait {
 
 #[derive(Debug)]
 pub(crate) struct WaitRegistry {
-    owner: Arc<()>,
+    owner: Arc<object::WaitOwner>,
     next_id: usize,
     pending: Vec<PendingWait>,
+}
+
+enum WaitJob {
+    Notified(usize),
+    TimedOut(usize, object::SharedArrayBufferData),
 }
 
 impl Drop for WaitRegistry {
@@ -64,7 +69,7 @@ impl Realm {
         });
         self.object_work(span, |_, budget| budget.charge(moved))?;
         let waits = self.atomic_waits.get_or_insert_with(|| WaitRegistry {
-            owner: Arc::new(()),
+            owner: Arc::new(object::WaitOwner::default()),
             next_id: 0,
             pending: Vec::new(),
         });
@@ -106,56 +111,66 @@ impl Realm {
         span: Span,
     ) -> Result<usize, Error> {
         let owner = self.atomic_waits.as_ref().map(|waits| waits.owner.clone());
-        let notification = self.buffer_value_work(span, |_, budget| {
-            backing.take_waiters(index, count, owner.as_ref(), budget)
-        })?;
-        let object::WaiterNotification::Local(mut batch) = notification else {
-            return Err(Self::unsupported(
-                span,
-                "notification across agents is not implemented",
-            ));
-        };
-        let ids = batch.take_ids();
-        let count = ids.len();
-        for id in ids {
-            let waits = self.atomic_waits.as_mut().expect("local wait registry");
-            let position = waits
-                .pending
-                .iter()
-                .position(|wait| wait.id == id)
-                .expect("local registered waiter");
-            let wait = waits.pending.remove(position);
-            // The batch retains the critical section. This private intrinsic
-            // resolving function receives a primitive string, so it only queues
-            // reactions and cannot run JS or reenter the backing mutex.
-            self.call(
-                wait.capability.resolve.clone(),
-                Value::Undefined,
-                vec![Value::String(JsString::from("ok"))],
-                span,
-            )?;
+        let mut batch =
+            self.buffer_value_work(span, |_, budget| backing.take_waiters(index, count, budget))?;
+        let targets = batch.take_targets();
+        let count = targets.len();
+        for (target, id) in targets {
+            if owner
+                .as_ref()
+                .is_some_and(|owner| Arc::ptr_eq(owner, &target))
+            {
+                // NotifyWaiter resolves locally inside the critical section.
+                // A primitive result cannot run JS or reenter the backing lock.
+                self.fulfill_atomic_wait(id, "ok", span)?;
+            } else {
+                // EnqueueResolveInAgentJob carries only an integer identity.
+                // The target owns and roots its capability in its own heap.
+                self.object_work(span, |_, budget| target.enqueue(id, budget))?;
+            }
         }
         Ok(count)
     }
 
-    /// Returns a scheduling hint for the next finite asynchronous wait timeout.
+    fn fulfill_atomic_wait(&mut self, id: usize, result: &str, span: Span) -> Result<(), Error> {
+        let waits = self.atomic_waits.as_mut().expect("local wait registry");
+        let position = waits
+            .pending
+            .iter()
+            .position(|wait| wait.id == id)
+            .expect("local registered waiter");
+        let wait = waits.pending.remove(position);
+        self.call(
+            wait.capability.resolve.clone(),
+            Value::Undefined,
+            vec![Value::String(JsString::from(result))],
+            span,
+        )?;
+        Ok(())
+    }
+
+    /// Returns a scheduling hint for the next asynchronous wait job.
     ///
-    /// Infinite waits have no deadline. This query does not initialize a Realm
+    /// Queued notifications return zero; unnotified infinite waits have no deadline.
+    /// This query does not initialize a Realm
     /// or run JavaScript; evaluation never sleeps or starts background timers.
     pub fn next_atomics_wait_delay(&self) -> Option<Duration> {
         let now = Instant::now();
-        self.atomic_waits
-            .as_ref()?
+        let waits = self.atomic_waits.as_ref()?;
+        if waits.owner.has_ready() {
+            return Some(Duration::ZERO);
+        }
+        waits
             .pending
             .iter()
             .filter_map(|wait| wait.timeout.map(|timeout| timeout.remaining(now)))
             .min()
     }
 
-    /// Services one expired asynchronous wait as an idle host job.
+    /// Services one foreign notification or expired wait as an idle host job.
     ///
     /// Resolving its Promise queues reactions without calling JavaScript.
-    /// No due timer returns false without changing execution state. Active
+    /// No ready job returns false without changing execution state. Active
     /// execution is rejected. The job uses the configured optional work budget;
     /// failure before removal preserves the waiter, while later host failures
     /// can leave the Promise unsettled and never become JavaScript rejections.
@@ -164,52 +179,63 @@ impl Realm {
         if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
             return Err(Error::Host {
                 span,
-                message: "cannot service an Atomics timeout during active execution".into(),
+                message: "cannot service an Atomics wait job during active execution".into(),
             });
         }
-        let now = Instant::now();
-        let Some((id, backing, owner, work)) = self.atomic_waits.as_ref().and_then(|waits| {
-            waits
-                .pending
-                .iter()
-                .find(|wait| wait.timeout.is_some_and(|timeout| timeout.expired(now)))
-                .map(|wait| {
-                    (
-                        wait.id,
-                        wait.backing.clone(),
-                        waits.owner.clone(),
-                        waits.pending.len(),
-                    )
-                })
-        }) else {
+        let Some(waits) = self.atomic_waits.as_ref() else {
             return Ok(false);
         };
+        let ready = waits.owner.front().map_err(|error| Error::Host {
+            span,
+            message: error.to_string(),
+        })?;
+        let now = Instant::now();
+        let job = if let Some(id) = ready {
+            WaitJob::Notified(id)
+        } else if let Some(wait) = waits
+            .pending
+            .iter()
+            .find(|wait| wait.timeout.is_some_and(|timeout| timeout.expired(now)))
+        {
+            WaitJob::TimedOut(wait.id, wait.backing.clone())
+        } else {
+            return Ok(false);
+        };
+        let owner = waits.owner.clone();
+        let work = waits.pending.len();
         self.clear_kept_objects()?;
         let caller_work = self.remaining_steps;
         self.remaining_steps = self.limits.max_steps;
         self.job_active = true;
         let result = (|| {
             self.object_work(span, |_, budget| budget.charge(work + 1))?;
-            let mut batch = self.buffer_value_work(span, |_, budget| {
-                backing.take_timed_waiter(id, &owner, budget)
-            })?;
-            let removed = !batch.take_ids().is_empty();
-            let waits = self.atomic_waits.as_mut().expect("timed wait registry");
-            let position = waits
-                .pending
-                .iter()
-                .position(|wait| wait.id == id)
-                .expect("selected timed waiter");
-            let wait = waits.pending.remove(position);
-            // A previous aborted notification may already have removed the
-            // native entry. Retiring that record must not invent a resolution.
-            if removed {
-                self.call(
-                    wait.capability.resolve.clone(),
-                    Value::Undefined,
-                    vec![Value::String(JsString::from("timed-out"))],
-                    span,
-                )?;
+            match job {
+                WaitJob::Notified(id) => {
+                    self.object_work(span, |_, _| owner.consume(id))?;
+                    self.fulfill_atomic_wait(id, "ok", span)?;
+                }
+                WaitJob::TimedOut(id, backing) => {
+                    let mut batch = self.buffer_value_work(span, |_, budget| {
+                        backing.take_timed_waiter(id, &owner, budget)
+                    })?;
+                    if batch.take_targets().is_empty() {
+                        // A foreign notification can win after job selection.
+                        // Keep its rooted capability for the queued delivery.
+                        // An earlier aborted host operation may also leave this
+                        // Promise unsettled; neither case invents a timeout.
+                        let wait = self
+                            .atomic_waits
+                            .as_mut()
+                            .expect("wait registry")
+                            .pending
+                            .iter_mut()
+                            .find(|wait| wait.id == id)
+                            .expect("selected timed waiter");
+                        wait.timeout = None;
+                    } else {
+                        self.fulfill_atomic_wait(id, "timed-out", span)?;
+                    }
+                }
             }
             Ok(true)
         })();
@@ -273,6 +299,33 @@ mod tests {
     }
 
     #[test]
+    fn a_removed_native_waiter_keeps_its_capability_for_a_later_foreign_delivery() {
+        let mut realm = Realm::default();
+        realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),result='';Atomics.waitAsync(a,0,0,1).value.then(v=>result=v)").unwrap();
+        let waits = realm.atomic_waits.as_ref().unwrap();
+        let backing = waits.pending[0].backing.clone();
+        let owner = waits.owner.clone();
+        let id = waits.pending[0].id;
+        // Simulate a timeout selection overtaken by native waiter removal.
+        let mut batch = backing
+            .take_waiters(0, 1, &mut object::Budget::with_work_limit(None))
+            .unwrap();
+        assert_eq!(batch.take_targets()[0].1, id);
+        drop(batch);
+        std::thread::sleep(Duration::from_millis(2));
+        assert!(realm.run_next_atomics_wait_job().unwrap());
+        assert!(realm.next_atomics_wait_delay().is_none());
+        assert_eq!(realm.atomic_waits.as_ref().unwrap().pending.len(), 1);
+        assert_eq!(realm.eval("result===''"), Ok(Value::Boolean(true)));
+        owner
+            .enqueue(id, &mut object::Budget::with_work_limit(None))
+            .unwrap();
+        assert!(realm.run_next_atomics_wait_job().unwrap());
+        realm.run_next_promise_job().unwrap();
+        assert_eq!(realm.eval("result==='ok'"), Ok(Value::Boolean(true)));
+    }
+
+    #[test]
     fn dropping_the_realm_retires_its_native_waiters() {
         let mut realm = Realm::default();
         let Value::Object(buffer) = realm.eval("let b=new SharedArrayBuffer(8);b").unwrap() else {
@@ -290,30 +343,14 @@ mod tests {
         realm
             .eval("Atomics.waitAsync(new Int32Array(b),0,0)")
             .unwrap();
-        assert!(matches!(
-            backing
-                .take_waiters(
-                    0,
-                    usize::MAX,
-                    None,
-                    &mut object::Budget::with_work_limit(None)
-                )
-                .unwrap(),
-            object::WaiterNotification::ForeignAgent
-        ));
+        // Keep the native owner alive independently while testing registry Drop.
+        let owner = realm.atomic_waits.as_ref().unwrap().owner.clone();
         drop(realm);
-        let object::WaiterNotification::Local(mut batch) = backing
-            .take_waiters(
-                0,
-                usize::MAX,
-                None,
-                &mut object::Budget::with_work_limit(None),
-            )
-            .unwrap()
-        else {
-            panic!("retired agent")
-        };
-        assert!(batch.take_ids().is_empty());
+        let mut batch = backing
+            .take_waiters(0, usize::MAX, &mut object::Budget::with_work_limit(None))
+            .unwrap();
+        assert!(batch.take_targets().is_empty());
+        assert!(!owner.has_ready());
     }
 
     #[test]

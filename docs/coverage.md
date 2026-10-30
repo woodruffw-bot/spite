@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and current-agent notifications; finite timeout jobs; inter-agent notification and agent hosting remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; suspending agents and agent hosting remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
@@ -62,6 +62,34 @@ not an alternative language specification.
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21755 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Cross-agent asynchronous notification jobs
+
+Foreign notifications now enqueue native waiter IDs in a standard Mutex/VecDeque
+owned by the receiving agent. Its rooted Promise capabilities stay in its own
+Realm. Same-agent settlement remains inline inside the waiter-list critical
+section; foreign settlement happens in an explicit idle generic job, and only
+ordinary Promise jobs run reactions. A ready notification yields a zero scheduling
+hint even for an infinite wait. Enqueue order is preserved across backing stores
+and byte offsets. Native owner references keep selected queues alive without
+retaining JavaScript heaps. Suspending agents and Test262 agent hosting remain
+Unsupported.
+
+Six additional Runtime units and an updated foreign-notification regression cover
+FIFO enqueue order, mixed local/foreign counts, actual native-thread delivery,
+GC retention/release, work refusal and caller-state restoration, both timeout
+winners and capability retention when native removal overtakes timeout selection.
+The latter disables the stale deadline while preserving the pending capability
+for its foreign job. Later host failures may leave it unsettled until Realm
+retirement; they never become language rejections. No dependencies, unsafe code,
+worker counts, default quotas or test allowances change.
+
+No upstream fixtures or new conformance credit are added. The inventory remains
+11,431 fixtures, twenty-four helpers, 11,346 reviewed sources, 21,755 variants and
+71 controls; case files remain 698 Runtime/88 Parser. All 519 Runtime units,
+2,383 non-RegExp integrations, 21,755 retained variants and 71 runner controls
+pass, as do formatting, strict workspace Clippy, Rust 1.99 all-targets checking,
+CLI/raw checks and all dependency/inventory gates.
 
 ## Shared backing transfer between isolated Realms
 

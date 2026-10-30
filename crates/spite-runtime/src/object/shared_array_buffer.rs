@@ -16,24 +16,19 @@ struct SharedState {
 #[derive(Debug)]
 struct Waiter {
     index: u64,
-    owner: Weak<()>,
+    owner: Weak<WaitOwner>,
     id: usize,
 }
 
-pub(crate) enum WaiterNotification<'a> {
-    Local(WaiterBatch<'a>),
-    ForeignAgent,
-}
-
-/// Retain the waiter-list critical section through native same-agent resolution.
+/// Retain the critical section through local resolution and foreign enqueueing.
 pub(crate) struct WaiterBatch<'a> {
-    ids: Vec<usize>,
+    targets: Vec<(Arc<WaitOwner>, usize)>,
     _critical: Option<std::sync::MutexGuard<'a, SharedState>>,
 }
 
 impl WaiterBatch<'_> {
-    pub(crate) fn take_ids(&mut self) -> Vec<usize> {
-        std::mem::take(&mut self.ids)
+    pub(crate) fn take_targets(&mut self) -> Vec<(Arc<WaitOwner>, usize)> {
+        std::mem::take(&mut self.targets)
     }
 }
 
@@ -113,7 +108,7 @@ impl SharedArrayBufferData {
         index: u64,
         access: &super::shared_page::PreparedAtomic,
         expected: u64,
-        owner: &Arc<()>,
+        owner: &Arc<WaitOwner>,
         id: usize,
         budget: &mut Budget,
     ) -> Result<bool, ArrayBufferError> {
@@ -140,43 +135,35 @@ impl SharedArrayBufferData {
         Ok(true)
     }
 
-    /// Prepare removal before mutating the list. A foreign live agent remains
-    /// an explicit boundary until inter-agent notification jobs are supported.
+    /// Prepare removal before mutating the list and retain selected live owners.
     pub(crate) fn take_waiters(
         &self,
         index: u64,
         count: usize,
-        owner: Option<&Arc<()>>,
         budget: &mut Budget,
-    ) -> Result<WaiterNotification<'_>, ArrayBufferError> {
+    ) -> Result<WaiterBatch<'_>, ArrayBufferError> {
         if count == 0 {
-            return Ok(WaiterNotification::Local(WaiterBatch {
-                ids: Vec::new(),
+            return Ok(WaiterBatch {
+                targets: Vec::new(),
                 _critical: None,
-            }));
+            });
         }
         let mut state = self.0.lock().map_err(|_| Error::PoisonedSharedStorage)?;
         let count = count.min(state.waiters.len());
         budget.charge(state.waiters.len())?;
         budget.charge(count)?;
-        let owner = owner.map(Arc::downgrade);
         let mut selected = Vec::new();
         selected
             .try_reserve_exact(count)
             .map_err(|_| ArrayBufferError::Capacity)?;
-        for waiter in state
+        for (owner, id) in state
             .waiters
             .iter()
-            .filter(|waiter| waiter.index == index && waiter.owner.strong_count() != 0)
+            .filter(|waiter| waiter.index == index)
+            .filter_map(|waiter| waiter.owner.upgrade().map(|owner| (owner, waiter.id)))
             .take(count)
         {
-            if !owner
-                .as_ref()
-                .is_some_and(|owner| owner.ptr_eq(&waiter.owner))
-            {
-                return Ok(WaiterNotification::ForeignAgent);
-            }
-            selected.push(waiter.id);
+            selected.push((owner, id));
         }
         let mut remaining = selected.len();
         state.waiters.retain(|waiter| {
@@ -189,13 +176,13 @@ impl SharedArrayBufferData {
                 true
             }
         });
-        Ok(WaiterNotification::Local(WaiterBatch {
-            ids: selected,
+        Ok(WaiterBatch {
+            targets: selected,
             _critical: Some(state),
-        }))
+        })
     }
 
-    pub(crate) fn cancel_waiters(&self, owner: &Arc<()>) {
+    pub(crate) fn cancel_waiters(&self, owner: &Arc<WaitOwner>) {
         if let Ok(mut state) = self.0.lock() {
             let owner = Arc::downgrade(owner);
             state.waiters.retain(|waiter| !owner.ptr_eq(&waiter.owner));
@@ -205,30 +192,31 @@ impl SharedArrayBufferData {
     pub(crate) fn take_timed_waiter(
         &self,
         id: usize,
-        owner: &Arc<()>,
+        owner: &Arc<WaitOwner>,
         budget: &mut Budget,
     ) -> Result<WaiterBatch<'_>, ArrayBufferError> {
         let mut state = self.0.lock().map_err(|_| Error::PoisonedSharedStorage)?;
         budget.charge(state.waiters.len() + 1)?;
-        let owner = Arc::downgrade(owner);
+        let weak_owner = Arc::downgrade(owner);
         let Some(position) = state
             .waiters
             .iter()
-            .position(|waiter| waiter.id == id && owner.ptr_eq(&waiter.owner))
+            .position(|waiter| waiter.id == id && weak_owner.ptr_eq(&waiter.owner))
         else {
             return Ok(WaiterBatch {
-                ids: Vec::new(),
+                targets: Vec::new(),
                 _critical: None,
             });
         };
-        let mut ids = Vec::new();
-        ids.try_reserve_exact(1)
+        let mut targets = Vec::new();
+        targets
+            .try_reserve_exact(1)
             .map_err(|_| ArrayBufferError::Capacity)?;
         budget.charge(state.waiters.len() - position)?;
         state.waiters.remove(position);
-        ids.push(id);
+        targets.push((owner.clone(), id));
         Ok(WaiterBatch {
-            ids,
+            targets,
             _critical: Some(state),
         })
     }
@@ -267,18 +255,15 @@ mod tests {
         Budget::with_work_limit(None)
     }
 
-    fn notifications(result: WaiterNotification<'_>) -> Vec<usize> {
-        let WaiterNotification::Local(mut batch) = result else {
-            panic!("foreign waiter")
-        };
-        batch.take_ids()
+    fn notifications(mut batch: WaiterBatch<'_>) -> Vec<usize> {
+        batch.take_targets().into_iter().map(|(_, id)| id).collect()
     }
 
     #[test]
     fn waiter_registration_comparison_and_notification_refusal_preserve_fifo() {
         let data = SharedArrayBufferData::new(8, None).unwrap();
         let access = data.prepare_atomic(0, 4, &mut unlimited()).unwrap();
-        let owner = Arc::new(());
+        let owner = Arc::new(WaitOwner::default());
         assert!(
             !data
                 .register_waiter(0, &access, 1, &owner, 0, &mut unlimited())
@@ -291,38 +276,28 @@ mod tests {
             );
         }
         assert!(matches!(
-            data.take_waiters(0, 2, Some(&owner), &mut Budget::new(0)),
+            data.take_waiters(0, 2, &mut Budget::new(0)),
             Err(ArrayBufferError::Storage(Error::WorkLimit))
         ));
         assert_eq!(
-            notifications(
-                data.take_waiters(0, 1, Some(&owner), &mut unlimited())
-                    .unwrap()
-            ),
+            notifications(data.take_waiters(0, 1, &mut unlimited()).unwrap()),
             [4]
         );
         assert_eq!(
-            notifications(
-                data.take_waiters(0, usize::MAX, Some(&owner), &mut unlimited())
-                    .unwrap()
-            ),
+            notifications(data.take_waiters(0, usize::MAX, &mut unlimited()).unwrap()),
             [9]
         );
         assert!(
-            notifications(
-                data.take_waiters(0, usize::MAX, Some(&owner), &mut unlimited())
-                    .unwrap()
-            )
-            .is_empty()
+            notifications(data.take_waiters(0, usize::MAX, &mut unlimited()).unwrap()).is_empty()
         );
     }
 
     #[test]
-    fn foreign_agent_boundary_and_retirement_do_not_drop_other_live_waiters() {
+    fn mixed_owners_and_retirement_do_not_drop_other_live_waiters() {
         let data = SharedArrayBufferData::new(8, None).unwrap();
         let access = data.prepare_atomic(0, 4, &mut unlimited()).unwrap();
-        let first = Arc::new(());
-        let second = Arc::new(());
+        let first = Arc::new(WaitOwner::default());
+        let second = Arc::new(WaitOwner::default());
         assert!(
             data.register_waiter(0, &access, 0, &first, 1, &mut unlimited())
                 .unwrap()
@@ -332,23 +307,16 @@ mod tests {
                 .unwrap()
         );
         assert!(matches!(
-            data.take_waiters(0, usize::MAX, Some(&first), &mut unlimited())
-                .unwrap(),
-            WaiterNotification::ForeignAgent
+            data.take_waiters(0, usize::MAX, &mut Budget::new(0)),
+            Err(ArrayBufferError::Storage(Error::WorkLimit))
         ));
         assert_eq!(
-            notifications(
-                data.take_waiters(0, 1, Some(&first), &mut unlimited())
-                    .unwrap()
-            ),
+            notifications(data.take_waiters(0, 1, &mut unlimited()).unwrap()),
             [1]
         );
         data.cancel_waiters(&first);
         assert_eq!(
-            notifications(
-                data.take_waiters(0, usize::MAX, Some(&second), &mut unlimited())
-                    .unwrap()
-            ),
+            notifications(data.take_waiters(0, usize::MAX, &mut unlimited()).unwrap()),
             [2]
         );
         assert!(
@@ -357,11 +325,7 @@ mod tests {
         );
         drop(second);
         assert!(
-            notifications(
-                data.take_waiters(0, usize::MAX, None, &mut unlimited())
-                    .unwrap()
-            )
-            .is_empty()
+            notifications(data.take_waiters(0, usize::MAX, &mut unlimited()).unwrap()).is_empty()
         );
     }
 

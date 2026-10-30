@@ -5,6 +5,17 @@ These 11431 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Cross-agent asynchronous notification jobs
+
+Native FIFO deliveries let a notifying Realm send waiter IDs to the receiving
+Realm without accessing its heap. The receiver resolves its own rooted Promise
+capabilities at idle job boundaries. Same-agent notification remains inline;
+reactions remain ordinary Promise jobs. Six new Runtime units cover ordering,
+counts, native threads, GC, resources and timeout races. Suspending agents and
+the Test262 agent host remain Unsupported. No upstream credit is added: counts
+remain 11,431 fixtures, twenty-four helpers, 11,346 reviewed sources, 21,755
+variants and 71 controls, with native case files at 698/88.
+
 ## Shared backing host transfer
 
 A checked native handle can retain shared bytes across isolated Realms while

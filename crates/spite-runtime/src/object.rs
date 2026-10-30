@@ -56,9 +56,9 @@ pub(crate) use promise::PromiseReaction;
 pub use promise::PromiseState;
 mod module_import;
 mod shared_array_buffer;
-pub(crate) use shared_array_buffer::{
-    SharedArrayBufferData, SharedBufferError, WaiterNotification,
-};
+pub(crate) use shared_array_buffer::{SharedArrayBufferData, SharedBufferError};
+mod wait_owner;
+pub(crate) use wait_owner::WaitOwner;
 mod promise_aggregate;
 mod proxy;
 pub(crate) mod shared_page;

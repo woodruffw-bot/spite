@@ -257,7 +257,7 @@ impl Realm {
             timeout.max(0.0)
         };
         if matches!(method, Member::AtomicsWait) {
-            // The current single-agent host cannot suspend its execution thread.
+            // This agent cannot suspend its execution thread.
             return Err(Self::exception(
                 ExceptionKind::TypeError,
                 span,

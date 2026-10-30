@@ -477,7 +477,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Register rooted infinite asynchronous waits by backing/byte offset, notify them in FIFO order with inline native settlement and retire Realm-owned waiters.
 - [x] Service finite asynchronous wait timeouts at idle host boundaries with overflow-safe monotonic deadlines, rooted responses and Test262 timer progress.
 - [x] Retain shared native backing across isolated Realms with checked host extraction/binding, receiving intrinsic wrappers and concurrent atomic access.
-- [ ] Implement inter-agent notification, suspending agents and agent hosting.
+- [x] Deliver foreign notifications as native FIFO waiter IDs and resolve rooted capabilities only in their owning Realm at idle job boundaries.
+- [ ] Implement suspending agents and agent hosting.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.

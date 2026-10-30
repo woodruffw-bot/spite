@@ -195,7 +195,7 @@ mod tests {
     }
 
     #[test]
-    fn foreign_notification_remains_explicit_and_does_not_consume_the_waiter() {
+    fn foreign_notification_resolves_only_at_the_receiving_realms_job_boundary() {
         let mut first = Realm::default();
         let shared = export(
             &mut first,
@@ -203,17 +203,183 @@ mod tests {
         );
         let mut second = Realm::default();
         second.bind_shared_array_buffer("buffer", &shared).unwrap();
-        let result = second.eval("let caught=0,finalized=0;try{Atomics.notify(new Int32Array(buffer),0)}catch(e){caught++}finally{finalized++}");
-        assert!(
-            matches!(result, Err(Error::Unsupported { .. })),
-            "{result:?}"
+        assert_eq!(
+            second.eval("Atomics.notify(new Int32Array(buffer),0)"),
+            Ok(Value::Number(1.0))
         );
         assert_eq!(
-            second.eval("caught===0&&finalized===0"),
+            first.eval("log===''&&Atomics.notify(a,0)===0"),
             Ok(Value::Boolean(true))
         );
-        assert_eq!(first.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+        assert_eq!(
+            first.next_atomics_wait_delay(),
+            Some(std::time::Duration::ZERO)
+        );
+        // Receiving a generic notification job queues, but never calls, JS.
+        first.run_next_promise_job().unwrap();
+        assert_eq!(first.eval("log===''"), Ok(Value::Boolean(true)));
+        assert!(first.run_next_atomics_wait_job().unwrap());
+        assert_eq!(first.eval("log===''"), Ok(Value::Boolean(true)));
         first.run_next_promise_job().unwrap();
         assert_eq!(first.eval("log==='ok'"), Ok(Value::Boolean(true)));
+        assert!(first.next_atomics_wait_delay().is_none());
+        assert!(!first.run_next_atomics_wait_job().unwrap());
+    }
+    #[test]
+    fn foreign_jobs_follow_notification_order_across_offsets_and_backings() {
+        let mut receiver = Realm::default();
+        let first = export(
+            &mut receiver,
+            "let first=new SharedArrayBuffer(8),a=new Int32Array(first),log='';Atomics.waitAsync(a,0,0).value.then(()=>log+='a');Atomics.waitAsync(a,1,0).value.then(()=>log+='b');first",
+        );
+        let second = export(
+            &mut receiver,
+            "let second=new SharedArrayBuffer(8),b=new Int32Array(second);Atomics.waitAsync(b,0,0).value.then(()=>log+='c');second",
+        );
+        let mut sender = Realm::default();
+        sender.bind_shared_array_buffer("first", &first).unwrap();
+        sender.bind_shared_array_buffer("second", &second).unwrap();
+        assert_eq!(sender.eval("let a=new Int32Array(first),b=new Int32Array(second);Atomics.notify(b,0,1)===1&&Atomics.notify(a,1,1)===1&&Atomics.notify(a,0,1)===1&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
+        for _ in 0..3 {
+            assert!(receiver.run_next_atomics_wait_job().unwrap());
+        }
+        assert!(!receiver.run_next_atomics_wait_job().unwrap());
+        assert_eq!(receiver.eval("log===''"), Ok(Value::Boolean(true)));
+        for _ in 0..3 {
+            receiver.run_next_promise_job().unwrap();
+        }
+        assert_eq!(receiver.eval("log==='cba'"), Ok(Value::Boolean(true)));
+    }
+
+    #[test]
+    fn mixed_local_and_foreign_waiters_keep_fifo_counts_and_local_inline_settlement() {
+        let mut first = Realm::default();
+        let shared = export(
+            &mut first,
+            "let buffer=new SharedArrayBuffer(8),a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0).value.then(()=>log+='a');buffer",
+        );
+        let mut second = Realm::default();
+        second.bind_shared_array_buffer("buffer", &shared).unwrap();
+        second.eval("let a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0).value.then(()=>log+='b')").unwrap();
+        first
+            .eval("Atomics.waitAsync(a,0,0).value.then(()=>log+='c')")
+            .unwrap();
+        assert_eq!(first.eval("Atomics.notify(a,0,2)"), Ok(Value::Number(2.0)));
+        assert!(!first.run_next_atomics_wait_job().unwrap());
+        first.run_next_promise_job().unwrap();
+        assert_eq!(
+            first.eval("log==='a'&&Atomics.notify(a,0)===1"),
+            Ok(Value::Boolean(true))
+        );
+        first.run_next_promise_job().unwrap();
+        assert_eq!(first.eval("log==='ac'"), Ok(Value::Boolean(true)));
+        assert_eq!(
+            second.eval("log===''&&Atomics.notify(a,0)===0"),
+            Ok(Value::Boolean(true))
+        );
+        assert!(second.run_next_atomics_wait_job().unwrap());
+        second.run_next_promise_job().unwrap();
+        assert_eq!(second.eval("log==='b'"), Ok(Value::Boolean(true)));
+    }
+
+    #[test]
+    fn native_thread_notifications_keep_receiving_captures_rooted_until_reactions_finish() {
+        let mut receiver = Realm::default();
+        let shared = export(
+            &mut receiver,
+            "let buffer=new SharedArrayBuffer(8),weak,log='';function keep(x){return ()=>log=x.tag}{let token={tag:'ok'};weak=new WeakRef(token);Atomics.waitAsync(new Int32Array(buffer),0,0).value.then(keep(token))}buffer",
+        );
+        let thread = std::thread::Builder::new()
+            .stack_size(2 * 1024 * 1024)
+            .spawn(move || {
+                let mut sender = Realm::default();
+                sender.bind_shared_array_buffer("buffer", &shared).unwrap();
+                assert_eq!(
+                    sender.eval("Atomics.notify(new Int32Array(buffer),0)"),
+                    Ok(Value::Number(1.0))
+                );
+            })
+            .unwrap();
+        receiver.clear_kept_objects().unwrap();
+        receiver.collect(usize::MAX).unwrap();
+        thread.join().unwrap();
+        assert_eq!(
+            receiver.eval("weak.deref()!==undefined&&log===''"),
+            Ok(Value::Boolean(true))
+        );
+        receiver.run_next_atomics_wait_job().unwrap();
+        receiver.clear_kept_objects().unwrap();
+        receiver.collect(usize::MAX).unwrap();
+        receiver.run_next_promise_job().unwrap();
+        assert_eq!(receiver.eval("log==='ok'"), Ok(Value::Boolean(true)));
+        receiver.clear_kept_objects().unwrap();
+        receiver.collect(usize::MAX).unwrap();
+        assert_eq!(
+            receiver.eval("weak.deref()===undefined"),
+            Ok(Value::Boolean(true))
+        );
+    }
+
+    #[test]
+    fn refused_foreign_delivery_keeps_the_native_job_and_restores_caller_work() {
+        let mut receiver = Realm::default();
+        let shared = export(
+            &mut receiver,
+            "let buffer=new SharedArrayBuffer(8),log='';Atomics.waitAsync(new Int32Array(buffer),0,0).value.then(v=>log=v);buffer",
+        );
+        let mut sender = Realm::default();
+        sender.bind_shared_array_buffer("buffer", &shared).unwrap();
+        assert_eq!(
+            sender.eval("Atomics.notify(new Int32Array(buffer),0)"),
+            Ok(Value::Number(1.0))
+        );
+        receiver.limits.max_steps = Some(0);
+        receiver.remaining_steps = Some(77);
+        assert!(matches!(
+            receiver.run_next_atomics_wait_job(),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(receiver.remaining_steps, Some(77));
+        assert!(!receiver.job_active);
+        assert_eq!(
+            receiver.next_atomics_wait_delay(),
+            Some(std::time::Duration::ZERO)
+        );
+        receiver.limits.max_steps = None;
+        assert!(receiver.run_next_atomics_wait_job().unwrap());
+        receiver.run_next_promise_job().unwrap();
+        assert_eq!(receiver.eval("log==='ok'"), Ok(Value::Boolean(true)));
+        assert!(!receiver.run_next_atomics_wait_job().unwrap());
+    }
+
+    #[test]
+    fn foreign_notification_and_timeout_have_one_winner() {
+        use std::time::Duration;
+        let mut receiver = Realm::default();
+        let shared = export(
+            &mut receiver,
+            "let buffer=new SharedArrayBuffer(8),a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0,1).value.then(v=>log+=v);buffer",
+        );
+        let mut sender = Realm::default();
+        sender.bind_shared_array_buffer("buffer", &shared).unwrap();
+        sender.eval("let a=new Int32Array(buffer)").unwrap();
+        std::thread::sleep(Duration::from_millis(2));
+        assert_eq!(sender.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+        receiver.run_next_atomics_wait_job().unwrap();
+        receiver.run_next_promise_job().unwrap();
+        assert_eq!(receiver.eval("log==='ok'"), Ok(Value::Boolean(true)));
+        receiver
+            .eval("Atomics.waitAsync(a,0,0,1).value.then(v=>log+=v)")
+            .unwrap();
+        std::thread::sleep(Duration::from_millis(2));
+        receiver.run_next_atomics_wait_job().unwrap();
+        assert_eq!(sender.eval("Atomics.notify(a,0)"), Ok(Value::Number(0.0)));
+        receiver.run_next_promise_job().unwrap();
+        assert_eq!(
+            receiver.eval("log==='oktimed-out'"),
+            Ok(Value::Boolean(true))
+        );
+        assert!(receiver.next_atomics_wait_delay().is_none());
+        assert!(!receiver.run_next_atomics_wait_job().unwrap());
     }
 }
