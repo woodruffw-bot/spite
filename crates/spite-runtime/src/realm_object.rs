@@ -620,6 +620,10 @@ impl Realm {
                 span,
                 message: "shared backing storage lock is poisoned".into(),
             },
+            object::Error::AgentTerminated => Error::Host {
+                span,
+                message: error.to_string(),
+            },
             object::Error::NotCallable | object::Error::WrongKind => {
                 unreachable!("realm operations validate function callability before storage")
             }

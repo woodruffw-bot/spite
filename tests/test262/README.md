@@ -5,6 +5,16 @@ These 11540 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Native agent termination control
+
+An embedding can request cooperative termination through an owned, thread-safe
+control containing no heap values. Running JS and blocked atomic waits return
+host failures, bypass language cleanup and retire native registrations. Three
+Runtime controls cover idle/lifetime behavior and actual native-thread execution.
+No Test262 worker host is installed by this API, and no upstream credit is added.
+Counts remain 21,973 variants and 73 controls, with native case files at 698/88.
+No dependencies, default quotas or unsafe exceptions change.
+
 ## CanBlockIsTrue host configuration
 
 CanBlockIsTrue now selects a real suspending Realm per variant; unflagged tests

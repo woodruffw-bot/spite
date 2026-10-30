@@ -5,16 +5,32 @@
 
 use super::{Budget, Error, WaitTimeout};
 use std::collections::VecDeque;
-use std::sync::{Condvar, Mutex};
+use std::sync::{
+    Condvar, Mutex,
+    atomic::{AtomicBool, Ordering},
+};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Default)]
 pub(crate) struct WaitOwner {
     ready: Mutex<VecDeque<usize>>,
     wake: Condvar,
+    terminated: AtomicBool,
 }
 
 impl WaitOwner {
+    pub(crate) fn terminate(&self) {
+        // The same mutex protects the check-before-park transition, so a stop
+        // arriving immediately before suspension cannot lose its wakeup.
+        let _critical = self.ready.lock();
+        self.terminated.store(true, Ordering::Release);
+        self.wake.notify_all();
+    }
+
+    pub(crate) fn is_terminated(&self) -> bool {
+        self.terminated.load(Ordering::Acquire)
+    }
+
     pub(crate) fn has_ready(&self) -> bool {
         // A poisoned queue must still schedule a host job to report its error.
         self.ready.lock().map_or(true, |ready| !ready.is_empty())
@@ -69,6 +85,9 @@ impl WaitOwner {
             .lock()
             .map_err(|_| Error::PoisonedSharedStorage)?;
         loop {
+            if self.is_terminated() {
+                return Err(Error::AgentTerminated);
+            }
             budget.charge(ready.len() + 1)?;
             if let Some(position) = ready.iter().position(|queued| *queued == id) {
                 ready.remove(position);

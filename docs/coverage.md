@@ -63,6 +63,30 @@ not an alternative language specification.
 
 
 
+## Cooperative host termination of native agents
+
+Realm::agent_control returns an owned native handle without initializing the
+Realm or resetting its work allowance. The handle can cross threads and outlive
+the Realm, retaining no JavaScript heap values. Permanent termination uses a
+standard atomic flag and condition-variable wake under the queue mutex, so a
+request racing suspension is retained. Execution and synchronous waits report
+host errors and bypass JS catch/finally/disposal. Native waiter cleanup preserves
+unrelated agents and queued jobs. Other native operations observe the request
+at their next execution check; the embedding owns thread lifetime.
+
+Three new Runtime units cover concurrent repeated requests, idle state, control
+lifetime, active JS-loop interruption and waking infinite waits without language
+cleanup or native waiter leaks. Failure-only test cleanup releases program loops
+or notifies waits before failing, and never turns a rescued execution into a pass.
+Default quotas, worker counts and dependencies are unchanged. The facade now
+exports both native transfer/control handles. No unsafe code is introduced.
+
+No upstream credit is added: counts stay 21,973 variants, 73 runner controls and
+698 Runtime/88 Parser case files. All 529 Runtime units, 2,384 non-RegExp
+integrations, 21,973 retained variants and 73 runner controls pass, as do facade
+and Runtime documentation checks, formatting, strict workspace Clippy, Rust 1.99
+all-targets checking, CLI/raw checks and all dependency/inventory gates.
+
 ## Suspending Test262 host configuration
 
 CanBlockIsTrue now creates a real suspending Realm for each selected variant.

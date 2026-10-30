@@ -18,11 +18,17 @@ struct PendingWait {
     timeout: Option<WaitTimeout>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct WaitRegistry {
     owner: Arc<object::WaitOwner>,
     next_id: usize,
     pending: Vec<PendingWait>,
+}
+
+impl WaitRegistry {
+    pub(crate) fn owner(&self) -> &Arc<object::WaitOwner> {
+        &self.owner
+    }
 }
 
 enum WaitJob {
@@ -68,11 +74,7 @@ impl Realm {
             }
         });
         self.object_work(span, |_, budget| budget.charge(moved))?;
-        let waits = self.atomic_waits.get_or_insert_with(|| WaitRegistry {
-            owner: Arc::new(object::WaitOwner::default()),
-            next_id: 0,
-            pending: Vec::new(),
-        });
+        let waits = self.atomic_waits.get_or_insert_default();
         waits.pending.try_reserve(1).map_err(|_| Error::Limit {
             span,
             message: "asynchronous waiter capacity exceeded".into(),

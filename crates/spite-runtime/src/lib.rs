@@ -24,6 +24,8 @@ mod reference;
 mod resource;
 mod shared_buffer;
 pub use shared_buffer::SharedBuffer;
+mod agent_control;
+pub use agent_control::AgentControl;
 mod super_property;
 mod time_zone;
 mod with;
@@ -381,6 +383,16 @@ impl Realm {
         }
     }
     fn tick(&mut self, span: Span) -> Result<(), Error> {
+        if self
+            .atomic_waits
+            .as_ref()
+            .is_some_and(|waits| waits.owner().is_terminated())
+        {
+            return Err(Error::Host {
+                span,
+                message: "agent terminated by host".into(),
+            });
+        }
         if let Some(remaining) = &mut self.remaining_steps {
             *remaining = remaining.checked_sub(1).ok_or_else(|| Error::Limit {
                 span,

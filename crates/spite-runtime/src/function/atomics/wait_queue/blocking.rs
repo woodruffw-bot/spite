@@ -1,6 +1,5 @@
 //! Synchronous DoWait and SuspendThisAgent using native wake signals.
 
-use super::WaitRegistry;
 use crate::{Error, Realm, Value, object};
 use spite_core::Span;
 use std::sync::Arc;
@@ -32,11 +31,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.object_work(span, |_, budget| budget.charge(1))?;
-        let waits = self.atomic_waits.get_or_insert_with(|| WaitRegistry {
-            owner: Arc::new(object::WaitOwner::default()),
-            next_id: 0,
-            pending: Vec::new(),
-        });
+        let waits = self.atomic_waits.get_or_insert_default();
         let id = waits.next_id;
         waits.next_id = id.checked_add(1).ok_or_else(|| Error::Limit {
             span,

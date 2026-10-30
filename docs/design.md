@@ -4461,6 +4461,22 @@ This host transfer API creates no agent threads or JavaScript extensions;
 foreign notifications progress through explicit idle jobs; Test262 agent hosting
 remains Unsupported.
 
+An embedding can obtain an AgentControl through Realm::agent_control before or
+after initialization. This opaque Clone/Send/Sync handle owns only the native
+wait-owner state, so it can outlive the Realm and carries no JavaScript heap
+values. Acquiring it preserves the current execution allowance. Both the
+facade and Runtime crate export AgentControl and SharedBuffer.
+
+Termination is permanent and cooperative. A standard atomic flag is checked at
+execution work boundaries and in synchronous wait loops. The host sets that flag
+and wakes the condition variable under the queue mutex, closing the check-before-
+park race. A blocked call exits with a host error and its native guard retires
+the waiter; running JS bypasses catch, finally and disposal callbacks. Native
+operations observe the request at their next execution check. Other agents keep
+their own policies, work and shared data. The handle is a termination request,
+not a thread join or a foreign heap reference; the embedding owns thread lifetime.
+No default execution quota or native helper thread is introduced.
+
 SharedArrayBuffer.prototype.slice (25.2.5.6) snapshots source length before
 converting start/end and invoking SpeciesConstructor. It shares the ordinary
 buffer index and species helpers, with the retained SharedArrayBuffer intrinsic

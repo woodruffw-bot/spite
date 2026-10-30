@@ -480,6 +480,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain shared native backing across isolated Realms with checked host extraction/binding, receiving intrinsic wrappers and concurrent atomic access.
 - [x] Deliver foreign notifications as native FIFO waiter IDs and resolve rooted capabilities only in their owning Realm at idle job boundaries.
 - [x] Suspend explicitly configured agents for synchronous Atomics.wait with native condition variables, preserved asynchronous jobs, race-safe timeout/notification results and metadata-selected conformance host configuration.
+- [x] Expose safe native agent termination that interrupts execution and synchronous waits while retiring only the owning agent's waiter state.
 - [ ] Implement Test262 agent hosting with isolated suspending workers.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.

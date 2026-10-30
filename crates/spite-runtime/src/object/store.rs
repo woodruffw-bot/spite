@@ -55,6 +55,8 @@ pub enum Error {
     RequiresRuntime,
     /// A shared backing store was poisoned by an interrupted native operation.
     PoisonedSharedStorage,
+    /// The host requested permanent cooperative termination of this agent.
+    AgentTerminated,
     /// Array length has not been converted to an integral Number in the u32 range.
     /// JavaScript's two observable numeric conversions belong to the Realm layer.
     UnnormalizedArrayLength,
@@ -73,6 +75,7 @@ impl fmt::Display for Error {
             Self::WrongKind => f.write_str("heap entry has the wrong kind"),
             Self::RequiresRuntime => f.write_str("object internal method requires the Realm"),
             Self::PoisonedSharedStorage => f.write_str("shared backing storage lock is poisoned"),
+            Self::AgentTerminated => f.write_str("agent terminated by host"),
             Self::UnnormalizedArrayLength => {
                 f.write_str("array length requires a preconverted u32 Number")
             }
