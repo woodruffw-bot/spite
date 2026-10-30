@@ -5,6 +5,16 @@ These 11431 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Shared backing host transfer
+
+A checked native handle can retain shared bytes across isolated Realms while
+each receiving Realm creates its own wrapper and intrinsic graph. Six new
+Runtime units cover lifetime, GC, branding, aliasing and concurrent interpreter
+access. Inter-agent notification and the Test262 agent host remain Unsupported.
+No upstream fixtures or conformance credit are added. The inventory remains
+11,431 fixtures, twenty-four helpers, 11,346 reviewed sources, 21,755 variants
+and 71 controls; native case files remain 698/88.
+
 ## Finite asynchronous wait timeout jobs
 
 Finite positive waitAsync timeouts use overflow-safe monotonic deadlines and

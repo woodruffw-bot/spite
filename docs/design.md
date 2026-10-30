@@ -4433,6 +4433,23 @@ AtomicU32. Shared 8-byte Atomics require native 64-bit support and explicitly
 refuse on other targets. Agent integration remains implementation work. Multipebibyte eager-allocation
 assumptions do not define a default quota for the logical buffer domain.
 
+An embedding can retain a SharedBuffer through share_array_buffer and install a
+fresh receiving wrapper through bind_shared_array_buffer. The opaque Clone/Send
+handle owns only native bytes, length and waiter metadata; it carries no heap
+handles, lexical environments or intrinsics. Extraction performs physical brand
+validation without consulting properties or Proxy traps, and rejects foreign or
+stale heap handles. The native backing can outlive the exporting Realm and does
+not root its original JavaScript wrapper.
+
+Binding initializes the receiving Realm and defines a global-object data
+property, using its retained SharedArrayBuffer prototype even after global
+constructor replacement. Separate wrappers preserve shared data-block identity,
+live growth and alias checks. Existing global lexical bindings keep their
+ordinary precedence. Isolated Realms can execute native atomic operations on the
+same backing concurrently without sharing their interpreters or object heaps.
+This host transfer API creates no agent threads or JavaScript extensions;
+inter-agent notification and Test262 agent hosting remain Unsupported.
+
 SharedArrayBuffer.prototype.slice (25.2.5.6) snapshots source length before
 converting start/end and invoking SpeciesConstructor. It shares the ordinary
 buffer index and species helpers, with the retained SharedArrayBuffer intrinsic

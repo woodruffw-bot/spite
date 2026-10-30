@@ -1,10 +1,8 @@
 //! Edition-17 global intrinsic metadata and generic species/getter dispatch.
 //!
 //! Ordinary metadata objects expose the specified reflection graph. The
-//! Generic species getters, Proxy and weak-reference operations, and ordinary
-//! buffer Atomics run their algorithms. SharedArrayBuffer constructors and length
-//! operations retain branded backing state; shared byte access and slicing still
-//! report host Unsupported.
+//! Generic species getters, Proxy, weak-reference operations, shared buffers and
+//! Atomics dispatch their algorithms while retaining the intrinsic identities.
 
 use super::Builtin;
 use crate::{

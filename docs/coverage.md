@@ -63,6 +63,30 @@ not an alternative language specification.
 
 
 
+## Shared backing transfer between isolated Realms
+
+The host can retain a SharedBuffer through share_array_buffer and bind a new
+wrapper through bind_shared_array_buffer. Only native backing crosses the
+boundary; JavaScript heap values, environments and intrinsics stay in their
+Realms. The receiving wrapper uses its retained intrinsic prototype and exposes
+normal global-object data-property semantics. Live bytes/growth and backing
+alias identity are shared. Wrong brands, proxies and foreign/stale handles are
+rejected without running property hooks.
+
+Six new Runtime units cover receiving prototypes and constructor replacement,
+alias detection, exporting-Realm retirement, independent wrapper GC, strict
+brand/owner checks, 10,000 atomic increments from two isolated interpreters on
+native threads and the still-unavailable foreign notification boundary. The
+native handle does not retain its original JavaScript wrapper. No agent host,
+foreign wakeup delivery, new dependency or unsafe exception is introduced.
+
+No upstream fixture or conformance credit is added. Counts remain 11,431 fixtures,
+twenty-four helpers, 11,346 reviewed sources, 21,755 variants and 71 controls;
+Runtime/Parser case files remain 698/88. All 513 Runtime units, 2,383 non-RegExp
+integration tests, 21,755 retained variants and 71 runner controls pass, as do
+formatting, strict workspace Clippy, the Rust 1.99 all-targets check, CLI checks
+and the dependency/inventory gates.
+
 ## Finite asynchronous wait timeout jobs
 
 Finite positive waitAsync requests now register real timers using the standard

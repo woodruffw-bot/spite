@@ -22,6 +22,8 @@ mod optional_chain;
 mod private;
 mod reference;
 mod resource;
+mod shared_buffer;
+pub use shared_buffer::SharedBuffer;
 mod super_property;
 mod time_zone;
 mod with;

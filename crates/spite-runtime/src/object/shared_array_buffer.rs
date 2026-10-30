@@ -243,6 +243,15 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<Handle, ArrayBufferError> {
         let data = SharedArrayBufferData::new(byte_length, max_byte_length)?;
+        Ok(self.create_shared_array_buffer_from_data(prototype, data, budget)?)
+    }
+
+    pub(crate) fn create_shared_array_buffer_from_data(
+        &mut self,
+        prototype: &Handle,
+        data: SharedArrayBufferData,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
         budget.charge(1)?;
         let buffer = self.create(Some(prototype))?;
         self.object_mut(&buffer)?.shared_array_buffer = Some(data);
