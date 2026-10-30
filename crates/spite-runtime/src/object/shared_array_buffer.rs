@@ -5,11 +5,36 @@
 //! Backing clones retain their identity and the same implicit-zero storage.
 
 use super::*;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 
 #[derive(Debug)]
 struct SharedState {
     data: ArrayBufferData,
+    waiters: Vec<Waiter>,
+}
+
+#[derive(Debug)]
+struct Waiter {
+    index: u64,
+    owner: Weak<()>,
+    id: usize,
+}
+
+pub(crate) enum WaiterNotification<'a> {
+    Local(WaiterBatch<'a>),
+    ForeignAgent,
+}
+
+/// Retain the waiter-list critical section through native same-agent resolution.
+pub(crate) struct WaiterBatch<'a> {
+    ids: Vec<usize>,
+    _critical: Option<std::sync::MutexGuard<'a, SharedState>>,
+}
+
+impl WaiterBatch<'_> {
+    pub(crate) fn take_ids(&mut self) -> Vec<usize> {
+        std::mem::take(&mut self.ids)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -26,6 +51,7 @@ impl SharedArrayBufferData {
     fn new(byte_length: u64, max_byte_length: Option<u64>) -> Result<Self, ArrayBufferError> {
         Ok(Self(Arc::new(Mutex::new(SharedState {
             data: ArrayBufferData::new_shared(byte_length, max_byte_length)?,
+            waiters: Vec::new(),
         }))))
     }
 
@@ -80,6 +106,101 @@ impl SharedArrayBufferData {
                 _ => unreachable!("attached shared backing growth"),
             })
     }
+
+    /// Compare and register in the same waiter-list critical section (25.4.3).
+    pub(crate) fn register_waiter(
+        &self,
+        index: u64,
+        access: &super::shared_page::PreparedAtomic,
+        expected: u64,
+        owner: &Arc<()>,
+        id: usize,
+        budget: &mut Budget,
+    ) -> Result<bool, ArrayBufferError> {
+        let mut state = self.0.lock().map_err(|_| Error::PoisonedSharedStorage)?;
+        budget.charge(1)?;
+        let value = access.update(|old| Ok::<_, ArrayBufferError>((None, old)))?;
+        if value != expected {
+            return Ok(false);
+        }
+        budget.charge(if state.waiters.len() == state.waiters.capacity() {
+            state.waiters.len() + 1
+        } else {
+            1
+        })?;
+        state
+            .waiters
+            .try_reserve(1)
+            .map_err(|_| ArrayBufferError::Capacity)?;
+        state.waiters.push(Waiter {
+            index,
+            owner: Arc::downgrade(owner),
+            id,
+        });
+        Ok(true)
+    }
+
+    /// Prepare removal before mutating the list. A foreign live agent remains
+    /// an explicit boundary until inter-agent notification jobs are supported.
+    pub(crate) fn take_waiters(
+        &self,
+        index: u64,
+        count: usize,
+        owner: Option<&Arc<()>>,
+        budget: &mut Budget,
+    ) -> Result<WaiterNotification<'_>, ArrayBufferError> {
+        if count == 0 {
+            return Ok(WaiterNotification::Local(WaiterBatch {
+                ids: Vec::new(),
+                _critical: None,
+            }));
+        }
+        let mut state = self.0.lock().map_err(|_| Error::PoisonedSharedStorage)?;
+        let count = count.min(state.waiters.len());
+        budget.charge(state.waiters.len())?;
+        budget.charge(count)?;
+        let owner = owner.map(Arc::downgrade);
+        let mut selected = Vec::new();
+        selected
+            .try_reserve_exact(count)
+            .map_err(|_| ArrayBufferError::Capacity)?;
+        for waiter in state
+            .waiters
+            .iter()
+            .filter(|waiter| waiter.index == index && waiter.owner.strong_count() != 0)
+            .take(count)
+        {
+            if !owner
+                .as_ref()
+                .is_some_and(|owner| owner.ptr_eq(&waiter.owner))
+            {
+                return Ok(WaiterNotification::ForeignAgent);
+            }
+            selected.push(waiter.id);
+        }
+        let mut remaining = selected.len();
+        state.waiters.retain(|waiter| {
+            if waiter.owner.strong_count() == 0 {
+                false
+            } else if waiter.index == index && remaining != 0 {
+                remaining -= 1;
+                false
+            } else {
+                true
+            }
+        });
+        Ok(WaiterNotification::Local(WaiterBatch {
+            ids: selected,
+            _critical: Some(state),
+        }))
+    }
+
+    pub(crate) fn cancel_waiters(&self, owner: &Arc<()>) {
+        if let Ok(mut state) = self.0.lock() {
+            let owner = Arc::downgrade(owner);
+            state.waiters.retain(|waiter| !owner.ptr_eq(&waiter.owner));
+        }
+    }
 }
 
 impl Objects {
@@ -104,6 +225,104 @@ mod tests {
 
     fn unlimited() -> Budget {
         Budget::with_work_limit(None)
+    }
+
+    fn notifications(result: WaiterNotification<'_>) -> Vec<usize> {
+        let WaiterNotification::Local(mut batch) = result else {
+            panic!("foreign waiter")
+        };
+        batch.take_ids()
+    }
+
+    #[test]
+    fn waiter_registration_comparison_and_notification_refusal_preserve_fifo() {
+        let data = SharedArrayBufferData::new(8, None).unwrap();
+        let access = data.prepare_atomic(0, 4, &mut unlimited()).unwrap();
+        let owner = Arc::new(());
+        assert!(
+            !data
+                .register_waiter(0, &access, 1, &owner, 0, &mut unlimited())
+                .unwrap()
+        );
+        for id in [4, 9] {
+            assert!(
+                data.register_waiter(0, &access, 0, &owner, id, &mut unlimited())
+                    .unwrap()
+            );
+        }
+        assert!(matches!(
+            data.take_waiters(0, 2, Some(&owner), &mut Budget::new(0)),
+            Err(ArrayBufferError::Storage(Error::WorkLimit))
+        ));
+        assert_eq!(
+            notifications(
+                data.take_waiters(0, 1, Some(&owner), &mut unlimited())
+                    .unwrap()
+            ),
+            [4]
+        );
+        assert_eq!(
+            notifications(
+                data.take_waiters(0, usize::MAX, Some(&owner), &mut unlimited())
+                    .unwrap()
+            ),
+            [9]
+        );
+        assert!(
+            notifications(
+                data.take_waiters(0, usize::MAX, Some(&owner), &mut unlimited())
+                    .unwrap()
+            )
+            .is_empty()
+        );
+    }
+
+    #[test]
+    fn foreign_agent_boundary_and_retirement_do_not_drop_other_live_waiters() {
+        let data = SharedArrayBufferData::new(8, None).unwrap();
+        let access = data.prepare_atomic(0, 4, &mut unlimited()).unwrap();
+        let first = Arc::new(());
+        let second = Arc::new(());
+        assert!(
+            data.register_waiter(0, &access, 0, &first, 1, &mut unlimited())
+                .unwrap()
+        );
+        assert!(
+            data.register_waiter(0, &access, 0, &second, 2, &mut unlimited())
+                .unwrap()
+        );
+        assert!(matches!(
+            data.take_waiters(0, usize::MAX, Some(&first), &mut unlimited())
+                .unwrap(),
+            WaiterNotification::ForeignAgent
+        ));
+        assert_eq!(
+            notifications(
+                data.take_waiters(0, 1, Some(&first), &mut unlimited())
+                    .unwrap()
+            ),
+            [1]
+        );
+        data.cancel_waiters(&first);
+        assert_eq!(
+            notifications(
+                data.take_waiters(0, usize::MAX, Some(&second), &mut unlimited())
+                    .unwrap()
+            ),
+            [2]
+        );
+        assert!(
+            data.register_waiter(0, &access, 0, &second, 3, &mut unlimited())
+                .unwrap()
+        );
+        drop(second);
+        assert!(
+            notifications(
+                data.take_waiters(0, usize::MAX, None, &mut unlimited())
+                    .unwrap()
+            )
+            .is_empty()
+        );
     }
 
     fn load(access: &super::super::shared_page::PreparedAtomic) -> u64 {

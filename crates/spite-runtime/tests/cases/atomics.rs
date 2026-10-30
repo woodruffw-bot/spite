@@ -578,9 +578,9 @@ fn wait_async_uses_original_bounds_but_reads_after_value_and_timeout_effects() {
 }
 
 #[test]
-fn queued_wait_async_remains_a_host_boundary_without_registering_fake_waiters() {
+fn finite_wait_async_timers_remain_a_host_boundary_without_registering_fake_waiters() {
     for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
-        for timeout in ["undefined", "1", "Infinity", "NaN"] {
+        for timeout in ["1", "2.5"] {
             let mut realm = Realm::default();
             realm.eval(&format!("let a=new {name}(new SharedArrayBuffer(16)),caught=0,finalized=0,disposed=0,r={{[Symbol.dispose](){{disposed++}}}};")).unwrap();
             let source = "function f(){using x=r;try{Atomics.waitAsync(a,0,0$N,$TIMEOUT)}catch(e){caught++}finally{finalized++}}f()";
@@ -616,6 +616,67 @@ fn wait_operand_host_failures_precede_policy_rejection_and_skip_language_cleanup
             Ok(Value::Boolean(true))
         );
     }
+}
+
+#[test]
+fn infinite_wait_async_returns_a_real_promise_and_notify_settles_before_returning() {
+    for (name, suffix) in [("Int32Array", ""), ("BigInt64Array", "n")] {
+        for timeout in ["undefined", "Infinity", "NaN"] {
+            let mut realm = Realm::default();
+            let source = "let a=new $TYPE(new SharedArrayBuffer(16)),r=Atomics.waitAsync(a,0,0$N,$TIMEOUT),log='';r.value.then(x=>log+=x);r.async===true&&r.value instanceof Promise&&Atomics.notify(a,0,1)===1&&log===''";
+            assert_eq!(
+                realm.eval(
+                    &source
+                        .replace("$TYPE", name)
+                        .replace("$N", suffix)
+                        .replace("$TIMEOUT", timeout)
+                ),
+                Ok(Value::Boolean(true))
+            );
+            // Same-agent resolution has already queued this reaction. There is
+            // no extra fulfillment job and no user callback inside notify.
+            realm.run_next_promise_job().unwrap();
+            assert_eq!(
+                realm.eval("log==='ok'&&Atomics.notify(a,0)===0"),
+                Ok(Value::Boolean(true))
+            );
+        }
+    }
+}
+
+#[test]
+fn notify_uses_waiter_fifo_counts_byte_positions_and_backing_identity() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"let b=new SharedArrayBuffer(16,{maxByteLength:32}),a=new Int32Array(b),big=new BigInt64Array(b),other=new Int32Array(new SharedArrayBuffer(16)),log='';
+        for(let i=0;i<3;i++){Atomics.waitAsync(a,0,0).value.then(()=>log+=i)}
+        Atomics.waitAsync(a,2,0).value.then(()=>log+='x');
+        b.grow(32);
+        Atomics.notify(other,0)===0&&Atomics.notify(a,1)===0&&Atomics.notify(a,0,-1)===0&&Atomics.notify(a,0,NaN)===0&&Atomics.notify(big,0,1.9)===1&&Atomics.notify(a,0,Infinity)===2&&Atomics.notify(big,1)===1"#), Ok(Value::Boolean(true)));
+    for _ in 0..4 {
+        realm.run_next_promise_job().unwrap();
+    }
+    assert_eq!(
+        realm.eval("log==='012x'&&Atomics.notify(a,0)===0&&Atomics.notify(a,2)===0"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn wait_queue_registration_during_notify_count_conversion_is_observed() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),log='',p;let count=Atomics.notify(a,0,{valueOf(){p=Atomics.waitAsync(a,0,0).value;p.then(x=>log=x);return 1}});count===1&&log==='';"), Ok(Value::Boolean(true)));
+    realm.run_next_promise_job().unwrap();
+    assert_eq!(realm.eval("log==='ok'"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn notify_fulfills_wait_promises_before_later_promise_jobs_are_enqueued() {
+    let mut realm = Realm::default();
+    realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),log='';Atomics.waitAsync(a,0,0).value.then(()=>log+='w');Promise.resolve().then(()=>log+='a');Atomics.notify(a,0);Promise.resolve().then(()=>log+='b');").unwrap();
+    for _ in 0..3 {
+        realm.run_next_promise_job().unwrap();
+    }
+    assert_eq!(realm.eval("log==='awb'"), Ok(Value::Boolean(true)));
 }
 
 #[test]

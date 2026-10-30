@@ -11341,3 +11341,6 @@ test/built-ins/Atomics/waitAsync/bigint/symbol-for-index-throws.js	-	-	-
 test/built-ins/Atomics/waitAsync/bigint/symbol-for-timeout-throws.js	-	-	-
 test/built-ins/Atomics/waitAsync/bigint/symbol-for-value-throws.js	-	-	-
 test/built-ins/Atomics/waitAsync/bigint/value-not-equal.js	-	-	-
+test/built-ins/Atomics/waitAsync/implicit-infinity-for-timeout.js	-	-	-
+test/built-ins/Atomics/waitAsync/undefined-for-timeout.js	-	-	-
+test/built-ins/Atomics/waitAsync/bigint/undefined-for-timeout.js	-	-	-

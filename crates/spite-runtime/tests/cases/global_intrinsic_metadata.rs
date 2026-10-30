@@ -151,7 +151,7 @@ fn deferred_algorithms_remain_host_unsupported_and_skip_language_handlers() {
     // Each operation reaches a deferred shared-buffer algorithm.
     // Reading its metadata must not stand in for executing that dependency.
     let operations = [
-        "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0)",
+        "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0,2)",
         "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(4)),0,0,1)",
     ];
     let mut realm = Realm::default();

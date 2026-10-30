@@ -4,6 +4,9 @@ use super::{global_metadata::Member, typed_array_methods::TypedArrayWitness};
 use crate::{Error, ExceptionKind, Realm, Value, binary_data::ElementType};
 use spite_core::Span;
 
+mod wait_queue;
+pub(crate) use wait_queue::WaitRegistry;
+
 impl Realm {
     pub(super) fn atomics_method(
         &mut self,
@@ -56,15 +59,34 @@ impl Realm {
             return self.atomics_wait(method, witness, index, arguments, span);
         }
         if matches!(method, Member::AtomicsNotify) {
-            // Atomics.notify (25.4.15) converts count before the ordinary-buffer
-            // +0 return or the shared wait-list lookup. Waiting and agents are
-            // still unavailable, so no backing can have registered waiters.
-            // Notify deliberately performs no post-conversion revalidation.
+            // Count conversion precedes the ordinary-buffer +0 return or shared
+            // wait-list lookup, without post-conversion view revalidation.
             let count = arguments.next().unwrap_or(Value::Undefined);
-            if !matches!(count, Value::Undefined) {
-                self.atomics_integer(count, span)?;
+            let count = if matches!(count, Value::Undefined) {
+                f64::INFINITY
+            } else {
+                self.atomics_integer(count, span)?.max(0.0)
+            };
+            if !shared {
+                return Ok(Value::Number(0.0));
             }
-            return Ok(Value::Number(0.0));
+            let (backing, byte_index) = self.object_work(span, |objects, _| {
+                let data = objects
+                    .inspect(&witness.object)?
+                    .typed_array_data()
+                    .expect("waitable view");
+                let backing = objects
+                    .inspect(data.buffer())?
+                    .shared_array_buffer_data()
+                    .expect("shared waitable buffer")
+                    .clone();
+                Ok((
+                    backing,
+                    data.byte_offset() + index * witness.element.size() as u64,
+                ))
+            })?;
+            let count = self.notify_atomic_waiters(&backing, byte_index, count as usize, span)?;
+            return Ok(Value::Number(count as f64));
         }
 
         let value = if matches!(method, Member::AtomicsLoad) {
@@ -248,21 +270,25 @@ impl Realm {
                 "shared atomics of this width require native target support",
             ));
         }
-        let access = self.buffer_value_work(span, |objects, budget| {
+        let (backing, byte_index) = self.object_work(span, |objects, _| {
             let data = objects
                 .inspect(&witness.object)?
                 .typed_array_data()
                 .expect("validated waitable view");
             let index = data.byte_offset() + index * size as u64;
-            objects
+            let backing = objects
                 .inspect(data.buffer())?
                 .shared_array_buffer_data()
                 .expect("shared waitable buffer")
-                .prepare_atomic(index, size, budget)
+                .clone();
+            Ok((backing, index))
+        })?;
+        let access = self.buffer_value_work(span, |_, budget| {
+            backing.prepare_atomic(byte_index, size, budget)
         })?;
         // DoWait creates the intrinsic capability and result before its shared
         // memory read, including immediate results. Neither invokes public hooks.
-        let _capability = self.intrinsic_promise_capability(span)?;
+        let capability = self.intrinsic_promise_capability(span)?;
         let prototype = self
             .intrinsics
             .as_ref()
@@ -278,19 +304,39 @@ impl Realm {
             "not-equal"
         } else if timeout == 0.0 {
             "timed-out"
+        } else if timeout.is_infinite() {
+            self.atomic_wait_record(&result, true, capability.promise.clone(), span)?;
+            if self
+                .register_atomic_wait(backing, byte_index, &access, expected, capability, span)?
+            {
+                return Ok(Value::Object(result));
+            }
+            "not-equal"
         } else {
             return Err(Self::unsupported(
                 span,
                 "asynchronous Atomics wait queues are not implemented",
             ));
         };
+        self.atomic_wait_record(
+            &result,
+            false,
+            Value::String(spite_core::JsString::from(value)),
+            span,
+        )
+    }
+
+    fn atomic_wait_record(
+        &mut self,
+        result: &spite_heap::Handle,
+        asynchronous: bool,
+        value: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
         self.object_work(span, |objects, budget| {
-            for (key, value) in [
-                ("async", Value::Boolean(false)),
-                ("value", Value::String(spite_core::JsString::from(value))),
-            ] {
+            for (key, value) in [("async", Value::Boolean(asynchronous)), ("value", value)] {
                 objects.define(
-                    &result,
+                    result,
                     key,
                     crate::object::DataDescriptor {
                         value: Some(value),
@@ -301,7 +347,7 @@ impl Realm {
                     budget,
                 )?;
             }
-            Ok(Value::Object(result))
+            Ok(Value::Object(result.clone()))
         })
     }
 

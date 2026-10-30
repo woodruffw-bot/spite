@@ -16,6 +16,7 @@ mod async_generator;
 mod async_iterator;
 pub(crate) mod async_native;
 mod atomics;
+pub(crate) use atomics::WaitRegistry;
 mod bigint;
 mod boolean;
 mod bound;

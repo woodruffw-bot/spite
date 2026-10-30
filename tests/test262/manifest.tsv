@@ -11450,3 +11450,6 @@ script-pass	8364b21ed423d9abe8737d6ecf3eb74fa508b071c72e603ad2c96c7cdf771ce7	tes
 script-pass	f21fbf1b40debe05a65bcc4718f1506ccc7097ddf0cfde9755b018125b1e5a84	test/built-ins/Atomics/waitAsync/bigint/symbol-for-timeout-throws.js
 script-pass	c2535595e65317955b8301d4170833c289b8c060f08f9bcbc7eacea9700c1ca1	test/built-ins/Atomics/waitAsync/bigint/symbol-for-value-throws.js
 script-pass	992334b8086da70aee9608414e8d05b6927bed0cb98f5a1f8cb0bd30c3449670	test/built-ins/Atomics/waitAsync/bigint/value-not-equal.js
+script-pass	9b4f6e19f803fc71ced02bc4552d03fc0b53b1620df2abcaee04d96bdc5b9660	test/built-ins/Atomics/waitAsync/implicit-infinity-for-timeout.js
+script-pass	622a73ebd0ac150e34db60884fd248a17465c354048b8517d4c9c75fa4172468	test/built-ins/Atomics/waitAsync/undefined-for-timeout.js
+script-pass	7897b990dcfcdddd91fd3214aa809b7b233cb24e03adafbccc814b9edef013f7	test/built-ins/Atomics/waitAsync/bigint/undefined-for-timeout.js

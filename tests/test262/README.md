@@ -1,9 +1,22 @@
 # Test262 regression fixtures
 
-These 11427 unmodified test fixtures and twenty-four harness files come from
+These 11430 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Notified asynchronous wait queues
+
+Infinite waitAsync calls register rooted waiters. Notify removes matching
+backing/byte-offset entries in FIFO order and resolves same-agent capabilities
+before returning; reactions run as ordinary Promise jobs. GC keeps pending
+captures alive, and Realm retirement cancels its native waiters. Finite timers
+and inter-agent notification remain Unsupported.
+
+Three unchanged originals add six required modes, all passed and original Git
+blob/SHA-256 verified before admission. No helper, worker or allowance changes
+are made. Counts are 11,430 fixtures, twenty-four helpers, 11,345 reviewed sources,
+21,753 variants and 68 runner controls. Native case files remain 698/88.
 
 ## Nonsuspending waits and immediate asynchronous results
 

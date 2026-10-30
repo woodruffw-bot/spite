@@ -24,9 +24,9 @@ impl Realm {
         })?;
         let capability = self.intrinsic_promise_capability(span)?;
         let roots = [
-            self.root_gc_value(&capability.promise, span)?,
-            self.root_gc_value(&capability.resolve, span)?,
-            self.root_gc_value(&capability.reject, span)?,
+            self.root_host_value(&capability.promise, span)?,
+            self.root_host_value(&capability.resolve, span)?,
+            self.root_host_value(&capability.reject, span)?,
         ];
         let promise = capability.promise.clone();
         self.gc_requests.push_back(GcRequest {
@@ -36,7 +36,11 @@ impl Realm {
         Ok(promise)
     }
 
-    fn root_gc_value(&mut self, value: &Value, span: Span) -> Result<object::Root, Error> {
+    pub(super) fn root_host_value(
+        &mut self,
+        value: &Value,
+        span: Span,
+    ) -> Result<object::Root, Error> {
         let Value::Object(handle) = value else {
             unreachable!("intrinsic capability objects")
         };

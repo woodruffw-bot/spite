@@ -39,10 +39,10 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate waitAsync results; queued waiting and agents remain Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and current-agent notifications; timed waiting and agents remain Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
-| Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary/shared notify with empty waiter lists, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
+| Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
 | WeakSet | Object and non-registered Symbol identities, non-retaining hash storage, iterable construction/closing, branded add/has/delete, subclassing, and complete reflection |
 | WeakMap | Object and non-registered Symbol ephemeron keys, iterable construction/closing, branded delete/get/has/set and computed insertion, callback reentrancy, subclassing, and reflection |
 | WeakRef | Object and non-registered Symbol targets, construction and branded deref, checked weak lifetimes, temporary kept roots and explicit host checkpoints, subclassing, and reflection |
@@ -59,9 +59,39 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21747 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21753 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Notified asynchronous wait queues
+
+Infinite asynchronous waits now register real waiters and return intrinsic
+Promises. The backing stores weak native owner identities and integer IDs;
+the Realm retains capabilities through three explicit heap root guards. The
+expected value is rechecked under the waiter-list critical section. Native
+notification selects live waiters by backing and byte offset in FIFO order,
+preflights removal, and calls same-agent intrinsic resolving functions while
+retaining the critical-section guard. These receive a primitive string and
+cannot execute JavaScript. Reactions are queued before notify returns, without
+an extra fulfillment job. Count coercion can register a waiter before lookup.
+
+Dropping the Realm cancels its waiters. GC retains pending reaction captures,
+then releases them after notification and execution. A foreign live owner is
+an explicit Unsupported boundary with no partial removal. Finite positive waits
+still require timer support and remain Unsupported; no timer or agent host is
+introduced. Later host failure during settlement can leave responses unsettled,
+as for other aborted host jobs; it never becomes a JavaScript rejection.
+
+Four new Runtime units and four integration groups cover FIFO/count/position
+semantics, mixed waitable views, backing identity and growth, inline settlement
+order, count coercion, resource refusal, Realm retirement and actual GC liveness.
+All 502 Runtime units and 2,381 non-RegExp integrations pass. Three additional
+unchanged originals pass all six modes with Git blob/SHA-256 verification before
+admission. The inventory is 11,430 fixtures, twenty-four helpers, 11,345 reviewed
+sources and 21,753 variants; case files remain 698 Runtime/88 Parser and runner
+controls remain 68. The full 21,753-variant corpus and all 68 package controls
+pass, along with CLI/raw smoke, formatting, strict Clippy, Rust 1.99, dependency
+policy and inventories.
 
 ## Nonsuspending waits and immediate asynchronous results
 

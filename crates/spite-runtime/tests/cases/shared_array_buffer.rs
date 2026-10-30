@@ -118,7 +118,7 @@ fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fall
 #[test]
 fn pending_shared_algorithms_remain_host_failures_without_language_cleanup() {
     for operation in [
-        "Atomics.waitAsync(new Int32Array(b),0,0)",
+        "Atomics.waitAsync(new Int32Array(b),0,0,2)",
         "Atomics.waitAsync(new Int32Array(b),0,0,1)",
     ] {
         let mut realm = Realm::default();

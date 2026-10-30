@@ -4378,8 +4378,8 @@ Proxy has no prototype property; Atomics is a namespace, not a function.
 
 Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
-immediate asynchronous results are supported; queued waiting retains Unsupported
-results. Proxy algorithms are
+immediate asynchronous results and current-agent notification queues are supported;
+timed waits and inter-agent notification retain Unsupported results. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4609,11 +4609,26 @@ allocation failures remain host failures.
 
 Notify accepts Int32Array and BigInt64Array, converts index and count, and returns
 positive zero for ordinary buffers without post-conversion revalidation. Shared
-buffers follow the same argument validation and original-length witness, then
-return positive zero for their empty waiter lists (sec-atomics.notify). No waiters
-can register while asynchronous wait queues and agents remain Unsupported. This path
-does not read or modify buffer bytes. Count coercion can grow a shared buffer;
-growth during index coercion does not extend the captured valid index range.
+waiter lists are indexed by backing identity and byte offset: different view
+kinds at the same byte offset share a list. Live waiters are removed in FIFO order
+up to the normalized count; zero counts and unrelated byte offsets wake none.
+Count coercion can register a waiter or grow the buffer before list lookup.
+Growth during index coercion does not extend the captured valid index range.
+
+The backing stores only weak native owner identities and integer waiter IDs;
+Promise capabilities remain in a Realm-owned registry with three heap root guards.
+Compare-and-register occurs under the list critical section after all fallible
+result/registry preparation. Rechecking the expected value prevents registration
+against a value that changed during preparation. Notify preflights its selection
+before removing records; a foreign live owner reports Unsupported without partial
+removal. A retained batch guard keeps the critical section through same-agent
+NotifyWaiter resolution. Its private intrinsic resolving functions receive the
+primitive string "ok", so they cannot execute JavaScript or reenter the backing
+mutex. They enqueue Promise reactions before notify returns, with no extra
+fulfillment job. Host failure after removal can leave responses unsettled, as
+with other aborted host/job operations; failures are never Promise rejections.
+Dropping the Realm cancels its native waiters. Completed notification drops the
+root guards while already queued reactions retain their normal strong roots.
 Wait and waitAsync reject ordinary buffers before index, value or timeout
 conversion. The current single-agent host selects AgentCanSuspend=false (9.7).
 DoWait converts the original-length index, ToInt32/ToBigInt64 value and numeric
@@ -4627,13 +4642,14 @@ returns { async: false, value: "not-equal" }; an equal value with a normalized z
 timeout returns { async: false, value: "timed-out" }. The properties are created
 in that order with writable/enumerable/configurable attributes, bypassing
 inherited setters and poisoned global constructors. Mismatch precedes timeout.
-Matching positive/infinite waits reach an explicit Unsupported boundary; no
-waiter, timer or substitute Promise response is registered. Consequently notify
-still observes empty waiter lists. Test262 CanBlockIsFalse runs against this
+An equal value with an infinite timeout (including omitted/NaN timeouts) returns
+{ async: true, value: promise } and registers a real rooted waiter. The result's
+properties and registry capacity are prepared before registration. Matching finite
+positive waits remain Unsupported; no timer or substitute response is registered. Test262 CanBlockIsFalse runs against this
 actual host policy; CanBlockIsTrue remains an unsupported host configuration.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Nonempty wait
-queues, suspending agents and agent hosting remain deferred. Native thread
+for widths one, two, and eight; width four always returns true. Finite timed waits, inter-agent
+notification, suspending agents and agent hosting remain deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
