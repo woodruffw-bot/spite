@@ -3242,7 +3242,10 @@ exactly one completion, rejects failure or duplicate messages, and keeps reporte
 job exceptions separate from printed failure names. Host failures retain their
 own categories. The runner adds no default execution or job quotas. While the
 grammar is partial, parse-negative passes additionally
-require a reviewed expected diagnostic span and message; an arbitrary syntax error
+require a reviewed expected diagnostic span and message; an empty span is valid
+only at the unchanged source's EOF. Strict Script prefix insertion adjusts both
+positions consistently. Interior empty spans, invalid UTF-8 boundaries and
+out-of-range spans remain invalid corpus reviews. An arbitrary syntax error
 is an unverified result, not a conformance pass. Conformance realms reserve missing
 host helper globals, so reading or testing their type reports Unsupported rather
 than producing an accidental ReferenceError or undefined. The explicit

@@ -11345,3 +11345,105 @@ test/built-ins/Atomics/waitAsync/implicit-infinity-for-timeout.js	-	-	-
 test/built-ins/Atomics/waitAsync/undefined-for-timeout.js	-	-	-
 test/built-ins/Atomics/waitAsync/bigint/undefined-for-timeout.js	-	-	-
 test/built-ins/Atomics/waitAsync/returns-result-object-value-is-promise-resolves-to-ok.js	-	-	-
+test/language/asi/S7.9.2_A1_T1.js	391	392	expected a semicolon or line terminator
+test/language/asi/S7.9.2_A1_T2.js	-	-	-
+test/language/asi/S7.9.2_A1_T3.js	402	403	expected ;
+test/language/asi/S7.9.2_A1_T4.js	-	-	-
+test/language/asi/S7.9.2_A1_T5.js	-	-	-
+test/language/asi/S7.9.2_A1_T6.js	432	436	reserved word cannot begin an expression
+test/language/asi/S7.9.2_A1_T7.js	-	-	-
+test/language/asi/S7.9_A1.js	-	-	-
+test/language/asi/S7.9_A10_T1.js	-	-	-
+test/language/asi/S7.9_A10_T10.js	-	-	-
+test/language/asi/S7.9_A10_T11.js	-	-	-
+test/language/asi/S7.9_A10_T12.js	-	-	-
+test/language/asi/S7.9_A10_T2.js	341	342	expected an expression
+test/language/asi/S7.9_A10_T3.js	-	-	-
+test/language/asi/S7.9_A10_T4.js	344	345	expected )
+test/language/asi/S7.9_A10_T5.js	-	-	-
+test/language/asi/S7.9_A10_T6.js	347	348	expected an expression
+test/language/asi/S7.9_A10_T7.js	-	-	-
+test/language/asi/S7.9_A10_T8.js	344	345	expected a semicolon or line terminator
+test/language/asi/S7.9_A10_T9.js	-	-	-
+test/language/asi/S7.9_A11_T1.js	-	-	-
+test/language/asi/S7.9_A11_T10.js	-	-	-
+test/language/asi/S7.9_A11_T11.js	-	-	-
+test/language/asi/S7.9_A11_T2.js	-	-	-
+test/language/asi/S7.9_A11_T3.js	-	-	-
+test/language/asi/S7.9_A11_T4.js	400	404	expected a semicolon or line terminator
+test/language/asi/S7.9_A11_T5.js	-	-	-
+test/language/asi/S7.9_A11_T6.js	-	-	-
+test/language/asi/S7.9_A11_T7.js	-	-	-
+test/language/asi/S7.9_A11_T8.js	364	368	reserved word cannot begin an expression
+test/language/asi/S7.9_A11_T9.js	-	-	-
+test/language/asi/S7.9_A2.js	-	-	-
+test/language/asi/S7.9_A3.js	-	-	-
+test/language/asi/S7.9_A4.js	366	367	line terminator after throw
+test/language/asi/S7.9_A5.1_T1.js	366	367	expected an expression
+test/language/asi/S7.9_A5.2_T1.js	-	-	-
+test/language/asi/S7.9_A5.3_T1.js	376	377	expected an expression
+test/language/asi/S7.9_A5.4_T1.js	-	-	-
+test/language/asi/S7.9_A5.5_T1.js	-	-	-
+test/language/asi/S7.9_A5.5_T2.js	-	-	-
+test/language/asi/S7.9_A5.5_T3.js	-	-	-
+test/language/asi/S7.9_A5.5_T4.js	-	-	-
+test/language/asi/S7.9_A5.5_T5.js	-	-	-
+test/language/asi/S7.9_A5.6_T1.js	-	-	-
+test/language/asi/S7.9_A5.6_T2.js	-	-	-
+test/language/asi/S7.9_A5.7_T1.js	596	600	invalid update target
+test/language/asi/S7.9_A5.8_T1.js	-	-	-
+test/language/asi/S7.9_A5.9_T1.js	-	-	-
+test/language/asi/S7.9_A6.1_T1.js	-	-	-
+test/language/asi/S7.9_A6.1_T10.js	-	-	-
+test/language/asi/S7.9_A6.1_T11.js	-	-	-
+test/language/asi/S7.9_A6.1_T12.js	-	-	-
+test/language/asi/S7.9_A6.1_T13.js	-	-	-
+test/language/asi/S7.9_A6.1_T2.js	-	-	-
+test/language/asi/S7.9_A6.1_T3.js	-	-	-
+test/language/asi/S7.9_A6.1_T4.js	-	-	-
+test/language/asi/S7.9_A6.1_T5.js	-	-	-
+test/language/asi/S7.9_A6.1_T6.js	-	-	-
+test/language/asi/S7.9_A6.1_T7.js	-	-	-
+test/language/asi/S7.9_A6.1_T8.js	-	-	-
+test/language/asi/S7.9_A6.1_T9.js	-	-	-
+test/language/asi/S7.9_A6.2_T1.js	486	487	expected an expression
+test/language/asi/S7.9_A6.2_T10.js	506	507	expected an expression
+test/language/asi/S7.9_A6.2_T2.js	494	495	expected an expression
+test/language/asi/S7.9_A6.2_T3.js	486	487	expected an expression
+test/language/asi/S7.9_A6.2_T4.js	490	491	expected an expression
+test/language/asi/S7.9_A6.2_T5.js	507	508	expected ;
+test/language/asi/S7.9_A6.2_T6.js	509	510	expected ;
+test/language/asi/S7.9_A6.2_T7.js	505	506	expected an expression
+test/language/asi/S7.9_A6.2_T8.js	516	517	expected ;
+test/language/asi/S7.9_A6.2_T9.js	497	498	expected ;
+test/language/asi/S7.9_A6.3_T1.js	478	479	expected an expression
+test/language/asi/S7.9_A6.3_T2.js	482	483	expected an expression
+test/language/asi/S7.9_A6.3_T3.js	486	487	expected an expression
+test/language/asi/S7.9_A6.3_T4.js	497	498	expected ;
+test/language/asi/S7.9_A6.3_T5.js	502	507	expected ;
+test/language/asi/S7.9_A6.3_T6.js	510	515	expected ;
+test/language/asi/S7.9_A6.3_T7.js	519	524	expected ;
+test/language/asi/S7.9_A6.4_T1.js	425	426	expected )
+test/language/asi/S7.9_A6.4_T2.js	415	416	expected an expression
+test/language/asi/S7.9_A7_T1.js	-	-	-
+test/language/asi/S7.9_A7_T2.js	-	-	-
+test/language/asi/S7.9_A7_T3.js	-	-	-
+test/language/asi/S7.9_A7_T4.js	-	-	-
+test/language/asi/S7.9_A7_T5.js	-	-	-
+test/language/asi/S7.9_A7_T6.js	-	-	-
+test/language/asi/S7.9_A7_T7.js	-	-	-
+test/language/asi/S7.9_A7_T8.js	-	-	-
+test/language/asi/S7.9_A7_T9.js	-	-	-
+test/language/asi/S7.9_A8_T1.js	-	-	-
+test/language/asi/S7.9_A8_T2.js	-	-	-
+test/language/asi/S7.9_A8_T3.js	-	-	-
+test/language/asi/S7.9_A8_T4.js	-	-	-
+test/language/asi/S7.9_A8_T5.js	-	-	-
+test/language/asi/S7.9_A9_T1.js	-	-	-
+test/language/asi/S7.9_A9_T2.js	-	-	-
+test/language/asi/S7.9_A9_T5.js	-	-	-
+test/language/asi/S7.9_A9_T6.js	359	359	expected an expression
+test/language/asi/S7.9_A9_T7.js	362	362	expected an expression
+test/language/asi/S7.9_A9_T8.js	351	352	expected while
+test/language/asi/S7.9_A9_T9.js	-	-	-
+test/language/asi/do-while-same-line.js	-	-	-

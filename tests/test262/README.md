@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11431 unmodified test fixtures and twenty-four harness files come from
+These 11533 unmodified test fixtures and twenty-four harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Automatic semicolon insertion and EOF reviews
+
+All 102 whole unchanged originals in language/asi pass both required modes before
+admission, with original Git blob/SHA-256 verification. They add 204 variants,
+including seventy parse-negative variants. Two originals have real zero-width
+EOF diagnostics: reviews now allow an empty span only at source EOF, preserving
+exact messages, strict-prefix adjustment, UTF-8 boundaries and all non-passing
+unsupported/limit outcomes. One new control checks these requirements across
+Script/raw/strict and Module modes, including malformed and mismatched reviews.
+
+Counts are 11,533 fixtures, twenty-four helpers, 11,448 reviewed sources, 21,959
+variants and 72 controls. Native case files remain 698/88. No upstream bytes,
+metadata, harness files, worker counts, default quotas or test allowances change.
 
 ## Forbidden statement continuations
 

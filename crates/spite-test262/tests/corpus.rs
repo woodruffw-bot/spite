@@ -131,8 +131,8 @@ fn pinned_corpus_runs_all_reviewed_variants() {
     let report = run_corpus_with_workers(&pinned(), NonZeroUsize::new(3).unwrap()).unwrap();
     assert!(report.is_success(), "{report:#?}");
     assert_eq!(report.revision, "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd");
-    assert_eq!(report.tests.len(), 11346);
-    assert_eq!(report.counts()["passed"], 21755);
+    assert_eq!(report.tests.len(), 11448);
+    assert_eq!(report.counts()["passed"], 21959);
     assert!(
         report
             .counts()
@@ -191,6 +191,57 @@ fn missing_or_mismatched_reviews_never_pass() {
     .unwrap();
     assert_eq!(run_corpus(&corpus.0).unwrap().counts()["failed"], 1);
     assert_eq!(command(&corpus.0).status.code(), Some(1));
+}
+
+#[test]
+fn reviewed_eof_errors_require_exact_end_of_input_and_diagnostics() {
+    for flags in ["[]", "[onlyStrict]", "[raw]", "[module]"] {
+        let source = format!(
+            "/*---\nflags: {flags}\nnegative:\n  phase: parse\n  type: SyntaxError\n---*/\nlet π ="
+        );
+        let end = source.len();
+        let row = format!("test/example.js\t{end}\t{end}\texpected an expression\n");
+        let corpus = TemporaryCorpus::new(&source, &row);
+        let report = run_corpus(&corpus.0).unwrap();
+        assert!(report.is_success(), "{flags}: {report:#?}");
+        assert_eq!(report.counts()["passed"], if flags == "[]" { 2 } else { 1 });
+        assert!(command(&corpus.0).status.success());
+
+        for row in [
+            format!("test/example.js\t{end}\t{end}\twrong diagnostic\n"),
+            format!(
+                "test/example.js\t{}\t{end}\texpected an expression\n",
+                end - 1
+            ),
+        ] {
+            fs::write(corpus.0.join("runner.tsv"), row).unwrap();
+            let report = run_corpus(&corpus.0).unwrap();
+            assert_eq!(report.counts()["passed"], 0);
+            assert!(!report.is_success());
+        }
+        for (start, end) in [(end - 1, end - 1), (end + 1, end + 1), (end, end - 1)] {
+            fs::write(
+                corpus.0.join("runner.tsv"),
+                format!("test/example.js\t{start}\t{end}\texpected an expression\n"),
+            )
+            .unwrap();
+            assert!(run_corpus(&corpus.0).is_err());
+            assert_eq!(command(&corpus.0).status.code(), Some(2));
+        }
+    }
+    // A valid EOF review never converts accepted or unsupported syntax into a pass.
+    for body in ["let value=1", "async function f(){await using x=null}"] {
+        let source =
+            format!("/*---\nnegative:\n  phase: parse\n  type: SyntaxError\n---*/\n{body}");
+        let end = source.len();
+        let corpus = TemporaryCorpus::new(
+            &source,
+            &format!("test/example.js\t{end}\t{end}\texpected an expression\n"),
+        );
+        let report = run_corpus(&corpus.0).unwrap();
+        assert_eq!(report.counts()["passed"], 0);
+        assert!(!report.is_success());
+    }
 }
 
 #[test]

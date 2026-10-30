@@ -52,7 +52,11 @@ for line in (root / "runner.tsv").read_text().splitlines():
         data = (root / "upstream" / path).read_bytes()
         try:
             start, end = int(start), int(end)
-            valid = 0 <= start < end <= len(data) and message not in {"", "-"}
+            valid = (
+                0 <= start <= end <= len(data)
+                and (start < end or end == len(data))
+                and message not in {"", "-"}
+            )
             data[:start].decode("utf-8")
             data[:end].decode("utf-8")
         except (ValueError, UnicodeDecodeError):

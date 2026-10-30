@@ -225,7 +225,8 @@ fn run_entry(root: &Path, entry: &Entry<'_>) -> io::Result<CorpusTest> {
         let end = entry.review[1]
             .parse::<usize>()
             .map_err(|_| invalid("invalid review end"))?;
-        if start >= end
+        if start > end
+            || (start == end && end != source.len())
             || !source.is_char_boundary(start)
             || !source.is_char_boundary(end)
             || entry.review[2].is_empty()

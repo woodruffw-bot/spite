@@ -38,7 +38,7 @@ pub enum Stage {
 /// must not count as a passing conformance test.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ParseExpectation {
-    /// Expected source range before strict-mode prefix insertion.
+    /// Expected byte range before strict-mode prefix insertion; EOF may be empty.
     pub span: Span,
     /// Exact expected parser diagnostic message.
     pub message: String,

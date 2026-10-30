@@ -59,9 +59,34 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21755 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21959 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Automatic semicolon insertion audit and reviewed EOF diagnostics
+
+All 102 whole originals in the pinned language/asi directory now pass both
+required modes. They cover line-break insertion, restricted productions,
+for-header semicolons, expression continuations, if/else and do-while's special
+insertion rule. Each original's Git blob hash and SHA-256 were verified before
+admission. This adds 204 variants, including seventy genuine parse-negative
+variants. No original bytes, metadata, harness files, worker counts or host
+allowances are changed.
+
+Two originals correctly fail at end of input with zero-width syntax spans. The
+corpus reader and byte checker now accept empty reviews only at source EOF;
+exact diagnostic matching and strict-prefix adjustment remain required. Interior
+empty spans, reversed/out-of-bounds spans and invalid UTF-8 boundaries stay
+invalid. One runner control exercises raw, ordinary/strict Script and Module
+modes, UTF-8 source, mismatched reviews, invalid spans and non-passing accepted or
+unsupported syntax. The new behavior changes review validation, not parsing or
+what qualifies as a language error.
+
+Counts are 11,533 fixtures, twenty-four helpers, 11,448 reviewed sources, 21,959
+variants and 72 runner controls; native case files remain 698 Runtime/88 Parser.
+The full 21,959-variant corpus and all 72 runner controls pass, along with
+formatting, strict workspace Clippy, Rust 1.99 all-targets checking, CLI/raw smoke
+and the dependency/inventory gates.
 
 ## Syntax errors for forbidden statement continuations
 
