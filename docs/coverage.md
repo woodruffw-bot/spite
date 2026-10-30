@@ -63,6 +63,25 @@ not an alternative language specification.
 
 
 
+## Syntax errors for forbidden statement continuations
+
+The parser no longer reports a supported call/property token as an unimplemented
+feature when it illegally follows a statement or declaration. Same-line forms
+such as debugger(0), continue[0] and var x(0) fail with real syntax diagnostics.
+Automatic semicolon insertion across line breaks and valid continued expressions
+retain their normal behavior. Eval and all four dynamic Function constructors
+throw catchable SyntaxErrors before executing any source-body effects.
+
+Two new Parser groups check Script/Module, lossless UTF-16, eval and dynamic
+function goals, with an inspected diagnostic snapshot. A Runtime group checks
+catch/finally and absence of body effects through direct/indirect eval and every
+dynamic constructor. No upstream fixture or conformance credit is added; retained
+counts remain 21,755 variants and 71 controls, and case files remain 698/88.
+All 18 Parser units, 440 Parser integrations, 519 Runtime units, 2,384 non-RegExp
+integrations, 21,755 retained variants and 71 runner controls pass. Formatting,
+strict workspace Clippy, Rust 1.99 all-targets checking, CLI/raw checks and the
+dependency/inventory gates pass.
+
 ## Cross-agent asynchronous notification jobs
 
 Foreign notifications now enqueue native waiter IDs in a standard Mutex/VecDeque

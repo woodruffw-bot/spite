@@ -81,6 +81,12 @@ The parser controls lexical goals for division, regular expressions, and templat
 tails. Preserve whether trivia contains a line terminator. Do not approximate ASI
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,
 and context-sensitive syntax. Keep parentheses where early errors depend on them.
+A forbidden same-line statement continuation is a syntax error under the
+[ASI rules](https://tc39.es/ecma262/#sec-rules-of-automatic-semicolon-insertion),
+including call/property punctuation. It is not an unsupported expression feature.
+Real line breaks and do-while's special insertion rule retain their grammar behavior.
+Eval and dynamic Function compilation turn these parse errors into language
+SyntaxErrors before executing any source-body effects.
 
 Module parsing has a distinct public Module AST and UTF-8/lossless UTF-16 entry
 points (16.2). It validates strict code, treats direct functions as lexical names,

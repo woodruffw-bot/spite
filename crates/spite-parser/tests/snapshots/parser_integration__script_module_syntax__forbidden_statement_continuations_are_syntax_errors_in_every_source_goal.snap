@@ -1,0 +1,78 @@
+---
+source: crates/spite-parser/tests/script_module_syntax.rs
+expression: errors
+---
+[
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 9,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 9,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 9,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 8,
+            end: 10,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 18,
+            end: 19,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 21,
+            end: 22,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 30,
+            end: 31,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 5,
+            end: 6,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+    Diagnostic {
+        kind: Syntax,
+        span: Span {
+            start: 5,
+            end: 6,
+        },
+        message: "expected a semicolon or line terminator",
+    },
+]

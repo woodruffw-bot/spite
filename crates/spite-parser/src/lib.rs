@@ -412,8 +412,6 @@ impl Parser {
             || self.current().newline
         {
             Ok(())
-        } else if matches!(self.current().kind, Kind::Punct("(" | "[" | "." | "?.")) {
-            Err(self.unsupported("calls and property access are not implemented"))
         } else {
             Err(self.error("expected a semicolon or line terminator"))
         }

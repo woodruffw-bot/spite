@@ -32,6 +32,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse, validate and evaluate left-associated binary expression chains iteratively, preserving precedence, prefix spans, coercion order and short circuit semantics.
 - [ ] Complete lexical goals, templates, RegExp literals, and numeric literals.
 - [x] Scan syntactic lookahead on demand and preserve lexical failures across Script, eval, and dynamic Function grammar goals.
+- [x] Reject forbidden statement continuations as syntax errors while retaining ASI and valid expression continuations across source goals.
 - [x] Add explicit scanner lexical goals and lossless RegExp body/flag boundary scanning, with distinct unsupported Pattern diagnostics.
 - [x] Reject invalid and repeated RegExp literal flags and simultaneous u/v Unicode modes before Pattern parsing.
 - [x] Validate core RegExp groups, assertions, quantifiers, scoped modifiers, character escapes, numbered backreferences and the normative capture-count bound without native recursion.

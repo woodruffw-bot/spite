@@ -5,6 +5,15 @@ These 11431 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Forbidden statement continuations
+
+An obsolete parser fallback no longer classifies malformed statements ending in
+call/property punctuation as Unsupported. They produce real syntax errors,
+including catchable errors through eval and all dynamic Function constructors.
+Parser/Runtime regressions cover source goals, ASI, exact diagnostics and absence
+of body effects. No upstream fixtures or credit are added: retained counts stay
+21,755 variants and 71 controls; native case files stay 698/88.
+
 ## Cross-agent asynchronous notification jobs
 
 Native FIFO deliveries let a notifying Realm send waiter IDs to the receiving
