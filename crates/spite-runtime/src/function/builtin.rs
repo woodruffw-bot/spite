@@ -52,6 +52,7 @@ impl Realm {
             }
             Builtin::DetachArrayBuffer => self.host_detach_array_buffer(arguments, span),
             Builtin::RequestGc => self.request_host_gc(span),
+            Builtin::Test262Agent(method) => self.test262_agent_method(method, arguments, span),
             Builtin::UnavailableHost(name) => Err(Self::unsupported(
                 span,
                 format!("{name} is not implemented"),

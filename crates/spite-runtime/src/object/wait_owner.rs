@@ -80,6 +80,23 @@ impl WaitOwner {
         timeout: Option<WaitTimeout>,
         budget: &mut Budget,
     ) -> Result<bool, Error> {
+        self.wait(Some(id), timeout, budget)
+    }
+
+    pub(crate) fn sleep(
+        &self,
+        timeout: Option<WaitTimeout>,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        self.wait(None, timeout, budget).map(|_| ())
+    }
+
+    fn wait(
+        &self,
+        id: Option<usize>,
+        timeout: Option<WaitTimeout>,
+        budget: &mut Budget,
+    ) -> Result<bool, Error> {
         let mut ready = self
             .ready
             .lock()
@@ -88,8 +105,10 @@ impl WaitOwner {
             if self.is_terminated() {
                 return Err(Error::AgentTerminated);
             }
-            budget.charge(ready.len() + 1)?;
-            if let Some(position) = ready.iter().position(|queued| *queued == id) {
+            budget.charge(if id.is_some() { ready.len() + 1 } else { 1 })?;
+            if let Some(id) = id
+                && let Some(position) = ready.iter().position(|queued| *queued == id)
+            {
                 ready.remove(position);
                 return Ok(true);
             }

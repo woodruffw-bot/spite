@@ -29,6 +29,10 @@ impl WaitRegistry {
     pub(crate) fn owner(&self) -> &Arc<object::WaitOwner> {
         &self.owner
     }
+
+    pub(crate) fn has_pending(&self) -> bool {
+        !self.pending.is_empty()
+    }
 }
 
 enum WaitJob {

@@ -5,6 +5,21 @@ These 11540 unmodified test fixtures and twenty-four harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Isolated workers and string reports
+
+The explicit $262.agent host now starts real suspending workers and transfers
+owned UTF-16 string reports. Source parsing precedes startup acknowledgement;
+heaps, intrinsics and ASTs stay isolated. Workers service GC and native/Promise
+jobs. Native timing methods and cooperative retirement stop active and blocked
+workers, and the runner joins them before accepting a result. Worker failures
+retain their own categories and never satisfy main-agent exception negatives.
+Broadcast and receiveBroadcast remain Unsupported pending their delivery layer.
+
+Three Runtime groups and two runner controls cover startup, isolation, reports,
+UTF-16, callbacks outside locks, jobs/GC, resources and cleanup. No upstream
+fixtures or credit are added: counts remain 21,973 variants and 75 controls,
+with native case files at 698/88. No helper, quota or worker-count allowance changes.
+
 ## Native agent termination control
 
 An embedding can request cooperative termination through an owned, thread-safe

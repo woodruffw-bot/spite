@@ -10,11 +10,16 @@ use crate::{
 use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::parse_script_utf16;
 
+pub(super) mod agent;
+pub(crate) use agent::AgentContext;
+
 impl Realm {
     /// Installs a fresh partial Test262 `$262` host object in this realm.
     ///
     /// The object exposes `global`, `detachArrayBuffer`, global `evalScript` and
-    /// requested collection through `gc`. Service collection requests with
+    /// requested collection through `gc`. Its agent object starts isolated
+    /// suspending workers, transfers string reports and provides native sleep
+    /// and a monotonic clock. Broadcast delivery remains Unsupported. Service collection requests with
     /// [`Self::run_requested_gc`] after JavaScript returns. Accessing
     /// unavailable host facilities reports Unsupported, including through typeof;
     /// they cannot masquerade as missing values or catchable JavaScript errors.
@@ -44,9 +49,10 @@ impl Realm {
             true,
             span,
         )?;
+        let agent = self.test262_agent_object(&object_prototype, &function_prototype, span)?;
+        self.define_builtin_property(&host, "agent", Value::Object(agent), true, span)?;
         for (name, getter_name) in [
             ("createRealm", "get createRealm"),
-            ("agent", "get agent"),
             ("IsHTMLDDA", "get IsHTMLDDA"),
             ("AbstractModuleSource", "get AbstractModuleSource"),
         ] {
@@ -93,37 +99,7 @@ impl Realm {
                 "evalScript requires a String",
             ));
         };
-        let bytes = char::decode_utf16(source.code_units().iter().copied())
-            .try_fold(0usize, |length, point| {
-                length.checked_add(point.map_or(3, char::len_utf8))
-            })
-            .ok_or_else(|| Error::Limit {
-                span,
-                message: "Script source capacity exceeded".into(),
-            })?;
-        if self
-            .limits
-            .max_source_bytes
-            .is_some_and(|limit| bytes > limit)
-        {
-            return Err(Error::Limit {
-                span,
-                message: "Script source size limit exceeded".into(),
-            });
-        }
-        self.object_work(span, |_, budget| budget.charge(bytes))?;
-        let script = parse_script_utf16(&source).map_err(|diagnostic| match diagnostic.kind {
-            DiagnosticKind::Syntax => Self::exception(
-                ExceptionKind::SyntaxError,
-                diagnostic.span,
-                diagnostic.message,
-            ),
-            DiagnosticKind::Unsupported => Self::unsupported(diagnostic.span, diagnostic.message),
-            DiagnosticKind::Limit => Error::Limit {
-                span: diagnostic.span,
-                message: diagnostic.message,
-            },
-        })?;
+        let script = self.prepare_host_script(&source, span)?;
         self.object_work(span, |_, budget| budget.charge(1))?;
         let global = self.scopes.first().expect("global environment").clone();
         let mut scopes = Vec::new();
@@ -144,6 +120,45 @@ impl Realm {
         let result = self.with_source_execution_context(context, |realm| realm.evaluate(&script));
         self.job_active = caller_job;
         result
+    }
+
+    pub(super) fn prepare_host_script(
+        &mut self,
+        source: &JsString,
+        span: Span,
+    ) -> Result<spite_parser::ast::Script, Error> {
+        let bytes = char::decode_utf16(source.code_units().iter().copied())
+            .try_fold(0usize, |length, point| {
+                length.checked_add(point.map_or(3, char::len_utf8))
+            })
+            .ok_or_else(|| Error::Limit {
+                span,
+                message: "Script source capacity exceeded".into(),
+            })?;
+        if self
+            .limits
+            .max_source_bytes
+            .is_some_and(|limit| bytes > limit)
+        {
+            return Err(Error::Limit {
+                span,
+                message: "Script source size limit exceeded".into(),
+            });
+        }
+        self.object_work(span, |_, budget| budget.charge(bytes))?;
+        let script = parse_script_utf16(source).map_err(|diagnostic| match diagnostic.kind {
+            DiagnosticKind::Syntax => Self::exception(
+                ExceptionKind::SyntaxError,
+                diagnostic.span,
+                diagnostic.message,
+            ),
+            DiagnosticKind::Unsupported => Self::unsupported(diagnostic.span, diagnostic.message),
+            DiagnosticKind::Limit => Error::Limit {
+                span: diagnostic.span,
+                message: diagnostic.message,
+            },
+        })?;
+        Ok(script)
     }
 
     pub(super) fn host_detach_array_buffer(

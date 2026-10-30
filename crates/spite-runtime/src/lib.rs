@@ -243,6 +243,7 @@ impl Completion {
 /// replace native recursion.
 #[derive(Debug)]
 pub struct Realm {
+    test262_agents: Option<function::AgentContext>,
     scopes: Vec<EnvironmentHandle>,
     // Lexical scopes may nest without changing the current VariableEnvironment.
     variable_environment: Option<EnvironmentHandle>,
@@ -281,6 +282,7 @@ impl Realm {
     /// Creates a realm with explicit host limits.
     pub fn new(limits: Limits) -> Self {
         Self {
+            test262_agents: None,
             scopes: Vec::new(),
             variable_environment: None,
             global_object: None,
@@ -388,10 +390,7 @@ impl Realm {
             .as_ref()
             .is_some_and(|waits| waits.owner().is_terminated())
         {
-            return Err(Error::Host {
-                span,
-                message: "agent terminated by host".into(),
-            });
+            return Err(self.agent_termination(span));
         }
         if let Some(remaining) = &mut self.remaining_steps {
             *remaining = remaining.checked_sub(1).ok_or_else(|| Error::Limit {

@@ -68,6 +68,7 @@ mod symbol;
 mod template;
 mod test262_host;
 pub(crate) use host_gc::GcRequest;
+pub(crate) use test262_host::AgentContext;
 mod typed_array;
 mod typed_array_copy;
 mod typed_array_intrinsics;
@@ -90,6 +91,7 @@ pub(crate) enum Builtin {
     DetachArrayBuffer,
     EvalScript,
     RequestGc,
+    Test262Agent(test262_host::agent::Method),
     UnavailableHost(&'static str),
     DisposableStack(crate::object::DisposableStackKind),
     DisposableStackMember(crate::object::DisposableStackKind, disposable_stack::Member),
@@ -424,6 +426,7 @@ impl Builtin {
             Self::DetachArrayBuffer => "detachArrayBuffer",
             Self::EvalScript => "evalScript",
             Self::RequestGc => "gc",
+            Self::Test262Agent(method) => method.name(),
             Self::UnavailableHost(name) => name,
             Self::GlobalMetadataConstructor(constructor) => constructor.name(),
             Self::GlobalMetadataMember(member) => member.name(),
@@ -738,6 +741,7 @@ impl Builtin {
             Self::DetachArrayBuffer => 1.0,
             Self::EvalScript => 1.0,
             Self::RequestGc => 0.0,
+            Self::Test262Agent(method) => method.length(),
             Self::UnavailableHost(_) => 0.0,
             Self::GlobalMetadataConstructor(constructor) => constructor.length(),
             Self::GlobalMetadataMember(member) => member.length(),

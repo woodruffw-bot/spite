@@ -233,230 +233,239 @@ impl Runner {
             return host_failure(&error, Stage::Harness)
                 .unwrap_or_else(|| Outcome::SetupFailure(format!("Test262 host: {error}")));
         }
-        let completion = if asynchronous {
-            match AsyncCompletion::install(&mut realm) {
-                Ok(completion) => Some(completion),
-                Err(error) => {
-                    return host_failure(&error, Stage::Harness).unwrap_or_else(|| {
-                        Outcome::SetupFailure(format!("async print host: {error}"))
-                    });
-                }
-            }
-        } else {
-            for name in ["print", "$DONE"] {
-                realm.reserve_unsupported_global(name);
-            }
-            None
-        };
-        let files = metadata.harness_files();
-        for name in &files {
-            if name.starts_with('/')
-                || name.contains('\\')
-                || name.split('/').any(|part| matches!(part, "" | "." | ".."))
-            {
-                return Outcome::SetupFailure(format!("unsafe harness path: {name}"));
-            }
-        }
-        for name in files {
-            let harness = match load_harness(name) {
-                Ok(source) => source,
-                Err(message) => return Outcome::SetupFailure(format!("{name}: {message}")),
-            };
-            if let Err(error) = realm.eval(&harness) {
-                return host_failure(&error, Stage::Harness)
-                    .unwrap_or_else(|| Outcome::SetupFailure(format!("{name}: {error}")));
-            }
-        }
-        let mut module_cache = ModuleCache::default();
-        if modules.is_some() {
-            realm.enable_module_imports();
-        }
-        let evaluated = match &parsed {
-            ParsedSource::Script(script) => realm.evaluate(script),
-            ParsedSource::Module(module) => {
-                if let Some(loader) = modules.as_deref_mut() {
-                    let loaded = loader
-                        .load_graph(&mut realm, module, original, &mut module_cache)
-                        .map_err(modules::ModuleLoadError::into_error)
-                        .and_then(|record| {
-                            realm.link_module(&record)?;
-                            Ok(record)
-                        });
-                    let record = match loaded {
-                        Ok(record) => record,
-                        Err(error) => {
-                            return host_failure(&error, Stage::Resolution)
-                                .unwrap_or_else(|| failed(Stage::Resolution, error.to_string()));
-                        }
-                    };
-                    realm.evaluate_module_record(&record)
-                } else {
-                    realm.evaluate_module(module)
-                }
-            }
-        };
-        let (mut result, module_promise) = match evaluated {
-            Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),
-            Err(error) => (Err(error), None),
-        };
-        let module_promise = match module_promise {
-            Some(value) => match realm.root_value(value, usize::MAX) {
-                Ok(root) => Some(root),
-                Err(error) => {
-                    return Outcome::SetupFailure(format!("module Promise root: {error}"));
-                }
-            },
-            None => None,
-        };
-        if result.is_ok()
-            && (asynchronous
-                || mode == Mode::Module
-                || modules.is_some()
-                || realm.has_requested_gc())
-        {
-            loop {
-                if let Err(error) =
-                    realm.run_requested_gc(self.limits.max_steps.unwrap_or(usize::MAX))
-                {
-                    result = Err(error);
-                    break;
-                }
-                match realm.run_next_atomics_wait_job() {
-                    Ok(true) => continue,
-                    Ok(false) => (),
+        let outcome = (|| {
+            let completion = if asynchronous {
+                match AsyncCompletion::install(&mut realm) {
+                    Ok(completion) => Some(completion),
                     Err(error) => {
-                        result = Err(error);
-                        break;
+                        return host_failure(&error, Stage::Harness).unwrap_or_else(|| {
+                            Outcome::SetupFailure(format!("async print host: {error}"))
+                        });
                     }
                 }
-                match realm.run_finalization_cleanup_job() {
-                    Ok(FinalizationCleanupOutcome::NoJob) => (),
-                    Ok(FinalizationCleanupOutcome::Completed) => continue,
-                    Ok(FinalizationCleanupOutcome::Reported(error)) | Err(error) => {
-                        result = Err(error);
-                        break;
-                    }
+            } else {
+                for name in ["print", "$DONE"] {
+                    realm.reserve_unsupported_global(name);
                 }
-                if let Some(loader) = modules.as_deref_mut()
-                    && let Err(error) = loader.service_requests(&mut realm, &mut module_cache)
+                None
+            };
+            let files = metadata.harness_files();
+            for name in &files {
+                if name.starts_with('/')
+                    || name.contains('\\')
+                    || name.split('/').any(|part| matches!(part, "" | "." | ".."))
                 {
-                    return host_failure(&error, Stage::Resolution).unwrap_or_else(|| {
-                        failed(
-                            Stage::Resolution,
-                            format!("dynamic source preparation failed: {error}"),
-                        )
-                    });
+                    return Outcome::SetupFailure(format!("unsafe harness path: {name}"));
                 }
-                match realm.run_next_promise_job() {
-                    Ok(PromiseJobOutcome::NoJob) => {
-                        let Some(delay) = realm.next_atomics_wait_delay() else {
-                            break;
-                        };
-                        let completion_pending = if let Some(completion) = completion.as_ref() {
-                            match completion.has_completion(&realm) {
-                                Ok(complete) => !complete,
-                                Err(outcome) => return outcome,
+            }
+            for name in files {
+                let harness = match load_harness(name) {
+                    Ok(source) => source,
+                    Err(message) => return Outcome::SetupFailure(format!("{name}: {message}")),
+                };
+                if let Err(error) = realm.eval(&harness) {
+                    return host_failure(&error, Stage::Harness)
+                        .unwrap_or_else(|| Outcome::SetupFailure(format!("{name}: {error}")));
+                }
+            }
+            let mut module_cache = ModuleCache::default();
+            if modules.is_some() {
+                realm.enable_module_imports();
+            }
+            let evaluated = match &parsed {
+                ParsedSource::Script(script) => realm.evaluate(script),
+                ParsedSource::Module(module) => {
+                    if let Some(loader) = modules.as_deref_mut() {
+                        let loaded = loader
+                            .load_graph(&mut realm, module, original, &mut module_cache)
+                            .map_err(modules::ModuleLoadError::into_error)
+                            .and_then(|record| {
+                                realm.link_module(&record)?;
+                                Ok(record)
+                            });
+                        let record = match loaded {
+                            Ok(record) => record,
+                            Err(error) => {
+                                return host_failure(&error, Stage::Resolution).unwrap_or_else(
+                                    || failed(Stage::Resolution, error.to_string()),
+                                );
                             }
-                        } else {
-                            false
                         };
-                        let module_pending = module_promise.as_ref().is_some_and(|root| {
-                            let Value::Object(promise) = root.value() else {
-                                unreachable!("module promise")
-                            };
-                            matches!(
-                                realm
-                                    .inspect_object(promise)
-                                    .expect("rooted module Promise")
-                                    .promise_state(),
-                                Some(PromiseState::Pending)
+                        realm.evaluate_module_record(&record)
+                    } else {
+                        realm.evaluate_module(module)
+                    }
+                }
+            };
+            let (mut result, module_promise) = match evaluated {
+                Ok(value) => (Ok(()), (mode == Mode::Module).then_some(value)),
+                Err(error) => (Err(error), None),
+            };
+            let module_promise = match module_promise {
+                Some(value) => match realm.root_value(value, usize::MAX) {
+                    Ok(root) => Some(root),
+                    Err(error) => {
+                        return Outcome::SetupFailure(format!("module Promise root: {error}"));
+                    }
+                },
+                None => None,
+            };
+            if result.is_ok()
+                && (asynchronous
+                    || mode == Mode::Module
+                    || modules.is_some()
+                    || realm.has_requested_gc())
+            {
+                loop {
+                    if let Err(error) =
+                        realm.run_requested_gc(self.limits.max_steps.unwrap_or(usize::MAX))
+                    {
+                        result = Err(error);
+                        break;
+                    }
+                    match realm.run_next_atomics_wait_job() {
+                        Ok(true) => continue,
+                        Ok(false) => (),
+                        Err(error) => {
+                            result = Err(error);
+                            break;
+                        }
+                    }
+                    match realm.run_finalization_cleanup_job() {
+                        Ok(FinalizationCleanupOutcome::NoJob) => (),
+                        Ok(FinalizationCleanupOutcome::Completed) => continue,
+                        Ok(FinalizationCleanupOutcome::Reported(error)) | Err(error) => {
+                            result = Err(error);
+                            break;
+                        }
+                    }
+                    if let Some(loader) = modules.as_deref_mut()
+                        && let Err(error) = loader.service_requests(&mut realm, &mut module_cache)
+                    {
+                        return host_failure(&error, Stage::Resolution).unwrap_or_else(|| {
+                            failed(
+                                Stage::Resolution,
+                                format!("dynamic source preparation failed: {error}"),
                             )
                         });
-                        if !completion_pending && !module_pending {
+                    }
+                    match realm.run_next_promise_job() {
+                        Ok(PromiseJobOutcome::NoJob) => {
+                            let Some(delay) = realm.next_atomics_wait_delay() else {
+                                break;
+                            };
+                            let completion_pending = if let Some(completion) = completion.as_ref() {
+                                match completion.has_completion(&realm) {
+                                    Ok(complete) => !complete,
+                                    Err(outcome) => return outcome,
+                                }
+                            } else {
+                                false
+                            };
+                            let module_pending = module_promise.as_ref().is_some_and(|root| {
+                                let Value::Object(promise) = root.value() else {
+                                    unreachable!("module promise")
+                                };
+                                matches!(
+                                    realm
+                                        .inspect_object(promise)
+                                        .expect("rooted module Promise")
+                                        .promise_state(),
+                                    Some(PromiseState::Pending)
+                                )
+                            });
+                            if !completion_pending && !module_pending {
+                                break;
+                            }
+                            std::thread::sleep(delay.min(std::time::Duration::from_millis(10)));
+                        }
+                        Ok(PromiseJobOutcome::Completed) => {}
+                        Ok(PromiseJobOutcome::Reported(error)) | Err(error) => {
+                            result = Err(error);
                             break;
                         }
-                        std::thread::sleep(delay.min(std::time::Duration::from_millis(10)));
-                    }
-                    Ok(PromiseJobOutcome::Completed) => {}
-                    Ok(PromiseJobOutcome::Reported(error)) | Err(error) => {
-                        result = Err(error);
-                        break;
                     }
                 }
             }
-        }
-        if result.is_ok()
-            && let Some(Value::Object(promise)) = module_promise
-                .as_ref()
-                .map(spite_runtime::RootedValue::value)
-        {
-            match realm
-                .inspect_object(promise)
-                .expect("module evaluation Promise")
-                .promise_state()
-                .expect("module Promise brand")
+            if result.is_ok()
+                && let Some(Value::Object(promise)) = module_promise
+                    .as_ref()
+                    .map(spite_runtime::RootedValue::value)
             {
-                PromiseState::Fulfilled(_) => (),
-                PromiseState::Rejected(reason) => result = Err(Error::Thrown(reason.clone())),
-                PromiseState::Pending => {
-                    return failed(Stage::Runtime, "module evaluation Promise did not settle");
-                }
-            }
-        }
-        if result.is_ok()
-            && let Some(completion) = completion
-            && let Err(outcome) = completion.finish(&mut realm)
-        {
-            return outcome;
-        }
-        match result {
-            Ok(_) if metadata.negative.is_none() => Outcome::Passed,
-            Ok(_) => failed(
-                Stage::Runtime,
-                "expected an exception, but evaluation completed normally",
-            ),
-            Err(error) => {
-                if let Some(outcome) = host_failure(&error, Stage::Runtime) {
-                    return outcome;
-                }
-                if let Error::Parse(diagnostic) = error {
-                    return failed(Stage::Parse, diagnostic.to_string());
-                }
-                let Some(negative) = metadata.negative.as_ref() else {
-                    return failed(
-                        Stage::Runtime,
-                        match error {
-                            Error::Thrown(value) => format!("uncaught throw: {value}"),
-                            _ => format!("uncaught exception: {error}"),
-                        },
-                    );
-                };
-                // Test262 INTERPRETING.md defines `type` as the thrown value's
-                // constructor name. Read it through the realm so accessor
-                // effects and failures are not replaced with host heuristics.
-                match exception_constructor_name(&mut realm, &error) {
-                    Ok(Some(name))
-                        if negative.phase == Phase::Runtime
-                            && name == JsString::from(negative.error_type.as_str()) =>
-                    {
-                        Outcome::Passed
+                match realm
+                    .inspect_object(promise)
+                    .expect("module evaluation Promise")
+                    .promise_state()
+                    .expect("module Promise brand")
+                {
+                    PromiseState::Fulfilled(_) => (),
+                    PromiseState::Rejected(reason) => result = Err(Error::Thrown(reason.clone())),
+                    PromiseState::Pending => {
+                        return failed(Stage::Runtime, "module evaluation Promise did not settle");
                     }
-                    Ok(name) => failed(
-                        Stage::Runtime,
-                        format!(
-                            "runtime exception with constructor name {name:?} does not match {:?} {}",
-                            negative.phase, negative.error_type
-                        ),
-                    ),
-                    Err(error) => host_failure(&error, Stage::Runtime).unwrap_or_else(|| {
-                        failed(
-                            Stage::Runtime,
-                            format!("exception inspection failed: {error}"),
-                        )
-                    }),
                 }
             }
+            if result.is_ok()
+                && let Some(completion) = completion
+                && let Err(outcome) = completion.finish(&mut realm)
+            {
+                return outcome;
+            }
+            match result {
+                Ok(_) if metadata.negative.is_none() => Outcome::Passed,
+                Ok(_) => failed(
+                    Stage::Runtime,
+                    "expected an exception, but evaluation completed normally",
+                ),
+                Err(error) => {
+                    if let Some(outcome) = host_failure(&error, Stage::Runtime) {
+                        return outcome;
+                    }
+                    if let Error::Parse(diagnostic) = error {
+                        return failed(Stage::Parse, diagnostic.to_string());
+                    }
+                    let Some(negative) = metadata.negative.as_ref() else {
+                        return failed(
+                            Stage::Runtime,
+                            match error {
+                                Error::Thrown(value) => format!("uncaught throw: {value}"),
+                                _ => format!("uncaught exception: {error}"),
+                            },
+                        );
+                    };
+                    // Test262 INTERPRETING.md defines `type` as the thrown value's
+                    // constructor name. Read it through the realm so accessor
+                    // effects and failures are not replaced with host heuristics.
+                    match exception_constructor_name(&mut realm, &error) {
+                        Ok(Some(name))
+                            if negative.phase == Phase::Runtime
+                                && name == JsString::from(negative.error_type.as_str()) =>
+                        {
+                            Outcome::Passed
+                        }
+                        Ok(name) => failed(
+                            Stage::Runtime,
+                            format!(
+                                "runtime exception with constructor name {name:?} does not match {:?} {}",
+                                negative.phase, negative.error_type
+                            ),
+                        ),
+                        Err(error) => host_failure(&error, Stage::Runtime).unwrap_or_else(|| {
+                            failed(
+                                Stage::Runtime,
+                                format!("exception inspection failed: {error}"),
+                            )
+                        }),
+                    }
+                }
+            }
+        })();
+        if let Err(error) = realm.finish_test262_agents() {
+            return host_failure(&error, Stage::Runtime).unwrap_or_else(|| {
+                failed(Stage::Runtime, format!("Test262 worker shutdown: {error}"))
+            });
         }
+        outcome
     }
 }
 

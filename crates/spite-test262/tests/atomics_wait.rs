@@ -70,7 +70,7 @@ fn timer_reaction_errors_keep_runtime_phase_and_host_failures_never_pass_negativ
             .iter()
             .all(|outcome| matches!(outcome, Outcome::Failed { .. }))
     );
-    let unavailable = "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(8)),0,0,1).value.then(()=>$262.agent).catch($DONE);";
+    let unavailable = "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(8)),0,0,1).value.then(()=>$262.createRealm).catch($DONE);";
     assert!(
         run(metadata, unavailable)
             .iter()

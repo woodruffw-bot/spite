@@ -3252,7 +3252,7 @@ than producing an accidental ReferenceError or undefined. The explicit
 Realm::install_test262_host API installs a partial $262 object with its actual
 global object, native detachArrayBuffer, global evalScript and requested gc. The detacher validates ordinary
 ArrayBuffer slots and the undefined detach key, then uses DetachArrayBuffer
-without public transfer/species hooks. Unavailable createRealm and agent,
+without public transfer/species hooks. Unavailable createRealm,
 IsHTMLDDA and AbstractModuleSource properties have getters that report Unsupported on access,
 including typeof. Ordinary realms receive no Test262 globals unless requested.
 Host setup respects the same optional work allowance; no quota is enlarged to
@@ -3327,6 +3327,32 @@ snapshot review, and a dependency-policy check. Keep production crates buildable
 without development dependencies. Commit the lockfile. Add deterministic corpus
 and fuzz-style tests without requiring an external runtime dependency. Differential
 checks against other engines are supplementary evidence, never the specification.
+
+The explicit Test262 agent host starts native workers with fresh suspending
+Realms, inheriting the configured optional limits and the documented 2 MiB
+native stack. Script source is parsed in the worker before startup is
+acknowledged; it remains lossless UTF-16 and never shares an AST or object heap.
+Each worker receives its own $262 object and standard intrinsic graph. A native
+Mutex/VecDeque channel carries only owned strings. Report conversion executes in
+the worker before acquiring that mutex. getReport is a nonblocking dequeue,
+returning null for an empty queue. Native sleep is interruptible and preserves
+queued asynchronous notifications; a process-wide monotonic clock supplies
+milliseconds to monotonicNow.
+
+Worker Script completion services requested GC, native waits, finalization and
+Promise jobs. Pending native waits keep its Realm alive. leaving permits
+immediate cooperative termination. A first native worker failure retains its
+unsupported/limit/host category and interrupts the parent; thrown worker values
+stay in their own heap and never become catchable main-agent exceptions.
+Broadcast and receiveBroadcast are explicit Unsupported getters until delivery
+is implemented.
+
+The parent owns every native join handle. At an idle boundary,
+finish_test262_agents requests termination and joins outside the state mutex;
+Realm retirement provides the same cleanup. The runner performs this step
+before accepting any positive or negative result. Worker shutdown retires only
+native state and performs no JavaScript cleanup. These APIs are installed only
+by the explicit Test262 host, with no default quotas or new dependencies.
 
 ## References
 
@@ -4389,7 +4415,7 @@ Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
 immediate asynchronous results, local notification and foreign notification jobs
 are supported; explicit suspending agents use native condition variables. Test262
-agent hosting retains Unsupported results. Proxy algorithms are
+workers run isolated Scripts and report strings; broadcast delivery remains Unsupported. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4458,8 +4484,8 @@ live growth and alias checks. Existing global lexical bindings keep their
 ordinary precedence. Isolated Realms can execute native atomic operations on the
 same backing concurrently without sharing their interpreters or object heaps.
 This host transfer API creates no agent threads or JavaScript extensions;
-foreign notifications progress through explicit idle jobs; Test262 agent hosting
-remains Unsupported.
+foreign notifications progress through explicit idle jobs. Test262 workers use
+isolated Realms; their broadcast delivery remains Unsupported.
 
 An embedding can obtain an AgentControl through Realm::agent_control before or
 after initialization. This opaque Clone/Send/Sync handle owns only the native
@@ -4734,8 +4760,8 @@ retain their runtime phase and constructor identity. Test262 CanBlockIsFalse run
 actual host policy. CanBlockIsTrue constructs a fresh suspending Realm; each
 case keeps its policy throughout Script or Module execution.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
-for widths one, two, and eight; width four always returns true. Test262 agent
-hosting remains deferred. Native thread
+for widths one, two, and eight; width four always returns true. Test262 shared-buffer
+broadcast hosting remains deferred. Native thread
 tests exercise the shared backing independently of the future agent host.
 
 Suspending agents perform synchronous DoWait without allocating a Promise
@@ -4764,8 +4790,8 @@ controls agent lifetime and services asynchronous jobs at idle boundaries.
 The Test262 runner selects this explicit policy for CanBlockIsTrue, while
 CanBlockIsFalse and unflagged cases keep the nonsuspending default. Contradictory
 flags remain metadata errors. The same optional limits apply to both policies;
-there is no reset inside a blocking call. The Test262 agent host is still
-unavailable and never turns a negative case into a pass.
+there is no reset inside a blocking call. Test262 workers run isolated Scripts and report strings. Their failures remain
+host outcomes and never turn a main-agent negative case into a pass.
 
 Atomics.pause uses the native processor spin-loop hint and returns undefined
 ([Atomics.pause](https://tc39.es/ecma262/#sec-atomics.pause)). It has zero arity,

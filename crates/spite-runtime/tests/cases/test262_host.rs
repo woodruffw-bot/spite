@@ -78,7 +78,12 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
 
 #[test]
 fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_cleanup() {
-    for member in ["createRealm", "agent", "IsHTMLDDA", "AbstractModuleSource"] {
+    for member in [
+        "createRealm",
+        "agent.broadcast",
+        "IsHTMLDDA",
+        "AbstractModuleSource",
+    ] {
         let mut realm = host();
         realm
             .eval(
@@ -268,4 +273,118 @@ fn nested_script_calls_share_the_current_work_allowance() {
     let error=realm.eval("function f(){entered=true;try{for(let i=0;i<1000;i++)$262.evalScript('0')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
     assert!(matches!(error, Error::Limit { .. }), "{error}");
     check(&mut realm, "entered&&caught===0&&finalized===0");
+}
+
+fn next_agent_report(realm: &mut Realm) -> Result<spite_core::JsString, Error> {
+    use std::time::{Duration, Instant};
+    let deadline = Instant::now() + Duration::from_secs(5);
+    loop {
+        match realm.eval("$262.agent.getReport()")? {
+            Value::String(message) => return Ok(message),
+            Value::Null => (),
+            value => panic!("unexpected report: {value:?}"),
+        }
+        assert!(
+            Instant::now() < deadline,
+            "worker neither reported nor failed"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
+
+#[test]
+fn isolated_workers_report_lossless_strings_and_run_gc_and_promise_jobs() {
+    use spite_core::JsString;
+    let mut realm = host();
+    check(
+        &mut realm,
+        "$262.agent.getReport()===null&&typeof $262.agent==='object'&&$262.agent.start.length===1",
+    );
+    realm
+        .eval("let parentOnly=11;Object.prototype.parentMarker=99")
+        .unwrap();
+    let source = r#"
+        $262.agent.report(typeof parentOnly+'|'+typeof Object.prototype.parentMarker+'|'+($262.global===globalThis));
+        $262.agent.report('');
+        $262.agent.report('\uD800');
+        $262.agent.report({toString(){$262.agent.report('inner');return 'outer'}});
+        (async function(){await $262.gc();$262.agent.report('jobs');$262.agent.leaving()})();
+    "#;
+    assert_eq!(
+        realm.eval(&format!("$262.agent.start({source:?})")),
+        Ok(Value::Undefined)
+    );
+    let reports = (0..6)
+        .map(|_| next_agent_report(&mut realm).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(reports[0], JsString::from("undefined|undefined|true"));
+    assert_eq!(reports[1].len(), 0);
+    assert_eq!(reports[2].code_units(), &[0xd800]);
+    assert_eq!(reports[3], JsString::from("inner"));
+    assert_eq!(reports[4], JsString::from("outer"));
+    assert_eq!(reports[5], JsString::from("jobs"));
+    realm.finish_test262_agents().unwrap();
+    check(
+        &mut realm,
+        "parentOnly===11&&Object.prototype.parentMarker===99&&$262.agent.getReport()===null",
+    );
+}
+
+#[test]
+fn worker_retirement_stops_program_loops_sleeps_and_infinite_waits() {
+    let mut realm = host();
+    for body in [
+        "while(true){}",
+        "$262.agent.sleep(Infinity)",
+        "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0)",
+    ] {
+        let source = format!("$262.agent.report('ready');{body}");
+        realm
+            .eval(&format!("$262.agent.start({source:?})"))
+            .unwrap();
+    }
+    for _ in 0..3 {
+        assert_eq!(next_agent_report(&mut realm).unwrap(), "ready".into());
+    }
+    realm.finish_test262_agents().unwrap();
+    realm.finish_test262_agents().unwrap();
+    check(
+        &mut realm,
+        "let now=$262.agent.monotonicNow(),calls=0;$262.agent.sleep({valueOf(){calls++;return 0}});calls===1&&$262.agent.monotonicNow()>=now",
+    );
+}
+
+#[test]
+fn worker_failures_keep_host_unsupported_and_limit_categories() {
+    for (limits, source, expected) in [
+        (Limits::default(), "throw new TypeError('worker')", "host"),
+        (
+            Limits::default(),
+            "typeof $262.agent.receiveBroadcast",
+            "unsupported",
+        ),
+        (
+            Limits {
+                max_steps: Some(2000),
+                ..Limits::default()
+            },
+            "while(true){}",
+            "limit",
+        ),
+    ] {
+        let mut realm = Realm::new(limits);
+        realm.install_test262_host().unwrap();
+        let error = match realm.eval(&format!("$262.agent.start({source:?})")) {
+            Ok(_) => next_agent_report(&mut realm).unwrap_err(),
+            Err(error) => error,
+        };
+        let kind = match error {
+            Error::Host { .. } => "host",
+            Error::Unsupported { .. } => "unsupported",
+            Error::Limit { .. } => "limit",
+            _ => panic!("unexpected worker error: {error}"),
+        };
+        assert_eq!(kind, expected, "{source}");
+        assert!(realm.finish_test262_agents().is_err());
+    }
 }

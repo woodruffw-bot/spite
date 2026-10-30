@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; explicit host-configured synchronous waits; Test262 agent hosting remains Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; explicit host-configured synchronous waits; isolated Test262 workers and string reports; broadcast delivery remains Unsupported |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
@@ -62,6 +62,36 @@ not an alternative language specification.
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21973 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Isolated Test262 workers and native reports
+
+The explicit Test262 host now starts real native worker Scripts with independent
+suspending Realms, intrinsics and heaps. Startup acknowledges only after worker
+source parsing; lossless UTF-16 stays inside that thread. A native FIFO queue
+transfers owned strings, including empty strings and lone surrogates. Report
+ToString callbacks run before locking. Native sleep and a shared monotonic clock
+support timing; sleep preserves queued notification jobs and is interruptible.
+Workers service GC, Promise, native wait and finalization jobs after evaluation.
+
+The parent owns and retires every join handle with cooperative termination.
+leaving permits termination, and explicit idle retirement or Realm drop stops
+busy loops, native sleeps and infinite waits. The runner retires workers before
+accepting any result. Unsupported features, limits and worker Script/job failures
+stay non-passing host outcomes; worker exceptions never masquerade as main-agent
+exceptions. No heap values or ASTs cross threads, no locks cover user callbacks,
+and no default quotas, test allowances, external dependencies or unsafe code
+are added. Broadcast and receiveBroadcast remain explicit Unsupported getters.
+
+Three new Runtime integration groups and two runner controls cover independent
+globals/prototypes, actual reports and ToString order, exact UTF-16, GC/Promise
+progress, startup failure, failure provenance, inherited limits and shutdown
+across Script/raw/Module modes. Existing unavailable-host controls now target
+the remaining broadcast boundary. No upstream credit is added: retained counts
+stay 21,973 variants and 75 runner controls, with native case files at 698/88.
+All 529 Runtime units, 2,387 non-RegExp integrations, 21,973 retained variants
+and 75 runner controls pass, as do documentation, formatting, strict workspace
+Clippy, Rust 1.99 all-targets checking, CLI/raw checks and the dependency/inventory
+gates.
 
 ## Cooperative host termination of native agents
 

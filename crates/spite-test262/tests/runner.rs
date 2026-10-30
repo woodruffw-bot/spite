@@ -431,8 +431,8 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
         "typeof print",
         "typeof $262.createRealm",
         "$262.AbstractModuleSource",
-        "$262.agent",
-        "typeof $262.agent",
+        "$262.agent.broadcast",
+        "typeof $262.agent.broadcast",
         "$262.IsHTMLDDA",
         "delete print",
         "print = 1",
@@ -561,7 +561,7 @@ fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
     }
     let cases = run(
         "flags: [CanBlockIsTrue]\nnegative:\n  phase: runtime\n  type: TypeError",
-        "try{$262.agent}catch(e){throw new TypeError()}finally{throw new TypeError()}",
+        "try{$262.agent.broadcast}catch(e){throw new TypeError()}finally{throw new TypeError()}",
     );
     assert!(
         cases
@@ -825,4 +825,72 @@ fn module_evaluation_checks_await_rejection_pending_jobs_and_async_completion() 
             "{body}"
         );
     }
+}
+
+#[test]
+fn worker_hosts_run_reports_and_retire_busy_agents_across_source_modes() {
+    let runner = Runner {
+        limits: Limits {
+            max_steps: Some(20000),
+            ..Limits::default()
+        },
+    };
+    for flags in ["[]", "[raw]", "[module]"] {
+        let body = "$262.agent.start(\"Promise.resolve().then(()=>{$262.agent.report(9);$262.agent.leaving()})\");let message;while((message=$262.agent.getReport())===null)$262.agent.sleep(1);if(message!=='9')throw 7;$262.agent.start(\"$262.agent.report('ready');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0)\");while((message=$262.agent.getReport())===null)$262.agent.sleep(1);if(message!=='ready')throw 8;";
+        let cases = runner
+            .run(&source(&format!("flags: {flags}"), body), None, |_| {
+                Ok("".into())
+            })
+            .unwrap();
+        assert!(
+            cases
+                .iter()
+                .all(|case| matches!(case.outcome, Outcome::Passed)),
+            "{flags}: {cases:?}"
+        );
+    }
+}
+
+#[test]
+fn worker_exceptions_and_unsupported_syntax_cannot_satisfy_main_runtime_negatives() {
+    let runner = Runner {
+        limits: Limits {
+            max_steps: Some(20000),
+            ..Limits::default()
+        },
+    };
+    let metadata = "negative:\n  phase: runtime\n  type: TypeError";
+    let cases = runner
+        .run(&source(metadata, "$262.agent.start(0)"), None, |_| {
+            Ok("".into())
+        })
+        .unwrap();
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::Passed)),
+        "{cases:?}"
+    );
+    let body = "$262.agent.start(\"throw new TypeError('worker')\");while($262.agent.getReport()===null)$262.agent.sleep(1)";
+    let cases = runner
+        .run(&source(metadata, body), None, |_| Ok("".into()))
+        .unwrap();
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::SetupFailure(_))),
+        "{cases:?}"
+    );
+    // Initialized for-in is a recognized, unavailable Annex B extension. Startup
+    // must parse it before acknowledging readiness, even if the main then throws.
+    let body = "$262.agent.start(\"for(var value=0 in {}){}\");throw new TypeError('main')";
+    let cases = runner
+        .run(&source(metadata, body), None, |_| Ok("".into()))
+        .unwrap();
+    assert!(
+        cases
+            .iter()
+            .all(|case| matches!(case.outcome, Outcome::Unsupported { .. })),
+        "{cases:?}"
+    );
 }
