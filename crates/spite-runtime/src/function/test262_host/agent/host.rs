@@ -3,8 +3,22 @@
 use crate::{AgentControl, Error, Limits, Realm, object};
 use spite_core::{DiagnosticKind, JsString, Span};
 use std::collections::VecDeque;
-use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, PoisonError};
 use std::thread::JoinHandle;
+use std::time::Duration;
+
+#[derive(Debug)]
+pub(super) enum BroadcastValue {
+    Int(i32),
+    BigInt(spite_bigint::BigInt),
+}
+
+#[derive(Debug)]
+pub(super) struct Broadcast {
+    pub(super) data: object::SharedArrayBufferData,
+    pub(super) value: BroadcastValue,
+    generation: usize,
+}
 
 #[derive(Clone, Debug)]
 enum Failure {
@@ -46,6 +60,8 @@ impl Failure {
 struct Worker {
     control: Option<AgentControl>,
     finished: bool,
+    inbox: Option<Arc<Broadcast>>,
+    retrieved: usize,
 }
 
 #[derive(Debug, Default)]
@@ -55,12 +71,14 @@ struct State {
     reports: VecDeque<JsString>,
     failure: Option<Failure>,
     closed: bool,
+    generation: usize,
 }
 
 #[derive(Debug)]
 pub(super) struct Hub {
     state: Mutex<State>,
     parent: AgentControl,
+    wake: Condvar,
 }
 
 #[derive(Debug)]
@@ -75,6 +93,7 @@ impl AgentContext {
             hub: Arc::new(Hub {
                 state: Mutex::new(State::default()),
                 parent: control,
+                wake: Condvar::new(),
             }),
             worker: None,
         }
@@ -98,6 +117,7 @@ impl Drop for AgentContext {
                     .fail(Failure::Host("Test262 worker panicked".into()));
             }
             self.hub.recover().workers[id].finished = true;
+            self.hub.wake.notify_all();
         } else {
             self.hub.shutdown();
         }
@@ -126,6 +146,7 @@ impl Hub {
 
     fn fail(&self, failure: Failure) {
         self.recover().failure.get_or_insert(failure);
+        self.wake.notify_all();
         self.parent.terminate();
     }
 
@@ -149,6 +170,8 @@ impl Hub {
         state.workers.push(Worker {
             control: None,
             finished: false,
+            inbox: None,
+            retrieved: 0,
         });
         Ok(id)
     }
@@ -231,10 +254,127 @@ impl Hub {
         Ok(self.lock(span)?.reports.pop_front())
     }
 
+    pub(super) fn broadcast(
+        &self,
+        data: object::SharedArrayBufferData,
+        value: BroadcastValue,
+        budget: &mut object::Budget,
+        span: Span,
+    ) -> Result<(), Error> {
+        let mut state = self.lock(span)?;
+        if let Some(failure) = &state.failure {
+            return Err(failure.error(span));
+        }
+        if state.closed {
+            return Err(terminated(span));
+        }
+        charge(budget, state.workers.len() + 1, span)?;
+        let mut selected = Vec::new();
+        selected
+            .try_reserve_exact(state.workers.len())
+            .map_err(|_| capacity(span))?;
+        for (id, worker) in state.workers.iter().enumerate() {
+            if worker.finished
+                || worker
+                    .control
+                    .as_ref()
+                    .is_none_or(AgentControl::is_terminated)
+            {
+                continue;
+            }
+            if worker.inbox.is_some() {
+                return Err(Error::Host {
+                    span,
+                    message: "previous broadcast has not been retrieved".into(),
+                });
+            }
+            selected.push(id);
+        }
+        let generation = state
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| capacity(span))?;
+        let message = Arc::new(Broadcast {
+            data,
+            value,
+            generation,
+        });
+        for id in &selected {
+            state.workers[*id].inbox = Some(message.clone())
+        }
+        state.generation = generation;
+        self.wake.notify_all();
+        loop {
+            if let Some(failure) = &state.failure {
+                return Err(failure.error(span));
+            }
+            if state.closed || self.parent.is_terminated() {
+                return Err(terminated(span));
+            }
+            charge(budget, selected.len() + 1, span)?;
+            if selected
+                .iter()
+                .all(|id| state.workers[*id].retrieved == generation)
+            {
+                return Ok(());
+            }
+            if selected
+                .iter()
+                .any(|id| state.workers[*id].finished && state.workers[*id].retrieved != generation)
+            {
+                return Err(Error::Host {
+                    span,
+                    message: "worker retired before retrieving its broadcast".into(),
+                });
+            }
+            // Native scheduling slices also observe external termination of
+            // the parent. They do not impose a broadcast deadline or quota.
+            (state, _) = self
+                .wake
+                .wait_timeout(state, Duration::from_millis(10))
+                .map_err(|_| Error::Host {
+                    span,
+                    message: "Test262 agent host lock is poisoned".into(),
+                })?;
+        }
+    }
+
+    pub(super) fn receive(
+        &self,
+        id: usize,
+        control: &AgentControl,
+        budget: &mut object::Budget,
+        span: Span,
+    ) -> Result<Arc<Broadcast>, Error> {
+        let mut state = self.lock(span)?;
+        loop {
+            if let Some(failure) = &state.failure {
+                return Err(failure.error(span));
+            }
+            if state.closed || control.is_terminated() {
+                return Err(terminated(span));
+            }
+            charge(budget, 1, span)?;
+            if let Some(message) = state.workers[id].inbox.take() {
+                state.workers[id].retrieved = message.generation;
+                self.wake.notify_all();
+                return Ok(message);
+            }
+            (state, _) = self
+                .wake
+                .wait_timeout(state, Duration::from_millis(10))
+                .map_err(|_| Error::Host {
+                    span,
+                    message: "Test262 agent host lock is poisoned".into(),
+                })?;
+        }
+    }
+
     fn shutdown(&self) {
         let threads = {
             let mut state = self.recover();
             state.closed = true;
+            self.wake.notify_all();
             for worker in &state.workers {
                 if !worker.finished
                     && let Some(control) = &worker.control
@@ -249,6 +389,13 @@ impl Hub {
                 self.fail(Failure::Host("Test262 worker panicked".into()));
             }
         }
+    }
+}
+
+fn terminated(span: Span) -> Error {
+    Error::Host {
+        span,
+        message: "agent terminated by host".into(),
     }
 }
 

@@ -39,7 +39,7 @@ not an alternative language specification.
 | URI handling | String-hint conversion, exact URI/component escape sets, UTF-8 encoding and strict decoding, reserved-escape preservation, and intrinsic URIError exceptions |
 | Set | Canonical values, ordered hash storage, construction and closing, live iteration/forEach, union/intersection/difference/symmetricDifference, set-like predicates, and full reflection |
 | ArrayBuffer | Fixed/resizable construction, ordered length/options conversion, byteLength/maxByteLength/resizable/detached getters, resize, species-aware slice, transfer/transferToFixedLength, isView, subclassing, and complete reflection |
-| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; explicit host-configured synchronous waits; isolated Test262 workers and string reports; broadcast delivery remains Unsupported |
+| SharedArrayBuffer | Branded fixed/growable construction, ordered length/options/prototype checks, length/maxByteLength/growable getters, shared backing identity, serialized monotonic grow, TypedArray/DataView byte access and species-aware slicing; native shared atomic memory operations and immediate/infinite waitAsync results and local and cross-agent notifications; finite timeout jobs; explicit host-configured synchronous waits; isolated Test262 workers, string reports and acknowledged shared-buffer broadcasts |
 | DataView | Construction and subclassing, buffer/byteLength/byteOffset getters, all 22 integer/BigInt/Float16/Float32/Float64 methods, explicit byte order, fixed/length-tracking resizable views, detached/out-of-bounds checks, positive ArrayBuffer.isView, and complete reflection |
 | TypedArray | All twelve constructors and overloads, from/of factories, state/tag getters, intrinsic graph and reflection, keys/values/entries, indexed access and search, callbacks, reductions, string conversion, species-aware map/filter/slice, subarray views, toReversed/with copies, stable numeric sort/toSorted, copyWithin/fill/reverse and typed/array-like set, all eight indexed exotic methods, fixed/auto buffer witnesses, receiver-sensitive coercion, integrity behavior and isView, plus Uint8Array hexadecimal and Base64 conversion |
 | Atomics | Ordinary/shared load/store/exchange/compareExchange and arithmetic/bitwise updates for all eight integer kinds, isLockFree, ordinary positive-zero notify and shared FIFO notification, pause's processor hint, non-shared wait/waitAsync rejection, nonsuspending wait validation and immediate waitAsync records |
@@ -59,9 +59,43 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 21973 reviewed Test262 variants, twenty-four pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22165 reviewed Test262 variants, twenty-five pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Acknowledged shared-buffer broadcasts and waiting audit
+
+The Test262 host now broadcasts native shared backing and Int32/full BigInt
+values to live isolated workers. Each receiver acknowledges retrieval under the
+native mutex, releases it, creates its own branded wrapper with retained
+intrinsics and invokes its local callback. The parent waits for retrieval,
+independently of callback completion. Generation checks protect repeated
+delivery; native failure, termination and exit before retrieval stay host
+outcomes. Input coercions and callbacks run outside the state lock. Logical
+buffers and live growth remain shared without copying or sharing heap objects.
+
+The unchanged atomicsHelper safeBroadcast probe requires a suspending main agent.
+The conformance host now selects that policy for unflagged and CanBlockIsTrue
+variants; explicit CanBlockIsFalse and ordinary Realm defaults retain their
+nonsuspending policy. All 174 previously staged wait/waitAsync originals pass
+all 348 modes with no failed, unsupported, unverified, setup or limit outcomes.
+Ninety-six newly supported whole originals add 192 modes, with original Git
+blob/SHA-256 verification. The unchanged atomicsHelper.js is added with its
+original timeout values and source hash. No source, metadata, worker-count,
+default-quota or test-allowance changes are made.
+
+Four Runtime groups and two additional runner controls cover multicast, local
+prototypes after constructor replacement, live growth, full BigInt and Int32
+conversion, repeated messages, retrieval before nested callbacks, brand checks,
+actual foreign notification and GC-rooted async waits through Script/Module
+completion. Worker callback failures remain distinct from main exceptions.
+Counts are 11,636 fixtures, twenty-five helpers, 11,551 reviewed sources, 22,165
+variants and 77 controls; native case files remain 698 Runtime/88 Parser.
+All 529 Runtime units, 2,391 non-RegExp integrations and the complete 22,165-variant
+corpus with 77 runner controls pass. Formatting, strict workspace Clippy, MSRV
+checks, CLI/doc tests, dependency policy and all inventories pass. The first
+package run caught an outdated harness-count assertion; after correcting it to
+25, the complete package gate passed.
 
 ## Isolated Test262 workers and native reports
 

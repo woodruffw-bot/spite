@@ -12,6 +12,8 @@ pub(crate) use host::AgentContext;
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Method {
     Start,
+    Broadcast,
+    ReceiveBroadcast,
     GetReport,
     Report,
     Leaving,
@@ -23,6 +25,8 @@ impl Method {
     pub(crate) fn name(self) -> &'static str {
         match self {
             Self::Start => "start",
+            Self::Broadcast => "broadcast",
+            Self::ReceiveBroadcast => "receiveBroadcast",
             Self::GetReport => "getReport",
             Self::Report => "report",
             Self::Leaving => "leaving",
@@ -32,7 +36,8 @@ impl Method {
     }
     pub(crate) fn length(self) -> f64 {
         match self {
-            Self::Start | Self::Report | Self::Sleep => 1.0,
+            Self::Broadcast => 2.0,
+            Self::Start | Self::Report | Self::Sleep | Self::ReceiveBroadcast => 1.0,
             _ => 0.0,
         }
     }
@@ -52,6 +57,7 @@ impl Realm {
         let agent = self.object_work(span, |objects, _| objects.create(Some(object_prototype)))?;
         let methods = if worker {
             [
+                Method::ReceiveBroadcast,
                 Method::Report,
                 Method::Leaving,
                 Method::Sleep,
@@ -60,6 +66,7 @@ impl Realm {
         } else {
             [
                 Method::Start,
+                Method::Broadcast,
                 Method::GetReport,
                 Method::Sleep,
                 Method::MonotonicNow,
@@ -73,26 +80,6 @@ impl Realm {
                 method.name(),
                 Value::Object(function),
                 true,
-                span,
-            )?;
-        }
-        for (name, getter) in [
-            ("broadcast", "get agent.broadcast"),
-            ("receiveBroadcast", "get agent.receiveBroadcast"),
-        ] {
-            let getter =
-                self.new_builtin(function_prototype, Builtin::UnavailableHost(getter), span)?;
-            self.define_property_or_throw(
-                &agent,
-                name,
-                object::PropertyDescriptor {
-                    kind: object::DescriptorKind::Accessor {
-                        get: Some(Some(getter)),
-                        set: Some(None),
-                    },
-                    enumerable: Some(false),
-                    configurable: Some(true),
-                },
                 span,
             )?;
         }
@@ -129,6 +116,91 @@ impl Realm {
                 let hub = self.agent_hub();
                 let id = self.object_work(span, |_, budget| Ok(hub.add_worker(budget, span)))??;
                 hub.spawn(id, source, self.limits, span)?;
+                Ok(Value::Undefined)
+            }
+            Method::Broadcast => {
+                let buffer = arguments.next().unwrap_or(Value::Undefined);
+                let data = if let Value::Object(buffer) = buffer {
+                    self.object_work(span, |objects, _| {
+                        Ok(objects
+                            .inspect(&buffer)?
+                            .shared_array_buffer_data()
+                            .cloned())
+                    })?
+                } else {
+                    None
+                };
+                let Some(data) = data else {
+                    return Err(Self::exception(
+                        crate::ExceptionKind::TypeError,
+                        span,
+                        "broadcast requires a SharedArrayBuffer",
+                    ));
+                };
+                let value = self.primitive(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    crate::realm_object::Hint::Number,
+                    span,
+                )?;
+                let value = if let Value::BigInt(value) = value {
+                    host::BroadcastValue::BigInt(value)
+                } else {
+                    host::BroadcastValue::Int(
+                        crate::value::to_uint32(self.number(value, span)?) as i32
+                    )
+                };
+                let hub = self.agent_hub();
+                self.object_work(span, |_, budget| {
+                    Ok(hub.broadcast(data, value, budget, span))
+                })??;
+                Ok(Value::Undefined)
+            }
+            Method::ReceiveBroadcast => {
+                let callback = arguments.next().unwrap_or(Value::Undefined);
+                if !self.is_callable(&callback, span)? {
+                    return Err(Self::exception(
+                        crate::ExceptionKind::TypeError,
+                        span,
+                        "receiveBroadcast requires a callable",
+                    ));
+                }
+                let context = self.test262_agents.as_ref().expect("worker context");
+                let id = context.worker.expect("worker receiver");
+                let hub = context.hub.clone();
+                let control = self.agent_control();
+                let message = self.object_work(span, |_, budget| {
+                    Ok(hub.receive(id, &control, budget, span))
+                })??;
+                // Retrieval is acknowledged before entering user code. Only
+                // native bytes and numeric values crossed; make a local wrapper.
+                let prototype = self
+                    .intrinsics
+                    .as_ref()
+                    .expect("initialized")
+                    .global_metadata
+                    .shared_array_buffer_prototype
+                    .clone();
+                let buffer = self.object_work(span, |objects, budget| {
+                    objects.create_shared_array_buffer_from_data(
+                        &prototype,
+                        message.data.clone(),
+                        budget,
+                    )
+                })?;
+                let value = match &message.value {
+                    host::BroadcastValue::Int(value) => Value::Number(f64::from(*value)),
+                    host::BroadcastValue::BigInt(value) => {
+                        Value::BigInt(self.integer_work(span, |budget| {
+                            value.add(&spite_bigint::BigInt::default(), budget)
+                        })?)
+                    }
+                };
+                self.call(
+                    callback,
+                    Value::Undefined,
+                    vec![Value::Object(buffer), value],
+                    span,
+                )?;
                 Ok(Value::Undefined)
             }
             Method::GetReport => {

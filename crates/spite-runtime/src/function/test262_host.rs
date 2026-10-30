@@ -19,7 +19,8 @@ impl Realm {
     /// The object exposes `global`, `detachArrayBuffer`, global `evalScript` and
     /// requested collection through `gc`. Its agent object starts isolated
     /// suspending workers, transfers string reports and provides native sleep
-    /// and a monotonic clock. Broadcast delivery remains Unsupported. Service collection requests with
+    /// and a monotonic clock. Shared-buffer broadcasts acknowledge worker retrieval
+    /// before invoking callbacks. Service collection requests with
     /// [`Self::run_requested_gc`] after JavaScript returns. Accessing
     /// unavailable host facilities reports Unsupported, including through typeof;
     /// they cannot masquerade as missing values or catchable JavaScript errors.

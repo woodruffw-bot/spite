@@ -3344,8 +3344,17 @@ Promise jobs. Pending native waits keep its Realm alive. leaving permits
 immediate cooperative termination. A first native worker failure retains its
 unsupported/limit/host category and interrupts the parent; thrown worker values
 stay in their own heap and never become catchable main-agent exceptions.
-Broadcast and receiveBroadcast are explicit Unsupported getters until delivery
-is implemented.
+Broadcast carries one shared backing identity and an Int32 or full BigInt value.
+Brand validation and numeric conversions finish before locking. The native state
+preflights all recipient storage and work, then posts an owned immutable message
+with a checked generation. Each live worker pops and acknowledges retrieval
+under the mutex. The parent waits for those acknowledgements; callback completion
+is separate. A receiver releases the mutex, allocates a branded local wrapper
+with its retained intrinsic prototype and invokes its local callback. Repeated
+delivery preserves shared identity and creates separate wrappers. Worker failure,
+retirement before retrieval and termination remain host outcomes; they never
+fabricate acknowledgements. Native scheduling slices observe external control
+requests without imposing a broadcast deadline or default quota.
 
 The parent owns every native join handle. At an idle boundary,
 finish_test262_agents requests termination and joins outside the state mutex;
@@ -4415,7 +4424,7 @@ Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
 immediate asynchronous results, local notification and foreign notification jobs
 are supported; explicit suspending agents use native condition variables. Test262
-workers run isolated Scripts and report strings; broadcast delivery remains Unsupported. Proxy algorithms are
+workers run isolated Scripts, report strings and exchange native shared-buffer broadcasts. Proxy algorithms are
 described below; WeakRef and FinalizationRegistry lifetimes are described above.
 Ordinary-buffer Atomics algorithms are described in the following section.
 The two species
@@ -4485,7 +4494,7 @@ ordinary precedence. Isolated Realms can execute native atomic operations on the
 same backing concurrently without sharing their interpreters or object heaps.
 This host transfer API creates no agent threads or JavaScript extensions;
 foreign notifications progress through explicit idle jobs. Test262 workers use
-isolated Realms; their broadcast delivery remains Unsupported.
+isolated Realms and receive native shared-buffer broadcasts with local wrappers.
 
 An embedding can obtain an AgentControl through Realm::agent_control before or
 after initialization. This opaque Clone/Send/Sync handle owns only the native
@@ -4757,11 +4766,12 @@ capture avoids JavaScript callbacks or repeated execution-budget charges during
 idle polling. Once $DONE is recorded, unrelated future timers do not delay test
 completion. Timer expiration cannot stand in for $DONE, and real reaction throws
 retain their runtime phase and constructor identity. Test262 CanBlockIsFalse runs against this
-actual host policy. CanBlockIsTrue constructs a fresh suspending Realm; each
-case keeps its policy throughout Script or Module execution.
+actual host policy. Unflagged cases and CanBlockIsTrue construct fresh suspending Realms, while
+CanBlockIsFalse keeps its nonsuspending Realm. Each case retains its policy
+throughout Script or Module execution.
 IsLockFree applies ToIntegerOrInfinity once and uses fixed native target flags
 for widths one, two, and eight; width four always returns true. Test262 shared-buffer
-broadcast hosting remains deferred. Native thread
+broadcasts use the isolated native worker host. Native thread
 tests exercise the shared backing independently of the future agent host.
 
 Suspending agents perform synchronous DoWait without allocating a Promise
@@ -4787,8 +4797,11 @@ failure without canceling unrelated asynchronous jobs. Failures bypass JS catch,
 finally and disposal and never fabricate a normal wait result; an aborted
 notifier may leave another agent's infinite wait suspended. The embedding still
 controls agent lifetime and services asynchronous jobs at idle boundaries.
-The Test262 runner selects this explicit policy for CanBlockIsTrue, while
-CanBlockIsFalse and unflagged cases keep the nonsuspending default. Contradictory
+The Test262 runner selects suspending agents for unflagged cases and
+CanBlockIsTrue; CanBlockIsFalse keeps a nonsuspending agent. This configuration
+supports the unchanged atomicsHelper safeBroadcast validation, whose synchronous
+mismatch probe requires AgentCanSuspend=true. Ordinary Realm constructors retain
+their existing nonsuspending policy. Contradictory
 flags remain metadata errors. The same optional limits apply to both policies;
 there is no reset inside a blocking call. Test262 workers run isolated Scripts and report strings. Their failures remain
 host outcomes and never turn a main-agent negative case into a pass.

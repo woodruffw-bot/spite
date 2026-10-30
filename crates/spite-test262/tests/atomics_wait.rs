@@ -77,3 +77,39 @@ fn timer_reaction_errors_keep_runtime_phase_and_host_failures_never_pass_negativ
             .all(|outcome| matches!(outcome, Outcome::Unsupported { .. }))
     );
 }
+
+#[test]
+fn broadcasts_drive_worker_waits_and_gc_before_script_and_module_completion() {
+    let worker = "$262.agent.receiveBroadcast(async function(buffer){let a=new Int32Array(buffer),wait=Atomics.waitAsync(a,0,0);$262.agent.report('ready');await $262.gc();$262.agent.report(await wait.value);$262.agent.leaving()})";
+    let body = format!(
+        "let buffer=new SharedArrayBuffer(8),a=new Int32Array(buffer),message;$262.agent.start({worker:?});$262.agent.broadcast(buffer);while((message=$262.agent.getReport())===null)$262.agent.sleep(1);assert.sameValue(message,'ready');assert.sameValue(Atomics.notify(a,0),1);while((message=$262.agent.getReport())===null)$262.agent.sleep(1);assert.sameValue(message,'ok');$DONE();"
+    );
+    assert_eq!(
+        run("flags: [async]", &body),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    assert_eq!(run("flags: [module, async]", &body), [Outcome::Passed]);
+}
+
+#[test]
+fn callback_failures_keep_worker_provenance_and_never_pass_main_negatives() {
+    let metadata = "negative:\n  phase: runtime\n  type: TypeError";
+    for (callback, unsupported) in [
+        ("throw new TypeError('worker')", false),
+        ("typeof $262.createRealm", true),
+    ] {
+        let worker = format!("$262.agent.receiveBroadcast(function(buffer){{{callback}}})");
+        let body = format!(
+            "$262.agent.start({worker:?});$262.agent.broadcast(new SharedArrayBuffer(4));while($262.agent.getReport()===null)$262.agent.sleep(1)"
+        );
+        let outcomes = run(metadata, &body);
+        assert!(
+            outcomes.iter().all(|outcome| if unsupported {
+                matches!(outcome, Outcome::Unsupported { .. })
+            } else {
+                matches!(outcome, Outcome::SetupFailure(_))
+            }),
+            "{outcomes:?}"
+        );
+    }
+}

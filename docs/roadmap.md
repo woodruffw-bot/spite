@@ -482,7 +482,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Suspend explicitly configured agents for synchronous Atomics.wait with native condition variables, preserved asynchronous jobs, race-safe timeout/notification results and metadata-selected conformance host configuration.
 - [x] Expose safe native agent termination that interrupts execution and synchronous waits while retiring only the owning agent's waiter state.
 - [x] Run isolated suspending Test262 worker Scripts with startup validation, native string reports, timing methods, job progress and cooperative shutdown.
-- [ ] Deliver Test262 shared-buffer broadcasts with worker retrieval acknowledgements.
+- [x] Deliver native shared backing and numeric broadcast values to isolated Test262 workers, acknowledge retrieval before callbacks and preserve timeout/notification progress across agents.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.

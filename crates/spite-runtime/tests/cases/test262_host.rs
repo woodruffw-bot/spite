@@ -78,12 +78,7 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
 
 #[test]
 fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_cleanup() {
-    for member in [
-        "createRealm",
-        "agent.broadcast",
-        "IsHTMLDDA",
-        "AbstractModuleSource",
-    ] {
+    for member in ["createRealm", "IsHTMLDDA", "AbstractModuleSource"] {
         let mut realm = host();
         realm
             .eval(
@@ -358,11 +353,7 @@ fn worker_retirement_stops_program_loops_sleeps_and_infinite_waits() {
 fn worker_failures_keep_host_unsupported_and_limit_categories() {
     for (limits, source, expected) in [
         (Limits::default(), "throw new TypeError('worker')", "host"),
-        (
-            Limits::default(),
-            "typeof $262.agent.receiveBroadcast",
-            "unsupported",
-        ),
+        (Limits::default(), "typeof $262.createRealm", "unsupported"),
         (
             Limits {
                 max_steps: Some(2000),
@@ -387,4 +378,79 @@ fn worker_failures_keep_host_unsupported_and_limit_categories() {
         assert_eq!(kind, expected, "{source}");
         assert!(realm.finish_test262_agents().is_err());
     }
+}
+
+#[test]
+fn broadcasts_share_live_backing_with_receiving_intrinsics_and_full_bigint_values() {
+    let mut realm = host();
+    realm.eval("let buffer=new SharedArrayBuffer(8,{maxByteLength:16}),a=new Int32Array(buffer),calls=0").unwrap();
+    let source = "let Original=SharedArrayBuffer;SharedArrayBuffer=function(){throw 1};$262.agent.receiveBroadcast(function(buffer,value){if(Object.getPrototypeOf(buffer)!==Original.prototype||!(buffer instanceof Original))throw 2;Atomics.add(new Int32Array(buffer),0,1);buffer.grow(16);$262.agent.report(value.toString()+':'+buffer.byteLength);$262.agent.leaving()})";
+    for _ in 0..2 {
+        realm
+            .eval(&format!("$262.agent.start({source:?})"))
+            .unwrap();
+    }
+    check(
+        &mut realm,
+        "$262.agent.broadcast(buffer,{valueOf(){calls++;return 2n**80n+7n}})===undefined&&calls===1",
+    );
+    for _ in 0..2 {
+        assert_eq!(
+            next_agent_report(&mut realm).unwrap(),
+            "1208925819614629174706183:16".into()
+        );
+    }
+    realm.finish_test262_agents().unwrap();
+    check(&mut realm, "buffer.byteLength===16&&a[0]===2");
+}
+
+#[test]
+fn broadcast_retrieval_acknowledges_before_callbacks_and_preserves_repeated_delivery() {
+    let mut realm = host();
+    realm
+        .eval("let buffer=new SharedArrayBuffer(4),a=new Int32Array(buffer)")
+        .unwrap();
+    let source = "$262.agent.receiveBroadcast(function(first,x){$262.agent.report('first:'+x);$262.agent.receiveBroadcast(function(second,y){if(first===second)throw 1;new Int32Array(second)[0]=37;if(new Int32Array(first)[0]!==37)throw 2;$262.agent.report('second:'+y);$262.agent.leaving()})})";
+    realm
+        .eval(&format!("$262.agent.start({source:?})"))
+        .unwrap();
+    realm
+        .eval("$262.agent.broadcast(buffer,4294967297);$262.agent.broadcast(buffer,-4294967298)")
+        .unwrap();
+    assert_eq!(next_agent_report(&mut realm).unwrap(), "first:1".into());
+    assert_eq!(next_agent_report(&mut realm).unwrap(), "second:-2".into());
+    realm.finish_test262_agents().unwrap();
+    check(&mut realm, "a[0]===37");
+}
+
+#[test]
+fn broadcast_validation_precedes_value_hooks_and_rejects_proxy_brands() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        "let buffer=new SharedArrayBuffer(8),calls=0,traps=0,caught=0;for(const invalid of [{},new ArrayBuffer(8),SharedArrayBuffer.prototype,new Proxy(buffer,{get(){traps++;throw 1}})]){try{$262.agent.broadcast(invalid,{valueOf(){calls++;return 0}})}catch(e){if(e instanceof TypeError)caught++}}caught===4&&calls===0&&traps===0",
+    );
+    check(
+        &mut realm,
+        "let reason={},same=false;try{$262.agent.broadcast(buffer,{valueOf(){throw reason}})}catch(e){same=e===reason}same&&$262.agent.broadcast(buffer)===undefined",
+    );
+    realm.finish_test262_agents().unwrap();
+}
+
+#[test]
+fn broadcast_workers_keep_gc_roots_and_resume_foreign_async_notifications() {
+    let mut realm = host();
+    realm
+        .eval("let buffer=new SharedArrayBuffer(8),a=new Int32Array(buffer)")
+        .unwrap();
+    let source = "$262.agent.receiveBroadcast(async function(buffer){let a=new Int32Array(buffer),wait=Atomics.waitAsync(a,0,0);$262.agent.report('waiting');await $262.gc();let value=await wait.value;$262.agent.report(value);$262.agent.leaving()})";
+    realm
+        .eval(&format!("$262.agent.start({source:?})"))
+        .unwrap();
+    realm.eval("$262.agent.broadcast(buffer)").unwrap();
+    assert_eq!(next_agent_report(&mut realm).unwrap(), "waiting".into());
+    assert_eq!(realm.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
+    assert_eq!(next_agent_report(&mut realm).unwrap(), "ok".into());
+    realm.finish_test262_agents().unwrap();
+    check(&mut realm, "Atomics.notify(a,0)===0");
 }

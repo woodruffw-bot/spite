@@ -1,9 +1,28 @@
 # Test262 regression fixtures
 
-These 11540 unmodified test fixtures and twenty-four harness files come from
+These 11636 unmodified test fixtures and twenty-five harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Shared-buffer broadcasts and waiting audit
+
+Broadcast transfers native backing with Int32 or full BigInt data, waits for
+worker retrieval acknowledgements and invokes callbacks after releasing the
+native mutex. Fresh receiving wrappers retain their own intrinsics and share
+live bytes/growth. Runtime and runner regressions cover multicast, repeated
+messages, conversion order, callback locking, foreign notifications and async GC.
+
+All 174 staged wait/waitAsync originals pass every one of their 348 modes.
+Ninety-six new whole unchanged originals add 192 retained modes after Git
+blob/SHA-256 verification. The original atomicsHelper.js is added unchanged,
+including its timeout values. Its safeBroadcast mismatch probe requires a
+suspending main agent: unflagged and CanBlockIsTrue tests use that policy;
+CanBlockIsFalse stays nonsuspending. Ordinary Realm defaults are unchanged.
+
+Counts are 11,636 fixtures, twenty-five helpers, 11,551 reviewed sources, 22,165
+variants and 77 controls; native case files remain 698/88. No upstream bytes,
+metadata, corpus worker counts, default quotas or test allowances change.
 
 ## Isolated workers and string reports
 

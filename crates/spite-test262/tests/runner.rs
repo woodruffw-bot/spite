@@ -431,8 +431,8 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
         "typeof print",
         "typeof $262.createRealm",
         "$262.AbstractModuleSource",
-        "$262.agent.broadcast",
-        "typeof $262.agent.broadcast",
+        "typeof $262.AbstractModuleSource",
+        "typeof $262.IsHTMLDDA",
         "$262.IsHTMLDDA",
         "delete print",
         "print = 1",
@@ -525,6 +525,7 @@ fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
             .unwrap()
     };
     for flags in [
+        "[]",
         "[CanBlockIsTrue]",
         "[CanBlockIsTrue, module]",
         "[CanBlockIsTrue, raw]",
@@ -561,7 +562,7 @@ fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
     }
     let cases = run(
         "flags: [CanBlockIsTrue]\nnegative:\n  phase: runtime\n  type: TypeError",
-        "try{$262.agent.broadcast}catch(e){throw new TypeError()}finally{throw new TypeError()}",
+        "try{$262.createRealm}catch(e){throw new TypeError()}finally{throw new TypeError()}",
     );
     assert!(
         cases
