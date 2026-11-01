@@ -42,11 +42,10 @@ impl Realm {
 
     pub(super) fn with_tail_calls<T>(
         &mut self,
-        allowed: bool,
         body: impl FnOnce(&mut Self) -> Result<T, Error>,
     ) -> Result<T, Error> {
         let previous = self.tail_scope.take();
-        if allowed && self.strict {
+        if self.strict {
             self.tail_scope = Some(self.scopes.len() - 1);
         }
         let result = body(self);

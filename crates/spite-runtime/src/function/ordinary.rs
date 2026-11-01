@@ -41,7 +41,6 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<super::CallOutcome, Error> {
-        let derived = context.derived_constructor.is_some();
         let invocation = OrdinaryInvocation {
             code,
             callee,
@@ -51,12 +50,13 @@ impl Realm {
         };
         let (outcome, constructor_environment) =
             self.with_ordinary_call(invocation, span, |realm, body| {
-                realm.function_body(body, span, !derived)
+                realm.function_body(body, span)
             })?;
         if let Some(environment) = constructor_environment {
-            let super::CallOutcome::Value(value) = outcome else {
-                unreachable!("derived constructor retains its return validation")
-            };
+            // [[Construct]] keeps the environment needed for GetThisBinding,
+            // even after PrepareForTailCall retires its execution context
+            // (10.2.2, 15.10). Validate the actual callee result afterwards.
+            let value = self.finish_call_outcome(outcome)?;
             match value {
                 value @ Value::Object(_) => Ok(super::CallOutcome::Value(value)),
                 Value::Undefined => self

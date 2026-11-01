@@ -78,9 +78,9 @@ impl Realm {
     ) -> Result<super::CallOutcome, Error> {
         self.with_arrow_call(arrow, arguments, span, |realm, body| match &body {
             ArrowBody::Expression(body) => {
-                realm.with_tail_calls(true, |realm| realm.return_expression(body))
+                realm.with_tail_calls(|realm| realm.return_expression(body))
             }
-            ArrowBody::Block(body) => realm.function_body(body, span, true),
+            ArrowBody::Block(body) => realm.function_body(body, span),
         })
     }
 
@@ -256,9 +256,8 @@ impl Realm {
         &mut self,
         body: &FunctionBody,
         span: Span,
-        tail_calls: bool,
     ) -> Result<super::CallOutcome, Error> {
-        self.with_tail_calls(tail_calls, |realm| {
+        self.with_tail_calls(|realm| {
             let environment = realm.prepare_function_body(body, span)?;
             let completion = realm.statements(body.statements());
             let mut completion =

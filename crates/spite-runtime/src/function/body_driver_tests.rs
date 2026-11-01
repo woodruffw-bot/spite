@@ -54,8 +54,7 @@ fn evaluate_and_capture(
     body: &FunctionBody,
 ) -> Result<(Value, EnvironmentHandle), Error> {
     assert!(realm.strict);
-    let super::CallOutcome::Value(value) = realm.function_body(body, Span::new(0, 0), false)?
-    else {
+    let super::CallOutcome::Value(value) = realm.function_body(body, Span::new(0, 0))? else {
         panic!("driver returns a value");
     };
     Ok((value, realm.scopes.last().unwrap().clone()))

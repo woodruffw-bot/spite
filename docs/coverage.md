@@ -63,6 +63,25 @@ not an alternative language specification.
 
 
 
+## Derived constructor tail returns
+
+Derived constructors can retire their source contexts before tail dispatch.
+The native construction operation retains the function environment needed for
+GetThisBinding and applies return-value validation to the actual callee result.
+Lexically captured super, this and new.target remain available after retirement;
+object returns, undefined with initialized/uninitialized this, primitive returns
+and thrown values retain their specification behavior. Host failures bypass
+language handlers and return validation. The obsolete constructor-specific
+tail-call switch is removed from shared body evaluation.
+
+Two additional native groups cover 512 tail transfers on a 2 MiB stack before
+lexical super(), derived private-field initialization, forwarded new.target,
+undefined after super, object/primitive/throw results, GC and host-failure cleanup.
+Counts are 2,402 non-RegExp integrations across 699 Runtime case files. The
+22,194 retained variants and 77 controls are unchanged. All 529 Runtime units,
+2,402 non-RegExp integrations and the complete conformance package pass, along
+with formatting, strict Clippy, MSRV, CLI/doc tests, policy and inventories.
+
 ## Optional and tagged tail calls with upstream audit
 
 Final optional-chain calls now transfer after shared prefix evaluation. Skipped

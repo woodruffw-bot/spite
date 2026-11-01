@@ -3150,9 +3150,14 @@ short-circuit result so a skipped prefix cannot be confused with an undefined
 callee. Ordinary undefined callees still evaluate arguments before TypeError;
 optional nullish callees skip them. Optional eval remains indirect. Tagged
 templates share receiver, template-registry and substitution preparation with
-ordinary tagged evaluation before transferring the call. Derived constructor
-return validation still retains ordinary dispatch. Async/generator bodies and non-strict functions do not create
-tail requests. Native guards and optional work budgets continue to apply without
+ordinary tagged evaluation before transferring the call. Derived constructors
+retire their source contexts before invoking a tail target, retaining the
+function environment required by [[Construct]] for subsequent GetThisBinding
+(10.2.2). Object, undefined and primitive return rules apply to the actual target
+result; thrown values and host failures propagate before that validation. Captured
+arrows retain lexical super, this and new.target, including a super() call after
+the constructor's source context has retired. Async/generator bodies and
+non-strict functions do not create tail requests. Native guards and optional work budgets continue to apply without
 resetting the allowance at each transfer.
 Call expressions and expression statements use separate small dispatch frames.
 Indirect eval bypasses the native-algorithm match frame, so recursive Script

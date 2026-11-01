@@ -220,3 +220,64 @@ fn optional_and_tagged_tail_values_survive_gc_and_keep_protected_cleanup() {
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("a.local.n===17&&a.v===3&&b()[0].raw.join('|')==='a|b'&&b()[1]===19&&c()[1]===23&&d()[1]===29"),Ok(Value::Boolean(true)));
 }
+
+#[test]
+fn derived_constructor_tail_returns_keep_lexical_super_this_and_new_target() {
+    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| check(r#"
+        'use strict';let observed;
+        class C extends Object{
+            #value=31;
+            constructor(){
+                let run=n=>n===0?(observed=new.target,super()):run(n-1);
+                return run(512);
+            }
+            read(){return this.#value}
+        }
+        class D extends C{}
+        let d=new D;
+        class E extends Object{
+            constructor(){super();let run=n=>n===0?(observed=new.target,undefined):run(n-1);return run(512)}
+        }
+        let before=observed===D,e=new E;
+        before&&d instanceof D&&d.read()===31&&e instanceof E&&observed===E
+    "#)).unwrap().join().unwrap();
+}
+
+#[test]
+fn derived_tail_result_validation_preserves_objects_exceptions_and_missing_super() {
+    let mut realm = Realm::default();
+    assert_eq!(
+        realm.eval(
+            r#"
+        'use strict';let object={value:37};
+        function provide(n,result){if(n===0)return result;return provide(n-1,result)}
+        class A extends null{constructor(){return provide(256,object)}}
+        class B extends null{constructor(){return provide(256,undefined)}}
+        class C extends null{constructor(){return provide(256,7)}}
+        class D extends null{constructor(){return (()=>{throw object})()}}
+        let a=new A,b=false,c=false,d=false;
+        try{new B}catch(e){b=e instanceof ReferenceError}
+        try{new C}catch(e){c=e instanceof TypeError}
+        try{new D}catch(e){d=e===object}
+        a===object&&b&&c&&d
+    "#
+        ),
+        Ok(Value::Boolean(true))
+    );
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("object.value===37&&a===object"),
+        Ok(Value::Boolean(true))
+    );
+    let mut blocked = Realm::default();
+    blocked.reserve_unsupported_global("tailUnavailableHost");
+    blocked.eval("let flag=0;class Missing extends null{constructor(){return (()=>tailUnavailableHost())()}}").unwrap();
+    assert!(matches!(
+        blocked.eval("try{new Missing}catch(e){flag=1}finally{flag=2}"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(
+        blocked.eval("flag===0&&(()=>{'use strict';return 7})()===7"),
+        Ok(Value::Boolean(true))
+    );
+}
