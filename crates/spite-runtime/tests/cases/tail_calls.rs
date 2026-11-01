@@ -125,6 +125,8 @@ fn ordinary_recursion_keeps_its_guard_and_tail_loops_keep_opted_in_work_limits()
         "function f(){'use strict';for(let x of [1])return f()}f()",
         "async function f(){'use strict';return f()}f()",
         "function* f(){'use strict';return f().next()}f().next()",
+        "function f(){return f?.()}f()",
+        "function f(){return f``}f()",
     ]
     .into_iter()
     .enumerate()
@@ -151,4 +153,70 @@ fn ordinary_recursion_keeps_its_guard_and_tail_loops_keep_opted_in_work_limits()
         realm.eval("flag===0&&(()=>{'use strict';return 7})()===7"),
         Ok(Value::Boolean(true))
     );
+}
+
+#[test]
+fn optional_tail_calls_keep_receivers_and_distinguish_skipped_prefixes() {
+    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| check(r#"
+        'use strict';
+        function f(n){if(n===0)return 7;return f?.(n-1)}
+        let o={m(n){if(n===0)return this;return this?.m(n-1)}};
+        class C{#m(n){if(n===0)return this;return this.#m?.(n-1)}run(n){return this.#m?.(n)}}
+        let c=new C,log=[];
+        function skipped(){return null?.x.m(log.push('skipped'))}
+        function absent(){return ({m:undefined})?.m(log.push('absent'))}
+        function grouped(){return (null?.m)(log.push('grouped'))}
+        let a,b;try{absent()}catch(e){a=e instanceof TypeError}try{grouped()}catch(e){b=e instanceof TypeError}
+        function indirect(){let local=13;return eval?.('typeof local')}
+        f(512)===7&&o.m(512)===o&&c.run(512)===c&&skipped()===undefined&&a&&b&&
+            log.join(',')==='absent,grouped'&&indirect()==='undefined'
+    "#)).unwrap().join().unwrap();
+}
+
+#[test]
+fn tagged_tail_calls_keep_template_identity_receivers_and_substitution_order() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            check(
+                r#"
+        'use strict';let saved;
+        let o={tag(strings,n){
+            if(this!==o||!Object.isFrozen(strings)||!Object.isFrozen(strings.raw))throw 1;
+            if(n===511)saved=strings;else if(n<511&&strings!==saved)throw 2;
+            if(n===0)return this;
+            return o.tag`${n-1}`;
+        }};
+        let log=[],target={get tag(){log.push('get');return function(strings,a,b){
+            if(this!==target||strings.join('|')!=='a|b|c')throw 3;
+            log.push('call');return a+b;
+        }}};
+        function ordered(){return target.tag`a${(log.push('a'),3)}b${(log.push('b'),4)}c`}
+        o.tag`${512}`===o&&ordered()===7&&log.join(',')==='get,a,b,call'
+    "#,
+            )
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn optional_and_tagged_tail_values_survive_gc_and_keep_protected_cleanup() {
+    let mut realm = Realm::default();
+    assert_eq!(realm.eval(r#"
+        'use strict';let log=[];
+        function capture(){let local={n:17};let o={make(){log.push('make');return ()=>v=>({local,v})}};
+            return o?.make()()?.((log.push('arg'),3))}
+        function tag(strings,value){log.push('tag');return ()=>[strings,value]}
+        function tagged(){return tag`a${19}b`}
+        function bad(){return null`${(log.push('sub'),5)}`}
+        function protectedTag(){try{return tag`x${23}y`}finally{log.push('finally')}}
+        function disposable(){using r={[Symbol.dispose](){log.push('dispose')}};return tag`p${29}q`}
+        let a=capture(),b=tagged(),c=protectedTag(),d=disposable(),caught=false;
+        try{bad()}catch(e){caught=e instanceof TypeError}
+        caught&&log.join(',')==='make,arg,tag,tag,finally,tag,dispose,sub'
+    "#),Ok(Value::Boolean(true)));
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("a.local.n===17&&a.v===3&&b()[0].raw.join('|')==='a|b'&&b()[1]===19&&c()[1]===23&&d()[1]===29"),Ok(Value::Boolean(true)));
 }

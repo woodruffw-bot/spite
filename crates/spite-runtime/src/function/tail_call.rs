@@ -3,7 +3,7 @@
 use super::CallTarget;
 use crate::{Completion, CompletionKind, Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
-use spite_parser::ast::{BinaryOp, Expr, ExprKind};
+use spite_parser::ast::{BinaryOp, ChainStepKind, Expr, ExprKind};
 
 #[derive(Debug)]
 pub(crate) struct TailCall {
@@ -130,31 +130,75 @@ impl Realm {
                     self.tick(expression.span)?;
                     let target = self.prepare_call(callee)?;
                     let arguments = self.argument_list(arguments)?;
-                    // Direct eval uses this execution context. Its result is
-                    // returned normally, after all eval execution has finished.
-                    if target.direct_eval {
-                        return self
-                            .invoke_call(target, arguments, expression.span)
-                            .map(CallOutcome::Value);
+                    return self.tail_call_target(target, arguments, expression.span);
+                }
+                ExprKind::OptionalChain { base, steps } => {
+                    let (last, prefix) = steps.split_last().expect("nonempty optional chain");
+                    let ChainStepKind::Call(arguments) = &last.kind else {
+                        return self.expression(expression).map(CallOutcome::Value);
+                    };
+                    self.tick(expression.span)?;
+                    let Some(mut reference) = self.optional_chain_prefix(base, prefix)? else {
+                        return Ok(CallOutcome::Value(Value::Undefined));
+                    };
+                    self.tick(last.span)?;
+                    let function = self.get(&mut reference, last.span)?;
+                    if last.optional && matches!(function, Value::Undefined | Value::Null) {
+                        return Ok(CallOutcome::Value(Value::Undefined));
                     }
-                    if !self.is_callable(&target.function, expression.span)? {
-                        return Err(Self::exception(
-                            ExceptionKind::TypeError,
-                            expression.span,
-                            "value is not callable",
-                        ));
-                    }
-                    let CallTarget { function, this, .. } = target;
-                    return Ok(CallOutcome::Tail(Box::new(TailCall {
+                    let target = CallTarget {
                         function,
-                        this,
-                        arguments,
-                        span: expression.span,
-                    })));
+                        this: reference.call_receiver(),
+                        direct_eval: false,
+                    };
+                    let arguments = self.argument_list(arguments)?;
+                    return self.tail_call_target(target, arguments, last.span);
+                }
+                ExprKind::TaggedTemplate {
+                    tag,
+                    elements,
+                    substitutions,
+                } => {
+                    self.tick(expression.span)?;
+                    let (target, arguments) = self.prepare_tagged_template(
+                        tag,
+                        elements,
+                        substitutions,
+                        expression.span,
+                    )?;
+                    return self.tail_call_target(target, arguments, expression.span);
                 }
                 _ => return self.expression(expression).map(CallOutcome::Value),
             }
         }
+    }
+
+    fn tail_call_target(
+        &mut self,
+        target: CallTarget,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<CallOutcome, Error> {
+        // Direct eval executes before its caller's context is retired.
+        if target.direct_eval {
+            return self
+                .invoke_call(target, arguments, span)
+                .map(CallOutcome::Value);
+        }
+        if !self.is_callable(&target.function, span)? {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "value is not callable",
+            ));
+        }
+        let CallTarget { function, this, .. } = target;
+        Ok(CallOutcome::Tail(Box::new(TailCall {
+            function,
+            this,
+            arguments,
+            span,
+        })))
     }
 }
 

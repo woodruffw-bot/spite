@@ -1,6 +1,7 @@
 //! Tagged call evaluation and the realm's template registry (13.3.11, 13.2.8.4).
 
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor, reference_expression};
+use super::CallTarget;
+use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{Expr, TemplateElement};
 use std::rc::Rc;
@@ -29,14 +30,21 @@ impl Realm {
         substitutions: &[Expr],
         span: Span,
     ) -> Result<Value, Error> {
-        let (function, this) = if reference_expression(tag) {
-            let mut reference = self.reference(tag)?;
-            let function = self.get(&mut reference, tag.span)?;
-            let this = reference.call_receiver();
-            (function, this)
-        } else {
-            (self.expression(tag)?, Value::Undefined)
-        };
+        let (target, arguments) =
+            self.prepare_tagged_template(tag, elements, substitutions, span)?;
+        self.call(target.function, target.this, arguments, span)
+    }
+
+    pub(super) fn prepare_tagged_template(
+        &mut self,
+        tag: &Expr,
+        elements: &Rc<[TemplateElement]>,
+        substitutions: &[Expr],
+        span: Span,
+    ) -> Result<(CallTarget, Vec<Value>), Error> {
+        let mut target = self.prepare_call(tag)?;
+        // Tagged eval is an ordinary call, never direct eval.
+        target.direct_eval = false;
         let template = self.get_template_object(elements, span)?;
         let mut arguments = Vec::new();
         self.append_argument(&mut arguments, Value::Object(template), span)?;
@@ -45,7 +53,7 @@ impl Realm {
             self.append_argument(&mut arguments, value, substitution.span)?;
         }
         // EvaluateCall checks callability after ArgumentListEvaluation.
-        self.call(function, this, arguments, span)
+        Ok((target, arguments))
     }
 
     pub(crate) fn get_template_object(

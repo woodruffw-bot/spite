@@ -59,9 +59,32 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22165 reviewed Test262 variants, twenty-five pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22194 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Optional and tagged tail calls with upstream audit
+
+Final optional-chain calls now transfer after shared prefix evaluation. Skipped
+prefixes remain distinct from ordinary undefined callees, preserving argument
+skipping and TypeErrors. Receivers, indirect eval and intervening calls retain
+their semantics. Tagged calls share template lookup, receiver capture and ordered
+substitutions with ordinary tagged evaluation before transferring the target.
+Three new native groups cover 512-deep optional/private/tagged recursion on a
+2 MiB stack, template identity/freezing, short-circuiting and grouping, argument
+order, GC-retained captures, non-callable tags and protected cleanup. Nonstrict
+optional/tagged recursion still reaches the native guard.
+
+Twenty-nine whole original Test262 fixtures pass all 29 required modes with
+their unchanged 100,000-call helper. Their Git blob/SHA-256 hashes match the pin.
+They cover direct/member calls, shadowed eval, conditional/logical/comma
+expressions, loop/switch bodies, labels, catches and finalizers. All are admitted
+with the unchanged tcoHelper.js. Counts are 11,665 fixtures, twenty-six helpers,
+11,580 reviewed sources, 22,194 variants and 77 controls. Native counts are 699
+Runtime case files and 2,400 non-RegExp integrations. All 529 Runtime units,
+2,400 non-RegExp integrations, 22,194 retained variants and 77 runner controls
+pass. Formatting, strict Clippy, MSRV, CLI/doc tests, dependency policy and all
+inventories pass.
 
 ## Strict source tail transfers
 

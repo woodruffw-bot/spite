@@ -3144,9 +3144,14 @@ Protected try bodies and catches with finally keep ordinary calls; a finalizer
 or catch without finally can transfer its return. For-of bodies retain calls
 until IteratorClose has observed their completion. Pending lexical resources in
 the current activation similarly prevent early transfer, while resources owned
-by earlier activations do not disable a callee's tail calls. Derived constructor
-return validation, optional-chain calls and tagged templates still retain their
-ordinary dispatch. Async/generator bodies and non-strict functions do not create
+by earlier activations do not disable a callee's tail calls. Final optional-chain
+calls use the same evaluator for the preceding chain, retaining a distinct
+short-circuit result so a skipped prefix cannot be confused with an undefined
+callee. Ordinary undefined callees still evaluate arguments before TypeError;
+optional nullish callees skip them. Optional eval remains indirect. Tagged
+templates share receiver, template-registry and substitution preparation with
+ordinary tagged evaluation before transferring the call. Derived constructor
+return validation still retains ordinary dispatch. Async/generator bodies and non-strict functions do not create
 tail requests. Native guards and optional work budgets continue to apply without
 resetting the allowance at each transfer.
 Call expressions and expression statements use separate small dispatch frames.

@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 11636 unmodified test fixtures and twenty-five harness files come from
+These 11665 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Strict tail-position audit
+
+Twenty-nine unchanged whole originals add 29 modes for direct/member calls,
+shadowed eval, conditional/logical/comma expressions, loop and switch bodies,
+labels, catches and finalizers. Every source matches its pinned Git blob and
+SHA-256 digest. The unchanged tcoHelper.js retains its original 100,000-call
+depth; no iteration, metadata, quota or worker-count changes are made.
+
+Counts are 11,665 fixtures, twenty-six helpers, 11,580 reviewed sources, 22,194
+variants and 77 controls. Runtime case files remain 699; three additional native
+groups also cover optional-chain and tagged-template tail transfers.
 
 ## Shared-buffer broadcasts and waiting audit
 

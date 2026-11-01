@@ -9,6 +9,18 @@ impl Realm {
         base: &'a Expr,
         steps: &'a [ChainStep],
     ) -> Result<Reference<'a>, Error> {
+        Ok(self
+            .optional_chain_prefix(base, steps)?
+            .unwrap_or(Reference::Value(Value::Undefined)))
+    }
+
+    // None preserves short-circuiting for a later tail-position call. An
+    // ordinary undefined property must still attempt that call and throw.
+    pub(super) fn optional_chain_prefix<'a>(
+        &mut self,
+        base: &'a Expr,
+        steps: &'a [ChainStep],
+    ) -> Result<Option<Reference<'a>>, Error> {
         let mut reference = if reference_expression(base) {
             self.reference(base)?
         } else {
@@ -20,7 +32,7 @@ impl Realm {
             if step.optional && matches!(value, Value::Undefined | Value::Null) {
                 // Skip the entire ungrouped suffix, including ordinary calls
                 // and properties. Parentheses create a separate outer node.
-                return Ok(Reference::Value(Value::Undefined));
+                return Ok(None);
             }
             reference = match &step.kind {
                 ChainStepKind::Property(name) => {
@@ -47,6 +59,6 @@ impl Realm {
                 }
             };
         }
-        Ok(reference)
+        Ok(Some(reference))
     }
 }
