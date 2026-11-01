@@ -7,7 +7,7 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
     for (index, (setup, call)) in [
         ("let f=(x=f())=>1;", "f()"),
         ("function f(x=f()){return 1;}", "f()"),
-        ("function f(){'use strict';return f();}", "f()"),
+        ("function f(){'use strict';return 1+f();}", "f()"),
         ("function F(){new F;}", "new F"),
         ("class C{constructor(){new C;}}", "new C"),
         ("class C{constructor(x=new C){}}", "new C"),
@@ -22,7 +22,7 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
         ("function f(){return class {static{f();}};}", "f()"),
         ("var code='class C{static{eval(code);}}';", "eval(code)"),
         ("function f(){return class C{constructor(){f();}static{new C;}};}", "f()"),
-        ("class C{m(){return this.m();}}let c=new C;", "c.m()"),
+        ("class C{m(){return 1+this.m();}}let c=new C;", "c.m()"),
         ("function f(){return class{[f()](){}};}", "f()"),
         ("var code='class C{[eval(code)](){}}';", "eval(code)"),
         ("var code='eval(code)';", "eval(code)"),

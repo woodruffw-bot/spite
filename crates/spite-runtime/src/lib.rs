@@ -192,6 +192,8 @@ struct Completion {
     // None is empty, distinct from Some(Value::Undefined).
     value: Option<Value>,
     target: Option<String>,
+    // Synchronous source returns only. Suspended drivers never create transfers.
+    tail_call: Option<Box<function::TailCall>>,
 }
 
 impl Completion {
@@ -200,6 +202,7 @@ impl Completion {
             kind: CompletionKind::Normal,
             value,
             target: None,
+            tail_call: None,
         }
     }
 
@@ -252,6 +255,7 @@ pub struct Realm {
     limits: Limits,
     remaining_steps: Option<usize>,
     call_depth: usize,
+    tail_scope: Option<usize>,
     evaluation_depth: usize,
     strict: bool,
     objects: object::Objects,
@@ -290,6 +294,7 @@ impl Realm {
             limits,
             remaining_steps: limits.max_steps,
             call_depth: 0,
+            tail_scope: None,
             evaluation_depth: 0,
             strict: false,
             objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
@@ -749,12 +754,15 @@ impl Realm {
     ) -> Result<Completion, Error> {
         self.enter_evaluation(statement.span)?;
         // Keep recursive expression statements out of the large general frame.
-        let result = if let StatementKind::Expression(expression) = &statement.kind {
-            self.tick(statement.span)
+        let result = match &statement.kind {
+            StatementKind::Expression(expression) => self
+                .tick(statement.span)
                 .and_then(|()| self.expression(expression))
-                .map(|value| Completion::normal(Some(value)))
-        } else {
-            self.statement_inner(statement, labels)
+                .map(|value| Completion::normal(Some(value))),
+            StatementKind::Return(expression) => self
+                .tick(statement.span)
+                .and_then(|()| self.return_completion(expression.as_ref())),
+            _ => self.statement_inner(statement, labels),
         };
         self.evaluation_depth -= 1;
         result
@@ -788,6 +796,7 @@ impl Realm {
                 unreachable!("expression statement dispatched separately")
             }
             StatementKind::Break(target) | StatementKind::Continue(target) => Ok(Completion {
+                tail_call: None,
                 kind: if matches!(statement.kind, StatementKind::Break(_)) {
                     CompletionKind::Break
                 } else {
@@ -810,14 +819,7 @@ impl Realm {
                 }
                 Ok(result)
             }
-            StatementKind::Return(expression) => Ok(Completion {
-                kind: CompletionKind::Return,
-                value: Some(match expression {
-                    Some(expression) => self.expression(expression)?,
-                    None => Value::Undefined,
-                }),
-                target: None,
-            }),
+            StatementKind::Return(_) => unreachable!("return dispatched separately"),
             StatementKind::Throw(expr) => Err(Error::Thrown(self.expression(expr)?)),
             StatementKind::Using(bindings) => {
                 self.initialize_using_bindings(bindings)?;
@@ -850,13 +852,24 @@ impl Realm {
                 handler,
                 finalizer,
             } => {
-                let mut result = match self.statement(body) {
+                // Calls in the protected body must still reach its handler or
+                // finalizer. A catch without finally and the finalizer itself
+                // can contain tail positions (15.10.2).
+                let tail_scope = self.tail_scope.take();
+                let body_result = self.statement(body);
+                self.tail_scope = if finalizer.is_none() {
+                    tail_scope
+                } else {
+                    None
+                };
+                let mut result = match body_result {
                     Err(error) if error.is_language_exception() => match handler {
                         Some(handler) => self.catch_clause(handler, error),
                         None => Err(error),
                     },
                     other => other,
                 };
+                self.tail_scope = tail_scope;
                 // Host failures cannot enter or be suppressed by language control.
                 if result.as_ref().is_err_and(|e| !e.is_language_exception()) {
                     return result;
@@ -987,7 +1000,11 @@ impl Realm {
                         "for-await-of execution is not implemented",
                     ));
                 }
-                self.for_of(binding, iterable, body, labels, statement.span)
+                // IteratorClose must observe the actual call completion.
+                let tail_scope = self.tail_scope.take();
+                let result = self.for_of(binding, iterable, body, labels, statement.span);
+                self.tail_scope = tail_scope;
+                result
             }
             StatementKind::ForIn {
                 binding,

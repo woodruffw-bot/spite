@@ -22,6 +22,8 @@ mod boolean;
 mod bound;
 mod builtin;
 mod call;
+mod tail_call;
+pub(crate) use tail_call::{CallOutcome, TailCall};
 mod generator;
 mod shared_array_buffer;
 mod source_context;
@@ -1528,8 +1530,10 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
+        let tail_scope = self.tail_scope.take();
         let result = self.call_inner(function, this, arguments, span);
         self.call_depth -= 1;
+        self.tail_scope = tail_scope;
         result
     }
 
@@ -1551,7 +1555,7 @@ impl Realm {
         mut function: Value,
         mut this: Value,
         arguments: Vec<Value>,
-        span: Span,
+        mut span: Span,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
         let mut arguments = arguments.into_iter();
@@ -1687,7 +1691,16 @@ impl Realm {
                     if arrow.kind == spite_parser::ast::FunctionKind::Async {
                         return self.call_async_arrow(arrow, arguments, span);
                     }
-                    return self.call_arrow(arrow, arguments, span);
+                    match self.call_arrow(arrow, arguments, span)? {
+                        CallOutcome::Value(value) => return Ok(value),
+                        CallOutcome::Tail(call) => {
+                            function = call.function;
+                            this = call.this;
+                            arguments = call.arguments.into_iter();
+                            span = call.span;
+                            continue;
+                        }
+                    }
                 }
                 Some(Callable::Ordinary(code)) => {
                     let Value::Object(callee) = function else {
@@ -1721,14 +1734,24 @@ impl Realm {
                             span,
                         );
                     }
-                    return self.call_ordinary(
+                    let outcome = self.call_ordinary_outcome(
                         code,
                         callee,
                         this,
                         Default::default(),
                         arguments,
                         span,
-                    );
+                    )?;
+                    match outcome {
+                        CallOutcome::Value(value) => return Ok(value),
+                        CallOutcome::Tail(call) => {
+                            function = call.function;
+                            this = call.this;
+                            arguments = call.arguments.into_iter();
+                            span = call.span;
+                            continue;
+                        }
+                    }
                 }
                 Some(Callable::Method(method)) => {
                     let Value::Object(callee) = function else {
@@ -1769,7 +1792,18 @@ impl Realm {
                             span,
                         );
                     }
-                    return self.call_ordinary(code, callee, this, context, arguments, span);
+                    match self
+                        .call_ordinary_outcome(code, callee, this, context, arguments, span)?
+                    {
+                        CallOutcome::Value(value) => return Ok(value),
+                        CallOutcome::Tail(call) => {
+                            function = call.function;
+                            this = call.this;
+                            arguments = call.arguments.into_iter();
+                            span = call.span;
+                            continue;
+                        }
+                    }
                 }
                 Some(Callable::Bound(bound)) => {
                     let count = bound
@@ -1805,6 +1839,23 @@ impl Realm {
                 Builtin::EvalScript => {
                     self.host_eval_script(arguments.next().unwrap_or(Value::Undefined), span)
                 }
+                // Source generators can synchronously reenter JavaScript.
+                // Keep the large native-algorithm frame out of that recursion.
+                Builtin::GeneratorNext | Builtin::GeneratorReturn | Builtin::GeneratorThrow => self
+                    .generator_resume(
+                        this,
+                        builtin,
+                        arguments.next().unwrap_or(Value::Undefined),
+                        span,
+                    ),
+                Builtin::AsyncGeneratorNext
+                | Builtin::AsyncGeneratorReturn
+                | Builtin::AsyncGeneratorThrow => self.async_generator_resume(
+                    this,
+                    builtin,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                ),
                 Builtin::FunctionCall => {
                     // 20.2.3.3 is a tail call. Transfer ownership of the receiver and
                     // advance the argument iterator without Rust stack recursion.

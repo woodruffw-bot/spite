@@ -289,6 +289,7 @@ impl Realm {
             match completion {
                 SourceResume::Throw(error) => Err(error),
                 SourceResume::Return(value) => Ok(Step::Complete(Completion {
+                    tail_call: None,
                     kind: CompletionKind::Return,
                     value: Some(value),
                     target: None,
@@ -410,6 +411,7 @@ impl Realm {
                 } else {
                     self.expression(expression).map(|value| {
                         Step::Complete(Completion {
+                            tail_call: None,
                             kind: CompletionKind::Return,
                             value: Some(value),
                             target: None,
@@ -603,6 +605,7 @@ impl Realm {
             }
             AsyncAwaitAction::Return | AsyncAwaitAction::AsyncGeneratorReturn => {
                 Ok(Step::Complete(Completion {
+                    tail_call: None,
                     kind: CompletionKind::Return,
                     value: Some(value),
                     target: None,

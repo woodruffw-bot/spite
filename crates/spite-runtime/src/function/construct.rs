@@ -28,6 +28,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
+        let tail_scope = self.tail_scope.take();
         let mut elements = Vec::new();
         let result = self
             .construct_inner(function, arguments, new_target, &mut elements, span)
@@ -38,6 +39,7 @@ impl Realm {
                 Ok(value)
             });
         self.call_depth -= 1;
+        self.tail_scope = tail_scope;
         result
     }
 

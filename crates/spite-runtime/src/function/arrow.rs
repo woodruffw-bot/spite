@@ -75,10 +75,12 @@ impl Realm {
         arrow: ScriptFunction,
         arguments: std::vec::IntoIter<Value>,
         span: Span,
-    ) -> Result<Value, Error> {
+    ) -> Result<super::CallOutcome, Error> {
         self.with_arrow_call(arrow, arguments, span, |realm, body| match &body {
-            ArrowBody::Expression(body) => realm.expression(body),
-            ArrowBody::Block(body) => realm.function_body(body, span),
+            ArrowBody::Expression(body) => {
+                realm.with_tail_calls(true, |realm| realm.return_expression(body))
+            }
+            ArrowBody::Block(body) => realm.function_body(body, span, true),
         })
     }
 
@@ -254,17 +256,26 @@ impl Realm {
         &mut self,
         body: &FunctionBody,
         span: Span,
-    ) -> Result<Value, Error> {
-        let environment = self.prepare_function_body(body, span)?;
-        let completion = self.statements(body.statements());
-        let completion = self.dispose_environment_resources(&environment, completion, span)?;
-        match completion.kind {
-            CompletionKind::Return => Ok(completion.value.expect("return has a value")),
-            CompletionKind::Normal => Ok(Value::Undefined),
-            CompletionKind::Break | CompletionKind::Continue => {
-                unreachable!("validated control target")
+        tail_calls: bool,
+    ) -> Result<super::CallOutcome, Error> {
+        self.with_tail_calls(tail_calls, |realm| {
+            let environment = realm.prepare_function_body(body, span)?;
+            let completion = realm.statements(body.statements());
+            let mut completion =
+                realm.dispose_environment_resources(&environment, completion, span)?;
+            match completion.kind {
+                CompletionKind::Return => match completion.tail_call.take() {
+                    Some(call) => Ok(super::CallOutcome::Tail(call)),
+                    None => Ok(super::CallOutcome::Value(
+                        completion.value.expect("return has a value"),
+                    )),
+                },
+                CompletionKind::Normal => Ok(super::CallOutcome::Value(Value::Undefined)),
+                CompletionKind::Break | CompletionKind::Continue => {
+                    unreachable!("validated control target")
+                }
             }
-        }
+        })
     }
 
     pub(super) fn prepare_function_body(

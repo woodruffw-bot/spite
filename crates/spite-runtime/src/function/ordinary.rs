@@ -28,6 +28,20 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
+        let outcome = self.call_ordinary_outcome(code, callee, this, context, arguments, span)?;
+        self.finish_call_outcome(outcome)
+    }
+
+    pub(super) fn call_ordinary_outcome(
+        &mut self,
+        code: ScriptFunction,
+        callee: ObjectHandle,
+        this: Value,
+        context: crate::environment::FunctionContext,
+        arguments: std::vec::IntoIter<Value>,
+        span: Span,
+    ) -> Result<super::CallOutcome, Error> {
+        let derived = context.derived_constructor.is_some();
         let invocation = OrdinaryInvocation {
             code,
             callee,
@@ -35,14 +49,19 @@ impl Realm {
             context,
             arguments,
         };
-        let (value, constructor_environment) =
+        let (outcome, constructor_environment) =
             self.with_ordinary_call(invocation, span, |realm, body| {
-                realm.function_body(body, span)
+                realm.function_body(body, span, !derived)
             })?;
         if let Some(environment) = constructor_environment {
+            let super::CallOutcome::Value(value) = outcome else {
+                unreachable!("derived constructor retains its return validation")
+            };
             match value {
-                value @ Value::Object(_) => Ok(value),
-                Value::Undefined => self.function_this_binding(&environment, span),
+                value @ Value::Object(_) => Ok(super::CallOutcome::Value(value)),
+                Value::Undefined => self
+                    .function_this_binding(&environment, span)
+                    .map(super::CallOutcome::Value),
                 _ => Err(Self::exception(
                     crate::ExceptionKind::TypeError,
                     span,
@@ -50,7 +69,7 @@ impl Realm {
                 )),
             }
         } else {
-            Ok(value)
+            Ok(outcome)
         }
     }
 

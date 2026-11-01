@@ -3128,7 +3128,27 @@ binding or constructor/prototype property. Lexical this follows captured functio
 environments and otherwise resolves to the realm's global this value.
 Every call restores caller strictness and active scopes on success or abrupt exit.
 The evaluator bounds combined statement/expression nesting across calls to 64,
-as well as call re-entry; ordinary user tail calls await explicit execution frames.
+as well as call re-entry. Strict ordinary functions, methods and arrows return
+owned tail-call requests for direct calls in return/concise-body positions,
+including parentheses, conditionals, logical operators and comma chains (15.10).
+The source driver restores the caller's scopes, module and strictness before the
+existing iterative call dispatcher invokes the target. Callee/receiver lookup,
+arguments and callability validation happen before retiring the source context;
+direct eval executes in that context. Bound/Proxy/builtin forwarding shares the
+same dispatcher, without incrementing native call depth for the transfer.
+Source generator next/return/throw methods and their async counterparts also
+bypass the large native-algorithm dispatcher when resuming JavaScript, so
+recursive resumption reaches the existing guard on a 2 MiB stack.
+
+Protected try bodies and catches with finally keep ordinary calls; a finalizer
+or catch without finally can transfer its return. For-of bodies retain calls
+until IteratorClose has observed their completion. Pending lexical resources in
+the current activation similarly prevent early transfer, while resources owned
+by earlier activations do not disable a callee's tail calls. Derived constructor
+return validation, optional-chain calls and tagged templates still retain their
+ordinary dispatch. Async/generator bodies and non-strict functions do not create
+tail requests. Native guards and optional work budgets continue to apply without
+resetting the allowance at each transfer.
 Call expressions and expression statements use separate small dispatch frames.
 Indirect eval bypasses the native-algorithm match frame, so recursive Script
 compilation/execution does not retain storage for unrelated expression, statement,

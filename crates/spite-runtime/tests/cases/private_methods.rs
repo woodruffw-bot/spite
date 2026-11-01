@@ -157,7 +157,7 @@ fn recursive_private_calls_and_accessors_are_bounded_on_two_mebibyte_stacks() {
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
             for source in [
-                "class C{#m(){return this.#m();}run(){return this.#m();}}new C().run();",
+                "class C{#m(){return 1+this.#m();}run(){return this.#m();}}new C().run();",
                 "class C{get #x(){return this.#x;}run(){return this.#x;}}new C().run();",
                 "class C{set #x(v){this.#x=v;}run(){this.#x=7;}}new C().run();",
                 "class C{#m(){return eval('this.#m()');}run(){return this.#m();}}new C().run();",

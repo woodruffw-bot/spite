@@ -67,6 +67,7 @@ impl Realm {
                         ));
                     }
                     return Ok(Step::Complete(Completion {
+                        tail_call: None,
                         kind: CompletionKind::Return,
                         value: Some(value),
                         target: None,
@@ -120,6 +121,7 @@ impl Realm {
             let value = self.get_property(object, &JsString::from("value"), span)?;
             if matches!(operation, DelegationOperation::Return) {
                 return Ok(Step::Complete(Completion {
+                    tail_call: None,
                     kind: CompletionKind::Return,
                     value: Some(value),
                     target: None,

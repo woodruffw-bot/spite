@@ -248,27 +248,20 @@ impl Realm {
                 arguments,
                 span,
             ),
-            Builtin::AsyncGeneratorNext
-            | Builtin::AsyncGeneratorReturn
-            | Builtin::AsyncGeneratorThrow => self.async_generator_resume(
-                this,
-                builtin,
-                arguments.next().unwrap_or(Value::Undefined),
-                span,
-            ),
             Builtin::GeneratorFunction => self.dynamic_function(
                 spite_parser::ast::FunctionKind::Generator,
                 None,
                 arguments,
                 span,
             ),
-            Builtin::GeneratorNext | Builtin::GeneratorReturn | Builtin::GeneratorThrow => self
-                .generator_resume(
-                    this,
-                    builtin,
-                    arguments.next().unwrap_or(Value::Undefined),
-                    span,
-                ),
+            Builtin::GeneratorNext
+            | Builtin::GeneratorReturn
+            | Builtin::GeneratorThrow
+            | Builtin::AsyncGeneratorNext
+            | Builtin::AsyncGeneratorReturn
+            | Builtin::AsyncGeneratorThrow => {
+                unreachable!("source resumption is handled by callable dispatch")
+            }
             Builtin::FunctionCall
             | Builtin::FunctionApply
             | Builtin::FunctionBind

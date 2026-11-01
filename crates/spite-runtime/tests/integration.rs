@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/tail_calls.rs"]
+mod tail_calls;
+
 #[path = "cases/test262_gc.rs"]
 mod test262_gc;
 

@@ -63,6 +63,32 @@ not an alternative language specification.
 
 
 
+## Strict source tail transfers
+
+Strict functions, methods and arrows can return owned call requests after
+evaluating the callee, receiver and arguments. Parentheses, conditional arms,
+logical operators and comma chains preserve their tail positions. Caller state
+is restored before iterative dispatch, including bound/Proxy/builtin forwarding.
+Direct eval, protected handlers, iterator closing, pending lexical disposal and
+derived constructor return validation keep the context they require. Optional
+chains and tagged templates remain to be integrated; async/generator and
+non-strict bodies do not create tail requests.
+
+Six regression groups cover 512 transfers on a 2 MiB native stack, mutual
+recursion, conditional/short-circuit evaluation, spread and receivers, direct
+eval, GC-retained closures, base/derived construction, cleanup/suppression and
+opted-in work limits. Native guard tests now use non-tail strict recursion where
+they previously assumed that strict direct returns must consume call depth.
+Generator resumption now bypasses the large builtin-algorithm frame; the new
+recursive generator check also exposed this stack-guard gap on unchanged main.
+There are 699 Runtime case files and 2,397 non-RegExp integration groups; corpus
+counts remain 22,165 variants with 77 controls. All 529 Runtime units, the six
+new groups, the existing 2 MiB stack suite and the complete Test262 package gate
+pass, along with Clippy, MSRV, CLI/doc tests and policy/inventory checks. All 5,014
+Runtime integrations, including 2,617 RegExp groups, pass. The private-method
+stack-guard case uses non-tail recursion; finite private-method tail transfers
+are tested separately at depth 512.
+
 ## Acknowledged shared-buffer broadcasts and waiting audit
 
 The Test262 host now broadcasts native shared backing and Int32/full BigInt
