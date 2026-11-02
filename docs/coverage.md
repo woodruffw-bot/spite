@@ -63,6 +63,28 @@ not an alternative language specification.
 
 
 
+## Saved source execution Realm activation
+
+Resumable source execution enters the Realm identified by its saved global
+environment before installing scopes, variables, strictness and module context.
+Borrowed generator methods therefore run the body with its defining intrinsics,
+then restore the native method's context. Generator completion/result allocation
+keeps the boundaries specified by GeneratorStart and AsyncGeneratorYield.
+Linked Module contexts use the Module environment's actual outer global rather
+than the ambient caller's global.
+
+Three new native groups cover borrowed synchronous and asynchronous generator
+methods, source allocation/error identity, yield/return/completed result objects,
+finally yields, linked foreign Module evaluation and Await resumption. A 2 MiB
+thread also checks recursive borrowed generator calls and host-abort restoration.
+Runtime now has 550 unit tests; integration and corpus inventories are unchanged.
+Public child-Realm creation remains unavailable. Promise job Realms, cold Module
+record ownership, async-generator return Await preparation and child bootstrap
+remain follow-up work.
+All 550 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Source and default class constructor Realms
 
 Explicit source constructors allocate base instances before entering their

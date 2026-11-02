@@ -108,7 +108,7 @@ impl Realm {
                 } = self.object_work(span, |objects, _| {
                     objects.take_async_generator_start(generator)
                 })?;
-                self.with_source_execution_context(context, |realm| {
+                self.with_source_execution_context(context, span, |realm| {
                     realm.start_generator_execution(
                         body,
                         root,
@@ -147,7 +147,7 @@ impl Realm {
                         }
                     }
                 };
-                self.resume_async_generator_source(generator, completion)
+                self.resume_async_generator_source(generator, completion, span)
             };
             if !self.handle_async_generator_outcome(generator, outcome, span)? {
                 return Ok(());
@@ -159,6 +159,7 @@ impl Realm {
         &mut self,
         generator: &ObjectHandle,
         completion: SourceResume,
+        span: Span,
     ) -> Result<AsyncBodyOutcome, Error> {
         let mut data = self
             .objects
@@ -166,7 +167,7 @@ impl Realm {
             .map_err(Error::InvalidObject)?
             .expect("suspended async-generator execution");
         let context = data.context.take().expect("async-generator source context");
-        self.with_source_execution_context(context, |realm| {
+        self.with_source_execution_context(context, span, |realm| {
             realm.resume_generator_execution(*data, generator.clone(), completion)
         })
     }
@@ -329,7 +330,7 @@ impl Realm {
         } else {
             SourceResume::Throw(Error::Thrown(value))
         };
-        let outcome = self.resume_async_generator_source(&generator, completion);
+        let outcome = self.resume_async_generator_source(&generator, completion, span);
         self.finish_async_generator_execution(generator, outcome, span)
     }
 

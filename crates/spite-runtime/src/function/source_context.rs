@@ -30,8 +30,17 @@ impl Realm {
     pub(super) fn with_source_execution_context<T>(
         &mut self,
         context: SourceExecutionContext,
+        span: Span,
         execute: impl FnOnce(&mut Self) -> Result<T, Error>,
     ) -> Result<T, Error> {
+        // Generator methods may be borrowed across Realms. The saved global
+        // environment identifies the source execution's Realm (9.3, 27.5–6).
+        let target = context
+            .scopes
+            .first()
+            .expect("saved global environment")
+            .clone();
+        let transition = self.enter_function_realm(&target, span)?;
         let caller = SourceExecutionContext {
             scopes: std::mem::replace(&mut self.scopes, context.scopes),
             variable: std::mem::replace(&mut self.variable_environment, context.variable),
@@ -43,6 +52,6 @@ impl Realm {
         self.variable_environment = caller.variable;
         self.strict = caller.strict;
         self.active_module = caller.module;
-        result
+        self.leave_function_realm(transition, result)
     }
 }

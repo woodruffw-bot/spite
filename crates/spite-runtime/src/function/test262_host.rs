@@ -118,7 +118,8 @@ impl Realm {
         // Re-entry belongs to the current execution sequence. In particular,
         // evaluate() must not reset the work allowance for each nested Script.
         let caller_job = std::mem::replace(&mut self.job_active, true);
-        let result = self.with_source_execution_context(context, |realm| realm.evaluate(&script));
+        let result =
+            self.with_source_execution_context(context, span, |realm| realm.evaluate(&script));
         self.job_active = caller_job;
         result
     }

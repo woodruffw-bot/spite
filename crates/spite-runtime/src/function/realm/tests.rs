@@ -648,3 +648,121 @@ fn deep_default_constructor_realms_and_source_recursion_restore_on_all_exits() {
             assert_eq!(realm.call_depth,0);
         }).unwrap().join().unwrap();
 }
+
+#[test]
+fn borrowed_generator_methods_resume_the_defining_realm_and_keep_result_boundaries() {
+    std::thread::Builder::new().stack_size(2*1024*1024).spawn(|| {
+        let mut realm=Realm::default();
+        let (environment,function)=child_realm_fixture(&mut realm,r#"
+            var GP=Object.getPrototypeOf(function*(){}.prototype);
+            var gen=(function*(){yield [];return [];})();
+            var bad=(function*(){null.x;})();
+            var recursive,again;
+            function noop(){}noop
+        "#);
+        expose_child(&mut realm,&environment,function);
+        assert_eq!(realm.eval(r#"
+            let failures=[],GP=Object.getPrototypeOf(function*(){}.prototype);
+            let local=(function*(){yield [];return [];})();
+            let first=child.GP.next.call(local),last=child.GP.next.call(local),done=child.GP.next.call(local);
+            if(Object.getPrototypeOf(first)!==Object.prototype || Object.getPrototypeOf(first.value)!==Array.prototype)failures.push('parent-yield');
+            if(Object.getPrototypeOf(last)!==child.Object.prototype || Object.getPrototypeOf(last.value)!==Array.prototype || !last.done)failures.push('parent-return');
+            if(Object.getPrototypeOf(done)!==child.Object.prototype || !done.done)failures.push('completed');
+            first=GP.next.call(child.gen);last=GP.next.call(child.gen);
+            if(Object.getPrototypeOf(first)!==child.Object.prototype || Object.getPrototypeOf(first.value)!==child.Array.prototype)failures.push('child-yield');
+            if(Object.getPrototypeOf(last)!==Object.prototype || Object.getPrototypeOf(last.value)!==child.Array.prototype)failures.push('child-return');
+            try{GP.next.call(child.bad);failures.push('child-error:missing');}catch(e){if(!(e instanceof child.TypeError))failures.push('child-error:realm');}
+            try{child.GP.next.call((function*(){null.x;})());failures.push('parent-error:missing');}catch(e){if(!(e instanceof TypeError))failures.push('parent-error:realm');}
+            let abrupt=(function*(){try{yield 1;}finally{yield [];}})();
+            child.GP.next.call(abrupt);let r=child.GP.return.call(abrupt,7),q=child.GP.next.call(abrupt);
+            if(r.done || Object.getPrototypeOf(r)!==Object.prototype || Object.getPrototypeOf(r.value)!==Array.prototype || q.value!==7 || !q.done || Object.getPrototypeOf(q)!==child.Object.prototype)failures.push('return-finally');
+            let marker={},fresh=(function*(){throw 1;})();
+            let skipped=child.GP.return.call(fresh,marker);
+            if(skipped.value!==marker || !skipped.done || Object.getPrototypeOf(skipped)!==child.Object.prototype)failures.push('return-start');
+            JSON.stringify(failures)
+        "#),Ok(Value::String("[]".into())));
+        assert!(matches!(realm.eval(r#"
+            let effects=0;
+            function* reenter(){child.GP.next.call(reenter());yield 1;}
+            try{child.GP.next.call(reenter());}catch(e){effects++;}finally{effects++;}
+        "#),Err(Error::Limit{..})));
+        assert_eq!(realm.eval("effects"),Ok(Value::Number(0.0)));
+        assert_eq!(realm.scopes.len(),1);
+        assert_eq!(realm.call_depth,0);
+        assert_eq!(realm.record.global_environment.as_ref(),realm.scopes.first());
+    }).unwrap().join().unwrap();
+}
+
+#[test]
+fn borrowed_async_generator_methods_keep_source_allocations_and_errors_in_their_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var GP=Object.getPrototypeOf(async function*(){}.prototype);
+        var gen=(async function*(){yield [];return [];})();
+        var bad=(async function*(){null.x;})();
+        function noop(){}noop
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let GP=Object.getPrototypeOf(async function*(){}.prototype),results=[],errors=[];
+        let local=(async function*(){yield [];return [];})();
+        let p=child.GP.next.call(local),q=GP.next.call(child.gen);
+        p.then(r=>results.push(['parent-yield',r]));q.then(r=>results.push(['child-yield',r]));
+        child.GP.next.call((async function*(){null.x;})()).catch(e=>errors.push(e instanceof TypeError));
+        GP.next.call(child.bad).catch(e=>errors.push(e instanceof child.TypeError));
+        let empty=child.GP.next.call((async function*(){})());empty.then(r=>results.push(['empty',r]));
+        Object.getPrototypeOf(p)===child.Promise.prototype && Object.getPrototypeOf(q)===Promise.prototype
+    "#),Ok(Value::Boolean(true)));
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval(r#"
+        errors.length===2 && errors.every(Boolean) && results.length===3 &&
+        results.every(([kind,r])=>kind==='empty' ? r.done && Object.getPrototypeOf(r)===child.Object.prototype :
+            !r.done && Object.getPrototypeOf(r.value)===(kind==='parent-yield'?Array.prototype:child.Array.prototype))
+    "#),Ok(Value::Boolean(true)));
+    realm.eval("child.GP.next.call(local).then(r=>results.push(['parent-return',r]));GP.next.call(child.gen).then(r=>results.push(['child-return',r]));").unwrap();
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval("results.length===5 && results.filter(([k])=>k.endsWith('return')).every(([k,r])=>r.done && Object.getPrototypeOf(r.value)===(k==='parent-return'?Array.prototype:child.Array.prototype))"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.scopes.len(), 1);
+    assert_eq!(realm.call_depth, 0);
+}
+
+fn drain_realm_test_jobs(realm: &mut Realm) {
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            crate::PromiseJobOutcome::NoJob => break,
+            crate::PromiseJobOutcome::Completed => (),
+            outcome => panic!("unexpected job result: {outcome:?}"),
+        }
+    }
+}
+
+#[test]
+fn linked_foreign_module_context_uses_its_defining_global_environment() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    let module=realm.with_function_realm(&environment,Span::new(0,0),|realm|{
+        let module=realm.create_module("globalThis.before=[];await 0;globalThis.after={};export function value(){return [];}" )?;
+        realm.link_module(&module)?;
+        Ok(module)
+    }).unwrap();
+    realm.evaluate_module_record(&module).unwrap();
+    assert_eq!(realm.eval("Object.getPrototypeOf(child.before)===child.Array.prototype && typeof before==='undefined'"),Ok(Value::Boolean(true)));
+    drain_realm_test_jobs(&mut realm);
+    let namespace = realm.module_namespace(&module).unwrap();
+    expose(&mut realm, "foreignNamespace", namespace);
+    assert_eq!(realm.eval("Object.getPrototypeOf(child.after)===child.Object.prototype && Object.getPrototypeOf(foreignNamespace.value())===child.Array.prototype && typeof after==='undefined' && Object.getPrototypeOf([])===Array.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.scopes.len(), 1);
+    assert_eq!(realm.call_depth, 0);
+}

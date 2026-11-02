@@ -253,7 +253,7 @@ impl Realm {
                 callee,
                 span: body_span,
             } = self.object_work(span, |objects, _| objects.take_generator_start(&generator))?;
-            self.with_source_execution_context(context, |realm| {
+            self.with_source_execution_context(context, span, |realm| {
                 realm.start_generator_execution(
                     body,
                     root,
@@ -273,7 +273,7 @@ impl Realm {
                 Builtin::GeneratorThrow => SourceResume::Throw(Error::Thrown(value)),
                 _ => unreachable!("generator resume operation"),
             };
-            self.with_source_execution_context(context, |realm| {
+            self.with_source_execution_context(context, span, |realm| {
                 realm.resume_generator_execution(*data, generator.clone(), resumed)
             })
         };

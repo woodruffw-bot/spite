@@ -163,26 +163,31 @@ impl Realm {
     fn with_module_context<T>(
         &mut self,
         root: crate::environment::EnvironmentHandle,
+        span: Span,
         execute: impl FnOnce(&mut Self) -> Result<T, Error>,
     ) -> Result<T, Error> {
+        let environment = self
+            .objects
+            .environment(&root)
+            .map_err(Error::InvalidObject)?;
         let context = crate::object::source_context::SourceExecutionContext {
+            // Linking fixed the Module environment's outer global. Evaluation
+            // may be entered from a different Realm or a Promise job.
             scopes: vec![
-                self.scopes.first().expect("global environment").clone(),
+                environment
+                    .outer
+                    .clone()
+                    .expect("Module global environment"),
                 root.clone(),
             ],
             variable: Some(root.clone()),
             strict: true,
-            module: match &self
-                .objects
-                .environment(&root)
-                .map_err(Error::InvalidObject)?
-                .this
-            {
+            module: match &environment.this {
                 Some(crate::environment::ThisBinding::Module(record)) => Some(record.clone()),
                 _ => unreachable!("Module environment"),
             },
         };
-        self.with_source_execution_context(context, execute)
+        self.with_source_execution_context(context, span, execute)
     }
 
     pub(crate) fn instantiate_module_body(
@@ -193,7 +198,7 @@ impl Realm {
         record: &ObjectHandle,
         span: Span,
     ) -> Result<(), Error> {
-        self.with_module_context(root.clone(), |realm| {
+        self.with_module_context(root.clone(), span, |realm| {
             realm.instantiate(body.statements().iter(), false, true)?;
             realm.prepare_module_default(body, &root, default_export)?;
             realm.object_work(span, |objects, budget| {
@@ -210,7 +215,7 @@ impl Realm {
         record: &ObjectHandle,
         span: Span,
     ) -> Result<(), Error> {
-        self.with_module_context(root.clone(), |realm| {
+        self.with_module_context(root.clone(), span, |realm| {
             realm
                 .call_async_body(span, |realm, capability, _| {
                     let Value::Object(promise) = &capability.promise else {
@@ -245,7 +250,7 @@ impl Realm {
         default_export: Option<usize>,
         span: Span,
     ) -> Result<(), Error> {
-        self.with_module_context(root.clone(), |realm| {
+        self.with_module_context(root.clone(), span, |realm| {
             let data = new_execution_data(
                 ArrowBody::Block(body),
                 SourceFunctionMode::SyncModule { default_export },
@@ -719,7 +724,7 @@ impl Realm {
         } else {
             SourceResume::Throw(Error::Thrown(value))
         };
-        let outcome = self.with_source_execution_context(context, |realm| {
+        let outcome = self.with_source_execution_context(context, span, |realm| {
             realm.drive_async_execution(*data, Some(state.clone()), Some(completion), 1)
         });
         if asynchronous_generator {
