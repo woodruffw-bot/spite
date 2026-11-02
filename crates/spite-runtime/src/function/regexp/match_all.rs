@@ -37,6 +37,7 @@ impl Realm {
             unicode |= unit == u16::from(b'u') || unit == u16::from(b'v');
         }
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

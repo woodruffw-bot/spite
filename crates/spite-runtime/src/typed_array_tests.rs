@@ -14,8 +14,15 @@ fn fixture(
 ) -> (Realm, ObjectHandle) {
     let mut realm = Realm::default();
     realm.eval("").unwrap();
-    let object_prototype = realm.intrinsics.as_ref().unwrap().object_prototype.clone();
+    let object_prototype = realm
+        .record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .object_prototype
+        .clone();
     let buffer_prototype = realm
+        .record
         .intrinsics
         .as_ref()
         .unwrap()
@@ -36,7 +43,7 @@ fn fixture(
         .objects
         .create_typed_array(&prototype, &buffer, element, byte_offset, array_length)
         .unwrap();
-    let global = realm.global_object.clone().unwrap();
+    let global = realm.record.global_object.clone().unwrap();
     for (name, object) in [
         ("buffer", buffer),
         ("prototype", prototype),
@@ -108,12 +115,18 @@ fn fixed_and_auto_witnesses_drop_partial_elements_and_recover_after_regrowth() {
         Value::Object(buffer) => buffer,
         _ => unreachable!(),
     };
-    let prototype = realm.intrinsics.as_ref().unwrap().object_prototype.clone();
+    let prototype = realm
+        .record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .object_prototype
+        .clone();
     let auto = realm
         .objects
         .create_typed_array(&prototype, &buffer, ElementType::Uint16, 2, None)
         .unwrap();
-    let global = realm.global_object.clone().unwrap();
+    let global = realm.record.global_object.clone().unwrap();
     realm
         .define_builtin_property(&global, "auto", Value::Object(auto), true, Span::new(0, 0))
         .unwrap();

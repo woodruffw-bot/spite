@@ -128,7 +128,7 @@ impl Realm {
         value: Value,
         span: Span,
     ) -> Result<Value, Error> {
-        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        let intrinsics = self.record.intrinsics.as_ref().expect("initialized");
         let default_prototype = intrinsics.object_prototype.clone();
         if let Some(target) = new_target.filter(|target| target != &intrinsics.object.constructor) {
             let prototype = self.get_property(&target, &JsString::from("prototype"), span)?;

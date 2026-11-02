@@ -30,7 +30,7 @@ impl Realm {
                 // The exact intrinsic delegates directly to OrdinaryHasInstance.
                 // Keep bound-chain forwarding iterative, including inherited or
                 // aliased copies of this immutable callable. Custom hooks use Call.
-                let intrinsic = matches!(&method, Value::Object(method) if method == &self.intrinsics.as_ref().expect("initialized").function_has_instance);
+                let intrinsic = matches!(&method, Value::Object(method) if method == &self.record.intrinsics.as_ref().expect("initialized").function_has_instance);
                 if intrinsic {
                     self.check_argument_count(1, span)?;
                 } else {
@@ -171,7 +171,13 @@ mod tests {
         let Value::Object(bound) = realm.eval("let bound=target.bind(null);bound").unwrap() else {
             panic!()
         };
-        let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
+        let thrower = realm
+            .record
+            .intrinsics
+            .as_ref()
+            .unwrap()
+            .throw_type_error
+            .clone();
         realm
             .objects
             .define(

@@ -36,6 +36,7 @@ pub use object::PromiseState;
 mod realm_finalization;
 mod realm_object;
 mod realm_proxy;
+mod realm_record;
 mod realm_typed_array;
 #[cfg(test)]
 mod typed_array_tests;
@@ -55,7 +56,6 @@ use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     fmt,
-    rc::Rc,
 };
 use value::{exponentiate, to_uint32};
 
@@ -246,12 +246,11 @@ impl Completion {
 /// replace native recursion.
 #[derive(Debug)]
 pub struct Realm {
+    record: realm_record::RealmRecord,
     test262_agents: Option<function::AgentContext>,
     scopes: Vec<EnvironmentHandle>,
     // Lexical scopes may nest without changing the current VariableEnvironment.
     variable_environment: Option<EnvironmentHandle>,
-    global_object: Option<ObjectHandle>,
-    unsupported_host_globals: BTreeSet<String>,
     limits: Limits,
     remaining_steps: Option<usize>,
     call_depth: usize,
@@ -259,8 +258,6 @@ pub struct Realm {
     evaluation_depth: usize,
     strict: bool,
     objects: object::Objects,
-    intrinsics: Option<function::Intrinsics>,
-    template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
     // 9.11: retained until the embedding explicitly ends its synchronous sequence.
     kept_alive: Vec<RootedValue>,
     // One host job is one execution sequence and one work allowance.
@@ -272,8 +269,6 @@ pub struct Realm {
     gc_requests: VecDeque<function::GcRequest>,
     atomic_waits: Option<function::WaitRegistry>,
     can_suspend: bool,
-    supported_import_attributes: BTreeSet<JsString>,
-    time_zone: Option<TimeZone>,
 }
 
 impl Default for Realm {
@@ -286,11 +281,10 @@ impl Realm {
     /// Creates a realm with explicit host limits.
     pub fn new(limits: Limits) -> Self {
         Self {
+            record: realm_record::RealmRecord::default(),
             test262_agents: None,
             scopes: Vec::new(),
             variable_environment: None,
-            global_object: None,
-            unsupported_host_globals: BTreeSet::new(),
             limits,
             remaining_steps: limits.max_steps,
             call_depth: 0,
@@ -298,8 +292,6 @@ impl Realm {
             evaluation_depth: 0,
             strict: false,
             objects: object::Objects::with_limits(limits.max_heap_entries, limits.max_properties),
-            intrinsics: None,
-            template_map: Vec::new(),
             kept_alive: Vec::new(),
             job_active: false,
             promise_jobs: VecDeque::new(),
@@ -309,8 +301,6 @@ impl Realm {
             gc_requests: VecDeque::new(),
             atomic_waits: None,
             can_suspend: false,
-            supported_import_attributes: BTreeSet::new(),
-            time_zone: None,
         }
     }
 
@@ -332,7 +322,7 @@ impl Realm {
     /// name, and existing implemented globals retain their normal behavior.
     /// Ordinary realms reserve no extra host names.
     pub fn reserve_unsupported_global(&mut self, name: impl Into<String>) {
-        self.unsupported_host_globals.insert(name.into());
+        self.record.unsupported_host_globals.insert(name.into());
     }
 
     /// Parses, validates, and evaluates a Script in this realm.
@@ -653,7 +643,7 @@ impl Realm {
                     "var declaration conflicts with global lexical binding",
                 ));
             }
-            if self.unsupported_host_globals.contains(binding.name)
+            if self.record.unsupported_host_globals.contains(binding.name)
                 && self.global_own(binding.name, binding.span)?.is_none()
                 && !function_names.contains(binding.name)
             {
@@ -1348,7 +1338,9 @@ impl Realm {
                 });
             }
         }
-        if self.unsupported_host_globals.contains(name) && self.global_own(name, span)?.is_none() {
+        if self.record.unsupported_host_globals.contains(name)
+            && self.global_own(name, span)?.is_none()
+        {
             return Ok(Reference::UnsupportedGlobal(name.into()));
         }
         let object = self.global_object();

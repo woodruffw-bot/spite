@@ -50,6 +50,7 @@ impl Realm {
             unreachable!("ProxyCreate returns an object")
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized realm")
@@ -67,6 +68,7 @@ impl Realm {
             span,
         )?;
         let object_prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized realm")

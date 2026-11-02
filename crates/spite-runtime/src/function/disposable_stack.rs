@@ -358,7 +358,7 @@ impl Realm {
     }
 
     fn disposable_stack_intrinsic_prototype(&self, kind: StackKind) -> ObjectHandle {
-        let intrinsic = self.intrinsics.as_ref().expect("initialized");
+        let intrinsic = self.record.intrinsics.as_ref().expect("initialized");
         match kind {
             StackKind::Sync => intrinsic.disposable_stack.prototype.clone(),
             StackKind::Async => intrinsic.async_disposable_stack.prototype.clone(),

@@ -263,7 +263,7 @@ mod tests {
         });
         assert!(realm.next_atomics_wait_delay().is_none());
         assert!(!realm.run_next_atomics_wait_job().unwrap());
-        assert!(realm.intrinsics.is_none());
+        assert!(realm.record.intrinsics.is_none());
         assert_eq!(realm.remaining_steps, Some(0));
         realm.call_depth = 1;
         assert!(matches!(

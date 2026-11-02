@@ -61,17 +61,20 @@ impl Realm {
         elements: &Rc<[TemplateElement]>,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        for index in 0..self.template_map.len() {
+        for index in 0..self.record.template_map.len() {
             self.tick(span)?;
-            let (site, array) = &self.template_map[index];
+            let (site, array) = &self.record.template_map[index];
             if Rc::ptr_eq(site, elements) {
                 return Ok(array.clone());
             }
         }
-        self.template_map.try_reserve(1).map_err(|_| Error::Limit {
-            span,
-            message: "template registry allocation failed".into(),
-        })?;
+        self.record
+            .template_map
+            .try_reserve(1)
+            .map_err(|_| Error::Limit {
+                span,
+                message: "template registry allocation failed".into(),
+            })?;
         // Parsing enforces the normative 2^32 component early error.
         let count = u32::try_from(elements.len()).expect("validated template count");
         let template = self.create_intrinsic_array(u64::from(count), span)?;
@@ -125,7 +128,9 @@ impl Realm {
         self.object_set_integrity(Value::Object(template.clone()), true, span)?;
         // Host failures before this point leave no partially initialized cache
         // entry. Evaluation never collects; completed Arrays become realm roots.
-        self.template_map.push((elements.clone(), template.clone()));
+        self.record
+            .template_map
+            .push((elements.clone(), template.clone()));
         Ok(template)
     }
 
@@ -177,7 +182,7 @@ mod tests {
                     .unwrap();
             for _ in 0..2 {
                 assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
-                assert!(realm.template_map.is_empty());
+                assert!(realm.record.template_map.is_empty());
                 assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 1);
                 assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
             }

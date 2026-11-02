@@ -72,7 +72,7 @@ mod tests {
             ..Limits::default()
         });
         let control = Arc::new(realm.agent_control());
-        assert!(realm.intrinsics.is_none());
+        assert!(realm.record.intrinsics.is_none());
         assert_eq!(realm.remaining_steps, Some(0));
         assert!(!control.is_terminated());
         let first = control.clone();

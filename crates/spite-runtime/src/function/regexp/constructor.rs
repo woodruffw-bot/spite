@@ -20,6 +20,7 @@ impl Realm {
         // IsRegExp's observable Symbol.match lookup precedes every other Get.
         let pattern_is_regexp = self.is_regexp(&pattern, span)?;
         let intrinsic = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -77,6 +78,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -101,7 +103,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .regexp

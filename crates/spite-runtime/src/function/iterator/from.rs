@@ -6,7 +6,12 @@ use spite_core::{JsString, Span};
 impl Realm {
     pub(crate) fn iterator_from(&mut self, value: Value, span: Span) -> Result<Value, Error> {
         let record = self.get_iterator_flattenable(value, true, span)?;
-        let intrinsics = &self.intrinsics.as_ref().expect("initialized").iterator;
+        let intrinsics = &self
+            .record
+            .intrinsics
+            .as_ref()
+            .expect("initialized")
+            .iterator;
         let constructor = intrinsics.constructor.clone();
         let prototype = intrinsics.wrapper_prototype.clone();
         // Use OrdinaryHasInstance on the intrinsic, never an observable custom

@@ -6,7 +6,14 @@ use spite_core::JsString;
 fn number_accessor_receivers_preserve_negative_zero_and_box_only_for_non_strict_calls() {
     let mut realm = Realm::default();
     realm.eval("let received, assigned").unwrap();
-    let prototype = realm.intrinsics.as_ref().unwrap().number.prototype.clone();
+    let prototype = realm
+        .record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .number
+        .prototype
+        .clone();
     for strict in [false, true] {
         let directive = if strict { "'use strict';" } else { "" };
         let Value::Object(get) = realm

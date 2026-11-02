@@ -34,7 +34,7 @@ fn distinct_new_target_selects_a_prototype_and_ignores_the_value_argument() {
     };
     assert_eq!(
         realm.inspect_object(&object).unwrap().prototype(),
-        Some(&realm.intrinsics.as_ref().unwrap().object_prototype)
+        Some(&realm.record.intrinsics.as_ref().unwrap().object_prototype)
     );
 }
 

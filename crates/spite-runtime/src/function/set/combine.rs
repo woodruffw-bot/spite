@@ -61,6 +61,7 @@ impl Realm {
 
     fn set_result(&mut self, data: SetData, span: Span) -> Result<Value, Error> {
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

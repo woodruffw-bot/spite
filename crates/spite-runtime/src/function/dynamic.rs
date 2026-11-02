@@ -124,7 +124,7 @@ impl Realm {
                 message: diagnostic.message,
             },
         })?;
-        let intrinsic = self.intrinsics.as_ref().expect("initialized");
+        let intrinsic = self.record.intrinsics.as_ref().expect("initialized");
         let (constructor, fallback) = match kind {
             FunctionKind::AsyncGenerator => (
                 &intrinsic.async_generator.constructor,

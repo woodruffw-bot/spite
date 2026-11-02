@@ -294,6 +294,7 @@ impl Realm {
         // memory read, including immediate results. Neither invokes public hooks.
         let capability = self.intrinsic_promise_capability(span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

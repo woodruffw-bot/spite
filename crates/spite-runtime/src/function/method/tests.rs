@@ -65,6 +65,7 @@ fn method_creation_rejects_foreign_and_stale_home_objects_before_allocation() {
     };
     let method = method.as_ref().clone();
     let prototype = realm
+        .record
         .intrinsics
         .as_ref()
         .unwrap()

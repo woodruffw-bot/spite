@@ -122,6 +122,7 @@ impl Realm {
             let length =
                 u64::try_from(decoded.bytes.len()).map_err(|_| Self::uint8_hex_capacity(span))?;
             let prototype = self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized realm")
@@ -257,6 +258,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized realm")

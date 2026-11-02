@@ -98,6 +98,7 @@ impl Realm {
             Self::exception(ExceptionKind::RangeError, span, "invalid Array length")
         })?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -278,7 +279,8 @@ impl Realm {
     ) -> Result<Value, Error> {
         // 23.1.1.1: GetPrototypeFromConstructor precedes length validation.
         let target = new_target.unwrap_or_else(|| {
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .array
@@ -290,7 +292,8 @@ impl Realm {
             Value::Object(prototype) => prototype,
             _ => {
                 self.check_function_realm(&target, span)?;
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized")
                     .array

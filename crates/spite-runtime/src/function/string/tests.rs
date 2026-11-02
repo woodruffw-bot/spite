@@ -36,7 +36,7 @@ fn new_target_prototype_is_observed_after_string_conversion_with_intrinsic_fallb
     };
     assert_eq!(
         realm.inspect_object(&value).unwrap().prototype(),
-        Some(&realm.intrinsics.as_ref().unwrap().string.prototype)
+        Some(&realm.record.intrinsics.as_ref().unwrap().string.prototype)
     );
 }
 

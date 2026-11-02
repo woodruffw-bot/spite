@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 
 impl Realm {
     pub(super) fn initialize_realm(&mut self) -> Result<(), Error> {
-        if self.global_object.is_some() {
+        if self.record.global_object.is_some() {
             return Ok(());
         }
         // Realm initialization (9.3.1) precedes the per-Script work allowance.
@@ -44,6 +44,7 @@ impl Realm {
             })?;
         }
         let boolean = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -52,6 +53,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Boolean", Value::Object(boolean), true, span)?;
         let date = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -60,6 +62,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Date", Value::Object(date), true, span)?;
         let regexp = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -68,6 +71,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "RegExp", Value::Object(regexp), true, span)?;
         let disposable_stack = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -82,6 +86,7 @@ impl Realm {
             span,
         )?;
         let async_disposable_stack = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -96,6 +101,7 @@ impl Realm {
             span,
         )?;
         let bigint = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -104,6 +110,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "BigInt", Value::Object(bigint), true, span)?;
         let number = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -111,7 +118,7 @@ impl Realm {
             .constructor
             .clone();
         self.define_builtin_property(&object, "Number", Value::Object(number), true, span)?;
-        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        let intrinsics = self.record.intrinsics.as_ref().expect("initialized");
         let global_functions = [
             ("eval", intrinsics.eval.clone()),
             ("parseFloat", intrinsics.number.parse_float.clone()),
@@ -133,6 +140,7 @@ impl Realm {
             self.define_builtin_property(&object, name, Value::Object(function), true, span)?;
         }
         let errors: Vec<_> = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -145,6 +153,7 @@ impl Realm {
             self.define_builtin_property(&object, name, Value::Object(constructor), true, span)?;
         }
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -153,6 +162,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Object", Value::Object(constructor), true, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -160,6 +170,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Function", Value::Object(constructor), true, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -168,6 +179,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "String", Value::Object(constructor), true, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -176,6 +188,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Symbol", Value::Object(constructor), true, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -184,6 +197,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Array", Value::Object(constructor), true, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -198,6 +212,7 @@ impl Realm {
             span,
         )?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -207,6 +222,7 @@ impl Realm {
         self.define_builtin_property(&object, "DataView", Value::Object(constructor), true, span)?;
         self.define_typed_array_globals(&object, span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -215,6 +231,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Iterator", Value::Object(constructor), true, span)?;
         let reflect = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -223,6 +240,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Reflect", Value::Object(reflect), true, span)?;
         let math = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -231,6 +249,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Math", Value::Object(math), true, span)?;
         let json = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -239,6 +258,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "JSON", Value::Object(json), true, span)?;
         let map = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -247,6 +267,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Map", Value::Object(map), true, span)?;
         let set = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -255,6 +276,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "Set", Value::Object(set), true, span)?;
         let weak_set = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -263,6 +285,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "WeakSet", Value::Object(weak_set), true, span)?;
         let weak_map = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -271,6 +294,7 @@ impl Realm {
             .clone();
         self.define_builtin_property(&object, "WeakMap", Value::Object(weak_map), true, span)?;
         let metadata = &self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -289,12 +313,13 @@ impl Realm {
         for (name, value) in globals {
             self.define_builtin_property(&object, name, Value::Object(value), true, span)?;
         }
-        self.global_object = Some(object);
+        self.record.global_object = Some(object);
         Ok(())
     }
 
     pub(super) fn global_object(&self) -> ObjectHandle {
-        self.global_object
+        self.record
+            .global_object
             .as_ref()
             .expect("initialized realm")
             .clone()
@@ -467,7 +492,7 @@ impl Realm {
         // Identifier names are UTF-8 scalar strings, while arbitrary property
         // names may contain lone surrogates; those never name configured host barriers.
         String::from_utf16(key.code_units())
-            .is_ok_and(|name| self.unsupported_host_globals.contains(&name))
+            .is_ok_and(|name| self.record.unsupported_host_globals.contains(&name))
     }
 
     pub(super) fn check_global_property_operation<'key>(
@@ -479,7 +504,7 @@ impl Realm {
         let Some(key) = key.into().as_string() else {
             return Ok(());
         };
-        if self.global_object.as_ref() == Some(object)
+        if self.record.global_object.as_ref() == Some(object)
             && self.missing_global_property(key)
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
         {
@@ -760,7 +785,7 @@ mod tests {
             };
             let result = realm.ensure_object_intrinsics(Span::new(0, 0));
             assert!(result.is_ok() || matches!(result, Err(Error::Limit { .. })));
-            assert_eq!(realm.intrinsics.is_some(), result.is_ok());
+            assert_eq!(realm.record.intrinsics.is_some(), result.is_ok());
             assert_eq!(
                 realm.collect(usize::MAX).unwrap().live,
                 if result.is_ok() {
@@ -781,7 +806,14 @@ mod tests {
                 assert_eq!(
                     realm
                         .objects
-                        .inspect(&realm.intrinsics.as_ref().unwrap().function_constructor)
+                        .inspect(
+                            &realm
+                                .record
+                                .intrinsics
+                                .as_ref()
+                                .unwrap()
+                                .function_constructor
+                        )
                         .unwrap()
                         .function_realm(),
                     Some(&creation_realm)

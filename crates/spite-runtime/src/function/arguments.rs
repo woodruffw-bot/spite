@@ -67,6 +67,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let intrinsics = self
+            .record
             .intrinsics
             .as_ref()
             .expect("function intrinsics initialized");

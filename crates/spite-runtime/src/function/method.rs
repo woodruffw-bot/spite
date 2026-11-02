@@ -23,7 +23,7 @@ impl Realm {
         kind: PropertyKind,
         span: Span,
     ) -> Result<ObjectHandle, Error> {
-        let intrinsic = self.intrinsics.as_ref().expect("initialized");
+        let intrinsic = self.record.intrinsics.as_ref().expect("initialized");
         let prototype = match syntax.kind {
             spite_parser::ast::FunctionKind::AsyncGenerator => {
                 intrinsic.async_generator.function_prototype.clone()

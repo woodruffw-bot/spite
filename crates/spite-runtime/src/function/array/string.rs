@@ -82,7 +82,8 @@ impl Realm {
         } else {
             // Use the intrinsic, not the possibly replaced public property.
             Value::Object(
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized")
                     .object_to_string

@@ -514,7 +514,8 @@ impl Realm {
                     span,
                 ),
             Builtin::IteratorConstructorGet => Ok(Value::Object(
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized")
                     .iterator

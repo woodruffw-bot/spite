@@ -111,6 +111,7 @@ impl Realm {
             };
             let value = self.call(method, this, Vec::new(), span)?;
             let constructor = self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized")
@@ -122,6 +123,7 @@ impl Realm {
                 unreachable!("intrinsic PromiseResolve returns a Promise");
             };
             let prototype = self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized")

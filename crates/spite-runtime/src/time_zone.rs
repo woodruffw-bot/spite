@@ -248,12 +248,12 @@ impl Realm {
     ///
     /// The immutable history can be cloned cheaply and reused by many realms.
     pub fn set_time_zone(&mut self, time_zone: TimeZone) {
-        self.time_zone = Some(time_zone);
+        self.record.time_zone = Some(time_zone);
     }
 
     /// Discards the selected zone so the next lookup reloads host configuration.
     pub fn use_system_time_zone(&mut self) {
-        self.time_zone = None;
+        self.record.time_zone = None;
     }
 
     /// Returns this realm's zone, loading the system zone lazily if necessary.
@@ -261,10 +261,10 @@ impl Realm {
     /// A failed load leaves the realm unconfigured so the host may retry or
     /// install an explicit override. No default resource allowance is imposed.
     pub fn time_zone(&mut self) -> Result<&TimeZone, TimeZoneError> {
-        if self.time_zone.is_none() {
-            self.time_zone = Some(TimeZone::system()?);
+        if self.record.time_zone.is_none() {
+            self.record.time_zone = Some(TimeZone::system()?);
         }
-        Ok(self.time_zone.as_ref().expect("loaded time zone"))
+        Ok(self.record.time_zone.as_ref().expect("loaded time zone"))
     }
 }
 

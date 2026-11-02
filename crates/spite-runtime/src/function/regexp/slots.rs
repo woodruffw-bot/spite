@@ -19,6 +19,7 @@ impl Realm {
         let Some(data) = data else {
             if object
                 == self
+                    .record
                     .intrinsics
                     .as_ref()
                     .expect("initialized")

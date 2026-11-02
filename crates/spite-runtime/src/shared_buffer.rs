@@ -48,6 +48,7 @@ impl Realm {
         let name = name.into();
         self.check_string(&Value::String(name.clone()), span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

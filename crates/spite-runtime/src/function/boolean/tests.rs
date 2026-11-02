@@ -5,7 +5,14 @@ use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 fn primitive_accessor_receivers_are_preserved_and_non_strict_accessors_box_them() {
     let mut realm = Realm::default();
     realm.eval("let received, assigned;").unwrap();
-    let prototype = realm.intrinsics.as_ref().unwrap().boolean.prototype.clone();
+    let prototype = realm
+        .record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .boolean
+        .prototype
+        .clone();
     for strict in [false, true] {
         let directive = if strict { "'use strict';" } else { "" };
         let Value::Object(get) = realm

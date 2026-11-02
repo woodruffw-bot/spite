@@ -331,7 +331,7 @@ mod tests {
             empty.run_next_promise_job(),
             Ok(PromiseJobOutcome::NoJob)
         ));
-        assert!(empty.intrinsics.is_none());
+        assert!(empty.record.intrinsics.is_none());
         let mut realm = Realm::default();
         realm
             .eval("Promise.resolve({then(resolve){resolve(1)}})")

@@ -15,6 +15,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let groups = self.collection_groups(items, callback, 0, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

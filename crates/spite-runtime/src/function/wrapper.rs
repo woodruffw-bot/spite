@@ -8,7 +8,7 @@ mod tests;
 
 impl Realm {
     pub(crate) fn primitive_prototype(&self, value: &Value) -> Option<ObjectHandle> {
-        let intrinsics = self.intrinsics.as_ref().expect("initialized realm");
+        let intrinsics = self.record.intrinsics.as_ref().expect("initialized realm");
         match value {
             Value::Boolean(_) => Some(intrinsics.boolean.prototype.clone()),
             Value::Number(_) => Some(intrinsics.number.prototype.clone()),

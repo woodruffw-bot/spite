@@ -24,7 +24,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .global_metadata
@@ -108,7 +109,7 @@ mod tests {
     fn active_checkpoint_refusal_preserves_roots_and_inactive_clear_ignores_work_quota() {
         let mut realm = Realm::default();
         realm.clear_kept_objects().unwrap();
-        assert!(realm.intrinsics.is_none());
+        assert!(realm.record.intrinsics.is_none());
         let Value::Object(target) = realm
             .eval("let checkpointRef=new WeakRef({});checkpointRef.deref()")
             .unwrap()

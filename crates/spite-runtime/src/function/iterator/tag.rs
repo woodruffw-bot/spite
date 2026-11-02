@@ -20,6 +20,7 @@ impl Realm {
         };
         if object
             == self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized")

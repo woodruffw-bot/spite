@@ -4906,5 +4906,11 @@ native Promise and asynchronous callbacks use the same checked metadata.
 Bound functions and Proxies resolve through their targets. Prototype mutation
 does not change the recorded Realm. Same-agent child Realms and execution-context
 switching remain unimplemented.
-Resource quotas remain opt-in, and the initial realm retains the same 549
-intrinsic objects.
+The interpreter keeps the global object, intrinsic graph, template registry and
+Realm-specific host settings in one owned RealmRecord. Heap storage, job queues,
+agent control and current source execution state stay outside that record. Field
+access is explicit; no shared ownership, interior mutability or pointer access
+is needed to move the Realm data as a unit. This grouping does not yet expose
+child Realms or switch execution between them.
+Resource quotas remain opt-in. The owned-record grouping preserves the current
+initialized Realm's 591 heap entries.

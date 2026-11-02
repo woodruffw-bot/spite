@@ -37,6 +37,7 @@ impl Realm {
         };
         let record = self.get_iterator_direct(iterator, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

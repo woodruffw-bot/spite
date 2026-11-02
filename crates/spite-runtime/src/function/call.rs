@@ -38,7 +38,7 @@ impl Realm {
         let function = self.get(&mut reference, span)?;
         // With/local eval references are direct only for the intrinsic eval.
         let direct_eval = reference.is_eval_environment_reference()
-            && matches!(&function, Value::Object(handle) if handle == &self.intrinsics.as_ref().expect("initialized").eval);
+            && matches!(&function, Value::Object(handle) if handle == &self.record.intrinsics.as_ref().expect("initialized").eval);
         Ok(CallTarget {
             function,
             this: reference.call_receiver(),

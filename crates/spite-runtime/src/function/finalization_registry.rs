@@ -28,7 +28,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized realm")
                 .global_metadata

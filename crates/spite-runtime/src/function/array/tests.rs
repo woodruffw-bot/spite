@@ -297,7 +297,7 @@ fn construction_observes_new_target_prototype_before_length_validation() {
     };
     assert_eq!(
         realm.inspect_object(&array).unwrap().prototype(),
-        Some(&realm.intrinsics.as_ref().unwrap().array.prototype)
+        Some(&realm.record.intrinsics.as_ref().unwrap().array.prototype)
     );
     realm
         .eval("Object.defineProperty(F,'prototype',{get:()=>{throw 9;}})")

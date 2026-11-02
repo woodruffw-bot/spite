@@ -30,6 +30,7 @@ impl Realm {
         span: Span,
     ) -> Result<IteratorRecord, Error> {
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -132,6 +133,7 @@ impl Realm {
             .to_boolean();
         let value = self.get_property(&result, &JsString::from("value"), span)?;
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -150,6 +152,7 @@ impl Realm {
             }
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

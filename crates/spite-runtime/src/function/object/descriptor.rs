@@ -265,6 +265,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -333,6 +334,7 @@ impl Realm {
             return Ok(Value::Undefined);
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

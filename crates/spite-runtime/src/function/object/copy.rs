@@ -51,6 +51,7 @@ impl Realm {
         };
         let keys = self.own_property_keys(&target, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

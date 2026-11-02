@@ -174,6 +174,7 @@ impl Realm {
                 // Retrieval is acknowledged before entering user code. Only
                 // native bytes and numeric values crossed; make a local wrapper.
                 let prototype = self
+                    .record
                     .intrinsics
                     .as_ref()
                     .expect("initialized")

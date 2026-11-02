@@ -187,7 +187,8 @@ impl Realm {
             Value::Object(prototype) => prototype,
             _ => {
                 self.check_function_realm(&target, span)?;
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized")
                     .string

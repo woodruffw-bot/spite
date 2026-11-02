@@ -352,7 +352,8 @@ impl Realm {
                         prototype
                     } else {
                         self.check_function_realm(&new_target, span)?;
-                        self.intrinsics
+                        self.record
+                            .intrinsics
                             .as_ref()
                             .expect("initialized realm")
                             .iterator
@@ -386,7 +387,8 @@ impl Realm {
                         prototype
                     } else {
                         self.check_function_realm(&new_target, span)?;
-                        self.intrinsics
+                        self.record
+                            .intrinsics
                             .as_ref()
                             .expect("initialized realm")
                             .boolean
@@ -428,7 +430,8 @@ impl Realm {
                         prototype
                     } else {
                         self.check_function_realm(&new_target, span)?;
-                        self.intrinsics
+                        self.record
+                            .intrinsics
                             .as_ref()
                             .expect("initialized realm")
                             .number
@@ -460,7 +463,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized realm")
                 .object_prototype
@@ -597,7 +601,13 @@ mod tests {
         else {
             panic!()
         };
-        let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
+        let thrower = realm
+            .record
+            .intrinsics
+            .as_ref()
+            .unwrap()
+            .throw_type_error
+            .clone();
         realm
             .objects
             .define(

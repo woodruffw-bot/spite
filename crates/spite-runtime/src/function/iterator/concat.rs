@@ -45,6 +45,7 @@ impl Realm {
             sources.push(ConcatIterable { iterable, method });
         }
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

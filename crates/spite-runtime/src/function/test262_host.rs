@@ -31,7 +31,7 @@ impl Realm {
             self.remaining_steps = self.limits.max_steps;
         }
         let span = Span::new(0, 0);
-        let intrinsics = self.intrinsics.as_ref().expect("initialized realm");
+        let intrinsics = self.record.intrinsics.as_ref().expect("initialized realm");
         let object_prototype = intrinsics.object_prototype.clone();
         let function_prototype = intrinsics.function_prototype.clone();
         let host = self.object_work(span, |objects, _| objects.create(Some(&object_prototype)))?;

@@ -1157,7 +1157,7 @@ impl Intrinsics {
 
 impl Realm {
     pub(super) fn ensure_object_intrinsics(&mut self, span: Span) -> Result<ObjectHandle, Error> {
-        if let Some(intrinsics) = &self.intrinsics {
+        if let Some(intrinsics) = &self.record.intrinsics {
             return Ok(intrinsics.object_prototype.clone());
         }
         // Establish the Realm identity before allocating any intrinsic function.
@@ -1373,7 +1373,7 @@ impl Realm {
         )?;
         // Publish only after the graph is fully initialized. A failed attempt
         // leaves unreachable allocations that explicit collection can reclaim.
-        self.intrinsics = Some(Intrinsics {
+        self.record.intrinsics = Some(Intrinsics {
             object,
             errors,
             eval,

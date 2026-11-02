@@ -21,7 +21,7 @@ mod wrapper;
 fn realm_with_symbols() -> Realm {
     let mut realm = Realm::default();
     realm.eval("").unwrap();
-    let global = realm.global_object.as_ref().unwrap().clone();
+    let global = realm.record.global_object.as_ref().unwrap().clone();
     let symbol = JsSymbol::new(Some(JsString::from("name")));
     for (name, symbol) in [
         ("s", symbol.clone()),

@@ -208,7 +208,8 @@ impl Realm {
             let superclass = superclass.expect("evaluated heritage");
             if matches!(superclass, Value::Null) {
                 (
-                    self.intrinsics
+                    self.record
+                        .intrinsics
                         .as_ref()
                         .expect("initialized")
                         .function_prototype
@@ -242,7 +243,7 @@ impl Realm {
                 (superclass, prototype)
             }
         } else {
-            let intrinsics = self.intrinsics.as_ref().expect("initialized");
+            let intrinsics = self.record.intrinsics.as_ref().expect("initialized");
             (
                 intrinsics.function_prototype.clone(),
                 Some(intrinsics.object_prototype.clone()),

@@ -102,6 +102,7 @@ impl Realm {
         span: Span,
     ) -> Result<PromiseCapability, Error> {
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -117,7 +118,8 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let default = Value::Object(
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .global_metadata
@@ -189,6 +191,7 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -388,7 +391,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .global_metadata
@@ -418,6 +422,7 @@ impl Realm {
         self.define_builtin_property(&cell, "promise", Value::Object(promise.clone()), true, span)?;
         self.define_builtin_property(&cell, "alreadyResolved", Value::Boolean(false), true, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -695,6 +700,7 @@ impl Realm {
             self.define_builtin_property(&capability, key, Value::Undefined, true, span)?;
         }
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -769,6 +775,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let capability = self.new_promise_capability(constructor, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

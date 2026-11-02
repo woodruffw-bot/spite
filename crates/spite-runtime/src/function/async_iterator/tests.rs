@@ -7,6 +7,7 @@ fn new_realm() -> Realm {
     let mut realm = Realm::default();
     realm.eval("0").unwrap();
     let prototype = realm
+        .record
         .intrinsics
         .as_ref()
         .unwrap()
@@ -145,7 +146,7 @@ fn awaited_capabilities_survive_collection_without_retaining_unused_receivers() 
     check(&mut realm, "done");
 
     let mut realm = new_realm();
-    let intrinsic = &realm.intrinsics.as_ref().unwrap().async_iterator;
+    let intrinsic = &realm.record.intrinsics.as_ref().unwrap().async_iterator;
     let handles = [
         intrinsic.prototype.clone(),
         intrinsic.identity.clone(),

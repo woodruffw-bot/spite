@@ -286,7 +286,7 @@ fn realm_overrides_are_independent_and_utc_operations_do_not_load_host_zones() {
         first.eval("new Date(0).getUTCFullYear()===1970 && Number.isNaN(new Date(NaN).getHours())"),
         Ok(Value::Boolean(true))
     );
-    assert!(first.time_zone.is_none());
+    assert!(first.record.time_zone.is_none());
     first.set_time_zone(TimeZone::utc());
     let ny = TimeZone::bundled("America/New_York").unwrap();
     second.set_time_zone(ny.clone());
@@ -297,6 +297,6 @@ fn realm_overrides_are_independent_and_utc_operations_do_not_load_host_zones() {
     assert_eq!(first.time_zone().unwrap().offset_at(0), -18000);
     assert_eq!(second.time_zone().unwrap().offset_at(0), 1234);
     first.use_system_time_zone();
-    assert!(first.time_zone.is_none());
+    assert!(first.record.time_zone.is_none());
     assert_eq!(second.time_zone().unwrap().offset_at(0), 1234);
 }

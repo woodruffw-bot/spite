@@ -207,7 +207,7 @@ impl Realm {
         if global {
             // Complete every global check before creating any binding.
             for &(name, range) in &names {
-                if self.unsupported_host_globals.contains(name)
+                if self.record.unsupported_host_globals.contains(name)
                     && self.global_own(name, range)?.is_none()
                     && !seen.contains(name)
                 {

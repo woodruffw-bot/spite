@@ -70,7 +70,7 @@ fn unit_interval(word: u64) -> f64 {
 
 impl Realm {
     pub(in crate::function) fn math_random(&mut self) -> Value {
-        let intrinsics = self.intrinsics.as_mut().expect("initialized");
+        let intrinsics = self.record.intrinsics.as_mut().expect("initialized");
         Value::Number(intrinsics.math.random.next())
     }
 }

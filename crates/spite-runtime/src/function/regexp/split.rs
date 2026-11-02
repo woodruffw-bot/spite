@@ -28,7 +28,8 @@ impl Realm {
         };
         if matches!(species, Value::Undefined | Value::Null) {
             return Ok(Value::Object(
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized")
                     .regexp

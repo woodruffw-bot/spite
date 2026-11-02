@@ -14,6 +14,7 @@ impl Realm {
             unreachable!("ToObject");
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

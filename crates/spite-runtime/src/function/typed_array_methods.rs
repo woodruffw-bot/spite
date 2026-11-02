@@ -188,7 +188,8 @@ impl Realm {
         };
         let constructor = if matches!(species, Value::Null | Value::Undefined) {
             Value::Object(
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .as_ref()
                     .expect("initialized realm")
                     .typed_array
@@ -233,6 +234,7 @@ impl Realm {
         span: Span,
     ) -> Result<ObjectHandle, Error> {
         let constructor = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized realm")

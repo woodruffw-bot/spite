@@ -282,6 +282,7 @@ impl Realm {
         let length =
             u64::try_from(decoded.bytes.len()).map_err(|_| Self::uint8_base64_capacity(span))?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized realm")

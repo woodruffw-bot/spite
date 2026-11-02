@@ -47,6 +47,7 @@ impl Realm {
             Some(self.iterator_counter_work(span, |budget| Counter::from_number(integer, budget))?)
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

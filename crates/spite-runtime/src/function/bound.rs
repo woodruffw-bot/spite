@@ -162,7 +162,7 @@ mod tests {
             .objects
             .delete(&target, &JsString::from("length"), &mut Budget::new(1000))
             .unwrap();
-        let intrinsics = realm.intrinsics.as_ref().unwrap();
+        let intrinsics = realm.record.intrinsics.as_ref().unwrap();
         let prototype = intrinsics.function_prototype.clone();
         let thrower = intrinsics.throw_type_error.clone();
         realm
@@ -231,7 +231,13 @@ mod tests {
         );
         assert_eq!(realm.eval("bound.caller"), Ok(Value::Undefined));
         realm.collect(usize::MAX).unwrap();
-        let thrower = realm.intrinsics.as_ref().unwrap().throw_type_error.clone();
+        let thrower = realm
+            .record
+            .intrinsics
+            .as_ref()
+            .unwrap()
+            .throw_type_error
+            .clone();
         realm
             .objects
             .define(
@@ -263,7 +269,13 @@ mod tests {
         let target = target(&mut realm);
         realm.eval("let flag = 0").unwrap();
         realm.collect(usize::MAX).unwrap();
-        let bind = realm.intrinsics.as_ref().unwrap().function_bind.clone();
+        let bind = realm
+            .record
+            .intrinsics
+            .as_ref()
+            .unwrap()
+            .function_bind
+            .clone();
         realm
             .objects
             .define(

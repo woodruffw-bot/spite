@@ -46,6 +46,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         let set = self.set_receiver(receiver, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

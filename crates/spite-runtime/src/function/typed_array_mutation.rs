@@ -349,6 +349,7 @@ impl Realm {
             // Snapshot the entire source view, for all same-buffer copies,
             // even nonoverlapping ranges or different element widths.
             let prototype = self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized realm")

@@ -389,6 +389,7 @@ impl Realm {
     ) -> Result<(), Error> {
         for element in ELEMENT_TYPES {
             let constructor = self
+                .record
                 .intrinsics
                 .as_ref()
                 .expect("initialized")

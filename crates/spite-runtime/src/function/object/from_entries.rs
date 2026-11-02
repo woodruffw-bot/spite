@@ -11,6 +11,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         Self::require_object_coercible(&iterable, span)?;
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

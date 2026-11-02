@@ -63,6 +63,22 @@ not an alternative language specification.
 
 
 
+## Owned Realm data
+
+Realm globals, intrinsic handles, template caches, reserved host globals, import
+attribute support and time-zone settings now belong to an owned RealmRecord.
+The heap, jobs, budgets, agent control and current execution scopes remain in the
+interpreter. Access sites use the record explicitly, with no shared ownership,
+new dependencies, unsafe code or extra heap entries. This is a storage refactor;
+same-agent child Realms and execution switching remain unimplemented.
+
+Production behavior and all fixture inventories are unchanged. Existing tests
+cover initialization rollback, independent Realm identities and host choices,
+template caching, mutation, collection and asynchronous continuation behavior.
+All 531 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass. Formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and all fixture inventories also pass.
+
 ## Complete published property attributes
 
 The reference inventory also checks writable/configurable attributes for all

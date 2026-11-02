@@ -15,7 +15,7 @@ impl Realm {
         keys: impl IntoIterator<Item = JsString>,
     ) -> Self {
         let mut realm = Self::new(limits);
-        realm.supported_import_attributes.extend(keys);
+        realm.record.supported_import_attributes.extend(keys);
         realm
     }
 
@@ -29,7 +29,7 @@ impl Realm {
             return Ok(());
         }
         // Account for UTF-16 key lengths and lookup depth before checking support.
-        let levels = self.supported_import_attributes.len().max(1).ilog2() as usize + 1;
+        let levels = self.record.supported_import_attributes.len().max(1).ilog2() as usize + 1;
         let work = attributes.iter().try_fold(1usize, |work, attribute| {
             attribute
                 .key
@@ -43,10 +43,12 @@ impl Realm {
                 })
         })?;
         self.object_work(span, |_, budget| budget.charge(work))?;
-        if attributes
-            .iter()
-            .any(|attribute| !self.supported_import_attributes.contains(&attribute.key))
-        {
+        if attributes.iter().any(|attribute| {
+            !self
+                .record
+                .supported_import_attributes
+                .contains(&attribute.key)
+        }) {
             return Err(Self::exception(
                 kind,
                 span,

@@ -5,7 +5,7 @@ use crate::object::Budget;
 fn object_prototype_is_immutable_and_function_prototype_is_callable() {
     let mut realm = Realm::default();
     realm.eval("({})").unwrap();
-    let intrinsics = realm.intrinsics.as_ref().unwrap();
+    let intrinsics = realm.record.intrinsics.as_ref().unwrap();
     let object = intrinsics.object_prototype.clone();
     let function = intrinsics.function_prototype.clone();
     assert!(realm.objects.inspect(&object).unwrap().is_extensible());
@@ -43,7 +43,7 @@ fn object_prototype_is_immutable_and_function_prototype_is_callable() {
 fn restricted_descriptors_share_a_frozen_nonextensible_thrower() {
     let mut realm = Realm::default();
     realm.eval("let f = ({}).toString").unwrap();
-    let intrinsics = realm.intrinsics.as_ref().unwrap();
+    let intrinsics = realm.record.intrinsics.as_ref().unwrap();
     let function = intrinsics.function_prototype.clone();
     let thrower = intrinsics.throw_type_error.clone();
     let object = realm.objects.inspect(&thrower).unwrap();
@@ -99,7 +99,7 @@ fn restricted_descriptors_share_a_frozen_nonextensible_thrower() {
 fn call_forwarding_is_iterative_and_budgeted() {
     let mut realm = Realm::default();
     realm.eval("({})").unwrap();
-    let intrinsics = realm.intrinsics.as_ref().unwrap();
+    let intrinsics = realm.record.intrinsics.as_ref().unwrap();
     let call = Value::Object(intrinsics.function_call.clone());
     let tag = Value::Object(intrinsics.object_to_string.clone());
     let mut arguments = vec![call.clone(); 10_000];
@@ -129,7 +129,7 @@ fn call_forwarding_is_iterative_and_budgeted() {
 fn native_source_does_not_read_the_name_property() {
     let mut realm = Realm::default();
     realm.eval("let f = ({}).valueOf").unwrap();
-    let intrinsics = realm.intrinsics.as_ref().unwrap();
+    let intrinsics = realm.record.intrinsics.as_ref().unwrap();
     let function = intrinsics.object_value_of.clone();
     let thrower = intrinsics.throw_type_error.clone();
     realm
@@ -171,7 +171,7 @@ fn apply_reads_every_index_with_the_list_receiver_before_calling_the_target() {
     else {
         panic!("object")
     };
-    let intrinsics = realm.intrinsics.as_ref().unwrap();
+    let intrinsics = realm.record.intrinsics.as_ref().unwrap();
     let value_of = intrinsics.object_value_of.clone();
     let thrower = intrinsics.throw_type_error.clone();
     realm

@@ -18,6 +18,7 @@ impl Realm {
             });
         }
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")

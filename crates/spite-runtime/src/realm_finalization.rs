@@ -162,7 +162,7 @@ mod tests {
             realm.run_finalization_cleanup_job(),
             Ok(FinalizationCleanupOutcome::NoJob)
         ));
-        assert!(realm.intrinsics.is_none());
+        assert!(realm.record.intrinsics.is_none());
         assert!(realm.scopes.is_empty());
         assert_eq!(realm.remaining_steps, Some(11));
         for (call_depth, evaluation_depth, job_active) in
@@ -179,7 +179,7 @@ mod tests {
                 realm.clear_kept_objects(),
                 Err(Error::Host { .. })
             ));
-            assert!(realm.intrinsics.is_none());
+            assert!(realm.record.intrinsics.is_none());
             assert!(realm.scopes.is_empty());
             assert_eq!(realm.remaining_steps, Some(11));
             assert_eq!(

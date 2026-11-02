@@ -561,12 +561,13 @@ impl Realm {
             .and_then(|count| count.checked_add(self.active_module.iter().count()))
             .and_then(|count| {
                 count.checked_add(
-                    self.intrinsics
+                    self.record
+                        .intrinsics
                         .as_ref()
                         .map_or(0, |intrinsics| intrinsics.roots().count()),
                 )
             })
-            .and_then(|count| count.checked_add(self.template_map.len()))
+            .and_then(|count| count.checked_add(self.record.template_map.len()))
             .and_then(|count| {
                 self.promise_jobs
                     .iter()
@@ -577,17 +578,19 @@ impl Realm {
             .checked_sub(scanned)
             .ok_or(spite_heap::Error::Limit)?;
         let roots = self
+            .record
             .global_object
             .iter()
             .chain(self.active_module.iter())
             .chain(self.scopes.iter().map(|scope| &scope.0))
             .chain(
-                self.intrinsics
+                self.record
+                    .intrinsics
                     .iter()
                     .flat_map(|intrinsics| intrinsics.roots()),
             );
         let roots = roots
-            .chain(self.template_map.iter().map(|(_, array)| array))
+            .chain(self.record.template_map.iter().map(|(_, array)| array))
             .chain(self.promise_jobs.iter().flat_map(|job| job.roots()));
         let mut result = self.objects.collect(roots, remaining)?;
         result.work_used += scanned;
@@ -955,7 +958,7 @@ impl Realm {
         let Some(key) = key.as_string() else {
             return false;
         };
-        if self.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
+        if self.record.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
             return true;
         }
         false
@@ -1013,7 +1016,13 @@ mod tests {
         else {
             panic!("object")
         };
-        let value_of = realm.intrinsics.as_ref().unwrap().object_value_of.clone();
+        let value_of = realm
+            .record
+            .intrinsics
+            .as_ref()
+            .unwrap()
+            .object_value_of
+            .clone();
         for (name, get, set) in [
             ("both", Some(value_of.clone()), Some(value_of)),
             ("empty", None, None),

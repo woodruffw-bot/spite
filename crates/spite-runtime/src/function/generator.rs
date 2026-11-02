@@ -131,7 +131,7 @@ impl Realm {
         kind: spite_parser::ast::FunctionKind,
         span: Span,
     ) -> Result<(), Error> {
-        let intrinsics = self.intrinsics.as_ref().expect("initialized");
+        let intrinsics = self.record.intrinsics.as_ref().expect("initialized");
         let intrinsic = if kind == spite_parser::ast::FunctionKind::AsyncGenerator {
             &intrinsics.async_generator
         } else {
@@ -171,7 +171,7 @@ impl Realm {
                 Value::Object(prototype) => prototype,
                 _ => {
                     realm.check_function_realm(&callee, span)?;
-                    let intrinsics = realm.intrinsics.as_ref().expect("initialized");
+                    let intrinsics = realm.record.intrinsics.as_ref().expect("initialized");
                     if asynchronous {
                         intrinsics.async_generator.prototype.clone()
                     } else {

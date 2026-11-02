@@ -250,7 +250,8 @@ impl Realm {
             prototype
         } else {
             self.check_function_realm(&new_target, span)?;
-            self.intrinsics
+            self.record
+                .intrinsics
                 .as_ref()
                 .expect("initialized")
                 .array_buffer
@@ -443,6 +444,7 @@ impl Realm {
         };
         let length = end.saturating_sub(first);
         let default = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
@@ -507,6 +509,7 @@ impl Realm {
             None
         };
         let prototype = self
+            .record
             .intrinsics
             .as_ref()
             .expect("initialized")
