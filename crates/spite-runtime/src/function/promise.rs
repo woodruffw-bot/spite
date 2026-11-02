@@ -390,14 +390,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .global_metadata
-                .promise_prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.global_metadata.promise_prototype.clone()
+            })?
         };
         let promise = self.object_work(span, |objects, _| objects.create_promise(&prototype))?;
         let (resolve, reject) = self.promise_resolving_functions(&promise, span)?;

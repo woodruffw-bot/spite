@@ -63,6 +63,31 @@ not an alternative language specification.
 
 
 
+## Constructor prototype Realm selection and Array species
+
+GetPrototypeFromConstructor selects a missing/non-object prototype's fallback
+from newTarget's retained intrinsic graph. A shared selector reads those checked
+handles without running JavaScript or changing the current Realm. It covers
+ordinary and built-in constructors, dynamic function families and generator
+prototype fallback. ArraySpeciesCreate normalizes only another Realm's exact
+intrinsic Array, using its cached identity even after global replacement.
+
+Three new native groups check 45 constructor families, independent function
+creation/buffer/error-array/resolver allocation Realms, bound Symbol/BigInt
+newTargets, single prototype Gets, conversion order and revocation. Species
+tests cover both directions, ignored foreign-intrinsic species, Proxy/bound
+custom species and revoked constructors. All seven Realm groups and nine
+existing constructor integration groups pass; Runtime unit count is 539.
+Tests move to a separate source test module. Corpus inventories are unchanged.
+All 539 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
+These constructor fixtures use constructors from the running Realm with foreign
+newTargets. Foreign constructor execution activation, saved source resumption
+and queued-job Realm selection remain separate pending work; createRealm stays
+unavailable and no cross-Realm Test262 fixtures are admitted yet.
+
 ## Function creation Realm activation
 
 Concrete [[Call]] dispatch now activates the function's immutable creation Realm,

@@ -351,14 +351,9 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
-                        self.check_function_realm(&new_target, span)?;
-                        self.record
-                            .intrinsics
-                            .as_ref()
-                            .expect("initialized realm")
-                            .iterator
-                            .prototype
-                            .clone()
+                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                            intrinsics.iterator.prototype.clone()
+                        })?
                     };
                     return self
                         .object_work(span, |objects, _| objects.create(Some(&prototype)))
@@ -386,14 +381,9 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
-                        self.check_function_realm(&new_target, span)?;
-                        self.record
-                            .intrinsics
-                            .as_ref()
-                            .expect("initialized realm")
-                            .boolean
-                            .prototype
-                            .clone()
+                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                            intrinsics.boolean.prototype.clone()
+                        })?
                     };
                     return self
                         .object_work(span, |objects, _| objects.create_boolean(&prototype, value))
@@ -429,14 +419,9 @@ impl Realm {
                     let prototype = if let Value::Object(prototype) = prototype {
                         prototype
                     } else {
-                        self.check_function_realm(&new_target, span)?;
-                        self.record
-                            .intrinsics
-                            .as_ref()
-                            .expect("initialized realm")
-                            .number
-                            .prototype
-                            .clone()
+                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                            intrinsics.number.prototype.clone()
+                        })?
                     };
                     return self
                         .object_work(span, |objects, _| objects.create_number(&prototype, value))
@@ -462,13 +447,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized realm")
-                .object_prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.object_prototype.clone()
+            })?
         };
         let instance = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
         let this = Value::Object(instance);
@@ -497,14 +478,6 @@ impl Realm {
 
     // Bound functions and Proxies do not own [[Realm]]. Follow their checked
     // targets without invoking handlers or inspecting mutable prototypes.
-    pub(super) fn check_function_realm(
-        &mut self,
-        function: &ObjectHandle,
-        span: Span,
-    ) -> Result<(), Error> {
-        self.function_realm_environment(function, span).map(|_| ())
-    }
-
     pub(super) fn function_realm_environment(
         &mut self,
         function: &ObjectHandle,

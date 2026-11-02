@@ -4895,9 +4895,12 @@ Constructor prototype fallback validates Proxy and bound-function chains after a
 non-object prototype result. Revoked records throw before allocation; object-valued
 prototypes skip the realm query. Array species selection validates a constructor
 before reading @@species. The traversal uses checked internal slots and an
-iterative loop without observable traps or copying bound arguments. The current
-implementation exposes one realm; foreign-realm intrinsic normalization remains
-deferred.
+iterative loop without observable traps or copying bound arguments. Non-object
+prototype results select the constructor-specific fallback from newTarget's
+retained intrinsic graph, without changing the running Realm. Array species
+selection normalizes another Realm's exact intrinsic Array before reading
+@@species; Proxy and bound wrappers retain their own species behavior. Public
+JavaScript still exposes one Realm per Agent.
 Concrete source and built-in function objects record their creation Realm using
 the existing global-environment handle (9.3, 7.3.24). This immutable internal edge
 is traced by the ordinary heap collector and needs no separate Realm identity
@@ -4928,7 +4931,8 @@ The computed caller ScriptOrModule fallback is preserved for built-ins (9.4.1,
 become Error objects before their Realm is removed. Host failures restore state
 and bypass language handlers. The outer call loop forwards only after record
 restoration, so alternating-Realm tail calls do not grow the native stack.
-Constructor fallback and queued-job Realm selection remain incomplete; the
-Test262 createRealm facility stays unavailable until those paths are ready.
+Constructor execution-context activation, foreign source resumption and
+queued-job Realm selection remain incomplete; the Test262 createRealm facility
+stays unavailable until those paths are ready.
 Resource quotas remain opt-in. The owned-record grouping preserves the current
 initialized Realm's 591 heap entries.

@@ -125,32 +125,28 @@ impl Realm {
             },
         })?;
         let intrinsic = self.record.intrinsics.as_ref().expect("initialized");
-        let (constructor, fallback) = match kind {
-            FunctionKind::AsyncGenerator => (
-                &intrinsic.async_generator.constructor,
-                &intrinsic.async_generator.function_prototype,
-            ),
-            FunctionKind::Async => (
-                &intrinsic.async_function.constructor,
-                &intrinsic.async_function.prototype,
-            ),
-            FunctionKind::Generator => (
-                &intrinsic.generator.constructor,
-                &intrinsic.generator.function_prototype,
-            ),
-            FunctionKind::Ordinary => (
-                &intrinsic.function_constructor,
-                &intrinsic.function_prototype,
-            ),
+        let (constructor, fallback): (_, fn(&super::Intrinsics) -> ObjectHandle) = match kind {
+            FunctionKind::AsyncGenerator => {
+                (&intrinsic.async_generator.constructor, |intrinsics| {
+                    intrinsics.async_generator.function_prototype.clone()
+                })
+            }
+            FunctionKind::Async => (&intrinsic.async_function.constructor, |intrinsics| {
+                intrinsics.async_function.prototype.clone()
+            }),
+            FunctionKind::Generator => (&intrinsic.generator.constructor, |intrinsics| {
+                intrinsics.generator.function_prototype.clone()
+            }),
+            FunctionKind::Ordinary => (&intrinsic.function_constructor, |intrinsics| {
+                intrinsics.function_prototype.clone()
+            }),
         };
         let new_target = new_target.unwrap_or_else(|| constructor.clone());
-        let fallback = fallback.clone();
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            fallback
+            self.function_realm_intrinsic(&new_target, span, fallback)?
         };
         let environment = self.scopes.first().expect("global environment").clone();
         self.allocate_ordinary_function(

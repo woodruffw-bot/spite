@@ -134,10 +134,9 @@ impl Realm {
             let prototype = self.get_property(&target, &JsString::from("prototype"), span)?;
             let prototype = match prototype {
                 Value::Object(prototype) => prototype,
-                _ => {
-                    self.check_function_realm(&target, span)?;
-                    default_prototype
-                }
+                _ => self.function_realm_intrinsic(&target, span, |intrinsics| {
+                    intrinsics.object_prototype.clone()
+                })?,
             };
             return self
                 .object_work(span, |objects, _| objects.create(Some(&prototype)))

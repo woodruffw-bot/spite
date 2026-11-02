@@ -292,14 +292,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .data_view
-                .prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.data_view.prototype.clone()
+            })?
         };
         // Both explicit length conversion and newTarget.prototype can run code.
         // Recheck the current buffer after that observable constructor step.

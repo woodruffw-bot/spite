@@ -173,14 +173,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .set
-                .prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.set.prototype.clone()
+            })?
         };
         let set = self.object_work(span, |objects, budget| {
             objects.create_set(&prototype, SetData::default(), budget)

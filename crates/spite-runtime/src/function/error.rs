@@ -292,16 +292,14 @@ impl Realm {
             .errors
             .get(kind);
         let new_target = new_target.unwrap_or_else(|| intrinsic.constructor.clone());
-        let fallback = intrinsic.prototype.clone();
         // 20.5.1.1 / 20.5.6.1.1 / 20.5.7.1.1 / 20.5.8.1.1: select the prototype
         // and allocate before converting message or installing additional fields.
         let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
         let prototype = match prototype {
             Value::Object(prototype) => prototype,
-            _ => {
-                self.check_function_realm(&new_target, span)?;
-                fallback
-            }
+            _ => self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.errors.get(kind).prototype.clone()
+            })?,
         };
         let object = self.object_work(span, |objects, _| objects.create_error(&prototype))?;
         if let Some(message) = arguments.next().filter(|v| !matches!(v, Value::Undefined)) {

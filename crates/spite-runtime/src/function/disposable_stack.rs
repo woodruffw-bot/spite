@@ -182,8 +182,10 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.disposable_stack_intrinsic_prototype(kind)
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| match kind {
+                StackKind::Sync => intrinsics.disposable_stack.prototype.clone(),
+                StackKind::Async => intrinsics.async_disposable_stack.prototype.clone(),
+            })?
         };
         self.object_work(span, |objects, _| {
             objects.create_disposable_stack(&prototype, kind)

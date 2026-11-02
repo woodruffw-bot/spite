@@ -27,14 +27,12 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized realm")
-                .global_metadata
-                .finalization_registry_prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics
+                    .global_metadata
+                    .finalization_registry_prototype
+                    .clone()
+            })?
         };
         // HostMakeJobCallback's required non-browser default stores this exact
         // function. The owning Objects store is the active constructor's Realm;

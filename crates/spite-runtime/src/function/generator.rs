@@ -169,15 +169,13 @@ impl Realm {
             let prototype = realm.get_property(&callee, &JsString::from("prototype"), span)?;
             let prototype = match prototype {
                 Value::Object(prototype) => prototype,
-                _ => {
-                    realm.check_function_realm(&callee, span)?;
-                    let intrinsics = realm.record.intrinsics.as_ref().expect("initialized");
+                _ => realm.function_realm_intrinsic(&callee, span, |intrinsics| {
                     if asynchronous {
                         intrinsics.async_generator.prototype.clone()
                     } else {
                         intrinsics.generator.prototype.clone()
                     }
-                }
+                })?,
             };
             let context = realm.capture_source_execution_context(
                 base,

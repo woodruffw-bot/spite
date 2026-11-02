@@ -23,14 +23,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .global_metadata
-                .weak_ref_prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.global_metadata.weak_ref_prototype.clone()
+            })?
         };
         let weak_ref = self.object_work(span, |objects, budget| {
             objects.create_weak_ref(&prototype, &target, budget)

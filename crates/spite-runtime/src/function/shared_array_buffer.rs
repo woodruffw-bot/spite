@@ -91,14 +91,12 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .global_metadata
-                .shared_array_buffer_prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics
+                    .global_metadata
+                    .shared_array_buffer_prototype
+                    .clone()
+            })?
         };
         self.array_buffer_work(span, |objects, budget| {
             objects.create_shared_array_buffer(&prototype, byte_length, maximum, budget)

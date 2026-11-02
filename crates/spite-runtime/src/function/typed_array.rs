@@ -107,14 +107,9 @@ impl Realm {
         Ok(if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized realm")
-                .typed_array
-                .prototype(element)
-                .clone()
+            self.function_realm_intrinsic(new_target, span, |intrinsics| {
+                intrinsics.typed_array.prototype(element).clone()
+            })?
         })
     }
 

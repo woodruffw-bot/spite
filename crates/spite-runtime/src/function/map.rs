@@ -171,14 +171,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .map
-                .prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.map.prototype.clone()
+            })?
         };
         let map = self.object_work(span, |objects, _| objects.create_map(&prototype))?;
         if matches!(iterable, Value::Undefined | Value::Null) {

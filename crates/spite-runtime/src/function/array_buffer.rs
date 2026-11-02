@@ -249,14 +249,9 @@ impl Realm {
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.check_function_realm(&new_target, span)?;
-            self.record
-                .intrinsics
-                .as_ref()
-                .expect("initialized")
-                .array_buffer
-                .prototype
-                .clone()
+            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                intrinsics.array_buffer.prototype.clone()
+            })?
         };
         self.array_buffer_work(span, |objects, budget| {
             objects.create_array_buffer(&prototype, byte_length, max_byte_length, budget)
