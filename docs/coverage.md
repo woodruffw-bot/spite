@@ -63,6 +63,28 @@ not an alternative language specification.
 
 
 
+## Source and default class constructor Realms
+
+Explicit source constructors allocate base instances before entering their
+creation Realm, then initialize fields, parameters and bodies in that Realm.
+They restore the caller before tail forwarding, primitive-return validation and
+derived GetThisBinding. Default class constructors follow the separate built-in
+algorithm: allocation or superclass construction and field initialization run
+in their creation Realm. Pending default-derived contexts unwind iteratively
+on every result, including initializer exceptions and host aborts.
+
+Four new native groups exercise both directions of cross-Realm inheritance,
+field/body/parameter allocation, revoked newTarget and superclass ordering,
+early and late error ownership, and constructor tail forwarding. A 2 MiB thread
+constructs and unwinds 2,049 alternating-Realm default classes, checks a field
+exception and work abort, and exercises recursive foreign source construction.
+Runtime now has 547 unit tests; integration and corpus inventories are unchanged.
+Public child-Realm creation remains unavailable pending resumable execution,
+Promise jobs and host bootstrap integration.
+All 547 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Built-in constructor Realm activation
 
 Native built-in [[Construct]] algorithms now enter their immutable creation Realm

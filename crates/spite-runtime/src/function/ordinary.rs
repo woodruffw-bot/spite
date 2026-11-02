@@ -52,25 +52,10 @@ impl Realm {
             self.with_ordinary_call(invocation, span, |realm, body| {
                 realm.function_body(body, span)
             })?;
-        if let Some(environment) = constructor_environment {
-            // [[Construct]] keeps the environment needed for GetThisBinding,
-            // even after PrepareForTailCall retires its execution context
-            // (10.2.2, 15.10). Validate the actual callee result afterwards.
-            let value = self.finish_call_outcome(outcome)?;
-            match value {
-                value @ Value::Object(_) => Ok(super::CallOutcome::Value(value)),
-                Value::Undefined => self
-                    .function_this_binding(&environment, span)
-                    .map(super::CallOutcome::Value),
-                _ => Err(Self::exception(
-                    crate::ExceptionKind::TypeError,
-                    span,
-                    "derived constructor returned a primitive",
-                )),
-            }
-        } else {
-            Ok(outcome)
-        }
+        // Constructors use construct_source so their Realm is restored before
+        // tail dispatch and derived-return validation (10.2.2, 15.10).
+        debug_assert!(constructor_environment.is_none());
+        Ok(outcome)
     }
 
     // Keep parameter/var instantiation and caller restoration shared by body

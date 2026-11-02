@@ -466,3 +466,185 @@ fn recursive_foreign_builtin_construction_keeps_the_two_mebibyte_guard() {
         .join()
         .unwrap();
 }
+
+#[test]
+fn source_constructor_bodies_and_fields_use_their_creation_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"var Base=class {field=[];constructor(arg=[]){this.arg=arg;this.body={};}};
+        var Ordinary=function(arg=[]){this.arg=arg;this.body={};};
+        var Default=class {field=[];};
+        var Derived=class extends Base {derived=[];constructor(arg=[]){super();this.derivedArg=arg;}};
+        var derive=function(B){return class extends B {childField=[];constructor(){super();this.childBody={};}};};
+        Base"#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(
+        realm.eval(
+            r#"let failures=[];
+            for(let C of [child.Base,child.Ordinary,child.Default,child.Derived]){
+                let x=new C;
+                if(Object.getPrototypeOf(x)!==C.prototype)failures.push('instance');
+                for(let key of ['field','arg','derived','derivedArg']){
+                    if(key in x && Object.getPrototypeOf(x[key])!==child.Array.prototype)failures.push(key);
+                }
+                if('body' in x && Object.getPrototypeOf(x.body)!==child.Object.prototype)failures.push('body');
+            }
+            class Parent extends child.Base {parentField=[];constructor(){super();this.parentBody={};}}
+            let p=new Parent;
+            if(Object.getPrototypeOf(p.field)!==child.Array.prototype ||
+                Object.getPrototypeOf(p.parentField)!==Array.prototype ||
+                Object.getPrototypeOf(p.parentBody)!==Object.prototype)failures.push('parent-derived');
+            class Root {rootField=[];constructor(){this.rootBody={};}}
+            let C=child.derive(Root),c=new C;
+            if(Object.getPrototypeOf(c.rootField)!==Array.prototype ||
+                Object.getPrototypeOf(c.rootBody)!==Object.prototype ||
+                Object.getPrototypeOf(c.childField)!==child.Array.prototype ||
+                Object.getPrototypeOf(c.childBody)!==child.Object.prototype)failures.push('child-derived');
+            Object.getPrototypeOf([])===Array.prototype && JSON.stringify(failures)"#
+        ),
+        Ok(Value::String("[]".into()))
+    );
+    assert_eq!(realm.scopes.len(), 1);
+    assert_eq!(realm.call_depth, 0);
+}
+
+#[test]
+fn source_and_default_constructor_allocation_have_distinct_caller_realms() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"var Ordinary=function(){};
+        var Explicit=class {constructor(){}};
+        var Default=class {};
+        var DefaultDerived=class extends Ordinary {};
+        var makeDefault=function(B){return class extends B {};};
+        Ordinary"#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(
+        realm.eval(
+            r#"let failures=[];
+            function allocationFailure(C,E,label){
+                let pair=Proxy.revocable(function(){},{get(t,k){if(k==='prototype'){pair.revoke();return 0;}return t[k];}});
+                try{Reflect.construct(C,[],pair.proxy);failures.push(label+':missing');}
+                catch(e){if(!(e instanceof E))failures.push(label+':realm');}
+            }
+            allocationFailure(child.Ordinary,TypeError,'ordinary');
+            allocationFailure(child.Explicit,TypeError,'explicit');
+            allocationFailure(child.Default,child.TypeError,'default');
+            allocationFailure(child.DefaultDerived,child.TypeError,'default-source-super');
+            class ParentExplicit {constructor(){}}
+            allocationFailure(child.makeDefault(ParentExplicit),child.TypeError,'foreign-source-super');
+            let D=child.makeDefault(ParentExplicit);
+            Object.setPrototypeOf(D,null);
+            try{new D;failures.push('invalid-super:missing');}
+            catch(e){if(!(e instanceof child.TypeError))failures.push('invalid-super:realm');}
+            let pair=Proxy.revocable(ParentExplicit,{}),P=child.makeDefault(pair.proxy);
+            pair.revoke();
+            try{new P;failures.push('revoked-super:missing');}
+            catch(e){if(!(e instanceof child.TypeError))failures.push('revoked-super:realm');}
+            JSON.stringify(failures)"#
+        ),
+        Ok(Value::String("[]".into()))
+    );
+    assert_eq!(realm.scopes.len(), 1);
+    assert_eq!(realm.call_depth, 0);
+}
+
+#[test]
+fn source_constructor_late_errors_and_tail_forwarding_restore_the_caller_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"var Primitive=class extends Object {constructor(){return 1;}};
+        var Missing=class extends Object {constructor(){}};
+        var Body=class extends Object {constructor(){null.x;}};
+        var Parameter=class extends Object {constructor(x=this){super();}};
+        var Field=class {x=null.x;constructor(){}};
+        var Callback=class {constructor(x=callback()){}};
+        var tail,callback;
+        var Tail=class extends Object {constructor(){return tail();}};
+        Primitive"#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(
+        realm.eval(
+            r#"let failures=[];
+            function expect(C,E,label){try{new C;failures.push(label+':missing');}catch(e){if(!(e instanceof E))failures.push(label+':realm');}}
+            child.callback=function(){return null.x;};
+            let pair=Proxy.revocable(function(){return {};},{});child.tail=pair.proxy;pair.revoke();
+            expect(child.Primitive,TypeError,'primitive');
+            expect(child.Missing,ReferenceError,'missing');
+            expect(child.Body,child.TypeError,'body');
+            expect(child.Parameter,child.ReferenceError,'parameter');
+            expect(child.Field,child.TypeError,'field');
+            expect(child.Callback,TypeError,'callback');
+            expect(child.Tail,TypeError,'tail');
+            class ParentPrimitive extends Object {constructor(){return 1;}}
+            class ParentMissing extends Object {constructor(){}}
+            class ParentBody extends Object {constructor(){null.x;}}
+            for(let [C,E,label] of [[ParentPrimitive,child.TypeError,'parent-primitive'],
+                [ParentMissing,child.ReferenceError,'parent-missing'],[ParentBody,TypeError,'parent-body']]){
+                try{child.Reflect.construct(C,[]);failures.push(label+':missing');}
+                catch(e){if(!(e instanceof E))failures.push(label+':realm');}
+            }
+            let Outer=child.Function('B','return class extends B {}')(child.Primitive);
+            expect(Outer,child.TypeError,'suspended-default');
+            JSON.stringify(failures)"#
+        ),
+        Ok(Value::String("[]".into()))
+    );
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.call_depth, 0);
+}
+
+#[test]
+fn deep_default_constructor_realms_and_source_recursion_restore_on_all_exits() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let mut realm = Realm::default();
+            let (environment, function) = child_realm_fixture(
+                &mut realm,
+                r#"var record,rootCtor;
+                var make=function(B){return class extends B {x=[];check=record(this.x,'child');};};
+                var Recursive=function(){new rootCtor;};
+                make"#,
+            );
+            expose_child(&mut realm, &environment, function);
+            assert_eq!(realm.eval(
+                r#"let count=0,wrong=0,effects=0;
+                function record(a,kind){count++;if(Object.getPrototypeOf(a)!==(kind==='child'?child.Array.prototype:Array.prototype))wrong++;}
+                child.record=record;
+                function make(B){return class extends B {x=[];check=record(this.x,'parent');};}
+                let C=class {};
+                for(let i=0;i<2049;i++)C=(i%2?make:child.make)(C);
+                let x=new C;
+                count===2049 && wrong===0 && Object.getPrototypeOf(x.x)===child.Array.prototype"#
+            ),Ok(Value::Boolean(true)));
+            assert_eq!(realm.eval(
+                r#"function Frozen(){return Object.freeze({});}
+                let D=Frozen;for(let i=0;i<2049;i++)D=(i%2?make:child.make)(D);
+                let caught=false;try{new D;}catch(e){caught=e instanceof child.TypeError;}
+                caught && Object.getPrototypeOf([])===Array.prototype"#
+            ),Ok(Value::Boolean(true)));
+            realm.limits.max_steps=Some(1000);
+            assert!(matches!(realm.eval("try{new C;}catch(e){effects++;}finally{effects++;}"),Err(Error::Limit{..})));
+            assert_eq!(realm.record.global_environment.as_ref(), realm.scopes.first());
+            assert_eq!(realm.scopes.len(),1);
+            assert_eq!(realm.call_depth,0);
+            realm.limits.max_steps=None;
+            assert!(matches!(realm.eval(
+                "function Root(){new child.Recursive;}child.rootCtor=Root;try{new Root;}catch(e){effects++;}finally{effects++;}"
+            ),Err(Error::Limit{..})));
+            assert_eq!(realm.eval("effects"),Ok(Value::Number(0.0)));
+            assert_eq!(realm.record.global_environment.as_ref(), realm.scopes.first());
+            assert_eq!(realm.scopes.len(),1);
+            assert_eq!(realm.call_depth,0);
+        }).unwrap().join().unwrap();
+}

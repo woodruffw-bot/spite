@@ -157,6 +157,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Activate concrete functions' creation Realms for [[Call]], preserve caller context through Proxy/bound resolution, materialize foreign errors before restoration and restore owned records before tail forwarding.
 - [x] Represent pending Realm transitions as owned entry/exit state that can unwind iteratively, preserving caller source context and foreign error identity without retaining Rust call frames.
 - [x] Execute native built-in constructor algorithms in their creation Realm, independently of newTarget's prototype fallback Realm, while preserving caller context during bound/Proxy forwarding.
+- [x] Run explicit constructor fields, parameters and bodies in their creation Realm while preserving caller-Realm base allocation, tail forwarding and derived-return validation; retain default class built-in contexts through iterative superclass construction.
 - [x] Select constructor prototype fallbacks from newTarget's Realm across constructor families and normalize only a foreign Realm's exact intrinsic Array before species lookup.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.

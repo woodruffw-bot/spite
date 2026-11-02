@@ -1,13 +1,24 @@
 //! Ordinary construction and iterative bound/default forwarding (10.2.2, 10.4.1.2).
 
-use super::{Builtin, Callable};
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::ProxyState};
+use super::{Builtin, Callable, ordinary::OrdinaryInvocation, realm::RealmTransition};
+use crate::{
+    Error, ExceptionKind, ObjectHandle, Realm, Value,
+    environment::{EnvironmentHandle, FunctionContext},
+    object::ProxyState,
+};
 use spite_core::{JsString, Span};
 
 enum FunctionRealmStep {
     Known(Option<crate::environment::EnvironmentHandle>),
     Target(ObjectHandle),
     Revoked,
+}
+
+// Default derived constructors are built-ins whose contexts remain suspended
+// across Construct(super). Retain their contexts without recursive Rust calls.
+struct PendingDefaultConstructor {
+    transition: Option<RealmTransition>,
+    elements: super::class_field::InstanceElements,
 }
 
 impl Realm {
@@ -29,15 +40,17 @@ impl Realm {
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
         let tail_scope = self.tail_scope.take();
-        let mut elements = Vec::new();
-        let result = self
-            .construct_inner(function, arguments, new_target, &mut elements, span)
-            .and_then(|value| {
-                for pending in elements.iter().rev() {
-                    self.initialize_elements(&value, pending, span)?;
-                }
+        let mut pending = Vec::new();
+        let mut result = self.construct_inner(function, arguments, new_target, &mut pending, span);
+        while let Some(frame) = pending.pop() {
+            result = result.and_then(|value| {
+                self.initialize_elements(&value, &frame.elements, span)?;
                 Ok(value)
             });
+            // Restore every suspended context, including after host aborts or
+            // an initializer error. Only successful construction runs fields.
+            result = self.leave_function_realm(frame.transition, result);
+        }
         self.call_depth -= 1;
         self.tail_scope = tail_scope;
         result
@@ -48,7 +61,7 @@ impl Realm {
         function: Value,
         mut arguments: Vec<Value>,
         new_target: Option<ObjectHandle>,
-        elements: &mut Vec<super::class_field::InstanceElements>,
+        pending: &mut Vec<PendingDefaultConstructor>,
         span: Span,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
@@ -128,15 +141,48 @@ impl Realm {
                     // [[BoundThis]] is ignored during construction.
                 }
                 Callable::Ordinary(code) => {
-                    return self.construct_base_function(
-                        code, function, new_target, None, arguments, span,
+                    return self.construct_source(
+                        OrdinaryInvocation {
+                            code,
+                            callee: function,
+                            this: Value::Undefined,
+                            context: FunctionContext {
+                                new_target: Some(new_target),
+                                ..Default::default()
+                            },
+                            arguments: arguments.into_iter(),
+                        },
+                        creation_realm,
+                        span,
                     );
                 }
-                Callable::ClassConstructor(class) if class.derived && class.default => {
-                    // The default derived closure forwards the argument List;
-                    // no rest binding or Array iterator is observable (15.7.14).
-                    // This record was certified as an ordinary class above;
-                    // its superclass may be a Proxy handled by the next loop.
+                Callable::ClassConstructor(class) if class.default && class.derived => {
+                    let has_elements = !class.elements.fields.is_empty()
+                        || !class.elements.private_methods.is_empty();
+                    let foreign = creation_realm.as_ref().is_some_and(|realm| {
+                        self.record.global_environment.as_ref() != Some(realm)
+                    });
+                    // Reserve before entering: every successful Realm entry
+                    // must have an unwind record before the next fallible step.
+                    if foreign || has_elements {
+                        pending.try_reserve(1).map_err(|_| Error::Limit {
+                            span,
+                            message: "derived constructor forwarding capacity exceeded".into(),
+                        })?;
+                    }
+                    let transition = match creation_realm {
+                        Some(realm) => self.enter_function_realm(&realm, span)?,
+                        None => None,
+                    };
+                    if foreign || has_elements {
+                        pending.push(PendingDefaultConstructor {
+                            transition,
+                            elements: class.elements,
+                        });
+                    }
+                    // 15.7.14: the default built-in forwards the argument List
+                    // without observing Array iteration. Its Realm is active
+                    // during superclass validation, construction and fields.
                     let superclass = self.object_work(span, |objects, budget| {
                         budget.charge(1)?;
                         Ok(objects
@@ -155,41 +201,34 @@ impl Realm {
                     let Value::Object(superclass) = superclass else {
                         unreachable!("constructor")
                     };
-                    if !class.elements.fields.is_empty()
-                        || !class.elements.private_methods.is_empty()
-                    {
-                        elements.try_reserve(1).map_err(|_| Error::Limit {
-                            span,
-                            message: "derived element forwarding capacity exceeded".into(),
-                        })?;
-                        elements.push(class.elements);
-                    }
                     function = superclass;
-                    // Initialize each default class's own elements, from the
-                    // superclass outward, after this forwarded construction.
                 }
-                Callable::ClassConstructor(class) if class.derived => {
-                    return self.call_ordinary(
-                        class.method.code,
-                        function.clone(),
-                        Value::Undefined,
-                        crate::environment::FunctionContext {
-                            new_target: Some(new_target),
-                            home_object: Some(class.method.home_object),
-                            derived_constructor: Some(function),
-                            class_field_initializer: false,
-                        },
-                        arguments.into_iter(),
-                        span,
-                    );
+                Callable::ClassConstructor(class) if class.default => {
+                    let execute = |realm: &mut Self| {
+                        let this = realm.constructor_instance(&new_target, span)?;
+                        realm.initialize_elements(&this, &class.elements, span)?;
+                        Ok(this)
+                    };
+                    return match creation_realm {
+                        Some(realm) => self.with_function_realm(&realm, span, execute),
+                        None => execute(self),
+                    };
                 }
                 Callable::ClassConstructor(class) => {
-                    return self.construct_base_function(
-                        class.method.code,
-                        function,
-                        new_target,
-                        Some(class.method.home_object),
-                        arguments,
+                    return self.construct_source(
+                        OrdinaryInvocation {
+                            code: class.method.code,
+                            callee: function.clone(),
+                            this: Value::Undefined,
+                            context: FunctionContext {
+                                new_target: Some(new_target),
+                                home_object: Some(class.method.home_object),
+                                derived_constructor: class.derived.then_some(function),
+                                class_field_initializer: false,
+                            },
+                            arguments: arguments.into_iter(),
+                        },
+                        creation_realm,
                         span,
                     );
                 }
@@ -416,48 +455,72 @@ impl Realm {
         }
     }
 
-    fn construct_base_function(
+    fn constructor_instance(
         &mut self,
-        code: super::ScriptFunction,
-        function: ObjectHandle,
-        new_target: ObjectHandle,
-        home_object: Option<ObjectHandle>,
-        arguments: Vec<Value>,
+        new_target: &ObjectHandle,
         span: Span,
     ) -> Result<Value, Error> {
-        // 10.2.2, 10.1.13–14: allocate before binding parameters or running the
-        // body; base constructors ignore primitive returns, including null.
-        let prototype = self.get_property(&new_target, &JsString::from("prototype"), span)?;
+        let prototype = self.get_property(new_target, &JsString::from("prototype"), span)?;
         let prototype = if let Value::Object(prototype) = prototype {
             prototype
         } else {
-            self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+            self.function_realm_intrinsic(new_target, span, |intrinsics| {
                 intrinsics.object_prototype.clone()
             })?
         };
-        let instance = self.object_work(span, |objects, _| objects.create(Some(&prototype)))?;
-        let this = Value::Object(instance);
-        // Base instance elements precede FunctionDeclarationInstantiation,
-        // including parameter defaults, and use their own initializer context.
-        self.initialize_instance_elements(&this, &function, span)?;
-        let result = self.call_ordinary(
-            code,
-            function,
-            this.clone(),
-            crate::environment::FunctionContext {
-                new_target: Some(new_target),
-                home_object,
-                derived_constructor: None,
-                class_field_initializer: false,
-            },
-            arguments.into_iter(),
-            span,
-        )?;
-        Ok(if matches!(result, Value::Object(_)) {
-            result
-        } else {
-            this
-        })
+        self.object_work(span, |objects, _| objects.create(Some(&prototype)))
+            .map(Value::Object)
+    }
+
+    fn construct_source(
+        &mut self,
+        mut invocation: OrdinaryInvocation,
+        creation_realm: Option<EnvironmentHandle>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let base = invocation.context.derived_constructor.is_none();
+        // 10.2.2: source base allocation precedes PrepareForOrdinaryCall and
+        // therefore runs in the caller's Realm, unlike default class built-ins.
+        if base {
+            invocation.this = self.constructor_instance(
+                invocation
+                    .context
+                    .new_target
+                    .as_ref()
+                    .expect("constructor newTarget"),
+                span,
+            )?;
+        }
+        let this = invocation.this.clone();
+        let execute = |realm: &mut Self| {
+            // Base fields precede parameter defaults, in the callee's Realm.
+            if base {
+                realm.initialize_instance_elements(&this, &invocation.callee, span)?;
+            }
+            realm.with_ordinary_call(invocation, span, |realm, body| {
+                realm.function_body(body, span)
+            })
+        };
+        let (outcome, environment) = match creation_realm {
+            Some(realm) => self.with_function_realm(&realm, span, execute),
+            None => execute(self),
+        }?;
+        // Retire the source context before tail dispatch and return validation
+        // (10.2.2, 15.10). Late errors belong to the restored caller's Realm.
+        let value = self.finish_call_outcome(outcome)?;
+        match value {
+            value @ Value::Object(_) => Ok(value),
+            _ if base => Ok(this),
+            Value::Undefined => self.function_this_binding(
+                &environment.expect("derived constructor environment"),
+                span,
+            ),
+            _ => Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "derived constructor returned a primitive",
+            )),
+        }
     }
 
     // Bound functions and Proxies do not own [[Realm]]. Follow their checked
