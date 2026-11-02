@@ -63,6 +63,27 @@ not an alternative language specification.
 
 
 
+## Published intrinsic property inventory
+
+A second edition-17 reference fixture checks 646 property roles across 105
+intrinsic owners, expanding the specification's NativeError and TypedArray
+templates. It verifies own-property presence, non-enumerability and data versus
+method/getter/setter roles. Method and accessor functions must inherit from
+Function.prototype, lack [[Construct]], and expose the standard name/length
+property attributes. This checks inventory and metadata; it does not establish
+the behavior of every algorithm or verify every function's name/arity value.
+
+The audit explicitly excludes Annex B web features, the normative-optional
+legacy Object accessors, and the internal-only AsyncFromSync/ForIn iterator
+prototypes. The initial diagnostic reported only those optional Object
+accessors as missing; inherited normative-optional flags were checked against
+the published source before excluding them. Runtime case files remain 700;
+non-RegExp integration groups increase to 2,407. Production code and retained
+upstream fixtures are unchanged.
+The new native regression passes all 646 checks. Formatting, strict Clippy,
+dependency policy and all fixture inventories pass; the complete Runtime and
+Test262 gates passed immediately before this test-only increment.
+
 ## Function creation Realm metadata
 
 Concrete source functions, built-ins and native Promise/asynchronous callbacks

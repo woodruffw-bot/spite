@@ -33,6 +33,18 @@ fn published_intrinsic_inventory_has_correct_roles_and_realm_local_identities() 
 }
 
 #[test]
+fn published_intrinsic_properties_have_their_specified_roles() {
+    let mut realm = Realm::default();
+    realm
+        .eval(include_str!("fixtures/edition17_intrinsic_inventory.js"))
+        .unwrap();
+    assert_eq!(
+        realm.eval(include_str!("fixtures/edition17_intrinsic_properties.js")),
+        Ok(Value::String("{\"checked\":646,\"failures\":[]}".into()))
+    );
+}
+
+#[test]
 fn deferred_intrinsic_metadata_graph_matches_edition_17() {
     let result = Realm::default().eval(r#"
         let rows=[],graph=[];
