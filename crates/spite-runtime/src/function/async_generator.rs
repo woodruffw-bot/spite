@@ -133,12 +133,19 @@ impl Realm {
                     RequestKind::Return => {
                         // AsyncGeneratorUnwrapYieldResumption awaits a return
                         // argument before injecting it into catch/finally.
-                        match self.await_native_value(
-                            generator,
-                            AsyncResumeKind::AsyncGeneratorResumeReturn,
-                            request.value,
-                            request.span,
-                        ) {
+                        let owner = self
+                            .objects
+                            .async_execution_global_environment(generator)
+                            .map_err(Error::InvalidObject)?;
+                        let awaited = self.with_function_realm(&owner, request.span, |realm| {
+                            realm.await_native_value(
+                                generator,
+                                AsyncResumeKind::AsyncGeneratorResumeReturn,
+                                request.value,
+                                request.span,
+                            )
+                        });
+                        match awaited {
                             Ok(()) => return Ok(()),
                             Err(error) if error.is_language_exception() => {
                                 SourceResume::Throw(error)

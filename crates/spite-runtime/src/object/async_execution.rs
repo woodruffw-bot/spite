@@ -462,6 +462,19 @@ impl AsyncExecutionData {
 }
 
 impl Objects {
+    pub(crate) fn async_execution_global_environment(
+        &self,
+        state: &Handle,
+    ) -> Result<EnvironmentHandle, Error> {
+        self.inspect(state)?
+            .async_execution
+            .as_ref()
+            .and_then(|data| data.context.as_ref())
+            .and_then(|context| context.scopes.first())
+            .cloned()
+            .ok_or(Error::WrongKind)
+    }
+
     pub(crate) fn async_execution_module(&self, state: &Handle) -> Result<Option<Handle>, Error> {
         Ok(self
             .inspect(state)?

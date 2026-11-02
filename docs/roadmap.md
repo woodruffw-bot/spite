@@ -160,6 +160,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Run explicit constructor fields, parameters and bodies in their creation Realm while preserving caller-Realm base allocation, tail forwarding and derived-return validation; retain default class built-in contexts through iterative superclass construction.
 - [x] Reactivate saved source execution Realms for generators, async resumptions and linked Module bodies, using their retained global environment rather than a borrowed method's Realm.
 - [x] Capture and trace Promise job Realms when callbacks are enqueued, enter them before resolving-function creation, preserve revoked-Proxy error ownership and restore caller state on preflight refusal or started-job failure.
+- [x] Prepare suspended async-generator return Await in the saved source Realm while preserving the native method Realm for initial/completed returns and request Promises.
 - [x] Select constructor prototype fallbacks from newTarget's Realm across constructor families and normalize only a foreign Realm's exact intrinsic Array before species lookup.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.

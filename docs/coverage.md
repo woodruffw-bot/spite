@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Async-generator return Await Realm
+
+AsyncGeneratorUnwrapYieldResumption prepares a suspended generator's return
+argument with the saved source Realm's intrinsic Promise, then restores the
+borrowed native method's Realm. Initial and completed returns retain their
+separate native-method behavior, and request Promises still belong to that
+method's Realm.
+
+Two native groups use throwing then getters to distinguish reusing the correct
+intrinsic Promise from wrapping a foreign Promise. They cover both directions,
+initial/completed returns, finally allocations and host-abort restoration.
+All 24 focused Realm groups pass. Runtime now has 556 unit tests; integration
+and retained corpus inventories are unchanged. Public child-Realm creation
+remains unavailable pending cold Module ownership and child bootstrap integration.
+All 556 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Captured Promise job Realms
 
 Promise reaction and thenable jobs capture GetFunctionRealm at enqueue time.

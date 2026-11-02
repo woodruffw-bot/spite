@@ -968,3 +968,89 @@ fn foreign_promise_job_preflight_refusals_and_started_aborts_restore_the_caller(
     realm.limits.max_steps = None;
     assert_eq!(realm.eval("child.effects"), Ok(Value::Number(0.0)));
 }
+
+#[test]
+fn suspended_async_generator_returns_await_with_the_source_realms_promise() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var GP=Object.getPrototypeOf(async function*(){}.prototype),cleanup;
+        var gen=(async function*(){try{yield 1;}finally{cleanup=[];}})();
+        function noop(){}noop
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    realm.eval(r#"
+        let GP=Object.getPrototypeOf(async function*(){}.prototype),results=[],errors=[],gets=0,cleanup,effects=0;
+        let local=(async function*(){try{yield 1;}finally{cleanup=[];}})();
+        child.GP.next.call(local);GP.next.call(child.gen);
+    "#).unwrap();
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval(r#"
+        let p=Promise.resolve(7),q=child.Promise.resolve(8);
+        for(let v of [p,q])Object.defineProperty(v,'then',{get(){gets++;throw 99;}});
+        let a=child.GP.return.call(local,p),b=GP.return.call(child.gen,q);
+        a.then(r=>results.push(r),e=>errors.push(e));b.then(r=>results.push(r),e=>errors.push(e));
+        Object.getPrototypeOf(a)===child.Promise.prototype && Object.getPrototypeOf(b)===Promise.prototype
+    "#),Ok(Value::Boolean(true)));
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval("gets===0 && errors.length===0 && results.length===2 && results.every(r=>r.done) && results.map(r=>r.value).sort().join(',')==='7,8' && Object.getPrototypeOf(cleanup)===Array.prototype && Object.getPrototypeOf(child.cleanup)===child.Array.prototype"),Ok(Value::Boolean(true)));
+    realm
+        .eval("let aborting=(async function*(){yield 1;})();child.GP.next.call(aborting);")
+        .unwrap();
+    drain_realm_test_jobs(&mut realm);
+    realm.limits.max_steps = Some(1000);
+    assert!(matches!(realm.eval("let stuck=Promise.resolve(1);Object.defineProperty(stuck,'constructor',{get(){for(;;){}}});try{child.GP.return.call(aborting,stuck);}catch(e){effects++;}finally{effects++;}"),Err(Error::Limit{..})));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+    assert!(
+        realm
+            .objects
+            .environment(&environment)
+            .unwrap()
+            .inactive_realm
+            .is_some()
+    );
+    realm.limits.max_steps = None;
+    assert_eq!(realm.eval("effects"), Ok(Value::Number(0.0)));
+}
+
+#[test]
+fn initial_and_completed_async_generator_returns_keep_the_method_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        "var GP=Object.getPrototypeOf(async function*(){}.prototype);function noop(){}noop",
+    );
+    expose_child(&mut realm, &environment, function);
+    realm
+        .eval(
+            r#"
+        let values=[],errors=[],body=0,gets=0;
+        let fresh=(async function*(){body++;})(),finished=(async function*(){})();
+        finished.next();
+        let own=child.Promise.resolve(7),other=Promise.resolve(8);
+        Object.defineProperty(own,'then',{get(){gets++;throw 11;}});
+        Object.defineProperty(other,'then',{get(){gets++;throw 99;}});
+        child.GP.return.call(fresh,own).then(r=>values.push(r),e=>errors.push(e));
+        child.GP.return.call(finished,own).then(r=>values.push(r),e=>errors.push(e));
+    "#,
+        )
+        .unwrap();
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval("body===0 && gets===0 && errors.length===0 && values.length===2 && values.every(r=>r.done && r.value===7)"),Ok(Value::Boolean(true)));
+    realm
+        .eval("child.GP.return.call(finished,other).then(r=>values.push(r),e=>errors.push(e));")
+        .unwrap();
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval("body===0 && gets===1 && values.length===2 && errors.length===1 && errors[0]===99 && Object.getPrototypeOf([])===Array.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
