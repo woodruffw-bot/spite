@@ -94,6 +94,21 @@ impl Realm {
                 }
             }
             match callable.expect("non-Proxy constructor metadata") {
+                Callable::Builtin(builtin @ (Builtin::Symbol | Builtin::BigInt)) => {
+                    // These have [[Construct]] and are valid heritage/newTarget
+                    // values, but reject every construction before coercion or
+                    // prototype lookup (20.4.1.1, 21.2.1.1).
+                    let name = if matches!(builtin, Builtin::Symbol) {
+                        "Symbol"
+                    } else {
+                        "BigInt"
+                    };
+                    return Err(Self::exception(
+                        ExceptionKind::TypeError,
+                        span,
+                        format!("{name} cannot be constructed"),
+                    ));
+                }
                 Callable::Builtin(Builtin::Function) => {
                     return self.dynamic_function(
                         spite_parser::ast::FunctionKind::Ordinary,

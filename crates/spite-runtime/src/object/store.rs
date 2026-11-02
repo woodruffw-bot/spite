@@ -335,6 +335,8 @@ impl Objects {
                 | Builtin::WeakMap
                 | Builtin::Map
                 | Builtin::Boolean
+                | Builtin::BigInt
+                | Builtin::Symbol
                 | Builtin::Date
                 | Builtin::RegExp
                 | Builtin::Function

@@ -59,9 +59,27 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22194 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22198 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Symbol and BigInt constructor capability
+
+The edition-17 intrinsic inventory audit found that Symbol and BigInt were
+incorrectly marked as lacking [[Construct]]. Both now pass constructor checks
+for heritage, newTarget, bound functions, Proxies and Array factories. Their
+construction algorithms still reject every actual invocation before coercion
+or prototype lookup. Classes can extend either and explicitly return objects
+without calling super. Three native groups cover those distinctions, proxy
+revocation/cached capabilities, factories and observable argument ordering.
+
+Two unchanged upstream originals pass all four required modes with existing
+helpers and verified Git blob/SHA-256 hashes. Counts are 11,667 fixtures,
+twenty-six helpers, 11,582 reviewed sources, 22,198 variants and 77 controls.
+Native counts are 700 Runtime case files and 2,405 non-RegExp integrations.
+All 529 Runtime units, 2,405 non-RegExp integrations, 22,198 retained variants
+and 77 runner controls pass, together with formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and inventory checks.
 
 ## Derived constructor tail returns
 

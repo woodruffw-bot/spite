@@ -144,6 +144,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Transfer strict return/concise-arrow calls through owned requests and iterative dispatch, including conditional/logical/comma positions, with protected handlers, iterator closing and lexical disposal ordering.
 - [x] Transfer final optional-chain calls and tagged-template calls while preserving short-circuiting, receivers, template identity and argument evaluation.
 - [x] Retire derived constructor source contexts for tail calls while retaining the environment needed to validate results and initialize or retrieve this.
+- [x] Preserve Symbol/BigInt constructor capability for heritage, newTarget, bound functions, Proxies and factories while rejecting their construction before coercion or prototype lookup.
 - [x] Execute non-strict calls with object receivers and mapped arguments, including alias detachment.
 - [x] Add the ordinary global object, property-backed global bindings, globalThis, and nullish/global receivers.
 - [x] Materialize edition-17 global intrinsic metadata and implement complete ordinary global reflection, enumeration, mutation, and deletion.

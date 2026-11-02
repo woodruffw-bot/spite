@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 11665 unmodified test fixtures and twenty-six harness files come from
+These 11667 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Symbol and BigInt constructor capability
+
+Two unchanged originals verify that Symbol and BigInt have [[Construct]], even
+though invoking either with new or super throws TypeError. All four modes pass
+with existing helpers; Git blob and SHA-256 hashes match the pin. Native tests
+also cover newTarget, superclass inheritance, rejection before coercion/prototype
+lookup, bound/Proxy capabilities and Array factories.
+
+Counts are 11,667 fixtures, twenty-six helpers, 11,582 reviewed sources, 22,198
+variants and 77 controls. There are 700 Runtime case files.
 
 ## Strict tail-position audit
 

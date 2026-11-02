@@ -11579,3 +11579,5 @@ test/language/statements/try/tco-catch-finally.js	-	-	-
 test/language/statements/try/tco-catch.js	-	-	-
 test/language/statements/try/tco-finally.js	-	-	-
 test/language/statements/while/tco-body.js	-	-	-
+test/built-ins/Symbol/is-constructor.js	-	-	-
+test/built-ins/BigInt/is-a-constructor.js	-	-	-

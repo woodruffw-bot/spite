@@ -4843,6 +4843,14 @@ evaluation. It performs no coercion, waiting, or Promise work.
 
 ## Private Proxy state and dispatch boundaries
 
+Symbol and BigInt have [[Construct]] despite rejecting every invocation with a
+non-undefined NewTarget (20.4.1.1, 21.2.1.1). Their constructor capability therefore
+remains true for heritage validation, Reflect.construct newTarget checks, bound
+functions, Proxy creation and Array factories. Their construction entry points
+throw before converting arguments or reading newTarget.prototype. A class may
+extend either and return an object without calling super; invoking super still
+throws. Constructor capability and successful construction are separate checks.
+
 Proxy records retain a checked target/handler pair and the target's callable and
 constructible capabilities (10.5 and 28.2). A single optional pair represents
 revocation, so the two slots cannot be partially cleared. Revoker functions trace

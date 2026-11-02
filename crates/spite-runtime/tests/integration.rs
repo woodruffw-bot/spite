@@ -2,6 +2,9 @@
 
 mod common;
 
+#[path = "cases/constructor_capabilities.rs"]
+mod constructor_capabilities;
+
 #[path = "cases/tail_calls.rs"]
 mod tail_calls;
 
