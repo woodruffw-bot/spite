@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Inactive Realm record tracing
+
+Realm records retain their checked global-environment identity. An inactive
+Realm's data can live in a boxed slot on that environment, and ordinary heap
+tracing follows its global object, hidden intrinsics and cached templates.
+Cold initialization failure clears the cached identity with its partial scope.
+
+A new same-agent GC fixture retains a native function after setting its
+prototype to null and removing its public paths. The function's creation-Realm
+edge preserves the inactive global object, a removed intrinsic constructor and
+a cached tagged-template Array. Dropping the function root collects the entire
+child graph and restores the 591-entry parent graph. The test passes; Runtime
+unit count is 532. Integration/corpus inventories are unchanged. No JavaScript
+child-Realm API or execution activation is exposed yet.
+All 532 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and all fixture inventories.
+
 ## Invocation completion before forwarding
 
 Call dispatch now finishes one invocation before the outer loop forwards to

@@ -1167,11 +1167,13 @@ impl Realm {
             self.push_scope(std::collections::BTreeMap::new(), span)?;
         }
         let realm = self.scopes[0].clone();
+        self.record.global_environment = Some(realm.clone());
         let result = self
             .object_work(span, |objects, _| objects.set_active_function_realm(&realm))
             .and_then(|()| self.create_object_intrinsics(span));
         if result.is_err() && bootstrap_scope {
             self.scopes.clear();
+            self.record.global_environment = None;
             self.objects.clear_active_function_realm();
         }
         result

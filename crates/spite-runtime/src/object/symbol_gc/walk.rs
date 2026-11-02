@@ -75,6 +75,7 @@ pub(super) fn symbols(
         Entry::Environment(environment) => {
             let Environment {
                 outer: _,
+                inactive_realm,
                 bindings,
                 // Module aliases own only record handles and immutable names.
                 imports: _,
@@ -88,6 +89,19 @@ pub(super) fn symbols(
                 // Only a handle to the separately scanned resource list.
                 disposable_resources: _,
             } = environment;
+            if let Some(realm) = inactive_realm {
+                // Only checked handles, immutable text and native host data.
+                // Keep the inventory exhaustive when Realm fields are added.
+                let crate::realm_record::RealmRecord {
+                    global_environment: _,
+                    global_object: _,
+                    intrinsics: _,
+                    template_map: _,
+                    unsupported_host_globals: _,
+                    supported_import_attributes: _,
+                    time_zone: _,
+                } = realm.as_ref();
+            }
             for value in bindings.values() {
                 visit(value.value.as_ref().and_then(symbol))?;
             }

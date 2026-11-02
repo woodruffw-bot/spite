@@ -903,6 +903,7 @@ impl Objects {
         Ok(EnvironmentHandle(self.heap.insert(Entry::Environment(
             Environment {
                 outer,
+                inactive_realm: None,
                 bindings,
                 imports: BTreeMap::new(),
                 private_names: BTreeMap::new(),

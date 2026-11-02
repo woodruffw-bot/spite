@@ -26,6 +26,8 @@ pub(crate) enum ThisBinding {
 #[derive(Debug)]
 pub(crate) struct Environment {
     pub outer: Option<EnvironmentHandle>,
+    // A global environment owns its Realm data while that Realm is inactive.
+    pub inactive_realm: Option<Box<crate::realm_record::RealmRecord>>,
     pub bindings: BTreeMap<String, BindingState>,
     pub imports: BTreeMap<String, crate::module::ModuleBinding>,
     // Transparent class-body records supply a separate private namespace.
@@ -56,6 +58,7 @@ pub(crate) struct FunctionContext {
 impl Trace for Environment {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         std::iter::once(self.outer.as_ref().map(|outer| &outer.0))
+            .chain(self.inactive_realm.iter().flat_map(|realm| realm.trace()))
             .chain(std::iter::once(self.binding_object.as_ref()))
             .chain(std::iter::once(self.new_target.as_ref()))
             .chain(std::iter::once(self.home_object.as_ref()))

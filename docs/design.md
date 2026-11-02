@@ -4912,5 +4912,13 @@ agent control and current source execution state stay outside that record. Field
 access is explicit; no shared ownership, interior mutability or pointer access
 is needed to move the Realm data as a unit. This grouping does not yet expose
 child Realms or switch execution between them.
+The record also keeps its checked global-environment identity. A global
+environment has an optional boxed record for inactive Realm data; tracing that
+record retains the global object, hidden intrinsic handles and cached template
+arrays even after public properties are removed. These are ordinary traced
+handle cycles, so dropping the last external function root lets the whole
+inactive Realm be collected. Active root scans and the initialized heap count
+are unchanged. A native same-agent fixture exercises this storage; JavaScript
+child-Realm creation and function Realm activation remain unavailable.
 Resource quotas remain opt-in. The owned-record grouping preserves the current
 initialized Realm's 591 heap entries.
