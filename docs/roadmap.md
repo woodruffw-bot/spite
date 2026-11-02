@@ -367,6 +367,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Check the 70 JavaScript-reachable base intrinsic objects from the edition-17 table for names, arities, prototype relationships, constructor capability and distinct identities within and across Realms.
 - [x] Audit the published intrinsic property headings across concrete NativeError/TypedArray families for own-property presence, data/method/accessor roles, non-enumerability and built-in function metadata attributes and constructor capability.
 - [x] Check exact names/arities for 456 published method/accessor entries and six specified aliases; give BigInt.prototype.toString its zero arity, distinct from Number.prototype.toString.
+- [x] Check all writable/configurable attributes in the published property inventory, including explicit clause overrides and absent getter/setter defaults.
 
 ## 5. Modules and suspended execution
 

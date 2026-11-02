@@ -217,4 +217,112 @@ for(let [label,value,target] of [
   ["Set.keys",Set.prototype.keys,Set.prototype.values],
   ["Set.iterator",Set.prototype[Symbol.iterator],Set.prototype.values]
 ])if(value!==target)propertyFailures.push(label+":alias");
+// Section 17 defaults, with the individual clauses' explicit attribute overrides.
+let propertyAttributeOverrides=new Map();
+for(let [owner,keys,writable,configurable] of [
+["Object",["prototype"],false,false],
+["Function",["prototype"],false,false],
+["Function.prototype",["@@hasInstance"],false,false],
+["Boolean",["prototype"],false,false],
+["Symbol",["asyncIterator","hasInstance","isConcatSpreadable","iterator","match","matchAll","prototype","replace","search","species","split","toPrimitive","toStringTag","unscopables"],false,false],
+["Symbol.prototype",["@@toPrimitive","@@toStringTag"],false,true],
+["Error",["prototype"],false,false],
+["EvalError",["prototype"],false,false],
+["RangeError",["prototype"],false,false],
+["ReferenceError",["prototype"],false,false],
+["SyntaxError",["prototype"],false,false],
+["TypeError",["prototype"],false,false],
+["URIError",["prototype"],false,false],
+["AggregateError",["prototype"],false,false],
+["Number",["EPSILON","MAX_SAFE_INTEGER","MAX_VALUE","MIN_SAFE_INTEGER","MIN_VALUE","NaN","NEGATIVE_INFINITY","POSITIVE_INFINITY","prototype"],false,false],
+["BigInt",["prototype"],false,false],
+["BigInt.prototype",["@@toStringTag"],false,true],
+["Math",["E","LN10","LN2","LOG10E","LOG2E","PI","SQRT1_2","SQRT2"],false,false],
+["Math",["@@toStringTag"],false,true],
+["Date",["prototype"],false,false],
+["Date.prototype",["@@toPrimitive"],false,true],
+["String",["prototype"],false,false],
+["intrinsicObjects[\"StringIteratorPrototype\"]",["@@toStringTag"],false,true],
+["RegExp",["prototype"],false,false],
+["intrinsicObjects[\"RegExpStringIteratorPrototype\"]",["@@toStringTag"],false,true],
+["Array",["prototype"],false,false],
+["Array.prototype",["@@unscopables"],false,true],
+["intrinsicObjects[\"ArrayIteratorPrototype\"]",["@@toStringTag"],false,true],
+["TA",["prototype"],false,false],
+["Int8Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Uint8Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Uint8ClampedArray",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Int16Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Uint16Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Int32Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Uint32Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["BigInt64Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["BigUint64Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Float16Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Float32Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Float64Array",["BYTES_PER_ELEMENT","prototype"],false,false],
+["Int8Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Uint8Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Uint8ClampedArray.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Int16Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Uint16Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Int32Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Uint32Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["BigInt64Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["BigUint64Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Float16Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Float32Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Float64Array.prototype",["BYTES_PER_ELEMENT"],false,false],
+["Map",["prototype"],false,false],
+["Map.prototype",["@@toStringTag"],false,true],
+["intrinsicObjects[\"MapIteratorPrototype\"]",["@@toStringTag"],false,true],
+["Set",["prototype"],false,false],
+["Set.prototype",["@@toStringTag"],false,true],
+["intrinsicObjects[\"SetIteratorPrototype\"]",["@@toStringTag"],false,true],
+["WeakMap",["prototype"],false,false],
+["WeakMap.prototype",["@@toStringTag"],false,true],
+["WeakSet",["prototype"],false,false],
+["WeakSet.prototype",["@@toStringTag"],false,true],
+["ArrayBuffer",["prototype"],false,false],
+["ArrayBuffer.prototype",["@@toStringTag"],false,true],
+["SharedArrayBuffer",["prototype"],false,false],
+["SharedArrayBuffer.prototype",["@@toStringTag"],false,true],
+["DataView",["prototype"],false,false],
+["DataView.prototype",["@@toStringTag"],false,true],
+["Atomics",["@@toStringTag"],false,true],
+["JSON",["@@toStringTag"],false,true],
+["WeakRef",["prototype"],false,false],
+["WeakRef.prototype",["@@toStringTag"],false,true],
+["FinalizationRegistry",["prototype"],false,false],
+["FinalizationRegistry.prototype",["@@toStringTag"],false,true],
+["intrinsicObjects[\"IteratorHelperPrototype\"]",["@@toStringTag"],false,true],
+["Iterator",["prototype"],false,false],
+["Promise",["prototype"],false,false],
+["Promise.prototype",["@@toStringTag"],false,true],
+["GeneratorFunction",["prototype"],false,false],
+["GeneratorFunction.prototype",["constructor","prototype","@@toStringTag"],false,true],
+["AsyncGeneratorFunction",["prototype"],false,false],
+["AsyncGeneratorFunction.prototype",["constructor","prototype","@@toStringTag"],false,true],
+["intrinsicObjects[\"GeneratorPrototype\"]",["constructor","@@toStringTag"],false,true],
+["intrinsicObjects[\"AsyncGeneratorPrototype\"]",["constructor","@@toStringTag"],false,true],
+["AsyncFunction",["prototype"],false,false],
+["AsyncFunction.prototype",["constructor","@@toStringTag"],false,true],
+["Reflect",["@@toStringTag"],false,true],
+])for(let key of keys)propertyAttributeOverrides.set(owner+":"+key,{writable,configurable});
+for(let [label,owner,methods,getters,setters,data] of propertyRows){
+  for(let [kind,keys] of [["method",methods],["getter",getters],["setter",setters],["data",data]]){
+    for(let name of keys){
+      let key=name.startsWith("@@")?Symbol[name.slice(2)]:name;
+      let d=Object.getOwnPropertyDescriptor(owner,key),override=propertyAttributeOverrides.get(label+":"+name);
+      let expectedConfigurable=override?override.configurable:true;
+      if(d.configurable!==expectedConfigurable)propertyFailures.push(label+":"+name+":configurable");
+      if(kind==="data"||kind==="method"){
+        let expectedWritable=override?override.writable:true;
+        if(d.writable!==expectedWritable)propertyFailures.push(label+":"+name+":writable");
+      }
+      if(kind==="getter"&&!setters.includes(name)&&d.set!==undefined)propertyFailures.push(label+":"+name+":unexpected-setter");
+      if(kind==="setter"&&!getters.includes(name)&&d.get!==undefined)propertyFailures.push(label+":"+name+":unexpected-getter");
+    }
+  }
+}
 JSON.stringify({checked:propertyCount,functions:builtinMetadataCount,failures:propertyFailures});

@@ -63,6 +63,17 @@ not an alternative language specification.
 
 
 
+## Complete published property attributes
+
+The reference inventory also checks writable/configurable attributes for all
+646 property roles, using section 17's defaults and 136 differing explicit
+overrides from the individual clauses. Getter-only properties must have no
+setter, and setter-only properties must have no getter. The diagnostic probe
+found no mismatches. This extends the existing native regression without
+changing production code, upstream fixtures or inventory counts.
+The extended native regression passes all checks; formatting, strict Clippy,
+dependency policy and fixture inventories pass.
+
 ## Exact built-in names/arities and BigInt formatter arity
 
 The property inventory now checks exact names and arities for 456 method/accessor
