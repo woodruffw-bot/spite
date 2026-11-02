@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 11667 unmodified test fixtures and twenty-six harness files come from
+These 11671 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## BigInt formatter metadata
+
+Four unchanged originals verify BigInt.prototype.toString's zero length, name,
+property descriptor and lack of [[Construct]]. All eight modes pass using the
+existing helpers; every source matches its pinned Git blob and SHA-256 digest.
+The native published-property inventory also checks exact names/arities for 456
+method/accessor entries and the identities of six specified aliases.
+
+Counts are 11,671 fixtures, twenty-six helpers, 11,586 reviewed sources, 22,206
+variants and 77 controls. Runtime case files remain 700.
 
 ## Symbol and BigInt constructor capability
 

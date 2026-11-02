@@ -40,7 +40,9 @@ fn published_intrinsic_properties_have_their_specified_roles() {
         .unwrap();
     assert_eq!(
         realm.eval(include_str!("fixtures/edition17_intrinsic_properties.js")),
-        Ok(Value::String("{\"checked\":646,\"failures\":[]}".into()))
+        Ok(Value::String(
+            "{\"checked\":646,\"functions\":456,\"failures\":[]}".into()
+        ))
     );
 }
 

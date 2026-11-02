@@ -818,7 +818,6 @@ impl Builtin {
             | Self::FunctionBind
             | Self::Boolean
             | Self::BigInt
-            | Self::BigIntToString
             | Self::Array
             | Self::ArrayIsArray
             | Self::ArrayFrom

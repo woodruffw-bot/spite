@@ -59,9 +59,27 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22198 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22206 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Exact built-in names/arities and BigInt formatter arity
+
+The property inventory now checks exact names and arities for 456 method/accessor
+entries and the identities of six specified aliases. Expectations follow the
+published headings, section 17's required-parameter rule and explicit individual
+overrides. This found BigInt.prototype.toString incorrectly exposing length 1;
+it now exposes 0, while Number.prototype.toString retains its explicitly specified
+length 1. An existing native test that encoded the wrong value is corrected.
+
+Four unchanged upstream originals cover the BigInt method's length, name,
+descriptor and non-constructor status. All eight modes pass with existing
+helpers and verified pinned Git blob/SHA-256 hashes. Counts are 11,671 fixtures,
+twenty-six helpers, 11,586 reviewed sources, 22,206 variants and 77 controls.
+Runtime counts remain 531 units, 700 case files and 2,407 non-RegExp groups.
+All 531 Runtime units, 2,407 non-RegExp integration groups, the full 22,206-variant
+corpus and 77 controls pass, along with formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and all fixture inventories.
 
 ## Published intrinsic property inventory
 
@@ -70,8 +88,8 @@ intrinsic owners, expanding the specification's NativeError and TypedArray
 templates. It verifies own-property presence, non-enumerability and data versus
 method/getter/setter roles. Method and accessor functions must inherit from
 Function.prototype, lack [[Construct]], and expose the standard name/length
-property attributes. This checks inventory and metadata; it does not establish
-the behavior of every algorithm or verify every function's name/arity value.
+property attributes. Exact names/arities are checked by the extension above;
+inventory and metadata checks do not establish every algorithm's behavior.
 
 The audit explicitly excludes Annex B web features, the normative-optional
 legacy Object accessors, and the internal-only AsyncFromSync/ForIn iterator

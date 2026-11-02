@@ -210,7 +210,7 @@ fn observable_tags_and_ordinary_coercions_use_the_exposed_prototype() {
 #[test]
 fn intrinsics_have_standard_descriptors_and_survive_collection() {
     check(
-        "BigInt.name==='BigInt' && BigInt.length===1 && BigInt.prototype.constructor===BigInt && BigInt.prototype.toString.length===1 && BigInt.prototype.valueOf.length===0 && BigInt.prototype.toLocaleString.length===0",
+        "BigInt.name==='BigInt' && BigInt.length===1 && BigInt.prototype.constructor===BigInt && BigInt.prototype.toString.length===0 && BigInt.prototype.valueOf.length===0 && BigInt.prototype.toLocaleString.length===0",
     );
     check(
         "let d=Object.getOwnPropertyDescriptor(BigInt,'prototype'),t=Object.getOwnPropertyDescriptor(BigInt.prototype,Symbol.toStringTag);!d.writable && !d.enumerable && !d.configurable && !t.writable && !t.enumerable && t.configurable && t.value==='BigInt'",

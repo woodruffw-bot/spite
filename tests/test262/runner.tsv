@@ -11581,3 +11581,7 @@ test/language/statements/try/tco-finally.js	-	-	-
 test/language/statements/while/tco-body.js	-	-	-
 test/built-ins/Symbol/is-constructor.js	-	-	-
 test/built-ins/BigInt/is-a-constructor.js	-	-	-
+test/built-ins/BigInt/prototype/toString/length.js	-	-	-
+test/built-ins/BigInt/prototype/toString/name.js	-	-	-
+test/built-ins/BigInt/prototype/toString/not-a-constructor.js	-	-	-
+test/built-ins/BigInt/prototype/toString/prop-desc.js	-	-	-
