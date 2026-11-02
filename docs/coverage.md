@@ -63,6 +63,26 @@ not an alternative language specification.
 
 
 
+## Captured Promise job Realms
+
+Promise reaction and thenable jobs capture GetFunctionRealm at enqueue time.
+An already revoked callback uses the enqueueing Realm; pending reactions select
+their Realm when settled. Jobs trace the saved global environment even after
+Proxy revocation removes the target edge. Job entry precedes creation of native
+resolve/reject functions, and every preflight refusal or started-job outcome
+restores the caller's record, source context and work allowance.
+
+Four native groups check resolving-function and Proxy argument-array prototypes,
+bound/Proxy callback traversal, revocation before/after enqueue, pending
+settlement, GC retention and eventual release of the saved Realm, queue rollback
+and started host-abort behavior. All 22 focused Realm groups pass. Runtime now
+has 554 unit tests; integration and retained corpus inventories are unchanged.
+Public child-Realm creation remains unavailable pending Module ownership,
+async-generator return Await preparation and child bootstrap integration.
+All 554 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Saved source execution Realm activation
 
 Resumable source execution enters the Realm identified by its saved global

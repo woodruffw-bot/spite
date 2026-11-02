@@ -1,6 +1,9 @@
 //! Promise construction, resolution, capabilities and protocol dispatch (27.2).
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::PromiseReaction};
+use crate::{
+    Error, ExceptionKind, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
+    object::PromiseReaction,
+};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod aggregate;
@@ -22,38 +25,38 @@ pub enum PromiseJobOutcome {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) enum PromiseJob {
+pub(crate) struct PromiseJob {
+    kind: PromiseJobKind,
+    realm: Option<EnvironmentHandle>,
+    module: Option<ObjectHandle>,
+}
+
+#[derive(Clone, Debug)]
+enum PromiseJobKind {
     Thenable {
         promise: ObjectHandle,
         thenable: ObjectHandle,
         then: ObjectHandle,
-        module: Option<ObjectHandle>,
     },
     Reaction {
         reaction: PromiseReaction,
         argument: Value,
-        module: Option<ObjectHandle>,
     },
 }
 
 impl PromiseJob {
     fn module(&self) -> Option<&ObjectHandle> {
-        match self {
-            Self::Thenable { module, .. } | Self::Reaction { module, .. } => module.as_ref(),
-        }
+        self.module.as_ref()
     }
 
     pub(crate) fn roots(&self) -> impl Iterator<Item = &ObjectHandle> {
-        let roots = match self {
-            Self::Thenable {
+        let roots = match &self.kind {
+            PromiseJobKind::Thenable {
                 promise,
                 thenable,
                 then,
-                ..
             } => [Some(promise), Some(thenable), Some(then), None, None],
-            Self::Reaction {
-                reaction, argument, ..
-            } => {
+            PromiseJobKind::Reaction { reaction, argument } => {
                 fn object(value: &Value) -> Option<&ObjectHandle> {
                     if let Value::Object(value) = value {
                         Some(value)
@@ -71,7 +74,11 @@ impl PromiseJob {
                 ]
             }
         };
-        roots.into_iter().flatten().chain(self.module())
+        roots
+            .into_iter()
+            .flatten()
+            .chain(self.module())
+            .chain(self.realm.as_ref().map(|realm| &realm.0))
     }
 }
 
@@ -313,14 +320,7 @@ impl Realm {
         if let Some((reaction, argument)) = self.object_work(span, |objects, budget| {
             objects.add_promise_reactions(promise, fulfill, reject, budget)
         })? {
-            self.enqueue_promise_job(
-                PromiseJob::Reaction {
-                    reaction,
-                    argument,
-                    module: self.active_module.clone(),
-                },
-                span,
-            )?;
+            self.enqueue_promise_job(PromiseJobKind::Reaction { reaction, argument }, span)?;
         }
         Ok(result)
     }
@@ -339,19 +339,37 @@ impl Realm {
             let argument = self.object_work(span, |objects, budget| {
                 objects.promise_result(promise, budget)
             })?;
-            self.enqueue_promise_job(
-                PromiseJob::Reaction {
-                    reaction,
-                    argument,
-                    module: self.active_module.clone(),
-                },
-                span,
-            )?;
+            self.enqueue_promise_job(PromiseJobKind::Reaction { reaction, argument }, span)?;
         }
         Ok(())
     }
 
-    fn enqueue_promise_job(&mut self, job: PromiseJob, span: Span) -> Result<(), Error> {
+    fn enqueue_promise_job(&mut self, kind: PromiseJobKind, span: Span) -> Result<(), Error> {
+        let callback = match &kind {
+            PromiseJobKind::Thenable { then, .. } => Some(then),
+            PromiseJobKind::Reaction { reaction, .. } => match &reaction.handler {
+                Value::Object(handler) => Some(handler),
+                _ => None,
+            },
+        };
+        // NewPromiseReactionJob / NewPromiseResolveThenableJob (27.2.2):
+        // capture the callback's Realm now, before later Proxy revocation.
+        // An already revoked callback uses the enqueueing context's Realm.
+        let realm = match callback {
+            None => None,
+            Some(callback) => match self.function_realm_environment(callback, span) {
+                Ok(realm) => realm.or_else(|| self.record.global_environment.clone()),
+                Err(error) if error.is_language_exception() => {
+                    self.record.global_environment.clone()
+                }
+                Err(error) => return Err(error),
+            },
+        };
+        let job = PromiseJob {
+            kind,
+            realm,
+            module: self.active_module.clone(),
+        };
         let moved = if self.promise_jobs.len() == self.promise_jobs.capacity() {
             self.promise_jobs.len()
         } else {
@@ -494,11 +512,10 @@ impl Realm {
             unreachable!("callable object")
         };
         self.enqueue_promise_job(
-            PromiseJob::Thenable {
+            PromiseJobKind::Thenable {
                 promise,
                 thenable,
                 then,
-                module: self.active_module.clone(),
             },
             span,
         )?;
@@ -555,9 +572,24 @@ impl Realm {
         // Allocation never collects. Temporarily owning the front job avoids
         // copying arbitrary reaction arguments; rollback cannot allocate.
         let job = self.promise_jobs.pop_front().expect("queued job");
+        // Enter before CreateResolvingFunctions so their observable prototype
+        // and immutable owner belong to the captured job Realm. Entry and
+        // preflight refusals preserve the queue and caller context.
+        let transition = match job.realm.as_ref() {
+            Some(realm) => match self.enter_function_realm(realm, span) {
+                Ok(transition) => transition,
+                Err(error) => {
+                    self.promise_jobs.push_front(job);
+                    self.remaining_steps = caller_work;
+                    return Err(error);
+                }
+            },
+            None => None,
+        };
+
         let prepared = (|| -> Result<_, Error> {
             self.object_work(span, |_, budget| budget.charge(job.roots().count() + 1))?;
-            let count = if matches!(job, PromiseJob::Thenable { .. }) {
+            let count = if matches!(&job.kind, PromiseJobKind::Thenable { .. }) {
                 2
             } else {
                 1
@@ -570,7 +602,7 @@ impl Realm {
                     span,
                     message: "Promise job argument capacity exceeded".into(),
                 })?;
-            let reject = if let PromiseJob::Thenable { promise, .. } = &job {
+            let reject = if let PromiseJobKind::Thenable { promise, .. } = &job.kind {
                 let (resolve, reject) = self.promise_resolving_functions(promise, span)?;
                 arguments.push(resolve);
                 arguments.push(reject.clone());
@@ -583,6 +615,9 @@ impl Realm {
         let (reject, mut arguments) = match prepared {
             Ok(prepared) => prepared,
             Err(error) => {
+                let error = self
+                    .leave_function_realm::<()>(transition, Err(error))
+                    .expect_err("preflight failed");
                 self.promise_jobs.push_front(job);
                 self.remaining_steps = caller_work;
                 return Err(error);
@@ -599,8 +634,8 @@ impl Realm {
         let caller_module = std::mem::replace(&mut self.active_module, job.module().cloned());
         self.job_active = true;
         let result = (|| -> Result<(), Error> {
-            match job {
-                PromiseJob::Thenable { thenable, then, .. } => {
+            match job.kind {
+                PromiseJobKind::Thenable { thenable, then, .. } => {
                     if let Err(error) = self.call(
                         Value::Object(then),
                         Value::Object(thenable),
@@ -616,9 +651,7 @@ impl Realm {
                         )?;
                     }
                 }
-                PromiseJob::Reaction {
-                    reaction, argument, ..
-                } => {
+                PromiseJobKind::Reaction { reaction, argument } => {
                     let handler = reaction.handler.clone();
                     let completion = if matches!(reaction.handler, Value::Undefined) {
                         if reaction.fulfill {
@@ -654,8 +687,9 @@ impl Realm {
         self.job_active = false;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
-        self.remaining_steps = caller_work;
         debug_assert_eq!(self.scopes.len(), caller_scope_depth);
+        let result = self.leave_function_realm(transition, result);
+        self.remaining_steps = caller_work;
         debug_assert_eq!((self.call_depth, self.evaluation_depth), (0, 0));
         Ok(match result {
             Ok(()) => PromiseJobOutcome::Completed,

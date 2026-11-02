@@ -766,3 +766,205 @@ fn linked_foreign_module_context_uses_its_defining_global_environment() {
     assert_eq!(realm.scopes.len(), 1);
     assert_eq!(realm.call_depth, 0);
 }
+
+#[test]
+fn thenable_jobs_create_resolving_functions_and_proxy_arguments_in_the_captured_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var seen=[];
+        function then(resolve,reject){seen.push(Object.getPrototypeOf(resolve)===Function.prototype && Object.getPrototypeOf(reject)===Function.prototype);resolve(7);}
+        Object.setPrototypeOf(then,null);then
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let values=[],trapRealm=false;
+        let bound=Function.prototype.bind.call(foreign,null);
+        let wrapped=new Proxy(bound,{apply(t,v,args){trapRealm=Object.getPrototypeOf(args)===child.Array.prototype;return Reflect.apply(t,v,args);}});
+        Promise.resolve({then:foreign}).then(x=>values.push(x));
+        Promise.resolve({then:wrapped}).then(x=>values.push(x));
+        child.seen.length===0 && values.length===0
+    "#),Ok(Value::Boolean(true)));
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(realm.eval("child.seen.length===2 && child.seen.every(Boolean) && values.join(',')==='7,7' && trapRealm && Object.getPrototypeOf([])===Array.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
+fn promise_job_realms_capture_revocation_at_enqueue_and_pending_settlement() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var release,pending=new Promise(r=>release=r);
+        function handler(x){return x;}handler
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    realm
+        .eval(
+            r#"
+        let seen=[];
+        function watch(p,E,label){p.catch(e=>seen.push([label,e instanceof E]));}
+        let later=Proxy.revocable(foreign,{});
+        watch(Promise.resolve(1).then(later.proxy),child.TypeError,'reaction-later');
+        watch(Promise.resolve({then:later.proxy}),child.TypeError,'thenable-later');
+        later.revoke();
+        let earlier=Proxy.revocable(foreign,{});earlier.revoke();
+        watch(Promise.resolve(1).then(earlier.proxy),TypeError,'reaction-before-parent');
+        watch(child.Promise.resolve(1).then(earlier.proxy),child.TypeError,'reaction-before-child');
+        watch(Promise.resolve({then:earlier.proxy}),TypeError,'thenable-before-parent');
+        watch(child.Promise.resolve({then:earlier.proxy}),child.TypeError,'thenable-before-child');
+        let pending=Proxy.revocable(x=>x,{});
+        watch(child.pending.then(pending.proxy),child.TypeError,'pending-settlement');
+        pending.revoke();child.release(7);
+    "#,
+        )
+        .unwrap();
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(
+        realm.eval(
+            "seen.length===7 && seen.every(x=>x[1]) && Object.getPrototypeOf([])===Array.prototype"
+        ),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+}
+
+#[test]
+fn queued_job_realm_retains_an_inactive_record_after_proxy_revocation_and_gc() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        "function then(resolve){resolve(7);}Object.setPrototypeOf(then,null);then",
+    );
+    let expected = realm
+        .objects
+        .environment(&environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap()
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .errors
+        .entries
+        .iter()
+        .find(|error| error.kind == crate::function::error::ErrorConstructor::TypeError)
+        .unwrap()
+        .prototype
+        .clone();
+    expose(&mut realm, "foreign", function);
+    realm.eval("var pair=Proxy.revocable(foreign,{}),p=Promise.resolve({then:pair.proxy}),reason;p.catch(e=>reason=e);delete globalThis.foreign;pair.revoke();").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    assert!(realm.objects.inspect(&expected).is_ok());
+    drain_realm_test_jobs(&mut realm);
+    let Value::Object(reason) = realm.eval("reason").unwrap() else {
+        panic!("missing rejection")
+    };
+    assert_eq!(
+        realm.inspect_object(&reason).unwrap().prototype(),
+        Some(&expected)
+    );
+    realm
+        .eval("pair=undefined;p=undefined;reason=undefined;")
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_err());
+    assert!(realm.objects.inspect(&expected).is_err());
+}
+
+#[test]
+fn foreign_promise_job_preflight_refusals_and_started_aborts_restore_the_caller() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var called=0,effects=0;
+        function then(resolve){called++;resolve(7);}
+        var loop=function(){try{for(;;){}}finally{effects++;}};
+        then
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    realm
+        .eval("var answer,p=Promise.resolve({then:foreign});p.then(x=>answer=x);")
+        .unwrap();
+    let count = realm.promise_jobs.len();
+    let caller_work = realm.remaining_steps;
+    realm.limits.max_steps = Some(0);
+    assert!(matches!(
+        realm.run_next_promise_job(),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.promise_jobs.len(), count);
+    assert_eq!(realm.remaining_steps, caller_work);
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    realm.limits.max_steps = None;
+    realm.limits.max_arguments = Some(1);
+    assert!(matches!(
+        realm.run_next_promise_job(),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.promise_jobs.len(), count);
+    assert_eq!(realm.remaining_steps, caller_work);
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert!(
+        realm
+            .objects
+            .environment(&environment)
+            .unwrap()
+            .inactive_realm
+            .is_some()
+    );
+    realm.limits.max_arguments = None;
+    drain_realm_test_jobs(&mut realm);
+    assert_eq!(
+        realm.eval("answer===7 && child.called===1"),
+        Ok(Value::Boolean(true))
+    );
+    realm.eval("Promise.resolve({then:child.loop});").unwrap();
+    realm.limits.max_steps = Some(1000);
+    assert!(matches!(
+        realm.run_next_promise_job(),
+        Ok(crate::PromiseJobOutcome::Reported(Error::Limit { .. }))
+    ));
+    assert!(realm.promise_jobs.is_empty());
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert!(
+        realm
+            .objects
+            .environment(&environment)
+            .unwrap()
+            .inactive_realm
+            .is_some()
+    );
+    assert!(!realm.job_active);
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+    realm.limits.max_steps = None;
+    assert_eq!(realm.eval("child.effects"), Ok(Value::Number(0.0)));
+}
