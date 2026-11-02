@@ -8,6 +8,15 @@ use crate::{
 };
 use spite_core::Span;
 
+#[derive(Debug)]
+#[must_use = "restore this transition with leave_function_realm"]
+pub(super) struct RealmTransition {
+    previous: EnvironmentHandle,
+    target: EnvironmentHandle,
+    context: SourceExecutionContext,
+    tail_scope: Option<usize>,
+}
+
 impl Realm {
     // GetPrototypeFromConstructor uses newTarget's intrinsic graph, independently
     // of the constructor algorithm's current Realm (10.1.14, 7.3.24).
@@ -55,6 +64,19 @@ impl Realm {
     ) -> Result<T, Error> {
         if self.record.global_environment.as_ref() == Some(target) {
             return execute(self);
+        }
+        let transition = self.enter_function_realm(target, span)?;
+        let result = execute(self);
+        self.leave_function_realm(transition, result)
+    }
+
+    pub(super) fn enter_function_realm(
+        &mut self,
+        target: &EnvironmentHandle,
+        span: Span,
+    ) -> Result<Option<RealmTransition>, Error> {
+        if self.record.global_environment.as_ref() == Some(target) {
+            return Ok(None);
         }
         let current = self
             .record
@@ -105,41 +127,63 @@ impl Realm {
             .expect("validated target global environment");
         let tail_scope = self.tail_scope.take();
         let context = SourceExecutionContext {
-            scopes,
-            variable: Some(target.clone()),
-            strict: false,
+            scopes: std::mem::replace(&mut self.scopes, scopes),
+            variable: self.variable_environment.replace(target.clone()),
+            strict: std::mem::replace(&mut self.strict, false),
             // Builtin contexts have null ScriptOrModule; GetActiveScriptOrModule
             // still sees the suspended caller. Source drivers install their own.
             module: self.active_module.clone(),
         };
-        let result = self.with_source_execution_context(context, |realm| {
-            match execute(realm) {
-                Err(error @ Error::Exception { .. }) => {
-                    // Create the language Error object before leaving its Realm.
-                    match realm.language_exception_value(error) {
-                        Ok(value) => Err(Error::Thrown(value)),
-                        Err(error) => Err(error),
-                    }
+        Ok(Some(RealmTransition {
+            previous: current,
+            target: target.clone(),
+            context,
+            tail_scope,
+        }))
+    }
+
+    pub(super) fn leave_function_realm<T>(
+        &mut self,
+        transition: Option<RealmTransition>,
+        result: Result<T, Error>,
+    ) -> Result<T, Error> {
+        let Some(transition) = transition else {
+            return result;
+        };
+        debug_assert_eq!(
+            self.record.global_environment.as_ref(),
+            Some(&transition.target)
+        );
+        let result = match result {
+            Err(error @ Error::Exception { .. }) => {
+                // Create the language Error object before leaving its Realm.
+                match self.language_exception_value(error) {
+                    Ok(value) => Err(Error::Thrown(value)),
+                    Err(error) => Err(error),
                 }
-                result => result,
             }
-        });
+            result => result,
+        };
         let mut inactive = self
             .objects
-            .environment_mut(&current)
+            .environment_mut(&transition.previous)
             .expect("active caller environment remains live")
             .inactive_realm
             .take()
             .expect("caller Realm was saved");
         std::mem::swap(&mut self.record, inactive.as_mut());
         self.objects
-            .environment_mut(target)
+            .environment_mut(&transition.target)
             .expect("target environment remains live")
             .inactive_realm = Some(inactive);
         self.objects
-            .set_active_function_realm(&current)
+            .set_active_function_realm(&transition.previous)
             .expect("caller environment remains live");
-        self.tail_scope = tail_scope;
+        self.scopes = transition.context.scopes;
+        self.variable_environment = transition.context.variable;
+        self.strict = transition.context.strict;
+        self.active_module = transition.context.module;
+        self.tail_scope = transition.tail_scope;
         result
     }
 }

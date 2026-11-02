@@ -323,3 +323,35 @@ fn array_species_normalizes_only_the_other_realms_exact_intrinsic_array() {
         Ok(Value::Boolean(true))
     );
 }
+
+#[test]
+fn iterative_realm_transitions_unwind_foreign_errors_to_the_original_caller() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function Foreign(){}Foreign");
+    expose_child(&mut realm, &environment, function);
+    let parent = realm.record.global_environment.clone().unwrap();
+    let span = Span::new(0, 0);
+    let mut transitions = Vec::new();
+    for index in 0..2049 {
+        let target = if index % 2 == 0 {
+            &environment
+        } else {
+            &parent
+        };
+        transitions.push(realm.enter_function_realm(target, span).unwrap());
+    }
+    let mut result = realm.eval("null.x");
+    for transition in transitions.into_iter().rev() {
+        result = realm.leave_function_realm(transition, result);
+    }
+    let Err(Error::Thrown(error)) = result else {
+        panic!("the foreign exception must be materialized before its Realm is removed")
+    };
+    expose(&mut realm, "caught", error);
+    assert_eq!(
+        realm.eval("caught instanceof child.TypeError && !(caught instanceof TypeError)"),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(realm.record.global_environment.as_ref(), Some(&parent));
+    assert_eq!(realm.scopes.len(), 1);
+}

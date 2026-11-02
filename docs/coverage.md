@@ -63,6 +63,23 @@ not an alternative language specification.
 
 
 
+## Owned Realm transition state
+
+Realm entry/exit now returns and consumes owned transition state. The scoped
+function-call wrapper uses these primitives, preserving same-Realm fast paths,
+caller scopes/variables/strictness/module fallback, factory ownership and tail
+state. Exit materializes foreign typed exceptions before restoring the caller.
+This lets iterative algorithms retain suspended contexts without Rust recursion.
+
+A new native group enters 2,049 alternating transitions, raises a JavaScript
+TypeError and unwinds them in a loop. The original caller is restored and the
+error retains its foreign TypeError prototype. All eight Realm groups, three
+2 MiB guards and eleven existing tail groups pass. Runtime unit count is 540;
+integration/corpus inventories and public child-Realm availability are unchanged.
+All 540 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass. Formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and fixture inventories also pass.
+
 ## Constructor prototype Realm selection and Array species
 
 GetPrototypeFromConstructor selects a missing/non-object prototype's fallback

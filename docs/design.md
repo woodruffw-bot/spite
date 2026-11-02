@@ -4931,6 +4931,12 @@ The computed caller ScriptOrModule fallback is preserved for built-ins (9.4.1,
 become Error objects before their Realm is removed. Host failures restore state
 and bypass language handlers. The outer call loop forwards only after record
 restoration, so alternating-Realm tail calls do not grow the native stack.
+Entry and exit are also available as owned transition state, containing the
+checked previous/target keys, caller source context and tail-call state. The
+scoped call wrapper uses the same primitives. A caller can retain and unwind
+these values iteratively; the values do not borrow the interpreter and cannot
+be cloned. Same-Realm entries keep the existing fast path. Exit materializes a
+typed foreign exception before restoring the owned record and caller fields.
 Constructor execution-context activation, foreign source resumption and
 queued-job Realm selection remain incomplete; the Test262 createRealm facility
 stays unavailable until those paths are ready.
