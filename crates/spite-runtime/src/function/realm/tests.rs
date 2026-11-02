@@ -1281,3 +1281,127 @@ fn native_string_iterator_context_retains_then_releases_a_realm_after_prototype_
         realm.scopes.first()
     );
 }
+
+#[test]
+fn iterator_helper_families_resume_the_creation_realm_and_complete_in_the_method_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let failures=[];
+        let sample=[1].values().map(x=>x),other=child.Iterator.prototype.map.call([1].values(),x=>x);
+        let next=Object.getPrototypeOf(sample).next,foreignNext=Object.getPrototypeOf(other).next;
+        let factories=[
+            ['map',it=>it.map(x=>x),it=>child.Iterator.prototype.map.call(it,x=>x)],
+            ['filter',it=>it.filter(()=>true),it=>child.Iterator.prototype.filter.call(it,()=>true)],
+            ['flatMap',it=>it.flatMap(x=>[x]),it=>child.Iterator.prototype.flatMap.call(it,x=>[x])],
+            ['take',it=>it.take(1),it=>child.Iterator.prototype.take.call(it,1)],
+            ['drop',it=>it.drop(0),it=>child.Iterator.prototype.drop.call(it,0)],
+            ['concat',it=>Iterator.concat(it),it=>child.Iterator.concat(it)]
+        ];
+        for(let [name,own,foreign] of factories){
+            let a=own([1].values()),b=foreign([1].values());
+            Object.setPrototypeOf(a,Object.getPrototypeOf(other));Object.setPrototypeOf(b,null);
+            let x=foreignNext.call(a),y=next.call(b);
+            if(x.value!==1 || x.done || Object.getPrototypeOf(x)!==Object.prototype)failures.push(name+':parent');
+            if(y.value!==1 || y.done || Object.getPrototypeOf(y)!==child.Object.prototype)failures.push(name+':child');
+            x=foreignNext.call(a);y=next.call(b);
+            if(!x.done || Object.getPrototypeOf(x)!==child.Object.prototype || !y.done || Object.getPrototypeOf(y)!==Object.prototype)failures.push(name+':done');
+        }
+        JSON.stringify(failures)
+    "#),Ok(Value::String("[]".into())));
+}
+
+#[test]
+fn helper_body_errors_initial_return_and_reentry_preserve_their_distinct_realms() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let failures=[],sample=[1].values().map(x=>x),other=child.Iterator.prototype.map.call([1].values(),x=>x);
+        let P=Object.getPrototypeOf(sample),C=Object.getPrototypeOf(other);
+        let make=it=>child.Iterator.prototype.map.call(it,x=>x);
+        function expect(f,E,label){try{f();failures.push(label+':missing');}catch(e){if(!(e instanceof E))failures.push(label+':realm');}}
+        expect(()=>P.next.call(make({next:1})),child.TypeError,'not-callable');
+        expect(()=>P.next.call(make({next(){return 1;}})),child.TypeError,'primitive-result');
+        expect(()=>P.next.call(child.Iterator.prototype.map.call([1].values(),()=>null.x)),TypeError,'callback');
+        function input(){return {next(){return {value:1,done:false};},return:1};}
+        expect(()=>P.return.call(make(input())),TypeError,'initial-return');
+        let yielded=make(input());P.next.call(yielded);
+        expect(()=>P.return.call(yielded),child.TypeError,'yielded-return');
+        let root=Iterator.prototype.map.call(input(),x=>x);
+        expect(()=>C.return.call(root),child.TypeError,'initial-return-child-method');
+        root=Iterator.prototype.map.call(input(),x=>x);C.next.call(root);
+        expect(()=>C.return.call(root),TypeError,'yielded-return-parent-closure');
+        let reentrant,entered=0;
+        reentrant=child.Iterator.prototype.map.call([1].values(),x=>{
+            expect(()=>P.next.call(reentrant),TypeError,'executing-parent-method');
+            expect(()=>C.next.call(reentrant),child.TypeError,'executing-child-method');entered++;return x;
+        });
+        P.next.call(reentrant);
+        if(entered!==1)failures.push('callback-count');
+        JSON.stringify(failures)
+    "#),Ok(Value::String("[]".into())));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
+fn iterator_helper_context_retains_then_releases_its_realm_without_prototype_or_callback_edges() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        "function make(it,cb){return Iterator.prototype.map.call(it,cb);}make",
+    );
+    let prototype = realm
+        .objects
+        .environment(&environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap()
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .object_prototype
+        .clone();
+    expose(&mut realm, "foreignMake", function);
+    realm.eval("var helper=foreignMake([1].values(),x=>x);delete globalThis.foreignMake;Object.setPrototypeOf(helper,null);var next=Object.getPrototypeOf([].values().map(x=>x)).next;").unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    let Value::Object(result) = realm.eval("next.call(helper)").unwrap() else {
+        panic!("yield result")
+    };
+    assert_eq!(
+        realm.inspect_object(&result).unwrap().prototype(),
+        Some(&prototype)
+    );
+    assert_eq!(
+        realm.eval("next.call(helper).done"),
+        Ok(Value::Boolean(true))
+    );
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_err());
+    assert!(realm.objects.inspect(&prototype).is_err());
+    assert_eq!(
+        realm.eval("next.call(helper).done"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn recursive_foreign_helper_callbacks_keep_the_two_mebibyte_guard_and_restore_realms() {
+    std::thread::Builder::new().stack_size(2*1024*1024).spawn(||{
+        let mut realm=Realm::default();
+        let (environment,function)=child_realm_fixture(&mut realm,"function noop(){}noop");
+        expose_child(&mut realm,&environment,function);
+        assert!(matches!(realm.eval("var effects=0,calls=0;function again(){calls++;return child.Iterator.prototype.map.call([1].values(),again).next().value;}try{again();}catch(e){effects++;}finally{effects++;}"),Err(Error::Limit{..})));
+        assert_eq!(realm.eval("effects===0 && calls>0"),Ok(Value::Boolean(true)));
+        assert_eq!(realm.record.global_environment.as_ref(),realm.scopes.first());
+        assert_eq!(realm.scopes.len(),1);
+        assert_eq!(realm.call_depth,0);
+    }).unwrap().join().unwrap();
+}

@@ -63,6 +63,26 @@ not an alternative language specification.
 
 
 
+## Iterator Helper closure Realms
+
+Iterator Helpers retain and trace the Realm in which their closure was created.
+Borrowed next/return methods execute active closures there and allocate yielded
+results before restoring the method's Realm for completion. Initial return still
+closes directly in the method's Realm. Brand/executing checks precede activation;
+prepaid state cleanup releases contexts on every outcome, including host aborts.
+
+Four native groups cover all six helper families in both directions, mutable
+prototypes, body/callback error identity, initial versus yielded return, executing
+reentry, GC retention/release with prototype/callback edges removed, and recursive
+foreign callbacks on a 2 MiB thread. The principal test reported twelve yield-Realm
+failures before the fix; all 33 focused Realm groups now pass. Runtime has 565 unit
+tests; integration and corpus inventories are unchanged. Public child-Realm
+creation remains unavailable pending finalization cleanup Realm integration and
+child bootstrap.
+All 565 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Native Map, Set and String iterator Realms
 
 Map, Set and String iterator closures now retain and trace their creation Realm.

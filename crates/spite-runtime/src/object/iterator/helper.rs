@@ -1,7 +1,7 @@
 //! Native iterator-helper suspension state and traced captures (27.1.2).
 
 use super::{Budget, Error, IteratorState, IteratorWrapper, Objects};
-use crate::iterator_count::Counter;
+use crate::{environment::EnvironmentHandle, iterator_count::Counter};
 use spite_heap::{Handle, Trace};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -65,6 +65,7 @@ pub(crate) enum HelperClosure {
 
 #[derive(Debug)]
 pub(crate) struct IteratorHelper {
+    pub realm: Option<EnvironmentHandle>,
     pub status: HelperStatus,
     pub(in crate::object) closure: Option<HelperClosure>,
 }
@@ -129,6 +130,7 @@ impl IteratorHelper {
                     state.iterated.next.trace().next().flatten(),
                 ]
             }))
+            .chain(self.realm.iter().map(|realm| Some(&realm.0)))
     }
 }
 
@@ -148,9 +150,11 @@ impl Objects {
                 return Err(Error::NotCallable);
             }
         }
+        let realm = self.active_function_realm()?;
         let helper = self.create(Some(prototype))?;
         self.object_mut(&helper)?.iterator =
             Some(IteratorState::Helper(Box::new(IteratorHelper {
+                realm,
                 status: HelperStatus::SuspendedStart,
                 closure: Some(HelperClosure::Concat(ConcatIterator {
                     sources,
@@ -179,9 +183,11 @@ impl Objects {
         if !self.inspect(&callback)?.is_callable() {
             return Err(Error::NotCallable);
         }
+        let realm = self.active_function_realm()?;
         let helper = self.create(Some(prototype))?;
         self.object_mut(&helper)?.iterator =
             Some(IteratorState::Helper(Box::new(IteratorHelper {
+                realm,
                 status: HelperStatus::SuspendedStart,
                 closure: Some(HelperClosure::Callback(CallbackIterator {
                     iterated,
@@ -209,9 +215,11 @@ impl Objects {
         if let crate::Value::Object(next) = &iterated.next {
             self.inspect(next)?;
         }
+        let realm = self.active_function_realm()?;
         let helper = self.create(Some(prototype))?;
         self.object_mut(&helper)?.iterator =
             Some(IteratorState::Helper(Box::new(IteratorHelper {
+                realm,
                 status: HelperStatus::SuspendedStart,
                 closure: Some(HelperClosure::Limit(LimitIterator {
                     iterated,
@@ -269,6 +277,7 @@ impl Objects {
         } else {
             state.status = HelperStatus::Completed;
             state.closure = None;
+            state.realm = None;
         }
         Ok(())
     }

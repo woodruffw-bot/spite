@@ -163,7 +163,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Prepare suspended async-generator return Await in the saved source Realm while preserving the native method Realm for initial/completed returns and request Promises.
 - [x] Retain a Source Text Module's immutable creation Realm before linking, trace that Realm from cold records and select its global environment independently of the linking caller.
 - [x] Retain and trace Map, Set and String iterator closure Realms, allocate yields in those Realms and completed results in the native method's Realm, independently of mutable prototypes.
-- [ ] Preserve Iterator Helper closure Realms across borrowed resume methods, including yield/completion and initial-return boundaries, before exposing child-Realm creation.
+- [x] Preserve Iterator Helper closure Realms across borrowed resume methods, including yield/completion, initial-return, executing-state error and capture-release boundaries.
+- [ ] Retain FinalizationRegistry creation Realms and run queued cleanup in the specified job Realm before exposing child-Realm creation.
 - [ ] Expose same-Agent Test262 child Realms with independent globals/intrinsics and preserve caller work allowance, source context and host choices through bootstrap failures.
 - [x] Select constructor prototype fallbacks from newTarget's Realm across constructor families and normalize only a foreign Realm's exact intrinsic Array before species lookup.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.

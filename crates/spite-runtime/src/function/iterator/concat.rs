@@ -74,9 +74,18 @@ impl Realm {
         let Value::Object(helper) = receiver else {
             return Err(brand_error());
         };
-        let previous = self
+        let (previous, owner) = self
             .object_work(span, |objects, budget| {
-                objects.begin_iterator_helper(&helper, budget)
+                let Some(previous) = objects.begin_iterator_helper(&helper, budget)? else {
+                    return Ok(None);
+                };
+                let owner = objects
+                    .inspect(&helper)?
+                    .iterator_helper()
+                    .expect("validated helper")
+                    .realm
+                    .clone();
+                Ok(Some((previous, owner)))
             })?
             .ok_or_else(brand_error)?;
         match previous {
@@ -110,12 +119,12 @@ impl Realm {
             }
             return self.iterator_result(Value::Undefined, true, span);
         }
-        let result = (|| {
+        let execute = |realm: &mut Self| {
             let value = if return_method {
-                self.iterator_helper_close_yielded(&helper, span)?;
+                realm.iterator_helper_close_yielded(&helper, span)?;
                 None
             } else {
-                let (callback, limit) = self.object_work(span, |objects, _| {
+                let (callback, limit) = realm.object_work(span, |objects, _| {
                     let state = objects.inspect(&helper)?.iterator_helper().expect("helper");
                     Ok((
                         state.callback().map(|state| state.kind),
@@ -123,28 +132,38 @@ impl Realm {
                     ))
                 })?;
                 if callback == Some(CallbackKind::FlatMap) {
-                    self.iterator_flat_map_step(&helper, span)?
+                    realm.iterator_flat_map_step(&helper, span)?
                 } else if callback.is_some() {
-                    self.iterator_callback_step(&helper, span)?
+                    realm.iterator_callback_step(&helper, span)?
                 } else if limit {
-                    self.iterator_limit_step(&helper, span)?
+                    realm.iterator_limit_step(&helper, span)?
                 } else {
-                    self.concat_step(&helper, span)?
+                    realm.concat_step(&helper, span)?
                 }
             };
-            let yielded = value.is_some();
-            self.iterator_result(value.unwrap_or(Value::Undefined), !yielded, span)
-                .map(|result| (result, yielded))
-        })();
+            match value {
+                Some(value) => realm.iterator_result(value, false, span).map(Some),
+                None => Ok(None),
+            }
+        };
+        let result = match owner {
+            Some(owner) => self.with_function_realm(&owner, span, execute),
+            None => execute(self),
+        };
         // State transition and capture release were prepaid before this resume.
         // This non-allocating cleanup must
         // run even after a host quota failure, without calling JavaScript cleanup.
         // Internal handles remain valid throughout a resume; collection occurs
         // only between host operations. Captures stayed traced while executing.
         self.objects
-            .finish_iterator_helper(&helper, matches!(&result, Ok((_, true))))
+            .finish_iterator_helper(&helper, matches!(&result, Ok(Some(_))))
             .expect("validated executing helper");
-        result.map(|(value, _)| value)
+        // GeneratorStart creates its completion result after popping the
+        // closure context, unlike a yielded result (27.5.3.1).
+        match result? {
+            Some(result) => Ok(result),
+            None => self.iterator_result(Value::Undefined, true, span),
+        }
     }
 
     fn concat_step(&mut self, helper: &ObjectHandle, span: Span) -> Result<Option<Value>, Error> {
