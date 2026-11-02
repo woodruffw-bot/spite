@@ -24,25 +24,26 @@ impl Realm {
         span: Span,
     ) -> Result<CallOutcome, Error> {
         // 13.3.6.2: callers evaluate arguments before entering this callable check.
-        let (callable, proxy) = if let Value::Object(object) = &function {
+        let (callable, proxy, creation_realm) = if let Value::Object(object) = &function {
             self.object_work(span, |objects, budget| {
                 // Capability is immutable, including for revoked Proxies.
                 if !objects.inspect(object)?.is_callable() {
-                    return Ok((None, None));
+                    return Ok((None, None, None));
                 }
                 let proxy = objects.proxy_state(object, budget)?;
                 if proxy.is_some() {
-                    return Ok((None, proxy));
+                    return Ok((None, proxy, None));
                 }
                 let callable = objects
                     .inspect(object)?
                     .callable()
                     .map(|callable| callable.copy_with_budget(budget))
                     .transpose()?;
-                Ok((callable, None))
+                let creation_realm = objects.inspect(object)?.function_realm().cloned();
+                Ok((callable, None, creation_realm))
             })?
         } else {
-            (None, None)
+            (None, None, None)
         };
         if let Some(proxy) = proxy {
             match self.proxy_call(proxy, &this, arguments.as_slice(), span)? {
@@ -84,7 +85,13 @@ impl Realm {
                 span,
             ));
         }
-        self.call_concrete(function, callable, this, arguments, span)
+        if let Some(realm) = creation_realm {
+            self.with_function_realm(&realm, span, |realm| {
+                realm.call_concrete(function, callable, this, arguments, span)
+            })
+        } else {
+            self.call_concrete(function, callable, this, arguments, span)
+        }
     }
 
     fn call_concrete(

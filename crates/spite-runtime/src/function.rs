@@ -26,6 +26,7 @@ mod invoke;
 mod tail_call;
 pub(crate) use tail_call::{CallOutcome, TailCall};
 mod generator;
+mod realm;
 mod shared_array_buffer;
 mod source_context;
 pub(crate) use call::CallTarget;

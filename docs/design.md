@@ -4910,15 +4910,25 @@ The interpreter keeps the global object, intrinsic graph, template registry and
 Realm-specific host settings in one owned RealmRecord. Heap storage, job queues,
 agent control and current source execution state stay outside that record. Field
 access is explicit; no shared ownership, interior mutability or pointer access
-is needed to move the Realm data as a unit. This grouping does not yet expose
-child Realms or switch execution between them.
+is needed to move the Realm data as a unit. Same-agent child-Realm creation is
+not yet exposed through JavaScript or the public host API.
 The record also keeps its checked global-environment identity. A global
 environment has an optional boxed record for inactive Realm data; tracing that
 record retains the global object, hidden intrinsic handles and cached template
 arrays even after public properties are removed. These are ordinary traced
 handle cycles, so dropping the last external function root lets the whole
 inactive Realm be collected. Active root scans and the initialized heap count
-are unchanged. A native same-agent fixture exercises this storage; JavaScript
-child-Realm creation and function Realm activation remain unavailable.
+are unchanged. Native same-agent fixtures exercise this storage.
+Concrete [[Call]] dispatch activates the function's recorded Realm after Proxy
+and bound forwarding. It validates and pays for a foreign transition before
+moving state, swaps the active record with an existing inactive Box, and uses
+the shared source-context driver to restore scopes, strictness and variables.
+The computed caller ScriptOrModule fallback is preserved for built-ins (9.4.1,
+10.3); source drivers install their defining context. Typed foreign exceptions
+become Error objects before their Realm is removed. Host failures restore state
+and bypass language handlers. The outer call loop forwards only after record
+restoration, so alternating-Realm tail calls do not grow the native stack.
+Constructor fallback and queued-job Realm selection remain incomplete; the
+Test262 createRealm facility stays unavailable until those paths are ready.
 Resource quotas remain opt-in. The owned-record grouping preserves the current
 initialized Realm's 591 heap entries.

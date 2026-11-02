@@ -154,6 +154,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Record and trace concrete functions' creation Realm through checked global-environment handles, independently of mutable prototypes and bound/Proxy forwarding.
 - [x] Group globals, intrinsic handles, template caches and Realm-specific host choices in an owned Realm record, separate from the heap, jobs and current execution state.
 - [x] Trace inactive Realm records from their checked global environments, retaining hidden intrinsics and cached templates through function ownership and collecting unretained Realm cycles.
+- [x] Activate concrete functions' creation Realms for [[Call]], preserve caller context through Proxy/bound resolution, materialize foreign errors before restoration and restore owned records before tail forwarding.
 - [x] Add Boolean calls/construction, prototype methods, wrappers, and Boolean boxed receivers.
 - [x] Add Number calls/construction, wrappers, constants, predicates, and decimal formatting.
 - [x] Add String calls/construction, UTF-16 indexed wrappers, branded methods, and boxed receivers.

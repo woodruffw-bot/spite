@@ -63,6 +63,31 @@ not an alternative language specification.
 
 
 
+## Function creation Realm activation
+
+Concrete [[Call]] dispatch now activates the function's immutable creation Realm,
+reusing owned boxed records and restoring caller source state before forwarding.
+Proxy and bound-function algorithms retain the caller context until they select
+a concrete target. Typed exceptions are materialized with the foreign intrinsic
+Error prototype before restoration; thrown values keep their identities and
+host failures bypass language handlers without leaving foreign state active.
+
+Four native groups cover ordinary and native result prototypes, non-strict this
+boxing, dynamic Function global scope, TypeError/SyntaxError identity, exact
+throws, unsupported/work-limit aborts, 4,096/4,097 alternating tail calls, Proxy
+argument Arrays, null-prototype bound forwarding and template identity after GC.
+The shared native Realm fixture uses the configured source work allowance;
+production quotas and conformance settings are unchanged. All four groups,
+the existing Realm/GC checks, three 2 MiB guards and eleven tail groups pass.
+Runtime unit count is 536; integration and corpus inventories are unchanged.
+All 536 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass. Formatting, strict Clippy, MSRV,
+CLI/doc tests, dependency policy and fixture inventories also pass.
+
+These fixtures exercise same-agent records internally. Public child-Realm
+creation, foreign constructor fallbacks and queued-job Realm selection remain
+incomplete; no cross-Realm Test262 credit or new host facility is added.
+
 ## Inactive Realm record tracing
 
 Realm records retain their checked global-environment identity. An inactive
