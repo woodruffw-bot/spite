@@ -132,7 +132,13 @@ impl Realm {
                 .last()
                 .map_or(0, |statement| statement.span.end),
         );
-        let global = self.scopes.first().expect("global environment").clone();
+        // InitializeEnvironment uses module.[[Realm]].[[GlobalEnv]], even
+        // when another Realm drives the module graph's linking (16.2.1.6.1).
+        let global = self
+            .objects
+            .module_realm(record)
+            .map_err(Error::InvalidObject)?
+            .clone();
         let mut bindings = BTreeMap::new();
         for name in body.var_declarations() {
             self.tick(name.span)?;

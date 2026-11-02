@@ -18,6 +18,7 @@ pub(crate) enum ModuleLinkState {
 #[derive(Debug)]
 pub(super) struct ModuleData {
     source: Module,
+    realm: EnvironmentHandle,
     environment: Option<EnvironmentHandle>,
     evaluation: Option<Value>,
     namespace: Option<Value>,
@@ -44,6 +45,7 @@ impl ModuleData {
         self.environment
             .iter()
             .map(|environment| Some(&environment.0))
+            .chain(std::iter::once(Some(&self.realm.0)))
             .chain(self.values().flat_map(Trace::trace))
             .chain(self.dependencies.iter().flatten().map(Some))
             .chain(
@@ -242,9 +244,13 @@ impl Objects {
         budget.charge(source.statements().len())?;
         budget.charge(source.imports().len())?;
         budget.charge(source.exports().len())?;
+        // Source Text Module [[Realm]] is fixed at ParseModule, before linking
+        // has created its environment (16.2.1.6). The factory hint is checked.
+        let realm = self.active_function_realm()?.ok_or(Error::WrongKind)?;
         let record = self.create(None)?;
         self.object_mut(&record)?.module_record = Some(Box::new(ModuleData {
             source,
+            realm,
             environment: None,
             evaluation: None,
             namespace: None,
@@ -254,6 +260,15 @@ impl Objects {
             execution: None,
         }));
         Ok(record)
+    }
+
+    pub(crate) fn module_realm(&self, record: &Handle) -> Result<&EnvironmentHandle, Error> {
+        Ok(&self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .realm)
     }
 
     pub(crate) fn module_source(&self, record: &Handle) -> Result<&Module, Error> {

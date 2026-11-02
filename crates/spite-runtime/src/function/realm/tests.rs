@@ -1054,3 +1054,130 @@ fn initial_and_completed_async_generator_returns_keep_the_method_realm() {
         realm.scopes.first()
     );
 }
+
+#[test]
+fn cold_module_records_retain_their_creation_realm_before_cross_realm_linking() {
+    let mut realm = Realm::default();
+    let (environment, _) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    let child_record = realm
+        .objects
+        .environment(&environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap();
+    let child_global = child_record.global_object.clone().unwrap();
+    let child_array = child_record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .array
+        .prototype
+        .clone();
+    let parent_promise = realm
+        .record
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .global_metadata
+        .promise_prototype
+        .clone();
+    let module = realm
+        .with_function_realm(&environment, Span::new(0, 0), |realm| {
+            realm.create_module("globalThis.cold=[];export function value(){return [];}")
+        })
+        .unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    realm.link_module(&module).unwrap();
+    let Value::Object(promise) = realm.evaluate_module_record(&module).unwrap() else {
+        panic!("evaluation Promise")
+    };
+    // Evaluate creates its top-level capability in the caller's Realm.
+    assert_eq!(
+        realm.inspect_object(&promise).unwrap().prototype(),
+        Some(&parent_promise)
+    );
+    let namespace = realm.module_namespace(&module).unwrap();
+    let Value::Object(namespace) = namespace else {
+        panic!("namespace")
+    };
+    let function = realm
+        .get_property(
+            &namespace,
+            &spite_core::JsString::from("value"),
+            Span::new(0, 0),
+        )
+        .unwrap();
+    let Value::Object(array) = realm
+        .call(function, Value::Undefined, vec![], Span::new(0, 0))
+        .unwrap()
+    else {
+        panic!("export result")
+    };
+    assert_eq!(
+        realm.inspect_object(&array).unwrap().prototype(),
+        Some(&child_array)
+    );
+    let Value::Object(cold) = realm
+        .get_property(
+            &child_global,
+            &spite_core::JsString::from("cold"),
+            Span::new(0, 0),
+        )
+        .unwrap()
+    else {
+        panic!("child global effect")
+    };
+    assert_eq!(
+        realm.inspect_object(&cold).unwrap().prototype(),
+        Some(&child_array)
+    );
+    assert_eq!(
+        realm.eval("typeof cold"),
+        Ok(Value::String("undefined".into()))
+    );
+    drop(module);
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_err());
+    assert!(realm.objects.inspect(&child_global).is_err());
+    assert!(realm.objects.inspect(&child_array).is_err());
+}
+
+#[test]
+fn cross_realm_module_dependencies_keep_their_own_environments_through_await() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    let dependency = realm
+        .with_function_realm(&environment, Span::new(0, 0), |realm| {
+            realm.create_module(
+                "globalThis.childBefore=[];await 0;export function value(){return [];}",
+            )
+        })
+        .unwrap();
+    let module = realm
+        .create_module(
+            "import {value} from 'child';globalThis.parentAfter=[];export const result=value();",
+        )
+        .unwrap();
+    realm
+        .load_module_graph(&module, |_, _| Ok(dependency.clone()))
+        .unwrap();
+    drop(dependency);
+    realm.link_module(&module).unwrap();
+    realm.evaluate_module_record(&module).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    drain_realm_test_jobs(&mut realm);
+    let namespace = realm.module_namespace(&module).unwrap();
+    expose(&mut realm, "moduleNamespace", namespace);
+    assert_eq!(realm.eval("Object.getPrototypeOf(child.childBefore)===child.Array.prototype && Object.getPrototypeOf(parentAfter)===Array.prototype && Object.getPrototypeOf(moduleNamespace.result)===child.Array.prototype && typeof childBefore==='undefined' && child.parentAfter===undefined"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert_eq!(realm.scopes.len(), 1);
+    assert_eq!(realm.call_depth, 0);
+}

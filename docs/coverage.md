@@ -63,6 +63,25 @@ not an alternative language specification.
 
 
 
+## Cold Module creation Realm ownership
+
+Source Text Module records now retain and trace their immutable creation Realm
+before a Module environment exists. Linking selects that Realm's global
+environment; declaration instantiation and execution use the existing saved
+source context machinery. Evaluate's top-level Promise capability retains its
+specified caller-Realm behavior.
+
+Two native groups retain an unlinked foreign Module through idle GC, link and
+evaluate it from the parent, check exported function/global allocation ownership,
+and collect the dropped Realm cycle. A mixed-Realm dependency graph also keeps
+each Module's globals through top-level Await and GC. All 26 focused Realm
+groups pass. Runtime now has 558 unit tests; integration and corpus inventories
+are unchanged. Public child-Realm creation remains unavailable pending the
+native iterator closure audit and child bootstrap integration.
+All 558 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Async-generator return Await Realm
 
 AsyncGeneratorUnwrapYieldResumption prepares a suspended generator's return
