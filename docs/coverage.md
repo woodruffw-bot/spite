@@ -63,6 +63,20 @@ not an alternative language specification.
 
 
 
+## Published base-intrinsic inventory
+
+A reference fixture derived from the pinned edition-17 intrinsic table checks
+all 55 global entries and 15 JavaScript-reachable hidden entries. It verifies
+function names/arities, prototype relationships, constructor capability and
+distinct identities, then checks all 70 objects have separate identities in a
+second Realm. The internal-only AsyncFromSyncIteratorPrototype and optimized
+For-In iterator state are excluded from this public reflection check.
+
+This adds one native integration group without changing production code or
+upstream fixtures. Runtime counts are 700 case files and 2,406 non-RegExp groups;
+the retained corpus remains 22,198 variants and 77 controls. The new regression
+passes in both Realms; formatting, strict Clippy, policy and all inventories pass.
+
 ## Symbol and BigInt constructor capability
 
 The edition-17 intrinsic inventory audit found that Symbol and BigInt were

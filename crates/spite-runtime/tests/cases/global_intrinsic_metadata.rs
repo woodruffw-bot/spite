@@ -13,6 +13,26 @@ fn check(source: &str) {
 }
 
 #[test]
+fn published_intrinsic_inventory_has_correct_roles_and_realm_local_identities() {
+    let source = include_str!("fixtures/edition17_intrinsic_inventory.js");
+    let mut first = Realm::default();
+    let mut second = Realm::default();
+    for realm in [&mut first, &mut second] {
+        assert_eq!(
+            realm.eval(source),
+            Ok(Value::String("{\"checked\":70,\"failures\":[]}".into()))
+        );
+    }
+    for index in 0..70 {
+        let source = format!("rows[{index}][1]");
+        let one = first.eval(&source).unwrap();
+        let two = second.eval(&source).unwrap();
+        assert!(matches!((&one, &two), (Value::Object(_), Value::Object(_))));
+        assert_ne!(one, two, "intrinsic identity at table row {index}");
+    }
+}
+
+#[test]
 fn deferred_intrinsic_metadata_graph_matches_edition_17() {
     let result = Realm::default().eval(r#"
         let rows=[],graph=[];

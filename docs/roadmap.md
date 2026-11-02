@@ -363,6 +363,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement ordinary-buffer Atomics integer access and read-modify-write operations, isLockFree, notify, and non-shared wait rejection with ordered conversions and live buffer checks.
 - [x] Add Atomics.pause with a native processor spin-loop hint and standard zero-arity metadata.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
+- [x] Check the 70 JavaScript-reachable base intrinsic objects from the edition-17 table for names, arities, prototype relationships, constructor capability and distinct identities within and across Realms.
 
 ## 5. Modules and suspended execution
 
