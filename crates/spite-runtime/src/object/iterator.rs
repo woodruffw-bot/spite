@@ -1,6 +1,7 @@
 //! Built-in iterator state and source retention (22.1.3.36, 23.1.5, 27.1.3.2.2).
 
 use super::{Budget, Error, Objects, Value};
+use crate::environment::EnvironmentHandle;
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 
@@ -37,6 +38,12 @@ impl IteratorState {
                 Some(state.next.trace().next().flatten()),
             ),
         };
+        let realm = match self {
+            Self::Map(state) => state.realm.as_ref(),
+            Self::Set(state) => state.realm.as_ref(),
+            Self::String(state) => state.realm.as_ref(),
+            _ => None,
+        };
         let helper = match self {
             Self::Helper(state) => Some(state),
             _ => None,
@@ -44,6 +51,7 @@ impl IteratorState {
         std::iter::once(first)
             .chain(second)
             .chain(helper.into_iter().flat_map(|state| state.trace()))
+            .chain(realm.map(|realm| Some(&realm.0)))
     }
 }
 
@@ -69,6 +77,7 @@ pub(crate) struct ArrayIterator {
 
 #[derive(Clone, Debug)]
 pub(crate) struct MapIterator {
+    pub realm: Option<EnvironmentHandle>,
     pub map: Option<Handle>,
     pub next_index: usize,
     pub kind: ArrayIterationKind,
@@ -76,6 +85,7 @@ pub(crate) struct MapIterator {
 
 #[derive(Clone, Debug)]
 pub(crate) struct SetIterator {
+    pub realm: Option<EnvironmentHandle>,
     pub set: Option<Handle>,
     pub next_index: usize,
     pub kind: ArrayIterationKind,
@@ -83,6 +93,7 @@ pub(crate) struct SetIterator {
 
 #[derive(Debug)]
 pub(crate) struct StringIterator {
+    pub realm: Option<EnvironmentHandle>,
     string: Option<JsString>,
     next_index: usize,
 }
@@ -97,8 +108,11 @@ impl Objects {
         if !self.inspect(set)?.is_set() {
             return Err(Error::WrongKind);
         }
+        // CreateIteratorFromClosure captures the current Realm (27.5.3.8).
+        let realm = self.active_function_realm()?;
         let iterator = self.create(Some(prototype))?;
         self.object_mut(&iterator)?.iterator = Some(IteratorState::Set(SetIterator {
+            realm,
             set: Some(set.clone()),
             next_index: 0,
             kind,
@@ -118,6 +132,7 @@ impl Objects {
             state.next_index = index;
         } else {
             state.set = None;
+            state.realm = None;
         }
         Ok(())
     }
@@ -131,8 +146,11 @@ impl Objects {
         if !self.inspect(map)?.is_map() {
             return Err(Error::WrongKind);
         }
+        // CreateIteratorFromClosure captures the current Realm (27.5.3.8).
+        let realm = self.active_function_realm()?;
         let iterator = self.create(Some(prototype))?;
         self.object_mut(&iterator)?.iterator = Some(IteratorState::Map(MapIterator {
+            realm,
             map: Some(map.clone()),
             next_index: 0,
             kind,
@@ -152,6 +170,7 @@ impl Objects {
             state.next_index = index;
         } else {
             state.map = None;
+            state.realm = None;
         }
         Ok(())
     }
@@ -189,8 +208,11 @@ impl Objects {
         prototype: &Handle,
         string: JsString,
     ) -> Result<Handle, Error> {
+        // CreateIteratorFromClosure captures the current Realm (27.5.3.8).
+        let realm = self.active_function_realm()?;
         let iterator = self.create(Some(prototype))?;
         self.object_mut(&iterator)?.iterator = Some(IteratorState::String(StringIterator {
+            realm,
             string: Some(string),
             next_index: 0,
         }));
@@ -214,6 +236,7 @@ impl Objects {
         };
         if state.next_index >= string.len() {
             state.string = None;
+            state.realm = None;
             return Ok(None);
         }
         let index = state.next_index;

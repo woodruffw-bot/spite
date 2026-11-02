@@ -82,23 +82,36 @@ impl Realm {
         let Some(map) = state.map else {
             return self.iterator_result(Value::Undefined, true, span);
         };
-        let next = self.object_work(span, |objects, budget| {
-            objects.map_next(&map, state.next_index, budget)
-        })?;
-        let Some((index, key, value)) = next else {
-            self.object_work(span, |objects, _| {
-                objects.update_map_iterator(&iterator, None)
+        let owner = state.realm;
+        let execute = |realm: &mut Self| {
+            let next = realm.object_work(span, |objects, budget| {
+                objects.map_next(&map, state.next_index, budget)
             })?;
-            return self.iterator_result(Value::Undefined, true, span);
+            let Some((index, key, value)) = next else {
+                realm.object_work(span, |objects, _| {
+                    objects.update_map_iterator(&iterator, None)
+                })?;
+                return Ok(None);
+            };
+            realm.object_work(span, |objects, _| {
+                objects.update_map_iterator(&iterator, Some(index))
+            })?;
+            let result = match state.kind {
+                ArrayIterationKind::Key => key,
+                ArrayIterationKind::Value => value,
+                ArrayIterationKind::KeyValue => realm.create_array_from_list([key, value], span)?,
+            };
+            realm.iterator_result(result, false, span).map(Some)
         };
-        self.object_work(span, |objects, _| {
-            objects.update_map_iterator(&iterator, Some(index))
-        })?;
-        let result = match state.kind {
-            ArrayIterationKind::Key => key,
-            ArrayIterationKind::Value => value,
-            ArrayIterationKind::KeyValue => self.create_array_from_list([key, value], span)?,
-        };
-        self.iterator_result(result, false, span)
+        let yielded = match owner {
+            Some(owner) => self.with_function_realm(&owner, span, execute),
+            None => execute(self),
+        }?;
+        // GeneratorStart restores the native method context before allocating
+        // the final result; yields were allocated in the closure's Realm.
+        match yielded {
+            Some(result) => Ok(result),
+            None => self.iterator_result(Value::Undefined, true, span),
+        }
     }
 }

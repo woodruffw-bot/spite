@@ -46,15 +46,32 @@ impl Realm {
         let Value::Object(iterator) = receiver else {
             return Err(brand_error());
         };
-        if !self.object_work(span, |objects, _| {
-            Ok(objects.inspect(&iterator)?.string_iterator().is_some())
-        })? {
-            return Err(brand_error());
+        let owner = self
+            .object_work(span, |objects, _| {
+                Ok(objects
+                    .inspect(&iterator)?
+                    .string_iterator()
+                    .map(|state| state.realm.clone()))
+            })?
+            .ok_or_else(brand_error)?;
+        let execute = |realm: &mut Self| {
+            let result = realm.object_work(span, |objects, budget| {
+                objects.next_string_iterator(&iterator, budget)
+            })?;
+            match result {
+                Some(string) => realm
+                    .iterator_result(Value::String(string), false, span)
+                    .map(Some),
+                None => Ok(None),
+            }
+        };
+        let yielded = match owner {
+            Some(owner) => self.with_function_realm(&owner, span, execute),
+            None => execute(self),
+        }?;
+        match yielded {
+            Some(result) => Ok(result),
+            None => self.iterator_result(Value::Undefined, true, span),
         }
-        let result = self.object_work(span, |objects, budget| {
-            objects.next_string_iterator(&iterator, budget)
-        })?;
-        let done = result.is_none();
-        self.iterator_result(result.map_or(Value::Undefined, Value::String), done, span)
     }
 }

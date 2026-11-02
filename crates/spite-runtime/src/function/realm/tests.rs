@@ -1181,3 +1181,103 @@ fn cross_realm_module_dependencies_keep_their_own_environments_through_await() {
     assert_eq!(realm.scopes.len(), 1);
     assert_eq!(realm.call_depth, 0);
 }
+
+#[test]
+fn borrowed_map_set_and_string_next_resume_creation_realms_before_returning_to_method_realms() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var map=new Map([[1,2]]).entries(),set=new Set([1]).entries(),string='x'[Symbol.iterator]();
+        var mapNext=Object.getPrototypeOf(map).next,setNext=Object.getPrototypeOf(set).next,stringNext=Object.getPrototypeOf(string).next;
+        function noop(){}noop
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let failures=[];
+        let families=[['map',()=>new Map([[1,2]]).entries(),true],['set',()=>new Set([1]).entries(),true],['string',()=>'x'[Symbol.iterator](),false]];
+        for(let [name,make,pair] of families){
+            let own=make(),next=Object.getPrototypeOf(own).next,foreignNext=child[name+'Next'];
+            let first=foreignNext.call(own),foreignFirst=next.call(child[name]);
+            if(Object.getPrototypeOf(first)!==Object.prototype || (pair&&Object.getPrototypeOf(first.value)!==Array.prototype))failures.push(name+':parent-yield');
+            if(Object.getPrototypeOf(foreignFirst)!==child.Object.prototype || (pair&&Object.getPrototypeOf(foreignFirst.value)!==child.Array.prototype))failures.push(name+':child-yield');
+            let done=foreignNext.call(own),foreignDone=next.call(child[name]);
+            if(!done.done || Object.getPrototypeOf(done)!==child.Object.prototype || !foreignDone.done || Object.getPrototypeOf(foreignDone)!==Object.prototype)failures.push(name+':done');
+            if(Object.getPrototypeOf(foreignNext.call(own))!==child.Object.prototype)failures.push(name+':completed');
+            try{foreignNext.call({});failures.push(name+':brand-missing');}catch(e){if(!(e instanceof child.TypeError))failures.push(name+':brand-realm');}
+        }
+        JSON.stringify(failures)
+    "#),Ok(Value::String("[]".into())));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
+fn native_iterator_realms_follow_creation_methods_and_keep_array_regexp_slot_algorithms() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        "var map=new Map([[1,2]]),regexp='x'.matchAll(/x/g);function noop(){}noop",
+    );
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(realm.eval(r#"
+        let failures=[],rootMap=new Map([[1,2]]),mapNext=Object.getPrototypeOf(rootMap.entries()).next;
+        let createdThere=child.Map.prototype.entries.call(rootMap);Object.setPrototypeOf(createdThere,null);
+        let a=mapNext.call(createdThere);
+        if(Object.getPrototypeOf(a)!==child.Object.prototype || Object.getPrototypeOf(a.value)!==child.Array.prototype)failures.push('creator-child');
+        let createdHere=Map.prototype.entries.call(child.map);Object.setPrototypeOf(createdHere,Object.getPrototypeOf(child.map.entries()));
+        let b=Object.getPrototypeOf(child.map.entries()).next.call(createdHere);
+        if(Object.getPrototypeOf(b)!==Object.prototype || Object.getPrototypeOf(b.value)!==Array.prototype)failures.push('creator-parent');
+        let array=child.Array.prototype.entries.call([7]),arrayNext=Object.getPrototypeOf([].entries()).next;
+        let c=arrayNext.call(array);
+        if(Object.getPrototypeOf(c)!==Object.prototype || Object.getPrototypeOf(c.value)!==Array.prototype)failures.push('ordinary-array');
+        let regexpNext=Object.getPrototypeOf('x'.matchAll(/x/g)).next,d=regexpNext.call(child.regexp);
+        if(Object.getPrototypeOf(d)!==Object.prototype || Object.getPrototypeOf(d.value)!==child.Array.prototype)failures.push('ordinary-regexp');
+        JSON.stringify(failures)
+    "#),Ok(Value::String("[]".into())));
+}
+
+#[test]
+fn native_string_iterator_context_retains_then_releases_a_realm_after_prototype_removal() {
+    let mut realm = Realm::default();
+    let (environment, iterator) = child_realm_fixture(&mut realm, "'x'[Symbol.iterator]()");
+    let prototype = realm
+        .objects
+        .environment(&environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap()
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .object_prototype
+        .clone();
+    expose(&mut realm, "foreign", iterator);
+    realm.eval("var next=Object.getPrototypeOf(''[Symbol.iterator]()).next;Object.setPrototypeOf(foreign,null);").unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    let Value::Object(yielded) = realm.eval("next.call(foreign)").unwrap() else {
+        panic!("yield result")
+    };
+    assert_eq!(
+        realm.inspect_object(&yielded).unwrap().prototype(),
+        Some(&prototype)
+    );
+    assert_eq!(realm.eval("let done=next.call(foreign);done.done && Object.getPrototypeOf(done)===Object.prototype"),Ok(Value::Boolean(true)));
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_err());
+    assert!(realm.objects.inspect(&prototype).is_err());
+    assert_eq!(
+        realm.eval("next.call(foreign).done"),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}

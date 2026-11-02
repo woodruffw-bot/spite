@@ -63,6 +63,27 @@ not an alternative language specification.
 
 
 
+## Native Map, Set and String iterator Realms
+
+Map, Set and String iterator closures now retain and trace their creation Realm.
+Borrowed next methods resume that Realm to allocate yielded results and Map/Set
+entry Arrays, then restore the method's Realm before allocating completion
+results. Completion releases the saved Realm. Brand errors use the native
+method's Realm. Array and RegExp String iterators retain edition 17's separate
+ordinary-slot algorithms.
+
+Three native groups cover both borrowing directions, completion/brand boundaries,
+creation methods borrowed across target Realms, mutable/null prototypes and the
+Array/RegExp distinction. A null-prototype String iterator retains its Realm
+through GC while live and releases it on completion while remaining usable.
+The principal regression reported all six cross-Realm yield failures before the
+fix; all 29 focused Realm groups now pass. Runtime has 561 unit tests; integration
+and corpus inventories are unchanged. Public child-Realm creation remains
+unavailable pending Iterator Helper contexts and child bootstrap integration.
+All 561 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Cold Module creation Realm ownership
 
 Source Text Module records now retain and trace their immutable creation Realm

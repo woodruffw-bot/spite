@@ -82,23 +82,36 @@ impl Realm {
         let Some(set) = state.set else {
             return self.iterator_result(Value::Undefined, true, span);
         };
-        let next = self.object_work(span, |objects, budget| {
-            objects.set_data(&set)?.next(state.next_index, budget)
-        })?;
-        let Some((index, value)) = next else {
-            self.object_work(span, |objects, _| {
-                objects.update_set_iterator(&iterator, None)
+        let owner = state.realm;
+        let execute = |realm: &mut Self| {
+            let next = realm.object_work(span, |objects, budget| {
+                objects.set_data(&set)?.next(state.next_index, budget)
             })?;
-            return self.iterator_result(Value::Undefined, true, span);
+            let Some((index, value)) = next else {
+                realm.object_work(span, |objects, _| {
+                    objects.update_set_iterator(&iterator, None)
+                })?;
+                return Ok(None);
+            };
+            realm.object_work(span, |objects, _| {
+                objects.update_set_iterator(&iterator, Some(index))
+            })?;
+            let value = if state.kind == ArrayIterationKind::KeyValue {
+                realm.create_array_from_list([value.clone(), value], span)?
+            } else {
+                value
+            };
+            realm.iterator_result(value, false, span).map(Some)
         };
-        self.object_work(span, |objects, _| {
-            objects.update_set_iterator(&iterator, Some(index))
-        })?;
-        let value = if state.kind == ArrayIterationKind::KeyValue {
-            self.create_array_from_list([value.clone(), value], span)?
-        } else {
-            value
-        };
-        self.iterator_result(value, false, span)
+        let yielded = match owner {
+            Some(owner) => self.with_function_realm(&owner, span, execute),
+            None => execute(self),
+        }?;
+        // GeneratorStart restores the native method context before allocating
+        // the final result; yields were allocated in the closure's Realm.
+        match yielded {
+            Some(result) => Ok(result),
+            None => self.iterator_result(Value::Undefined, true, span),
+        }
     }
 }
