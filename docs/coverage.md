@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Invocation completion before forwarding
+
+Call dispatch now finishes one invocation before the outer loop forwards to
+another target. Source functions and native callbacks return a shared value or
+tail-transfer outcome; Proxy and bound-function forwarding precede concrete
+function dispatch. Function.call/apply and Reflect.apply use the same outer
+loop. Generator and eval execution remain outside the large built-in dispatch
+frame. This prepares a single boundary for restoring function Realm state
+before a transfer, without exposing child Realms yet.
+
+The existing eleven tail-call groups, three 2 MiB stack-guard groups and deep
+bound-constructor unit pass. Production/corpus inventories are unchanged.
+The complete Runtime suite passes all 531 units and 5,024 integration groups,
+including 2,617 RegExp groups. Integration execution takes 631.93 seconds;
+the combined test invocation peaks at 1,748,824 KiB. The full 22,206-variant
+Test262 corpus and 77 controls pass, as do formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and all fixture inventories.
+
 ## Owned Realm data
 
 Realm globals, intrinsic handles, template caches, reserved host globals, import

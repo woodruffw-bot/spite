@@ -225,6 +225,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Function.prototype apply, ordered array-like arguments, and argument limits.
 - [x] Add bound callable objects, capture tracing, and Function.prototype bind.
 - [x] Bound re-entrant calls and dispatch builtin/bound tail transfers iteratively.
+- [x] Return one invocation's value or transfer outcome before the outer dispatcher forwards, keeping Proxy/bound resolution outside concrete function execution.
 - [ ] Add arrays, destructuring, iteration, classes, and private elements.
 - [x] Add sparse Array exotic storage, indexed growth, and partial length truncation.
 - [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
