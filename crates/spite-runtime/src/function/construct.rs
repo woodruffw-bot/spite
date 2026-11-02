@@ -72,17 +72,21 @@ impl Realm {
             ));
         }
         loop {
-            let (callable, proxy) = self.object_work(span, |objects, budget| {
+            let (callable, proxy, creation_realm) = self.object_work(span, |objects, budget| {
                 let proxy = objects.proxy_state(&function, budget)?;
                 if proxy.is_some() {
-                    return Ok((None, proxy));
+                    return Ok((None, proxy, None));
                 }
                 let callable = objects
                     .inspect(&function)?
                     .callable()
                     .expect("ordinary constructor has call metadata")
                     .copy_with_budget(budget)?;
-                Ok((Some(callable), None))
+                Ok((
+                    Some(callable),
+                    None,
+                    objects.inspect(&function)?.function_realm().cloned(),
+                ))
             })?;
             if let Some(proxy) = proxy {
                 match self.proxy_construct(proxy, &arguments, &new_target, span)? {
@@ -93,54 +97,17 @@ impl Realm {
                     super::proxy::ProxyInvocation::Complete(value) => return Ok(value),
                 }
             }
-            match callable.expect("non-Proxy constructor metadata") {
-                Callable::Builtin(builtin @ (Builtin::Symbol | Builtin::BigInt)) => {
-                    // These have [[Construct]] and are valid heritage/newTarget
-                    // values, but reject every construction before coercion or
-                    // prototype lookup (20.4.1.1, 21.2.1.1).
-                    let name = if matches!(builtin, Builtin::Symbol) {
-                        "Symbol"
-                    } else {
-                        "BigInt"
-                    };
-                    return Err(Self::exception(
-                        ExceptionKind::TypeError,
-                        span,
-                        format!("{name} cannot be constructed"),
-                    ));
-                }
-                Callable::Builtin(Builtin::Function) => {
-                    return self.dynamic_function(
-                        spite_parser::ast::FunctionKind::Ordinary,
-                        Some(new_target),
-                        arguments.into_iter(),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::AsyncFunction) => {
-                    return self.dynamic_function(
-                        spite_parser::ast::FunctionKind::Async,
-                        Some(new_target),
-                        arguments.into_iter(),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::AsyncGeneratorFunction) => {
-                    return self.dynamic_function(
-                        spite_parser::ast::FunctionKind::AsyncGenerator,
-                        Some(new_target),
-                        arguments.into_iter(),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::GeneratorFunction) => {
-                    return self.dynamic_function(
-                        spite_parser::ast::FunctionKind::Generator,
-                        Some(new_target),
-                        arguments.into_iter(),
-                        span,
-                    );
-                }
+            let callable = callable.expect("non-Proxy constructor metadata");
+            if let Callable::Builtin(builtin) = callable {
+                return if let Some(realm) = creation_realm {
+                    self.with_function_realm(&realm, span, |realm| {
+                        realm.construct_builtin(builtin, function, new_target, arguments, span)
+                    })
+                } else {
+                    self.construct_builtin(builtin, function, new_target, arguments, span)
+                };
+            }
+            match callable {
                 Callable::Bound(bound) => {
                     let count = bound
                         .arguments
@@ -226,209 +193,226 @@ impl Realm {
                         span,
                     );
                 }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(
-                    super::global_metadata::Constructor::Proxy,
-                )) => {
-                    let mut arguments = arguments.into_iter();
-                    return self.proxy_constructor(
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(
-                    super::global_metadata::Constructor::WeakRef,
-                )) => {
-                    return self.weak_ref_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(
-                    super::global_metadata::Constructor::FinalizationRegistry,
-                )) => {
-                    return self.finalization_registry_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(
-                    super::global_metadata::Constructor::Promise,
-                )) => {
-                    return self.promise_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::GlobalMetadataConstructor(
-                    super::global_metadata::Constructor::SharedArrayBuffer,
-                )) => {
-                    let mut arguments = arguments.into_iter();
-                    return self.shared_array_buffer_constructor(
-                        new_target,
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Object) => {
-                    return self.object_constructor(
-                        Some(new_target),
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::DisposableStack(kind)) => {
-                    return self.disposable_stack_constructor(kind, new_target, span);
-                }
-                Callable::Builtin(Builtin::Set) => {
-                    return self.set_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::WeakMap) => {
-                    return self.weak_map_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::WeakSet) => {
-                    return self.weak_set_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Map) => {
-                    return self.map_constructor(
-                        new_target,
-                        arguments.into_iter().next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Array) => {
-                    return self.array_constructor(Some(new_target), arguments.into_iter(), span);
-                }
-                Callable::Builtin(Builtin::ArrayBuffer) => {
-                    let mut arguments = arguments.into_iter();
-                    return self.array_buffer_constructor(
-                        new_target,
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::TypedArray(element)) => {
-                    return self.typed_array_constructor(element, new_target, arguments, span);
-                }
-                Callable::Builtin(Builtin::TypedArrayAbstract) => {
-                    // %TypedArray% is abstract even with a distinct newTarget
-                    // (23.2.1.1). No prototype lookup or coercion occurs.
+                _ => unreachable!("built-in constructors dispatch before source construction"),
+            }
+        }
+    }
+
+    fn construct_builtin(
+        &mut self,
+        builtin: Builtin,
+        function: ObjectHandle,
+        new_target: ObjectHandle,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, Error> {
+        match builtin {
+            builtin @ (Builtin::Symbol | Builtin::BigInt) => {
+                // These have [[Construct]] and are valid heritage/newTarget
+                // values, but reject every construction before coercion or
+                // prototype lookup (20.4.1.1, 21.2.1.1).
+                let name = if matches!(builtin, Builtin::Symbol) {
+                    "Symbol"
+                } else {
+                    "BigInt"
+                };
+                Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    format!("{name} cannot be constructed"),
+                ))
+            }
+            Builtin::Function => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Ordinary,
+                Some(new_target),
+                arguments.into_iter(),
+                span,
+            ),
+            Builtin::AsyncFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Async,
+                Some(new_target),
+                arguments.into_iter(),
+                span,
+            ),
+            Builtin::AsyncGeneratorFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::AsyncGenerator,
+                Some(new_target),
+                arguments.into_iter(),
+                span,
+            ),
+            Builtin::GeneratorFunction => self.dynamic_function(
+                spite_parser::ast::FunctionKind::Generator,
+                Some(new_target),
+                arguments.into_iter(),
+                span,
+            ),
+            Builtin::GlobalMetadataConstructor(super::global_metadata::Constructor::Proxy) => {
+                let mut arguments = arguments.into_iter();
+                self.proxy_constructor(
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::GlobalMetadataConstructor(super::global_metadata::Constructor::WeakRef) => {
+                self.weak_ref_constructor(
+                    new_target,
+                    arguments.into_iter().next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::GlobalMetadataConstructor(
+                super::global_metadata::Constructor::FinalizationRegistry,
+            ) => self.finalization_registry_constructor(
+                new_target,
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::GlobalMetadataConstructor(super::global_metadata::Constructor::Promise) => {
+                self.promise_constructor(
+                    new_target,
+                    arguments.into_iter().next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::GlobalMetadataConstructor(
+                super::global_metadata::Constructor::SharedArrayBuffer,
+            ) => {
+                let mut arguments = arguments.into_iter();
+                self.shared_array_buffer_constructor(
+                    new_target,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::Object => self.object_constructor(
+                Some(new_target),
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::DisposableStack(kind) => {
+                self.disposable_stack_constructor(kind, new_target, span)
+            }
+            Builtin::Set => self.set_constructor(
+                new_target,
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::WeakMap => self.weak_map_constructor(
+                new_target,
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::WeakSet => self.weak_set_constructor(
+                new_target,
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::Map => self.map_constructor(
+                new_target,
+                arguments.into_iter().next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Builtin::Array => self.array_constructor(Some(new_target), arguments.into_iter(), span),
+            Builtin::ArrayBuffer => {
+                let mut arguments = arguments.into_iter();
+                self.array_buffer_constructor(
+                    new_target,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::TypedArray(element) => {
+                self.typed_array_constructor(element, new_target, arguments, span)
+            }
+            Builtin::TypedArrayAbstract => {
+                // %TypedArray% is abstract even with a distinct newTarget
+                // (23.2.1.1). No prototype lookup or coercion occurs.
+                Err(Self::exception(
+                    ExceptionKind::TypeError,
+                    span,
+                    "TypedArray is an abstract constructor",
+                ))
+            }
+            Builtin::Iterator => {
+                // Iterator (27.1.3.1.1) is abstract but has [[Construct]].
+                // Reject the active function before reading newTarget.prototype.
+                if new_target == function {
                     return Err(Self::exception(
                         ExceptionKind::TypeError,
                         span,
-                        "TypedArray is an abstract constructor",
+                        "Iterator requires a distinct newTarget",
                     ));
                 }
-                Callable::Builtin(Builtin::Iterator) => {
-                    // Iterator (27.1.3.1.1) is abstract but has [[Construct]].
-                    // Reject the active function before reading newTarget.prototype.
-                    if new_target == function {
-                        return Err(Self::exception(
-                            ExceptionKind::TypeError,
-                            span,
-                            "Iterator requires a distinct newTarget",
-                        ));
-                    }
-                    let prototype =
-                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
-                    let prototype = if let Value::Object(prototype) = prototype {
-                        prototype
-                    } else {
-                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
-                            intrinsics.iterator.prototype.clone()
-                        })?
-                    };
-                    return self
-                        .object_work(span, |objects, _| objects.create(Some(&prototype)))
-                        .map(Value::Object);
-                }
-                Callable::Builtin(Builtin::String) => {
-                    return self.string_constructor(
-                        Some(new_target),
-                        arguments.into_iter().next(),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Error(kind)) => {
-                    return self.error_constructor(
-                        kind,
-                        Some(new_target),
-                        arguments.into_iter(),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Boolean) => {
-                    let value = arguments.first().unwrap_or(&Value::Undefined).to_boolean();
-                    let prototype =
-                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
-                    let prototype = if let Value::Object(prototype) = prototype {
-                        prototype
-                    } else {
-                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
-                            intrinsics.boolean.prototype.clone()
-                        })?
-                    };
-                    return self
-                        .object_work(span, |objects, _| objects.create_boolean(&prototype, value))
-                        .map(Value::Object);
-                }
-                Callable::Builtin(Builtin::RegExp) => {
-                    let mut arguments = arguments.into_iter();
-                    return self.regexp_constructor(
-                        Some(new_target),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Date) => {
-                    return self.date_constructor(new_target, arguments, span);
-                }
-                Callable::Builtin(Builtin::DataView) => {
-                    let mut arguments = arguments.into_iter();
-                    return self.data_view_constructor(
-                        new_target,
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        arguments.next().unwrap_or(Value::Undefined),
-                        span,
-                    );
-                }
-                Callable::Builtin(Builtin::Number) => {
-                    let value =
-                        self.number_constructor_value(arguments.into_iter().next(), span)?;
-                    let prototype =
-                        self.get_property(&new_target, &JsString::from("prototype"), span)?;
-                    let prototype = if let Value::Object(prototype) = prototype {
-                        prototype
-                    } else {
-                        self.function_realm_intrinsic(&new_target, span, |intrinsics| {
-                            intrinsics.number.prototype.clone()
-                        })?
-                    };
-                    return self
-                        .object_work(span, |objects, _| objects.create_number(&prototype, value))
-                        .map(Value::Object);
-                }
-                _ => unreachable!("constructibility is enabled only for known constructors"),
+                let prototype =
+                    self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                let prototype = if let Value::Object(prototype) = prototype {
+                    prototype
+                } else {
+                    self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                        intrinsics.iterator.prototype.clone()
+                    })?
+                };
+                self.object_work(span, |objects, _| objects.create(Some(&prototype)))
+                    .map(Value::Object)
             }
+            Builtin::String => {
+                self.string_constructor(Some(new_target), arguments.into_iter().next(), span)
+            }
+            Builtin::Error(kind) => {
+                self.error_constructor(kind, Some(new_target), arguments.into_iter(), span)
+            }
+            Builtin::Boolean => {
+                let value = arguments.first().unwrap_or(&Value::Undefined).to_boolean();
+                let prototype =
+                    self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                let prototype = if let Value::Object(prototype) = prototype {
+                    prototype
+                } else {
+                    self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                        intrinsics.boolean.prototype.clone()
+                    })?
+                };
+                self.object_work(span, |objects, _| objects.create_boolean(&prototype, value))
+                    .map(Value::Object)
+            }
+            Builtin::RegExp => {
+                let mut arguments = arguments.into_iter();
+                self.regexp_constructor(
+                    Some(new_target),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::Date => self.date_constructor(new_target, arguments, span),
+            Builtin::DataView => {
+                let mut arguments = arguments.into_iter();
+                self.data_view_constructor(
+                    new_target,
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    arguments.next().unwrap_or(Value::Undefined),
+                    span,
+                )
+            }
+            Builtin::Number => {
+                let value = self.number_constructor_value(arguments.into_iter().next(), span)?;
+                let prototype =
+                    self.get_property(&new_target, &JsString::from("prototype"), span)?;
+                let prototype = if let Value::Object(prototype) = prototype {
+                    prototype
+                } else {
+                    self.function_realm_intrinsic(&new_target, span, |intrinsics| {
+                        intrinsics.number.prototype.clone()
+                    })?
+                };
+                self.object_work(span, |objects, _| objects.create_number(&prototype, value))
+                    .map(Value::Object)
+            }
+            _ => unreachable!("constructibility is enabled only for known constructors"),
         }
     }
 

@@ -355,3 +355,114 @@ fn iterative_realm_transitions_unwind_foreign_errors_to_the_original_caller() {
     assert_eq!(realm.record.global_environment.as_ref(), Some(&parent));
     assert_eq!(realm.scopes.len(), 1);
 }
+
+#[test]
+fn builtin_construction_uses_its_creation_realm_for_native_errors() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function Foreign(){}Foreign");
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(
+        realm.eval(
+            r#"let failures=[];
+            for(let make of [()=>new child.Symbol(),()=>new child.BigInt(),
+                ()=>new child.Number(Symbol()),()=>new child.String(Symbol()),
+                ()=>new child.WeakMap(1),()=>new child.Promise(1),()=>new child.Iterator()]){
+                try{make();failures.push('missing-type-error')}catch(e){
+                    if(!(e instanceof child.TypeError)||e instanceof TypeError)failures.push('type-error-realm');
+                }
+            }
+            for(let make of [()=>new child.Array(-1),()=>new child.ArrayBuffer(-1),
+                ()=>new child.SharedArrayBuffer(-1),()=>new child.Int8Array(-1),
+                ()=>new child.DataView(new ArrayBuffer(1),2)]){
+                try{make();failures.push('missing-range-error')}catch(e){
+                    if(!(e instanceof child.RangeError)||e instanceof RangeError)failures.push('range-error-realm');
+                }
+            }
+            let callback=false;
+            try{new child.Number({[Symbol.toPrimitive](){return null.x;}})}catch(e){
+                callback=e instanceof TypeError && !(e instanceof child.TypeError);
+            }
+            if(!callback)failures.push('callback-error-realm');
+            let reads=0,coercions=0,proxy=new Proxy(foreign,{get(){reads++;throw 7;}});
+            try{Reflect.construct(child.Symbol,[{[Symbol.toPrimitive](){coercions++;return 1;}}],proxy)}catch(e){
+                if(!(e instanceof child.TypeError)||reads!==0||coercions!==0)failures.push('symbol-order');
+            }
+            JSON.stringify(failures)"#,
+        ),
+        Ok(Value::String("[]".into()))
+    );
+}
+
+#[test]
+fn builtin_creation_realm_and_new_target_realm_remain_independent() {
+    let mut realm = Realm::default();
+    let (environment, function) =
+        child_realm_fixture(&mut realm, "var mark=7;function Foreign(){}Foreign");
+    expose_child(&mut realm, &environment, function);
+    let (third_environment, third_target) =
+        child_realm_fixture(&mut realm, "function Third(){}Third");
+    let third = realm
+        .objects
+        .environment(&third_environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap()
+        .global_object
+        .clone()
+        .unwrap();
+    expose(&mut realm, "third", Value::Object(third));
+    expose(&mut realm, "thirdTarget", third_target);
+    assert_eq!(
+        realm.eval(
+            r#"var mark=42;thirdTarget.prototype=0;
+            let compiled=new child.Function('return mark');
+            let mixed=Reflect.construct(child.Function,['return globalThis'],thirdTarget);
+            let view=Reflect.construct(child.Uint8Array,[2],thirdTarget);
+            let aggregate=Reflect.construct(child.AggregateError,[[]],thirdTarget);
+            let resolving=false,promise=Reflect.construct(child.Promise,[resolve=>{
+                resolving=Object.getPrototypeOf(resolve)===child.Function.prototype;resolve(7);
+            }],thirdTarget);
+            let pair=Proxy.revocable(thirdTarget,{get(t,k){if(k==='prototype'){pair.revoke();return 0;}throw 7;}});
+            let builtinError=false;try{Reflect.construct(child.Object,[],pair.proxy)}catch(e){
+                builtinError=e instanceof child.TypeError && !(e instanceof TypeError);
+            }
+            let source=Proxy.revocable(thirdTarget,{get(t,k){if(k==='prototype'){source.revoke();return 0;}throw 7;}});
+            let sourceError=false;try{Reflect.construct(foreign,[],source.proxy)}catch(e){
+                sourceError=e instanceof TypeError && !(e instanceof child.TypeError);
+            }
+            compiled()===7 && mixed()===child &&
+            Object.getPrototypeOf(mixed)===third.Function.prototype &&
+            Object.getPrototypeOf(view)===third.Uint8Array.prototype &&
+            Object.getPrototypeOf(view.buffer)===child.ArrayBuffer.prototype &&
+            Object.getPrototypeOf(aggregate)===third.AggregateError.prototype &&
+            Object.getPrototypeOf(aggregate.errors)===child.Array.prototype &&
+            Object.getPrototypeOf(promise)===third.Promise.prototype && resolving && builtinError && sourceError &&
+            Object.getPrototypeOf([])===Array.prototype"#,
+        ),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn recursive_foreign_builtin_construction_keeps_the_two_mebibyte_guard() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let mut realm = Realm::default();
+            let (environment, function) = child_realm_fixture(&mut realm, "function Foreign(){}Foreign");
+            expose_child(&mut realm, &environment, function);
+            let parent = realm.record.global_environment.clone().unwrap();
+            assert!(matches!(
+                realm.eval("let effects=0,calls=0,value={[Symbol.toPrimitive](){calls++;return new child.Number(value).valueOf();}};try{new child.Number(value)}catch(e){effects=1}finally{effects=2}"),
+                Err(Error::Limit { .. })
+            ));
+            assert_eq!(realm.eval("effects===0 && calls>0"), Ok(Value::Boolean(true)));
+            assert_eq!(realm.record.global_environment.as_ref(), Some(&parent));
+            assert_eq!(realm.call_depth, 0);
+            assert_eq!(realm.scopes.len(), 1);
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}

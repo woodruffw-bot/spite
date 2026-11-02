@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Built-in constructor Realm activation
+
+Native built-in [[Construct]] algorithms now enter their immutable creation Realm
+after Proxy and bound forwarding. Their typed errors, dynamically compiled source,
+Promise resolving functions, AggregateError elements and typed-array backing
+buffers use that Realm. A different newTarget still supplies its own Realm's
+intrinsic fallback prototype. Explicit source constructor allocation and default
+class constructor contexts remain separate follow-up work; public child-Realm
+creation is still unavailable.
+
+Three new native groups cover constructor error families, callback exceptions,
+early rejection order, three-Realm allocation/prototype combinations and foreign
+recursive construction on a 2 MiB native stack. Runtime now has 543 unit tests;
+integration and retained corpus inventories are unchanged.
+All 543 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass. Formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and fixture inventories also pass.
+
 ## Owned Realm transition state
 
 Realm entry/exit now returns and consumes owned transition state. The scoped
