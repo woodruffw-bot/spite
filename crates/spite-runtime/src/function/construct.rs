@@ -5,7 +5,7 @@ use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::ProxyState
 use spite_core::{JsString, Span};
 
 enum FunctionRealmStep {
-    Current,
+    Known(Option<crate::environment::EnvironmentHandle>),
     Target(ObjectHandle),
     Revoked,
 }
@@ -491,14 +491,21 @@ impl Realm {
         })
     }
 
-    // GetFunctionRealm (7.3.24) resolves to the sole exposed Realm. Bound
-    // functions and Proxies do not own [[Realm]]; follow their checked target
-    // edges without invoking handlers or copying bound arguments and receivers.
+    // Bound functions and Proxies do not own [[Realm]]. Follow their checked
+    // targets without invoking handlers or inspecting mutable prototypes.
     pub(super) fn check_function_realm(
         &mut self,
         function: &ObjectHandle,
         span: Span,
     ) -> Result<(), Error> {
+        self.function_realm_environment(function, span).map(|_| ())
+    }
+
+    pub(super) fn function_realm_environment(
+        &mut self,
+        function: &ObjectHandle,
+        span: Span,
+    ) -> Result<Option<crate::environment::EnvironmentHandle>, Error> {
         let mut function = function.clone();
         loop {
             let step = self.object_work(span, |objects, budget| {
@@ -510,11 +517,13 @@ impl Realm {
                 }
                 Ok(match objects.inspect(&function)?.callable() {
                     Some(Callable::Bound(bound)) => FunctionRealmStep::Target(bound.target.clone()),
-                    _ => FunctionRealmStep::Current,
+                    _ => FunctionRealmStep::Known(
+                        objects.inspect(&function)?.function_realm().cloned(),
+                    ),
                 })
             })?;
             match step {
-                FunctionRealmStep::Current => return Ok(()),
+                FunctionRealmStep::Known(realm) => return Ok(realm),
                 FunctionRealmStep::Target(target) => function = target,
                 FunctionRealmStep::Revoked => {
                     return Err(Self::exception(
@@ -546,6 +555,38 @@ mod tests {
         function::BoundFunction,
         object::{Budget, DescriptorKind, PropertyDescriptor},
     };
+
+    #[test]
+    fn creation_realm_survives_prototype_changes_and_proxy_bound_forwarding() {
+        let mut realm = Realm::default();
+        let Value::Object(proxy) = realm
+            .eval(
+                "function F(){};let gets=0;let bound=F.bind(null);\
+                 let pair=Proxy.revocable(bound,{get(){gets++;throw 7;}});\
+                 Object.setPrototypeOf(F,null);pair.proxy",
+            )
+            .unwrap()
+        else {
+            panic!()
+        };
+        let expected = realm.scopes[0].clone();
+        assert_eq!(
+            realm
+                .function_realm_environment(&proxy, Span::new(0, 0))
+                .unwrap(),
+            Some(expected)
+        );
+        assert_eq!(realm.eval("gets"), Ok(Value::Number(0.0)));
+        realm.eval("pair.revoke()").unwrap();
+        assert!(matches!(
+            realm.function_realm_environment(&proxy, Span::new(0, 0)),
+            Err(Error::Exception {
+                kind: ExceptionKind::TypeError,
+                ..
+            })
+        ));
+        assert_eq!(realm.eval("gets"), Ok(Value::Number(0.0)));
+    }
 
     #[test]
     fn bound_prototype_getters_are_ignored_and_constructor_flags_follow_the_target() {

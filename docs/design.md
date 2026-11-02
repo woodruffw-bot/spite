@@ -4898,5 +4898,13 @@ before reading @@species. The traversal uses checked internal slots and an
 iterative loop without observable traps or copying bound arguments. The current
 implementation exposes one realm; foreign-realm intrinsic normalization remains
 deferred.
+Concrete source and built-in function objects record their creation Realm using
+the existing global-environment handle (9.3, 7.3.24). This immutable internal edge
+is traced by the ordinary heap collector and needs no separate Realm identity
+allocation. Bootstrap establishes it before creating intrinsic functions, and
+native Promise and asynchronous callbacks use the same checked metadata.
+Bound functions and Proxies resolve through their targets. Prototype mutation
+does not change the recorded Realm. Same-agent child Realms and execution-context
+switching remain unimplemented.
 Resource quotas remain opt-in, and the initial realm retains the same 549
 intrinsic objects.

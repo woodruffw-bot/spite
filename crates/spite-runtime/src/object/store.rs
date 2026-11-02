@@ -222,6 +222,7 @@ pub struct Objects {
     heap: Heap<Entry>,
     max_properties: Option<usize>,
     roots: Vec<Weak<Handle>>,
+    pub(super) active_realm: Option<crate::environment::EnvironmentHandle>,
     // One-way: only a committed private WeakMap Symbol insertion/overwrite
     // sets this. Never reset it after deletion or collection.
     pub(super) symbol_keys_ever_stored: bool,
@@ -243,6 +244,7 @@ impl Objects {
             heap: Heap::with_capacity_limit(max_entries),
             max_properties,
             roots: Vec::new(),
+            active_realm: None,
             symbol_keys_ever_stored: false,
             finalization_jobs: Vec::new(),
             finalization_active_held: None,
@@ -321,6 +323,7 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        object.function_realm = self.active_function_realm()?;
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
@@ -494,6 +497,7 @@ impl Objects {
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        object.function_realm = self.active_function_realm()?;
         object.callable = Some(Callable::Arrow(arrow));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -511,6 +515,7 @@ impl Objects {
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.constructible = function.kind == spite_parser::ast::FunctionKind::Ordinary;
+        object.function_realm = self.active_function_realm()?;
         object.callable = Some(Callable::Ordinary(function));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -528,6 +533,7 @@ impl Objects {
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        object.function_realm = self.active_function_realm()?;
         object.callable = Some(Callable::Method(Box::new(method)));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -698,6 +704,7 @@ impl Objects {
             Some(function_prototype.clone()),
             self.max_properties,
         );
+        record.function_realm = self.active_function_realm()?;
         record.callable = Some(Callable::ProxyRevoker(Some(proxy.clone())));
         Ok(self.heap.insert(Entry::Object(record))?)
     }
@@ -711,6 +718,7 @@ impl Objects {
         self.inspect(capability)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        record.function_realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseCapabilityExecutor(capability.clone()));
         Ok(self.heap.insert(Entry::Object(record))?)
     }
@@ -725,6 +733,7 @@ impl Objects {
         self.inspect(cell)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        record.function_realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseResolvingFunction {
             cell: cell.clone(),
             resolve,
@@ -742,6 +751,7 @@ impl Objects {
         self.inspect(cell)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
+        record.function_realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseFinally {
             cell: cell.clone(),
             kind,
@@ -761,7 +771,7 @@ impl Objects {
         done: bool,
     ) -> Result<Handle, Error> {
         let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable = Some(Callable::AsyncFromSyncUnwrap { done });
+        self.initialize_callable(&function, Callable::AsyncFromSyncUnwrap { done })?;
         Ok(function)
     }
 
@@ -772,7 +782,7 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(iterator)?;
         let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable = Some(Callable::AsyncFromSyncClose(iterator.clone()));
+        self.initialize_callable(&function, Callable::AsyncFromSyncClose(iterator.clone()))?;
         Ok(function)
     }
 
@@ -786,11 +796,14 @@ impl Objects {
         self.inspect(prototype)?;
         self.inspect(state)?;
         let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable = Some(Callable::AsyncResume {
-            state: state.clone(),
-            kind,
-            fulfilled,
-        });
+        self.initialize_callable(
+            &function,
+            Callable::AsyncResume {
+                state: state.clone(),
+                kind,
+                fulfilled,
+            },
+        )?;
         Ok(function)
     }
 

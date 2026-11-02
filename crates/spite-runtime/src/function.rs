@@ -1161,6 +1161,23 @@ impl Realm {
         if let Some(intrinsics) = &self.intrinsics {
             return Ok(intrinsics.object_prototype.clone());
         }
+        // Establish the Realm identity before allocating any intrinsic function.
+        let bootstrap_scope = self.scopes.is_empty();
+        if bootstrap_scope {
+            self.push_scope(std::collections::BTreeMap::new(), span)?;
+        }
+        let realm = self.scopes[0].clone();
+        let result = self
+            .object_work(span, |objects, _| objects.set_active_function_realm(&realm))
+            .and_then(|()| self.create_object_intrinsics(span));
+        if result.is_err() && bootstrap_scope {
+            self.scopes.clear();
+            self.objects.clear_active_function_realm();
+        }
+        result
+    }
+
+    fn create_object_intrinsics(&mut self, span: Span) -> Result<ObjectHandle, Error> {
         let object_prototype =
             self.object_work(span, |objects, _| objects.create_object_prototype())?;
         let function_prototype =

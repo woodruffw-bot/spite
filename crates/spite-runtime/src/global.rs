@@ -753,7 +753,7 @@ mod tests {
 
     #[test]
     fn intrinsic_work_failure_does_not_publish_partial_graphs() {
-        for work in 0..1000 {
+        for work in (0..1000).chain([usize::MAX]) {
             let mut realm = Realm {
                 remaining_steps: Some(work),
                 ..Realm::default()
@@ -764,11 +764,35 @@ mod tests {
             assert_eq!(
                 realm.collect(usize::MAX).unwrap().live,
                 if result.is_ok() {
-                    crate::test_support::REALM_ENTRIES - 2
+                    // Intrinsics and their creation environment, before the
+                    // ordinary global object is installed.
+                    crate::test_support::REALM_ENTRIES - 1
                 } else {
                     0
                 }
             );
+            if result.is_ok() {
+                let creation_realm = realm.scopes[0].clone();
+                assert_eq!(realm.eval("Number(7)"), Ok(Value::Number(7.0)));
+                assert_eq!(
+                    realm.scopes.as_slice(),
+                    std::slice::from_ref(&creation_realm)
+                );
+                assert_eq!(
+                    realm
+                        .objects
+                        .inspect(&realm.intrinsics.as_ref().unwrap().function_constructor)
+                        .unwrap()
+                        .function_realm(),
+                    Some(&creation_realm)
+                );
+                assert_eq!(
+                    realm.collect(usize::MAX).unwrap().live,
+                    crate::test_support::REALM_ENTRIES
+                );
+            } else {
+                assert!(realm.scopes.is_empty());
+            }
         }
     }
 }

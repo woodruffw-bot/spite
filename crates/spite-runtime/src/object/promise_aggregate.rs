@@ -84,11 +84,14 @@ impl Objects {
     ) -> Result<Handle, Error> {
         self.inspect(state)?;
         let function = self.create(Some(prototype))?;
-        self.object_mut(&function)?.callable = Some(Callable::PromiseAggregateElement {
-            state: state.clone(),
-            index,
-            fulfilled,
-        });
+        self.initialize_callable(
+            &function,
+            Callable::PromiseAggregateElement {
+                state: state.clone(),
+                index,
+                fulfilled,
+            },
+        )?;
         Ok(function)
     }
 

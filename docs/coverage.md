@@ -63,6 +63,24 @@ not an alternative language specification.
 
 
 
+## Function creation Realm metadata
+
+Concrete source functions, built-ins and native Promise/asynchronous callbacks
+retain their creation Realm through a traced, checked global-environment handle.
+The metadata is independent of mutable prototypes. Bound and Proxy chains resolve
+through targets without invoking handlers; revoked Proxies still throw TypeError.
+No same-agent child Realm API or cross-Realm execution is exposed yet.
+
+Two new unit groups verify that a retained function keeps its Realm's global
+bindings alive, an unrelated Realm is collectable, prototype mutation preserves
+ownership and target traversal observes revocation without traps. Runtime unit
+count is 531; native integration and upstream inventories are unchanged.
+All 531 Runtime units, 2,406 non-RegExp integration groups, 22,198 retained
+Test262 variants and 77 runner controls pass. Formatting, strict Clippy, MSRV,
+CLI/doc tests, policy and fixture inventories also pass. Initialization rollback
+tests retain no partial scope after failure and verify that successful early
+bootstrap reuses its creation environment when installing the global object.
+
 ## Published base-intrinsic inventory
 
 A reference fixture derived from the pinned edition-17 intrinsic table checks

@@ -117,6 +117,7 @@ fn object_symbols(
         private_elements,
         max_properties: _,
         callable,
+        function_realm: _,
         constructible: _,
         proxy: _,
         primitive_data,

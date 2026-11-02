@@ -74,6 +74,7 @@ mod finalization_registry;
 pub(crate) use finalization_registry::{
     FinalizationCleanupCall, FinalizationCleanupCell, FinalizationCleanupJob,
 };
+mod function_realm;
 mod store;
 mod symbol_gc;
 mod weak_map;
@@ -119,6 +120,9 @@ pub struct OrdinaryObject {
     private_elements: Vec<(crate::private::PrivateName, private::PrivateElement)>,
     max_properties: Option<usize>,
     callable: Option<Callable>,
+    // Checked global-environment handle identifying a function's creation Realm.
+    // Bound functions and Proxies resolve through their targets instead.
+    function_realm: Option<crate::environment::EnvironmentHandle>,
     constructible: bool,
     proxy: Option<proxy::ProxyData>,
     primitive_data: Option<PrimitiveData>,
@@ -173,6 +177,7 @@ impl OrdinaryObject {
             private_elements: Vec::new(),
             max_properties,
             callable: None,
+            function_realm: None,
             constructible: false,
             proxy: None,
             primitive_data: None,
@@ -219,6 +224,10 @@ impl OrdinaryObject {
     /// Returns whether the object has a [[Call]] internal method.
     pub fn is_callable(&self) -> bool {
         self.callable.is_some() || self.proxy.as_ref().is_some_and(|proxy| proxy.callable)
+    }
+
+    pub(crate) fn function_realm(&self) -> Option<&crate::environment::EnvironmentHandle> {
+        self.function_realm.as_ref()
     }
 
     /// Returns whether the object has a [[Construct]] internal method.
@@ -519,6 +528,7 @@ impl Trace for OrdinaryObject {
             _ => None,
         };
         std::iter::once(self.prototype.as_ref())
+            .chain(self.function_realm.iter().map(|realm| Some(&realm.0)))
             .chain(self.proxy.iter().flat_map(|proxy| {
                 proxy
                     .snapshot
