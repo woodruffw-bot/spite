@@ -50,6 +50,7 @@ impl Realm {
             Builtin::EvalScript => {
                 unreachable!("Script evaluation dispatched without a native-algorithm frame")
             }
+            Builtin::CreateRealm => self.host_create_realm(span),
             Builtin::DetachArrayBuffer => self.host_detach_array_buffer(arguments, span),
             Builtin::RequestGc => self.request_host_gc(span),
             Builtin::Test262Agent(method) => self.test262_agent_method(method, arguments, span),

@@ -78,7 +78,7 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
 
 #[test]
 fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_cleanup() {
-    for member in ["createRealm", "IsHTMLDDA", "AbstractModuleSource"] {
+    for member in ["IsHTMLDDA", "AbstractModuleSource"] {
         let mut realm = host();
         realm
             .eval(
@@ -247,7 +247,7 @@ fn jobs_created_by_global_scripts_keep_their_context_after_caller_restoration() 
 fn script_host_failures_restore_context_and_bypass_caller_cleanup() {
     let mut realm = host();
     realm.eval("let caught=0,finalized=0,disposed=0;var entered=0;let resource={[Symbol.dispose](){disposed++}}").unwrap();
-    let error=realm.eval("function f(){using r=resource;let entered=99;try{$262.evalScript('entered++;$262.createRealm')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    let error=realm.eval("function f(){using r=resource;let entered=99;try{$262.evalScript('entered++;$262.IsHTMLDDA')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
     check(
         &mut realm,
@@ -353,7 +353,7 @@ fn worker_retirement_stops_program_loops_sleeps_and_infinite_waits() {
 fn worker_failures_keep_host_unsupported_and_limit_categories() {
     for (limits, source, expected) in [
         (Limits::default(), "throw new TypeError('worker')", "host"),
-        (Limits::default(), "typeof $262.createRealm", "unsupported"),
+        (Limits::default(), "typeof $262.IsHTMLDDA", "unsupported"),
         (
             Limits {
                 max_steps: Some(2000),
@@ -453,4 +453,185 @@ fn broadcast_workers_keep_gc_roots_and_resume_foreign_async_notifications() {
     assert_eq!(next_agent_report(&mut realm).unwrap(), "ok".into());
     realm.finish_test262_agents().unwrap();
     check(&mut realm, "Atomics.notify(a,0)===0");
+}
+
+fn drain_host_jobs(realm: &mut Realm) {
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            PromiseJobOutcome::NoJob => break,
+            PromiseJobOutcome::Completed => (),
+            PromiseJobOutcome::Reported(error) => panic!("unexpected job failure: {error:?}"),
+        }
+    }
+}
+
+#[test]
+fn child_realms_have_independent_globals_intrinsics_and_native_host_metadata() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        let create=$262.createRealm,r=create.call(7,'ignored'),s=r.createRealm();
+        let rejected=false;try{new create;}catch(e){rejected=e instanceof TypeError;}
+        r.evalScript('var own=7;let lexical=8;');
+        let array=r.evalScript('[]');
+        create.name==='createRealm' && create.length===0 && !Object.hasOwn(create,'prototype') && rejected &&
+        Function.prototype.toString.call(create)==='function createRealm() { [native code] }' &&
+        r!==s && r.global!==globalThis && r.global!==s.global && r.global.$262===r && s.global.$262===s &&
+        r.global.Array!==Array && r.global.Array!==s.global.Array && r.global.Object.prototype!==Object.prototype &&
+        Object.getPrototypeOf(r.global)===r.global.Object.prototype && Object.getPrototypeOf(r.evalScript)===r.global.Function.prototype &&
+        Object.getPrototypeOf(array)===r.global.Array.prototype && Array.isArray(array) &&
+        r.evalScript('own+lexical')===15 && typeof own==='undefined' && typeof lexical==='undefined' &&
+        s.evalScript('typeof own')==='undefined' && !Object.getOwnPropertyDescriptor($262,'createRealm').enumerable
+    "#,
+    );
+    drain_host_jobs(&mut realm);
+}
+
+#[test]
+fn child_creation_restores_strict_callers_and_distinct_module_script_referrers() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        function strictCaller(){'use strict';let secret=42;let r=$262.createRealm();
+            r.evalScript('var childOnly=7');let caught=false;
+            try{newUndeclaredName=1;}catch(e){caught=e instanceof ReferenceError;}
+            return caught && eval('secret')===42 && r.evalScript('childOnly')===7 &&
+                $262.evalScript('typeof secret')==='undefined' && Object.getPrototypeOf((()=>[])())===Array.prototype;}
+        strictCaller() && typeof childOnly==='undefined' && !Object.hasOwn(globalThis,'newUndeclaredName')
+    "#,
+    );
+    realm.enable_module_imports();
+    let module = realm
+        .create_module(
+            r#"
+        globalThis.moduleChild=$262.createRealm();
+        globalThis.moduleLoader=Function("return import('module')");
+        globalThis.childScriptLoader=moduleChild.evalScript("Function(\"return import('child')\")");
+    "#,
+        )
+        .unwrap();
+    realm.evaluate_module_record(&module).unwrap();
+    realm.eval("moduleLoader();childScriptLoader();").unwrap();
+    assert_eq!(
+        realm.take_module_import_request().unwrap().referrer(),
+        Some(&module)
+    );
+    assert!(
+        realm
+            .take_module_import_request()
+            .unwrap()
+            .referrer()
+            .is_none()
+    );
+}
+
+#[test]
+fn child_functions_keep_private_intrinsics_and_templates_until_their_last_root_is_dropped() {
+    let mut realm = host();
+    realm.eval(r#"
+        var r=$262.createRealm(),weak=new WeakRef(r.global);
+        var inspect=r.evalScript("function tag(x){return x;}var keep=function(){return tag`held`;};keep();var inspect=Object.getOwnPropertyDescriptor;Object.setPrototypeOf(inspect,null);delete Object.getOwnPropertyDescriptor;delete Object.prototype.constructor;delete globalThis.Object;inspect");
+        var keep=r.evalScript('keep');r=undefined;
+    "#).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(
+        &mut realm,
+        r#"
+        (()=>{let d=inspect({x:7},'x'),a=keep(),b=keep(),g=weak.deref();
+            return g!==undefined && d.value===7 && Object.getPrototypeOf(d)===Object.getPrototypeOf(g) &&
+                a===b && Object.isFrozen(a) && Object.getPrototypeOf(a)===g.Array.prototype;})()
+    "#,
+    );
+    realm.eval("inspect=undefined;keep=undefined;").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weak.deref()===undefined");
+}
+
+#[test]
+fn child_realms_share_agent_symbols_atomic_backings_and_promise_jobs() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        var r=$262.createRealm(),buffer=new SharedArrayBuffer(4,{maxByteLength:8}),view=new Int32Array(buffer),values=[];
+        r.global.buffer=buffer;r.evalScript('var view=new Int32Array(buffer);Atomics.store(view,0,7)');
+        let before=Atomics.add(view,0,2);buffer.grow(8);
+        var then=r.evalScript('var seen=false;function then(resolve){seen=Object.getPrototypeOf(resolve)===Function.prototype;resolve(13);}then');
+        Promise.resolve({then}).then(x=>values.push(x));
+        var madeInJob;Promise.resolve().then(()=>{madeInJob=$262.createRealm();return madeInJob.evalScript('globalThis');}).then(g=>values.push(g===madeInJob.global));
+        before===7 && r.evalScript('Atomics.load(view,0)')===9 && r.evalScript('view.length')===2 &&
+        Symbol.for('shared-key')===r.global.Symbol.for('shared-key') && Symbol('unique')!==r.global.Symbol('unique')
+    "#,
+    );
+    drain_host_jobs(&mut realm);
+    check(
+        &mut realm,
+        "values.includes(13) && values.includes(true) && r.global.seen && Object.getPrototypeOf([])===Array.prototype",
+    );
+}
+
+#[test]
+fn child_bootstrap_heap_failure_restores_parent_and_bypasses_language_cleanup() {
+    let mut probe = host();
+    let baseline = probe.collect(usize::MAX).unwrap().live;
+    let mut realm = Realm::new(Limits {
+        max_heap_entries: Some(baseline + 64),
+        ..Limits::default()
+    });
+    realm.install_test262_host().unwrap();
+    assert!(matches!(realm.eval("let caught=0,finalized=0;try{$262.createRealm();}catch(e){caught++;}finally{finalized++;}"),Err(Error::Limit{..})));
+    assert!(matches!(
+        realm.run_next_promise_job().unwrap(),
+        PromiseJobOutcome::NoJob
+    ));
+    check(
+        &mut realm,
+        "caught===0 && finalized===0 && $262.global===globalThis",
+    );
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(
+        &mut realm,
+        "Object.getPrototypeOf((()=>[])())===Array.prototype",
+    );
+}
+
+#[test]
+fn child_bootstrap_keeps_the_two_mebibyte_guard_at_deep_source_calls() {
+    std::thread::Builder::new().stack_size(2*1024*1024).spawn(||{
+        let mut realm=host();
+        realm.eval("function descend(n){if(n>0)return descend(n-1);return $262.createRealm();}").unwrap();
+        let mut successes=0;
+        let mut guarded_depth=None;
+        // Expression evaluation and calls have separate native-stack guards.
+        // Reach whichever applies first, exercising bootstrap at every
+        // successful depth on the same 2 MiB thread.
+        for depth in 0..=32 {
+            match realm.eval(&format!("descend({depth})")) {
+                Ok(Value::Object(_))=>successes+=1,
+                Err(Error::Limit{..})=>{guarded_depth=Some(depth);break;},
+                result=>panic!("depth {depth}: {result:?}"),
+            }
+            realm.clear_kept_objects().unwrap();realm.collect(usize::MAX).unwrap();
+        }
+        assert!(successes>=2);
+        let depth=guarded_depth.expect("native-stack guard");
+        assert!(matches!(realm.eval(&format!("let caught=0,finalized=0;try{{descend({depth});}}catch(e){{caught++;}}finally{{finalized++;}}")),Err(Error::Limit{..})));
+        check(&mut realm,"caught===0 && finalized===0 && Object.getPrototypeOf((()=>[])())===Array.prototype");
+    }).unwrap().join().unwrap();
+}
+
+#[test]
+fn suspending_workers_create_child_realms_on_the_same_agent() {
+    let mut realm = host();
+    realm.eval(r#"$262.agent.start("let child=$262.createRealm();child.evalScript(\"$262.agent.report('child')\");$262.agent.leaving();");"#).unwrap();
+    assert_eq!(
+        next_agent_report(&mut realm).unwrap(),
+        spite_core::JsString::from("child")
+    );
+    realm.finish_test262_agents().unwrap();
 }

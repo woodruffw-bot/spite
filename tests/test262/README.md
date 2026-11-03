@@ -5,6 +5,21 @@ These 11671 unmodified test fixtures and twenty-six harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Same-Agent child-Realm host support
+
+The runner's explicit $262 host now supplies createRealm, independent child
+globals/intrinsics, child evalScript and nested creation on the same Agent.
+Native regressions cover Realm ownership across calls, construction, source and
+native iterator resumes, Promise jobs, finalization cleanup and GC. Host tests
+also cover shared symbols/atomic backing, workers, caller work/heap limits and
+the 2 MiB native-stack constraint. Existing unavailable-host controls probe
+IsHTMLDDA; a new positive runner control covers both Script modes.
+
+Counts remain 11,671 unchanged fixtures, twenty-six helpers, 11,586 reviewed
+sources and 22,206 variants, with 78 runner controls. Runtime has 700 case files.
+Foreign-Realm exclusions in the cohort notes below are now eligible for separate
+admission reviews.
+
 ## BigInt formatter metadata
 
 Four unchanged originals verify BigInt.prototype.toString's zero length, name,

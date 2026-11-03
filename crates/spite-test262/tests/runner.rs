@@ -427,9 +427,9 @@ fn unsupported_host_helpers_never_appear_missing_or_undefined() {
     for body in [
         "print",
         "$DONE",
-        "$262.createRealm",
+        "Reflect.get($262,'IsHTMLDDA')",
         "typeof print",
-        "typeof $262.createRealm",
+        "typeof $262.createRealm().IsHTMLDDA",
         "$262.AbstractModuleSource",
         "typeof $262.AbstractModuleSource",
         "typeof $262.IsHTMLDDA",
@@ -562,7 +562,7 @@ fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
     }
     let cases = run(
         "flags: [CanBlockIsTrue]\nnegative:\n  phase: runtime\n  type: TypeError",
-        "try{$262.createRealm}catch(e){throw new TypeError()}finally{throw new TypeError()}",
+        "try{$262.createRealm().IsHTMLDDA}catch(e){throw new TypeError()}finally{throw new TypeError()}",
     );
     assert!(
         cases
@@ -894,4 +894,27 @@ fn worker_exceptions_and_unsupported_syntax_cannot_satisfy_main_runtime_negative
             .all(|case| matches!(case.outcome, Outcome::Unsupported { .. })),
         "{cases:?}"
     );
+}
+
+#[test]
+fn child_realm_globals_intrinsics_and_shared_symbols_work_in_both_runner_modes() {
+    let cases = Runner::default()
+        .run(
+            &source(
+                "",
+                r#"
+        let child=$262.createRealm();child.evalScript('var own=7');
+        if(child.global===globalThis || typeof own!=='undefined' ||
+            Object.getPrototypeOf(child.evalScript('[]'))!==child.global.Array.prototype ||
+            Symbol.for('shared')!==child.global.Symbol.for('shared'))throw new Error('child Realm');
+    "#,
+            ),
+            None,
+            |_| Ok("".into()),
+        )
+        .unwrap();
+    assert_eq!(cases.len(), 2);
+    for case in cases {
+        assert!(matches!(case.outcome, Outcome::Passed), "{case:?}");
+    }
 }

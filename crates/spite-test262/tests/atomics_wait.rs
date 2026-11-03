@@ -70,7 +70,7 @@ fn timer_reaction_errors_keep_runtime_phase_and_host_failures_never_pass_negativ
             .iter()
             .all(|outcome| matches!(outcome, Outcome::Failed { .. }))
     );
-    let unavailable = "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(8)),0,0,1).value.then(()=>$262.createRealm).catch($DONE);";
+    let unavailable = "Atomics.waitAsync(new Int32Array(new SharedArrayBuffer(8)),0,0,1).value.then(()=>$262.IsHTMLDDA).catch($DONE);";
     assert!(
         run(metadata, unavailable)
             .iter()
@@ -96,7 +96,7 @@ fn callback_failures_keep_worker_provenance_and_never_pass_main_negatives() {
     let metadata = "negative:\n  phase: runtime\n  type: TypeError";
     for (callback, unsupported) in [
         ("throw new TypeError('worker')", false),
-        ("typeof $262.createRealm", true),
+        ("typeof $262.IsHTMLDDA", true),
     ] {
         let worker = format!("$262.agent.receiveBroadcast(function(buffer){{{callback}}})");
         let body = format!(

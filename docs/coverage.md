@@ -63,6 +63,37 @@ not an alternative language specification.
 
 
 
+## Same-Agent Test262 child Realms
+
+The explicit Test262 host now exposes createRealm. Each call returns a fresh
+child host object with independent globals, intrinsics and template cache on
+the existing Agent's heap. Symbols, shared atomic storage, job queues and kept
+objects remain Agent-wide. Fixed native bootstrap preserves the caller's source
+context, tail state, work balance and job flag on success and failure. Source
+execution keeps its configured allowance; heap/property limits apply to setup.
+Children inherit the caller's unavailable-host names, import-attribute support
+and time-zone choice. Ordinary Rust Realm instances remain isolated Agents.
+
+Seven public host groups cover native metadata, nested creation, global and
+intrinsic isolation, strict callers and module referrers, retained private
+intrinsics/templates through GC, shared symbols/atomic backing/jobs, heap-abort
+restoration, suspending workers and bootstrap at each permitted source-call depth
+on a 2 MiB thread. Two private groups verify exact saved-state restoration and
+that repeated creation cannot reset script or job work limits. All 38 private
+Realm groups and 28 host groups pass. Runtime has 570 unit tests and 5,031
+integration groups, including 2,414 non-RegExp groups.
+
+Unavailable-facility controls now probe IsHTMLDDA, including Reflect and child
+host access, while positive tests cover createRealm. Every existing test group
+is retained. One new runner group checks both Script modes. The original corpus
+is unchanged at 22,206 variants, with 78 runner controls. Previously deferred
+foreign-Realm sources need separate admission reviews.
+
+Final verification passes all 570 Runtime unit tests, all 5,031 integration
+groups (including RegExp), 22,206 pinned Test262 variants and 78 runner controls.
+Formatting, strict workspace Clippy, Rust 1.99 all-target checks, dependency and
+fixture policies, CLI tests and workspace doctests also pass.
+
 ## FinalizationRegistry creation Realm and cleanup context
 
 Registries retain and trace their constructor's creation Realm independently of

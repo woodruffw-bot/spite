@@ -94,6 +94,7 @@ pub(crate) use bound::BoundFunction;
 pub(crate) enum Builtin {
     DetachArrayBuffer,
     EvalScript,
+    CreateRealm,
     RequestGc,
     Test262Agent(test262_host::agent::Method),
     UnavailableHost(&'static str),
@@ -429,6 +430,7 @@ impl Builtin {
         match self {
             Self::DetachArrayBuffer => "detachArrayBuffer",
             Self::EvalScript => "evalScript",
+            Self::CreateRealm => "createRealm",
             Self::RequestGc => "gc",
             Self::Test262Agent(method) => method.name(),
             Self::UnavailableHost(name) => name,
@@ -744,6 +746,7 @@ impl Builtin {
         match self {
             Self::DetachArrayBuffer => 1.0,
             Self::EvalScript => 1.0,
+            Self::CreateRealm => 0.0,
             Self::RequestGc => 0.0,
             Self::Test262Agent(method) => method.length(),
             Self::UnavailableHost(_) => 0.0,

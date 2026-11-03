@@ -16,9 +16,10 @@ pub(crate) use agent::AgentContext;
 impl Realm {
     /// Installs a fresh partial Test262 `$262` host object in this realm.
     ///
-    /// The object exposes `global`, `detachArrayBuffer`, global `evalScript` and
-    /// requested collection through `gc`. Its agent object starts isolated
-    /// suspending workers, transfers string reports and provides native sleep
+    /// The object exposes `global`, `createRealm`, `detachArrayBuffer`, global
+    /// `evalScript` and requested collection through `gc`. Child Realms have
+    /// independent globals and intrinsics on the same Agent's heap. The agent
+    /// interface starts isolated suspending workers, transfers string reports and provides native sleep
     /// and a monotonic clock. Shared-buffer broadcasts acknowledge worker retrieval
     /// before invoking callbacks. Service collection requests with
     /// [`Self::run_requested_gc`] after JavaScript returns. Accessing
@@ -38,6 +39,7 @@ impl Realm {
         for (name, builtin) in [
             ("detachArrayBuffer", Builtin::DetachArrayBuffer),
             ("evalScript", Builtin::EvalScript),
+            ("createRealm", Builtin::CreateRealm),
             ("gc", Builtin::RequestGc),
         ] {
             let method = self.new_builtin(&function_prototype, builtin, span)?;
@@ -53,7 +55,6 @@ impl Realm {
         let agent = self.test262_agent_object(&object_prototype, &function_prototype, span)?;
         self.define_builtin_property(&host, "agent", Value::Object(agent), true, span)?;
         for (name, getter_name) in [
-            ("createRealm", "get createRealm"),
             ("IsHTMLDDA", "get IsHTMLDDA"),
             ("AbstractModuleSource", "get AbstractModuleSource"),
         ] {
@@ -88,6 +89,16 @@ impl Realm {
             .into(),
             span,
         )
+    }
+
+    pub(super) fn host_create_realm(&mut self, span: Span) -> Result<Value, Error> {
+        self.with_new_realm(span, |realm| {
+            realm.install_test262_host()?;
+            // This fresh data property cannot run user code during bootstrap.
+            let global = realm.global_object();
+            realm.get_property(&global, &JsString::from("$262"), span)
+        })
+        .map(|(_, host)| host)
     }
 
     pub(super) fn host_eval_script(&mut self, source: Value, span: Span) -> Result<Value, Error> {

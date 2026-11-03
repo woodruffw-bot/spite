@@ -1589,3 +1589,111 @@ fn foreign_finalization_preflight_refusals_and_started_host_aborts_restore_the_c
         crate::FinalizationCleanupOutcome::NoJob
     ));
 }
+
+#[test]
+fn child_bootstrap_failure_restores_owned_source_context_job_flags_and_allowance() {
+    let mut realm = Realm::default();
+    realm.install_test262_host().unwrap();
+    let span = Span::new(0, 0);
+    let parent = realm.record.global_environment.clone().unwrap();
+    realm
+        .push_scope(std::collections::BTreeMap::new(), span)
+        .unwrap();
+    let scopes = realm.scopes.clone();
+    let variable = realm.scopes.last().cloned();
+    realm.variable_environment = variable.clone();
+    realm.strict = true;
+    realm.tail_scope = Some(1);
+    realm.limits.max_steps = Some(1000);
+    realm.remaining_steps = Some(41);
+    realm.job_active = true;
+    realm
+        .record
+        .unsupported_host_globals
+        .insert("console".into());
+    let result = realm.with_new_realm::<()>(span, |child| {
+        child.install_test262_host()?;
+        let global = child.global_object();
+        assert!(matches!(
+            child.get_property(&global, &spite_core::JsString::from("console"), span),
+            Err(Error::Unsupported { .. })
+        ));
+        assert!(child.job_active);
+        assert!(!child.strict);
+        assert_eq!(child.scopes.len(), 1);
+        Err(Error::Host {
+            span,
+            message: "stop initialization".into(),
+        })
+    });
+    assert!(matches!(result,Err(Error::Host{message,..}) if message=="stop initialization"));
+    assert_eq!(realm.record.global_environment.as_ref(), Some(&parent));
+    assert_eq!(realm.scopes, scopes);
+    assert_eq!(realm.variable_environment, variable);
+    assert!(realm.strict);
+    assert_eq!(realm.tail_scope, Some(1));
+    assert_eq!(realm.remaining_steps, Some(41));
+    assert!(realm.job_active);
+    realm.scopes.truncate(1);
+    realm.variable_environment = None;
+    realm.strict = false;
+    realm.tail_scope = None;
+    realm.limits.max_steps = None;
+    realm.remaining_steps = None;
+    realm.job_active = false;
+    assert_eq!(
+        realm.eval("Object.getPrototypeOf((()=>[])())===Array.prototype"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
+fn repeated_public_child_creation_cannot_reset_script_or_job_work_allowances() {
+    let mut realm = Realm::default();
+    realm.install_test262_host().unwrap();
+    realm
+        .eval(
+            r#"
+        var controller=(function(create){let count=0;return {
+            run(){while(count<256){create();count++;}},
+            read(){return count;},reset(){count=0;}
+        };})($262.createRealm);
+    "#,
+        )
+        .unwrap();
+    let run = realm.eval("controller.run").unwrap();
+    realm.limits.max_steps = Some(1000);
+    realm.remaining_steps = Some(1000);
+    assert!(matches!(
+        realm.call(run, Value::Undefined, vec![], Span::new(0, 0)),
+        Err(Error::Limit { .. })
+    ));
+    assert!(
+        realm
+            .remaining_steps
+            .is_some_and(|remaining| remaining <= 1000)
+    );
+    assert!(!realm.job_active);
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+    realm.limits.max_steps = None;
+    assert_eq!(
+        realm.eval("controller.read()>0 && controller.read()<256"),
+        Ok(Value::Boolean(true))
+    );
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    realm
+        .eval("controller.reset();Promise.resolve().then(controller.run);")
+        .unwrap();
+    realm.limits.max_steps = Some(1000);
+    assert!(matches!(
+        realm.run_next_promise_job().unwrap(),
+        crate::PromiseJobOutcome::Reported(Error::Limit { .. })
+    ));
+    assert!(!realm.job_active);
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+    realm.limits.max_steps = None;
+    assert_eq!(realm.eval("controller.read()>0 && controller.read()<256 && Object.getPrototypeOf((()=>[])())===Array.prototype"),Ok(Value::Boolean(true)));
+}

@@ -1,7 +1,10 @@
 //! Owned Realm data, separate from the Agent's heap, jobs and execution context (9.3).
 
-use crate::{ObjectHandle, TimeZone, environment::EnvironmentHandle, function::Intrinsics};
-use spite_core::JsString;
+use crate::{
+    Error, ObjectHandle, Realm, TimeZone, environment::EnvironmentHandle, function::Intrinsics,
+    object::source_context::SourceExecutionContext,
+};
+use spite_core::{JsString, Span};
 use spite_heap::Trace;
 use spite_parser::ast::TemplateElement;
 use std::{collections::BTreeSet, rc::Rc};
@@ -33,52 +36,91 @@ impl Trace for RealmRecord {
     }
 }
 
+impl Realm {
+    // Bootstrap a new Realm on this Agent's heap. Fixed intrinsic and host setup
+    // runs outside Script work limits; initialize must restore an allowance
+    // before executing any source. Neither initialization nor evaluation
+    // collects, so the temporarily owned caller record stays live throughout.
+    pub(super) fn with_new_realm<T>(
+        &mut self,
+        span: Span,
+        initialize: impl FnOnce(&mut Self) -> Result<T, Error>,
+    ) -> Result<(EnvironmentHandle, T), Error> {
+        let parent_environment =
+            self.record
+                .global_environment
+                .clone()
+                .ok_or_else(|| Error::Host {
+                    span,
+                    message: "caller Realm is not initialized".into(),
+                })?;
+        let child = RealmRecord {
+            unsupported_host_globals: self.record.unsupported_host_globals.clone(),
+            supported_import_attributes: self.record.supported_import_attributes.clone(),
+            time_zone: self.record.time_zone.clone(),
+            ..RealmRecord::default()
+        };
+        let parent = std::mem::replace(&mut self.record, child);
+        let caller = SourceExecutionContext {
+            scopes: std::mem::take(&mut self.scopes),
+            variable: self.variable_environment.take(),
+            strict: std::mem::replace(&mut self.strict, false),
+            module: self.active_module.take(),
+        };
+        let tail_scope = self.tail_scope.take();
+        let work = self.remaining_steps;
+        let job = std::mem::replace(&mut self.job_active, true);
+        self.objects.clear_active_function_realm();
+        let result = self.initialize_realm().and_then(|()| initialize(self));
+        let result = match result {
+            Err(error @ Error::Exception { .. }) if self.record.intrinsics.is_some() => {
+                match self.language_exception_value(error) {
+                    Ok(value) => Err(Error::Thrown(value)),
+                    Err(error) => Err(error),
+                }
+            }
+            result => result,
+        };
+        let child = std::mem::replace(&mut self.record, parent);
+        let environment = child.global_environment.clone();
+        if let Some(environment) = &environment {
+            // Keep even a partially initialized record coherent until idle GC.
+            // A thrown language value may also retain this Realm on failure.
+            let target = self
+                .objects
+                .environment_mut(environment)
+                .expect("bootstrap environment remains live without collection");
+            debug_assert!(target.inactive_realm.is_none());
+            target.inactive_realm = Some(Box::new(child));
+        }
+        self.scopes = caller.scopes;
+        self.variable_environment = caller.variable;
+        self.strict = caller.strict;
+        self.active_module = caller.module;
+        self.tail_scope = tail_scope;
+        self.remaining_steps = work;
+        self.job_active = job;
+        self.objects
+            .set_active_function_realm(&parent_environment)
+            .expect("caller remains live without collection");
+        result.map(|value| (environment.expect("initialized child Realm"), value))
+    }
+}
+
 #[cfg(test)]
 pub(crate) fn child_realm_fixture(
-    realm: &mut crate::Realm,
+    realm: &mut Realm,
     source: &str,
 ) -> (EnvironmentHandle, crate::Value) {
-    use crate::object::source_context::SourceExecutionContext;
-
     realm.initialize_realm().unwrap();
     assert_eq!(realm.call_depth, 0);
     assert_eq!(realm.evaluation_depth, 0);
-    let child = RealmRecord {
-        unsupported_host_globals: realm.record.unsupported_host_globals.clone(),
-        supported_import_attributes: realm.record.supported_import_attributes.clone(),
-        time_zone: realm.record.time_zone.clone(),
-        ..RealmRecord::default()
-    };
-    let parent = std::mem::replace(&mut realm.record, child);
-    let caller = SourceExecutionContext {
-        scopes: std::mem::take(&mut realm.scopes),
-        variable: realm.variable_environment.take(),
-        strict: std::mem::replace(&mut realm.strict, false),
-        module: realm.active_module.take(),
-    };
-    let work = realm.remaining_steps;
-    let job = std::mem::replace(&mut realm.job_active, true);
-    realm.initialize_realm().unwrap();
-    realm.remaining_steps = realm.limits.max_steps;
-    let value = realm.eval(source).unwrap();
-    let child = std::mem::replace(&mut realm.record, parent);
-    let environment = child.global_environment.clone().unwrap();
     realm
-        .objects
-        .environment_mut(&environment)
+        .with_new_realm(Span::new(0, 0), |realm| {
+            realm.remaining_steps = realm.limits.max_steps;
+            realm.eval(source)
+        })
         .unwrap()
-        .inactive_realm = Some(Box::new(child));
-    realm.scopes = caller.scopes;
-    realm.variable_environment = caller.variable;
-    realm.strict = caller.strict;
-    realm.active_module = caller.module;
-    realm.remaining_steps = work;
-    realm.job_active = job;
-    realm
-        .objects
-        .set_active_function_realm(realm.record.global_environment.as_ref().unwrap())
-        .unwrap();
-    (environment, value)
 }
 
 #[cfg(test)]

@@ -85,7 +85,7 @@ fn reported_cleanup_exceptions_retain_runtime_types_and_host_failures_never_pass
     for outcome in outcomes(
         "negative:\n  phase: runtime\n  type: ReferenceError",
         r#"
-        let registry=new FinalizationRegistry(()=>{$262.createRealm});
+        let registry=new FinalizationRegistry(()=>{$262.IsHTMLDDA});
         (function(){registry.register({},7)})();$262.gc();
     "#,
     ) {

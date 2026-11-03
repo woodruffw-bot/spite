@@ -2923,7 +2923,7 @@ property cannot make an arrow or builtin method constructible.
 
 EvaluateNew evaluates the constructor and all arguments before IsConstructor
 (13.3.5.1.1). Ordinary construction reads the current newTarget.prototype after
-arguments finish, falls back to the constructor realm's Object.prototype for any
+arguments finish, falls back to newTarget's Realm's Object.prototype for any
 non-object value, and creates a fresh receiver (10.1.13–14, 10.2.2). Parameter and
 body evaluation share ordinary call semantics; object returns replace the receiver,
 while primitive returns preserve it. Bound construction prepends captures, ignores
@@ -2935,7 +2935,9 @@ handle for construction and undefined for calls (9.1.1.3). GetNewTarget finds th
 nearest non-arrow function environment, so arrows retain the original invocation
 binding through nested scopes and after return (9.4.5, 13.3.12). Bound construction
 exposes the substituted target, and nested ordinary calls reset the binding.
-Derived constructors remain unimplemented.
+Derived constructors retain an uninitialized this binding until super returns,
+initialize their own instance elements after binding, and validate returns after
+restoring the caller's context. Default-derived forwarding remains iterative.
 
 Reflect is an ordinary object inheriting Object.prototype, with a configurable,
 non-writable Symbol.toStringTag and retained method roots (28.1). Reflect.apply
@@ -3280,13 +3282,15 @@ is an unverified result, not a conformance pass. Conformance realms reserve miss
 host helper globals, so reading or testing their type reports Unsupported rather
 than producing an accidental ReferenceError or undefined. The explicit
 Realm::install_test262_host API installs a partial $262 object with its actual
-global object, native detachArrayBuffer, global evalScript and requested gc. The detacher validates ordinary
-ArrayBuffer slots and the undefined detach key, then uses DetachArrayBuffer
-without public transfer/species hooks. Unavailable createRealm,
-IsHTMLDDA and AbstractModuleSource properties have getters that report Unsupported on access,
-including typeof. Ordinary realms receive no Test262 globals unless requested.
-Host setup respects the same optional work allowance; no quota is enlarged to
-initialize these helpers. Parse-negative tests need no harness evaluation.
+global object, native createRealm/detachArrayBuffer, global evalScript and requested
+gc. The detacher validates ordinary ArrayBuffer slots and the undefined detach
+key, then uses DetachArrayBuffer without public transfer/species hooks. IsHTMLDDA
+and AbstractModuleSource remain unavailable through getters that report
+Unsupported on access, including typeof. Ordinary realms receive no Test262
+globals unless requested. Explicit host installation uses the configured work
+allowance. A child's fixed intrinsic/host bootstrap has the initial Realm's
+pre-Script exemption and restores the caller's exact balance; heap/property
+limits remain enforced. Parse-negative tests need no harness evaluation.
 
 The String-taking evalScript host uses lossless ParseScript and ScriptEvaluation
 (Test262 INTERPRETING.md), with the normal encoded source/work limits. Syntax
@@ -4906,33 +4910,38 @@ iterative loop without observable traps or copying bound arguments. Non-object
 prototype results select the constructor-specific fallback from newTarget's
 retained intrinsic graph, without changing the running Realm. Array species
 selection normalizes another Realm's exact intrinsic Array before reading
-@@species; Proxy and bound wrappers retain their own species behavior. Public
-JavaScript still exposes one Realm per Agent.
+@@species; Proxy and bound wrappers retain their own species behavior. The
+opt-in Test262 host exposes same-Agent child Realms through createRealm.
 Concrete source and built-in function objects record their creation Realm using
 the existing global-environment handle (9.3, 7.3.24). This immutable internal edge
 is traced by the ordinary heap collector and needs no separate Realm identity
 allocation. Bootstrap establishes it before creating intrinsic functions, and
 native Promise and asynchronous callbacks use the same checked metadata.
 Bound functions and Proxies resolve through their targets. Prototype mutation
-does not change the recorded Realm. Same-agent child Realms and execution-context
-switching remain unimplemented.
+does not change the recorded Realm. Calls, construction, saved source execution,
+iterator closures and queued jobs activate their recorded Realms.
 The interpreter keeps the global object, intrinsic graph, template registry and
 Realm-specific host settings in one owned RealmRecord. Heap storage, job queues,
 agent control and current source execution state stay outside that record. Field
 access is explicit; no shared ownership, interior mutability or pointer access
-is needed to move the Realm data as a unit. Same-agent child-Realm creation is
-not yet exposed through JavaScript or the public host API.
+is needed to move the Realm data as a unit. Ordinary Rust Realm instances each
+own an isolated Agent. The Test262 host creates child Realm records on its
+Agent's existing heap, with independent globals, intrinsics and template caches.
+Children inherit unavailable-host names, supported import attributes and the
+caller's time-zone choice. Symbols, buffers, jobs, kept roots and limits stay
+Agent-wide.
 The record also keeps its checked global-environment identity. A global
 environment has an optional boxed record for inactive Realm data; tracing that
 record retains the global object, hidden intrinsic handles and cached template
 arrays even after public properties are removed. These are ordinary traced
-handle cycles, so dropping the last external function root lets the whole
-inactive Realm be collected. Active root scans and the initialized heap count
-are unchanged. Native same-agent fixtures exercise this storage.
+handle cycles, so dropping the last external root lets the whole inactive Realm
+be collected. A registry, Module or suspended iterator can retain its own Realm
+without a mutable-prototype path. Active root scans and the standard initialized
+heap count are unchanged.
 Concrete [[Call]] dispatch activates the function's recorded Realm after Proxy
 and bound forwarding. It validates and pays for a foreign transition before
-moving state, swaps the active record with an existing inactive Box, and uses
-the shared source-context driver to restore scopes, strictness and variables.
+moving state, swaps the active record with an existing inactive Box, and retains
+caller scopes, strictness and variables in owned transition state.
 The computed caller ScriptOrModule fallback is preserved for built-ins (9.4.1,
 10.3); source drivers install their defining context. Typed foreign exceptions
 become Error objects before their Realm is removed. Host failures restore state
@@ -4944,8 +4953,28 @@ scoped call wrapper uses the same primitives. A caller can retain and unwind
 these values iteratively; the values do not borrow the interpreter and cannot
 be cloned. Same-Realm entries keep the existing fast path. Exit materializes a
 typed foreign exception before restoring the owned record and caller fields.
-Constructor execution-context activation, foreign source resumption and
-queued-job Realm selection remain incomplete; the Test262 createRealm facility
-stays unavailable until those paths are ready.
+Explicit source base constructors allocate this in the caller's Realm before
+entry; fields, parameters and bodies run in the callee's Realm. Tail forwarding
+and derived-return validation follow restoration. Native/default constructors
+run in their creation Realm. Default-derived contexts remain suspended across
+superclass construction and unwind iteratively, including on host failures.
+
+Saved source resumptions use their retained global environment. Map, Set, String
+and Iterator Helper closures retain their creation Realm for yields and pop it
+before allocating final results in the native method's Realm. Array and RegExp
+String iterators use their separate ordinary-slot algorithms. Cold Module
+records retain their creation Realm before linking selects its global environment.
+Promise jobs capture callback Realms at enqueue, including the current-Realm
+fallback for revoked callbacks, and enter before resolving-function creation.
+Finalization jobs use the registry's retained Realm under the host policy above.
+
+Child bootstrap temporarily owns the caller record while initializing a cold
+record and fixed native host graph. This phase executes no user source and
+cannot collect. It restores caller scopes, variable environment, strictness,
+module fallback, tail state, remaining work, job flag and factory ownership on
+every Result. Partially initialized records remain coherent until idle GC.
+Repeated createRealm cannot reset an opted-in source or job allowance. The native
+fixture builder uses the same path and reinstates the configured allowance before
+executing fixture source.
 Resource quotas remain opt-in. The owned-record grouping preserves the current
 initialized Realm's 591 heap entries.

@@ -108,7 +108,7 @@ fn job_host_failures_preserve_nonpassing_categories() {
     let unsupported = run_with(
         Runner::default(),
         "negative:\n  phase: runtime\n  type: ReferenceError",
-        "Promise.resolve().then(()=>{$262.createRealm()}).then($DONE,$DONE)",
+        "Promise.resolve().then(()=>{$262.IsHTMLDDA()}).then($DONE,$DONE)",
     );
     assert!(unsupported.iter().all(|outcome| matches!(
         outcome,
