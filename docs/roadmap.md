@@ -52,6 +52,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add optional property/call chains with lazy nullish checks, preserved references/receivers, grouping boundaries, deletion, and write/tag/constructor early errors.
 - [x] Implement edition-17 legacy numeric/string literals and strict lexical early errors.
 - [x] Add while and do-while loops, including completion values and ASI.
+- [x] Audit if/while/do-while conditions, completion propagation, declaration placement and contextual grammar boundaries.
 - [x] Add unlabelled break and continue with completion propagation and early errors.
 - [x] Add labelled statements, labelled control transfers, and label early errors.
 - [x] Audit basic statement/control-transfer grammar, label and iteration target scope, private/reserved names, and block tail calls.

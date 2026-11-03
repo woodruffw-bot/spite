@@ -14252,3 +14252,138 @@ test/language/statements/with/set-mutable-binding-binding-deleted-with-typed-arr
 test/language/statements/with/set-mutable-binding-binding-deleted-with-typed-array-in-proto-chain.js	-	-	-
 test/language/statements/with/set-mutable-binding-idref-compound-assign-with-proxy-env.js	-	-	-
 test/language/statements/with/set-mutable-binding-idref-with-proxy-env.js	-	-	-
+test/language/statements/do-while/S12.6.1_A1.js	-	-	-
+test/language/statements/do-while/S12.6.1_A10.js	-	-	-
+test/language/statements/do-while/S12.6.1_A11.js	-	-	-
+test/language/statements/do-while/S12.6.1_A12.js	477	480	expected while
+test/language/statements/do-while/S12.6.1_A14_T1.js	-	-	-
+test/language/statements/do-while/S12.6.1_A14_T2.js	-	-	-
+test/language/statements/do-while/S12.6.1_A15.js	440	441	expected a colon after property name
+test/language/statements/do-while/S12.6.1_A2.js	-	-	-
+test/language/statements/do-while/S12.6.1_A3.js	-	-	-
+test/language/statements/do-while/S12.6.1_A4_T1.js	-	-	-
+test/language/statements/do-while/S12.6.1_A4_T2.js	-	-	-
+test/language/statements/do-while/S12.6.1_A4_T3.js	-	-	-
+test/language/statements/do-while/S12.6.1_A4_T4.js	-	-	-
+test/language/statements/do-while/S12.6.1_A4_T5.js	-	-	-
+test/language/statements/do-while/S12.6.1_A5.js	-	-	-
+test/language/statements/do-while/S12.6.1_A6_T1.js	469	470	expected (
+test/language/statements/do-while/S12.6.1_A6_T2.js	469	470	expected (
+test/language/statements/do-while/S12.6.1_A6_T3.js	471	475	expected (
+test/language/statements/do-while/S12.6.1_A6_T4.js	472	477	expected (
+test/language/statements/do-while/S12.6.1_A6_T5.js	469	471	expected (
+test/language/statements/do-while/S12.6.1_A6_T6.js	473	479	expected (
+test/language/statements/do-while/S12.6.1_A7.js	-	-	-
+test/language/statements/do-while/S12.6.1_A8.js	-	-	-
+test/language/statements/do-while/S12.6.1_A9.js	-	-	-
+test/language/statements/do-while/cptn-abrupt-empty.js	-	-	-
+test/language/statements/do-while/cptn-normal.js	-	-	-
+test/language/statements/do-while/decl-async-fun.js	522	527	declaration requires a statement list
+test/language/statements/do-while/decl-async-gen.js	523	528	declaration requires a statement list
+test/language/statements/do-while/decl-cls.js	326	331	declaration requires a statement list
+test/language/statements/do-while/decl-const.js	336	341	lexical declaration requires a statement list
+test/language/statements/do-while/decl-fun.js	329	337	function declaration requires a statement list
+test/language/statements/do-while/decl-gen.js	353	361	function declaration requires a statement list
+test/language/statements/do-while/decl-let.js	340	341	expected a semicolon or line terminator
+test/language/statements/do-while/labelled-fn-stmt.js	566	574	labelled functions are not allowed
+test/language/statements/do-while/let-array-with-newline.js	511	514	expression statement cannot start with let [
+test/language/statements/if/S12.5_A1.1_T1.js	-	-	-
+test/language/statements/if/S12.5_A1.1_T2.js	-	-	-
+test/language/statements/if/S12.5_A1.2_T1.js	-	-	-
+test/language/statements/if/S12.5_A1.2_T2.js	-	-	-
+test/language/statements/if/S12.5_A10_T1.js	-	-	-
+test/language/statements/if/S12.5_A10_T2.js	-	-	-
+test/language/statements/if/S12.5_A11.js	427	428	expected a colon after property name
+test/language/statements/if/S12.5_A12_T1.js	-	-	-
+test/language/statements/if/S12.5_A12_T2.js	-	-	-
+test/language/statements/if/S12.5_A12_T3.js	-	-	-
+test/language/statements/if/S12.5_A12_T4.js	-	-	-
+test/language/statements/if/S12.5_A1_T1.js	-	-	-
+test/language/statements/if/S12.5_A1_T2.js	-	-	-
+test/language/statements/if/S12.5_A2.js	-	-	-
+test/language/statements/if/S12.5_A3.js	-	-	-
+test/language/statements/if/S12.5_A4.js	-	-	-
+test/language/statements/if/S12.5_A5.js	-	-	-
+test/language/statements/if/S12.5_A6_T1.js	438	442	expected (
+test/language/statements/if/S12.5_A6_T2.js	439	444	expected (
+test/language/statements/if/S12.5_A8.js	428	429	expected an expression
+test/language/statements/if/cptn-else-false-abrupt-empty.js	-	-	-
+test/language/statements/if/cptn-else-false-nrml.js	-	-	-
+test/language/statements/if/cptn-else-true-abrupt-empty.js	-	-	-
+test/language/statements/if/cptn-else-true-nrml.js	-	-	-
+test/language/statements/if/cptn-empty-statement.js	-	-	-
+test/language/statements/if/cptn-no-else-false.js	-	-	-
+test/language/statements/if/cptn-no-else-true-abrupt-empty.js	-	-	-
+test/language/statements/if/cptn-no-else-true-nrml.js	-	-	-
+test/language/statements/if/empty-statement.js	-	-	-
+test/language/statements/if/if-async-fun-else-async-fun.js	523	528	declaration requires a statement list
+test/language/statements/if/if-async-fun-else-stmt.js	523	528	declaration requires a statement list
+test/language/statements/if/if-async-fun-no-else.js	523	528	declaration requires a statement list
+test/language/statements/if/if-async-gen-else-async-gen.js	524	529	declaration requires a statement list
+test/language/statements/if/if-async-gen-else-stmt.js	524	529	declaration requires a statement list
+test/language/statements/if/if-async-gen-no-else.js	524	529	declaration requires a statement list
+test/language/statements/if/if-cls-else-cls.js	325	330	declaration requires a statement list
+test/language/statements/if/if-cls-else-stmt.js	325	330	declaration requires a statement list
+test/language/statements/if/if-cls-no-else.js	325	330	declaration requires a statement list
+test/language/statements/if/if-const-else-const.js	335	340	lexical declaration requires a statement list
+test/language/statements/if/if-const-else-stmt.js	335	340	lexical declaration requires a statement list
+test/language/statements/if/if-const-no-else.js	335	340	lexical declaration requires a statement list
+test/language/statements/if/if-decl-else-decl-strict.js	947	955	function declaration requires a statement list
+test/language/statements/if/if-decl-else-stmt-strict.js	951	959	function declaration requires a statement list
+test/language/statements/if/if-decl-no-else-strict.js	923	931	function declaration requires a statement list
+test/language/statements/if/if-fun-else-fun-strict.js	969	977	function declaration requires a statement list
+test/language/statements/if/if-fun-else-stmt-strict.js	973	981	function declaration requires a statement list
+test/language/statements/if/if-fun-no-else-strict.js	945	953	function declaration requires a statement list
+test/language/statements/if/if-gen-else-gen.js	352	360	function declaration requires a statement list
+test/language/statements/if/if-gen-else-stmt.js	352	360	function declaration requires a statement list
+test/language/statements/if/if-gen-no-else.js	352	360	function declaration requires a statement list
+test/language/statements/if/if-let-else-let.js	337	338	expected a semicolon or line terminator
+test/language/statements/if/if-let-else-stmt.js	337	338	expected a semicolon or line terminator
+test/language/statements/if/if-let-no-else.js	337	338	expected a semicolon or line terminator
+test/language/statements/if/if-stmt-else-async-fun.js	531	536	declaration requires a statement list
+test/language/statements/if/if-stmt-else-async-gen.js	532	537	declaration requires a statement list
+test/language/statements/if/if-stmt-else-cls.js	333	338	declaration requires a statement list
+test/language/statements/if/if-stmt-else-const.js	343	348	lexical declaration requires a statement list
+test/language/statements/if/if-stmt-else-decl-strict.js	1020	1028	function declaration requires a statement list
+test/language/statements/if/if-stmt-else-fun-strict.js	1042	1050	function declaration requires a statement list
+test/language/statements/if/if-stmt-else-gen.js	360	368	function declaration requires a statement list
+test/language/statements/if/if-stmt-else-let.js	345	346	expected a semicolon or line terminator
+test/language/statements/if/labelled-fn-stmt-first.js	816	824	labelled functions are not allowed
+test/language/statements/if/labelled-fn-stmt-lone.js	807	815	labelled functions are not allowed
+test/language/statements/if/labelled-fn-stmt-second.js	823	831	labelled functions are not allowed
+test/language/statements/if/let-array-with-newline.js	513	516	expression statement cannot start with let [
+test/language/statements/while/S12.6.2_A1.js	-	-	-
+test/language/statements/while/S12.6.2_A10.js	-	-	-
+test/language/statements/while/S12.6.2_A11.js	-	-	-
+test/language/statements/while/S12.6.2_A14_T1.js	-	-	-
+test/language/statements/while/S12.6.2_A14_T2.js	-	-	-
+test/language/statements/while/S12.6.2_A15.js	411	412	expected a colon after property name
+test/language/statements/while/S12.6.2_A2.js	-	-	-
+test/language/statements/while/S12.6.2_A3.js	-	-	-
+test/language/statements/while/S12.6.2_A4_T1.js	-	-	-
+test/language/statements/while/S12.6.2_A4_T2.js	-	-	-
+test/language/statements/while/S12.6.2_A4_T3.js	-	-	-
+test/language/statements/while/S12.6.2_A4_T4.js	-	-	-
+test/language/statements/while/S12.6.2_A4_T5.js	-	-	-
+test/language/statements/while/S12.6.2_A5.js	-	-	-
+test/language/statements/while/S12.6.2_A6_T1.js	457	458	expected (
+test/language/statements/while/S12.6.2_A6_T2.js	457	458	expected (
+test/language/statements/while/S12.6.2_A6_T3.js	460	464	expected (
+test/language/statements/while/S12.6.2_A6_T4.js	461	466	expected (
+test/language/statements/while/S12.6.2_A6_T5.js	458	460	expected (
+test/language/statements/while/S12.6.2_A6_T6.js	462	468	expected (
+test/language/statements/while/S12.6.2_A7.js	-	-	-
+test/language/statements/while/S12.6.2_A8.js	-	-	-
+test/language/statements/while/S12.6.2_A9.js	-	-	-
+test/language/statements/while/cptn-abrupt-empty.js	-	-	-
+test/language/statements/while/cptn-iter.js	-	-	-
+test/language/statements/while/cptn-no-iter.js	-	-	-
+test/language/statements/while/decl-async-fun.js	530	535	declaration requires a statement list
+test/language/statements/while/decl-async-gen.js	531	536	declaration requires a statement list
+test/language/statements/while/decl-cls.js	334	339	declaration requires a statement list
+test/language/statements/while/decl-const.js	344	349	lexical declaration requires a statement list
+test/language/statements/while/decl-fun.js	337	345	function declaration requires a statement list
+test/language/statements/while/decl-gen.js	361	369	function declaration requires a statement list
+test/language/statements/while/decl-let.js	346	347	expected a semicolon or line terminator
+test/language/statements/while/labelled-fn-stmt.js	577	585	labelled functions are not allowed
+test/language/statements/while/let-array-with-newline.js	519	522	expression statement cannot start with let [
