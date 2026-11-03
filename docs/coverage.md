@@ -59,9 +59,33 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22407 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22696 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Type and reference operator audit
+
+All 164 whole originals from the pinned typeof, instanceof, in and delete
+directories add 289 modes: 270 evaluated positives and 19 reviewed parse
+negatives from eleven files. They cover primitive and callable brands, custom
+Symbol.hasInstance lookup/conversion, operand/coercion order, references and
+unresolvable names, deletion descriptors and strictness, and private-in grammar
+and brands. Every source matches its upstream Git blob and SHA-256 digest.
+
+The negative reviews identify the forbidden private token/assignment target,
+undeclared private name, invalid right-hand operand, strict yield identifier or
+strict identifier deletion. Independent CLI parsing confirms each exact message
+and byte range before mode-prefix adjustment. All candidate modes pass using
+the existing helpers and default resource limits, with no source slices or
+unsupported-negative credit.
+
+Counts are 11,936 fixtures, twenty-six helpers, 11,851 reviewed sources, 22,696
+variants and 78 runner controls. Runtime and Parser implementations and native
+test inventories are unchanged.
+
+The complete gate passes all 22,696 variants and 78 controls. Formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency and fixture policies,
+CLI tests and workspace doctests also pass.
 
 ## Cross-Realm construction, calls and Proxy protocols
 

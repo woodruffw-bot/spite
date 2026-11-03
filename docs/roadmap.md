@@ -84,6 +84,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
 - [x] Parse/evaluate object and array destructuring assignments and synchronous for-in/of assignment heads, with nested/default/rest patterns, retained member references, ordered writes, and iterator closing.
 - [x] Implement delete for environment references and non-reference expressions.
+- [x] Audit typeof, instanceof, in and delete grammar and evaluation, including custom Symbol.hasInstance, private-in validity, reference order and strict deletion.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.
 - [x] Parse/evaluate var binding patterns in statements and for/for-in/for-of headers, with complete hoisted BoundNames, repeated bindings, and ordered ResolveBinding/PutValue through with environments.

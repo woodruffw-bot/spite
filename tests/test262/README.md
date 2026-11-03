@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11772 unmodified test fixtures and twenty-six harness files come from
+These 11936 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Type and reference operators
+
+All 164 unchanged originals from the typeof, instanceof, in and delete
+directories add 289 modes. The 270 evaluated modes cover type/callable brands,
+Symbol.hasInstance, operand order, references, property deletion and private-in.
+Eleven parse-negative files add 19 modes with exact reviewed diagnostics for
+private-name grammar/validity and strict yield/deletion errors, independently
+confirmed through CLI parsing. Every complete source matches its pinned Git
+blob and SHA-256 digest; existing helpers and default quotas are unchanged.
+
+Counts are 11,936 fixtures, twenty-six helpers, 11,851 reviewed sources, 22,696
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Cross-Realm construction and object protocols
 
