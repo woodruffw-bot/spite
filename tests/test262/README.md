@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 12265 unmodified test fixtures and twenty-six harness files come from
+These 12567 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Arithmetic and unary numeric operators
+
+All 302 unchanged originals from the nine arithmetic/unary numeric directories
+add 599 modes: 585 evaluated modes and 14 reviewed parse-negative modes from
+seven files. They cover numeric conversion/order, concatenation, signed zero,
+nonfinite values, exact BigInt arithmetic and errors, and unary-base restrictions
+before exponentiation. Independent CLI parsing confirms the exact rejection
+reviews. Every source matches its pinned Git blob and SHA-256 digest, and all
+candidate modes pass with existing helpers, flags and default limits.
+
+Counts are 12,567 fixtures, twenty-six helpers, 12,482 reviewed sources, 23,945
+variants and 78 controls. Runtime/Parser production code and case files are
+unchanged.
 
 ## Equality and ordering operators
 

@@ -92,6 +92,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add normalized integer storage, radix conversion, signed addition, and work budgets.
 - [x] Add integer multiplication and truncating division with signed remainders.
 - [x] Add integer shifts, bitwise operations, and exponentiation.
+- [x] Audit arithmetic and unary numeric operators for conversion order, signed/nonfinite Number behavior, BigInt arithmetic/errors and exponentiation grammar.
 - [x] Parse exact BigInt literals, separators, and numeric-token boundaries.
 - [x] Compare arbitrary integers with binary64 values without rounding.
 - [x] Audit abstract/strict equality and all relational comparisons, including mixed BigInt/string/Number values, unordered results and observable coercion order.
