@@ -1,9 +1,28 @@
 # Test262 regression fixtures
 
-These 17136 unmodified test fixtures and twenty-seven harness files come from
+These 19830 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete mandatory Object inventory
+
+Another 2,694 whole originals add 5,368 modes across creation, descriptor
+application, integrity levels, prototypes, construction, copying and mandatory
+prototype methods. All independent candidate batches pass: 944 create and
+defineProperties sources / 1,888 modes; 1,119 defineProperty sources / 2,226 modes;
+and 631 remaining sources / 1,254 modes. Original normal/strict flags, helpers
+and default limits are unchanged, and each source matches its pinned Git blob
+and SHA-256 digest.
+
+All 3,342 mandatory Object originals are retained. The 69 whole legacy
+__defineGetter__/__defineSetter__/__lookupGetter__/__lookupSetter__/__proto__
+files remain excluded under the existing optional-feature policy, without
+execution credit. No retained source or native group is removed or changed.
+
+Counts are 19,830 fixtures, twenty-seven helpers, 19,745 reviewed sources,
+38,034 variants and 78 controls. Production code and native inventories remain
+unchanged.
 
 ## Function boundaries and Object inspection
 
