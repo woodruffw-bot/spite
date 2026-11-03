@@ -149,6 +149,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [x] Audit ordinary/async/generator/arrow declaration and expression grammar, parameter scope and patterns, strict bindings, contextual suspension keywords and body early errors.
 - [x] Separate expression heads from precedence continuations to reduce native parser frames while preserving lexical goals and early errors.
+- [x] Separate unary/update/Await and primary-expression frames while preserving literal validation and deferred cover diagnostics.
 - [ ] Support deeper nested function-expression calls without widening native-stack allowances.
 - [x] Expose the eval intrinsic with standard metadata, global binding behavior, and the non-String identity branch of PerformEval.
 - [x] Execute indirect String eval with lossless Script compilation, global lookup, fresh lexical/strict var environments, configurable global declarations, and restored caller contexts.

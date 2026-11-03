@@ -5,6 +5,15 @@ These 25046 unmodified test fixtures and twenty-seven harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Parser unary and primary frames
+
+Unary/update/Await and primary-token parsing now use separate native frames,
+with unchanged literal validation, cover diagnostics, ASTs and lexical goals.
+All 440 Parser integration tests, eight Runtime literal groups and 72 separate
+2 MiB stack probes pass. The depth guard stays 64 and the unadmitted nested-call
+original receives no credit. Counts remain 25,046 fixtures, twenty-seven helpers,
+24,961 reviewed sources, 48,159 variants and 78 controls.
+
 ## Parser expression-frame separation
 
 Expression heads and continuations now use separate native frames. Parser

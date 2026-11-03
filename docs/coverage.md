@@ -63,6 +63,30 @@ not an alternative language specification.
 
 
 
+## Smaller unary and primary parser frames
+
+Prefix dispatch now selects separate operator, update, Await and primary-token
+frames. Literal validation and deferred cover diagnostics use the same paths and
+state; no Pattern or matching behavior changes. In the measured x86-64 debug
+build, the primary route uses 4,184 frame bytes instead of 7,016, unary uses
+1,528 and Await uses 1,280. Function/new dispatch retains only a 360-byte prefix
+frame before entering its existing parser.
+
+All 440 Parser integration tests, eight Runtime literal/goal integration groups
+and 72 independent 2 MiB stack probes pass. Original guard outcomes, AST shapes,
+lexical goals and exact diagnostics are preserved. MAX_DEPTH stays 64, and the
+32-level nested-function original remains unadmitted while stack work continues.
+Counts remain 25,046 fixtures, twenty-seven helpers, 24,961 reviewed sources,
+48,159 variants and 78 controls; no fixture, native test, quota or dependency is
+changed.
+
+The full Test262 package passes all 81 tests, including 48,159 corpus variants
+and 78 controls (330.34 seconds for the corpus integration binary). All 570
+Runtime unit tests, 2,414 non-RegExp integration tests and eight literal groups
+pass, as do all 440 Parser integration tests. Formatting, strict workspace
+Clippy, MSRV all-target checking, policy/inventory checks, CLI tests and
+documentation tests pass. Full RegExp integrations remain required in hosted CI.
+
 ## Smaller recursive expression parser frames
 
 Expression-head parsing now returns before precedence/postfix continuations
