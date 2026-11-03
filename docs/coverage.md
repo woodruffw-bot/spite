@@ -59,9 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 28984 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31163 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Asynchronous iteration binding audit
+
+Another 1,098 whole baseline for-await-of originals add 2,179 modes: 2,011
+asynchronous evaluated modes and 168 reviewed parse-negative modes from 87 files.
+The three independent candidate batches pass all 695, 691 and 793 modes. They
+exercise async functions and async generators, synchronous/asynchronous input
+iterators, nested/default/rest patterns, closing, inferred names, lexical/var
+bindings and per-iteration scopes. Exact CLI reviews identify invalid rest
+initializers, targets, strict yield/arguments uses, initialized for-of heads,
+escaped of and contextual let-array restrictions.
+
+One whole await-using file is excluded from the published baseline with no
+credit. Every admitted source matches its Git blob and SHA-256 digest; helpers,
+flags, async completion metadata and default limits are unchanged. Counts are
+16,375 fixtures, twenty-six helpers, 16,290 reviewed sources, 31,163 variants and
+78 controls. Runtime/Parser code and native inventories are unchanged.
+
+The full gate passes all 31,163 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests, with metadata verified before the corpus run.
 
 ## Synchronous iteration baseline audit
 

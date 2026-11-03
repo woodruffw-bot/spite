@@ -487,6 +487,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume with objects and bodies through shared object-environment creation, scope restoration and saved declarative/object var references.
 - [x] Parse for-await-of in async bodies with explicit AST iteration kind, context/head validation and a runtime boundary before iterable evaluation.
 - [x] Evaluate for-await-of through asynchronous iterator stepping and closing, shared bindings/disposal and traced pending completions.
+- [x] Audit asynchronous iteration binding patterns, closing, name inference and scopes across async functions/generators and sync/async inputs.
 - [x] Resume awaited iteration assignment targets across for-of, for-in and for-await-of with shared references and traced input values.
 - [x] Share binding default evaluation, iterator acquisition and rest collection for suspended binding initialization.
 - [x] Resume lexical array-binding defaults in declaration lists and three-clause headers with nested iterator state, rest, name inference and closing.
