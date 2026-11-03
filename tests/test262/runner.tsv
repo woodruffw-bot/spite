@@ -14387,3 +14387,382 @@ test/language/statements/while/decl-gen.js	361	369	function declaration requires
 test/language/statements/while/decl-let.js	346	347	expected a semicolon or line terminator
 test/language/statements/while/labelled-fn-stmt.js	577	585	labelled functions are not allowed
 test/language/statements/while/let-array-with-newline.js	519	522	expression statement cannot start with let [
+test/language/statements/for/12.6.3_2-3-a-ii-1.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-10.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-11.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-12.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-13.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-14.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-15.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-16.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-17.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-18.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-19.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-2.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-20.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-21.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-3.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-4.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-5.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-6.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-7.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-8.js	-	-	-
+test/language/statements/for/12.6.3_2-3-a-ii-9.js	-	-	-
+test/language/statements/for/S12.6.3_A1.js	-	-	-
+test/language/statements/for/S12.6.3_A10.1_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A10.1_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A10_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A10_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A11.1_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A11.1_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A11.1_T3.js	683	691	undefined label
+test/language/statements/for/S12.6.3_A11_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A11_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A11_T3.js	666	674	undefined label
+test/language/statements/for/S12.6.3_A12.1_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A12.1_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A12.1_T3.js	715	723	undefined label
+test/language/statements/for/S12.6.3_A12_T1.js	-	-	-
+test/language/statements/for/S12.6.3_A12_T2.js	-	-	-
+test/language/statements/for/S12.6.3_A12_T3.js	699	707	undefined label
+test/language/statements/for/S12.6.3_A13.js	-	-	-
+test/language/statements/for/S12.6.3_A14.js	-	-	-
+test/language/statements/for/S12.6.3_A15.js	-	-	-
+test/language/statements/for/S12.6.3_A2.1.js	-	-	-
+test/language/statements/for/S12.6.3_A2.2.js	-	-	-
+test/language/statements/for/S12.6.3_A2.js	-	-	-
+test/language/statements/for/S12.6.3_A3.js	-	-	-
+test/language/statements/for/S12.6.3_A4.1.js	586	587	expected )
+test/language/statements/for/S12.6.3_A4_T1.js	579	580	expected )
+test/language/statements/for/S12.6.3_A4_T2.js	570	571	invalid for-in assignment target
+test/language/statements/for/S12.6.3_A5.js	-	-	-
+test/language/statements/for/S12.6.3_A6.js	-	-	-
+test/language/statements/for/S12.6.3_A7.1_T1.js	689	690	expected )
+test/language/statements/for/S12.6.3_A7.1_T2.js	700	701	expected )
+test/language/statements/for/S12.6.3_A7_T1.js	669	670	expected )
+test/language/statements/for/S12.6.3_A7_T2.js	680	681	expected )
+test/language/statements/for/S12.6.3_A8.1_T1.js	557	559	expected }
+test/language/statements/for/S12.6.3_A8.1_T2.js	546	548	expected }
+test/language/statements/for/S12.6.3_A8.1_T3.js	530	533	expected a colon after property name
+test/language/statements/for/S12.6.3_A8_T1.js	537	539	expected }
+test/language/statements/for/S12.6.3_A8_T2.js	526	528	expected }
+test/language/statements/for/S12.6.3_A8_T3.js	519	520	initialized shorthand is not allowed in an object literal
+test/language/statements/for/cptn-decl-expr-iter.js	-	-	-
+test/language/statements/for/cptn-decl-expr-no-iter.js	-	-	-
+test/language/statements/for/cptn-expr-expr-iter.js	-	-	-
+test/language/statements/for/cptn-expr-expr-no-iter.js	-	-	-
+test/language/statements/for/decl-async-fun.js	531	536	declaration requires a statement list
+test/language/statements/for/decl-async-gen.js	532	537	declaration requires a statement list
+test/language/statements/for/decl-cls.js	335	340	declaration requires a statement list
+test/language/statements/for/decl-const.js	345	350	lexical declaration requires a statement list
+test/language/statements/for/decl-fun.js	338	346	function declaration requires a statement list
+test/language/statements/for/decl-gen.js	362	370	function declaration requires a statement list
+test/language/statements/for/decl-let.js	347	348	expected a semicolon or line terminator
+test/language/statements/for/dstr/const-ary-init-iter-close.js	-	-	-
+test/language/statements/for/dstr/const-ary-init-iter-get-err-array-prototype.js	-	-	-
+test/language/statements/for/dstr/const-ary-init-iter-get-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-init-iter-no-close.js	-	-	-
+test/language/statements/for/dstr/const-ary-name-iter-val.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-elem-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-elem-iter.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-elision-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-elision-iter.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-empty-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-empty-iter.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-rest-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-rest-iter.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-ary-val-null.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-exhausted.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-hole.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-undef.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-complete.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-done.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-val-array-prototype.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-id-iter-val.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-id-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-id.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-val-null.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elem-obj-val-undef.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elision-exhausted.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elision-iter-close.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elision-step-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-elision.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-ary-elem.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-ary-elision.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-ary-empty.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-ary-rest.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-direct.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-elision-next-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-elision.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-exhausted.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-iter-close.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-id.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-init-ary.js	1672	1673	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-init-id.js	1657	1658	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-init-obj.js	1673	1674	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-not-final-ary.js	1681	1682	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-not-final-id.js	1667	1668	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-not-final-obj.js	1684	1685	expected ]
+test/language/statements/for/dstr/const-ary-ptrn-rest-obj-id.js	-	-	-
+test/language/statements/for/dstr/const-ary-ptrn-rest-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/const-obj-init-null.js	-	-	-
+test/language/statements/for/dstr/const-obj-init-undefined.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-list-err.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-ary-init.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-ary-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-ary-value-null.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-ary.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-eval-err.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-id.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-obj-init.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-obj-value-null.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-obj-value-undef.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-prop-obj.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-rest-getter.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-rest-skip-non-enumerable.js	-	-	-
+test/language/statements/for/dstr/const-obj-ptrn-rest-val-obj.js	-	-	-
+test/language/statements/for/dstr/let-ary-init-iter-close.js	-	-	-
+test/language/statements/for/dstr/let-ary-init-iter-get-err-array-prototype.js	-	-	-
+test/language/statements/for/dstr/let-ary-init-iter-get-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-init-iter-no-close.js	-	-	-
+test/language/statements/for/dstr/let-ary-name-iter-val.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-elem-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-elem-iter.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-elision-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-elision-iter.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-empty-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-empty-iter.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-rest-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-rest-iter.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-ary-val-null.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-exhausted.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-hole.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-undef.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-complete.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-done.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-val-array-prototype.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-id-iter-val.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-id-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-id.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-val-null.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elem-obj-val-undef.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elision-exhausted.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elision-iter-close.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elision-step-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-elision.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-ary-elem.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-ary-elision.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-ary-empty.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-ary-rest.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-direct.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-elision-next-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-elision.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-exhausted.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-iter-close.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-id.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-init-ary.js	1668	1669	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-init-id.js	1653	1654	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-init-obj.js	1669	1670	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-not-final-ary.js	1677	1678	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-not-final-id.js	1663	1664	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-not-final-obj.js	1680	1681	expected ]
+test/language/statements/for/dstr/let-ary-ptrn-rest-obj-id.js	-	-	-
+test/language/statements/for/dstr/let-ary-ptrn-rest-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/let-obj-init-null.js	-	-	-
+test/language/statements/for/dstr/let-obj-init-undefined.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-list-err.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-ary-init.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-ary-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-ary-value-null.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-ary.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-eval-err.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-id.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-obj-init.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-obj-value-null.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-obj-value-undef.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-prop-obj.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-rest-getter.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-rest-skip-non-enumerable.js	-	-	-
+test/language/statements/for/dstr/let-obj-ptrn-rest-val-obj.js	-	-	-
+test/language/statements/for/dstr/var-ary-init-iter-close.js	-	-	-
+test/language/statements/for/dstr/var-ary-init-iter-get-err-array-prototype.js	-	-	-
+test/language/statements/for/dstr/var-ary-init-iter-get-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-init-iter-no-close.js	-	-	-
+test/language/statements/for/dstr/var-ary-name-iter-val.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-elem-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-elem-iter.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-elision-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-elision-iter.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-empty-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-empty-iter.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-rest-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-rest-iter.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-ary-val-null.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-exhausted.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-hole.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-undef.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-complete.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-done.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-val-array-prototype.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-id-iter-val.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-id-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-id.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-val-null.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elem-obj-val-undef.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elision-exhausted.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elision-iter-close.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elision-step-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-elision.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-ary-elem.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-ary-elision.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-ary-empty.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-ary-rest.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-direct.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-elision-next-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-elision.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-exhausted.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-iter-close.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-iter-step-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id-iter-val-err.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-id.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-init-ary.js	1521	1522	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-init-id.js	1506	1507	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-init-obj.js	1522	1523	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-not-final-ary.js	1530	1531	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-not-final-id.js	1516	1517	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-not-final-obj.js	1533	1534	expected ]
+test/language/statements/for/dstr/var-ary-ptrn-rest-obj-id.js	-	-	-
+test/language/statements/for/dstr/var-ary-ptrn-rest-obj-prop-id.js	-	-	-
+test/language/statements/for/dstr/var-obj-init-null.js	-	-	-
+test/language/statements/for/dstr/var-obj-init-undefined.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-empty.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-arrow.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-class.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-cover.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-fn.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-fn-name-gen.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-list-err.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-ary-init.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-ary-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-ary-value-null.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-ary.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-eval-err.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-get-value-err.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-init-skipped.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-init-throws.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-init-unresolvable.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-init.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id-trailing-comma.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-id.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-obj-init.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-obj-value-null.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-obj-value-undef.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-prop-obj.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-rest-getter.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-rest-skip-non-enumerable.js	-	-	-
+test/language/statements/for/dstr/var-obj-ptrn-rest-val-obj.js	-	-	-
+test/language/statements/for/head-const-bound-names-in-stmt.js	603	604	var declaration conflicts with lexical for binding
+test/language/statements/for/head-const-fresh-binding-per-iteration.js	-	-	-
+test/language/statements/for/head-init-async-of.js	-	-	-
+test/language/statements/for/head-init-expr-check-empty-inc-empty-completion.js	-	-	-
+test/language/statements/for/head-init-expr-check-empty-inc-empty-syntax.js	-	-	-
+test/language/statements/for/head-init-var-check-empty-inc-empty-completion.js	-	-	-
+test/language/statements/for/head-init-var-check-empty-inc-empty-syntax.js	-	-	-
+test/language/statements/for/head-let-bound-names-in-stmt.js	597	598	var declaration conflicts with lexical for binding
+test/language/statements/for/head-let-destructuring.js	-	-	-
+test/language/statements/for/head-let-fresh-binding-per-iteration.js	-	-	-
+test/language/statements/for/head-lhs-let.js	-	-	-
+test/language/statements/for/head-var-bound-names-in-stmt.js	-	-	-
+test/language/statements/for/labelled-fn-stmt-const.js	590	598	labelled functions are not allowed
+test/language/statements/for/labelled-fn-stmt-expr.js	580	588	labelled functions are not allowed
+test/language/statements/for/labelled-fn-stmt-let.js	584	592	labelled functions are not allowed
+test/language/statements/for/labelled-fn-stmt-var.js	584	592	labelled functions are not allowed
+test/language/statements/for/let-array-with-newline.js	519	522	expression statement cannot start with let [
+test/language/statements/for/scope-body-lex-boundary.js	-	-	-
+test/language/statements/for/scope-body-lex-open.js	-	-	-
+test/language/statements/for/scope-body-var-none.js	-	-	-
+test/language/statements/for/scope-head-lex-close.js	-	-	-
+test/language/statements/for/scope-head-lex-open.js	-	-	-
+test/language/statements/for/scope-head-var-none.js	-	-	-

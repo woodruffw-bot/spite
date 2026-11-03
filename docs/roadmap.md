@@ -58,6 +58,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit basic statement/control-transfer grammar, label and iteration target scope, private/reserved names, and block tail calls.
 - [x] Add expression-header for loops and their completion semantics.
 - [x] Add lexical for-loop declarations and per-iteration environments.
+- [x] Audit three-clause for header/body scope, destructuring initialization and closing, name inference, per-iteration bindings and grammar/target restrictions.
 - [x] Parse/evaluate synchronous for-of with assignment/var/lexical bindings, fresh iteration scopes, and iterator closing.
 - [x] Parse/evaluate for-in over complete ordinary/exotic prototype chains with live descriptors and inherited-name suppression.
 - [x] Parse switch clauses and validate their lexical scope and control flow.

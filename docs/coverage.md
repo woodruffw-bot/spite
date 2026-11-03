@@ -59,9 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 27398 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 28150 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Complete three-clause for inventory
+
+Another 379 whole originals complete the pinned for inventory alongside four
+retained tail-call originals and two existing Parser component fixtures. They
+add 752 modes: 655 evaluated modes and 97 reviewed parse-negative modes from 49
+files. The 285 generated destructuring cases cover ordered/default/rest bindings,
+iterator closing, name inference and per-iteration environments. Other cases
+cover header/body scope, completion and var/lexical behavior. Exact independent
+CLI reviews identify malformed headers/patterns, target/label validity, lexical
+head/body conflicts and declaration/let-array restrictions.
+
+Every new source matches its Git blob and SHA-256 digest. All candidate modes
+pass with existing helpers, flags and default limits; Parser component modes and
+tests remain intact. Counts are 14,852 fixtures, twenty-six helpers, 14,767
+reviewed sources, 28,150 variants and 78 controls. Runtime/Parser code and native
+inventories are unchanged.
+
+The full gate passes all 28,150 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests, with metadata checked before the corpus run.
 
 ## If, while and do-while grammar and execution
 

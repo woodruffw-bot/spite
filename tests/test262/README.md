@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 14473 unmodified test fixtures and twenty-six harness files come from
+These 14852 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete three-clause for inventory
+
+Another 379 unchanged originals complete the for source inventory with four
+retained tail-call originals and two Parser component fixtures. They add 752
+modes, including 285 destructuring originals. Forty-nine parse-negative files
+add 97 modes with exact CLI-confirmed header/pattern, target/label and scope
+rejection reviews. All candidate modes pass; every source matches its Git blob
+and SHA-256 digest, with existing helpers, flags, limits and component tests
+unchanged.
+
+Counts are 14,852 fixtures, twenty-six helpers, 14,767 reviewed sources, 28,150
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## If, while and do-while
 
