@@ -241,6 +241,10 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
                 "test/language/module-code/eval-self-abrupt.js"
                 | "test/language/module-code/eval-export-dflt-expr-err-eval.js" => "Test262Error",
                 "test/language/module-code/eval-export-dflt-expr-err-get-value.js"
+                | "test/language/statements/const/global-use-before-initialization-in-declaration-statement.js"
+                | "test/language/statements/const/global-use-before-initialization-in-prior-statement.js"
+                | "test/language/statements/let/global-use-before-initialization-in-declaration-statement.js"
+                | "test/language/statements/let/global-use-before-initialization-in-prior-statement.js"
                 | "test/language/statements/using/global-use-before-initialization-in-declaration-statement.js"
                 | "test/language/statements/using/global-use-before-initialization-in-prior-statement.js" => {
                     "ReferenceError"
@@ -286,6 +290,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 13906);
+    assert_eq!(count, 14134);
     assert_eq!(harness_count, 26);
 }
