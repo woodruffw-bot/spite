@@ -63,6 +63,30 @@ not an alternative language specification.
 
 
 
+## Smaller structured-statement parser frames
+
+Structured bodies, labels and expression statements now return completed
+Statements from separate parser frames. The dispatcher preserves declaration
+lookahead and token order; a shared constructor retains each original start/end
+span. Direct forwarding avoids retaining temporaries for unrelated statement
+kinds. The measured x86-64 debug dispatcher drops from 29,768 to 4,024 bytes;
+its if-body parser uses 4,488 bytes while active.
+
+All eighteen Parser unit tests and 440 integration tests pass, with unchanged
+snapshots. Seventy-two independent 2 MiB stack probes return normally and retain
+the compared original guard outcomes. The syntax guard remains 64 and the
+32-level nested-function original stays unadmitted pending the remaining work.
+Counts remain 25,046 fixtures, twenty-seven helpers, 24,961 reviewed sources,
+48,159 variants and 78 controls. No AST type, fixture, native test, quota or
+dependency is changed.
+
+The full Test262 package passes all 81 tests, including 48,159 corpus variants
+and 78 controls (355.96 seconds for the corpus integration binary). All 570
+Runtime unit tests and 2,414 non-RegExp integration tests pass, along with all
+18 Parser unit tests and 440 integration tests. Formatting, strict workspace
+Clippy, MSRV all-target checking, policy/inventory checks, CLI tests and
+documentation tests pass. Full RegExp integrations remain required in hosted CI.
+
 ## Smaller unary and primary parser frames
 
 Prefix dispatch now selects separate operator, update, Await and primary-token

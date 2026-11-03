@@ -24,6 +24,7 @@ mod prefix;
 mod private;
 mod regexp;
 mod source;
+mod statement;
 mod template;
 mod using;
 
@@ -431,19 +432,7 @@ impl Parser {
                 .token_at(self.index + 1)
                 .is_some_and(|t| t.kind == Kind::Punct(":"))
         {
-            let label = self.label_identifier()?;
-            self.expect(":")?;
-            // ECMA-262 14.13.1: labelled functions require the excluded Annex B
-            // extension even in non-strict code.
-            if self.at("function") {
-                return Err(self.error("labelled functions are not allowed"));
-            }
-            let body = Box::new(self.statement(false)?);
-            let span = Span::new(start, body.span.end);
-            return Ok(Statement {
-                kind: StatementKind::Labelled { label, body },
-                span,
-            });
+            return self.labelled_statement(start);
         }
         // ECMA-262 14.5 forbids an ExpressionStatement starting with `let [`,
         // but permits `let` as an IdentifierReference in non-strict code. In a
@@ -470,15 +459,7 @@ impl Parser {
         let kind = if self.eat(";") {
             StatementKind::Empty
         } else if self.eat("{") {
-            let mut body = Vec::new();
-            while !self.at("}") {
-                if self.current().kind == Kind::Eof {
-                    return Err(self.error("unterminated block"));
-                }
-                body.push(self.statement(true)?);
-            }
-            self.expect("}")?;
-            StatementKind::Block(body)
+            return self.block_statement(start);
         } else if self.at("function") || self.at_async_function() {
             if !allow_declaration {
                 return Err(self.error("function declaration requires a statement list"));
@@ -505,122 +486,19 @@ impl Parser {
             self.semicolon()?;
             StatementKind::Lexical { mutable, bindings }
         } else if self.eat("try") {
-            // ECMA-262 14.15 requires blocks, not arbitrary statements.
-            let body = self.required_block()?;
-            let handler = if self.at("catch") {
-                let start = self.bump().span.start;
-                let parameter = if self.eat("(") {
-                    let parameter = self.binding_pattern()?;
-                    self.expect(")")?;
-                    Some(parameter)
-                } else {
-                    None
-                };
-                let body = self.required_block()?;
-                let span = Span::new(start, body.span.end);
-                Some(Box::new(CatchClause {
-                    parameter,
-                    body,
-                    span,
-                }))
-            } else {
-                None
-            };
-            let finalizer = if self.eat("finally") {
-                Some(self.required_block()?)
-            } else {
-                None
-            };
-            if handler.is_none() && finalizer.is_none() {
-                return Err(self.error("expected catch or finally"));
-            }
-            StatementKind::Try {
-                body,
-                handler,
-                finalizer,
-            }
+            return self.try_statement(start);
         } else if self.eat("switch") {
-            self.expect("(")?;
-            let discriminant = self.expression(1)?;
-            self.expect(")")?;
-            self.expect("{")?;
-            let mut clauses = Vec::new();
-            let mut has_default = false;
-            while !self.at("}") {
-                let start = self.current().span.start;
-                let test = if self.eat("case") {
-                    Some(self.expression(1)?)
-                } else if self.at("default") {
-                    if has_default {
-                        return Err(self.error("duplicate default clause"));
-                    }
-                    self.bump();
-                    has_default = true;
-                    None
-                } else {
-                    return Err(self.error("expected case, default, or }"));
-                };
-                self.expect(":")?;
-                let mut statements = Vec::new();
-                while !self.at("case") && !self.at("default") && !self.at("}") {
-                    if self.current().kind == Kind::Eof {
-                        return Err(self.error("unterminated switch"));
-                    }
-                    statements.push(self.statement(true)?);
-                }
-                let end = self.tokens[self.index - 1].span.end;
-                clauses.push(SwitchClause {
-                    test,
-                    statements,
-                    span: Span::new(start, end),
-                });
-            }
-            self.expect("}")?;
-            StatementKind::Switch {
-                discriminant,
-                clauses,
-            }
+            return self.switch_statement(start);
         } else if self.eat("if") {
-            self.expect("(")?;
-            let test = self.expression(1)?;
-            self.expect(")")?;
-            let consequent = Box::new(self.statement(false)?);
-            let alternate = if self.eat("else") {
-                Some(Box::new(self.statement(false)?))
-            } else {
-                None
-            };
-            StatementKind::If {
-                test,
-                consequent,
-                alternate,
-            }
+            return self.if_statement(start);
         } else if self.eat("for") {
-            let header = self.for_header()?;
-            let body = Box::new(self.statement(false)?);
-            header.with_body(body)
+            return self.for_statement(start);
         } else if self.eat("while") {
-            self.expect("(")?;
-            let test = self.expression(1)?;
-            self.expect(")")?;
-            let body = Box::new(self.statement(false)?);
-            StatementKind::While { test, body }
+            return self.while_statement(start);
         } else if self.eat("with") {
-            self.expect("(")?;
-            let object = self.expression_with_in(1, true)?;
-            self.expect(")")?;
-            let body = Box::new(self.statement(false)?);
-            StatementKind::With { object, body }
+            return self.with_statement(start);
         } else if self.eat("do") {
-            let body = Box::new(self.statement(false)?);
-            self.expect("while")?;
-            self.expect("(")?;
-            let test = self.expression(1)?;
-            self.expect(")")?;
-            // ECMA-262 12.10.1 allows ASI after the closing parenthesis of
-            // do-while even without a line terminator before the next token.
-            self.eat(";");
-            StatementKind::DoWhile { body, test }
+            return self.do_while_statement(start);
         } else if self.at("break") || self.at("continue") {
             let is_break = self.eat("break");
             if !is_break {
@@ -643,39 +521,21 @@ impl Parser {
             self.semicolon()?;
             StatementKind::Debugger
         } else if self.at("return") {
-            if !self.allow_return {
-                return Err(self.error("return outside a function body"));
-            }
-            self.bump();
-            // ECMA-262 14.10: a line terminator ends a bare return.
-            let value = if self.current().newline
-                || self.at(";")
-                || self.at("}")
-                || self.current().kind == Kind::Eof
-            {
-                None
-            } else {
-                Some(self.expression_with_in(1, true)?)
-            };
-            self.semicolon()?;
-            StatementKind::Return(value)
+            return self.return_statement(start);
         } else if self.eat("throw") {
-            if self.current().newline {
-                return Err(self.error("line terminator after throw"));
-            }
-            let expr = self.expression(1)?;
-            self.semicolon()?;
-            StatementKind::Throw(expr)
+            return self.throw_statement(start);
         } else {
-            let expr = self.expression(1)?;
-            self.semicolon()?;
-            StatementKind::Expression(expr)
+            return self.expression_statement(start);
         };
+        Ok(self.finish_statement(start, kind))
+    }
+
+    fn finish_statement(&self, start: usize, kind: StatementKind) -> Statement {
         let end = self.tokens[self.index.saturating_sub(1)].span.end;
-        Ok(Statement {
+        Statement {
             kind,
             span: Span::new(start, end),
-        })
+        }
     }
 
     fn required_block(&mut self) -> Result<Box<Statement>, Diagnostic> {
