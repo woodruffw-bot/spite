@@ -59,9 +59,27 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31163 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31531 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Complete Function bind, call and apply inventories
+
+Another 192 whole originals complete these three pinned inventories with five
+retained cross-Realm originals. They add 368 evaluated modes: 194 for bind and
+174 for call/apply. Cases cover callable checks, receiver/argument forwarding,
+array-like argument access, construction/new.target behavior, target prototypes,
+name/length observation and descriptors, and resizable-buffer arguments.
+
+Every source matches its pinned Git blob and SHA-256 digest, and all candidate
+modes pass with existing helpers, original flags and default limits. Counts are
+16,567 fixtures, twenty-six helpers, 16,482 reviewed sources, 31,531 variants and
+78 controls. Runtime/Parser code and native inventories are unchanged.
+
+The complete Test262 package passes all 79 tests, including the 31,531-variant
+corpus and 78 runner controls (293.70 seconds for the corpus integration binary).
+Formatting, strict workspace Clippy, MSRV all-target checking, metadata inventory,
+CLI tests, documentation tests and policy checks also pass.
 
 ## Asynchronous iteration binding audit
 

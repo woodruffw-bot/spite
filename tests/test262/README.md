@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 16375 unmodified test fixtures and twenty-six harness files come from
+These 16567 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete Function bind, call and apply inventories
+
+Another 192 unchanged originals complete these inventories with five retained
+cross-Realm originals. All 368 new modes pass for validation, receivers,
+arguments, construction/new.target, prototypes, names/lengths, descriptors and
+resizable buffers. Every source matches its Git blob and SHA-256 digest; existing
+helpers, flags and default limits remain unchanged.
+
+Counts are 16,567 fixtures, twenty-six helpers, 16,482 reviewed sources, 31,531
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Asynchronous iteration bindings
 

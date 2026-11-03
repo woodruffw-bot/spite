@@ -92,6 +92,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit bitwise and shift conversions, short-circuit evaluation and logical assignments, including private references, conditional writes and strict target validity.
 - [x] Parse/evaluate object and array destructuring assignments and synchronous for-in/of assignment heads, with nested/default/rest patterns, retained member references, ordered writes, and iterator closing.
 - [x] Audit ordinary and destructuring assignment reference/write order, iterator closing, inferred names and strict/invalid target early errors.
+- [x] Audit Function bind/call/apply validation, forwarding, construction/new.target, prototype and metadata behavior.
 - [x] Validate baseline direct/grouped assignment-target classification together with strictness and grammar-goal restrictions.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Audit typeof, instanceof, in and delete grammar and evaluation, including custom Symbol.hasInstance, private-in validity, reference order and strict deletion.
