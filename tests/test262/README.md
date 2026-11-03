@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 16567 unmodified test fixtures and twenty-six harness files come from
+These 16636 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Function source text and header line endings
+
+Another 69 unchanged originals complete the eighty-source pinned toString
+inventory. All 138 new modes pass for ordinary/async/generator functions, arrows,
+classes, methods/accessors, private methods, dynamic constructors, escaped
+identifiers, native functions, bound functions and Proxies. Native syntax is
+checked by the unchanged pinned nativeFunctionMatcher.js helper. Every new
+source and helper matches its upstream Git blob and SHA-256 digest.
+
+The CR original exposed the runner's rejection of lone-CR frontmatter. The reader
+now accepts LF, CRLF and CR headers through borrowed slices; original source
+bytes, byte quotas and offsets remain intact. Flags and limits are unchanged.
+Counts are 16,636 fixtures, twenty-seven helpers, 16,551 reviewed sources,
+31,669 variants and 78 controls. Runtime/Parser production code is unchanged.
 
 ## Complete Function bind, call and apply inventories
 

@@ -124,7 +124,9 @@ impl Metadata {
         if max_bytes.is_some_and(|limit| body.len() > limit) {
             return Err(error(Limit, "frontmatter size limit exceeded"));
         }
-        let lines: Vec<_> = body.lines().collect();
+        // Header line breaks may be LF, CRLF or CR. Split only this borrowed
+        // header slice so source text, byte offsets and quotas remain unchanged.
+        let lines: Vec<_> = body.split(['\n', '\r']).collect();
         let mut index = 0;
         let mut seen = BTreeSet::new();
         let mut metadata = Self {

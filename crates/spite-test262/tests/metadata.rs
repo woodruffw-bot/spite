@@ -56,6 +56,31 @@ fn raw_and_module_sources_preserve_exact_bytes() {
 }
 
 #[test]
+fn execution_metadata_accepts_cr_lf_and_crlf_without_rewriting_source() {
+    let header = "description: |\n  flags: [raw]\nflags: [onlyStrict]\nincludes:\n  - first.js\n  - second.js\nnegative:\n  phase: runtime\n  type: TypeError";
+    for newline in ["\r", "\n", "\r\n"] {
+        let original = format!(
+            "/*---{newline}{}{newline}---*/{newline}function f() {{{newline}}}",
+            header.replace('\n', newline)
+        );
+        let meta = Metadata::parse(&original).unwrap();
+        assert_eq!(meta.modes(), [Mode::StrictScript]);
+        assert_eq!(meta.includes, ["first.js", "second.js"]);
+        assert_eq!(
+            meta.negative,
+            Some(Negative {
+                phase: Phase::Runtime,
+                error_type: "TypeError".into()
+            })
+        );
+        assert_eq!(
+            meta.modes()[0].prepare_source(&original),
+            format!("\"use strict\";\n{original}")
+        );
+    }
+}
+
+#[test]
 fn harness_files_keep_default_async_and_declared_order() {
     let meta = metadata("flags: [async]\nincludes: [first.js, second.js, first.js]");
     assert_eq!(
@@ -296,6 +321,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 16567);
-    assert_eq!(harness_count, 26);
+    assert_eq!(count, 16636);
+    assert_eq!(harness_count, 27);
 }

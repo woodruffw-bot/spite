@@ -59,9 +59,34 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31531 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31669 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Function source text and carriage-return metadata
+
+The runner now reads LF, CRLF and CR frontmatter without rewriting source bytes,
+changing diagnostic offsets or normalizing function source text. A focused
+regression checks descriptive-field isolation, strict modes, includes and runtime
+negative metadata under each header line ending, along with exact prepared source.
+
+Another 69 whole originals complete the pinned Function.prototype.toString
+inventory with eleven retained originals. All 138 candidate modes pass. They
+exercise exact source text for ordinary/async/generator functions, arrows,
+classes, methods/accessors and private methods, dynamic constructors, escaped
+identifiers and all three line endings. Native-function validation covers bound
+functions, callable Proxies and built-in graphs, per 20.2.3.5. The unchanged
+nativeFunctionMatcher.js helper is admitted at the same pin with verified Git
+blob and SHA-256 digests, as are all new sources.
+
+Counts are 16,636 fixtures, twenty-seven helpers, 16,551 reviewed sources,
+31,669 variants and 78 controls. Runtime/Parser code, source flags and native
+case inventories remain unchanged.
+
+The full Test262 package passes all 80 tests, including 31,669 corpus variants
+and 78 controls (310.31 seconds for the corpus integration binary). Formatting,
+strict workspace Clippy, MSRV all-target checking, policy/inventory checks,
+CLI tests and documentation tests pass.
 
 ## Complete Function bind, call and apply inventories
 
