@@ -1,9 +1,24 @@
 # Test262 regression fixtures
 
-These 13586 unmodified test fixtures and twenty-six harness files come from
+These 13906 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Baseline assignment-target classification
+
+The 320 applicable unchanged originals add 623 modes: thirteen evaluated modes
+and 610 reviewed parse-negative modes from 312 files. Exact independent Script
+and Module parsing reviews cover invalid targets, strict assignments and the
+actual earlier grammar/goal restrictions present in generated originals. Four
+whole files requiring import-defer/source-phase-imports remain excluded from the
+published edition-17 baseline, with no credit. Every admitted source matches its
+Git blob and SHA-256 digest; all candidate modes pass with existing helpers,
+original flags and default limits.
+
+Counts are 13,906 fixtures, twenty-six helpers, 13,821 reviewed sources, 26,418
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Complete compound-assignment directory
 

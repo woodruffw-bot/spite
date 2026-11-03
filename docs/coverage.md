@@ -59,9 +59,35 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 25795 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 26418 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Baseline assignment-target classification
+
+The 320 edition-17-applicable whole originals from assignmenttargettype add 623
+modes: thirteen evaluated modes and 610 reviewed parse-negative modes from 312
+files. Direct/grouped target cases include arithmetic/logical expressions,
+functions, classes, calls, loops and updates, strict eval/arguments assignments,
+and valid identifier/property references. Independent CLI parsing confirms
+Script diagnostics; a small external helper calls the existing parse_module API
+for the two Module-goal originals. Every review keeps its exact source byte range
+and message before mode-prefix adjustment.
+
+Reviews also identify the original files' earlier grammar/goal failures, including
+Script import.meta, missing import arguments, anonymous declarations and yield
+outside generators. These are recorded as their actual rejection conditions.
+Four whole import-defer/source-phase-imports files are excluded because those
+proposals are absent from published edition 17; none receives conformance credit.
+
+Every admitted source matches its pinned Git blob and SHA-256 digest, and all
+623 candidate modes pass with unchanged helpers, flags and default limits.
+Counts are 13,906 fixtures, twenty-six helpers, 13,821 reviewed sources, 26,418
+variants and 78 controls. Runtime/Parser code and native inventories are unchanged.
+
+The full gate passes all 26,418 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests.
 
 ## Complete compound-assignment directory
 
