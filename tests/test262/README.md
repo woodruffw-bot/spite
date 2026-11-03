@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 21016 unmodified test fixtures and twenty-seven harness files come from
+These 23330 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete pinned Array inventory
+
+Another 2,314 whole originals complete the 3,082-file Array inventory. All 896
+construction/iterator/structural modes and 3,710 callback/reduction/index-search
+modes pass. They exercise species and callback order, sparse/inherited keys,
+mutation, resizable views, descriptor failures, Proxy traps, sorting, copy methods,
+metadata and iteration, alongside the already retained factory and Realm cases.
+
+Every source matches its pinned Git blob and SHA-256 digest, and all original
+flags (including 22 noStrict cases), helpers and default limits are unchanged.
+No source is excluded, sliced or rewritten. Counts are 23,330 fixtures,
+twenty-seven helpers, 23,245 reviewed sources, 45,008 variants and 78 controls.
+Production code and native case inventories remain unchanged.
 
 ## Core primitive and String inventories
 

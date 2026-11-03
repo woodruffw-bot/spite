@@ -59,9 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 40402 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 45008 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Array species and iterator integration completed
+
+The Array species/iterator roadmap milestone is implemented and audited against
+23.1. Species-aware map/filter/slice/concat/splice/flat/flatMap retain constructor
+lookup order and foreign intrinsic normalization. Callback methods snapshot the
+range while observing live properties, reduction/search directions retain their
+specified presence rules, stable sorting preserves holes and write order, and
+Array iterators retain live array/typed-array lengths and method-Realm results.
+Existing synchronous/asynchronous factory and cross-Realm regressions remain.
+
+Another 2,314 whole originals complete all 3,082 files in the pinned Array
+inventory. All 896 construction/iterator/structural candidate modes and 3,710
+callback/reduction/index-search modes pass. They include sparse/inherited
+properties, callback mutation, descriptor failures, species results, Proxy traps,
+resizable views, copies, sorting, metadata and iterator branding. Twenty-two
+original noStrict flags are preserved. No file is excluded or sliced, every
+source matches its pinned Git blob and SHA-256 digest, and existing helpers,
+limits, production code and native inventories remain unchanged.
+
+Counts are 23,330 fixtures, twenty-seven helpers, 23,245 reviewed sources,
+45,008 variants and 78 controls. Broader language and conformance audits remain
+open.
+
+The full Test262 package passes all 80 tests, including 45,008 corpus variants
+and 78 controls (298.29 seconds for the corpus integration binary). Formatting,
+strict workspace Clippy, MSRV all-target checking, policy/inventory checks,
+CLI tests and documentation tests pass.
 
 ## Primitive wrappers and core built-ins audit
 

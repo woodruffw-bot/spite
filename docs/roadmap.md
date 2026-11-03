@@ -323,7 +323,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Iterator.prototype[Symbol.dispose] with live return-method lookup, original receivers, ignored results, and abrupt completion propagation.
 - [x] Install the hidden AsyncIterator prototype with generic identity and intrinsic Promise-based awaited disposal.
 - [x] Add Async-from-Sync iterator adaptation and Array.fromAsync consumption.
-- [ ] Complete Array species-dependent methods and iterator integration.
+- [x] Audit Array construction, species-aware results, live callback/reduction/search behavior, sorting/copying and iterator integration across ordinary, Proxy and resizable views.
+- [x] Complete Array species-dependent methods and iterator integration.
 
 ## 4. Standard library
 
