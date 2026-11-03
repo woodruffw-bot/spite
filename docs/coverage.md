@@ -59,9 +59,31 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22206 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 22407 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Cross-Realm construction, calls and Proxy protocols
+
+One hundred and one unchanged pinned originals add 201 modes through the public
+createRealm hook. They cover constructor-family fallback prototypes, separate
+dynamic-function and generator prototype Realms, non-strict receiver boxing,
+ErrorData identity, bound/Proxy GetFunctionRealm forwarding, source-constructor
+late exceptions, Array species normalization and Proxy trap argument/descriptor
+allocation and invariant failures. The three isolated candidate corpora pass all
+24, 70 and 107 modes with default limits and existing helpers. Every complete
+source matches its immutable upstream Git blob and SHA-256 digest.
+
+The inventory is 11,772 fixtures, twenty-six helpers, 11,687 reviewed sources,
+22,407 modes and 78 runner controls. Runtime remains at 570 unit tests and 5,031
+integration groups. Error.prototype.stack extension fixtures remain outside the
+edition-17 baseline.
+
+The complete gate passes all 22,407 variants and 78 runner controls. Formatting,
+strict workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies,
+CLI tests and workspace doctests pass. The preceding implementation gate also
+passed all 570 Runtime unit tests and 5,031 integration groups; this admission
+changes no Runtime code.
 
 ## Same-Agent Test262 child Realms
 

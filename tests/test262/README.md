@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11671 unmodified test fixtures and twenty-six harness files come from
+These 11772 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Cross-Realm construction and object protocols
+
+One hundred and one complete originals add 201 modes for constructor prototype
+fallbacks, dynamic-function/generator prototype ownership, receiver boxing,
+ErrorData identity, bound/Proxy Realm lookup, late constructor exceptions, Array
+species and Proxy trap arguments/descriptors and errors. All pass unchanged in
+isolated candidate corpora with existing helpers and default resource limits.
+Each source matches its pinned Git blob and SHA-256 digest. Error stack extension
+fixtures are excluded from the edition-17 baseline.
+
+Counts are 11,772 fixtures, twenty-six helpers, 11,687 reviewed sources, 22,407
+variants and 78 controls. Runtime case files remain 700; no production Runtime,
+harness, metadata flags or quota changes are needed for this admission.
 
 ## Same-Agent child-Realm host support
 
