@@ -59,9 +59,32 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 28150 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 28586 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Complete switch and try inventories
+
+Another 224 whole originals complete the pinned switch/try inventories with 88
+existing unchanged originals. They add 436 modes: 255 evaluated positives,
+twelve runtime-negative ReferenceErrors from six files, and 169 reviewed
+parse-negative modes from 85 files. Cases cover selector/default behavior,
+shared case scope, declarations, abrupt completions, catch parameters, optional
+catch binding, finally behavior and destructuring. Exact independent CLI reviews
+identify duplicate defaults/bindings, var/lexical conflicts, malformed try/catch
+and invalid static-block await bindings. Runtime records describe the original
+scope/unbound-reference failures; their exact ReferenceError expectations are
+added to the metadata inventory map.
+
+Every source matches its Git blob and SHA-256 digest, and all 436 candidate modes
+pass with existing helpers, flags and default limits. Counts are 15,076 fixtures,
+twenty-six helpers, 14,991 reviewed sources, 28,586 variants and 78 controls.
+Runtime/Parser code and native inventories are unchanged.
+
+The full gate passes all 28,586 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests. The exact six ReferenceError expectations pass
+the metadata inventory check before the corpus run.
 
 ## Complete three-clause for inventory
 

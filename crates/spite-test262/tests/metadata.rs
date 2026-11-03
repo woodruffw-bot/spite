@@ -241,6 +241,12 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
                 "test/language/module-code/eval-self-abrupt.js"
                 | "test/language/module-code/eval-export-dflt-expr-err-eval.js" => "Test262Error",
                 "test/language/module-code/eval-export-dflt-expr-err-get-value.js"
+                | "test/language/statements/switch/scope-lex-async-function.js"
+                | "test/language/statements/switch/scope-lex-async-generator.js"
+                | "test/language/statements/switch/scope-lex-class.js"
+                | "test/language/statements/switch/scope-lex-const.js"
+                | "test/language/statements/switch/scope-lex-generator.js"
+                | "test/language/statements/switch/scope-lex-let.js"
                 | "test/language/statements/const/global-use-before-initialization-in-declaration-statement.js"
                 | "test/language/statements/const/global-use-before-initialization-in-prior-statement.js"
                 | "test/language/statements/let/global-use-before-initialization-in-declaration-statement.js"
@@ -290,6 +296,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 14852);
+    assert_eq!(count, 15076);
     assert_eq!(harness_count, 26);
 }

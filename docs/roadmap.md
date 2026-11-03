@@ -65,6 +65,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate switch selection, fall-through, and completion values.
 - [x] Parse try-finally blocks and validate their scopes and control targets.
 - [x] Evaluate finalizers and their normal and abrupt completion overrides.
+- [x] Audit switch/try selection, shared lexical scope, declaration conflicts, catch bindings and normal/abrupt completion propagation.
 - [x] Implement debugger statements with no active debugging facility.
 - [x] Parse/evaluate non-strict with statements using live object bindings, Symbol.unscopables, implicit call receivers, and restored completion scopes.
 - [x] Audit with environments across direct/indirect eval, strictness, proxy traps, typed-array objects and retained assignment references.

@@ -14766,3 +14766,227 @@ test/language/statements/for/scope-body-var-none.js	-	-	-
 test/language/statements/for/scope-head-lex-close.js	-	-	-
 test/language/statements/for/scope-head-lex-open.js	-	-	-
 test/language/statements/for/scope-head-var-none.js	-	-	-
+test/language/statements/switch/S12.11_A1_T1.js	-	-	-
+test/language/statements/switch/S12.11_A1_T2.js	-	-	-
+test/language/statements/switch/S12.11_A1_T3.js	-	-	-
+test/language/statements/switch/S12.11_A1_T4.js	-	-	-
+test/language/statements/switch/S12.11_A2_T1.js	454	461	duplicate default clause
+test/language/statements/switch/S12.11_A3_T1.js	390	391	expected an expression
+test/language/statements/switch/S12.11_A3_T2.js	388	389	expected (
+test/language/statements/switch/S12.11_A3_T3.js	349	350	expected {
+test/language/statements/switch/S12.11_A3_T4.js	465	466	expected an expression
+test/language/statements/switch/S12.11_A3_T5.js	410	416	expected case, default, or }
+test/language/statements/switch/S12.11_A4_T1.js	-	-	-
+test/language/statements/switch/cptn-a-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-a-fall-thru-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-a-fall-thru-nrml.js	-	-	-
+test/language/statements/switch/cptn-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-b-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-b-fall-thru-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-b-fall-thru-nrml.js	-	-	-
+test/language/statements/switch/cptn-b-final.js	-	-	-
+test/language/statements/switch/cptn-dflt-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-dflt-b-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-dflt-b-fall-thru-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-dflt-b-fall-thru-nrml.js	-	-	-
+test/language/statements/switch/cptn-dflt-b-final.js	-	-	-
+test/language/statements/switch/cptn-dflt-fall-thru-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-dflt-fall-thru-nrml.js	-	-	-
+test/language/statements/switch/cptn-dflt-final.js	-	-	-
+test/language/statements/switch/cptn-no-dflt-match-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-no-dflt-match-fall-thru-abrupt-empty.js	-	-	-
+test/language/statements/switch/cptn-no-dflt-match-fall-thru-nrml.js	-	-	-
+test/language/statements/switch/cptn-no-dflt-match-final.js	-	-	-
+test/language/statements/switch/cptn-no-dflt-no-match.js	-	-	-
+test/language/statements/switch/scope-lex-async-function.js	-	-	-
+test/language/statements/switch/scope-lex-async-generator.js	-	-	-
+test/language/statements/switch/scope-lex-class.js	-	-	-
+test/language/statements/switch/scope-lex-close-case.js	-	-	-
+test/language/statements/switch/scope-lex-close-dflt.js	-	-	-
+test/language/statements/switch/scope-lex-const.js	-	-	-
+test/language/statements/switch/scope-lex-generator.js	-	-	-
+test/language/statements/switch/scope-lex-let.js	-	-	-
+test/language/statements/switch/scope-lex-open-case.js	-	-	-
+test/language/statements/switch/scope-lex-open-dflt.js	-	-	-
+test/language/statements/switch/scope-var-none-case.js	-	-	-
+test/language/statements/switch/scope-var-none-dflt.js	-	-	-
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-async-function.js	726	727	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-async-generator.js	746	747	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-class.js	700	701	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-const.js	708	709	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-function.js	731	732	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-generator.js	724	725	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-let.js	702	703	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-function-name-redeclaration-attempt-with-var.js	742	743	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-async-function.js	746	747	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-async-generator.js	732	733	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-class.js	703	704	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-const.js	711	712	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-function.js	734	735	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-generator.js	727	728	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-let.js	705	706	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/async-generator-name-redeclaration-attempt-with-var.js	745	746	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-async-function.js	698	699	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-async-generator.js	701	702	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-class.js	644	645	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-const.js	652	653	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-function.js	675	676	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-generator.js	679	680	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-let.js	646	647	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/class-name-redeclaration-attempt-with-var.js	686	687	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-async-function.js	710	711	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-async-generator.js	713	714	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-class.js	656	657	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-const.js	664	665	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-function.js	687	688	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-generator.js	691	692	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-let.js	658	659	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/const-name-redeclaration-attempt-with-var.js	698	699	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-async-function.js	709	710	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-async-generator.js	712	713	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-class.js	655	656	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-const.js	663	664	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-function.js	698	699	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-generator.js	690	691	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-let.js	657	658	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/function-name-redeclaration-attempt-with-var.js	697	698	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-async-function.js	724	725	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-async-generator.js	727	728	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-class.js	681	682	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-const.js	689	690	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-function.js	712	713	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-generator.js	693	694	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-let.js	683	684	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/generator-name-redeclaration-attempt-with-var.js	723	724	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-async-function.js	700	701	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-async-generator.js	703	704	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-class.js	646	647	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-const.js	654	655	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-function.js	677	678	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-generator.js	681	682	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-let.js	648	649	duplicate lexical binding
+test/language/statements/switch/syntax/redeclaration/let-name-redeclaration-attempt-with-var.js	688	689	var declaration conflicts with lexical binding
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-async-function.js	728	729	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-async-generator.js	731	732	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-class.js	674	675	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-const.js	682	683	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-function.js	705	706	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-generator.js	709	710	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-let.js	676	677	lexical declaration conflicts with var
+test/language/statements/switch/syntax/redeclaration/var-name-redeclaration-attempt-with-var.js	-	-	-
+test/language/statements/try/12.14-10.js	-	-	-
+test/language/statements/try/12.14-11.js	-	-	-
+test/language/statements/try/12.14-12.js	-	-	-
+test/language/statements/try/12.14-13.js	-	-	-
+test/language/statements/try/12.14-14.js	-	-	-
+test/language/statements/try/12.14-15.js	-	-	-
+test/language/statements/try/12.14-16.js	-	-	-
+test/language/statements/try/12.14-3.js	-	-	-
+test/language/statements/try/12.14-4.js	-	-	-
+test/language/statements/try/12.14-6.js	-	-	-
+test/language/statements/try/12.14-7.js	-	-	-
+test/language/statements/try/12.14-8.js	-	-	-
+test/language/statements/try/12.14-9.js	-	-	-
+test/language/statements/try/S12.14_A1.js	-	-	-
+test/language/statements/try/S12.14_A10_T1.js	-	-	-
+test/language/statements/try/S12.14_A10_T2.js	-	-	-
+test/language/statements/try/S12.14_A10_T3.js	-	-	-
+test/language/statements/try/S12.14_A10_T4.js	-	-	-
+test/language/statements/try/S12.14_A10_T5.js	-	-	-
+test/language/statements/try/S12.14_A11_T1.js	-	-	-
+test/language/statements/try/S12.14_A11_T2.js	-	-	-
+test/language/statements/try/S12.14_A11_T3.js	-	-	-
+test/language/statements/try/S12.14_A11_T4.js	-	-	-
+test/language/statements/try/S12.14_A12_T1.js	-	-	-
+test/language/statements/try/S12.14_A12_T2.js	-	-	-
+test/language/statements/try/S12.14_A12_T3.js	-	-	-
+test/language/statements/try/S12.14_A12_T4.js	-	-	-
+test/language/statements/try/S12.14_A13_T1.js	-	-	-
+test/language/statements/try/S12.14_A13_T2.js	-	-	-
+test/language/statements/try/S12.14_A13_T3.js	-	-	-
+test/language/statements/try/S12.14_A14.js	-	-	-
+test/language/statements/try/S12.14_A15.js	-	-	-
+test/language/statements/try/S12.14_A16_T1.js	408	408	expected {
+test/language/statements/try/S12.14_A16_T10.js	406	407	expected binding identifier
+test/language/statements/try/S12.14_A16_T11.js	459	464	unexpected catch or finally
+test/language/statements/try/S12.14_A16_T12.js	436	437	expected catch or finally
+test/language/statements/try/S12.14_A16_T13.js	490	494	expected binding identifier
+test/language/statements/try/S12.14_A16_T14.js	412	413	expected {
+test/language/statements/try/S12.14_A16_T15.js	459	460	expected {
+test/language/statements/try/S12.14_A16_T2.js	407	412	unexpected catch or finally
+test/language/statements/try/S12.14_A16_T3.js	409	416	unexpected catch or finally
+test/language/statements/try/S12.14_A16_T5.js	465	466	expected binding identifier
+test/language/statements/try/S12.14_A16_T6.js	445	450	unexpected catch or finally
+test/language/statements/try/S12.14_A16_T7.js	452	453	expected binding identifier
+test/language/statements/try/S12.14_A16_T8.js	497	498	expected binding identifier
+test/language/statements/try/S12.14_A16_T9.js	407	412	unexpected catch or finally
+test/language/statements/try/S12.14_A17.js	-	-	-
+test/language/statements/try/S12.14_A18_T1.js	-	-	-
+test/language/statements/try/S12.14_A18_T2.js	-	-	-
+test/language/statements/try/S12.14_A18_T3.js	-	-	-
+test/language/statements/try/S12.14_A18_T4.js	-	-	-
+test/language/statements/try/S12.14_A18_T5.js	-	-	-
+test/language/statements/try/S12.14_A18_T6.js	-	-	-
+test/language/statements/try/S12.14_A18_T7.js	-	-	-
+test/language/statements/try/S12.14_A19_T1.js	-	-	-
+test/language/statements/try/S12.14_A19_T2.js	-	-	-
+test/language/statements/try/S12.14_A2.js	-	-	-
+test/language/statements/try/S12.14_A3.js	-	-	-
+test/language/statements/try/S12.14_A4.js	-	-	-
+test/language/statements/try/S12.14_A5.js	-	-	-
+test/language/statements/try/S12.14_A6.js	-	-	-
+test/language/statements/try/S12.14_A7_T1.js	-	-	-
+test/language/statements/try/S12.14_A7_T2.js	-	-	-
+test/language/statements/try/S12.14_A7_T3.js	-	-	-
+test/language/statements/try/S12.14_A8.js	-	-	-
+test/language/statements/try/S12.14_A9_T1.js	-	-	-
+test/language/statements/try/S12.14_A9_T2.js	-	-	-
+test/language/statements/try/S12.14_A9_T3.js	-	-	-
+test/language/statements/try/S12.14_A9_T4.js	-	-	-
+test/language/statements/try/S12.14_A9_T5.js	-	-	-
+test/language/statements/try/catch-parameter-boundnames-restriction-arguments-eval-throws.js	-	-	-
+test/language/statements/try/catch-parameter-boundnames-restriction-eval-eval-throws.js	-	-	-
+test/language/statements/try/completion-values-fn-finally-abrupt.js	-	-	-
+test/language/statements/try/completion-values-fn-finally-normal.js	-	-	-
+test/language/statements/try/completion-values-fn-finally-return.js	-	-	-
+test/language/statements/try/completion-values.js	-	-	-
+test/language/statements/try/cptn-catch-empty-break.js	-	-	-
+test/language/statements/try/cptn-catch-empty-continue.js	-	-	-
+test/language/statements/try/cptn-catch-finally-empty-break.js	-	-	-
+test/language/statements/try/cptn-catch-finally-empty-continue.js	-	-	-
+test/language/statements/try/cptn-catch.js	-	-	-
+test/language/statements/try/cptn-finally-empty-break.js	-	-	-
+test/language/statements/try/cptn-finally-empty-continue.js	-	-	-
+test/language/statements/try/cptn-finally-from-catch.js	-	-	-
+test/language/statements/try/cptn-finally-skip-catch.js	-	-	-
+test/language/statements/try/cptn-finally-wo-catch.js	-	-	-
+test/language/statements/try/cptn-try.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-elision-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-elision-iter.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-ary-empty-init.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-class.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-init-fn-name-gen.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elem-id-iter-val-array-prototype.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elision-exhausted.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elision-step-err.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-elision.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-empty.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-ary-elision.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-ary-empty.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-elision-next-err.js	-	-	-
+test/language/statements/try/dstr/ary-ptrn-rest-id-iter-step-err.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-class.js	-	-	-
+test/language/statements/try/dstr/obj-ptrn-id-init-fn-name-gen.js	-	-	-
+test/language/statements/try/optional-catch-binding-finally.js	-	-	-
+test/language/statements/try/optional-catch-binding-lexical.js	-	-	-
+test/language/statements/try/optional-catch-binding-parens.js	501	502	expected binding identifier
+test/language/statements/try/optional-catch-binding-throws.js	-	-	-
+test/language/statements/try/optional-catch-binding.js	-	-	-
+test/language/statements/try/scope-catch-block-lex-close.js	-	-	-
+test/language/statements/try/scope-catch-block-lex-open.js	-	-	-
+test/language/statements/try/scope-catch-block-var-none.js	-	-	-
+test/language/statements/try/scope-catch-param-lex-close.js	-	-	-
+test/language/statements/try/scope-catch-param-lex-open.js	-	-	-
+test/language/statements/try/scope-catch-param-var-none.js	-	-	-
+test/language/statements/try/static-init-await-binding-invalid.js	723	728	invalid binding identifier
+test/language/statements/try/static-init-await-binding-valid.js	-	-	-
