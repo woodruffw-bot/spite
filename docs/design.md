@@ -768,7 +768,8 @@ home objects. Super property evaluation uses the original receiver in parameters
 and bodies. Methods inherit %AsyncFunction.prototype% and cannot be constructed.
 Literal class constructors cannot be async; computed constructor names remain
 ordinary method names. Prefix line breaks, duplicate method parameters and await
-bindings are syntax errors. Generator methods remain Unsupported.
+bindings are syntax errors. Generator methods use their corresponding generator
+function kind and saved source driver.
 
 AwaitExpression (13.3.9) retains its UnaryExpression operand and complete source
 range. It binds before multiplication, logical operators and conditionals; an
@@ -779,6 +780,14 @@ computed keys inherit their appropriate Await grammar; parameters and class
 initialization enforce their separate restrictions. Arrow parameter probes
 isolate and restore that restriction so ordinary parenthesized expressions retain
 the enclosing async context. Nested async bodies in defaults remain valid.
+Suspension detection exhaustively classifies expression kinds (13.3.9 and the
+source continuation algorithms). It follows operands evaluated in the current
+context, including class heritage/computed names and binding/assignment
+patterns, and stops at nested function/arrow definitions. A new ExprKind must
+receive an explicit classification before Rust can compile the driver. All
+statement forms route through dedicated continuations or synchronous terminal
+evaluation; method/field bodies keep their independent source contexts.
+
 The generic expression evaluator reports Unsupported before an AwaitExpression
 operand. An async body cursor intercepts direct await expression statements and
 return-await in block bodies, and direct await concise arrows, including transparent
@@ -910,8 +919,8 @@ The existing pattern evaluator performs nested/default/rest assignment and
 synchronous iterator closing, preserving default name inference, abrupt precedence
 and raw yielded Promise values. The expression returns its original RHS value.
 Its continuation stores an AST path; the existing expression value and statement
-completion owners retain the RHS through suspension. Awaits inside pattern keys,
-targets and defaults remain explicit gaps.
+completion owners retain the RHS through suspension. Pattern keys, targets and
+defaults use the suspended pattern cursors described below.
 
 Untagged templates suspend in substitutions (13.2.8.6). Cooked components and
 substitutions append left to right; each completed substitution uses ToString
@@ -2306,7 +2315,8 @@ inside evaluation, temporary and pending-completion lifetimes still need roots.
 Function support begins with call syntax and reference-aware callee evaluation.
 GetValue of the callee precedes arguments; argument evaluation precedes the
 IsCallable check. Member calls retain their base as the receiver, including through
-parentheses. Optional calls remain unsupported. ArgumentListEvaluation (13.3.8.1)
+parentheses. Optional calls retain chain receivers and use lazy argument cursors.
+ArgumentListEvaluation (13.3.8.1)
 distinguishes ordinary and spread arguments. Each spread expression acquires a
 synchronous iterator and consumes it before later arguments. Cache next and read
 done before value; step failures propagate without closing. Calls/construction

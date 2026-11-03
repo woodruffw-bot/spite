@@ -485,7 +485,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Resume catch array-parameter defaults before body entry with shared iterator cleanup, mutable catch cells and finally/outer-handler transitions.
 - [x] Resume object-binding computed keys and defaults across declarations, headers and catch parameters with shared mixed-pattern state, GetV, exclusion sets and object rest.
 - [x] Share rest Array collection and rest Object copying between binding and assignment patterns while preserving reference order and closing.
-- [ ] Complete await expressions and suspended control-flow continuations.
+- [x] Complete await expressions and suspended control-flow continuations.
+- [x] Classify all expression forms explicitly for suspension while keeping nested function definitions in their own execution contexts.
 - [x] Resume class-declaration heritage through Await/Yield with the shared class builder, persistent name TDZ, outer private environments and abrupt context restoration.
 - [x] Resume computed class-declaration method/accessor/field names in source order with traced partial definitions and deferred static initialization.
 - [x] Resume nested class-expression heritage and computed names on the value-expression task stack, including NamedEvaluation before static initialization and abrupt context cleanup.

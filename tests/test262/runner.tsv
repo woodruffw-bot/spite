@@ -12851,3 +12851,63 @@ test/language/expressions/unsigned-right-shift/bigint-toprimitive.js	-	-	-
 test/language/expressions/unsigned-right-shift/bigint-wrapped-values.js	-	-	-
 test/language/expressions/unsigned-right-shift/bigint.js	-	-	-
 test/language/expressions/unsigned-right-shift/order-of-evaluation.js	-	-	-
+test/language/expressions/comma/S11.14_A1.js	-	-	-
+test/language/expressions/comma/S11.14_A2.1_T1.js	-	-	-
+test/language/expressions/comma/S11.14_A2.1_T2.js	-	-	-
+test/language/expressions/comma/S11.14_A2.1_T3.js	-	-	-
+test/language/expressions/comma/S11.14_A3.js	-	-	-
+test/language/expressions/conditional/S11.12_A1.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T1.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T2.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T3.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T4.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T5.js	-	-	-
+test/language/expressions/conditional/S11.12_A2.1_T6.js	-	-	-
+test/language/expressions/conditional/S11.12_A3_T1.js	-	-	-
+test/language/expressions/conditional/S11.12_A3_T2.js	-	-	-
+test/language/expressions/conditional/S11.12_A3_T3.js	-	-	-
+test/language/expressions/conditional/S11.12_A3_T4.js	-	-	-
+test/language/expressions/conditional/S11.12_A4_T1.js	-	-	-
+test/language/expressions/conditional/S11.12_A4_T2.js	-	-	-
+test/language/expressions/conditional/S11.12_A4_T3.js	-	-	-
+test/language/expressions/conditional/S11.12_A4_T4.js	-	-	-
+test/language/expressions/conditional/coalesce-expr-ternary.js	-	-	-
+test/language/expressions/conditional/in-branch-1.js	-	-	-
+test/language/expressions/conditional/in-branch-2.js	584	596	invalid for-in assignment target
+test/language/expressions/conditional/in-condition.js	604	606	invalid for-in assignment target
+test/language/expressions/conditional/symbol-conditional-evaluation.js	-	-	-
+test/language/expressions/postfix-decrement/arguments.js	781	790	invalid update target in strict mode
+test/language/expressions/postfix-decrement/eval.js	776	780	invalid update target in strict mode
+test/language/expressions/postfix-decrement/line-terminator-carriage-return.js	388	389	expected an expression
+test/language/expressions/postfix-decrement/line-terminator-line-feed.js	394	395	expected an expression
+test/language/expressions/postfix-decrement/line-terminator-line-separator.js	389	390	expected an expression
+test/language/expressions/postfix-decrement/line-terminator-paragraph-separator.js	394	395	expected an expression
+test/language/expressions/postfix-decrement/target-cover-yieldexpr.js	840	847	invalid update target
+test/language/expressions/postfix-decrement/this.js	691	695	invalid update target
+test/language/expressions/postfix-increment/11.3.1-2-1gs.js	382	391	invalid update target in strict mode
+test/language/expressions/postfix-increment/arguments.js	645	654	invalid update target in strict mode
+test/language/expressions/postfix-increment/eval.js	645	649	invalid update target in strict mode
+test/language/expressions/postfix-increment/line-terminator-carriage-return.js	375	376	expected an expression
+test/language/expressions/postfix-increment/line-terminator-line-feed.js	378	379	expected an expression
+test/language/expressions/postfix-increment/line-terminator-line-separator.js	385	386	expected an expression
+test/language/expressions/postfix-increment/line-terminator-paragraph-separator.js	390	391	expected an expression
+test/language/expressions/postfix-increment/target-cover-yieldexpr.js	840	847	invalid update target
+test/language/expressions/postfix-increment/this.js	691	695	invalid update target
+test/language/expressions/prefix-decrement/11.4.5-2-2gs.js	394	403	invalid update target in strict mode
+test/language/expressions/prefix-decrement/arguments.js	762	771	invalid update target in strict mode
+test/language/expressions/prefix-decrement/eval.js	757	761	invalid update target in strict mode
+test/language/expressions/prefix-decrement/target-cover-yieldexpr.js	829	836	invalid update target
+test/language/expressions/prefix-decrement/this.js	691	695	invalid update target
+test/language/expressions/prefix-increment/arguments.js	762	771	invalid update target in strict mode
+test/language/expressions/prefix-increment/eval.js	758	762	invalid update target in strict mode
+test/language/expressions/prefix-increment/target-cover-yieldexpr.js	829	836	invalid update target
+test/language/expressions/prefix-increment/this.js	673	677	invalid update target
+test/language/expressions/void/S11.4.2_A1.js	-	-	-
+test/language/expressions/void/S11.4.2_A2_T1.js	-	-	-
+test/language/expressions/void/S11.4.2_A2_T2.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T1.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T2.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T3.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T4.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T5.js	-	-	-
+test/language/expressions/void/S11.4.2_A4_T6.js	-	-	-

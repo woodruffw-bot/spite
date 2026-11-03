@@ -81,9 +81,16 @@ pub(super) fn has_supported_await(expression: &Expr) -> bool {
             has_supported_await(base)
                 || matches!(name, PropertyName::Computed(key) if has_supported_await(key))
         }
-        // Unsupported parents retain the ordinary evaluator's explicit boundary.
-        // Defining a nested async function does not execute its awaited body.
-        _ => false,
+        // Terminals do not suspend; nested functions run in their own contexts.
+        // Keep this exhaustive so new expression kinds require classification.
+        ExprKind::Literal(_)
+        | ExprKind::This
+        | ExprKind::NewTarget
+        | ExprKind::ImportMeta
+        | ExprKind::Identifier(_)
+        | ExprKind::SuperProperty(_)
+        | ExprKind::Function(_)
+        | ExprKind::Arrow { .. } => false,
     }
 }
 

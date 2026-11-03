@@ -59,9 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 24653 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 24763 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Suspension classification and remaining value operators
+
+Suspension detection now classifies every ExprKind explicitly. Composite
+expressions visit their evaluated children, class heritage and computed names;
+nested function/arrow definitions retain their own execution contexts. Adding an
+expression kind requires a Rust match update. The source-driver audit also
+accounts for every statement kind, binding/assignment pattern, class key and
+iteration header through the existing continuation drivers, completing the
+baseline await-expression/control-flow roadmap entry.
+
+Another sixty whole originals complete comma, conditional, prefix/postfix update
+and void directories alongside 119 existing unchanged originals. They add 110
+modes: 64 evaluated modes and 46 reviewed parse-negative modes from 28 files.
+Exact CLI-confirmed reviews cover NoIn conditional grammar, strict eval/arguments
+updates, invalid this/yield targets and postfix line-terminator restrictions,
+including original CR, LF, U+2028 and U+2029 bytes. Every source matches its pinned
+Git blob and SHA-256 digest; all candidate modes pass with existing helpers,
+flags and default limits.
+
+Counts are 12,997 fixtures, twenty-six helpers, 12,912 reviewed sources, 24,763
+variants and 78 controls. Native inventories remain 570 Runtime unit tests and
+5,031 integration groups, with 700 Runtime and 88 Parser case files.
+
+Final checks pass all 570 Runtime unit tests, 2,414 non-RegExp integration groups,
+24,763 Test262 variants and 78 controls. Formatting, strict workspace Clippy,
+Rust 1.99 all-target checks, dependency/fixture policies, CLI tests and workspace
+doctests also pass. The previous public-Realm gate passed all 2,617 RegExp groups.
 
 ## Bitwise, shifts and short-circuit operator audit
 
