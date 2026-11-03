@@ -1,9 +1,29 @@
 # Test262 regression fixtures
 
-These 19830 unmodified test fixtures and twenty-seven harness files come from
+These 21016 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Core primitive and String inventories
+
+Another 496 baseline originals add 990 modes across Boolean, Number, BigInt,
+Symbol, Math and String construction/unboxing. Another 690 String-method
+originals add 1,378 modes for UTF-16 operations, conversion order, iteration,
+trimming/padding, raw strings and protocol dispatch. Every candidate mode passes,
+and every whole source matches its pinned Git blob and SHA-256 digest. Original
+flags, existing helpers and default limits are unchanged.
+
+The Boolean, Number, BigInt and Math inventories are complete at 51, 340, 77 and
+327 files. String retains 1,222 originals; the whole split/separator-regexp.js
+file requires disabled Annex B RegExp forms and remains excluded without credit.
+The three new Symbol asyncDispose/dispose proposal files remain wholly excluded
+from edition 17; earlier retained extras remain unchanged. No original is sliced
+or rewritten to create a passing case.
+
+Counts are 21,016 fixtures, twenty-seven helpers, 20,931 reviewed sources,
+40,402 variants and 78 controls. Production code and native inventories remain
+unchanged.
 
 ## Complete mandatory Object inventory
 

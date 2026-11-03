@@ -143,8 +143,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate ordinary-object property reads, writes, updates, and deletion with ordered references.
 - [x] Add the in operator and context-sensitive In grammar for for initializers.
 - [x] Implement primitive property access, String indices/length, and strict write/delete behavior.
-- [ ] Implement object coercion hooks and primitive wrapper constructors/prototypes.
+- [x] Implement object coercion hooks and primitive wrapper constructors/prototypes.
 - [x] Route coercion through realms and reject ordinary objects without callable conversion methods.
+- [x] Audit primitive wrapper calls/construction, unboxing, conversion order, Symbol hooks and core primitive/String built-ins with complete baseline inventories.
 - [ ] Add functions, closures, this, arguments, constructors, and direct eval.
 - [x] Expose the eval intrinsic with standard metadata, global binding behavior, and the non-String identity branch of PerformEval.
 - [x] Execute indirect String eval with lossless Script compilation, global lookup, fresh lexical/strict var environments, configurable global declarations, and restored caller contexts.
@@ -326,7 +327,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 ## 4. Standard library
 
-- [ ] Complete Object, Function, Boolean, Number, BigInt, String, Symbol, and Math.
+- [x] Complete Object, Function, Boolean, Number, BigInt, String, Symbol, and Math.
 - [x] Add encodeURI/encodeURIComponent with ordered string conversion, exact UTF-8 escape sets, and malformed-surrogate URIErrors.
 - [x] Add decodeURI/decodeURIComponent with strict UTF-8 validation and reserved-escape preservation.
 - [x] Add Math's fixed constants, tag, abs/sign, and ceil/floor/round/trunc with exact signed-zero and halfway behavior.

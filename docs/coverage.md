@@ -59,9 +59,41 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 38034 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 40402 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Primitive wrappers and core built-ins audit
+
+The primitive-wrapper/coercion and core Object/Function/Boolean/Number/BigInt/
+String/Symbol/Math roadmap milestones are implemented. The existing primitive
+conversion paths preserve @@toPrimitive hints and receiver identity, ordered
+ordinary method lookup, constructor/call differences, Symbol conversion errors,
+branded unboxing and creation-Realm prototype fallback. All published own
+methods are installed; earlier intrinsic metadata and implementation tests remain
+in place alongside the completed mandatory Function and Object audits.
+
+Another 1,186 whole originals add 2,368 evaluated modes. All 990 wrapper/number/
+symbol/math candidate modes and 1,378 String-method modes pass, covering numeric
+parsing/formatting, cross-Realm construction, well-known identities, UTF-16
+indexing/slicing, coercion order, trimming/padding, raw strings and protocol hooks.
+The Boolean (51), Number (340), BigInt (77) and Math (327) pinned inventories are
+complete. String retains 1,222 of 1,223 originals: the whole split/separator-regexp
+file uses Annex B identity escapes, including incomplete hex and a nonreference
+`\k` escape, and is excluded under the existing host policy, without credit.
+Three new Symbol disposal proposal files remain excluded from edition 17;
+previously retained extras remain unchanged.
+
+Every new source matches its pinned Git blob and SHA-256 digest. Original flags,
+helpers, production code, default limits and native inventories are unchanged.
+Counts are 21,016 fixtures, twenty-seven helpers, 20,931 reviewed sources,
+40,402 variants and 78 controls. This completes these implementation milestones;
+the remaining language and full-conformance audits stay open.
+
+The full Test262 package passes all 80 tests, including 40,402 corpus variants
+and 78 controls (308.80 seconds for the corpus integration binary). Formatting,
+strict workspace Clippy, MSRV all-target checking, policy/inventory checks,
+CLI tests and documentation tests pass.
 
 ## Mandatory Object inventory completed
 
