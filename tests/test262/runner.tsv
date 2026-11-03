@@ -14048,3 +14048,127 @@ test/language/statements/variable/id-arguments-strict.js	423	432	invalid binding
 test/language/statements/variable/id-eval-strict.js	418	422	invalid binding in strict mode
 test/language/statements/variable/static-init-await-binding-invalid.js	713	718	invalid binding identifier
 test/language/statements/variable/static-init-await-binding-valid.js	-	-	-
+test/language/statements/block/12.1-1.js	310	311	expected catch or finally
+test/language/statements/block/12.1-2.js	326	327	expected catch or finally
+test/language/statements/block/12.1-3.js	312	313	expected catch or finally
+test/language/statements/block/12.1-4.js	305	306	expected (
+test/language/statements/block/12.1-5.js	308	309	expected (
+test/language/statements/block/12.1-6.js	321	322	expected (
+test/language/statements/block/12.1-7.js	308	309	expected while
+test/language/statements/block/S12.1_A2.js	-	-	-
+test/language/statements/block/S12.1_A4_T1.js	464	465	expected }
+test/language/statements/block/S12.1_A4_T2.js	437	438	expected }
+test/language/statements/block/S12.1_A5.js	-	-	-
+test/language/statements/block/early-errors/invalid-names-call-expression-bad-reference.js	1197	1199	private identifier is not declared in an enclosing class
+test/language/statements/block/early-errors/invalid-names-call-expression-this.js	1191	1193	private identifier is not declared in an enclosing class
+test/language/statements/block/early-errors/invalid-names-member-expression-bad-reference.js	1198	1200	private identifier is not declared in an enclosing class
+test/language/statements/block/early-errors/invalid-names-member-expression-this.js	1185	1187	private identifier is not declared in an enclosing class
+test/language/statements/block/labeled-continue.js	575	580	continue target is not an iteration label
+test/language/statements/block/scope-lex-close.js	-	-	-
+test/language/statements/block/scope-lex-open.js	-	-	-
+test/language/statements/block/scope-var-none.js	-	-	-
+test/language/statements/block/tco-stmt-list.js	-	-	-
+test/language/statements/block/tco-stmt.js	-	-	-
+test/language/statements/break/12.8-1.js	-	-	-
+test/language/statements/break/S12.8_A1_T1.js	463	469	break requires an enclosing loop or switch
+test/language/statements/break/S12.8_A1_T2.js	487	492	undefined label
+test/language/statements/break/S12.8_A1_T3.js	505	511	break requires an enclosing loop or switch
+test/language/statements/break/S12.8_A1_T4.js	530	535	undefined label
+test/language/statements/break/S12.8_A3.js	-	-	-
+test/language/statements/break/S12.8_A4_T1.js	-	-	-
+test/language/statements/break/S12.8_A4_T2.js	-	-	-
+test/language/statements/break/S12.8_A4_T3.js	-	-	-
+test/language/statements/break/S12.8_A5_T1.js	566	584	undefined label
+test/language/statements/break/S12.8_A5_T2.js	599	609	undefined label
+test/language/statements/break/S12.8_A5_T3.js	605	613	undefined label
+test/language/statements/break/S12.8_A6.js	507	513	undefined label
+test/language/statements/break/S12.8_A7.js	-	-	-
+test/language/statements/break/S12.8_A8_T1.js	429	435	undefined label
+test/language/statements/break/S12.8_A8_T2.js	423	429	break requires an enclosing loop or switch
+test/language/statements/break/S12.8_A9_T1.js	-	-	-
+test/language/statements/break/S12.8_A9_T2.js	-	-	-
+test/language/statements/break/line-terminators.js	-	-	-
+test/language/statements/break/static-init-without-label.js	733	739	break requires an enclosing loop or switch
+test/language/statements/continue/12.7-1.js	-	-	-
+test/language/statements/continue/S12.7_A1_T1.js	509	518	continue requires an enclosing loop
+test/language/statements/continue/S12.7_A1_T2.js	537	542	undefined label
+test/language/statements/continue/S12.7_A1_T3.js	552	557	undefined label
+test/language/statements/continue/S12.7_A1_T4.js	530	539	continue requires an enclosing loop
+test/language/statements/continue/S12.7_A5_T1.js	555	573	undefined label
+test/language/statements/continue/S12.7_A5_T2.js	545	555	undefined label
+test/language/statements/continue/S12.7_A5_T3.js	548	556	undefined label
+test/language/statements/continue/S12.7_A6.js	478	484	undefined label
+test/language/statements/continue/S12.7_A7.js	-	-	-
+test/language/statements/continue/S12.7_A8_T1.js	426	432	undefined label
+test/language/statements/continue/S12.7_A8_T2.js	396	405	continue requires an enclosing loop
+test/language/statements/continue/S12.7_A9_T1.js	-	-	-
+test/language/statements/continue/S12.7_A9_T2.js	-	-	-
+test/language/statements/continue/labeled-continue.js	-	-	-
+test/language/statements/continue/line-terminators.js	-	-	-
+test/language/statements/continue/nested-let-bound-for-loops-inner-continue.js	-	-	-
+test/language/statements/continue/nested-let-bound-for-loops-labeled-continue.js	-	-	-
+test/language/statements/continue/nested-let-bound-for-loops-outer-continue.js	-	-	-
+test/language/statements/continue/no-label-continue.js	-	-	-
+test/language/statements/continue/shadowing-loop-variable-in-same-scope-as-continue.js	-	-	-
+test/language/statements/continue/simple-and-labeled.js	-	-	-
+test/language/statements/continue/static-init-with-label.js	789	794	undefined label
+test/language/statements/continue/static-init-without-label.js	783	792	continue requires an enclosing loop
+test/language/statements/debugger/expression.js	330	338	reserved word cannot begin an expression
+test/language/statements/debugger/statement.js	-	-	-
+test/language/statements/empty/S12.3_A1.js	-	-	-
+test/language/statements/empty/cptn-value.js	-	-	-
+test/language/statements/expression/S12.4_A1.js	526	527	function declaration requires a name
+test/language/statements/expression/S12.4_A2_T1.js	-	-	-
+test/language/statements/expression/S12.4_A2_T2.js	-	-	-
+test/language/statements/labeled/S12.12_A1_T1.js	-	-	-
+test/language/statements/labeled/continue.js	719	726	continue target is not an iteration label
+test/language/statements/labeled/cptn-break.js	-	-	-
+test/language/statements/labeled/cptn-nrml.js	-	-	-
+test/language/statements/labeled/decl-async-function.js	527	532	declaration requires a statement list
+test/language/statements/labeled/decl-async-generator.js	528	533	declaration requires a statement list
+test/language/statements/labeled/decl-cls.js	330	335	declaration requires a statement list
+test/language/statements/labeled/decl-const.js	340	345	lexical declaration requires a statement list
+test/language/statements/labeled/decl-fun-strict.js	385	393	labelled functions are not allowed
+test/language/statements/labeled/decl-gen.js	357	365	labelled functions are not allowed
+test/language/statements/labeled/decl-let.js	342	343	expected a semicolon or line terminator
+test/language/statements/labeled/let-array-with-newline.js	597	600	expression statement cannot start with let [
+test/language/statements/labeled/let-block-with-newline.js	-	-	-
+test/language/statements/labeled/let-identifier-with-newline.js	-	-	-
+test/language/statements/labeled/static-init-invalid-await.js	658	663	invalid label identifier
+test/language/statements/labeled/value-await-module-escaped.js	562	572	invalid label identifier
+test/language/statements/labeled/value-await-module.js	486	491	invalid label identifier
+test/language/statements/labeled/value-await-non-module-escaped.js	-	-	-
+test/language/statements/labeled/value-await-non-module.js	-	-	-
+test/language/statements/labeled/value-yield-non-strict-escaped.js	-	-	-
+test/language/statements/labeled/value-yield-non-strict.js	-	-	-
+test/language/statements/labeled/value-yield-strict-escaped.js	660	670	reserved label in strict mode
+test/language/statements/labeled/value-yield-strict.js	358	363	reserved label in strict mode
+test/language/statements/return/12.9-1.js	-	-	-
+test/language/statements/return/S12.9_A1_T1.js	470	476	return outside a function body
+test/language/statements/return/S12.9_A1_T10.js	466	472	return outside a function body
+test/language/statements/return/S12.9_A1_T2.js	472	478	return outside a function body
+test/language/statements/return/S12.9_A1_T3.js	477	483	return outside a function body
+test/language/statements/return/S12.9_A1_T4.js	461	467	return outside a function body
+test/language/statements/return/S12.9_A1_T5.js	512	518	return outside a function body
+test/language/statements/return/S12.9_A1_T6.js	514	520	return outside a function body
+test/language/statements/return/S12.9_A1_T7.js	514	520	return outside a function body
+test/language/statements/return/S12.9_A1_T8.js	516	522	return outside a function body
+test/language/statements/return/S12.9_A1_T9.js	507	513	return outside a function body
+test/language/statements/return/S12.9_A3.js	-	-	-
+test/language/statements/return/S12.9_A4.js	-	-	-
+test/language/statements/return/S12.9_A5.js	-	-	-
+test/language/statements/return/line-terminators.js	-	-	-
+test/language/statements/throw/S12.13_A1.js	-	-	-
+test/language/statements/throw/S12.13_A2_T1.js	-	-	-
+test/language/statements/throw/S12.13_A2_T2.js	-	-	-
+test/language/statements/throw/S12.13_A2_T3.js	-	-	-
+test/language/statements/throw/S12.13_A2_T4.js	-	-	-
+test/language/statements/throw/S12.13_A2_T5.js	-	-	-
+test/language/statements/throw/S12.13_A2_T6.js	-	-	-
+test/language/statements/throw/S12.13_A2_T7.js	-	-	-
+test/language/statements/throw/S12.13_A3_T1.js	-	-	-
+test/language/statements/throw/S12.13_A3_T2.js	-	-	-
+test/language/statements/throw/S12.13_A3_T3.js	-	-	-
+test/language/statements/throw/S12.13_A3_T4.js	-	-	-
+test/language/statements/throw/S12.13_A3_T5.js	-	-	-
+test/language/statements/throw/S12.13_A3_T6.js	-	-	-

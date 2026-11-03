@@ -54,6 +54,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add while and do-while loops, including completion values and ASI.
 - [x] Add unlabelled break and continue with completion propagation and early errors.
 - [x] Add labelled statements, labelled control transfers, and label early errors.
+- [x] Audit basic statement/control-transfer grammar, label and iteration target scope, private/reserved names, and block tail calls.
 - [x] Add expression-header for loops and their completion semantics.
 - [x] Add lexical for-loop declarations and per-iteration environments.
 - [x] Parse/evaluate synchronous for-of with assignment/var/lexical bindings, fresh iteration scopes, and iterator closing.

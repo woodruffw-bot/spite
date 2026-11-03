@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 14134 unmodified test fixtures and twenty-six harness files come from
+These 14258 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Basic statements and control transfers
+
+Another 124 unchanged originals complete nine statement directories with two
+retained tail-call originals. They add 236 modes for blocks, break/continue,
+labels, debugger, empty/expression statements, return and throw. Sixty-three
+parse-negative files contribute 120 modes with exact independent Script/Module
+diagnostic reviews. Both new block tail-call cases preserve the existing
+helper's 100,000-call depth. Every source matches its Git blob and SHA-256 digest;
+all candidate modes pass with unchanged helpers, flags and default limits.
+
+Counts are 14,258 fixtures, twenty-six helpers, 14,173 reviewed sources, 27,059
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Complete var, let and const declaration directories
 
