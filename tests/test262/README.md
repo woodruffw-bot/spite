@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 11936 unmodified test fixtures and twenty-six harness files come from
+These 12265 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Equality and ordering operators
+
+All 329 unchanged originals from the eight abstract/strict equality and ordering
+directories add 650 evaluated modes. They cover mixed numeric/string types,
+large BigInts, NaN, signed zero, UTF-16 ordering, ToPrimitive hints, coercion
+order and abrupt completions. The sixty BigInt files and eight original noStrict
+flags remain whole and unchanged. Both isolated candidate corpora pass every
+mode using existing helpers and default limits. Each source matches its pinned
+Git blob and SHA-256 digest.
+
+Counts are 12,265 fixtures, twenty-six helpers, 12,180 reviewed sources, 23,346
+variants and 78 controls. Runtime/Parser production code and case files are
+unchanged.
 
 ## Type and reference operators
 

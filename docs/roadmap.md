@@ -94,6 +94,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add integer shifts, bitwise operations, and exponentiation.
 - [x] Parse exact BigInt literals, separators, and numeric-token boundaries.
 - [x] Compare arbitrary integers with binary64 values without rounding.
+- [x] Audit abstract/strict equality and all relational comparisons, including mixed BigInt/string/Number values, unordered results and observable coercion order.
 - [x] Add correctly rounded BigInt-to-binary64 conversion for the Number constructor.
 - [x] Add exact binary64-to-BigInt conversion for finite integral Numbers.
 - [x] Integrate BigInt literals, values, coercions, and language operators.
