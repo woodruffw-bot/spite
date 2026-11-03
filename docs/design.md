@@ -3846,9 +3846,9 @@ itself. Methods require the receiver's own registry slot; public properties and
 Proxy wrappers cannot supply it. Registration does not add targets to kept
 objects, and token death alone does not unregister a cell.
 
-A reachable registry strongly retains its callback and held values, while its
-targets and tokens remain weak. Successful collection clears dead targets and
-queues cleanup captures without running JavaScript. A queued capture keeps the
+A reachable registry strongly retains its creation Realm, callback and held
+values, while its targets and tokens remain weak. Successful collection clears
+dead targets and queues cleanup captures without running JavaScript. A queued capture keeps the
 registry and callback alive. Before removing a selected cell, the driver retains
 its held argument through the callback; unregister removes all matching cells,
 including cleared cells awaiting delivery.
@@ -3869,6 +3869,13 @@ collects, and schedules a later cleanup turn. Kept roots survive every callback
 and reentry until that explicit checkpoint. One opt-in job work allowance spans
 all callbacks and host reentry, with no per-callback reset. Realm execution
 context is restored on normal and abrupt exit.
+
+The initial context of a cleanup job uses the registry's creation Realm. This is
+this host's choice under 9.5; 26.2.1.1 fixes the registry's [[Realm]] independently
+of newTarget's prototype. Callbacks enter their own function Realms, while errors
+from a revoked callback Proxy are created in the job's Realm. Preflight refusals
+restore the caller and leave the queued cells intact. Started-job errors are
+reported after restoring the caller; foreign language errors retain their Realm.
 
 ## ArrayBuffer
 

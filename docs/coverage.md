@@ -63,6 +63,25 @@ not an alternative language specification.
 
 
 
+## FinalizationRegistry creation Realm and cleanup context
+
+Registries retain and trace their constructor's creation Realm independently of
+newTarget's prototype and the callback's Realm. Cleanup starts in that Realm
+under the documented host policy allowed by 9.5, then ordinary Call enters the
+callback's own Realm. Preflight failures preserve the queue and caller allowance;
+started outcomes restore the caller and preserve foreign language-error identity.
+
+Three native groups cover a foreign newTarget, null prototype, callback Proxy
+revocation and GC retention/release; Proxy argument-array allocation versus source
+callback/error ownership; and preflight refusals plus a host abort reached inside
+the callback body. The slot-retention test failed before the implementation by
+collecting the still-retained registry's Realm. All 36 focused Realm groups now
+pass. Runtime has 568 unit tests; integration and corpus inventories are unchanged.
+Public child-Realm creation remains unavailable pending bootstrap integration.
+All 568 Runtime units, 2,407 non-RegExp integration groups, 22,206 retained
+Test262 variants and 77 controls pass, together with formatting, strict Clippy,
+MSRV, CLI/doc tests, policy and fixture inventories.
+
 ## Iterator Helper closure Realms
 
 Iterator Helpers retain and trace the Realm in which their closure was created.

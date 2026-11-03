@@ -1405,3 +1405,187 @@ fn recursive_foreign_helper_callbacks_keep_the_two_mebibyte_guard_and_restore_re
         assert_eq!(realm.call_depth,0);
     }).unwrap().join().unwrap();
 }
+
+#[test]
+fn finalization_registry_realm_survives_foreign_new_target_revoked_callback_and_gc() {
+    let mut realm = Realm::default();
+    let (environment, constructor) = child_realm_fixture(&mut realm, "FinalizationRegistry");
+    let prototype = realm
+        .objects
+        .environment(&environment)
+        .unwrap()
+        .inactive_realm
+        .as_ref()
+        .unwrap()
+        .intrinsics
+        .as_ref()
+        .unwrap()
+        .errors
+        .entries
+        .iter()
+        .find(|error| error.kind == crate::function::error::ErrorConstructor::TypeError)
+        .unwrap()
+        .prototype
+        .clone();
+    expose(&mut realm, "ForeignRegistry", constructor);
+    realm.eval("var pair=Proxy.revocable(function(){},{}),registry=Reflect.construct(ForeignRegistry,[pair.proxy],function N(){});FinalizationRegistry.prototype.register.call(registry,{},7);Object.setPrototypeOf(registry,null);delete globalThis.ForeignRegistry;pair.revoke();").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    let crate::FinalizationCleanupOutcome::Reported(Error::Thrown(Value::Object(reason))) =
+        realm.run_finalization_cleanup_job().unwrap()
+    else {
+        panic!("foreign revoked-callback error")
+    };
+    assert_eq!(
+        realm.inspect_object(&reason).unwrap().prototype(),
+        Some(&prototype)
+    );
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_ok());
+    realm.eval("registry=undefined;pair=undefined;").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&environment).is_err());
+    assert!(realm.objects.inspect(&prototype).is_err());
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
+fn finalization_cleanup_starts_in_the_registry_realm_then_calls_the_callbacks_realm() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    realm.eval(r#"
+        var seen=[];
+        var callback=new Proxy(function(v){seen.push(v===7 && this===globalThis && Object.getPrototypeOf([])===Array.prototype);},
+            {apply(t,v,args){seen.push(Object.getPrototypeOf(args)===child.Array.prototype);return Reflect.apply(t,v,args);}});
+        var registry=new child.FinalizationRegistry(callback);registry.register({},7);
+    "#).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(matches!(
+        realm.run_finalization_cleanup_job().unwrap(),
+        crate::FinalizationCleanupOutcome::Completed
+    ));
+    assert_eq!(
+        realm.eval("seen.length===2 && seen.every(Boolean)"),
+        Ok(Value::Boolean(true))
+    );
+    realm
+        .eval("var bad=new child.FinalizationRegistry(function(){null.x;});bad.register({},8);")
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    let crate::FinalizationCleanupOutcome::Reported(Error::Thrown(reason)) =
+        realm.run_finalization_cleanup_job().unwrap()
+    else {
+        panic!("callback exception")
+    };
+    expose(&mut realm, "reason", reason);
+    assert_eq!(
+        realm.eval("reason instanceof TypeError && !(reason instanceof child.TypeError)"),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
+fn foreign_finalization_preflight_refusals_and_started_host_aborts_restore_the_caller() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(
+        &mut realm,
+        r#"
+        var state=(()=>{
+            let calls=0,effects=0;
+            return {
+                cleanup(value){calls++;if(value==='loop'){try{for(;;){}}finally{effects++;}}},
+                read(){return [calls,effects];}
+            };
+        })();state.cleanup
+    "#,
+    );
+    expose_child(&mut realm, &environment, function);
+    realm
+        .eval("var registry=new child.FinalizationRegistry(foreign);registry.register({},7);")
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    let work = realm.remaining_steps;
+    realm.limits.max_steps = Some(0);
+    assert!(matches!(
+        realm.run_finalization_cleanup_job(),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.remaining_steps, work);
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    realm.limits.max_steps = None;
+    realm.limits.max_arguments = Some(0);
+    assert!(matches!(
+        realm.run_finalization_cleanup_job(),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.remaining_steps, work);
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert!(
+        realm
+            .objects
+            .environment(&environment)
+            .unwrap()
+            .inactive_realm
+            .is_some()
+    );
+    realm.limits.max_arguments = None;
+    assert!(matches!(
+        realm.run_finalization_cleanup_job().unwrap(),
+        crate::FinalizationCleanupOutcome::Completed
+    ));
+    assert_eq!(
+        realm.eval("JSON.stringify(child.state.read())"),
+        Ok(Value::String("[1,0]".into()))
+    );
+    realm.eval("registry.register({},'loop');").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    realm.limits.max_steps = Some(1000);
+    assert!(matches!(
+        realm.run_finalization_cleanup_job().unwrap(),
+        crate::FinalizationCleanupOutcome::Reported(Error::Limit { .. })
+    ));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+    assert!(
+        realm
+            .objects
+            .environment(&environment)
+            .unwrap()
+            .inactive_realm
+            .is_some()
+    );
+    assert!(!realm.job_active);
+    assert_eq!(realm.call_depth, 0);
+    assert_eq!(realm.scopes.len(), 1);
+    realm.limits.max_steps = None;
+    assert_eq!(
+        realm.eval("JSON.stringify(child.state.read())"),
+        Ok(Value::String("[2,0]".into()))
+    );
+    assert!(matches!(
+        realm.run_finalization_cleanup_job().unwrap(),
+        crate::FinalizationCleanupOutcome::NoJob
+    ));
+}

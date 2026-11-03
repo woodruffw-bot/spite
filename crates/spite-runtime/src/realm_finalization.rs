@@ -36,7 +36,8 @@ impl Realm {
     /// They share one optional work allowance, including host evaluation/property
     /// reentry, and kept objects survive the entire job and later reentry until
     /// the embedding explicitly ends that sequence. No per-callback allowance or
-    /// automatic checkpoint is introduced. Realms remain independent execution domains.
+    /// automatic checkpoint is introduced. Cleanup jobs start in the registry's
+    /// creation Realm; callbacks enter their own creation Realms.
     pub fn run_finalization_cleanup_job(&mut self) -> Result<FinalizationCleanupOutcome, Error> {
         let span = Span::new(0, 0);
         if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
@@ -59,10 +60,20 @@ impl Realm {
                     objects.prepare_finalization_cleanup_job(budget)
                 })?
                 .expect("the exclusive Realm retains its queued job");
-            let (arguments, cell) = self.prepare_finalization_cleanup_call(&job, span)?;
-            Ok((job, arguments, cell))
+            // Host cleanup policy uses the registry's saved [[Realm]], not
+            // the callback's possibly revoked target (9.5, 9.12, 26.2.1.1).
+            let transition = match job.realm() {
+                Some(realm) => self.enter_function_realm(realm, span)?,
+                None => None,
+            };
+            match self.prepare_finalization_cleanup_call(&job, span) {
+                Ok((arguments, cell)) => Ok((job, transition, arguments, cell)),
+                Err(error) => Err(self
+                    .leave_function_realm::<()>(transition, Err(error))
+                    .expect_err("cleanup preflight failed")),
+            }
         })();
-        let (job, mut arguments, mut cell) = match prepared {
+        let (job, transition, mut arguments, mut cell) = match prepared {
             Ok(prepared) => prepared,
             Err(error) => {
                 self.remaining_steps = caller_work;
@@ -70,9 +81,8 @@ impl Realm {
             }
         };
 
-        // A real queued registry was created in this Realm, so its global
-        // environment exists. Retain the existing scope roots throughout the
-        // job; ordinary Call restores its own lexical/function context.
+        // The job's creation Realm is active. Retain its global roots while
+        // ordinary Call enters and restores each callback's own context.
         let global = self
             .scopes
             .first()
@@ -82,9 +92,9 @@ impl Realm {
         let caller_strict = std::mem::replace(&mut self.strict, false);
         let caller_scope_depth = self.scopes.len();
         self.job_active = true;
-        let outcome = loop {
+        let result = loop {
             let Some(prepared_cell) = cell else {
-                break FinalizationCleanupOutcome::Completed;
+                break Ok(());
             };
             // All fallible copying, removal work, root metadata and real
             // argument capacity precede this commit. The queue roots callback
@@ -101,7 +111,7 @@ impl Realm {
             // Call has returned. No object borrow or Symbol gate spans JavaScript.
             self.objects.finish_finalization_cleanup_argument();
             if let Err(error) = result {
-                break FinalizationCleanupOutcome::Reported(error);
+                break Err(error);
             }
             // Callback mutations can unregister any remaining cell. Re-select
             // from the current registry; no captured list survives a callback.
@@ -110,7 +120,7 @@ impl Realm {
                     arguments = next_arguments;
                     cell = next_cell;
                 }
-                Err(error) => break FinalizationCleanupOutcome::Reported(error),
+                Err(error) => break Err(error),
             }
         };
         // The pre-reserved capture remains queued when cleared cells remain.
@@ -119,10 +129,14 @@ impl Realm {
         self.job_active = false;
         self.strict = caller_strict;
         self.variable_environment = caller_variable;
-        self.remaining_steps = caller_work;
         debug_assert_eq!(self.scopes.len(), caller_scope_depth);
+        let result = self.leave_function_realm(transition, result);
+        self.remaining_steps = caller_work;
         debug_assert_eq!((self.call_depth, self.evaluation_depth), (0, 0));
-        Ok(outcome)
+        Ok(match result {
+            Ok(()) => FinalizationCleanupOutcome::Completed,
+            Err(error) => FinalizationCleanupOutcome::Reported(error),
+        })
     }
 
     fn prepare_finalization_cleanup_call(

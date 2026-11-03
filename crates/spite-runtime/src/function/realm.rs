@@ -10,7 +10,7 @@ use spite_core::Span;
 
 #[derive(Debug)]
 #[must_use = "restore this transition with leave_function_realm"]
-pub(super) struct RealmTransition {
+pub(crate) struct RealmTransition {
     previous: EnvironmentHandle,
     target: EnvironmentHandle,
     context: SourceExecutionContext,
@@ -70,7 +70,7 @@ impl Realm {
         self.leave_function_realm(transition, result)
     }
 
-    pub(super) fn enter_function_realm(
+    pub(crate) fn enter_function_realm(
         &mut self,
         target: &EnvironmentHandle,
         span: Span,
@@ -142,7 +142,7 @@ impl Realm {
         }))
     }
 
-    pub(super) fn leave_function_realm<T>(
+    pub(crate) fn leave_function_realm<T>(
         &mut self,
         transition: Option<RealmTransition>,
         result: Result<T, Error>,

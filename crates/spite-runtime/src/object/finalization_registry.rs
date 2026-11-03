@@ -6,6 +6,7 @@
 
 use super::{Budget, Error, Objects};
 use crate::Value;
+use crate::environment::EnvironmentHandle;
 use spite_core::WeakJsSymbol;
 use spite_heap::{Handle, Trace};
 
@@ -46,6 +47,7 @@ pub(super) struct Cell {
 
 #[derive(Debug)]
 pub(super) struct FinalizationRegistryData {
+    pub(super) realm: Option<EnvironmentHandle>,
     pub(super) callback: Handle,
     pub(super) cells: Vec<Cell>,
     // Maintained with cell mutation, allowing infallible post-abort completion.
@@ -55,12 +57,12 @@ pub(super) struct FinalizationRegistryData {
 
 impl Trace for FinalizationRegistryData {
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        std::iter::once(Some(&self.callback)).chain(self.cells.iter().map(
-            |cell| match &cell.held {
+        std::iter::once(Some(&self.callback))
+            .chain(self.cells.iter().map(|cell| match &cell.held {
                 Value::Object(value) => Some(value),
                 _ => None,
-            },
-        ))
+            }))
+            .chain(self.realm.iter().map(|realm| Some(&realm.0)))
     }
 }
 
@@ -69,6 +71,13 @@ impl Trace for FinalizationRegistryData {
 pub(crate) struct FinalizationCleanupJob {
     index: usize,
     registry: Handle,
+    realm: Option<EnvironmentHandle>,
+}
+
+impl FinalizationCleanupJob {
+    pub(crate) fn realm(&self) -> Option<&EnvironmentHandle> {
+        self.realm.as_ref()
+    }
 }
 
 /// All fallible cell selection is complete; no JavaScript may run before commit.
@@ -102,7 +111,9 @@ impl Objects {
         // Like the existing WeakRef slot, box the optional record so ordinary
         // objects do not carry an inline cells Vec and cleanup counters. This
         // allocation precedes heap insertion and any collector-state mutation.
+        let realm = self.active_function_realm()?;
         let data = Box::new(FinalizationRegistryData {
+            realm,
             callback: callback.clone(),
             cells: Vec::new(),
             cleared: 0,
@@ -240,6 +251,7 @@ impl Objects {
         Ok(Some(FinalizationCleanupJob {
             index,
             registry: registry.clone(),
+            realm: data.realm.clone(),
         }))
     }
 
