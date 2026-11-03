@@ -82,6 +82,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
+- [x] Audit bitwise and shift conversions, short-circuit evaluation and logical assignments, including private references, conditional writes and strict target validity.
 - [x] Parse/evaluate object and array destructuring assignments and synchronous for-in/of assignment heads, with nested/default/rest patterns, retained member references, ordered writes, and iterator closing.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Audit typeof, instanceof, in and delete grammar and evaluation, including custom Symbol.hasInstance, private-in validity, reference order and strict deletion.

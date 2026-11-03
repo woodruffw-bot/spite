@@ -1,9 +1,25 @@
 # Test262 regression fixtures
 
-These 12567 unmodified test fixtures and twenty-six harness files come from
+These 12937 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Bitwise, shifts and short circuiting
+
+Another 370 unchanged originals complete the eleven bitwise, shift, logical,
+nullish-coalescing and logical-assignment directories alongside four existing
+unchanged tail-call originals. They add 708 modes: 682 evaluated modes and 26
+reviewed parse-negative modes from sixteen files. Cases cover word conversions,
+BigInt operations/errors, ordered references, conditional writes, private fields
+and short circuits. Exact independently confirmed rejection reviews cover
+coalesce/logical mixtures, invalid targets and strict eval/arguments assignment.
+Every source matches its pinned Git blob and SHA-256 digest; all candidate modes
+pass with existing helpers, original flags and default limits.
+
+Counts are 12,937 fixtures, twenty-six helpers, 12,852 reviewed sources, 24,653
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Arithmetic and unary numeric operators
 

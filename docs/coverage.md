@@ -59,9 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 23945 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 24653 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Bitwise, shifts and short-circuit operator audit
+
+Another 370 whole originals complete the eleven pinned bitwise, shift,
+short-circuit, nullish-coalescing and logical-assignment directories. Four
+previously admitted tail-call originals remain unchanged. The new files add
+708 modes: 682 evaluated modes and 26 reviewed parse-negative modes from sixteen
+files. They cover Number word conversion, signed/unsigned and BigInt shifts,
+BigInt mixing errors, operand order, conditional writes, reference retention,
+private fields and coercion-free short circuits. Negative reviews identify
+forbidden coalesce/logical mixtures, invalid assignment targets and strict
+eval/arguments assignments, with independently confirmed exact diagnostics.
+
+Every complete source matches its pinned Git blob and SHA-256 digest, and all
+708 candidate modes pass with existing helpers, flags and default limits.
+Counts are 12,937 fixtures, twenty-six helpers, 12,852 reviewed sources, 24,653
+variants and 78 controls. Runtime/Parser code and native inventories are unchanged.
+
+The full gate passes all 24,653 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests.
 
 ## Arithmetic and unary numeric operator audit
 
