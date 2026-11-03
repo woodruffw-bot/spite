@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 14258 unmodified test fixtures and twenty-six harness files come from
+These 14338 unmodified test fixtures and twenty-six harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Deferred with interactions now admitted
+
+Eighty unchanged originals previously deferred for eval, Proxy and TypedArray
+support add eighty modes and complete the with directory with 101 retained
+originals. They cover eval scope/strictness, binding and assignment identity,
+unscopables, proxy environment traps and typed-array binding objects. All flags
+and existing compareArray/proxyTrapsHelper bytes remain unchanged. Every source
+matches its Git blob and SHA-256 digest and all candidate modes pass with default
+resource limits.
+
+Counts are 14,338 fixtures, twenty-six helpers, 14,253 reviewed sources, 27,139
+variants and 78 controls. Runtime/Parser production code and case files remain
+unchanged.
 
 ## Basic statements and control transfers
 

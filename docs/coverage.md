@@ -59,9 +59,28 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 27059 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 27139 reviewed Test262 variants, twenty-six pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Previously deferred with/eval/proxy interaction cases
+
+The eighty whole originals previously deferred for eval, Proxy and TypedArray
+support now add eighty passing modes and complete the pinned with directory
+alongside 101 retained originals. They cover direct/indirect eval scopes and
+strictness, declaration versus assignment targets, live unscopables and proxy
+has/get/set behavior, original reference identity and typed-array environments.
+All 79 noStrict flags and the one onlyStrict flag remain unchanged; the existing
+compareArray and proxyTrapsHelper files run unchanged.
+
+Every source matches its Git blob and SHA-256 digest. All candidate modes pass
+with default limits. Counts are 14,338 fixtures, twenty-six helpers, 14,253
+reviewed sources, 27,139 variants and 78 controls. Runtime/Parser code and native
+inventories are unchanged.
+
+The full gate passes all 27,139 variants and 78 controls, formatting, strict
+workspace Clippy, Rust 1.99 all-target checks, dependency/fixture policies, CLI
+tests and workspace doctests, including the metadata check before the corpus run.
 
 ## Basic statements, labels and control transfers
 
