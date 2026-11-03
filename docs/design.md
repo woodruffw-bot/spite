@@ -19,6 +19,12 @@ their lexical metadata until the entire directive prologue establishes strictnes
 The optional legacy Object.prototype accessor/helpers in 20.1.3.8–9 are disabled;
 these clauses are explicitly Normative Optional, separately from Annex B.
 
+Function objects do not expose optional own `caller` or `arguments` extensions.
+The required Function.prototype accessors share %ThrowTypeError%, retaining the
+core [Forbidden Extensions](https://262.ecma-international.org/17.0/#sec-forbidden-extensions)
+restrictions. Calls through eval, dynamic constructors, bound functions and
+call/apply do not enable caller-chain inspection.
+
 Production crates use Rust's standard library and workspace crates. Approved direct
 external production dependencies are `regex` or `regress` for regular expressions,
 `jiff` for host time-zone discovery, and `jiff-tzdb` for portable raw IANA time-zone

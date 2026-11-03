@@ -59,9 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 31669 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 32666 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Function boundaries and own-property inspection
+
+Another 500 whole originals add 997 evaluated modes with original flags and
+existing helpers. Twenty-six originals finish the mandatory Function inventory
+(488 files, with 21 optional non-strict caller-extension files excluded) and the
+64-file AsyncFunction/GeneratorFunction/AsyncGeneratorFunction inventories.
+They cover restricted accessor identity/descriptors, constructor failures,
+Symbol.hasInstance, dynamic private-name scope and constructor metadata.
+The host's existing exclusion of caller-chain extensions is now explicit in the
+design; mandatory Function.prototype throwing accessors remain implemented.
+
+Another 474 originals complete eight Object inspection inventories with 73
+retained files: getOwnPropertyDescriptor(s), getOwnPropertyNames/Symbols,
+keys/entries/values and hasOwn. All 948 new Object modes pass, including primitive
+boxing/key conversion, descriptor fidelity, ordered/filtering enumeration,
+getter mutation, Proxy invariant validation and poisoned public helpers.
+All 49 new Function modes also pass. Every admitted source matches its pinned
+Git blob and SHA-256 digest.
+
+Counts are 17,136 fixtures, twenty-seven helpers, 17,051 reviewed sources,
+32,666 variants and 78 controls. Production code and native case inventories
+remain unchanged.
+
+The full Test262 package passes all 80 tests, including the 32,666-variant corpus
+and 78 controls (328.29 seconds for the corpus integration binary). Formatting,
+strict workspace Clippy, MSRV all-target checking, policy/inventory checks,
+CLI tests and documentation tests pass.
 
 ## Function source text and carriage-return metadata
 

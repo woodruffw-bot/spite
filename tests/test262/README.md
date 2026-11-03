@@ -1,9 +1,29 @@
 # Test262 regression fixtures
 
-These 16636 unmodified test fixtures and twenty-seven harness files come from
+These 17136 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Function boundaries and Object inspection
+
+Another 26 whole originals add 49 modes for Function constructor failures,
+Symbol.hasInstance, restricted caller/arguments accessors, dynamic private-name
+scope and async/generator constructors. The mandatory Function inventory is
+complete at 488 files; 21 optional non-strict caller-extension files are excluded
+without credit. All 64 files across the other three dynamic-function constructor
+families are retained.
+
+Another 474 whole originals add 948 modes, completing 547 files across Object's
+getOwnPropertyDescriptor(s), getOwnPropertyNames/Symbols, keys/entries/values and
+hasOwn directories. They cover primitive conversion, descriptor fidelity,
+enumeration order/filtering, getter mutation and Proxy invariants. All new modes
+pass with unchanged helpers, flags and default limits, and every source matches
+its pinned Git blob and SHA-256 digest.
+
+Counts are 17,136 fixtures, twenty-seven helpers, 17,051 reviewed sources,
+32,666 variants and 78 controls. Production code and native inventories remain
+unchanged.
 
 ## Function source text and header line endings
 

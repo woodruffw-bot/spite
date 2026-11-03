@@ -94,6 +94,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit ordinary and destructuring assignment reference/write order, iterator closing, inferred names and strict/invalid target early errors.
 - [x] Audit Function bind/call/apply validation, forwarding, construction/new.target, prototype and metadata behavior.
 - [x] Audit Function.prototype.toString source retention across syntax forms, dynamic constructors, line endings and callable exotic/native objects.
+- [x] Audit mandatory Function instance/constructor restrictions, Symbol.hasInstance and the dynamic function constructor families.
 - [x] Validate baseline direct/grouped assignment-target classification together with strictness and grammar-goal restrictions.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Audit typeof, instanceof, in and delete grammar and evaluation, including custom Symbol.hasInstance, private-in validity, reference order and strict deletion.
@@ -129,6 +130,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add object identity values and trace object-valued data properties, including cycles.
 - [ ] Implement ordinary objects, descriptors, prototypes, and property order.
 - [x] Add ordinary data-property records, descriptor invariants, deletion, and string-key order.
+- [x] Audit own descriptor/name/symbol inspection and Object keys/entries/values/hasOwn across primitives, mutations, Proxies and poisoned public helpers.
 - [x] Add accessor descriptors, kind transitions, callable validation/tracing, and receiver-aware calls.
 - [x] Implement prototype traversal and mutation with bounded cycle checks.
 - [x] Implement inherited data reads, presence checks, and receiver-sensitive writes.
