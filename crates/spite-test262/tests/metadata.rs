@@ -81,6 +81,22 @@ fn execution_metadata_accepts_cr_lf_and_crlf_without_rewriting_source() {
 }
 
 #[test]
+fn common_header_indentation_preserves_nested_field_boundaries() {
+    let fields = "description: |\n  flags: [raw]\nflags: [onlyStrict]\nincludes:\n  - first.js\nnegative:\n  phase: parse\n  type: SyntaxError";
+    let expected = metadata(fields);
+    for indentation in [" ", "   "] {
+        for newline in ["\n", "\r", "\r\n"] {
+            let indented = fields
+                .lines()
+                .map(|line| format!("{indentation}{line}"))
+                .collect::<Vec<_>>()
+                .join(newline);
+            assert_eq!(metadata(&format!("# comment\n{indented}")), expected);
+        }
+    }
+}
+
+#[test]
 fn harness_files_keep_default_async_and_declared_order() {
     let meta = metadata("flags: [async]\nincludes: [first.js, second.js, first.js]");
     assert_eq!(
@@ -193,6 +209,8 @@ fn unknown_semantics_and_unsupported_yaml_never_default_to_a_normal_test() {
         "negative:\n  phase: parse\n  type: SyntaxError\n  extra: value",
         "flags: [raw]\n  nested: ignored",
         "description: text\n  flags: [raw]",
+        " description: text\nflags: [raw]",
+        "\tflags: [raw]",
     ] {
         assert_eq!(
             Metadata::parse(&source(frontmatter)).unwrap_err().kind,
@@ -321,6 +339,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 23330);
+    assert_eq!(count, 25046);
     assert_eq!(harness_count, 27);
 }

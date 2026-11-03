@@ -1,9 +1,30 @@
 # Test262 regression fixtures
 
-These 23330 unmodified test fixtures and twenty-seven harness files come from
+These 25046 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Function grammar and common header indentation
+
+Another 1,716 whole originals add 3,151 modes across ordinary/async/generator/
+async-generator declarations and expressions plus ordinary/async arrows. All
+2,675 evaluated modes and 476 parse-negative modes pass; the latter retain exact
+independent CLI reviews for 264 files, with actual grammar/strictness rejection
+conditions reviewed. Original async/generated/mode flags, existing helpers and
+source bytes remain unchanged, and every source matches its Git blob and
+SHA-256 digest.
+
+The bound-function 13.2-30-s.js original exposed a valid common indentation in its
+header. Metadata parsing now accepts that common prefix while preserving relative
+field/block boundaries, source bytes, offsets and quotas. Mixed outer indentation
+and tabs remain rejected. One whole S13.2.1_A1_T1.js nested-function positive
+remains unadmitted at the parser native-stack guard, with no credit or allowance
+change. The ten function-form inventories retain 2,764 of 2,765 originals.
+
+Counts are 25,046 fixtures, twenty-seven helpers, 24,961 reviewed sources,
+48,159 variants and 78 controls. Runtime/Parser production code and native
+inventories remain unchanged.
 
 ## Complete pinned Array inventory
 

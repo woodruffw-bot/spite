@@ -126,7 +126,25 @@ impl Metadata {
         }
         // Header line breaks may be LF, CRLF or CR. Split only this borrowed
         // header slice so source text, byte offsets and quotas remain unchanged.
-        let lines: Vec<_> = body.split(['\n', '\r']).collect();
+        let mut lines: Vec<_> = body.split(['\n', '\r']).collect();
+        // Dedent only the outer mapping's common prefix. Relative indentation
+        // still separates descriptive blocks from execution fields and lists.
+        let indentation = lines
+            .iter()
+            .copied()
+            .find(|line| !line.trim().is_empty() && !line.trim_start().starts_with('#'))
+            .map_or("", |line| {
+                &line[..line.len() - line.trim_start_matches(' ').len()]
+            });
+        if !indentation.is_empty() {
+            for line in &mut lines {
+                if !line.trim().is_empty() && !line.trim_start().starts_with('#') {
+                    *line = line.strip_prefix(indentation).ok_or_else(|| {
+                        error(Unsupported, "inconsistent frontmatter indentation")
+                    })?;
+                }
+            }
+        }
         let mut index = 0;
         let mut seen = BTreeSet::new();
         let mut metadata = Self {

@@ -59,9 +59,40 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 45008 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48159 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
 
+
+## Function grammar and indented metadata
+
+The metadata reader accepts a common outer mapping indentation through borrowed
+header views. Relative indentation still isolates descriptive blocks, lists and
+negative fields; inconsistent outer indentation and tabs remain rejected. A
+regression checks execution fields and descriptive-field isolation across three
+line endings and two common indentations. Source bytes, offsets and quotas
+remain unchanged. This fixes the unchanged bound-function 13.2-30-s original.
+
+Another 1,716 whole originals add 3,151 modes across ten ordinary, async,
+generator, async-generator and arrow declaration/expression inventories. All
+2,675 evaluated modes and 476 parse-negative modes pass. The 264 negative files
+have independent exact CLI reviews for rest/default restrictions, duplicate and
+strict bindings, contextual await/yield, super placement, private-name scope,
+arrow line breaks and invalid bodies. Actual rejection locations are retained,
+including the unterminated RegExp in an invalid function body. Async/generated
+flags, original helper use and every source byte are preserved and Git blob /
+SHA-256 verified.
+
+One whole 32-level nested-function positive (S13.2.1_A1_T1.js) still hits the
+existing parser native-stack depth guard. It remains unadmitted with no passing
+credit while parser stack work continues; no allowance or guard is relaxed.
+The ten inventories retain 2,764 of 2,765 originals. Counts are 25,046 fixtures,
+twenty-seven helpers, 24,961 reviewed sources, 48,159 variants and 78 controls.
+Runtime/Parser production code and native case inventories remain unchanged.
+
+The full Test262 package passes all 81 tests, including 48,159 corpus variants
+and 78 controls (360.54 seconds for the corpus integration binary). Formatting,
+strict workspace Clippy, MSRV all-target checking, policy/inventory checks,
+CLI tests and documentation tests pass.
 
 ## Array species and iterator integration completed
 
