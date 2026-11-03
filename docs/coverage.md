@@ -63,6 +63,33 @@ not an alternative language specification.
 
 
 
+## Smaller recursive expression parser frames
+
+Expression-head parsing now returns before precedence/postfix continuations
+begin. Explicit frame boundaries keep continuation temporaries off recursive
+head paths; terminal head branches return their existing results directly.
+The grammar, lexical-goal decisions, AST shapes and diagnostics are unchanged.
+In the current x86-64 debug build, the active inner/head frame allocation drops
+from 16,536 to 4,208 bytes; the continuation frame is entered after the head
+returns. This is a measured native-stack improvement, not a new input allowance.
+
+All 440 Parser integration tests pass, including existing snapshots and guarded
+cover/method cases. Seventy-two independent 2 MiB thread probes cover eighteen
+syntax families at four depths, return normally and preserve every compared
+original guard outcome. MAX_DEPTH stays 64, and the 32-level nested-function
+original remains unadmitted while the remaining parser-frame work continues.
+
+Counts stay at 25,046 fixtures, twenty-seven helpers, 24,961 reviewed sources,
+48,159 variants and 78 controls. No fixture, native test, quota or dependency is
+changed.
+
+The full Test262 package passes all 81 tests, including the 48,159-variant corpus
+and 78 controls (322.63 seconds for the corpus integration binary). All 570
+Runtime unit tests and 2,414 non-RegExp integration tests pass; Parser passes all
+440 integration tests. Formatting, strict workspace Clippy, MSRV all-target
+checking, policy/inventory checks, CLI tests and documentation tests pass.
+The unchanged RegExp integration groups remain required in hosted CI.
+
 ## Function grammar and indented metadata
 
 The metadata reader accepts a common outer mapping indentation through borrowed

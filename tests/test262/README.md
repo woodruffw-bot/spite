@@ -5,6 +5,15 @@ These 25046 unmodified test fixtures and twenty-seven harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Parser expression-frame separation
+
+Expression heads and continuations now use separate native frames. Parser
+snapshots, lexical goals and reviewed negative diagnostics remain unchanged,
+as do all 25,046 fixtures, twenty-seven helpers, 24,961 reviewed sources,
+48,159 variants and 78 controls. All 440 Parser integration tests and 72 separate
+2 MiB stack probes pass. The depth guard stays 64; the unadmitted 32-level
+nested-function original receives no credit while stack work continues.
+
 ## Function grammar and common header indentation
 
 Another 1,716 whole originals add 3,151 modes across ordinary/async/generator/
