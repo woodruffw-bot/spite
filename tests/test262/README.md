@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 34007 unmodified test fixtures and twenty-seven harness files come from
+These 34597 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Date, ArrayBuffer and DataView inventories
+
+The 590 added whole originals pass 1,180 modes and complete 1,326 host-compatible
+published-baseline sources. Forty-eight proposal files remain excluded.
+Two further files assume that 7 PiB backing must fail; sparse logical storage
+supports those lengths and far-byte accesses without reserving that memory.
+The complete originals and their flags remain intact, and no default cap is added.
+
+Counts are 34,597 fixtures, twenty-seven helpers, 34,512 reviewed sources,
+66,710 variants and 78 controls.
 
 ## Symbol hooks, Proxy and Reflect
 

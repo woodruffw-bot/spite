@@ -59,7 +59,30 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 65530 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 66710 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Date, ArrayBuffer and DataView inventories
+
+The 590 added whole originals pass 1,180 modes, completing 1,326 host-compatible
+published-baseline sources across Date, ArrayBuffer and DataView. Checks cover
+calendar/time conversion, construction and newTarget, buffer transfer/resize,
+detachment, numeric access, conversion order and intrinsic reflection.
+
+The pinned inventories contain 1,376 originals. Eight Temporal and forty
+immutable-buffer proposal files remain outside edition 17. Two further files
+assume that a 7 PiB allocation or maximum length must fail. The existing sparse
+backing represents these logical lengths without reserving their address space;
+a direct probe verifies fixed/resizable far-byte writes and non-aliasing reads.
+CreateByteDataBlock requires RangeError when creation is impossible, which is
+not the case here. These two whole host-allocation-assumption files remain
+excluded, with no new default quota or test allowance.
+
+Counts are 34,597 fixtures, twenty-seven helpers, 34,512 reviewed sources,
+66,710 variants and 78 controls.
+
+Full verification passes all 66,710 variants, 78 controls and 81 Test262 package
+tests (corpus 373.80 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests.
 
 ## Symbol hooks, Proxy and Reflect
 

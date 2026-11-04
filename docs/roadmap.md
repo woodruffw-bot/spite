@@ -372,6 +372,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [ ] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
 - [x] Implement ordinary DataView construction, all integer/BigInt/Float16/Float32/Float64 accessors, fixed and length-tracking resizable views, live bounds and detachment checks, and intrinsic reflection.
+- [x] Audit Date, ArrayBuffer and DataView construction, conversion, calendar behavior, resizable/detached views and reflection.
 - [x] Implement TypedArray integer-indexed exotic methods for all twelve element kinds, fixed and length-tracking buffer witnesses, receiver-sensitive writes, reflection, integrity operations, and live ArrayIterator access.
 - [x] Add all twelve TypedArray constructors, construction overloads, intrinsic metadata, state getters, and from/of factories.
 - [x] Implement TypedArray indexed access, search, callback traversal, reduction, string conversion, and species-aware map/filter.
