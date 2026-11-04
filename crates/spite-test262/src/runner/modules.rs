@@ -16,12 +16,18 @@ pub struct ModuleSource {
 
 pub(super) struct ModuleLoader<'a> {
     pub root_identifier: &'a str,
-    pub load: &'a mut dyn FnMut(&str, &ModuleRequest) -> Result<ModuleSource, String>,
+    pub load: &'a mut dyn FnMut(&str, &ModuleRequest) -> Result<ModuleSource, ModuleLoadError>,
 }
 
-pub(super) enum ModuleLoadError {
+pub(crate) enum ModuleLoadError {
     Preparation(Error),
     Resolution(Error),
+}
+
+impl From<String> for ModuleLoadError {
+    fn from(message: String) -> Self {
+        Self::Preparation(host(message))
+    }
 }
 
 impl From<Error> for ModuleLoadError {
@@ -69,6 +75,22 @@ fn host(message: String) -> Error {
         message,
     }
 }
+// ParseModule syntax errors in an imported source are an abrupt loading
+// result for HostLoadImportedModule/FinishLoadingImportedModule. Parser
+// unsupported/limit diagnostics remain preparation failures.
+fn imported_source_error(error: Error) -> ModuleLoadError {
+    match error {
+        Error::Parse(diagnostic) if diagnostic.kind == DiagnosticKind::Syntax => {
+            ModuleLoadError::Resolution(Error::Exception {
+                kind: spite_runtime::ExceptionKind::SyntaxError,
+                span: diagnostic.span,
+                message: diagnostic.message,
+            })
+        }
+        error => ModuleLoadError::Preparation(error),
+    }
+}
+
 fn supported_attributes(request: &ModuleRequest) -> Result<(), Error> {
     if request.attributes.is_empty() {
         return Ok(());
@@ -173,9 +195,10 @@ impl ModuleLoader<'_> {
                         cache.nodes[index].attribute_error = Some(error.clone());
                         return Err(ModuleLoadError::Resolution(error));
                     }
-                    let loaded =
-                        (self.load)(&cache.nodes[index].identifier, &request).map_err(host)?;
-                    let target = cache.insert(realm, loaded, None)?;
+                    let loaded = (self.load)(&cache.nodes[index].identifier, &request)?;
+                    let target = cache
+                        .insert(realm, loaded, None)
+                        .map_err(imported_source_error)?;
                     dependencies.push(cache.nodes[target].handle.clone());
                 }
                 cache.nodes[index].dependencies = dependencies;
@@ -222,17 +245,22 @@ impl ModuleLoader<'_> {
                     .identifier
                 }
             };
-            let loaded = (self.load)(referrer, request.request()).map_err(host)?;
-            let target = cache.insert(realm, loaded, None)?;
-            match self.publish_graph(realm, target, cache) {
+            let loaded = (self.load)(referrer, request.request());
+            let result = loaded.and_then(|loaded| {
+                let target = cache
+                    .insert(realm, loaded, None)
+                    .map_err(imported_source_error)?;
+                self.publish_graph(realm, target, cache)
+            });
+            match result {
                 Ok(target) => realm.finish_module_import(request, Ok(target))?,
-                Err(ModuleLoadError::Resolution(error)) => {
+                Err(error) => {
+                    let error = error.into_error();
                     let Some(reason) = realm.exception_value(&error)? else {
                         return Err(error);
                     };
                     realm.finish_module_import(request, Err(reason))?;
                 }
-                Err(ModuleLoadError::Preparation(error)) => return Err(error),
             }
         }
         Ok(())
@@ -240,8 +268,8 @@ impl ModuleLoader<'_> {
 }
 
 impl Runner {
-    // Loading-time attribute errors and linking errors satisfy resolution
-    // negatives. Dependency parsing and body throws cannot supply the exception.
+    // Imported-source syntax, loading-time attribute and linking exceptions
+    // satisfy resolution negatives. Root parsing and body throws cannot.
     pub(super) fn run_module_resolution(
         &self,
         module: &Module,

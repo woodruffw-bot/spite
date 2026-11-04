@@ -448,6 +448,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Complete host-provided loaded-record imports with fresh namespace Promises, intrinsic evaluation reactions, live namespace identity and exported-then assimilation.
 - [x] Expose explicit dynamic-import host requests with canonical attributes, rooted capabilities, deferred completion and defining Module identity across functions, eval, class initialization and Promise jobs.
 - [x] Service Test262 dynamic imports with one source/record cache per execution variant, shared static/dynamic identities and explicit non-passing preparation failures.
+- [x] Propagate unavailable-source and imported-syntax loading exceptions through dynamic import Promises while preserving root parse, unsupported, resource and filesystem-confinement failures.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

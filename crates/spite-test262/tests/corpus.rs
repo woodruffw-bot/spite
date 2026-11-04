@@ -1,6 +1,6 @@
 //! Pinned corpus inventory and command-line failure semantics.
 
-use spite_test262::{Outcome, run_corpus, run_corpus_with_workers};
+use spite_test262::{Outcome, Stage, run_corpus, run_corpus_with_workers};
 use std::{
     fs,
     num::NonZeroUsize,
@@ -56,13 +56,24 @@ fn module_filesystem_failures_and_escape_attempts_never_satisfy_runtime_negative
         );
         empty_harness(&corpus.0);
         let report = run_corpus(&corpus.0).unwrap();
-        assert!(
-            matches!(
-                report.tests[0].result.as_ref().unwrap()[0].outcome,
-                Outcome::SetupFailure(_)
-            ),
-            "{specifier}: {report:#?}"
-        );
+        let outcome = &report.tests[0].result.as_ref().unwrap()[0].outcome;
+        if specifier == "./missing.js" {
+            assert!(
+                matches!(
+                    outcome,
+                    Outcome::Failed {
+                        stage: Stage::Resolution,
+                        ..
+                    }
+                ),
+                "{report:#?}"
+            );
+        } else {
+            assert!(
+                matches!(outcome, Outcome::SetupFailure(_)),
+                "{specifier}: {report:#?}"
+            );
+        }
     }
     #[cfg(unix)]
     {
@@ -265,4 +276,55 @@ fn corrupt_manifests_and_missing_sources_abort_instead_of_skipping() {
     }
     fs::write(corpus.0.join("REVISION"), "main").unwrap();
     assert!(run_corpus(&corpus.0).is_err());
+}
+
+#[test]
+fn missing_dynamic_sources_reject_and_do_not_block_unrelated_module_graphs() {
+    let corpus = TemporaryCorpus::new(
+        "/*---\nflags: [module]\n---*/\nfor(const name of ['./missing.js','./absent/leaf.js','./parent.js','','./']){try{await import(name);throw 0}catch(e){if(!(e instanceof TypeError))throw e}};let good=await import('./good.js');if(good.value!==7)throw 1",
+        "test/example.js\t-\t-\t-\n",
+    );
+    empty_harness(&corpus.0);
+    fs::write(
+        corpus.0.join("upstream/test/parent.js"),
+        "import './absent.js'",
+    )
+    .unwrap();
+    fs::write(
+        corpus.0.join("upstream/test/good.js"),
+        "export const value=7",
+    )
+    .unwrap();
+    let report = run_corpus(&corpus.0).unwrap();
+    assert!(report.is_success(), "{report:#?}");
+}
+
+#[cfg(unix)]
+#[test]
+fn missing_targets_never_turn_module_symlink_escapes_into_language_exceptions() {
+    for specifier in ["./outside/absent.js", "./broken.js"] {
+        let corpus = TemporaryCorpus::new(
+            &format!(
+                "/*---\nflags: [module]\n---*/\ntry{{await import({specifier:?})}}catch(e){{if(!(e instanceof TypeError))throw e}}"
+            ),
+            "test/example.js\t-\t-\t-\n",
+        );
+        empty_harness(&corpus.0);
+        let outside = corpus.0.join("outside");
+        fs::create_dir(&outside).unwrap();
+        std::os::unix::fs::symlink(&outside, corpus.0.join("upstream/test/outside")).unwrap();
+        std::os::unix::fs::symlink(
+            outside.join("absent.js"),
+            corpus.0.join("upstream/test/broken.js"),
+        )
+        .unwrap();
+        let report = run_corpus(&corpus.0).unwrap();
+        assert!(
+            matches!(
+                report.tests[0].result.as_ref().unwrap()[0].outcome,
+                Outcome::SetupFailure(_)
+            ),
+            "{report:#?}"
+        );
+    }
 }

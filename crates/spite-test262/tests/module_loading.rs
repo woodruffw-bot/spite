@@ -294,8 +294,7 @@ fn successful_linking_never_evaluates_a_resolution_negative_body_to_obtain_its_e
 }
 
 #[test]
-fn resolution_negatives_reject_parse_failures_and_preserve_missing_or_unsupported_source_outcomes()
-{
+fn resolution_negatives_distinguish_root_parsing_from_imported_source_syntax_errors() {
     assert!(matches!(
         resolution("import.meta=1", "SyntaxError", |_| panic!(
             "invalid root loaded sources"
@@ -305,16 +304,13 @@ fn resolution_negatives_reject_parse_failures_and_preserve_missing_or_unsupporte
             ..
         }
     ));
-    assert!(matches!(
+    assert_eq!(
         resolution("import'leaf'", "SyntaxError", |_| Ok(ModuleSource {
             identifier: "leaf".into(),
             source: "@".into()
         })),
-        Outcome::Failed {
-            stage: Stage::Resolution,
-            ..
-        }
-    ));
+        Outcome::Passed
+    );
     assert!(matches!(
         resolution("import'leaf'", "SyntaxError", |_| Ok(ModuleSource {
             identifier: "leaf".into(),
@@ -515,22 +511,19 @@ fn dynamic_body_and_linking_rejections_remain_language_runtime_failures() {
 }
 
 #[test]
-fn dynamic_preparation_and_source_identity_failures_never_satisfy_runtime_negatives() {
+fn dynamic_syntax_rejections_keep_host_and_source_identity_failures_distinct() {
     let metadata = "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError";
     assert!(matches!(
         outcome("await import('leaf')", metadata, |_| Err("missing".into())),
         Outcome::SetupFailure(_)
     ));
-    assert!(matches!(
+    assert_eq!(
         outcome("await import('leaf')", metadata, |_| Ok(ModuleSource {
             identifier: "leaf".into(),
             source: "export const = 1".into(),
         })),
-        Outcome::Failed {
-            stage: Stage::Resolution,
-            ..
-        }
-    ));
+        Outcome::Passed
+    );
     assert!(matches!(
         outcome("await import('leaf')", metadata, |_| Ok(ModuleSource {
             identifier: "leaf".into(),
@@ -635,4 +628,24 @@ fn dynamic_attributes_reject_at_runtime_and_source_limits_remain_host_failures()
             ..
         }
     ));
+}
+
+#[test]
+fn dynamic_syntax_rejections_are_catchable_and_preserve_subsequent_imports() {
+    assert_eq!(
+        outcome(
+            "for(const name of ['bad','good','bad','good']){try{let m=await import(name);if(name==='bad'||m.value!==7)throw 0}catch(e){if(name!=='bad'||!(e instanceof SyntaxError))throw e}}",
+            "flags: [module]",
+            |name| Ok(ModuleSource {
+                identifier: name.into(),
+                source: if name == "bad" {
+                    "export const = 1"
+                } else {
+                    "export const value=7"
+                }
+                .into()
+            }),
+        ),
+        Outcome::Passed
+    );
 }

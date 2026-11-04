@@ -3370,23 +3370,29 @@ publication; cached identities require byte-identical sources. Attribute failure
 are retained per record and reject the current import without blocking an
 unrelated graph. Host requests are serviced between
 Promise jobs, with referrers mapped from their defining Module records. Source
-preparation failures leave their non-passing setup/resolution category; deferred
-linking/evaluation exceptions propagate through the import Promise as language
-runtime failures. A fresh cache per Realm keeps Script variants independent.
+loader String errors, unsupported syntax and resource failures retain their
+setup/resolution categories. Ordinary imported-source syntax errors become
+loading SyntaxErrors through HostLoadImportedModule/FinishLoadingImportedModule;
+dynamic loading and linking/evaluation exceptions reject the import Promise
+through ContinueDynamicImport. A fresh cache per Realm keeps Script variants
+independent.
 
 Resolution negatives stop after loading and linking, without harness or body
-evaluation (Test262 INTERPRETING.md). Only an actual language exception from
-attribute validation during loading or from linking may satisfy the expected
-constructor name. Root/dependency parse errors,
-missing files, unsupported syntax and host limits remain non-passing outcomes.
+evaluation (Test262 INTERPRETING.md). Actual language exceptions from imported
+source parsing, host-selected loading failures, attribute validation or linking
+may satisfy the expected constructor name. Root parse errors, unsupported syntax,
+resource limits and host preparation failures remain non-passing outcomes.
 Successful linking fails the negative immediately, even if its body would throw
 the requested error. A script-resolution-error manifest role retains the Module
 phase/type evidence and exact source hashes separately from runtime negatives.
 
 The corpus host resolves relative source names by normalized path components
 under upstream/test. Canonical target checks also keep symlinks inside that
-source tree. File failures are setup failures, distinct from language exceptions;
-executed dependency body errors retain their runtime phase and original reason.
+source tree. A genuinely absent source or a directory target produces a loading
+TypeError; this includes an empty specifier that resolves to a directory. Before
+classifying a missing target, the host verifies its nearest existing ancestor.
+Broken symlinks, escapes and other filesystem failures remain setup failures.
+Executed dependency body errors retain their runtime phase and original reason.
 ModuleHandle hashes use record identity, permitting efficient host maps. Imported
 support files have an explicit module-fixture manifest mode, exact hashes and
 Module syntax validation; they receive no independent execution variant credit.

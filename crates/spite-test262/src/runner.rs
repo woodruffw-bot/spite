@@ -16,6 +16,7 @@ enum ParsedSource {
 mod async_completion;
 mod modules;
 use async_completion::AsyncCompletion;
+pub(crate) use modules::ModuleLoadError;
 pub use modules::ModuleSource;
 use modules::{ModuleCache, ModuleLoader};
 
@@ -122,7 +123,29 @@ impl Runner {
     /// explicit host requests and Promise jobs. The host supports no import
     /// attribute keys: static requests fail with SyntaxError during resolution,
     /// while dynamic requests reject with TypeError during evaluation.
+    /// Ordinary syntax errors in a returned dynamic source reject with SyntaxError.
+    /// String loader errors remain host preparation failures.
     pub fn run_with_module_loader(
+        &self,
+        source: &str,
+        review: Option<&ParseExpectation>,
+        root_identifier: &str,
+        load_harness: impl FnMut(&str) -> Result<String, String>,
+        mut load_module: impl FnMut(
+            &str,
+            &spite_parser::ast::ModuleRequest,
+        ) -> Result<ModuleSource, String>,
+    ) -> Result<Vec<CaseResult>, MetadataError> {
+        self.run_with_source_loader(
+            source,
+            review,
+            root_identifier,
+            load_harness,
+            |referrer, request| load_module(referrer, request).map_err(ModuleLoadError::from),
+        )
+    }
+
+    pub(crate) fn run_with_source_loader(
         &self,
         source: &str,
         review: Option<&ParseExpectation>,
@@ -131,7 +154,7 @@ impl Runner {
         mut load_module: impl FnMut(
             &str,
             &spite_parser::ast::ModuleRequest,
-        ) -> Result<ModuleSource, String>,
+        ) -> Result<ModuleSource, ModuleLoadError>,
     ) -> Result<Vec<CaseResult>, MetadataError> {
         let mut loader = ModuleLoader {
             root_identifier,

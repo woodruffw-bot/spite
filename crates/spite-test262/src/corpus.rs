@@ -239,7 +239,7 @@ fn run_entry(root: &Path, entry: &Entry<'_>) -> io::Result<CorpusTest> {
             message: entry.review[2].into(),
         })
     };
-    let result = Runner::default().run_with_module_loader(
+    let result = Runner::default().run_with_source_loader(
         &source,
         review.as_ref(),
         entry.path,

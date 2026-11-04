@@ -968,11 +968,13 @@ and 20,497 variants. Existing sources and harness files are unchanged.
 ## Static Module loading and dependency fixtures
 
 The conformance host loads relative Module sources by stable normalized identity
-inside upstream/test. Loading, dependency parsing and linking failures have a
-separate Resolution stage and never satisfy runtime-negative expectations.
-Imported body exceptions retain their runtime phase. Parse negatives and Scripts
-without import calls never request sources; unsupported attributes keep explicit
-non-passing outcomes.
+inside upstream/test. Static loading, imported-source syntax and linking failures
+have a separate Resolution stage and never satisfy runtime-negative expectations.
+Dynamic loading failures reject the import Promise. Missing sources and directory
+targets are loading TypeErrors; broken symlinks, escapes and other filesystem
+failures remain setup errors. Root parse failures and unsupported/limit outcomes
+retain their separate categories. Imported body exceptions retain their runtime
+phase. Parse negatives and Scripts without import calls never request sources.
 Asynchronous dependencies use the shared Module scheduler.
 
 Eleven unchanged default-export originals and distinct-for-each-module.js add

@@ -61,6 +61,29 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 70184 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Module loading exceptions and preparation failures
+
+The conformance host now returns loading TypeErrors for genuinely absent sources
+and directory targets, including empty import specifiers. Imported ordinary
+syntax errors become loading SyntaxErrors. Dynamic imports reject their Promises
+with these language exceptions; static loading errors stay in the resolution
+phase. Root parsing, unsupported syntax, resource limits, explicit loader String
+failures and source-identity conflicts keep their distinct failure categories.
+
+Nearest-existing-ancestor checks preserve corpus confinement for missing targets.
+Broken symlinks and escaping paths remain setup failures. New native groups cover
+missing files/directories, dependency failures, catchable syntax rejections,
+subsequent successful imports and symlink failures. Existing phase checks still
+reject root parse failures and body throws as resolution-negative passes.
+
+
+
+Verification passes all 70,184 variants, 78 controls and 84 Test262 package
+tests (corpus 482.71 seconds), including seventeen module-loading and eleven
+corpus groups. The next 923 whole Module originals also pass all 1,432 original
+modes outside the admitted corpus. Formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests pass.
+
 ## Complete TypedArray baseline inventory
 
 The 1,760 added whole originals exercise all twelve constructor kinds, overloads,
