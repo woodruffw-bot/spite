@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 33800 unmodified test fixtures and twenty-seven harness files come from
+These 34007 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Symbol hooks, Proxy and Reflect
+
+The 207 added whole Proxy/Reflect sources pass 400 modes and complete all 556
+published-baseline originals across Symbol (92), Proxy (311) and Reflect (153).
+Traps, invariants, forwarding and reflective operations retain their original
+bytes and flags. Three new resource-management Symbol sources remain excluded
+from the baseline admission; existing supported extras remain retained.
+
+Counts are 34,007 fixtures, twenty-seven helpers, 33,922 reviewed sources,
+65,530 variants and 78 controls.
 
 ## Function contexts, references and arguments
 

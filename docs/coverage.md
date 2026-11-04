@@ -59,7 +59,28 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 65130 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 65530 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Symbol hooks, Proxy and Reflect
+
+All 556 published-baseline originals in the Symbol, Proxy and Reflect
+inventories are retained: 92 Symbol, 311 Proxy and 153 Reflect sources. The 207
+added whole Proxy/Reflect files pass 400 modes covering all thirteen traps,
+revocation, call/construction, descriptor and extensibility invariants,
+reflection, receivers and conversion ordering. The self-importing Module case
+also checks default Proxy forwarding over a Module namespace. The three
+proxy-missing-checks cases match the published DefineOwnProperty, Delete and
+GetOwnProperty algorithms.
+
+Three new resource-management Symbol sources remain outside the baseline
+admission; the three previously retained sources for the existing extras are
+preserved. The symbols/coercion/Proxy/Reflect implementation milestone is
+complete. Counts are 34,007 fixtures, twenty-seven helpers, 33,922 reviewed
+sources, 65,530 variants and 78 controls.
+
+Full verification passes all 65,530 variants, 78 controls and 81 Test262 package
+tests (corpus 338.06 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests.
 
 ## Function contexts, references and arguments
 

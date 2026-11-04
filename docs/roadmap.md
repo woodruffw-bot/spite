@@ -176,6 +176,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Materialize edition-17 global intrinsic metadata and implement complete ordinary global reflection, enumeration, mutation, and deletion.
 - [x] Add checked Proxy target/handler storage, failure-atomic revocation, GC tracing, cached call/construct capabilities, and ordinary internal-method dispatch boundaries.
 - [x] Implement Proxy construction/revocation, all thirteen internal methods and trap invariants, iterative invocation forwarding, and Proxy-aware object/Array/JSON internal-method dispatch.
+- [x] Audit published Symbol hooks, all Proxy traps and invariants, revocation, forwarding and Reflect operations.
 - [x] Implement GetFunctionRealm validation through Proxy and bound-function chains for constructor prototype fallback and Array species selection.
 - [x] Record and trace concrete functions' creation Realm through checked global-environment handles, independently of mutable prototypes and bound/Proxy forwarding.
 - [x] Group globals, intrinsic handles, template caches and Realm-specific host choices in an owned Realm record, separate from the heap, jobs and current execution state.
@@ -301,7 +302,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add Array splice with sparse species results, ordered moves/deletes, and strict length writes.
 - [x] Integrate Array species construction with class constructors, ordered field/private-brand initialization, and abrupt completions.
 - [x] Complete Array prototype method materialization and enable full reflection/integrity operations.
-- [ ] Implement symbols, coercion hooks, proxies, and Reflect.
+- [x] Implement symbols, coercion hooks, proxies, and Reflect.
 - [x] Add the Reflect object, array-like apply calls, and construction with explicit newTarget and bound forwarding.
 - [x] Add Reflect prototype and extensibility operations with object-only targets and boolean rejection results.
 - [x] Add Reflect get/has/deleteProperty with ordered property-key conversion, explicit read receivers, and boolean deletion.
