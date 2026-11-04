@@ -1,22 +1,40 @@
 # Test262 regression fixtures
 
-These 37773 unmodified test fixtures and twenty-seven harness files come from
+These 37819 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
-The complete TypedArray baseline audit adds 1,760 unchanged originals and 3,474
-modes across TypedArray, TypedArrayConstructors and Uint8Array. All 2,247
-host-compatible published-baseline sources are retained. Twelve immutable-buffer
-proposal files and one whole host-allocation-assumption source remain excluded;
-ToLength clamps that source's 2**53 array-like length to a representable sparse
-byte length. Its BigInt counterpart remains because its byte length exceeds the
-specified bound. The original long detachment/prototype security test runs in
-both modes. There are 36,272 reviewed sources and 70,184 variants, plus 78 controls.
+## WeakRef and FinalizationRegistry inventories
 
-One further whole no-species source requires the disabled normative-optional
-`__proto__` accessor; native coverage checks its core behavior through `Object.getPrototypeOf`
-for all twelve element kinds without rewriting the original.
+The completed WeakRef/FinalizationRegistry audit adds 46 unchanged originals and
+92 modes, retaining all 76 baseline sources across the two inventories. It covers
+construction, metadata/branding, object and Symbol targets/tokens, held values,
+registration and unregister identity. Counts are 37,603 reviewed sources and
+72,401 variants, plus 78 controls.
+
+## Literal-value inventories
+
+The literal-value audit adds 343 unchanged originals and 655 modes across BigInt,
+Boolean, null, numeric, String and template literals. All 353 originals in these
+inventories are retained. There are 402 positive execution modes and 253 exact
+parse-negative modes, including required non-strict legacy forms and strict errors.
+Missing required numeric digits now identify their offending character rather
+than an interior empty span; true EOF errors remain empty. This cohort keeps all
+original bytes and flags and leaves RegExp literals in their separate inventory.
+Counts are 37,557 reviewed sources and 72,309 variants, plus 78 controls.
+
+## Shared-memory inventories
+
+The completed SharedArrayBuffer/Atomics baseline audit adds nineteen unchanged
+originals and 38 modes, retaining all 482 host-compatible published sources.
+Original multi-agent counts, timeouts and loops are preserved. Nine immutable-buffer
+proposal sources and two whole shared-allocation-assumption files remain excluded;
+sparse backing supports their logical lengths, verified through far-index atomic
+access at 7 PiB and the maximum safe-integer size. No default resource cap is added.
+Counts are 37,214 reviewed sources and 71,654 variants, plus 78 controls.
+
+## Module inventories
 
 The complete host-compatible Module audit adds 923 unchanged test originals and
 131 required support sources. Its 1,432 modes retain their original parse,
@@ -31,22 +49,20 @@ export grammar before its separately ill-formed name. Fixture bytes and flags
 are unchanged. Counts are 37,195 reviewed sources and 71,616 variants, plus
 78 controls.
 
-The completed SharedArrayBuffer/Atomics baseline audit adds nineteen unchanged
-originals and 38 modes, retaining all 482 host-compatible published sources.
-Original multi-agent counts, timeouts and loops are preserved. Nine immutable-buffer
-proposal sources and two whole shared-allocation-assumption files remain excluded;
-sparse backing supports their logical lengths, verified through far-index atomic
-access at 7 PiB and the maximum safe-integer size. No default resource cap is added.
-Counts are 37,214 reviewed sources and 71,654 variants, plus 78 controls.
+## TypedArray inventories
 
-The literal-value audit adds 343 unchanged originals and 655 modes across BigInt,
-Boolean, null, numeric, String and template literals. All 353 originals in these
-inventories are retained. There are 402 positive execution modes and 253 exact
-parse-negative modes, including required non-strict legacy forms and strict errors.
-Missing required numeric digits now identify their offending character rather
-than an interior empty span; true EOF errors remain empty. This cohort keeps all
-original bytes and flags and leaves RegExp literals in their separate inventory.
-Counts are 37,557 reviewed sources and 72,309 variants, plus 78 controls.
+The complete TypedArray baseline audit adds 1,760 unchanged originals and 3,474
+modes across TypedArray, TypedArrayConstructors and Uint8Array. All 2,247
+host-compatible published-baseline sources are retained. Twelve immutable-buffer
+proposal files and one whole host-allocation-assumption source remain excluded;
+ToLength clamps that source's 2**53 array-like length to a representable sparse
+byte length. Its BigInt counterpart remains because its byte length exceeds the
+specified bound. The original long detachment/prototype security test runs in
+both modes. There are 36,272 reviewed sources and 70,184 variants, plus 78 controls.
+
+One further whole no-species source requires the disabled normative-optional
+`__proto__` accessor; native coverage checks its core behavior through `Object.getPrototypeOf`
+for all twelve element kinds without rewriting the original.
 
 ## Date, ArrayBuffer and DataView inventories
 
