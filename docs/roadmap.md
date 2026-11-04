@@ -253,6 +253,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
 - [x] Audit class definitions, computed names, strict scopes, superclass construction, return overrides and built-in subclassing.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.
+- [x] Audit public/private class field initialization, member layout and termination, strict initializer restrictions and private-name visibility.
 - [x] Parse private fields/methods/accessors, private references and brand checks, with lexical class scope and early errors.
 - [x] Execute instance/static private fields with private-name environments, brand checks, ordered initialization, direct eval, and tracing.
 - [x] Execute private methods/accessors with brands installed before fields, private calls and writes, and tracing.
