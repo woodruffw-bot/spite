@@ -25674,3 +25674,815 @@ test/language/expressions/class/setter-length-dflt.js	-	-	-
 test/language/expressions/class/static-gen-method-param-dflt-yield.js	780	785	yield is not allowed in generator parameters
 test/language/expressions/class/static-method-length-dflt.js	-	-	-
 test/language/expressions/class/static-method-param-dflt-yield.js	525	530	reserved identifier in strict mode
+test/language/statements/class/accessor-name-inst/computed-err-evaluation.js	-	-	-
+test/language/statements/class/accessor-name-inst/computed-err-to-prop-key.js	-	-	-
+test/language/statements/class/accessor-name-inst/computed-err-unresolvable.js	-	-	-
+test/language/statements/class/accessor-name-inst/computed.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-binary.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-exponent.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-hex.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-leading-decimal.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-non-canonical.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-octal.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-numeric-zero.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-char-escape.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-default-escaped-ext.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-default-escaped.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-default.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-double-quote.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-empty.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-hex-escape.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-line-continuation.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-single-quote.js	-	-	-
+test/language/statements/class/accessor-name-inst/literal-string-unicode-escape.js	-	-	-
+test/language/statements/class/accessor-name-static/computed-err-evaluation.js	-	-	-
+test/language/statements/class/accessor-name-static/computed-err-to-prop-key.js	-	-	-
+test/language/statements/class/accessor-name-static/computed-err-unresolvable.js	-	-	-
+test/language/statements/class/accessor-name-static/computed.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-binary.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-exponent.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-hex.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-leading-decimal.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-non-canonical.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-octal.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-numeric-zero.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-char-escape.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-default-escaped-ext.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-default-escaped.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-default.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-double-quote.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-empty.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-hex-escape.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-line-continuation.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-single-quote.js	-	-	-
+test/language/statements/class/accessor-name-static/literal-string-unicode-escape.js	-	-	-
+test/language/statements/class/async-gen-method-static/array-destructuring-param-strict-body.js	5548	5596	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method-static/await-as-binding-identifier-escaped.js	1018	1028	invalid binding identifier
+test/language/statements/class/async-gen-method-static/await-as-binding-identifier.js	1010	1015	invalid binding identifier
+test/language/statements/class/async-gen-method-static/await-as-identifier-reference-escaped.js	1026	1036	await cannot be an identifier in an async function
+test/language/statements/class/async-gen-method-static/await-as-identifier-reference.js	1023	1024	expected an expression
+test/language/statements/class/async-gen-method-static/await-as-label-identifier-escaped.js	1008	1018	invalid label identifier
+test/language/statements/class/async-gen-method-static/await-as-label-identifier.js	1000	1005	invalid label identifier
+test/language/statements/class/async-gen-method-static/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-duplicates.js	2170	2171	duplicate lexical binding
+test/language/statements/class/async-gen-method-static/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/async-gen-method-static/dflt-params-rest.js	1986	1987	expected )
+test/language/statements/class/async-gen-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/async-gen-method-static/forbidden-ext/b1/cls-decl-async-gen-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/async-gen-method-static/forbidden-ext/b1/cls-decl-async-gen-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/async-gen-method-static/forbidden-ext/b2/cls-decl-async-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/async-gen-method-static/forbidden-ext/b2/cls-decl-async-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/async-gen-method-static/forbidden-ext/b2/cls-decl-async-gen-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/async-gen-method-static/object-destructuring-param-strict-body.js	5550	5599	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/async-gen-method-static/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/async-gen-method-static/rest-param-strict-body.js	5557	5605	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method-static/rest-params-trailing-comma-early-error.js	2098	2099	expected )
+test/language/statements/class/async-gen-method-static/yield-as-binding-identifier-escaped.js	1018	1028	invalid binding identifier
+test/language/statements/class/async-gen-method-static/yield-as-binding-identifier.js	1010	1015	invalid binding identifier
+test/language/statements/class/async-gen-method-static/yield-as-identifier-reference-escaped.js	1026	1036	yield cannot be an identifier in a generator context
+test/language/statements/class/async-gen-method-static/yield-as-identifier-reference.js	1018	1023	yield cannot be an identifier in a generator context
+test/language/statements/class/async-gen-method-static/yield-as-label-identifier-escaped.js	1008	1018	invalid label identifier
+test/language/statements/class/async-gen-method-static/yield-as-label-identifier.js	1000	1005	invalid label identifier
+test/language/statements/class/async-gen-method-static/yield-identifier-spread-strict.js	1091	1096	invalid binding in strict mode
+test/language/statements/class/async-gen-method-static/yield-identifier-strict.js	935	940	invalid binding in strict mode
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next-catch.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-promise-reject-next.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-spread-obj.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-async-next.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-async-return.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-async-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-expr-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-sync-next.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-sync-return.js	-	-	-
+test/language/statements/class/async-gen-method-static/yield-star-sync-throw.js	-	-	-
+test/language/statements/class/async-gen-method/array-destructuring-param-strict-body.js	5522	5570	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method/await-as-binding-identifier-escaped.js	990	1000	invalid binding identifier
+test/language/statements/class/async-gen-method/await-as-binding-identifier.js	982	987	invalid binding identifier
+test/language/statements/class/async-gen-method/await-as-identifier-reference-escaped.js	998	1008	await cannot be an identifier in an async function
+test/language/statements/class/async-gen-method/await-as-identifier-reference.js	995	996	expected an expression
+test/language/statements/class/async-gen-method/await-as-label-identifier-escaped.js	980	990	invalid label identifier
+test/language/statements/class/async-gen-method/await-as-label-identifier.js	972	977	invalid label identifier
+test/language/statements/class/async-gen-method/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-duplicates.js	2144	2145	duplicate lexical binding
+test/language/statements/class/async-gen-method/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/async-gen-method/dflt-params-rest.js	1960	1961	expected )
+test/language/statements/class/async-gen-method/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/async-gen-method/forbidden-ext/b1/cls-decl-async-gen-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/async-gen-method/forbidden-ext/b1/cls-decl-async-gen-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/async-gen-method/forbidden-ext/b2/cls-decl-async-gen-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/async-gen-method/forbidden-ext/b2/cls-decl-async-gen-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/async-gen-method/forbidden-ext/b2/cls-decl-async-gen-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/async-gen-method/object-destructuring-param-strict-body.js	5524	5573	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/async-gen-method/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/async-gen-method/rest-param-strict-body.js	5531	5579	use strict directive with non-simple parameters
+test/language/statements/class/async-gen-method/rest-params-trailing-comma-early-error.js	2072	2073	expected )
+test/language/statements/class/async-gen-method/yield-as-binding-identifier-escaped.js	990	1000	invalid binding identifier
+test/language/statements/class/async-gen-method/yield-as-binding-identifier.js	982	987	invalid binding identifier
+test/language/statements/class/async-gen-method/yield-as-identifier-reference-escaped.js	998	1008	yield cannot be an identifier in a generator context
+test/language/statements/class/async-gen-method/yield-as-identifier-reference.js	990	995	yield cannot be an identifier in a generator context
+test/language/statements/class/async-gen-method/yield-as-label-identifier-escaped.js	980	990	invalid label identifier
+test/language/statements/class/async-gen-method/yield-as-label-identifier.js	972	977	invalid label identifier
+test/language/statements/class/async-gen-method/yield-identifier-spread-strict.js	1063	1068	invalid binding in strict mode
+test/language/statements/class/async-gen-method/yield-identifier-strict.js	907	912	invalid binding in strict mode
+test/language/statements/class/async-gen-method/yield-promise-reject-next-catch.js	-	-	-
+test/language/statements/class/async-gen-method/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/statements/class/async-gen-method/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/statements/class/async-gen-method/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/statements/class/async-gen-method/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/statements/class/async-gen-method/yield-promise-reject-next.js	-	-	-
+test/language/statements/class/async-gen-method/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/async-gen-method/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/async-gen-method/yield-spread-obj.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-async-next.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-async-return.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-async-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-expr-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-sync-next.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-sync-return.js	-	-	-
+test/language/statements/class/async-gen-method/yield-star-sync-throw.js	-	-	-
+test/language/statements/class/async-method-static/array-destructuring-param-strict-body.js	5452	5499	use strict directive with non-simple parameters
+test/language/statements/class/async-method-static/await-as-binding-identifier-escaped.js	970	980	invalid binding identifier
+test/language/statements/class/async-method-static/await-as-binding-identifier.js	962	967	invalid binding identifier
+test/language/statements/class/async-method-static/await-as-identifier-reference-escaped.js	978	988	await cannot be an identifier in an async function
+test/language/statements/class/async-method-static/await-as-identifier-reference.js	975	976	expected an expression
+test/language/statements/class/async-method-static/await-as-label-identifier-escaped.js	960	970	invalid label identifier
+test/language/statements/class/async-method-static/await-as-label-identifier.js	952	957	invalid label identifier
+test/language/statements/class/async-method-static/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-duplicates.js	2073	2074	duplicate lexical binding
+test/language/statements/class/async-method-static/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/async-method-static/dflt-params-rest.js	1889	1890	expected )
+test/language/statements/class/async-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/async-method-static/forbidden-ext/b1/cls-decl-async-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/async-method-static/forbidden-ext/b1/cls-decl-async-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/async-method-static/forbidden-ext/b2/cls-decl-async-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/async-method-static/forbidden-ext/b2/cls-decl-async-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/async-method-static/forbidden-ext/b2/cls-decl-async-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/async-method-static/object-destructuring-param-strict-body.js	5454	5502	use strict directive with non-simple parameters
+test/language/statements/class/async-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/async-method-static/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/async-method-static/rest-param-strict-body.js	5461	5508	use strict directive with non-simple parameters
+test/language/statements/class/async-method-static/rest-params-trailing-comma-early-error.js	1990	1991	expected )
+test/language/statements/class/async-method-static/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/statements/class/async-method-static/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/statements/class/async-method-static/returns-async-arrow.js	-	-	-
+test/language/statements/class/async-method-static/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/statements/class/async-method-static/returns-async-function-returns-newtarget.js	-	-	-
+test/language/statements/class/async-method-static/returns-async-function.js	-	-	-
+test/language/statements/class/async-method/array-destructuring-param-strict-body.js	5438	5485	use strict directive with non-simple parameters
+test/language/statements/class/async-method/await-as-binding-identifier-escaped.js	942	952	invalid binding identifier
+test/language/statements/class/async-method/await-as-binding-identifier.js	934	939	invalid binding identifier
+test/language/statements/class/async-method/await-as-identifier-reference-escaped.js	950	960	await cannot be an identifier in an async function
+test/language/statements/class/async-method/await-as-identifier-reference.js	947	948	expected an expression
+test/language/statements/class/async-method/await-as-label-identifier-escaped.js	932	942	invalid label identifier
+test/language/statements/class/async-method/await-as-label-identifier.js	924	929	invalid label identifier
+test/language/statements/class/async-method/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/async-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/async-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/async-method/dflt-params-duplicates.js	2059	2060	duplicate lexical binding
+test/language/statements/class/async-method/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/async-method/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/async-method/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/async-method/dflt-params-rest.js	1875	1876	expected )
+test/language/statements/class/async-method/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/async-method/forbidden-ext/b1/cls-decl-async-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/async-method/forbidden-ext/b1/cls-decl-async-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/async-method/forbidden-ext/b2/cls-decl-async-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/async-method/forbidden-ext/b2/cls-decl-async-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/async-method/forbidden-ext/b2/cls-decl-async-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/async-method/object-destructuring-param-strict-body.js	5440	5488	use strict directive with non-simple parameters
+test/language/statements/class/async-method/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/async-method/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/async-method/rest-param-strict-body.js	5447	5494	use strict directive with non-simple parameters
+test/language/statements/class/async-method/rest-params-trailing-comma-early-error.js	1976	1977	expected )
+test/language/statements/class/async-method/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/statements/class/async-method/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/statements/class/async-method/returns-async-arrow.js	-	-	-
+test/language/statements/class/async-method/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/statements/class/async-method/returns-async-function-returns-newtarget.js	-	-	-
+test/language/statements/class/async-method/returns-async-function.js	-	-	-
+test/language/statements/class/gen-method-static/array-destructuring-param-strict-body.js	6129	6171	use strict directive with non-simple parameters
+test/language/statements/class/gen-method-static/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-duplicates.js	2745	2746	duplicate lexical binding
+test/language/statements/class/gen-method-static/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/gen-method-static/dflt-params-rest.js	2561	2562	expected )
+test/language/statements/class/gen-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/gen-method-static/forbidden-ext/b1/cls-decl-gen-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/gen-method-static/forbidden-ext/b1/cls-decl-gen-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/gen-method-static/forbidden-ext/b2/cls-decl-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/gen-method-static/forbidden-ext/b2/cls-decl-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/gen-method-static/forbidden-ext/b2/cls-decl-gen-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/gen-method-static/object-destructuring-param-strict-body.js	6131	6174	use strict directive with non-simple parameters
+test/language/statements/class/gen-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/gen-method-static/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/gen-method-static/rest-param-strict-body.js	6138	6180	use strict directive with non-simple parameters
+test/language/statements/class/gen-method-static/rest-params-trailing-comma-early-error.js	2673	2674	expected )
+test/language/statements/class/gen-method-static/yield-as-binding-identifier-escaped.js	929	939	invalid binding identifier
+test/language/statements/class/gen-method-static/yield-as-binding-identifier.js	921	926	invalid binding identifier
+test/language/statements/class/gen-method-static/yield-as-identifier-reference-escaped.js	937	947	yield cannot be an identifier in a generator context
+test/language/statements/class/gen-method-static/yield-as-identifier-reference.js	929	934	yield cannot be an identifier in a generator context
+test/language/statements/class/gen-method-static/yield-as-label-identifier-escaped.js	919	929	invalid label identifier
+test/language/statements/class/gen-method-static/yield-as-label-identifier.js	911	916	invalid label identifier
+test/language/statements/class/gen-method-static/yield-identifier-spread-strict.js	1002	1007	invalid binding in strict mode
+test/language/statements/class/gen-method-static/yield-identifier-strict.js	846	851	invalid binding in strict mode
+test/language/statements/class/gen-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/gen-method-static/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/gen-method-static/yield-spread-obj.js	-	-	-
+test/language/statements/class/gen-method/array-destructuring-param-strict-body.js	6104	6146	use strict directive with non-simple parameters
+test/language/statements/class/gen-method/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-duplicates.js	2720	2721	duplicate lexical binding
+test/language/statements/class/gen-method/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/gen-method/dflt-params-rest.js	2536	2537	expected )
+test/language/statements/class/gen-method/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/gen-method/forbidden-ext/b1/cls-decl-gen-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/gen-method/forbidden-ext/b1/cls-decl-gen-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/gen-method/forbidden-ext/b2/cls-decl-gen-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/gen-method/forbidden-ext/b2/cls-decl-gen-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/gen-method/forbidden-ext/b2/cls-decl-gen-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/gen-method/object-destructuring-param-strict-body.js	6106	6149	use strict directive with non-simple parameters
+test/language/statements/class/gen-method/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/gen-method/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/gen-method/rest-param-strict-body.js	6113	6155	use strict directive with non-simple parameters
+test/language/statements/class/gen-method/rest-params-trailing-comma-early-error.js	2648	2649	expected )
+test/language/statements/class/gen-method/yield-as-binding-identifier-escaped.js	902	912	invalid binding identifier
+test/language/statements/class/gen-method/yield-as-binding-identifier.js	894	899	invalid binding identifier
+test/language/statements/class/gen-method/yield-as-identifier-reference-escaped.js	910	920	yield cannot be an identifier in a generator context
+test/language/statements/class/gen-method/yield-as-identifier-reference.js	902	907	yield cannot be an identifier in a generator context
+test/language/statements/class/gen-method/yield-as-label-identifier-escaped.js	892	902	invalid label identifier
+test/language/statements/class/gen-method/yield-as-label-identifier.js	884	889	invalid label identifier
+test/language/statements/class/gen-method/yield-identifier-spread-strict.js	975	980	invalid binding in strict mode
+test/language/statements/class/gen-method/yield-identifier-strict.js	819	824	invalid binding in strict mode
+test/language/statements/class/gen-method/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/gen-method/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/gen-method/yield-spread-obj.js	-	-	-
+test/language/statements/class/method-static/array-destructuring-param-strict-body.js	5930	5971	use strict directive with non-simple parameters
+test/language/statements/class/method-static/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/method-static/dflt-params-duplicates.js	2545	2546	duplicate lexical binding
+test/language/statements/class/method-static/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/method-static/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/method-static/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/method-static/dflt-params-rest.js	2361	2362	expected )
+test/language/statements/class/method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/method-static/forbidden-ext/b1/cls-decl-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/method-static/forbidden-ext/b1/cls-decl-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/method-static/forbidden-ext/b2/cls-decl-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/method-static/forbidden-ext/b2/cls-decl-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/method-static/forbidden-ext/b2/cls-decl-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/method-static/object-destructuring-param-strict-body.js	5932	5974	use strict directive with non-simple parameters
+test/language/statements/class/method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/method-static/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/method-static/rest-param-strict-body.js	5939	5980	use strict directive with non-simple parameters
+test/language/statements/class/method-static/rest-params-trailing-comma-early-error.js	2462	2463	expected )
+test/language/statements/class/method/array-destructuring-param-strict-body.js	5920	5961	use strict directive with non-simple parameters
+test/language/statements/class/method/dflt-params-abrupt.js	-	-	-
+test/language/statements/class/method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/statements/class/method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/statements/class/method/dflt-params-duplicates.js	2535	2536	duplicate lexical binding
+test/language/statements/class/method/dflt-params-ref-later.js	-	-	-
+test/language/statements/class/method/dflt-params-ref-prior.js	-	-	-
+test/language/statements/class/method/dflt-params-ref-self.js	-	-	-
+test/language/statements/class/method/dflt-params-rest.js	2351	2352	expected )
+test/language/statements/class/method/dflt-params-trailing-comma.js	-	-	-
+test/language/statements/class/method/forbidden-ext/b1/cls-decl-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/statements/class/method/forbidden-ext/b1/cls-decl-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/statements/class/method/forbidden-ext/b2/cls-decl-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/statements/class/method/forbidden-ext/b2/cls-decl-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/statements/class/method/forbidden-ext/b2/cls-decl-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/statements/class/method/object-destructuring-param-strict-body.js	5922	5964	use strict directive with non-simple parameters
+test/language/statements/class/method/params-trailing-comma-multiple.js	-	-	-
+test/language/statements/class/method/params-trailing-comma-single.js	-	-	-
+test/language/statements/class/method/rest-param-strict-body.js	5929	5970	use strict directive with non-simple parameters
+test/language/statements/class/method/rest-params-trailing-comma-early-error.js	2452	2453	expected )
+test/language/expressions/class/accessor-name-inst/computed-err-evaluation.js	-	-	-
+test/language/expressions/class/accessor-name-inst/computed-err-to-prop-key.js	-	-	-
+test/language/expressions/class/accessor-name-inst/computed-err-unresolvable.js	-	-	-
+test/language/expressions/class/accessor-name-inst/computed.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-binary.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-exponent.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-hex.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-leading-decimal.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-non-canonical.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-octal.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-numeric-zero.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-char-escape.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-default-escaped-ext.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-default-escaped.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-default.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-double-quote.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-empty.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-hex-escape.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-line-continuation.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-single-quote.js	-	-	-
+test/language/expressions/class/accessor-name-inst/literal-string-unicode-escape.js	-	-	-
+test/language/expressions/class/accessor-name-static/computed-err-evaluation.js	-	-	-
+test/language/expressions/class/accessor-name-static/computed-err-to-prop-key.js	-	-	-
+test/language/expressions/class/accessor-name-static/computed-err-unresolvable.js	-	-	-
+test/language/expressions/class/accessor-name-static/computed.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-binary.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-exponent.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-hex.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-leading-decimal.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-non-canonical.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-octal.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-numeric-zero.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-char-escape.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-default-escaped-ext.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-default-escaped.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-default.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-double-quote.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-empty.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-hex-escape.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-line-continuation.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-single-quote.js	-	-	-
+test/language/expressions/class/accessor-name-static/literal-string-unicode-escape.js	-	-	-
+test/language/expressions/class/async-gen-method-static/array-destructuring-param-strict-body.js	5632	5680	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method-static/await-as-binding-identifier-escaped.js	1023	1033	invalid binding identifier
+test/language/expressions/class/async-gen-method-static/await-as-binding-identifier.js	1015	1020	invalid binding identifier
+test/language/expressions/class/async-gen-method-static/await-as-identifier-reference-escaped.js	1031	1041	await cannot be an identifier in an async function
+test/language/expressions/class/async-gen-method-static/await-as-identifier-reference.js	1028	1029	expected an expression
+test/language/expressions/class/async-gen-method-static/await-as-label-identifier-escaped.js	1013	1023	invalid label identifier
+test/language/expressions/class/async-gen-method-static/await-as-label-identifier.js	1005	1010	invalid label identifier
+test/language/expressions/class/async-gen-method-static/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-duplicates.js	2254	2255	duplicate lexical binding
+test/language/expressions/class/async-gen-method-static/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/async-gen-method-static/dflt-params-rest.js	2070	2071	expected )
+test/language/expressions/class/async-gen-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/async-gen-method-static/forbidden-ext/b1/cls-expr-async-gen-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/async-gen-method-static/forbidden-ext/b1/cls-expr-async-gen-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-gen-method-static/forbidden-ext/b2/cls-expr-async-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/async-gen-method-static/forbidden-ext/b2/cls-expr-async-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/async-gen-method-static/forbidden-ext/b2/cls-expr-async-gen-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-gen-method-static/object-destructuring-param-strict-body.js	5634	5683	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/async-gen-method-static/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/async-gen-method-static/rest-param-strict-body.js	5641	5689	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method-static/rest-params-trailing-comma-early-error.js	2182	2183	expected )
+test/language/expressions/class/async-gen-method-static/yield-as-binding-identifier-escaped.js	1023	1033	invalid binding identifier
+test/language/expressions/class/async-gen-method-static/yield-as-binding-identifier.js	1015	1020	invalid binding identifier
+test/language/expressions/class/async-gen-method-static/yield-as-identifier-reference-escaped.js	1031	1041	yield cannot be an identifier in a generator context
+test/language/expressions/class/async-gen-method-static/yield-as-identifier-reference.js	1023	1028	yield cannot be an identifier in a generator context
+test/language/expressions/class/async-gen-method-static/yield-as-label-identifier-escaped.js	1013	1023	invalid label identifier
+test/language/expressions/class/async-gen-method-static/yield-as-label-identifier.js	1005	1010	invalid label identifier
+test/language/expressions/class/async-gen-method-static/yield-identifier-spread-strict.js	1096	1101	invalid binding in strict mode
+test/language/expressions/class/async-gen-method-static/yield-identifier-strict.js	940	945	invalid binding in strict mode
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-catch.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-promise-reject-next.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-spread-obj.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-async-next.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-async-return.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-async-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-expr-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-sync-next.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-sync-return.js	-	-	-
+test/language/expressions/class/async-gen-method-static/yield-star-sync-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/array-destructuring-param-strict-body.js	5622	5670	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method/await-as-binding-identifier-escaped.js	995	1005	invalid binding identifier
+test/language/expressions/class/async-gen-method/await-as-binding-identifier.js	987	992	invalid binding identifier
+test/language/expressions/class/async-gen-method/await-as-identifier-reference-escaped.js	1003	1013	await cannot be an identifier in an async function
+test/language/expressions/class/async-gen-method/await-as-identifier-reference.js	1000	1001	expected an expression
+test/language/expressions/class/async-gen-method/await-as-label-identifier-escaped.js	985	995	invalid label identifier
+test/language/expressions/class/async-gen-method/await-as-label-identifier.js	977	982	invalid label identifier
+test/language/expressions/class/async-gen-method/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-duplicates.js	2244	2245	duplicate lexical binding
+test/language/expressions/class/async-gen-method/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/async-gen-method/dflt-params-rest.js	2060	2061	expected )
+test/language/expressions/class/async-gen-method/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/async-gen-method/forbidden-ext/b1/cls-expr-async-gen-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/async-gen-method/forbidden-ext/b1/cls-expr-async-gen-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-gen-method/forbidden-ext/b2/cls-expr-async-gen-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/async-gen-method/forbidden-ext/b2/cls-expr-async-gen-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/async-gen-method/forbidden-ext/b2/cls-expr-async-gen-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-gen-method/object-destructuring-param-strict-body.js	5624	5673	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/async-gen-method/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/async-gen-method/rest-param-strict-body.js	5631	5679	use strict directive with non-simple parameters
+test/language/expressions/class/async-gen-method/rest-params-trailing-comma-early-error.js	2172	2173	expected )
+test/language/expressions/class/async-gen-method/yield-as-binding-identifier-escaped.js	995	1005	invalid binding identifier
+test/language/expressions/class/async-gen-method/yield-as-binding-identifier.js	987	992	invalid binding identifier
+test/language/expressions/class/async-gen-method/yield-as-identifier-reference-escaped.js	1003	1013	yield cannot be an identifier in a generator context
+test/language/expressions/class/async-gen-method/yield-as-identifier-reference.js	995	1000	yield cannot be an identifier in a generator context
+test/language/expressions/class/async-gen-method/yield-as-label-identifier-escaped.js	985	995	invalid label identifier
+test/language/expressions/class/async-gen-method/yield-as-label-identifier.js	977	982	invalid label identifier
+test/language/expressions/class/async-gen-method/yield-identifier-spread-strict.js	1068	1073	invalid binding in strict mode
+test/language/expressions/class/async-gen-method/yield-identifier-strict.js	912	917	invalid binding in strict mode
+test/language/expressions/class/async-gen-method/yield-promise-reject-next-catch.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-promise-reject-next.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-spread-obj.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-async-next.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-async-return.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-async-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-expr-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-sync-next.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-sync-return.js	-	-	-
+test/language/expressions/class/async-gen-method/yield-star-sync-throw.js	-	-	-
+test/language/expressions/class/async-method-static/array-destructuring-param-strict-body.js	5525	5572	use strict directive with non-simple parameters
+test/language/expressions/class/async-method-static/await-as-binding-identifier-escaped.js	975	985	invalid binding identifier
+test/language/expressions/class/async-method-static/await-as-binding-identifier.js	967	972	invalid binding identifier
+test/language/expressions/class/async-method-static/await-as-identifier-reference-escaped.js	983	993	await cannot be an identifier in an async function
+test/language/expressions/class/async-method-static/await-as-identifier-reference.js	980	981	expected an expression
+test/language/expressions/class/async-method-static/await-as-label-identifier-escaped.js	965	975	invalid label identifier
+test/language/expressions/class/async-method-static/await-as-label-identifier.js	957	962	invalid label identifier
+test/language/expressions/class/async-method-static/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-duplicates.js	2146	2147	duplicate lexical binding
+test/language/expressions/class/async-method-static/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/async-method-static/dflt-params-rest.js	1962	1963	expected )
+test/language/expressions/class/async-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/async-method-static/forbidden-ext/b1/cls-expr-async-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/async-method-static/forbidden-ext/b1/cls-expr-async-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-method-static/forbidden-ext/b2/cls-expr-async-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/async-method-static/forbidden-ext/b2/cls-expr-async-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/async-method-static/forbidden-ext/b2/cls-expr-async-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-method-static/object-destructuring-param-strict-body.js	5527	5575	use strict directive with non-simple parameters
+test/language/expressions/class/async-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/async-method-static/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/async-method-static/rest-param-strict-body.js	5534	5581	use strict directive with non-simple parameters
+test/language/expressions/class/async-method-static/rest-params-trailing-comma-early-error.js	2063	2064	expected )
+test/language/expressions/class/async-method-static/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/expressions/class/async-method-static/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/expressions/class/async-method-static/returns-async-arrow.js	-	-	-
+test/language/expressions/class/async-method-static/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/expressions/class/async-method-static/returns-async-function-returns-newtarget.js	-	-	-
+test/language/expressions/class/async-method-static/returns-async-function.js	-	-	-
+test/language/expressions/class/async-method/array-destructuring-param-strict-body.js	5518	5565	use strict directive with non-simple parameters
+test/language/expressions/class/async-method/await-as-binding-identifier-escaped.js	947	957	invalid binding identifier
+test/language/expressions/class/async-method/await-as-binding-identifier.js	939	944	invalid binding identifier
+test/language/expressions/class/async-method/await-as-identifier-reference-escaped.js	955	965	await cannot be an identifier in an async function
+test/language/expressions/class/async-method/await-as-identifier-reference.js	952	953	expected an expression
+test/language/expressions/class/async-method/await-as-label-identifier-escaped.js	937	947	invalid label identifier
+test/language/expressions/class/async-method/await-as-label-identifier.js	929	934	invalid label identifier
+test/language/expressions/class/async-method/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-duplicates.js	2139	2140	duplicate lexical binding
+test/language/expressions/class/async-method/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/async-method/dflt-params-rest.js	1955	1956	expected )
+test/language/expressions/class/async-method/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/async-method/forbidden-ext/b1/cls-expr-async-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/async-method/forbidden-ext/b1/cls-expr-async-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-method/forbidden-ext/b2/cls-expr-async-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/async-method/forbidden-ext/b2/cls-expr-async-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/async-method/forbidden-ext/b2/cls-expr-async-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/async-method/object-destructuring-param-strict-body.js	5520	5568	use strict directive with non-simple parameters
+test/language/expressions/class/async-method/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/async-method/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/async-method/rest-param-strict-body.js	5527	5574	use strict directive with non-simple parameters
+test/language/expressions/class/async-method/rest-params-trailing-comma-early-error.js	2056	2057	expected )
+test/language/expressions/class/async-method/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/expressions/class/async-method/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/expressions/class/async-method/returns-async-arrow.js	-	-	-
+test/language/expressions/class/async-method/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/expressions/class/async-method/returns-async-function-returns-newtarget.js	-	-	-
+test/language/expressions/class/async-method/returns-async-function.js	-	-	-
+test/language/expressions/class/gen-method-static/array-destructuring-param-strict-body.js	6216	6258	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method-static/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-duplicates.js	2832	2833	duplicate lexical binding
+test/language/expressions/class/gen-method-static/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/gen-method-static/dflt-params-rest.js	2648	2649	expected )
+test/language/expressions/class/gen-method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/gen-method-static/forbidden-ext/b1/cls-expr-gen-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/gen-method-static/forbidden-ext/b1/cls-expr-gen-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/gen-method-static/forbidden-ext/b2/cls-expr-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/gen-method-static/forbidden-ext/b2/cls-expr-gen-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/gen-method-static/forbidden-ext/b2/cls-expr-gen-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/gen-method-static/object-destructuring-param-strict-body.js	6218	6261	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/gen-method-static/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/gen-method-static/rest-param-strict-body.js	6225	6267	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method-static/rest-params-trailing-comma-early-error.js	2760	2761	expected )
+test/language/expressions/class/gen-method-static/yield-as-binding-identifier-escaped.js	935	945	invalid binding identifier
+test/language/expressions/class/gen-method-static/yield-as-binding-identifier.js	927	932	invalid binding identifier
+test/language/expressions/class/gen-method-static/yield-as-identifier-reference-escaped.js	943	953	yield cannot be an identifier in a generator context
+test/language/expressions/class/gen-method-static/yield-as-identifier-reference.js	935	940	yield cannot be an identifier in a generator context
+test/language/expressions/class/gen-method-static/yield-as-label-identifier-escaped.js	925	935	invalid label identifier
+test/language/expressions/class/gen-method-static/yield-as-label-identifier.js	917	922	invalid label identifier
+test/language/expressions/class/gen-method-static/yield-identifier-spread-strict.js	1008	1013	invalid binding in strict mode
+test/language/expressions/class/gen-method-static/yield-identifier-strict.js	852	857	invalid binding in strict mode
+test/language/expressions/class/gen-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/gen-method-static/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/gen-method-static/yield-spread-obj.js	-	-	-
+test/language/expressions/class/gen-method/array-destructuring-param-strict-body.js	6196	6238	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-duplicates.js	2812	2813	duplicate lexical binding
+test/language/expressions/class/gen-method/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/gen-method/dflt-params-rest.js	2628	2629	expected )
+test/language/expressions/class/gen-method/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/gen-method/forbidden-ext/b1/cls-expr-gen-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/gen-method/forbidden-ext/b1/cls-expr-gen-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/gen-method/forbidden-ext/b2/cls-expr-gen-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/gen-method/forbidden-ext/b2/cls-expr-gen-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/gen-method/forbidden-ext/b2/cls-expr-gen-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/gen-method/object-destructuring-param-strict-body.js	6198	6241	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/gen-method/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/gen-method/rest-param-strict-body.js	6205	6247	use strict directive with non-simple parameters
+test/language/expressions/class/gen-method/rest-params-trailing-comma-early-error.js	2740	2741	expected )
+test/language/expressions/class/gen-method/yield-as-binding-identifier-escaped.js	906	916	invalid binding identifier
+test/language/expressions/class/gen-method/yield-as-binding-identifier.js	898	903	invalid binding identifier
+test/language/expressions/class/gen-method/yield-as-identifier-reference-escaped.js	914	924	yield cannot be an identifier in a generator context
+test/language/expressions/class/gen-method/yield-as-identifier-reference.js	906	911	yield cannot be an identifier in a generator context
+test/language/expressions/class/gen-method/yield-as-label-identifier-escaped.js	896	906	invalid label identifier
+test/language/expressions/class/gen-method/yield-as-label-identifier.js	888	893	invalid label identifier
+test/language/expressions/class/gen-method/yield-identifier-spread-strict.js	979	984	invalid binding in strict mode
+test/language/expressions/class/gen-method/yield-identifier-strict.js	823	828	invalid binding in strict mode
+test/language/expressions/class/gen-method/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/gen-method/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/gen-method/yield-spread-obj.js	-	-	-
+test/language/expressions/class/method-static/array-destructuring-param-strict-body.js	6009	6050	use strict directive with non-simple parameters
+test/language/expressions/class/method-static/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-duplicates.js	2624	2625	duplicate lexical binding
+test/language/expressions/class/method-static/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/method-static/dflt-params-rest.js	2440	2441	expected )
+test/language/expressions/class/method-static/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/method-static/forbidden-ext/b1/cls-expr-meth-static-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/method-static/forbidden-ext/b1/cls-expr-meth-static-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/method-static/forbidden-ext/b2/cls-expr-meth-static-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/method-static/forbidden-ext/b2/cls-expr-meth-static-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/method-static/forbidden-ext/b2/cls-expr-meth-static-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/method-static/object-destructuring-param-strict-body.js	6011	6053	use strict directive with non-simple parameters
+test/language/expressions/class/method-static/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/method-static/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/method-static/rest-param-strict-body.js	6018	6059	use strict directive with non-simple parameters
+test/language/expressions/class/method-static/rest-params-trailing-comma-early-error.js	2541	2542	expected )
+test/language/expressions/class/method/array-destructuring-param-strict-body.js	5999	6040	use strict directive with non-simple parameters
+test/language/expressions/class/method/dflt-params-abrupt.js	-	-	-
+test/language/expressions/class/method/dflt-params-arg-val-not-undefined.js	-	-	-
+test/language/expressions/class/method/dflt-params-arg-val-undefined.js	-	-	-
+test/language/expressions/class/method/dflt-params-duplicates.js	2614	2615	duplicate lexical binding
+test/language/expressions/class/method/dflt-params-ref-later.js	-	-	-
+test/language/expressions/class/method/dflt-params-ref-prior.js	-	-	-
+test/language/expressions/class/method/dflt-params-ref-self.js	-	-	-
+test/language/expressions/class/method/dflt-params-rest.js	2430	2431	expected )
+test/language/expressions/class/method/dflt-params-trailing-comma.js	-	-	-
+test/language/expressions/class/method/forbidden-ext/b1/cls-expr-meth-forbidden-ext-direct-access-prop-arguments.js	-	-	-
+test/language/expressions/class/method/forbidden-ext/b1/cls-expr-meth-forbidden-ext-direct-access-prop-caller.js	-	-	-
+test/language/expressions/class/method/forbidden-ext/b2/cls-expr-meth-forbidden-ext-indirect-access-own-prop-caller-get.js	-	-	-
+test/language/expressions/class/method/forbidden-ext/b2/cls-expr-meth-forbidden-ext-indirect-access-own-prop-caller-value.js	-	-	-
+test/language/expressions/class/method/forbidden-ext/b2/cls-expr-meth-forbidden-ext-indirect-access-prop-caller.js	-	-	-
+test/language/expressions/class/method/object-destructuring-param-strict-body.js	6001	6043	use strict directive with non-simple parameters
+test/language/expressions/class/method/params-trailing-comma-multiple.js	-	-	-
+test/language/expressions/class/method/params-trailing-comma-single.js	-	-	-
+test/language/expressions/class/method/rest-param-strict-body.js	6008	6049	use strict directive with non-simple parameters
+test/language/expressions/class/method/rest-params-trailing-comma-early-error.js	2531	2532	expected )

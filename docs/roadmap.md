@@ -249,6 +249,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Execute object methods/accessors with non-constructible closures, names, and home-object tracing.
 - [x] Execute super property references in object methods, accessors, arrows, and direct eval with receiver preservation, ordered computed names, and strict write/delete errors.
 - [x] Parse/evaluate base class declarations and expressions with strict constructors/methods, instance/static accessors, class-name TDZs, immutable internal names, and standard construction/metadata/source semantics.
+- [x] Audit ordinary/generator/async/async-generator class methods and accessors, including parameters, naming, suspension and nested-arrow arguments/new.target.
 - [x] Add class heritage and derived constructors with ordered superclass evaluation, super calls, and uninitialized this bindings.
 - [x] Audit class definitions, computed names, strict scopes, superclass construction, return overrides and built-in subclassing.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.

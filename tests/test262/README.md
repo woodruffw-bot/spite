@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 25760 unmodified test fixtures and twenty-seven harness files come from
+These 26572 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Class methods and accessors
+
+All 812 unchanged originals across twenty ordinary/generator/async/async-generator
+instance/static method and accessor-name inventories are retained. Their 1,528
+variants pass, including 400 reviewed parse-negative modes from 208 originals.
+Parameter, naming, strictness, suspension and await/yield context checks retain
+their original source, flags and helpers.
+
+Counts are 26,572 fixtures, twenty-seven helpers, 26,487 reviewed sources,
+51,086 variants and 78 controls.
 
 ## Class definitions and inheritance
 

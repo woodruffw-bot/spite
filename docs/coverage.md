@@ -59,7 +59,26 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 49558 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 51086 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Class methods and accessors
+
+All 812 pinned originals in twenty instance/static method and accessor-name
+inventories pass 1,528 variants. They cover ordinary, generator, async and
+async-generator calls, parameters, metadata, computed and Symbol names,
+iteration, suspension, and lexical arguments/new.target in nested arrows. The 208 parse-negative
+originals contribute 400 modes, with exact rejection spans reviewed across
+twenty generated families: duplicate/default/rest parameters, non-simple strict
+directives, and await/yield binding, reference and label restrictions. The 604
+evaluated originals contribute 1,128 modes.
+
+Original sources, flags and harness helpers are unchanged. Counts are 26,572
+fixtures, twenty-seven helpers, 26,487 reviewed sources, 51,086 variants and
+78 controls.
+
+Full verification passes all 51,086 variants, 78 controls and 81 Test262 package
+tests (corpus 320.70 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests.
 
 ## Class definitions and inheritance
 
