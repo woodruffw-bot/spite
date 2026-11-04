@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 28752 unmodified test fixtures and twenty-seven harness files come from
+These 29222 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Class member grammar and private-name boundaries
+
+The 470 added whole originals complete all 512 mandatory member syntax and
+evaluation-error sources, and all 2,955 mandatory class element originals.
+Their 940 variants pass, including 804 exact reviewed parse-negative modes.
+Two whole auto-accessor proposal files remain excluded. Generated delete cases
+that first reject an undeclared private name retain that actual diagnostic.
+
+Counts are 29,222 fixtures, twenty-seven helpers, 29,137 reviewed sources,
+56,361 variants and 78 controls.
 
 ## Class field initialization and member layout
 

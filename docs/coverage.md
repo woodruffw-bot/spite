@@ -59,7 +59,31 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 55421 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 56361 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Class member grammar and private-name boundaries
+
+All 512 mandatory originals in the member syntax/evaluation-error inventories
+are retained, completing all 2,955 mandatory class element originals. The 470
+added whole files pass 940 modes: 804 reviewed parse negatives from 402 originals
+and 136 evaluated modes from 68 originals. Checks cover constructor and static
+prototype restrictions, duplicate private elements, private-name lexical scope,
+private deletion, identifier escapes, member separation, heritage grammar and
+super calls. Two whole auto-accessor proposal sources remain excluded.
+
+Exact diagnostics distinguish the actual early errors: 132 generated delete-case
+originals reference undeclared #m and reject there; 60 other originals exercise
+private deletion itself. All 188 undeclared-name cases were checked, including
+24 with same-name declarations in parent or inner classes outside lexical scope.
+The original files and flags are retained.
+
+Counts are 29,222 fixtures, twenty-seven helpers, 29,137 reviewed sources,
+56,361 variants and 78 controls.
+
+Full verification passes all 56,361 variants, 78 controls and 81 Test262 package
+tests (corpus 358.25 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests. All 29,249 retained fixture
+and harness blobs also match the pinned upstream Git tree.
 
 ## Class field initialization and member layout
 

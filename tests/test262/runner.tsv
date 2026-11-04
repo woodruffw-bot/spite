@@ -28666,3 +28666,473 @@ test/language/expressions/class/elements/wrapped-in-sc-static-private-fields.js	
 test/language/expressions/class/elements/wrapped-in-sc-static-private-methods-with-fields.js	-	-	-
 test/language/expressions/class/elements/wrapped-in-sc-static-private-methods.js	-	-	-
 test/language/expressions/class/elements/wrapped-in-sc-string-literal-names.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-referenceerror.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-toprimitive-err.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-toprimitive-returns-noncallable.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-toprimitive-returns-nonobject.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-tostring-err.js	-	-	-
+test/language/statements/class/elements/evaluation-error/computed-name-valueof-err.js	-	-	-
+test/language/statements/class/elements/syntax/early-errors/class-heritage-array-literal-arrow-heritage.js	611	612	expected an expression
+test/language/statements/class/elements/syntax/early-errors/class-heritage-array-literal-async-arrow-heritage.js	625	627	expected {
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-accessor-get.js	1393	1395	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-accessor-set.js	1393	1395	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-async-gen.js	1403	1405	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-async.js	1396	1398	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-gen.js	1386	1388	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method.js	1384	1386	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-no-reference.js	1372	1374	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-privatename.js	1343	1351	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-accessor-get.js	1387	1389	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-accessor-set.js	1387	1389	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-async-gen.js	1391	1401	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-async.js	1384	1394	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-gen.js	1374	1384	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method.js	1378	1380	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-no-reference.js	1366	1368	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-privatename.js	1336	1345	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-accessor-get.js	1125	1127	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-accessor-set.js	1125	1127	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-async-gen.js	1135	1137	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-async.js	1128	1130	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-gen.js	1118	1120	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method.js	1116	1118	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-no-reference.js	1104	1106	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-privatename.js	1076	1082	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-accessor-get.js	1119	1121	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-accessor-set.js	1119	1121	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-async-gen.js	1124	1131	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-async.js	1117	1124	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-gen.js	1107	1114	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method.js	1110	1112	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-no-reference.js	1098	1100	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-privatename.js	1069	1076	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-accessor-get.js	1412	1414	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-accessor-set.js	1412	1414	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-async-gen.js	1422	1424	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-async.js	1415	1417	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-gen.js	1405	1407	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method.js	1403	1405	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-no-reference.js	1391	1393	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-privatename.js	1361	1371	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-accessor-get.js	1406	1408	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-accessor-set.js	1406	1408	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-async-gen.js	1409	1421	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-async.js	1402	1414	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-gen.js	1392	1404	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method.js	1397	1399	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-no-reference.js	1385	1387	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-privatename.js	1354	1365	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-accessor-get.js	1528	1530	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-accessor-set.js	1528	1530	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-async-gen.js	1517	1519	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-async.js	1510	1512	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-gen.js	1500	1502	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method.js	1498	1500	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-no-reference.js	1486	1488	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-privatename.js	1457	1465	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-accessor-get.js	1497	1499	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-accessor-set.js	1497	1499	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-async-gen.js	1501	1511	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-async.js	1494	1504	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-gen.js	1484	1494	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method.js	1488	1490	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-no-reference.js	1476	1478	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-privatename.js	1446	1455	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-accessor-get.js	1140	1142	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-accessor-set.js	1140	1142	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-async-gen.js	1129	1131	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-async.js	1122	1124	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-gen.js	1112	1114	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method.js	1110	1112	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-no-reference.js	1098	1100	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-privatename.js	1070	1076	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-accessor-get.js	1109	1111	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-accessor-set.js	1109	1111	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-async-gen.js	1114	1121	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-async.js	1107	1114	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-gen.js	1097	1104	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method.js	1100	1102	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-no-reference.js	1088	1090	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-privatename.js	1059	1066	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-accessor-get.js	1547	1549	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-accessor-set.js	1547	1549	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-async-gen.js	1536	1538	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-async.js	1529	1531	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-gen.js	1519	1521	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method.js	1517	1519	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-no-reference.js	1505	1507	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-privatename.js	1475	1485	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-accessor-get.js	1516	1518	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-accessor-set.js	1516	1518	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-async-gen.js	1519	1531	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-async.js	1512	1524	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-gen.js	1502	1514	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method.js	1507	1509	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-no-reference.js	1495	1497	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-privatename.js	1464	1475	cannot delete a private element
+test/language/statements/class/elements/syntax/early-errors/grammar-class-body-ctor-duplicate.js	663	674	invalid or duplicate class constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-ctor-super-no-heritage.js	809	814	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-field-identifier-invalid-ues-error.js	1555	1561	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-field-identifier-invalid-zwj-error.js	1555	1561	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-field-identifier-invalid-zwnj-error.js	1556	1562	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-fields-same-line-error.js	665	666	expected class field terminator
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-array-literal.js	1608	1610	expected {
+test/language/statements/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-obj-literal.js	1606	1608	expected {
+test/language/statements/class/elements/syntax/early-errors/grammar-private-field-on-object-destructuring.js	845	846	expected an object property name
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-async-gen.js	842	844	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-async.js	835	837	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-gen.js	819	821	duplicate private class element
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-ues.js	1397	1403	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-zwj-error.js	1403	1409	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-zwnj-error.js	1404	1410	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-accessor-get-meth.js	634	635	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-accessor-set-meth.js	653	654	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-async-gen-meth.js	674	675	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-async-meth.js	658	659	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-call-expr.js	748	749	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-field-init.js	644	645	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-field.js	622	623	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-gen-meth.js	651	652	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-member-expr.js	717	718	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-meth.js	623	624	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-accessor-get-meth.js	681	682	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-accessor-set-meth.js	681	682	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-async-gen-meth.js	702	703	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-async-meth.js	662	663	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-field-init.js	672	673	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-field.js	650	651	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-gen-meth.js	679	680	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-meth.js	651	652	unexpected character
+test/language/statements/class/elements/syntax/early-errors/grammar-privatenames-same-line-error.js	716	717	expected class field terminator
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-async-gen.js	749	754	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-async.js	733	738	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-gen.js	726	731	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-get.js	719	724	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-method.js	705	710	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-async-gen.js	790	795	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-async.js	773	778	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-gen.js	767	772	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-method.js	745	750	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-contains-super-set.js	720	725	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-ctor-async-gen.js	703	714	class constructor cannot be a generator
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-ctor-async-meth.js	692	703	class constructor cannot be async
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-ctor-gen.js	680	691	class constructor cannot be a generator
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-ctor-get.js	673	684	invalid or duplicate class constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-special-meth-ctor-set.js	673	684	invalid or duplicate class constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-async-gen-meth-prototype.js	675	684	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-async-gen-meth-super.js	706	711	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-async-meth-prototype.js	659	668	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-async-meth-super.js	690	695	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-gen-meth-prototype.js	652	661	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-gen-meth-super.js	683	688	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-get-meth-prototype.js	645	654	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-get-meth-super.js	676	681	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-meth-prototype.js	624	633	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-meth-super.js	655	660	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-async-gen-meth-constructor.js	720	732	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-async-gen-meth-super.js	753	758	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-async-meth-constructor.js	704	716	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-async-meth-super.js	737	742	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-gen-meth-constructor.js	697	709	invalid private class element name
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-gen-meth-super.js	730	735	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-private-meth-super.js	702	707	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/grammar-static-set-meth-prototype.js	645	654	static class method cannot be named prototype
+test/language/statements/class/elements/syntax/early-errors/grammar-static-set-meth-super.js	677	682	super call requires a derived constructor
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-call-expression-bad-reference.js	1289	1291	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-call-expression-this.js	1283	1285	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-fn-call-expression-bad-reference.js	1317	1319	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-fn-call-expression-this.js	1311	1313	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-fn-member-expression-bad-reference.js	1318	1320	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-fn-member-expression-this.js	1305	1307	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-member-expression-bad-reference.js	1290	1292	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/field-init-member-expression-this.js	1277	1279	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/fields-init-heritage-call-expression-bad-reference.js	1780	1782	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/fields-init-heritage-call-expression-this.js	1774	1776	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/fields-init-heritage-member-expression-bad-reference.js	1781	1783	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/fields-init-heritage-member-expression-this.js	1768	1770	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-call-expression-bad-reference.js	1242	1244	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-call-expression-this.js	1236	1238	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-fn-call-expression-bad-reference.js	1283	1285	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-fn-call-expression-this.js	1277	1279	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-fn-member-expression-bad-reference.js	1284	1286	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-fn-member-expression-this.js	1271	1273	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-heritage-call-expression-bad-reference.js	1757	1759	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-heritage-call-expression-this.js	1751	1753	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-heritage-member-expression-bad-reference.js	1758	1760	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-heritage-member-expression-this.js	1745	1747	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-member-expression-bad-reference.js	1243	1245	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-member-expression-this.js	1230	1232	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-outter-call-expression-bad-reference.js	1751	1753	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-outter-call-expression-this.js	1743	1745	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-outter-member-expression-bad-reference.js	1755	1757	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/invalid-names/method-outter-member-expression-this.js	1747	1749	private identifier is not declared in an enclosing class
+test/language/statements/class/elements/syntax/early-errors/private-async-generator-cannot-escape-token.js	611	617	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-async-method-cannot-escape-token.js	603	609	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-call-exp-cannot-escape-token.js	712	718	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-field-cannot-escape-token.js	565	571	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-generator-cannot-escape-token.js	588	594	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-member-exp-cannot-escape-token.js	713	719	invalid identifier start escape
+test/language/statements/class/elements/syntax/early-errors/private-method-cannot-escape-token.js	568	574	invalid identifier start escape
+test/language/statements/class/elements/syntax/valid/grammar-class-body-ctor-no-heritage.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-classelementname-initializer-alt.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-classelementname-initializer.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-identifier-alt.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-identifier.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-named-get-followed-by-generator-asi.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-field-named-set-followed-by-generator-asi.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-fields-multi-line.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatemeth-duplicate-get-set.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatemeth-duplicate-meth-nestedclassmeth.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatename-classelementname-initializer-alt.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatename-classelementname-initializer.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatename-identifier.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatename-no-initializer-with-method.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-privatenames-multi-line.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-special-prototype-accessor-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-special-prototype-async-gen-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-special-prototype-async-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-special-prototype-gen-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-special-prototype-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-ctor-accessor-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-ctor-async-gen-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-ctor-async-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-ctor-gen-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-ctor-meth-valid.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-private-async-gen-meth-prototype.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-private-async-meth-prototype.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-private-gen-meth-prototype.js	-	-	-
+test/language/statements/class/elements/syntax/valid/grammar-static-private-meth-prototype.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-referenceerror.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-err.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-returns-noncallable.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-toprimitive-returns-nonobject.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-tostring-err.js	-	-	-
+test/language/expressions/class/elements/evaluation-error/computed-name-valueof-err.js	-	-	-
+test/language/expressions/class/elements/syntax/early-errors/class-heritage-array-literal-arrow-heritage.js	616	617	expected an expression
+test/language/expressions/class/elements/syntax/early-errors/class-heritage-array-literal-async-arrow-heritage.js	630	632	expected {
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-accessor-get.js	1519	1521	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-accessor-set.js	1519	1521	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-async-gen.js	1529	1531	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-async.js	1522	1524	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method-gen.js	1512	1514	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-method.js	1510	1512	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-private-no-reference.js	1498	1500	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-call-expression-privatename.js	1469	1477	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-accessor-get.js	1513	1515	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-accessor-set.js	1513	1515	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-async-gen.js	1517	1527	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-async.js	1510	1520	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method-gen.js	1500	1510	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-method.js	1504	1506	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-private-no-reference.js	1492	1494	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-covered-err-delete-member-expression-privatename.js	1462	1471	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-accessor-get.js	1131	1133	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-accessor-set.js	1131	1133	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-async-gen.js	1141	1143	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-async.js	1134	1136	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method-gen.js	1124	1126	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-method.js	1122	1124	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-private-no-reference.js	1110	1112	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-call-expression-privatename.js	1082	1088	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-accessor-get.js	1125	1127	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-accessor-set.js	1125	1127	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-async-gen.js	1130	1137	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-async.js	1123	1130	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method-gen.js	1113	1120	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-method.js	1116	1118	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-private-no-reference.js	1104	1106	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-err-delete-member-expression-privatename.js	1075	1082	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-accessor-get.js	1538	1540	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-accessor-set.js	1538	1540	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-async-gen.js	1548	1550	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-async.js	1541	1543	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method-gen.js	1531	1533	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-method.js	1529	1531	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-private-no-reference.js	1517	1519	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-call-expression-privatename.js	1487	1497	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-accessor-get.js	1532	1534	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-accessor-set.js	1532	1534	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-async-gen.js	1535	1547	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-async.js	1528	1540	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method-gen.js	1518	1530	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-method.js	1523	1525	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-private-no-reference.js	1511	1513	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/field-delete-twice-covered-err-delete-member-expression-privatename.js	1480	1491	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-accessor-get.js	1534	1536	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-accessor-set.js	1534	1536	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-async-gen.js	1523	1525	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-async.js	1516	1518	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method-gen.js	1506	1508	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-method.js	1504	1506	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-private-no-reference.js	1492	1494	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-call-expression-privatename.js	1463	1471	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-accessor-get.js	1503	1505	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-accessor-set.js	1503	1505	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-async-gen.js	1507	1517	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-async.js	1500	1510	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method-gen.js	1490	1500	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-method.js	1494	1496	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-private-no-reference.js	1482	1484	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-covered-err-delete-member-expression-privatename.js	1452	1461	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-accessor-get.js	1146	1148	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-accessor-set.js	1146	1148	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-async-gen.js	1135	1137	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-async.js	1128	1130	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method-gen.js	1118	1120	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-method.js	1116	1118	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-private-no-reference.js	1104	1106	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-call-expression-privatename.js	1076	1082	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-accessor-get.js	1115	1117	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-accessor-set.js	1115	1117	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-async-gen.js	1120	1127	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-async.js	1113	1120	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method-gen.js	1103	1110	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-method.js	1106	1108	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-private-no-reference.js	1094	1096	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-err-delete-member-expression-privatename.js	1065	1072	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-accessor-get.js	1553	1555	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-accessor-set.js	1553	1555	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-async-gen.js	1542	1544	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-async.js	1535	1537	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method-gen.js	1525	1527	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-method.js	1523	1525	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-private-no-reference.js	1511	1513	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-call-expression-privatename.js	1481	1491	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-accessor-get.js	1522	1524	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-accessor-set.js	1522	1524	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-async-gen.js	1525	1537	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-async.js	1518	1530	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method-gen.js	1508	1520	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-method.js	1513	1515	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-private-no-reference.js	1501	1503	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/delete/method-delete-twice-covered-err-delete-member-expression-privatename.js	1470	1481	cannot delete a private element
+test/language/expressions/class/elements/syntax/early-errors/grammar-class-body-ctor-duplicate.js	668	679	invalid or duplicate class constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-ctor-super-no-heritage.js	814	819	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-field-identifier-invalid-ues-error.js	1560	1566	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-field-identifier-invalid-zwj-error.js	1560	1566	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-field-identifier-invalid-zwnj-error.js	1561	1567	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-fields-same-line-error.js	670	671	expected class field terminator
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-array-literal.js	1613	1615	expected {
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-environment-on-class-heritage-obj-literal.js	1611	1613	expected {
+test/language/expressions/class/elements/syntax/early-errors/grammar-private-field-on-object-destructuring.js	850	851	expected an object property name
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-async-gen.js	847	849	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-async.js	840	842	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatemeth-duplicate-gen.js	824	826	duplicate private class element
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-ues.js	1402	1408	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-zwj-error.js	1408	1414	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-identifier-invalid-zwnj-error.js	1409	1415	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-accessor-get-meth.js	639	640	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-accessor-set-meth.js	658	659	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-async-gen-meth.js	679	680	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-async-meth.js	663	664	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-call-expr.js	753	754	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-field-init.js	649	650	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-field.js	627	628	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-gen-meth.js	656	657	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-member-expr.js	722	723	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-meth.js	628	629	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-accessor-get-meth.js	686	687	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-accessor-set-meth.js	686	687	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-async-gen-meth.js	707	708	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-async-meth.js	667	668	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-field-init.js	677	678	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-field.js	655	656	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-gen-meth.js	684	685	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatename-whitespace-error-static-meth.js	656	657	unexpected character
+test/language/expressions/class/elements/syntax/early-errors/grammar-privatenames-same-line-error.js	721	722	expected class field terminator
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-async-gen.js	754	759	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-async.js	738	743	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-gen.js	731	736	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-get.js	724	729	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-method.js	710	715	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-async-gen.js	795	800	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-async.js	778	783	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-gen.js	772	777	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-private-method.js	750	755	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-contains-super-set.js	725	730	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-ctor-async-gen.js	708	719	class constructor cannot be a generator
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-ctor-async-meth.js	697	708	class constructor cannot be async
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-ctor-gen.js	685	696	class constructor cannot be a generator
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-ctor-get.js	678	689	invalid or duplicate class constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-special-meth-ctor-set.js	678	689	invalid or duplicate class constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-async-gen-meth-prototype.js	680	689	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-async-gen-meth-super.js	711	716	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-async-meth-prototype.js	664	673	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-async-meth-super.js	695	700	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-gen-meth-prototype.js	657	666	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-gen-meth-super.js	688	693	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-get-meth-prototype.js	650	659	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-get-meth-super.js	681	686	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-meth-prototype.js	629	638	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-meth-super.js	660	665	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-async-gen-meth-constructor.js	725	737	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-async-gen-meth-super.js	758	763	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-async-meth-constructor.js	709	721	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-async-meth-super.js	742	747	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-gen-meth-constructor.js	702	714	invalid private class element name
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-gen-meth-super.js	735	740	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-private-meth-super.js	707	712	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-set-meth-prototype.js	650	659	static class method cannot be named prototype
+test/language/expressions/class/elements/syntax/early-errors/grammar-static-set-meth-super.js	682	687	super call requires a derived constructor
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-call-expression-bad-reference.js	1752	1754	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-call-expression-this.js	1746	1748	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-fn-call-expression-bad-reference.js	1780	1782	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-fn-call-expression-this.js	1774	1776	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-fn-member-expression-bad-reference.js	1781	1783	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-fn-member-expression-this.js	1768	1770	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-heritage-call-expression-bad-reference.js	1784	1786	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-heritage-call-expression-this.js	1778	1780	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-heritage-member-expression-bad-reference.js	1785	1787	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-heritage-member-expression-this.js	1772	1774	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-member-expression-bad-reference.js	1753	1755	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/field-init-member-expression-this.js	1740	1742	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-call-expression-bad-reference.js	1705	1707	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-call-expression-this.js	1699	1701	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-fn-call-expression-bad-reference.js	1746	1748	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-fn-call-expression-this.js	1740	1742	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-fn-member-expression-bad-reference.js	1747	1749	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-fn-member-expression-this.js	1734	1736	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-heritage-call-expression-bad-reference.js	1768	1770	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-heritage-call-expression-this.js	1762	1764	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-heritage-member-expression-bad-reference.js	1769	1771	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-heritage-member-expression-this.js	1756	1758	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-member-expression-bad-reference.js	1706	1708	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-member-expression-this.js	1693	1695	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-outter-call-expression-bad-reference.js	1756	1758	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-outter-call-expression-this.js	1748	1750	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-outter-member-expression-bad-reference.js	1760	1762	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/invalid-names/method-outter-member-expression-this.js	1752	1754	private identifier is not declared in an enclosing class
+test/language/expressions/class/elements/syntax/early-errors/private-async-generator-cannot-escape-token.js	616	622	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-async-method-cannot-escape-token.js	608	614	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-call-exp-cannot-escape-token.js	717	723	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-field-cannot-escape-token.js	570	576	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-generator-cannot-escape-token.js	593	599	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-member-exp-cannot-escape-token.js	718	724	invalid identifier start escape
+test/language/expressions/class/elements/syntax/early-errors/private-method-cannot-escape-token.js	573	579	invalid identifier start escape
+test/language/expressions/class/elements/syntax/valid/grammar-class-body-ctor-no-heritage.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-field-classelementname-initializer-alt.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-field-classelementname-initializer.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-field-identifier-alt.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-field-identifier.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-fields-multi-line.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatemeth-duplicate-get-set.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatemeth-duplicate-meth-nestedclassmeth.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatename-classelementname-initializer-alt.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatename-classelementname-initializer.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatename-identifier.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatename-no-initializer-with-method.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-privatenames-multi-line.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-special-prototype-accessor-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-special-prototype-async-gen-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-special-prototype-async-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-special-prototype-gen-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-special-prototype-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-accessor-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-async-gen-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-async-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-gen-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-ctor-meth-valid.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-private-async-gen-meth-prototype.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-private-async-meth-prototype.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-private-gen-meth-prototype.js	-	-	-
+test/language/expressions/class/elements/syntax/valid/grammar-static-private-meth-prototype.js	-	-	-
