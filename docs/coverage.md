@@ -59,7 +59,47 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 74857 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 79448 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Published lexical, object and declaration inventories
+
+The baseline audit adds 378 unchanged declaration/reference originals (724
+modes) and 1,126 object-literal originals (2,166 modes). They cover block scope,
+redeclarations, strict bindings, reference targets, property access, construction,
+computed names, shorthand, methods, rest/spread and hashbang placement. All 126
+and 161 respective parse negatives retain exact reviewed diagnostics. One whole
+object original requires the disabled optional Object.prototype.__proto__
+extension and remains excluded under the established host policy.
+
+Another 791 lexical and expression originals pass 1,483 modes, including 227
+exact parse negatives and eight runtime negatives. Coverage includes Unicode
+identifier declarations through Unicode17, strict directives, keywords and
+reserved words, comments, line terminators, whitespace, super, optional chaining
+and destructuring. Unicode18 accepts the older positive identifier sets. Four
+whole class sources require disabled legacy getter/setter lookup helpers; two
+others assert withdrawn nonextensible-private-field behavior. They remain
+excluded whole, alongside the previously reviewed legacy host and join-control
+sources. No production behavior changed for these inventories.
+
+The remaining language inventory is accounted for: 657 whole sources use future
+or withdrawn features, 86 are metadata-free support files, and three
+require optional host extensions. The six further whole files are the four
+legacy lookup-helper sources and two obsolete join-control loops reviewed above.
+All other pinned language originals are retained under the workspace baseline.
+
+Another 109 generated RegExp originals pass 218 modes: 21 syntax-only sources
+and 88 finite string/UnicodeSets vectors. The Unicode17 dataset label alone does
+not determine compatibility. Ninety other datasets contain explicit membership
+counterexamples to pinned Unicode18, confirmed through the real backend; 290
+identical-membership exhaustive datasets remain pending execution. No source,
+helper, flag or loop was rewritten and no execution allowance changed.
+
+Counts are 41,457 fixtures, twenty-eight helpers, 41,241 reviewed sources,
+79,448 variants and 78 controls.
+
+Validation: all 79,448 variants, 78 controls and 85 Test262 package checks pass
+(the full corpus took 511.55 seconds). Formatting, strict Clippy, Rust 1.99
+all-target checks, repository policies and the original CLI smoke suite pass.
 
 ## RegExp integration and transparent returns
 

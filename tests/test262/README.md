@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 39053 unmodified test fixtures and twenty-eight harness files come from
+These 41457 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Object, declaration and finite Unicode fixture audits
+
+The audit adds 2,404 unchanged originals and 4,591 passing modes: 378 declaration
+and reference sources, 1,126 object-literal sources, 791 lexical/expression
+sources and 109 finite/syntax-only Unicode property sources. Exact rejection
+reviews cover 535 originals; eight runtime negatives run normally. Four whole
+class files require disabled legacy getter/setter lookup; two others assert
+withdrawn nonextensible-private-field behavior. Those files remain excluded.
+The whole object test requiring optional Object.prototype.__proto__ remains excluded.
+Ninety other Unicode17 datasets disagree with the pinned Unicode18 membership;
+290 compatible exhaustive datasets remain pending execution. All retained bytes,
+flags, helper code and loops stay unchanged. Counts are 41,241 reviewed sources
+and 79,448 variants, plus 78 controls.
 
 ## RegExp integration and finite original programs
 

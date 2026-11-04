@@ -88,6 +88,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reject static module declarations and import.meta under Script/dynamic-function goals as syntax errors, preserving the valid dynamic-import host boundary.
 - [ ] Complete remaining statement early errors and completions.
 - [ ] Complete strict mode, declarations, early errors, and reference semantics.
+- [x] Audit block-scope redeclarations, reference targets, property access/construction, computed property names, hashbang placement and object-literal shorthand/method/rest/spread behavior.
+- [x] Audit Unicode identifier declarations, strict directives, keywords/reserved words, comments/whitespace, super and optional-chain references against unchanged published-baseline originals.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.
 - [x] Add arithmetic, bitwise, shift, and logical compound assignments.
 - [x] Audit compound-assignment reference/value retention, coercion and setter order, private fields and strict target early errors.

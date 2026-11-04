@@ -3,6 +3,22 @@
 use spite::{DiagnosticKind, Realm, parse_script};
 use std::{fs, path::Path};
 
+// Keep this standalone API smoke suite independent of the full runner inventory.
+// All other raw fixtures, including Modules, run through spite-test262.
+const RAW_SMOKE_FIXTURES: [&str; 11] = [
+    "test/language/comments/hashbang/not-empty.js",
+    "test/language/comments/hashbang/line-terminator-carriage-return.js",
+    "test/language/comments/hashbang/line-terminator-line-separator.js",
+    "test/language/comments/hashbang/line-terminator-paragraph-separator.js",
+    "test/language/comments/hashbang/preceding-empty-statement.js",
+    "test/language/comments/hashbang/preceding-whitespace.js",
+    "test/language/comments/hashbang/preceding-hashbang.js",
+    "test/language/comments/hashbang/preceding-directive-prologue.js",
+    "test/language/comments/hashbang/preceding-directive-prologue-sc.js",
+    "test/language/comments/hashbang/preceding-multi-line-comment.js",
+    "test/language/comments/hashbang/preceding-line-comment.js",
+];
+
 #[test]
 fn pinned_test262_raw_scripts() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262");
@@ -16,20 +32,7 @@ fn pinned_test262_raw_scripts() {
         assert_eq!(fields.len(), 3, "invalid manifest entry");
         let expectation = fields[0];
         let path = fields[2];
-        // Non-raw tests and harness files belong to spite-test262. Lexer/parser
-        // component fixtures are checked in spite-parser, outside this raw suite.
-        if matches!(
-            expectation,
-            "identifier-tokens"
-                | "identifier-error"
-                | "parser-pass"
-                | "parse-syntax-error"
-                | "script-pass"
-                | "script-runtime-error"
-                | "script-resolution-error"
-                | "module-fixture"
-                | "harness"
-        ) {
+        if !RAW_SMOKE_FIXTURES.contains(&path) {
             continue;
         }
         let source = fs::read_to_string(root.join("upstream").join(path)).unwrap();

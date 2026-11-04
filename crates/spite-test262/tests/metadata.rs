@@ -294,7 +294,14 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         let meta =
             Metadata::parse(&original).unwrap_or_else(|error| panic!("{}: {error}", fields[2]));
         if fields[0].starts_with("raw-") {
-            assert_eq!(meta.modes(), [Mode::Script]);
+            assert_eq!(
+                meta.modes(),
+                [if meta.has_flag("module") {
+                    Mode::Module
+                } else {
+                    Mode::Script
+                }]
+            );
             assert!(meta.has_flag("raw"));
         }
         if fields[0] == "script-pass" {
@@ -314,7 +321,14 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
                     "RangeError"
                 }
                 "test/language/module-code/eval-self-abrupt.js"
-                | "test/language/module-code/eval-export-dflt-expr-err-eval.js" => "Test262Error",
+                | "test/language/module-code/eval-export-dflt-expr-err-eval.js"
+                | "test/language/line-terminators/comment-multi-lf.js"
+                | "test/language/line-terminators/comment-multi-ls.js"
+                | "test/language/line-terminators/comment-multi-ps.js"
+                | "test/language/line-terminators/comment-single-cr.js"
+                | "test/language/line-terminators/comment-single-lf.js"
+                | "test/language/line-terminators/comment-single-ls.js"
+                | "test/language/line-terminators/comment-single-ps.js" => "Test262Error",
                 "test/language/module-code/eval-export-dflt-expr-err-get-value.js"
                 | "test/language/statements/switch/scope-lex-async-function.js"
                 | "test/language/statements/switch/scope-lex-async-generator.js"
@@ -327,7 +341,8 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
                 | "test/language/statements/let/global-use-before-initialization-in-declaration-statement.js"
                 | "test/language/statements/let/global-use-before-initialization-in-prior-statement.js"
                 | "test/language/statements/using/global-use-before-initialization-in-declaration-statement.js"
-                | "test/language/statements/using/global-use-before-initialization-in-prior-statement.js" => {
+                | "test/language/statements/using/global-use-before-initialization-in-prior-statement.js"
+                | "test/language/identifier-resolution/assign-to-global-undefined.js" => {
                     "ReferenceError"
                 }
                 _ => "SyntaxError",
@@ -371,6 +386,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 39053);
+    assert_eq!(count, 41457);
     assert_eq!(harness_count, 28);
 }
