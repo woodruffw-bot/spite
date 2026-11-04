@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 38240 unmodified test fixtures and twenty-eight harness files come from
+These 38570 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Callable and collection inventories
+
+The 330 added unchanged originals pass 660 modes and complete 2,138
+host-compatible published-baseline Function, Promise, Iterator, Map and Set
+sources. Six existing supported resource-management extras remain retained.
+There are 311 new proposal files outside edition 17 and 21 non-strict caller
+extension sources outside host policy. Six whole take/drop sources demand an
+upper-limit RangeError absent from the published algorithms; the engine keeps
+unbounded nonnegative mathematical limits and required validation-error closing.
+Original bytes and flags remain unchanged. Counts are 38,354 reviewed sources
+and 73,893 variants, plus 78 controls.
 
 ## Complete iterator-prototype inventories
 

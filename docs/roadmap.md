@@ -334,6 +334,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add lazy Iterator.prototype.map/filter with direct capture, exact indices, source closing, and traced native suspension.
 - [x] Add lazy Iterator.prototype.take/drop with ordered conversion, exact finite countdowns, discarded-value bypass, and source closing.
 - [x] Add lazy Iterator.prototype.flatMap with ordered iterator acquisition, one-level flattening, exact outer indices, and inner-before-outer closing.
+- [x] Audit all host-compatible published Function/Promise/Iterator/Map/Set originals, preserving mathematical take/drop limits and required argument-failure closing.
 - [x] Complete edition-17 shared Iterator prototype properties and enable ordered reflection and integrity operations.
 - [x] Expose the Symbol global with standard attributes.
 - [x] Expose Symbol.dispose and Symbol.asyncDispose as shared, non-registered well-known identities with fixed constructor descriptors.
