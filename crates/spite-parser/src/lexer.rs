@@ -446,7 +446,13 @@ impl Lexer {
             }
         }
         if required && !had_digit {
-            return Err(self.syntax(start, "expected a digit"));
+            // Point at the whole offending character; only EOF has an empty span.
+            let end = self.pos + self.peek().map_or(0, char::len_utf8);
+            return Err(Diagnostic::new(
+                DiagnosticKind::Syntax,
+                Span::new(start, end),
+                "expected a digit",
+            ));
         }
         Ok(())
     }

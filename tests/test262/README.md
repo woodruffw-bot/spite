@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 37430 unmodified test fixtures and twenty-seven harness files come from
+These 37773 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -38,6 +38,15 @@ proposal sources and two whole shared-allocation-assumption files remain exclude
 sparse backing supports their logical lengths, verified through far-index atomic
 access at 7 PiB and the maximum safe-integer size. No default resource cap is added.
 Counts are 37,214 reviewed sources and 71,654 variants, plus 78 controls.
+
+The literal-value audit adds 343 unchanged originals and 655 modes across BigInt,
+Boolean, null, numeric, String and template literals. All 353 originals in these
+inventories are retained. There are 402 positive execution modes and 253 exact
+parse-negative modes, including required non-strict legacy forms and strict errors.
+Missing required numeric digits now identify their offending character rather
+than an interior empty span; true EOF errors remain empty. This cohort keeps all
+original bytes and flags and leaves RegExp literals in their separate inventory.
+Counts are 37,557 reviewed sources and 72,309 variants, plus 78 controls.
 
 ## Date, ArrayBuffer and DataView inventories
 

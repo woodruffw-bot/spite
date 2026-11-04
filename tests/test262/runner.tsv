@@ -37213,3 +37213,346 @@ test/built-ins/Atomics/notify/notify-with-no-agents-waiting.js	-	-	-
 test/built-ins/Atomics/notify/notify-with-no-matching-agents-waiting.js	-	-	-
 test/built-ins/Atomics/notify/notify-zero.js	-	-	-
 test/built-ins/Atomics/notify/undefined-index-defaults-to-zero.js	-	-	-
+test/language/expressions/template-literal/evaluation-order.js	-	-	-
+test/language/expressions/template-literal/invalid-hexidecimal-character-escape-sequence-truncated-1.js	321	324	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-hexidecimal-character-escape-sequence-truncated-2.js	309	313	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-hexidecimal-character-escape-sequence-truncated-3.js	309	312	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-legacy-octal-escape-sequence-8.js	723	725	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-legacy-octal-escape-sequence-9.js	723	725	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-legacy-octal-escape-sequence.js	631	634	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-1.js	307	310	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-2.js	295	299	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-3.js	295	300	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-4.js	295	301	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-5.js	295	299	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-6.js	295	299	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-7.js	295	306	invalid escape in untagged template
+test/language/expressions/template-literal/invalid-unicode-escape-sequence-8.js	295	306	invalid escape in untagged template
+test/language/expressions/template-literal/literal-expr-abrupt.js	-	-	-
+test/language/expressions/template-literal/literal-expr-function.js	-	-	-
+test/language/expressions/template-literal/literal-expr-member-expr.js	-	-	-
+test/language/expressions/template-literal/literal-expr-method.js	-	-	-
+test/language/expressions/template-literal/literal-expr-obj.js	-	-	-
+test/language/expressions/template-literal/literal-expr-primitive.js	-	-	-
+test/language/expressions/template-literal/literal-expr-template.js	-	-	-
+test/language/expressions/template-literal/literal-expr-tostr-error.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-abrupt.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-function.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-member-expr.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-method.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-obj.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-primitive.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-template.js	-	-	-
+test/language/expressions/template-literal/middle-list-many-expr-tostr-error.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-abrupt.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-function.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-member-expr.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-method.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-obj.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-primitive.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-template.js	-	-	-
+test/language/expressions/template-literal/middle-list-one-expr-tostr-error.js	-	-	-
+test/language/expressions/template-literal/mongolian-vowel-separator-eval.js	-	-	-
+test/language/expressions/template-literal/mongolian-vowel-separator.js	-	-	-
+test/language/expressions/template-literal/no-sub.js	-	-	-
+test/language/expressions/template-literal/tv-character-escape-sequence.js	-	-	-
+test/language/expressions/template-literal/tv-hex-escape-sequence.js	-	-	-
+test/language/expressions/template-literal/tv-line-continuation.js	-	-	-
+test/language/expressions/template-literal/tv-line-terminator-sequence.js	-	-	-
+test/language/expressions/template-literal/tv-no-substitution.js	-	-	-
+test/language/expressions/template-literal/tv-null-character-escape-sequence.js	-	-	-
+test/language/expressions/template-literal/tv-template-character.js	-	-	-
+test/language/expressions/template-literal/tv-template-characters.js	-	-	-
+test/language/expressions/template-literal/tv-template-head.js	-	-	-
+test/language/expressions/template-literal/tv-template-middle.js	-	-	-
+test/language/expressions/template-literal/tv-template-tail.js	-	-	-
+test/language/expressions/template-literal/tv-utf16-escape-sequence.js	-	-	-
+test/language/expressions/template-literal/tv-zwnbsp.js	-	-	-
+test/language/expressions/template-literal/unicode-escape-nls-err.js	1167	1177	invalid escape in untagged template
+test/language/expressions/template-literal/unicode-escape-no-hex-err.js	1024	1026	invalid escape in untagged template
+test/language/literals/bigint/binary-invalid-digit.js	535	536	expected a digit
+test/language/literals/bigint/hexadecimal-invalid-digit.js	540	541	expected a digit
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-bd-nsl-bd-err.js	897	898	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-bd-nsl-bd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-bd-nsl-bds.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-bds-nsl-bd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-bds-nsl-bds.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-nsl-bd-dunder-err.js	910	912	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-bil-nsl-bd-err.js	897	899	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dd-nsl-dd-one-of.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dd-nsl-dds-dunder-err.js	787	789	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dd-nsl-err.js	807	809	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dds-nsl-dd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dds-nsl-dds-dunder-err.js	785	788	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-dds-nsl-err.js	829	832	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-hd-nsl-hd-err.js	902	903	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-hd-nsl-hd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-hd-nsl-hds.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-hds-nsl-hd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-hds-nsl-hds.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-nsl-hd-dunder-err.js	915	917	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-nsl-hd-err.js	892	894	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-hil-od-nsl-od-one-of.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-00-err.js	1187	1190	invalid character after numeric literal
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-01-err.js	1187	1190	invalid character after numeric literal
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-07-err.js	1248	1251	invalid character after numeric literal
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-0_0-err.js	1186	1188	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-0_1-err.js	1186	1188	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-lol-0_7-err.js	1192	1194	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nonoctal-08-err.js	1136	1139	invalid character after numeric literal
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nonoctal-09-err.js	1136	1139	invalid character after numeric literal
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nonoctal-0_8-err.js	1137	1139	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nonoctal-0_9-err.js	1137	1139	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nzd-nsl-dd-one-of.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nzd-nsl-dd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nzd-nsl-dds-dunder-err.js	833	835	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nzd-nsl-dds-leading-zero-err.js	766	768	separator cannot follow a leading zero
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-nzd-nsl-dds.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-nsl-od-dunder-err.js	911	913	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-nsl-od-err.js	889	891	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-od-nsl-od-err.js	898	899	numeric separator must separate digits
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-od-nsl-od-one-of.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-od-nsl-od.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-od-nsl-ods.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-ods-nsl-od.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-oil-ods-nsl-ods.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-sign-minus-dds-nsl-dd.js	-	-	-
+test/language/literals/bigint/numeric-separators/numeric-separator-literal-unicode-err.js	774	776	invalid character after numeric literal
+test/language/literals/bigint/octal-invalid-digit.js	534	535	expected a digit
+test/language/literals/boolean/S7.8.2_A1_T1.js	-	-	-
+test/language/literals/boolean/S7.8.2_A1_T2.js	-	-	-
+test/language/literals/boolean/false-with-unicode.js	519	529	reserved word cannot be an identifier
+test/language/literals/boolean/true-with-unicode.js	518	527	reserved word cannot be an identifier
+test/language/literals/null/S7.8.1_A1_T1.js	-	-	-
+test/language/literals/null/S7.8.1_A1_T2.js	-	-	-
+test/language/literals/null/null-with-unicode.js	518	527	reserved word cannot be an identifier
+test/language/literals/numeric/7.8.3-1gs.js	334	337	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/7.8.3-2gs.js	398	400	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/7.8.3-3gs.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.1_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.1_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A1.2_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.1_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.1_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.1_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A2.2_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.1_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.1_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.2_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.2_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.2_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.3_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A3.4_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.1_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A4.2_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T1.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T2.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T3.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T4.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T5.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T6.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T7.js	-	-	-
+test/language/literals/numeric/S7.8.3_A5.1_T8.js	-	-	-
+test/language/literals/numeric/S7.8.3_A6.1_T1.js	342	343	expected a digit
+test/language/literals/numeric/S7.8.3_A6.1_T2.js	342	343	expected a digit
+test/language/literals/numeric/S7.8.3_A6.2_T1.js	316	317	expected a digit
+test/language/literals/numeric/S7.8.3_A6.2_T2.js	316	317	expected a digit
+test/language/literals/numeric/binary-invalid-digit.js	495	496	expected a digit
+test/language/literals/numeric/binary-invalid-leading.js	482	485	invalid character after numeric literal
+test/language/literals/numeric/binary-invalid-truncated.js	486	487	expected a digit
+test/language/literals/numeric/binary-invalid-unicode.js	504	506	invalid character after numeric literal
+test/language/literals/numeric/binary.js	-	-	-
+test/language/literals/numeric/legacy-octal-integer-strict.js	856	858	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integer.js	-	-	-
+test/language/literals/numeric/legacy-octal-integery-000-strict.js	327	330	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integery-005-strict.js	327	330	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integery-01-strict.js	326	328	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integery-010-strict.js	327	330	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integery-06-strict.js	326	328	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/legacy-octal-integery-07-strict.js	326	328	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/non-octal-decimal-integer-strict.js	1064	1066	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/numeric/non-octal-decimal-integer.js	-	-	-
+test/language/literals/numeric/numeric-followed-by-ident.js	416	418	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-bd-nsl-bd-err.js	668	669	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-bd-nsl-bd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-bd-nsl-bds.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-bds-nsl-bd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-bds-nsl-bds.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-nsl-bd-dunder-err.js	681	683	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-bil-nsl-bd-err.js	658	660	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-dot-dd-ep-sign-minus-dd-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-dot-dd-ep-sign-minus-dds-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-dot-dd-ep-sign-plus-dd-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-dot-dd-ep-sign-plus-dds-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-nsl-dd-one-of.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-nsl-dds-dunder-err.js	558	560	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dd-nsl-err.js	578	580	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dds-dot-dd-nsl-dd-ep-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dds-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dds-nsl-dds-dunder-err.js	556	559	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dds-nsl-err.js	600	603	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dil-dot-dds-nsl-ep-dd-err.js	585	587	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dil-dot-nsl-dd-err.js	572	573	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dil-dot-nsl-ep-err.js	627	628	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dil-dot-nsl-err.js	603	604	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-dd-nsl-dd-ep.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-dd-nsl-dds-ep.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-dds-nsl-dd-ep.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-dds-nsl-dds-ep.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-dds-nsl-ep-err.js	592	594	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-nsl-ep-err.js	599	600	expected an expression
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-dot-nsl-err.js	595	596	expected an expression
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-hd-nsl-hd-err.js	673	674	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-hd-nsl-hd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-hd-nsl-hds.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-hds-nsl-hd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-hds-nsl-hds.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-nsl-hd-dunder-err.js	686	688	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-nsl-hd-err.js	663	665	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-hil-od-nsl-od-one-of.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-00-err.js	945	948	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-01-err.js	945	948	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-07-err.js	1006	1009	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-0_0-err.js	944	946	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-0_1-err.js	944	946	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-lol-0_7-err.js	950	952	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nonoctal-08-err.js	894	897	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nonoctal-09-err.js	894	897	invalid character after numeric literal
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nonoctal-0_8-err.js	895	897	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nonoctal-0_9-err.js	895	897	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dd-one-of.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dds-dunder-err.js	604	606	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dds-leading-zero-err.js	537	539	separator cannot follow a leading zero
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dds.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-nsl-od-dunder-err.js	682	684	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-nsl-od-err.js	660	662	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-od-nsl-od-err.js	669	670	numeric separator must separate digits
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-od-nsl-od-one-of.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-od-nsl-od.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-od-nsl-ods.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-ods-nsl-od.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-oil-ods-nsl-ods.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-sign-minus-dds-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-sign-plus-dds-nsl-dd.js	-	-	-
+test/language/literals/numeric/numeric-separators/numeric-separator-literal-unicode-err.js	545	547	invalid character after numeric literal
+test/language/literals/numeric/octal-invalid-digit.js	498	499	expected a digit
+test/language/literals/numeric/octal-invalid-leading.js	485	488	invalid character after numeric literal
+test/language/literals/numeric/octal-invalid-truncated.js	489	490	expected a digit
+test/language/literals/numeric/octal-invalid-unicode.js	507	509	invalid character after numeric literal
+test/language/literals/numeric/octal.js	-	-	-
+test/language/literals/string/S7.8.4_A1.1_T1.js	404	406	line terminator in string
+test/language/literals/string/S7.8.4_A1.1_T2.js	402	404	line terminator in string
+test/language/literals/string/S7.8.4_A1.2_T1.js	402	404	line terminator in string
+test/language/literals/string/S7.8.4_A1.2_T2.js	400	402	line terminator in string
+test/language/literals/string/S7.8.4_A2.1_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A2.1_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A2.2_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A2.2_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A2.3_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A3.1_T1.js	344	348	line terminator in string
+test/language/literals/string/S7.8.4_A3.1_T2.js	346	350	line terminator in string
+test/language/literals/string/S7.8.4_A3.2_T1.js	354	360	line terminator in string
+test/language/literals/string/S7.8.4_A3.2_T2.js	354	360	line terminator in string
+test/language/literals/string/S7.8.4_A4.1_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A4.1_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T3.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T4.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T5.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T6.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T7.js	-	-	-
+test/language/literals/string/S7.8.4_A4.2_T8.js	-	-	-
+test/language/literals/string/S7.8.4_A4.3_T1.js	351	355	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/S7.8.4_A4.3_T2.js	351	355	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/S7.8.4_A4.3_T7.js	-	-	-
+test/language/literals/string/S7.8.4_A5.1_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A5.1_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A5.1_T3.js	-	-	-
+test/language/literals/string/S7.8.4_A6.1_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A6.1_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A6.1_T3.js	-	-	-
+test/language/literals/string/S7.8.4_A6.3_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A7.1_T1.js	-	-	-
+test/language/literals/string/S7.8.4_A7.1_T2.js	-	-	-
+test/language/literals/string/S7.8.4_A7.1_T3.js	-	-	-
+test/language/literals/string/S7.8.4_A7.1_T4.js	396	403	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T1.js	355	360	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T2.js	355	360	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T3.js	355	361	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T4.js	355	361	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T5.js	355	362	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.2_T6.js	355	362	invalid hexadecimal escape
+test/language/literals/string/S7.8.4_A7.3_T1.js	-	-	-
+test/language/literals/string/legacy-non-octal-escape-sequence-1-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-2-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-3-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-4-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-5-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-6-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-7-strict-explicit-pragma.js	780	784	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-8-non-strict.js	-	-	-
+test/language/literals/string/legacy-non-octal-escape-sequence-8-strict-explicit-pragma.js	812	816	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-8-strict.js	771	775	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-9-non-strict.js	-	-	-
+test/language/literals/string/legacy-non-octal-escape-sequence-9-strict-explicit-pragma.js	812	816	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-9-strict.js	771	775	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-non-octal-escape-sequence-strict.js	709	714	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-octal-escape-sequence-prologue-strict.js	356	372	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-octal-escape-sequence-strict.js	718	722	legacy numeric literals and escapes are forbidden in strict code
+test/language/literals/string/legacy-octal-escape-sequence.js	-	-	-
+test/language/literals/string/line-continuation-double.js	-	-	-
+test/language/literals/string/line-continuation-single.js	-	-	-
+test/language/literals/string/line-separator-eval.js	-	-	-
+test/language/literals/string/line-separator.js	-	-	-
+test/language/literals/string/mongolian-vowel-separator-eval.js	-	-	-
+test/language/literals/string/mongolian-vowel-separator.js	-	-	-
+test/language/literals/string/paragraph-separator-eval.js	-	-	-
+test/language/literals/string/paragraph-separator.js	-	-	-
+test/language/literals/string/unicode-escape-nls-err-double.js	1109	1116	invalid Unicode escape
+test/language/literals/string/unicode-escape-nls-err-single.js	1106	1113	invalid Unicode escape
+test/language/literals/string/unicode-escape-no-hex-err-double.js	953	957	invalid hexadecimal escape
+test/language/literals/string/unicode-escape-no-hex-err-single.js	953	957	invalid hexadecimal escape

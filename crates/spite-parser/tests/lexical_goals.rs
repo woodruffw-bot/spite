@@ -198,3 +198,22 @@ fn malformed_literal_boundary_diagnostics_snapshot() {
     );
     insta::assert_debug_snapshot!(errors);
 }
+
+#[test]
+fn required_numeric_digits_highlight_complete_characters_and_preserve_eof() {
+    for (source, start, end) in [
+        ("0b2n", 2, 3),
+        ("0o8", 2, 3),
+        ("0xg", 2, 3),
+        ("0xπ", 2, 4),
+        ("0b😀", 2, 6),
+        ("1e+π", 3, 5),
+        ("0x", 2, 2),
+        ("1e+", 3, 3),
+    ] {
+        let error = parse_script(source).unwrap_err();
+        assert_eq!(error.kind, DiagnosticKind::Syntax, "{source}");
+        assert_eq!(error.span, spite_core::Span::new(start, end), "{source}");
+        assert_eq!(error.message, "expected a digit", "{source}");
+    }
+}
