@@ -362,6 +362,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement JSON reviver traversal and primitive source contexts.
 - [x] Implement raw JSON primitive validation, frozen objects, and unforgeable branding.
 - [x] Implement JSON stringify with replacers, indentation, cycle detection, and raw JSON embedding.
+- [x] Audit all JSON and host-compatible String originals, including Proxy revivers/replacers, mutation/source contexts and cross-realm abrupt behavior.
 - [x] Implement Map construction, canonical key identity, ordered mutation, live iterators, forEach, getOrInsert methods, and intrinsic groupBy.
 - [x] Implement Set construction, canonical value identity, live iteration, ordered combination methods, and set-like predicates.
 - [x] Validate original RegExp Patterns and flags against edition 17, preserving UTF-16 syntax and named capture bindings.

@@ -1,9 +1,18 @@
 # Test262 regression fixtures
 
-These 37819 unmodified test fixtures and twenty-seven harness files come from
+These 37844 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete JSON and String inventories
+
+The JSON audit adds 25 unchanged originals and 50 modes, completing all 165 JSON
+sources. Proxy/reviver/replacer behavior, mutation and source contexts, raw BigInt
+JSON and cross-realm exceptions retain their original sources and phases.
+All 1,222 host-compatible String originals are retained; the remaining whole
+split source requires disabled Annex B RegExp escapes and is not rewritten.
+Counts are 37,628 reviewed sources and 72,451 variants, plus 78 controls.
 
 ## WeakRef and FinalizationRegistry inventories
 

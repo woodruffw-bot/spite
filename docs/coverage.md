@@ -59,7 +59,29 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 72401 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 72451 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete JSON and host-compatible String inventories
+
+The 25 added whole JSON originals pass all 50 original modes. They cover Proxy
+revivers and replacers, abrupt property operations, forward mutation and primitive
+source contexts, raw BigInt JSON, revoked proxies and cross-realm exception behavior.
+All 165 JSON originals and 1,222 host-compatible String originals are retained.
+
+One remaining whole String split source embeds Annex B RegExp identity escapes
+and malformed hexadecimal escapes. Its first rejection is the undeclared named
+reference in /\k<x>/; isolated probes also reject /\XA0/, /\x/ and /\X/ under
+the existing non-browser policy. The source is excluded whole, without edits to
+its assertions or changes to Pattern grammar.
+
+Counts are 37,844 fixtures, twenty-seven helpers, 37,628 reviewed sources,
+72,451 variants and 78 controls.
+
+
+Verification passes all 72,451 variants, 78 controls and 84 Test262 package
+tests (corpus 481.41 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests. All 1,387
+retained JSON/String sources also match their pinned upstream Git blobs.
 
 ## Complete WeakRef and FinalizationRegistry inventories
 
