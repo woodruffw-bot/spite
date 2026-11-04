@@ -187,6 +187,13 @@ work charges. Comma results still have unbound call receivers and indirect eval.
 Right-associated exponentiation and genuinely nested syntax remain subject to
 the existing native-stack safety guards; host resource quotas remain opt-in.
 
+Parser grammar-call nesting is guarded at 192 after separating expression heads,
+continuations, operators, structured statements and binding/cover branches into
+small native frames. This is distinct from the retained 64-level expression-tree
+and template bounds. The supported native thread stack remains 2 MiB. Explicit
+small-stack regressions cover accepted nested functions and graceful refusal of
+deep mixed syntax across Script, Module, eval and dynamic-function goals.
+
 The parser owns its source scanner and caches tokens as syntactic lookahead
 demands them. Consumed tokens retain spans and strict legacy-token evidence.
 Scanner and computed-name lookahead failures are reported at every public parsing
@@ -3145,8 +3152,11 @@ ignored after evaluation, and parameters remain mutable. Arrows create no argume
 binding or constructor/prototype property. Lexical this follows captured function
 environments and otherwise resolves to the realm's global this value.
 Every call restores caller strictness and active scopes on success or abrupt exit.
-The evaluator bounds combined statement/expression nesting across calls to 64,
-as well as call re-entry. Strict ordinary functions, methods and arrows return
+The evaluator bounds recursive control-statement/expression work across calls to
+64, as well as call re-entry. Expression statement wrappers pay their work tick
+and check depth before delegating the recursion slot to their expression; they
+do not charge a second slot for the same evaluation. Strict ordinary functions,
+methods and arrows return
 owned tail-call requests for direct calls in return/concise-body positions,
 including parentheses, conditionals, logical operators and comma chains (15.10).
 The source driver restores the caller's scopes, module and strictness before the

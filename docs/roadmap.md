@@ -151,7 +151,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Separate expression heads from precedence continuations to reduce native parser frames while preserving lexical goals and early errors.
 - [x] Separate unary/update/Await and primary-expression frames while preserving literal validation and deferred cover diagnostics.
 - [x] Forward structured statement parsing through separate frames while preserving declaration placement, token order and AST spans.
-- [ ] Support deeper nested function-expression calls without widening native-stack allowances.
+- [x] Support deeper nested function-expression calls without widening native-stack allowances.
 - [x] Expose the eval intrinsic with standard metadata, global binding behavior, and the non-String identity branch of PerformEval.
 - [x] Execute indirect String eval with lossless Script compilation, global lookup, fresh lexical/strict var environments, configurable global declarations, and restored caller contexts.
 - [x] Execute direct String eval with caller strictness, declaration checks, and lexical/variable/this environment inheritance.

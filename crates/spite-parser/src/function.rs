@@ -204,7 +204,24 @@ impl Parser {
         invalid_name: &str,
         allow_default: bool,
     ) -> Result<BindingElement, Diagnostic> {
-        let pattern = if self.at("[") || self.at("{") {
+        let pattern = self.formal_parameter_pattern(invalid_name)?;
+        let initializer = if allow_default && self.eat("=") {
+            Some(self.expression_with_in(2, true)?)
+        } else {
+            None
+        };
+        Ok(BindingElement {
+            pattern,
+            initializer,
+        })
+    }
+
+    #[inline(never)]
+    fn formal_parameter_pattern(
+        &mut self,
+        invalid_name: &str,
+    ) -> Result<BindingPattern, Diagnostic> {
+        Ok(if self.at("[") || self.at("{") {
             self.binding_pattern()?
         } else {
             let token = self.bump();
@@ -221,15 +238,6 @@ impl Parser {
                 kind: BindingPatternKind::Identifier(name),
                 span: token.span,
             }
-        };
-        let initializer = if allow_default && self.eat("=") {
-            Some(self.expression_with_in(2, true)?)
-        } else {
-            None
-        };
-        Ok(BindingElement {
-            pattern,
-            initializer,
         })
     }
 

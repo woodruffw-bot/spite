@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 25046 unmodified test fixtures and twenty-seven harness files come from
+These 25047 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete function-form inventory
+
+The unchanged S13.2.1_A1_T1.js original now passes both normal and strict modes,
+completing all 2,765 files across the ten function-form inventories. Its Git blob
+and SHA-256 digest match the pin. Parser frame reductions support a grammar-call
+guard of 192 while retaining the 64 expression-tree/template bound. Runtime
+expression statements retain work ticks while delegating their recursion slot
+to the expression; evaluator/call guards remain 64/32 and the native stack stays
+2 MiB. No original is rewritten or sliced and no test allowance is introduced.
+
+Counts are 25,047 fixtures, twenty-seven helpers, 24,962 reviewed sources,
+48,161 variants and 78 controls. New native regressions cover parsing/evaluation
+of 32 nested calls and graceful host limits for deeply mixed syntax.
 
 ## Parser statement forwarding
 

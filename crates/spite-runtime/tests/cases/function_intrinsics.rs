@@ -13,6 +13,25 @@ fn check(source: &str) {
 }
 
 #[test]
+fn thirty_two_nested_function_calls_fit_the_supported_native_stack() {
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            for directive in ["", "'use strict';"] {
+                let source = format!(
+                    "{directive}let calls=0;{}{};calls",
+                    "(function(){calls++;".repeat(32),
+                    "})()".repeat(32)
+                );
+                assert_eq!(Realm::default().eval(&source), Ok(Value::Number(32.0)));
+            }
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
 fn constructor_and_prototype_graph_has_standard_identity_and_descriptors() {
     check(
         "typeof Function==='function' && Function.name==='Function' && Function.length===1 && Object.getPrototypeOf(Function)===Function.prototype && Object.getPrototypeOf(Function.prototype)===Object.prototype && Function.prototype.constructor===Function && Function.constructor===Function && Function.prototype()===undefined",

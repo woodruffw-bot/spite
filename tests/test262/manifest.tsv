@@ -25072,3 +25072,4 @@ script-pass	ba6992ef223873c4032977c744c2a3c456043e8145447dc844add9b34b416f1a	tes
 parse-syntax-error	c4c1f312cfa56d5733ec5b6ad3c63bdb97ee7a31b9ead3a5a266f00b4488efd1	test/language/expressions/generators/yield-star-after-newline.js
 script-pass	f7dc7a7af2fac7c9eb96899ca404620e7ea6046b404396757273b3744e374f1e	test/language/expressions/generators/yield-star-before-newline.js
 parse-syntax-error	6b0bf560359ed841e4424e7b9175dbe4624da87053c31a265ca5e92717664282	test/language/expressions/generators/yield-weak-binding.js
+script-pass	92538a981853d536d0a90d3db608f7a8f0ff8a0b526a6b354504076d49c3b447	test/language/statements/function/S13.2.1_A1_T1.js

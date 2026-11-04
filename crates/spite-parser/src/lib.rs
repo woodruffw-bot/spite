@@ -45,8 +45,12 @@ use lexer::{Goal, Kind, Lexer, Token};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use std::collections::BTreeSet;
 
-/// Maximum recursive syntax depth accepted by this parser.
-pub const MAX_DEPTH: usize = 64;
+/// Maximum recursive grammar-call depth accepted by this parser.
+pub const MAX_DEPTH: usize = 192;
+
+// Grammar wrappers consume native frames without adding expression-tree depth.
+// Keep the existing tree and template bounds independent of that call guard.
+const MAX_EXPRESSION_DEPTH: usize = 64;
 
 /// Parses a Script with an opted-in maximum UTF-8 source length.
 pub fn parse_script_with_source_limit(
@@ -337,7 +341,7 @@ impl Parser {
                     self.template_braces.pop();
                 }
                 if !tail {
-                    if self.template_braces.len() >= MAX_DEPTH {
+                    if self.template_braces.len() >= MAX_EXPRESSION_DEPTH {
                         return Err(Diagnostic::new(
                             DiagnosticKind::Limit,
                             token.span,
@@ -784,7 +788,7 @@ impl Parser {
                 .unwrap_or(0),
             _ => 0,
         };
-        if depth > MAX_DEPTH {
+        if depth > MAX_EXPRESSION_DEPTH {
             return Err(Diagnostic::new(
                 DiagnosticKind::Limit,
                 span,
@@ -869,7 +873,7 @@ impl Parser {
                 // Existing chain depth is already cached. Extending a flat chain
                 // must not rescan all earlier operands and become quadratic.
                 let depth = depth.max(1 + step.right.depth);
-                if depth > MAX_DEPTH {
+                if depth > MAX_EXPRESSION_DEPTH {
                     return Err(Diagnostic::new(
                         DiagnosticKind::Limit,
                         span,

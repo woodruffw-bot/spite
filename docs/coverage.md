@@ -59,9 +59,42 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48159 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48161 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Thirty-two nested function calls on the supported stack
 
+Nested function-expression calls now parse and execute to depth 32 on a 2 MiB
+native thread, in normal and strict code. The remaining whole upstream
+S13.2.1_A1_T1.js original passes both modes, completing all 2,765 sources in the
+ten audited function-form inventories. Its pinned Git blob and SHA-256 digest
+match; no source, flag, helper or allowance is changed to pass it.
+
+Parser branches now return their own results before unrelated native frames
+are retained: assignment/conditional/binary continuations, private/destructuring
+heads, object/array assignment patterns and method/accessor probes, and formal
+binding patterns versus default initializers. After those reductions, the
+recursive grammar-call guard is 192. The existing expression-tree/template bound
+stays 64; the native thread size, evaluator bound of 64 and call bound of 32
+stay unchanged. Expression statements delegate their recursion slot to the
+expression while retaining their work tick and preflight failure ordering.
+
+New regressions parse 32 nested calls across Script, Module, eval and all four
+dynamic-function goals, evaluate 32 normal/strict calls, and require deep mixed
+syntax to return a host Limit on explicit 2 MiB threads. All 18 Parser unit tests
+and 442 integration tests pass. Independent Cargo-built-parser probes pass all
+90 single-family and 432 mixed/nine-goal cases; all oversized single-family
+inputs return Limit without native overflow. One Runtime group is added, bringing
+its integration inventory to 5,032; the 570 unit tests remain.
+
+Counts are 25,047 fixtures, twenty-seven helpers, 24,962 reviewed sources,
+48,161 variants and 78 controls. No production dependency or default host quota
+is added, and existing tests and snapshots remain in place.
+
+Final verification passes all 570 Runtime unit tests and 5,032 integration
+groups (754.75 seconds), all 48,161 Test262 variants and 78 controls, and all 81
+Test262 package tests (corpus 334.11 seconds). Formatting, strict Clippy, Rust
+1.99 all-target checks, dependency/inventory policies, CLI tests and doctests
+also pass.
 
 ## Smaller structured-statement parser frames
 

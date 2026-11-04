@@ -742,13 +742,19 @@ impl Realm {
         statement: &Statement,
         labels: &[&str],
     ) -> Result<Completion, Error> {
+        if let StatementKind::Expression(expression) = &statement.kind {
+            // The expression owns the recursion guard. Its transparent statement
+            // wrapper still pays work before evaluation, without a second slot.
+            self.check_evaluation_depth(statement.span)?;
+            self.tick(statement.span)?;
+            return self
+                .expression(expression)
+                .map(|value| Completion::normal(Some(value)));
+        }
         self.enter_evaluation(statement.span)?;
-        // Keep recursive expression statements out of the large general frame.
+        // Keep recursive returns out of the large general statement frame.
         let result = match &statement.kind {
-            StatementKind::Expression(expression) => self
-                .tick(statement.span)
-                .and_then(|()| self.expression(expression))
-                .map(|value| Completion::normal(Some(value))),
+            StatementKind::Expression(_) => unreachable!("expression statement dispatched above"),
             StatementKind::Return(expression) => self
                 .tick(statement.span)
                 .and_then(|()| self.return_completion(expression.as_ref())),
@@ -1572,14 +1578,19 @@ impl Realm {
         Ok(Some((environment, value)))
     }
 
-    fn enter_evaluation(&mut self, span: Span) -> Result<(), Error> {
-        // Bound combined statement/expression recursion across function calls.
+    fn check_evaluation_depth(&self, span: Span) -> Result<(), Error> {
+        // Bound recursive statement/expression work across function calls.
         if self.evaluation_depth >= 64 {
             return Err(Error::Limit {
                 span,
                 message: "evaluation nesting limit exceeded".into(),
             });
         }
+        Ok(())
+    }
+
+    fn enter_evaluation(&mut self, span: Span) -> Result<(), Error> {
+        self.check_evaluation_depth(span)?;
         self.evaluation_depth += 1;
         Ok(())
     }

@@ -8,6 +8,81 @@ use spite_parser::{
 };
 
 #[test]
+fn thirty_two_nested_function_calls_parse_across_goals_on_two_mib() {
+    use spite_core::JsString;
+    use spite_parser::{
+        EvalContext, parse_dynamic_async_function, parse_dynamic_async_generator_function,
+        parse_dynamic_function, parse_dynamic_generator_function, parse_eval_utf16, parse_module,
+    };
+
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let source = format!("{}0;{}", "(function(){".repeat(32), "})()".repeat(32));
+            parse_script(&source).unwrap();
+            parse_script(&format!("'use strict';{source}")).unwrap();
+            parse_module(&source).unwrap();
+            parse_eval_utf16(
+                &JsString::from(source.as_str()),
+                EvalContext {
+                    strict: true,
+                    in_function: true,
+                    ..EvalContext::default()
+                },
+            )
+            .unwrap();
+            parse_dynamic_function("", &source).unwrap();
+            parse_dynamic_async_function("", &source).unwrap();
+            parse_dynamic_generator_function("", &source).unwrap();
+            parse_dynamic_async_generator_function("", &source).unwrap();
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
+fn deeply_mixed_function_and_cover_syntax_returns_a_limit_on_two_mib() {
+    use spite_parser::{parse_dynamic_async_generator_function, parse_module};
+
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let wrappers = [
+                ("[", "]"),
+                ("({x:", "})"),
+                ("(function f(x=", "){})"),
+                ("(()=>{return ", "})()"),
+                ("`a${", "}b`"),
+                ("(class {[", "](){}})"),
+            ];
+            let mut expression = String::from("0");
+            for index in 0..MAX_DEPTH * 4 {
+                let (prefix, suffix) = wrappers[index % wrappers.len()];
+                expression = format!("{prefix}{expression}{suffix}");
+            }
+            let source = format!("let value={expression};");
+            assert_eq!(
+                parse_script(&source).unwrap_err().kind,
+                DiagnosticKind::Limit
+            );
+            assert_eq!(
+                parse_module(&source).unwrap_err().kind,
+                DiagnosticKind::Limit
+            );
+            assert_eq!(
+                parse_dynamic_async_generator_function("", &source)
+                    .unwrap_err()
+                    .kind,
+                DiagnosticKind::Limit
+            );
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+#[test]
 fn ordinary_function_expression_snapshot() {
     insta::assert_debug_snapshot!(
         parse_script("let f = function named(x = 1) { return x; };").unwrap()

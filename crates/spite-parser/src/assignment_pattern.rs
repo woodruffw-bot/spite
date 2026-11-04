@@ -43,119 +43,154 @@ impl Parser {
 
     fn assignment_pattern_inner(&mut self) -> Result<AssignmentPattern, Diagnostic> {
         let start = self.current().span.start;
-        let kind = if self.eat("{") {
-            let mut properties = Vec::new();
-            let mut rest = None;
-            while !self.at("}") {
-                if self.eat("...") {
-                    let target = self.destructuring_target()?;
-                    let reference = match target {
-                        AssignmentTarget::Reference(reference) => reference,
-                        AssignmentTarget::Pattern(pattern) => {
-                            self.defer_cover_error(early(
-                                pattern.span,
-                                "object assignment rest requires a reference",
-                            ))?;
-                            Box::new(
-                                self.make_expr(ExprKind::Literal(Literal::Null), pattern.span)?,
-                            )
-                        }
-                    };
-                    rest = Some(reference);
-                    if self.probe_rest_continuation("}")? {
-                        continue;
-                    }
-                    break;
-                }
-                let token = self.bump();
-                let key = self.object_property_name(token.clone())?;
-                let element = if self.probing_cover && self.at("(") {
-                    let error = if matches!(token.kind, Kind::Word(_)) {
-                        self.error("expected }")
-                    } else {
-                        early(token.span, "expected assignment identifier")
-                    };
-                    self.defer_cover_error(error)?;
-                    self.object_method(token.span.start, PropertyKind::Method)?;
-                    AssignmentElement {
-                        target: AssignmentTarget::Reference(Box::new(
-                            self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
-                        )),
-                        initializer: None,
-                    }
-                } else if self.probing_cover
-                    && !token.escaped
-                    && matches!(&token.kind, Kind::Word(name) if name == "get" || name == "set")
-                    && !self.at(":")
-                    && !self.at("=")
-                    && !self.at(",")
-                    && !self.at("}")
-                {
-                    self.defer_cover_error(self.error("expected }"))?;
-                    let kind = if matches!(&token.kind, Kind::Word(name) if name == "get") {
-                        PropertyKind::Getter
-                    } else {
-                        PropertyKind::Setter
-                    };
-                    let name = self.bump();
-                    self.object_property_name(name)?;
-                    self.object_method(token.span.start, kind)?;
-                    AssignmentElement {
-                        target: AssignmentTarget::Reference(Box::new(
-                            self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
-                        )),
-                        initializer: None,
-                    }
-                } else if self.eat(":") {
-                    self.assignment_element()?
-                } else {
-                    let Kind::Word(name) = token.kind else {
-                        return Err(early(token.span, "expected assignment identifier"));
-                    };
-                    if reserved(&name) {
-                        self.defer_cover_error(early(token.span, "invalid assignment identifier"))?;
-                    }
-                    let target = AssignmentTarget::Reference(Box::new(
-                        self.make_expr(ExprKind::Identifier(name), token.span)?,
-                    ));
-                    AssignmentElement {
-                        target,
-                        initializer: self.assignment_initializer()?,
-                    }
-                };
-                properties.push(AssignmentProperty { key, element });
-                if !self.eat(",") {
-                    break;
-                }
-            }
-            self.expect("}")?;
-            AssignmentPatternKind::Object { properties, rest }
+        if self.eat("{") {
+            self.object_assignment_pattern(start)
         } else {
             self.expect("[")?;
-            let mut elements = Vec::new();
-            let mut rest = None;
-            while !self.at("]") {
-                if self.eat(",") {
-                    elements.push(None);
+            self.array_assignment_pattern(start)
+        }
+    }
+
+    #[inline(never)]
+    fn object_assignment_pattern(&mut self, start: usize) -> Result<AssignmentPattern, Diagnostic> {
+        let mut properties = Vec::new();
+        let mut rest = None;
+        while !self.at("}") {
+            if self.eat("...") {
+                let target = self.destructuring_target()?;
+                let reference = match target {
+                    AssignmentTarget::Reference(reference) => reference,
+                    AssignmentTarget::Pattern(pattern) => {
+                        self.defer_cover_error(early(
+                            pattern.span,
+                            "object assignment rest requires a reference",
+                        ))?;
+                        Box::new(self.make_expr(ExprKind::Literal(Literal::Null), pattern.span)?)
+                    }
+                };
+                rest = Some(reference);
+                if self.probe_rest_continuation("}")? {
                     continue;
                 }
-                if self.eat("...") {
-                    rest = Some(self.destructuring_target()?);
-                    if self.probe_rest_continuation("]")? {
-                        continue;
-                    }
-                    break;
-                }
-                elements.push(Some(self.assignment_element()?));
-                if !self.eat(",") {
-                    break;
-                }
+                break;
             }
-            self.expect("]")?;
-            AssignmentPatternKind::Array { elements, rest }
-        };
+            properties.push(self.object_assignment_property()?);
+            if !self.eat(",") {
+                break;
+            }
+        }
+        self.expect("}")?;
         Ok(AssignmentPattern {
-            kind,
+            kind: AssignmentPatternKind::Object { properties, rest },
+            span: Span::new(start, self.tokens[self.index - 1].span.end),
+        })
+    }
+
+    #[inline(never)]
+    fn object_assignment_property(&mut self) -> Result<AssignmentProperty, Diagnostic> {
+        let token = self.bump();
+        let key = self.object_property_name(token.clone())?;
+        let element = if self.probing_cover && self.at("(") {
+            return self.probed_assignment_method(token, key);
+        } else if self.probing_cover
+            && !token.escaped
+            && matches!(&token.kind, Kind::Word(name) if name == "get" || name == "set")
+            && !self.at(":")
+            && !self.at("=")
+            && !self.at(",")
+            && !self.at("}")
+        {
+            return self.probed_assignment_accessor(token, key);
+        } else if self.eat(":") {
+            self.assignment_element()?
+        } else {
+            let Kind::Word(name) = token.kind else {
+                return Err(early(token.span, "expected assignment identifier"));
+            };
+            if reserved(&name) {
+                self.defer_cover_error(early(token.span, "invalid assignment identifier"))?;
+            }
+            let target = AssignmentTarget::Reference(Box::new(
+                self.make_expr(ExprKind::Identifier(name), token.span)?,
+            ));
+            AssignmentElement {
+                target,
+                initializer: self.assignment_initializer()?,
+            }
+        };
+        Ok(AssignmentProperty { key, element })
+    }
+
+    #[inline(never)]
+    fn probed_assignment_method(
+        &mut self,
+        token: Token,
+        key: PropertyName,
+    ) -> Result<AssignmentProperty, Diagnostic> {
+        let error = if matches!(token.kind, Kind::Word(_)) {
+            self.error("expected }")
+        } else {
+            early(token.span, "expected assignment identifier")
+        };
+        self.defer_cover_error(error)?;
+        self.object_method(token.span.start, PropertyKind::Method)?;
+        let element = AssignmentElement {
+            target: AssignmentTarget::Reference(Box::new(
+                self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
+            )),
+            initializer: None,
+        };
+        Ok(AssignmentProperty { key, element })
+    }
+
+    #[inline(never)]
+    fn probed_assignment_accessor(
+        &mut self,
+        token: Token,
+        key: PropertyName,
+    ) -> Result<AssignmentProperty, Diagnostic> {
+        self.defer_cover_error(self.error("expected }"))?;
+        let kind = if matches!(&token.kind, Kind::Word(name) if name == "get") {
+            PropertyKind::Getter
+        } else {
+            PropertyKind::Setter
+        };
+        let name = self.bump();
+        self.object_property_name(name)?;
+        self.object_method(token.span.start, kind)?;
+        let element = AssignmentElement {
+            target: AssignmentTarget::Reference(Box::new(
+                self.make_expr(ExprKind::Literal(Literal::Null), token.span)?,
+            )),
+            initializer: None,
+        };
+        Ok(AssignmentProperty { key, element })
+    }
+
+    #[inline(never)]
+    fn array_assignment_pattern(&mut self, start: usize) -> Result<AssignmentPattern, Diagnostic> {
+        let mut elements = Vec::new();
+        let mut rest = None;
+        while !self.at("]") {
+            if self.eat(",") {
+                elements.push(None);
+                continue;
+            }
+            if self.eat("...") {
+                rest = Some(self.destructuring_target()?);
+                if self.probe_rest_continuation("]")? {
+                    continue;
+                }
+                break;
+            }
+            elements.push(Some(self.assignment_element()?));
+            if !self.eat(",") {
+                break;
+            }
+        }
+        self.expect("]")?;
+        Ok(AssignmentPattern {
+            kind: AssignmentPatternKind::Array { elements, rest },
             span: Span::new(start, self.tokens[self.index - 1].span.end),
         })
     }

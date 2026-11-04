@@ -24960,3 +24960,4 @@ test/language/expressions/generators/yield-spread-obj.js	-	-	-
 test/language/expressions/generators/yield-star-after-newline.js	367	368	expected an expression
 test/language/expressions/generators/yield-star-before-newline.js	-	-	-
 test/language/expressions/generators/yield-weak-binding.js	334	339	yield cannot be an identifier in a generator context
+test/language/statements/function/S13.2.1_A1_T1.js	-	-	-
