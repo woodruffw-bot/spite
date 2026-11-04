@@ -128,6 +128,8 @@ fn object_symbols(
         prototype: _,
         extensible: _,
         properties,
+        // Numeric layout only; no additional heap or Symbol owners.
+        dense_index_start: _,
         private_elements,
         max_properties: _,
         callable,

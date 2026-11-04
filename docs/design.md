@@ -1788,6 +1788,15 @@ This makes common dense reads and append definitions constant in property count
 without changing storage, descriptor rules or opted-in work accounting. Other
 shapes retain the complete scan, including writes into pre-sized sparse arrays.
 
+Ordinary objects separately track a non-index prefix followed by contiguous
+numeric properties starting at zero. This scalar layout lets lookup and append
+avoid scanning growing array-like objects (10.1.6.3). Successful insertion and
+deletion maintain the layout; sparse keys, a non-index suffix or a middle
+deletion restore complete lookup. Prefix and last-index deletions retain a valid
+layout. Arrays use their existing path, and direct String wrapper construction
+disables this ordinary layout. The metadata owns no keys, Symbols or heap edges,
+so tracing and Symbol ownership counts are unchanged.
+
 ArraySetLength coercion stays in the Realm layer: ToUint32 and ToNumber observe
 the original descriptor value separately, before reading the current length
 descriptor (10.4.2.4). The same object can therefore run conversion code twice and

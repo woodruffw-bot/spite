@@ -130,6 +130,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add object identity values and trace object-valued data properties, including cycles.
 - [x] Implement ordinary objects, descriptors, prototypes, and property order.
 - [x] Add ordinary data-property records, descriptor invariants, deletion, and string-key order.
+- [x] Track contiguous ordinary numeric-property layouts without extra key ownership while preserving descriptor, deletion and key-order semantics.
 - [x] Audit own descriptor/name/symbol inspection and Object keys/entries/values/hasOwn across primitives, mutations, Proxies and poisoned public helpers.
 - [x] Audit mandatory Object creation/descriptor application, integrity levels, prototype operations, construction and prototype methods against the published algorithms.
 - [x] Add accessor descriptors, kind transitions, callable validation/tracing, and receiver-aware calls.

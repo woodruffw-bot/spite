@@ -61,6 +61,27 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 66710 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Contiguous ordinary numeric properties
+
+Ordinary objects now retain a scalar description of a non-index prefix followed
+by contiguous numeric properties. This removes repeated full scans while
+constructing common array-like inputs. Descriptor changes, prefix/tail deletion,
+sparse insertion and named suffixes preserve the complete lookup behavior and
+property order. Direct String population disables the layout; Arrays retain
+their existing path. The layout owns no additional Symbols or heap handles.
+
+Two native unit groups cover successful and rejected mutations, missing keys,
+replacement without duplicates and key order. The unchanged 10,000-element
+TypedArray detachment/prototype security original passes both modes. On this
+workspace the indexed run took 82.54 seconds; the preceding run spanned about
+95.10 seconds between output-file creation and completion. Original source,
+factory loops, execution flags and resource settings remain unchanged.
+
+Verification passes 572 runtime unit tests, all 5,032 runtime integration tests
+(737.49 seconds), all 66,710 reviewed variants, 78 controls and 81 Test262
+package tests (corpus 365.65 seconds). Formatting, strict Clippy, Rust 1.99
+all-target checks, dependency/inventory checks, CLI tests and doctests pass.
+
 ## Date, ArrayBuffer and DataView inventories
 
 The 590 added whole originals pass 1,180 modes, completing 1,326 host-compatible

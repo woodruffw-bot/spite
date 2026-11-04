@@ -16,6 +16,8 @@ mod accessor_tests;
 mod arguments;
 mod array;
 mod array_buffer;
+#[cfg(test)]
+mod indexed_tests;
 pub(crate) use array_buffer::{ArrayBufferData, ArrayBufferError};
 #[cfg(test)]
 mod symbol_tests;
@@ -109,7 +111,8 @@ pub(crate) enum PrimitiveData {
 
 /// Stored object properties, prototype, extensibility, and internal-slot metadata.
 ///
-/// Lookup is linear. String keys compare UTF-16 units; symbols compare identity.
+/// Contiguous indexed properties have direct lookup; other keys use a linear
+/// search. String keys compare UTF-16 units; symbols compare identity.
 /// An optional property quota bounds storage; callers account for lookup and enumeration work when
 /// integrating these records into an evaluator.
 #[derive(Debug)]
@@ -117,6 +120,9 @@ pub struct OrdinaryObject {
     prototype: Option<Handle>,
     extensible: bool,
     properties: Vec<(PropertyKey, Property)>,
+    // A non-index prefix followed only by keys "0", "1", ... in slot order.
+    // Updated only after successful insertion/deletion; no key owners are added.
+    dense_index_start: Option<usize>,
     private_elements: Vec<(crate::private::PrivateName, private::PrivateElement)>,
     max_properties: Option<usize>,
     callable: Option<Callable>,
@@ -174,6 +180,7 @@ impl OrdinaryObject {
             prototype,
             extensible: true,
             properties: Vec::new(),
+            dense_index_start: Some(0),
             private_elements: Vec::new(),
             max_properties,
             callable: None,
@@ -436,6 +443,7 @@ impl OrdinaryObject {
         }
         self.properties.try_reserve(1).map_err(|_| PropertyLimit)?;
         self.properties.push((key, descriptor.complete()));
+        self.record_property_append();
         Ok(true)
     }
 
@@ -447,6 +455,13 @@ impl OrdinaryObject {
         };
         if !self.properties[index].1.configurable() {
             return false;
+        }
+        if let Some(start) = self.dense_index_start {
+            if index < start {
+                self.dense_index_start = Some(start - 1);
+            } else if index != self.properties.len() - 1 {
+                self.dense_index_start = None;
+            }
         }
         self.properties.remove(index);
         true

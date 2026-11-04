@@ -294,6 +294,7 @@ impl Objects {
             )
             .map_err(|_| Error::PropertyLimit)?;
         record.array = true;
+        record.dense_index_start = None;
         Ok(self.heap.insert(Entry::Object(record))?)
     }
 
@@ -452,6 +453,8 @@ impl Objects {
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         let count = value.len().checked_add(1).ok_or(Error::PropertyLimit)?;
+        // StringCreate populates indices and its trailing length directly.
+        object.dense_index_start = None;
         object
             .properties
             .try_reserve_exact(count)

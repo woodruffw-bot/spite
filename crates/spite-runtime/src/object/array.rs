@@ -8,6 +8,18 @@ use crate::Value;
 use spite_core::{PropertyKey, PropertyKeyRef};
 
 impl OrdinaryObject {
+    pub(super) fn record_property_append(&mut self) {
+        let Some(start) = self.dense_index_start else {
+            return;
+        };
+        let slot = self.properties.len() - 1;
+        match array_index(&self.properties[slot].0) {
+            Some(index) if usize::try_from(index).ok() == slot.checked_sub(start) => {}
+            None if slot == start => self.dense_index_start = Some(self.properties.len()),
+            _ => self.dense_index_start = None,
+        }
+    }
+
     // Array indices always remain below the own length (10.4.2.1). A key at
     // or beyond that length cannot already be present. For common dense arrays,
     // length is the first property and index n occupies slot n+1. Verify the
@@ -15,6 +27,21 @@ impl OrdinaryObject {
     // arrays fall back to the ordinary complete lookup. No derived cache or
     // insertion-order assumption affects the returned descriptor.
     pub(super) fn property_index(&self, key: PropertyKeyRef<'_>) -> Option<usize> {
+        if !self.array
+            && let Some(start) = self.dense_index_start
+            && let Some(index) = array_index(key)
+        {
+            let Ok(index) = usize::try_from(index) else {
+                return None;
+            };
+            if index >= self.properties.len() - start {
+                return None;
+            }
+            let slot = start + index;
+            if PropertyKeyRef::from(&self.properties[slot].0) == key {
+                return Some(slot);
+            }
+        }
         if self.array
             && let Some(index) = array_index(key)
         {
