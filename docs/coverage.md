@@ -59,7 +59,31 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 71616 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 71654 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete shared-memory baseline inventory
+
+The nineteen added whole originals pass all 38 original modes. They exercise
+multi-agent notification counts, default/coerced/negative counts, FIFO ordering,
+separate wait locations, repeated notifications, timeout interaction and BigInt
+waiters, plus Atomics.isLockFree construction rejection. Original worker counts,
+helper timeouts and loops remain unchanged.
+
+All 482 host-compatible edition-17 sources across SharedArrayBuffer and Atomics
+are retained. Nine immutable-buffer proposal sources remain outside the baseline.
+Two whole allocation-assumption files require 7 PiB or maximum safe-integer shared
+lengths to fail; existing sparse storage supports them. Independent fixed and
+growable probes verify far-index atomic writes/reads and non-aliasing zero reads
+at both sizes. No storage design, dependency or default resource quota changes.
+
+Counts are 37,430 fixtures, twenty-seven helpers, 37,214 reviewed sources,
+71,654 variants and 78 controls.
+
+
+Verification passes all 71,654 variants, 78 controls and 84 Test262 package
+tests (corpus 440.53 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests. All 482 retained
+SharedArrayBuffer/Atomics originals also match their pinned upstream Git blobs.
 
 ## Complete host-compatible Module baseline inventory
 

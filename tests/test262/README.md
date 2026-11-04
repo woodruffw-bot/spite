@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 37411 unmodified test fixtures and twenty-seven harness files come from
+These 37430 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -30,6 +30,14 @@ JSON-loading sources outside the host's empty supported-attribute policy, and
 export grammar before its separately ill-formed name. Fixture bytes and flags
 are unchanged. Counts are 37,195 reviewed sources and 71,616 variants, plus
 78 controls.
+
+The completed SharedArrayBuffer/Atomics baseline audit adds nineteen unchanged
+originals and 38 modes, retaining all 482 host-compatible published sources.
+Original multi-agent counts, timeouts and loops are preserved. Nine immutable-buffer
+proposal sources and two whole shared-allocation-assumption files remain excluded;
+sparse backing supports their logical lengths, verified through far-index atomic
+access at 7 PiB and the maximum safe-integer size. No default resource cap is added.
+Counts are 37,214 reviewed sources and 71,654 variants, plus 78 controls.
 
 ## Date, ArrayBuffer and DataView inventories
 

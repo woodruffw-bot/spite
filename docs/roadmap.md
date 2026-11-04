@@ -534,11 +534,11 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 ## 6. Completion and hardening
 
-- [ ] Implement agents, SharedArrayBuffer, Atomics, and memory-model requirements.
+- [x] Implement agents, SharedArrayBuffer, Atomics, and memory-model requirements.
 - [x] Construct branded SharedArrayBuffers with ordered conversion/prototype checks, fixed/growable length getters and serialized monotonic growth across shared backing identities.
 - [x] Integrate shared byte storage with TypedArray/DataView, live growable-buffer witnesses, numeric codecs and raw copies.
 - [x] Implement SharedArrayBuffer slicing with ordered species construction, shared-brand/backing validation and raw byte copies.
-- [x] Support shared Atomics.notify with ordered brand/index/count validation and empty waiter lists while waiting and agents remain unavailable.
+- [x] Support shared Atomics.notify with ordered brand/index/count validation and empty waiter lists.
 - [x] Prepare shared page ownership with safe standard-library types and implement native atomic load/store, exchange, compareExchange and arithmetic/bitwise memory steps.
 - [x] Validate waiting arguments for the nonsuspending host and return immediate asynchronous mismatch/zero-timeout records with faithful Test262 CanBlockIsFalse handling.
 - [x] Register rooted infinite asynchronous waits by backing/byte offset, notify them in FIFO order with inline native settlement and retire Realm-owned waiters.
@@ -549,6 +549,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Expose safe native agent termination that interrupts execution and synchronous waits while retiring only the owning agent's waiter state.
 - [x] Run isolated suspending Test262 worker Scripts with startup validation, native string reports, timing methods, job progress and cooperative shutdown.
 - [x] Deliver native shared backing and numeric broadcast values to isolated Test262 workers, acknowledge retrieval before callbacks and preserve timeout/notification progress across agents.
+- [x] Audit all host-compatible SharedArrayBuffer and Atomics baseline originals, including multi-agent FIFO notifications, counts, timeouts and separate wait locations.
 - [ ] Audit normative optional features and host-defined behavior.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
