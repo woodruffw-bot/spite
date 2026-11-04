@@ -59,7 +59,34 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 48161 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 49558 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Class definitions and inheritance
+
+The pinned audit covers all 781 mandatory originals across the class declaration
+and expression root inventories, definition, superclass and built-in subclass
+inventories, and declaration super/syntax inventories. The 713 newly retained
+whole files pass 1,397 variants: 1,305 evaluated variants and 92 reviewed parse
+negatives from 48 originals. Cases cover computed names, strict class scopes,
+metadata, inheritance, constructor return overrides, built-in subclasses,
+Proxy superclasses and cross-Realm private installation. The test that poisons
+an ordinary `__proto__` property does not require the optional legacy accessor.
+
+One whole `nonextensible-applies-to-private` original remains excluded:
+edition-17 PrivateFieldAdd and PrivateMethodOrAccessorAdd permit adding private
+elements to ordinary non-extensible objects. HostEnsureCanAddPrivateElement is
+a browser-only hook for host exotic objects. Existing runtime behavior follows
+those rules. The historical async-method formals/body negative actually contains
+invalid `async function foo` class method grammar; its exact rejection is
+reviewed at `function`, without claiming a duplicate-binding check.
+
+Each admitted fixture retains its original bytes, flags and harness helpers.
+Counts are 25,760 fixtures, twenty-seven helpers, 25,675 reviewed sources,
+49,558 variants and 78 controls.
+
+Full verification passes all 49,558 variants, 78 controls and 81 Test262 package
+tests (corpus 308.16 seconds). Formatting, strict Clippy, Rust 1.99 all-target
+checks, dependency and fixture policies, CLI tests and doctests pass.
 
 ## Thirty-two nested function calls on the supported stack
 

@@ -1,9 +1,22 @@
 # Test262 regression fixtures
 
-These 25047 unmodified test fixtures and twenty-seven harness files come from
+These 25760 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Class definitions and inheritance
+
+The 713 added whole originals pass 1,397 variants, including 92 exact reviewed
+parse negatives. Together with existing fixtures they cover all 781 mandatory
+originals in the audited root, definition, subclass, built-in subclass, super
+and syntax inventories. One whole `nonextensible-applies-to-private` source is
+excluded because the published private-element algorithms permit installation
+on ordinary non-extensible objects. The poisoned `__proto__` property case uses
+ordinary property definition and does not depend on the legacy accessor.
+
+Counts are 25,760 fixtures, twenty-seven helpers, 25,675 reviewed sources,
+49,558 variants and 78 controls.
 
 ## Complete function-form inventory
 
