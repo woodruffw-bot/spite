@@ -1,9 +1,21 @@
 # Test262 regression fixtures
 
-These 29222 unmodified test fixtures and twenty-seven harness files come from
+These 33064 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete published-baseline class inventory
+
+All 8,398 mandatory originals in the two pinned class inventories are retained.
+The final 3,842 whole parameter-binding and constructor-argument sources add
+7,684 passing modes, including 576 exact reviewed parse negatives. The complete
+8,426-source Git-tree ledger leaves twenty-eight whole exclusions: twenty-two
+decorator/auto-accessor sources, two private-extensibility expectations and four
+Annex B lookup-method sources. Source bytes, flags and helpers match the pin.
+
+Counts are 33,064 fixtures, twenty-seven helpers, 32,979 reviewed sources,
+64,045 variants and 78 controls.
 
 ## Class member grammar and private-name boundaries
 

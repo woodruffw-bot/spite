@@ -256,6 +256,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit public/private class field initialization, member layout and termination, strict initializer restrictions and private-name visibility.
 - [x] Parse private fields/methods/accessors, private references and brand checks, with lexical class scope and early errors.
 - [x] Audit class member grammar, constructor restrictions, private-name scope/deletion, identifier spelling and heritage syntax.
+- [x] Audit class parameter patterns, default/rest binding, iterator closing and constructor arguments across declaration/expression forms.
 - [x] Execute instance/static private fields with private-name environments, brand checks, ordered initialization, direct eval, and tracing.
 - [x] Execute private methods/accessors with brands installed before fields, private calls and writes, and tracing.
 - [x] Audit private class method/accessor names, installation order, suspension/delegation and await/yield context restrictions.
@@ -270,7 +271,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add bound callable objects, capture tracing, and Function.prototype bind.
 - [x] Bound re-entrant calls and dispatch builtin/bound tail transfers iteratively.
 - [x] Return one invocation's value or transfer outcome before the outer dispatcher forwards, keeping Proxy/bound resolution outside concrete function execution.
-- [ ] Add arrays, destructuring, iteration, classes, and private elements.
+- [x] Add arrays, destructuring, iteration, classes, and private elements.
 - [x] Add sparse Array exotic storage, indexed growth, and partial length truncation.
 - [x] Add ordered Realm-level ArraySetLength coercions and deferred length assignments.
 - [x] Add Array calls/new and Array.isArray.

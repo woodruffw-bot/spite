@@ -59,7 +59,35 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 56361 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 64045 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete published-baseline class inventory
+
+All 8,398 mandatory originals across the pinned class declaration/expression
+inventories are retained. The final 3,842 whole sources add 7,684 variants for
+method parameter binding and constructor arguments: 7,108 evaluated modes and
+576 exact reviewed parse negatives from 288 originals. They cover nested array
+and object patterns, default/rest binding, evaluation and iterator-closing
+order, inferred names, private and generator/async-generator methods, and
+base/derived/default-constructor argument forwarding. The parse negatives
+reject rest initializers and non-final rest elements across twelve pattern
+families in each class form.
+
+The independent pinned Git-tree ledger accounts for all 8,426 class originals.
+Twenty-eight whole sources remain excluded: twenty-two require decorators or
+auto-accessors, two require private additions to obey extensibility, and four
+call Annex B lookup methods. These exclusions follow the published baseline
+and recorded host policy. Every admitted source and helper retains its pinned
+bytes and execution metadata.
+
+Counts are 33,064 fixtures, twenty-seven helpers, 32,979 reviewed sources,
+64,045 variants and 78 controls. The arrays/destructuring/iteration/classes
+milestone is complete; the specification-wide conformance audit remains open.
+
+Full verification passes all 64,045 variants, 78 controls and 81 Test262 package
+tests (corpus 375.47 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests. All 33,091 retained fixture
+and harness blobs match the pinned upstream Git tree.
 
 ## Class member grammar and private-name boundaries
 
