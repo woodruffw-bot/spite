@@ -173,6 +173,25 @@ fn typed_array_sources_ignore_public_hooks_and_are_validated_after_prototype_loo
 }
 
 #[test]
+fn typed_array_copies_allocate_intrinsic_buffers_without_source_constructor_hooks() {
+    // InitializeTypedArrayFromTypedArray (23.2.5.1.2) uses intrinsic
+    // ArrayBuffers for both raw-byte clones and element conversions.
+    for (name, width, bigint) in KINDS {
+        let one = if bigint { "1n" } else { "1" };
+        let other = match name {
+            "BigInt64Array" => "BigUint64Array",
+            "BigUint64Array" => "BigInt64Array",
+            "Float64Array" => "Int16Array",
+            _ => "Float64Array",
+        };
+        check(&format!(
+            "let enabled=false;class B extends ArrayBuffer{{constructor(n){{super(n);if(enabled)throw 1;}}static get [Symbol.species](){{throw 2;}}}}let b=new B({}),source=new {name}(b,{width},1);source[0]={one};Object.defineProperty(b,'constructor',{{get(){{throw 3;}}}});enabled=true;let same=new {name}(source),other=new {other}(source);same[0]==={one} && other[0]==={one} && same.byteOffset===0 && other.byteOffset===0 && same.buffer!==b && other.buffer!==b && same.buffer!==other.buffer && Object.getPrototypeOf(same.buffer)===ArrayBuffer.prototype && Object.getPrototypeOf(other.buffer)===ArrayBuffer.prototype && same.buffer.constructor===ArrayBuffer && other.buffer.constructor===ArrayBuffer",
+            3 * width,
+        ));
+    }
+}
+
+#[test]
 fn same_kind_copies_preserve_raw_nan_sign_and_payload_from_nonzero_offsets() {
     for (name, width, set, get, bits) in [
         ("Float16Array", 2, "setUint16", "getUint16", "65535"),

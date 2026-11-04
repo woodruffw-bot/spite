@@ -1,9 +1,22 @@
 # Test262 regression fixtures
 
-These 34597 unmodified test fixtures and twenty-seven harness files come from
+These 36357 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+The complete TypedArray baseline audit adds 1,760 unchanged originals and 3,474
+modes across TypedArray, TypedArrayConstructors and Uint8Array. All 2,247
+host-compatible published-baseline sources are retained. Twelve immutable-buffer
+proposal files and one whole host-allocation-assumption source remain excluded;
+ToLength clamps that source's 2**53 array-like length to a representable sparse
+byte length. Its BigInt counterpart remains because its byte length exceeds the
+specified bound. The original long detachment/prototype security test runs in
+both modes. There are 36,272 reviewed sources and 70,184 variants, plus 78 controls.
+
+One further whole no-species source requires the disabled normative-optional
+`__proto__` accessor; native coverage checks its core behavior through `Object.getPrototypeOf`
+for all twelve element kinds without rewriting the original.
 
 ## Date, ArrayBuffer and DataView inventories
 

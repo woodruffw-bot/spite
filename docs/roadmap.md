@@ -370,7 +370,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Align regress Unicode property and folding tables with the workspace Unicode 18 baseline.
 - [x] Report explicit backend representation limits after original Pattern syntax validation.
 - [ ] Audit remaining edition-17 RegExp behavior through the shared backend.
-- [ ] Add Date, binary buffers, typed arrays, and DataView.
+- [x] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
 - [x] Implement ordinary DataView construction, all integer/BigInt/Float16/Float32/Float64 accessors, fixed and length-tracking resizable views, live bounds and detachment checks, and intrinsic reflection.
 - [x] Audit Date, ArrayBuffer and DataView construction, conversion, calendar behavior, resizable/detached views and reflection.
@@ -382,6 +382,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement TypedArray numeric sort and toSorted.
 - [x] Implement Uint8Array hexadecimal conversion methods.
 - [x] Implement Uint8Array base64 conversion methods.
+- [x] Audit the complete host-compatible TypedArray, TypedArrayConstructors and Uint8Array baseline inventories with unchanged allocation, detachment and resize cases.
 - [x] Add Date TimeClip, ordered MakeTime/MakeDate arithmetic, and UTC Gregorian decomposition across the complete clipped domain.
 - [x] Parse Date interchange string syntax with expanded years, absent-element defaults, end-of-day midnight and explicit/local zone distinctions.
 - [x] Convert UTC/explicit-offset Date strings with calendar rollover and final time-range validation, and implement numeric MakeFullYear adjustment.

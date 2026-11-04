@@ -59,7 +59,40 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 66710 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 70184 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete TypedArray baseline inventory
+
+The 1,760 added whole originals exercise all twelve constructor kinds, overloads,
+array-like and iterable inputs, species, integer-indexed exotic behavior,
+coercion/detachment/resize ordering, callbacks, copying, sorting, reflection and
+Uint8Array text conversions. All 3,474 original modes pass, including the unchanged
+10,000-element detachment/prototype security case.
+
+The pinned inventory contains 2,261 sources: 2,247 host-compatible edition-17
+originals are retained, twelve immutable-buffer proposal files are outside the
+baseline, and one whole source assumes an array-like length of 2**53 must fail
+allocation. ToLength clamps that input to 2**53-1. Existing sparse byte storage can
+represent a byte-sized view of that length, verified by a far write and non-aliasing
+read, so that allocation failure is not required by CreateByteDataBlock. The
+BigInt counterpart remains: its eight-byte elements exceed the specified byte
+limit. No source, loop, flag or default resource setting is changed.
+
+One further whole source requires the disabled normative-optional `__proto__`
+accessor. A native regression checks its core construction behavior with
+`Object.getPrototypeOf` across all twelve kinds, both same-kind clones and
+different-kind conversions, nonzero source offsets, and poisoned backing
+constructors/species.
+
+Counts are 36,357 fixtures, twenty-seven helpers, 36,272 reviewed sources,
+70,184 variants and 78 controls.
+
+
+Full verification passes all 70,184 variants, 78 controls and 81 Test262 package
+tests (corpus 466.71 seconds). The new native regression passes for all twelve
+element kinds. Formatting, strict Clippy, Rust 1.99 all-target checks, dependency
+and fixture checks, CLI tests and doctests pass. All 2,247 retained TypedArray
+originals also match the upstream pinned Git blobs.
 
 ## Contiguous ordinary numeric properties
 
