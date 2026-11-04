@@ -237,6 +237,38 @@ fn frontmatter_size_limits_are_opt_in() {
     );
 }
 
+// Imported support sources may intentionally contain syntax errors. Check
+// their exact rejection rather than accepting an unrelated parser failure.
+fn verify_module_fixture(path: &str, original: &str) {
+    let expected = match path {
+        "test/language/module-code/instn-resolve-empty-export_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-empty-import_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-err-syntax-2_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-order-depth-reference_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-order-src-reference_FIXTURE.js" => {
+            Some((139, 140, "invalid update target"))
+        }
+        "test/language/module-code/instn-resolve-err-syntax-1_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-order-depth-syntax_FIXTURE.js"
+        | "test/language/module-code/instn-resolve-order-src-syntax_FIXTURE.js" => {
+            Some((139, 145, "break requires an enclosing loop or switch"))
+        }
+        "test/language/expressions/dynamic-import/catch/script-code_FIXTURE.js" => {
+            Some((339, 345, "lexical declaration conflicts with var"))
+        }
+        _ => None,
+    };
+    let parsed = spite_parser::parse_module(original);
+    if let Some((start, end, message)) = expected {
+        let error = parsed.unwrap_err();
+        assert_eq!(error.kind, spite_core::DiagnosticKind::Syntax, "{path}");
+        assert_eq!(error.span, spite_core::Span::new(start, end), "{path}");
+        assert_eq!(error.message, message, "{path}");
+    } else {
+        parsed.unwrap_or_else(|error| panic!("{path}: {error:?}"));
+    }
+}
+
 #[test]
 fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/test262");
@@ -255,8 +287,7 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         let original = fs::read_to_string(root.join("upstream").join(fields[2])).unwrap();
         if fields[0] == "module-fixture" {
-            spite_parser::parse_module(&original)
-                .unwrap_or_else(|error| panic!("{}: {error:?}", fields[2]));
+            verify_module_fixture(fields[2], &original);
             count += 1;
             continue;
         }
@@ -273,7 +304,8 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         if fields[0] == "script-runtime-error" {
             assert!(!meta.has_flag("raw"));
             let error_type = match fields[2] {
-                "test/language/module-code/top-level-await/await-dynamic-import-rejection.js"
+                "test/language/module-code/eval-rqstd-abrupt.js"
+                | "test/language/module-code/top-level-await/await-dynamic-import-rejection.js"
                 | "test/language/module-code/top-level-await/module-import-rejection-body.js"
                 | "test/language/module-code/top-level-await/module-import-rejection.js" => {
                     "TypeError"
@@ -339,6 +371,6 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         count += 1;
     }
-    assert_eq!(count, 36357);
+    assert_eq!(count, 37411);
     assert_eq!(harness_count, 27);
 }

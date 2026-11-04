@@ -59,7 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 70184 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 71616 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete host-compatible Module baseline inventory
+
+The 923 added whole originals pass 1,432 modes: 735 positive sources contribute
+1,136 modes, 169 reviewed parse negatives contribute 277, eighteen resolution
+negatives contribute eighteen, and one runtime TypeError source contributes one.
+They cover static/dynamic imports, live and namespace bindings, cycles, export
+resolution, top-level Await, evaluation order and abrupt completion.
+
+The audit covers module-code, dynamic-import, import.meta, import and export.
+Across 2,038 pinned JavaScript sources, all 1,243 host-compatible baseline test
+cases and 197 required support sources are retained. Of the remaining sources,
+502 whole proposal tests are outside edition 17, thirteen require JSON loading
+under an attribute policy this host does not provide, and 83 unneeded support
+files are not admitted. The default supported-import-attribute list remains empty.
+
+All original bytes, helpers, flags and phases remain intact. Nine imported support
+sources intentionally contain syntax errors; exact kind/span/message checks
+validate their actual rejection. The malformed quoted export-star negative is
+credited for its invalid export grammar, before its ill-formed export name.
+Support sources receive no independent execution-variant credit.
+
+Counts are 37,411 fixtures, twenty-seven helpers, 37,195 reviewed sources,
+71,616 variants and 78 controls.
+
+
+Verification passes all 71,616 variants, 78 controls and 84 Test262 package
+tests (corpus 436.25 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests. All 1,440
+retained Module sources also match their upstream pinned Git blobs.
 
 ## Module loading exceptions and preparation failures
 

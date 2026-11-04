@@ -424,7 +424,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 ## 5. Modules and suspended execution
 
-- [ ] Add module parsing, linking, namespace objects, live bindings, and cycles.
+- [x] Add module parsing, linking, namespace objects, live bindings, and cycles.
 - [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.
 - [x] Validate reviewed Test262 Module parse negatives with the Module goal, exact unprefixed rejection evidence, phase checks and separate unsupported linking/execution outcomes.
 - [x] Parse static default/named/namespace imports and combinations into module requests/bindings, with strict shared scope conflicts, well-formed quoted export names and unique canonical import attributes.
@@ -449,6 +449,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Expose explicit dynamic-import host requests with canonical attributes, rooted capabilities, deferred completion and defining Module identity across functions, eval, class initialization and Promise jobs.
 - [x] Service Test262 dynamic imports with one source/record cache per execution variant, shared static/dynamic identities and explicit non-passing preparation failures.
 - [x] Propagate unavailable-source and imported-syntax loading exceptions through dynamic import Promises while preserving root parse, unsupported, resource and filesystem-confinement failures.
+- [x] Audit all host-compatible Module, import/export, import.meta and dynamic-import baseline originals, with exact imported-syntax evidence and unchanged helper graphs.
 - [ ] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.

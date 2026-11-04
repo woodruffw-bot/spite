@@ -36271,3 +36271,926 @@ test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js	-	-	-
 test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js	-	-	-
 test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js	-	-	-
 test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js	-	-	-
+test/language/expressions/dynamic-import/always-create-new-promise.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/additive-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/array-literal.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/arrow-function.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/await-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/await-identifier.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/call-expr-arguments.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/call-expr-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/call-expr-identifier.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/cover-call-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/cover-parenthesized-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/identifier.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/import-meta.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/lhs-assign-operator-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/lhs-eq-assign-expr-nostrict.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/lhs-eq-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/logical-and-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/logical-or-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/member-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/new-target.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/object-literal.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/tagged-function-call.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/ternary.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/this.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/unary-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/yield-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/yield-expr.js	-	-	-
+test/language/expressions/dynamic-import/assignment-expression/yield-identifier.js	-	-	-
+test/language/expressions/dynamic-import/await-import-evaluation.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-arrow-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-arrow-function-return-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-return-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-function-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-async-gen-return-await-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-block-labeled-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-do-while-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-else-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-function-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-if-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/nested-while-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-eval-rqstd-abrupt-typeerror.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-eval-rqstd-abrupt-urierror.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-eval-script-code-target.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-file-does-not-exist.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-instn-iee-err-ambiguous-import.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-instn-iee-err-circular.js	-	-	-
+test/language/expressions/dynamic-import/catch/top-level-import-catch-specifier-tostring-abrupt-rejects.js	-	-	-
+test/language/expressions/dynamic-import/custom-primitive.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-cls-anon.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-cls-name-meth.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-cls-named.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-cls-anon.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-cls-name-meth.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-cls-named.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-fn-anon.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-fn-named.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-gen-anon.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-gen-named.js	-	-	-
+test/language/expressions/dynamic-import/eval-export-dflt-expr-in.js	-	-	-
+test/language/expressions/dynamic-import/eval-rqstd-once.js	-	-	-
+test/language/expressions/dynamic-import/eval-self-once-module.js	-	-	-
+test/language/expressions/dynamic-import/eval-self-once-script.js	-	-	-
+test/language/expressions/dynamic-import/for-await-resolution-and-error-agen-yield.js	-	-	-
+test/language/expressions/dynamic-import/for-await-resolution-and-error-agen.js	-	-	-
+test/language/expressions/dynamic-import/for-await-resolution-and-error.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-await-expr.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-await-ident.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-evaluation-sequence.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-in.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-trailing-comma-fulfill.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-undefined.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-yield-expr.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-yield-ident-valid.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/trailing-comma-fulfill.js	-	-	-
+test/language/expressions/dynamic-import/import-errored-module.js	-	-	-
+test/language/expressions/dynamic-import/import-fulfilled-member-of-errored-cycle.js	-	-	-
+test/language/expressions/dynamic-import/imported-self-update.js	-	-	-
+test/language/expressions/dynamic-import/indirect-resolution.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-Symbol-toStringTag.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-define-own-property.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-delete-exported-init-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-delete-exported-init-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-delete-non-exported-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-delete-non-exported-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-extensible.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-nested-namespace-dflt-direct.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-nested-namespace-dflt-indirect.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-nested-namespace-props-nrml.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-own-property-str-found-init.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-own-property-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-own-property-sym.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-str-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-sym-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-get-sym-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-has-property-str-found-init.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-has-property-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-has-property-sym-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-has-property-sym-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-no-iterator.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-own-property-keys-sort.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-prevent-extensions-object.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-prevent-extensions-reflect.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-prop-descs.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-prototype.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-prototype-of-null.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-prototype-of.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-same-values-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-same-values-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/await-ns-set-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/default-property-not-set-own.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-Symbol-toStringTag.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-define-own-property.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-delete-exported-init-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-delete-exported-init-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-delete-non-exported-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-delete-non-exported-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-extensible.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-nested-namespace-dflt-direct.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-nested-namespace-dflt-indirect.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-nested-namespace-props-nrml.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-own-property-str-found-init.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-own-property-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-own-property-sym.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-str-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-sym-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-get-sym-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-has-property-str-found-init.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-has-property-str-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-has-property-sym-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-has-property-sym-not-found.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-no-iterator.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-own-property-keys-sort.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-prevent-extensions-object.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-prevent-extensions-reflect.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-prop-descs.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-prototype.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-prototype-of-null.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-prototype-of.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-same-values-no-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-same-values-strict.js	-	-	-
+test/language/expressions/dynamic-import/namespace/promise-then-ns-set-strict.js	-	-	-
+test/language/expressions/dynamic-import/returns-promise.js	-	-	-
+test/language/expressions/dynamic-import/reuse-namespace-object-from-import.js	-	-	-
+test/language/expressions/dynamic-import/reuse-namespace-object-from-script.js	-	-	-
+test/language/expressions/dynamic-import/reuse-namespace-object.js	-	-	-
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expr-not-optional.js	1227	1228	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-assignment-expr-not-optional.js	1245	1246	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-no-new-call-expression-prop-access.js	1428	1443	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-no-new-call-expression.js	1292	1302	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-no-rest-param.js	1401	1404	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-not-extensible-args.js	1445	1447	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-assignment-expression-typeof-import.js	1246	1252	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-no-new-call-expression-prop-access.js	1410	1425	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-no-new-call-expression.js	1274	1284	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-no-rest-param.js	1383	1386	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-not-extensible-args.js	1427	1429	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-arrow-typeof-import.js	1228	1234	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-assignment-expr-not-optional.js	1267	1268	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-no-new-call-expression-prop-access.js	1450	1465	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-no-new-call-expression.js	1314	1324	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-no-rest-param.js	1423	1426	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-not-extensible-args.js	1467	1469	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-await-typeof-import.js	1268	1274	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-assignment-expr-not-optional.js	1271	1272	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-no-new-call-expression-prop-access.js	1454	1469	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-no-new-call-expression.js	1318	1328	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-no-rest-param.js	1427	1430	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-not-extensible-args.js	1471	1473	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-arrow-function-return-await-typeof-import.js	1272	1278	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-assignment-expr-not-optional.js	1241	1242	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-assignment-expr-not-optional.js	1253	1254	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-no-new-call-expression-prop-access.js	1436	1451	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-no-new-call-expression.js	1300	1310	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-no-rest-param.js	1409	1412	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-not-extensible-args.js	1453	1455	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-await-typeof-import.js	1254	1260	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-no-new-call-expression-prop-access.js	1424	1439	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-no-new-call-expression.js	1288	1298	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-no-rest-param.js	1397	1400	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-not-extensible-args.js	1441	1443	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-assignment-expr-not-optional.js	1267	1268	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-no-new-call-expression-prop-access.js	1450	1465	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-no-new-call-expression.js	1314	1324	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-no-rest-param.js	1423	1426	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-not-extensible-args.js	1467	1469	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-return-await-typeof-import.js	1268	1274	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-function-typeof-import.js	1242	1248	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-assignment-expr-not-optional.js	1288	1289	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-no-new-call-expression-prop-access.js	1471	1486	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-no-new-call-expression.js	1335	1345	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-no-rest-param.js	1444	1447	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-not-extensible-args.js	1488	1490	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-async-gen-await-typeof-import.js	1289	1295	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-assignment-expr-not-optional.js	1213	1214	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-assignment-expr-not-optional.js	1228	1229	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-no-new-call-expression-prop-access.js	1411	1426	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-no-new-call-expression.js	1275	1285	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-no-rest-param.js	1384	1387	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-not-extensible-args.js	1428	1430	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-labeled-typeof-import.js	1229	1235	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-no-new-call-expression-prop-access.js	1396	1411	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-no-new-call-expression.js	1260	1270	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-no-rest-param.js	1369	1372	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-not-extensible-args.js	1413	1415	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-block-typeof-import.js	1214	1220	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-assignment-expr-not-optional.js	1222	1223	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-no-new-call-expression-prop-access.js	1405	1420	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-no-new-call-expression.js	1269	1279	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-no-rest-param.js	1378	1381	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-not-extensible-args.js	1422	1424	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-do-while-typeof-import.js	1223	1229	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-assignment-expr-not-optional.js	1232	1233	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-assignment-expr-not-optional.js	1238	1239	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-no-new-call-expression-prop-access.js	1421	1436	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-no-new-call-expression.js	1285	1295	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-no-rest-param.js	1394	1397	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-not-extensible-args.js	1438	1440	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-braceless-typeof-import.js	1239	1245	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-no-new-call-expression-prop-access.js	1415	1430	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-no-new-call-expression.js	1279	1289	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-no-rest-param.js	1388	1391	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-not-extensible-args.js	1432	1434	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-else-typeof-import.js	1233	1239	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-assignment-expr-not-optional.js	1233	1234	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-no-new-call-expression-prop-access.js	1416	1431	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-no-new-call-expression.js	1280	1290	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-no-rest-param.js	1389	1392	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-not-extensible-args.js	1433	1435	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-assignment-expr-not-optional.js	1247	1248	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-no-new-call-expression-prop-access.js	1430	1445	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-no-new-call-expression.js	1294	1304	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-no-rest-param.js	1403	1406	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-not-extensible-args.js	1447	1449	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-return-typeof-import.js	1248	1254	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-function-typeof-import.js	1234	1240	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-assignment-expr-not-optional.js	1217	1218	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-assignment-expr-not-optional.js	1223	1224	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-no-new-call-expression-prop-access.js	1406	1421	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-no-new-call-expression.js	1270	1280	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-no-rest-param.js	1379	1382	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-not-extensible-args.js	1423	1425	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-braceless-typeof-import.js	1224	1230	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-no-new-call-expression-prop-access.js	1400	1415	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-no-new-call-expression.js	1264	1274	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-no-rest-param.js	1373	1376	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-not-extensible-args.js	1417	1419	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-if-typeof-import.js	1218	1224	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-assignment-expr-not-optional.js	1242	1243	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-no-new-call-expression-prop-access.js	1425	1440	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-no-new-call-expression.js	1289	1299	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-no-rest-param.js	1398	1401	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-not-extensible-args.js	1442	1444	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-while-typeof-import.js	1243	1249	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-assignment-expr-not-optional.js	1231	1232	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-assignment-expr-not-optional.js	1261	1262	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-no-new-call-expression-prop-access.js	1444	1459	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-no-new-call-expression.js	1308	1318	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-no-rest-param.js	1417	1420	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-not-extensible-args.js	1461	1463	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-expression-typeof-import.js	1262	1268	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-no-new-call-expression-prop-access.js	1414	1429	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-no-new-call-expression.js	1278	1288	import call is not a constructor expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-no-rest-param.js	1387	1390	expected an expression
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-not-extensible-args.js	1431	1433	expected )
+test/language/expressions/dynamic-import/syntax/invalid/nested-with-typeof-import.js	1232	1238	reserved word cannot begin an expression
+test/language/expressions/dynamic-import/syntax/valid/callexpression-arguments.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/callexpression-templateliteral.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-assignment-expression-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-assignment-expression-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-assignment-expression-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-assignment-expression-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-assignment-expression-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-arrow-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-await-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-await-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-await-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-await-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-await-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-return-await-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-return-await-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-return-await-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-return-await-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-arrow-function-return-await-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-await-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-await-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-await-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-await-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-await-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-return-await-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-return-await-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-return-await-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-return-await-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-return-await-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-function-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-gen-await-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-gen-await-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-gen-await-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-gen-await-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-async-gen-await-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-labeled-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-labeled-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-labeled-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-labeled-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-labeled-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-block-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-do-while-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-do-while-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-do-while-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-do-while-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-do-while-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-braceless-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-braceless-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-braceless-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-braceless-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-braceless-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-else-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-return-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-return-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-return-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-return-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-return-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-function-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-braceless-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-braceless-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-braceless-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-braceless-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-braceless-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-if-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-while-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-while-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-while-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-while-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-while-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-expression-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-expression-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-expression-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-expression-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-expression-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/nested-with-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/top-level-empty-str-is-valid-assign-expr.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/top-level-import-attributes-trailing-comma-first.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/top-level-import-attributes-trailing-comma-second.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/top-level-nested-imports.js	-	-	-
+test/language/expressions/dynamic-import/syntax/valid/top-level-script-code-valid.js	-	-	-
+test/language/expressions/dynamic-import/update-to-dynamic-import.js	-	-	-
+test/language/expressions/dynamic-import/usage-from-eval.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-assignment-expression-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-arrow-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-arrow-function-return-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-return-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-function-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-async-gen-return-await-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-block-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-do-while-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-else-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-function-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-braceless-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-if-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/nested-while-import-then-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/syntax-nested-block-labeled-specifier-tostring.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-eval-gtbndng-indirect-update.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-eval-script-code-host-resolves-module-code.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-is-call-expression-square-brackets.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-returns-thenable.js	-	-	-
+test/language/expressions/dynamic-import/usage/top-level-import-then-specifier-tostring.js	-	-	-
+test/language/module-code/comment-multi-line-html-close.js	370	371	expected an expression
+test/language/module-code/comment-single-line-html-close.js	366	367	expected an expression
+test/language/module-code/comment-single-line-html-open.js	363	364	expected an expression
+test/language/module-code/early-dup-export-dflt.js	377	380	reserved word cannot begin an expression
+test/language/module-code/early-dup-lables.js	376	381	duplicate label
+test/language/module-code/early-dup-top-function-async-generator.js	565	566	duplicate lexical binding
+test/language/module-code/early-dup-top-function-async.js	564	565	duplicate lexical binding
+test/language/module-code/early-dup-top-function-generator.js	559	560	duplicate lexical binding
+test/language/module-code/early-dup-top-function.js	558	559	duplicate lexical binding
+test/language/module-code/early-new-target.js	347	357	new.target requires an enclosing non-arrow function
+test/language/module-code/early-strict-mode.js	329	335	invalid binding in strict mode
+test/language/module-code/early-super.js	321	326	super call requires a derived constructor
+test/language/module-code/early-undef-break.js	394	399	undefined label
+test/language/module-code/early-undef-continue.js	411	416	undefined label
+test/language/module-code/eval-gtbndng-indirect-trlng-comma.js	-	-	-
+test/language/module-code/eval-gtbndng-indirect-update-as.js	-	-	-
+test/language/module-code/eval-gtbndng-indirect-update-dflt.js	-	-	-
+test/language/module-code/eval-gtbndng-indirect-update.js	-	-	-
+test/language/module-code/eval-gtbndng-local-bndng-cls.js	-	-	-
+test/language/module-code/eval-gtbndng-local-bndng-const.js	-	-	-
+test/language/module-code/eval-gtbndng-local-bndng-let.js	-	-	-
+test/language/module-code/eval-gtbndng-local-bndng-var.js	-	-	-
+test/language/module-code/eval-rqstd-abrupt.js	-	-	-
+test/language/module-code/eval-rqstd-once.js	-	-	-
+test/language/module-code/eval-rqstd-order.js	-	-	-
+test/language/module-code/eval-self-once.js	-	-	-
+test/language/module-code/export-expname-binding-index.js	-	-	-
+test/language/module-code/export-expname-binding-string.js	-	-	-
+test/language/module-code/export-expname-from-binding-string.js	-	-	-
+test/language/module-code/export-expname-from-star-string.js	-	-	-
+test/language/module-code/export-expname-from-star-unpaired-surrogate.js	510	513	expected an export declaration
+test/language/module-code/export-expname-from-star.js	-	-	-
+test/language/module-code/export-expname-from-string-binding.js	-	-	-
+test/language/module-code/export-expname-from-string-string.js	-	-	-
+test/language/module-code/export-expname-from-string.js	-	-	-
+test/language/module-code/export-expname-import-string-binding.js	-	-	-
+test/language/module-code/export-star-as-dflt.js	-	-	-
+test/language/module-code/instn-iee-bndng-cls.js	-	-	-
+test/language/module-code/instn-iee-bndng-const.js	-	-	-
+test/language/module-code/instn-iee-bndng-fun.js	-	-	-
+test/language/module-code/instn-iee-bndng-gen.js	-	-	-
+test/language/module-code/instn-iee-bndng-let.js	-	-	-
+test/language/module-code/instn-iee-bndng-var.js	-	-	-
+test/language/module-code/instn-iee-err-circular-as.js	-	-	-
+test/language/module-code/instn-iee-err-circular.js	-	-	-
+test/language/module-code/instn-iee-err-dflt-thru-star-as.js	-	-	-
+test/language/module-code/instn-iee-err-dflt-thru-star.js	-	-	-
+test/language/module-code/instn-iee-err-not-found-as.js	-	-	-
+test/language/module-code/instn-iee-err-not-found.js	-	-	-
+test/language/module-code/instn-iee-iee-cycle.js	-	-	-
+test/language/module-code/instn-iee-star-cycle.js	-	-	-
+test/language/module-code/instn-iee-trlng-comma.js	-	-	-
+test/language/module-code/instn-named-bndng-cls.js	-	-	-
+test/language/module-code/instn-named-bndng-const.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-cls.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-expr.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-fun-anon.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-fun-named.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-gen-anon.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-gen-named.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-named.js	-	-	-
+test/language/module-code/instn-named-bndng-dflt-star.js	-	-	-
+test/language/module-code/instn-named-bndng-fun.js	-	-	-
+test/language/module-code/instn-named-bndng-gen.js	-	-	-
+test/language/module-code/instn-named-bndng-let.js	-	-	-
+test/language/module-code/instn-named-bndng-trlng-comma.js	-	-	-
+test/language/module-code/instn-named-bndng-var.js	-	-	-
+test/language/module-code/instn-named-err-dflt-thru-star-as.js	-	-	-
+test/language/module-code/instn-named-err-dflt-thru-star-dflt.js	-	-	-
+test/language/module-code/instn-named-err-not-found-as.js	-	-	-
+test/language/module-code/instn-named-err-not-found-dflt.js	-	-	-
+test/language/module-code/instn-named-err-not-found.js	-	-	-
+test/language/module-code/instn-named-id-name.js	-	-	-
+test/language/module-code/instn-named-iee-cycle.js	-	-	-
+test/language/module-code/instn-named-star-cycle.js	-	-	-
+test/language/module-code/instn-once.js	-	-	-
+test/language/module-code/instn-resolve-empty-export.js	-	-	-
+test/language/module-code/instn-resolve-empty-import.js	-	-	-
+test/language/module-code/instn-resolve-err-syntax-1.js	-	-	-
+test/language/module-code/instn-resolve-err-syntax-2.js	-	-	-
+test/language/module-code/instn-resolve-order-depth.js	-	-	-
+test/language/module-code/instn-resolve-order-src.js	-	-	-
+test/language/module-code/instn-same-global.js	-	-	-
+test/language/module-code/instn-star-as-props-dflt-skip.js	-	-	-
+test/language/module-code/instn-star-binding.js	-	-	-
+test/language/module-code/instn-star-equality.js	-	-	-
+test/language/module-code/instn-star-err-not-found.js	-	-	-
+test/language/module-code/instn-star-id-name.js	-	-	-
+test/language/module-code/instn-star-iee-cycle.js	-	-	-
+test/language/module-code/instn-star-iee-multi-cycle-same-name.js	-	-	-
+test/language/module-code/instn-star-iee-single-cycle-same-name.js	-	-	-
+test/language/module-code/instn-star-props-circular.js	-	-	-
+test/language/module-code/instn-star-props-dflt-keep-indirect.js	-	-	-
+test/language/module-code/instn-star-props-dflt-keep-local.js	-	-	-
+test/language/module-code/instn-star-props-dflt-skip.js	-	-	-
+test/language/module-code/instn-star-props-nrml.js	-	-	-
+test/language/module-code/instn-star-star-cycle.js	-	-	-
+test/language/module-code/instn-uniq-env-rec.js	-	-	-
+test/language/module-code/invalid-private-names-call-expression-bad-reference.js	1227	1229	private identifier is not declared in an enclosing class
+test/language/module-code/invalid-private-names-call-expression-this.js	1221	1223	private identifier is not declared in an enclosing class
+test/language/module-code/invalid-private-names-member-expression-bad-reference.js	1228	1230	private identifier is not declared in an enclosing class
+test/language/module-code/invalid-private-names-member-expression-this.js	1215	1217	private identifier is not declared in an enclosing class
+test/language/module-code/parse-err-hoist-lex-fun.js	710	711	lexical declaration conflicts with var
+test/language/module-code/parse-err-hoist-lex-gen.js	748	749	lexical declaration conflicts with var
+test/language/module-code/parse-err-invoke-anon-fun-decl.js	773	774	expected an expression
+test/language/module-code/parse-err-invoke-anon-gen-decl.js	813	814	expected an expression
+test/language/module-code/parse-err-return.js	578	584	return outside a function body
+test/language/module-code/parse-err-semi-dflt-expr.js	795	799	expected a semicolon or line terminator
+test/language/module-code/parse-err-semi-export-star.js	841	845	expected a semicolon or line terminator
+test/language/module-code/parse-err-semi-name-space-export.js	880	884	expected a semicolon or line terminator
+test/language/module-code/parse-err-semi-named-export-from.js	826	830	expected a semicolon or line terminator
+test/language/module-code/parse-err-semi-named-export.js	769	773	expected a semicolon or line terminator
+test/language/module-code/parse-err-syntax-1.js	693	694	expected an expression
+test/language/module-code/parse-err-syntax-2.js	693	694	invalid update target
+test/language/module-code/parse-err-yield.js	578	583	reserved identifier in strict mode
+test/language/module-code/private-identifiers-not-empty.js	490	492	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-1.js	634	636	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-2.js	609	611	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-3.js	633	635	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-4.js	640	642	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-5.js	587	589	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-6.js	581	583	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-7.js	580	582	private identifier is not declared in an enclosing class
+test/language/module-code/privatename-not-valid-earlyerr-module-8.js	587	589	private identifier is not declared in an enclosing class
+test/language/module-code/top-level-await/early-errors-await-not-simple-assignment-target.js	355	364	invalid assignment target
+test/language/module-code/top-level-await/new-await-parens.js	-	-	-
+test/language/module-code/top-level-await/new-await-script-code.js	-	-	-
+test/language/module-code/top-level-await/new-await.js	354	355	expected an expression
+test/language/module-code/top-level-await/no-operand.js	320	321	expected an expression
+test/language/module-code/top-level-await/syntax/await-expr-dyn-import.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/block-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/catch-parameter.js	-	-	-
+test/language/module-code/top-level-await/syntax/early-does-not-propagate-to-fn-declaration-body.js	1161	1166	await cannot be an identifier in Modules
+test/language/module-code/top-level-await/syntax/early-does-not-propagate-to-fn-declaration-params.js	1167	1172	await cannot be an identifier in Modules
+test/language/module-code/top-level-await/syntax/early-does-not-propagate-to-fn-expr-body.js	717	722	await cannot be an identifier in Modules
+test/language/module-code/top-level-await/syntax/early-does-not-propagate-to-fn-expr-params.js	721	726	await cannot be an identifier in Modules
+test/language/module-code/top-level-await/syntax/early-no-escaped-await.js	467	477	await cannot be an identifier in Modules
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-class-decl-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dflt-assign-expr-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-dft-class-decl-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-lex-decl-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/export-var-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-in-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/for-of-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-block-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/if-expr-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/top-level-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/try-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/typeof-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/void-await-expr-this.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-array-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-func-expression.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-identifier.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-literal-number.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-literal-string.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-nested.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-new-expr.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-null.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-obj-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-regexp.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-template-literal.js	-	-	-
+test/language/module-code/top-level-await/syntax/while-await-expr-this.js	-	-	-
+test/language/module-code/verify-dfs.js	-	-	-

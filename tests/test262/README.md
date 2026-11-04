@@ -1,6 +1,6 @@
 # Test262 regression fixtures
 
-These 36357 unmodified test fixtures and twenty-seven harness files come from
+These 37411 unmodified test fixtures and twenty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
@@ -17,6 +17,19 @@ both modes. There are 36,272 reviewed sources and 70,184 variants, plus 78 contr
 One further whole no-species source requires the disabled normative-optional
 `__proto__` accessor; native coverage checks its core behavior through `Object.getPrototypeOf`
 for all twelve element kinds without rewriting the original.
+
+The complete host-compatible Module audit adds 923 unchanged test originals and
+131 required support sources. Its 1,432 modes retain their original parse,
+resolution and runtime phases. Nine intentionally invalid imported sources have
+exact syntax-diagnostic assertions; all other support modules must parse normally.
+
+The five audited inventories retain 1,243 baseline test cases and 197 required
+support sources. There are 502 whole out-of-baseline proposal tests, thirteen
+JSON-loading sources outside the host's empty supported-attribute policy, and
+83 unused support files. The quoted export-star negative rejects its invalid
+export grammar before its separately ill-formed name. Fixture bytes and flags
+are unchanged. Counts are 37,195 reviewed sources and 71,616 variants, plus
+78 controls.
 
 ## Date, ArrayBuffer and DataView inventories
 
