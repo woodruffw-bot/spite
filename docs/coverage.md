@@ -59,7 +59,31 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 64045 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 65130 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Function contexts, references and arguments
+
+All 989 mandatory originals across eight arguments/this/new.target/call/eval/
+function-code/global-code inventories are retained. The 736 added whole files
+pass 1,085 modes: 1,055 evaluated positives, 28 exact reviewed parse negatives,
+and two runtime-negative modes. Checks cover mapped/unmapped argument aliases
+and descriptors, receivers, lexical new.target, call targets, environment
+instantiation and direct/indirect eval. Module-origin eval still uses Script
+grammar. The restricted-global `let undefined` case rejects during global
+declaration instantiation, preserving its runtime SyntaxError phase.
+
+Two whole caller-feature sources remain excluded because they require optional
+non-strict caller access, which the documented host policy omits. Original
+sources, flags and helpers are retained. Together with the completed function
+form, built-in and class audits, this completes the functions/closures/this/
+arguments/constructors/direct-eval implementation milestone.
+
+Counts are 33,800 fixtures, twenty-seven helpers, 33,715 reviewed sources,
+65,130 variants and 78 controls.
+
+Full verification passes all 65,130 variants, 78 controls and 81 Test262 package
+tests (corpus 350.09 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests.
 
 ## Complete published-baseline class inventory
 
