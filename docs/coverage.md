@@ -59,7 +59,29 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 72451 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 73091 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Error constructors and global conversion inventories
+
+The 325 added whole originals pass all 640 original modes. They complete all 552
+published-baseline sources across Error, NativeErrors, AggregateError,
+ThrowTypeError, Infinity, NaN, undefined, global-object behavior, isFinite/isNaN,
+parseFloat/parseInt and all four URI conversion functions. Checks include brands,
+construction, messages/causes, cross-realm behavior, strict descriptor operations,
+coercion order, numeric string prefixes, whitespace and URI abrupt completion.
+
+Thirty-five whole error-stack-accessor proposal sources are outside edition 17.
+The required nativeErrors.js helper is added whole at the same upstream pin;
+all original source bytes, flags and helper order are preserved.
+
+Counts are 38,169 fixtures, twenty-eight helpers, 37,953 reviewed sources,
+73,091 variants and 78 controls.
+
+
+Verification passes all 73,091 variants, 78 controls and 84 Test262 package
+tests (corpus 447.73 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests. All 552
+retained scope originals and the new helper match their pinned Git blobs.
 
 ## Complete JSON and host-compatible String inventories
 

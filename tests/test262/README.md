@@ -1,9 +1,18 @@
 # Test262 regression fixtures
 
-These 37844 unmodified test fixtures and twenty-seven harness files come from
+These 38169 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Error constructors and global conversion inventories
+
+The completed audit adds 325 unchanged originals and 640 modes across standard
+Error constructors and global values/conversion functions. All 552 published
+baseline originals in these inventories are retained. Thirty-five proposed stack
+accessor sources remain outside edition 17. The unchanged nativeErrors.js helper
+joins the pinned harness set; source bytes, flags and include order are preserved.
+Counts are 37,953 reviewed sources and 73,091 variants, plus 78 controls.
 
 ## Complete JSON and String inventories
 

@@ -421,6 +421,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement ordinary-buffer Atomics integer access and read-modify-write operations, isLockFree, notify, and non-shared wait rejection with ordered conversions and live buffer checks.
 - [x] Add Atomics.pause with a native processor spin-loop hint and standard zero-arity metadata.
 - [ ] Audit all edition-17 intrinsics against the specification inventory.
+- [x] Audit all published Error/NativeError/AggregateError/ThrowTypeError and global value/conversion originals, including strict descriptors, cross-realm behavior, coercion and URI errors.
 - [x] Check the 70 JavaScript-reachable base intrinsic objects from the edition-17 table for names, arities, prototype relationships, constructor capability and distinct identities within and across Realms.
 - [x] Audit the published intrinsic property headings across concrete NativeError/TypedArray families for own-property presence, data/method/accessor roles, non-enumerability and built-in function metadata attributes and constructor capability.
 - [x] Check exact names/arities for 456 published method/accessor entries and six specified aliases; give BigInt.prototype.toString its zero arity, distinct from Number.prototype.toString.
