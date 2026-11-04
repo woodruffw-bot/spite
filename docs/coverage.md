@@ -59,7 +59,37 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 73893 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 74857 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## RegExp integration and transparent returns
+
+Return statements now share the transparent-wrapper guard behavior of expression
+statements. Their work tick and depth preflight remain; their value expressions
+own recursion accounting. Evaluation and call limits remain 64 and 32. The
+unchanged deepEqual.js helper and recursion matrix pass on native 2 MiB stacks.
+All executed Test262 modes now receive the existing private print capture;
+only async modes require the doneprintHandle completion protocol. Constant host
+bootstrap parsing is separate from source-size checks on test/harness/imported
+code; normal evaluation limits remain in force. Missing-helper
+controls still use reserved $DONE, and ordinary Realms keep their existing globals.
+
+The 483 added whole originals pass 964 modes, including thirteen exact reviewed
+parse negatives, indices with deep equality, modifiers, property access,
+reflection and RegExp consumers. Source bytes, loops, helper bodies and flags
+are unchanged. Two older whole literal loops assume join controls are absent
+from Unicode ID_Continue; the pinned Unicode18 data includes them, so their premise is
+incompatible with this workspace baseline. They remain excluded without edits.
+Another 489 generated sources explicitly target Unicode 17; compatibility with the workspace Unicode18
+baseline remains under review and receives no new passing credit here.
+
+Counts are 39,053 fixtures, twenty-eight helpers, 38,837 reviewed sources,
+74,857 variants and 78 controls.
+
+Validation: Parser 18 unit and 443 integration tests, Runtime 572 unit and all
+5,034 integration tests, and the full 74,857-variant corpus pass (491.38 seconds).
+All 84 other Test262 package checks pass after the bootstrap adjustment,
+including unchanged static/dynamic dependency-size controls. Formatting, strict
+Clippy, Rust 1.99 all-target checks and repository policies pass.
 
 ## Complete host-compatible callable and collection inventories
 

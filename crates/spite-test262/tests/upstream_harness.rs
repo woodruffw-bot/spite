@@ -74,8 +74,8 @@ fn original_property_helper_rejects_wrong_descriptors_and_preserves_host_gaps() 
     }
     for body in [
         "verifyProperty(new Proxy(Array,{ownKeys(){import('missing-host-module');}}),'of',{enumerable:false});",
-        "verifyProperty({get x(){print;}},'x',{value:1});",
-        "assert.throws(TypeError,()=>Function('print')());",
+        "verifyProperty({get x(){$DONE;}},'x',{value:1});",
+        "assert.throws(TypeError,()=>Function('$DONE')());",
     ] {
         let outcomes = run_with_includes(body, "propertyHelper.js");
         assert_eq!(outcomes.len(), 2);
@@ -128,7 +128,7 @@ fn original_constructor_helper_checks_constructibility_without_masking_host_gaps
         [Outcome::Passed, Outcome::Passed]
     );
     let outcomes = run_with_includes(
-        "let N=(function(){}).bind(null);Object.defineProperty(N,'prototype',{get(){print;}});isConstructor(N);",
+        "let N=(function(){}).bind(null);Object.defineProperty(N,'prototype',{get(){$DONE;}});isConstructor(N);",
         "isConstructor.js",
     );
     assert_eq!(outcomes.len(), 2);

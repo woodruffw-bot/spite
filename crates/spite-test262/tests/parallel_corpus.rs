@@ -65,7 +65,7 @@ fn parallel_reports_preserve_order_modes_isolation_and_non_passing_categories() 
         "@",
     );
     corpus.source("module.js", "flags: [module]", "1;");
-    corpus.source("host.js", "flags: [raw]", "print");
+    corpus.source("host.js", "flags: [raw]", "$DONE");
     corpus.source("metadata.js", "flags: [unknownFlag]", "1;");
     corpus.source("setup.js", "includes: [missing.js]", "1;");
     corpus.source(

@@ -751,13 +751,18 @@ impl Realm {
                 .expression(expression)
                 .map(|value| Completion::normal(Some(value)));
         }
+        if let StatementKind::Return(expression) = &statement.kind {
+            // As with expression statements, the value expression owns the
+            // recursion guard; returning it adds work, not another AST level.
+            self.check_evaluation_depth(statement.span)?;
+            self.tick(statement.span)?;
+            return self.return_completion(expression.as_ref());
+        }
         self.enter_evaluation(statement.span)?;
         // Keep recursive returns out of the large general statement frame.
         let result = match &statement.kind {
             StatementKind::Expression(_) => unreachable!("expression statement dispatched above"),
-            StatementKind::Return(expression) => self
-                .tick(statement.span)
-                .and_then(|()| self.return_completion(expression.as_ref())),
+            StatementKind::Return(_) => unreachable!("return statement dispatched above"),
             _ => self.statement_inner(statement, labels),
         };
         self.evaluation_depth -= 1;

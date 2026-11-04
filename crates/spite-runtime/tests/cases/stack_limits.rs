@@ -103,3 +103,25 @@ fn recursion_limits_work_on_a_two_mebibyte_thread_stack() {
             .unwrap();
     }
 }
+
+#[test]
+fn nested_structural_callbacks_fit_a_two_mebibyte_stack() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/test262/upstream/harness");
+    let assertion = std::fs::read_to_string(root.join("assert.js")).unwrap();
+    let equality = std::fs::read_to_string(root.join("deepEqual.js")).unwrap();
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(move || {
+            let mut realm = Realm::default();
+            realm.eval(&assertion).unwrap();
+            realm.eval(&equality).unwrap();
+            assert_eq!(
+                realm.eval("assert.deepEqual([[0,1]],[[0,1]]);true"),
+                Ok(Value::Boolean(true))
+            );
+        })
+        .unwrap()
+        .join()
+        .unwrap();
+}

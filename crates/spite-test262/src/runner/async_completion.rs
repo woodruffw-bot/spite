@@ -21,7 +21,11 @@ pub(super) struct AsyncCompletion {
 
 impl AsyncCompletion {
     pub(super) fn install(realm: &mut Realm) -> Result<Self, Error> {
-        let messages = realm.eval(PRINT_HOST)?;
+        // This constant is host bootstrap code, rather than a source supplied
+        // by the test or its module loader. Compile it independently of their
+        // source-size bound; evaluation still uses the Realm's normal limits.
+        let script = spite_parser::parse_script(PRINT_HOST).map_err(Error::Parse)?;
+        let messages = realm.evaluate(&script)?;
         let messages = realm
             .root_value(messages, usize::MAX)
             .map_err(Error::InvalidObject)?;

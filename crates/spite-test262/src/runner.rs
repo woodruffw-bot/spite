@@ -257,19 +257,17 @@ impl Runner {
                 .unwrap_or_else(|| Outcome::SetupFailure(format!("Test262 host: {error}")));
         }
         let outcome = (|| {
+            let print = match AsyncCompletion::install(&mut realm) {
+                Ok(print) => print,
+                Err(error) => {
+                    return host_failure(&error, Stage::Harness)
+                        .unwrap_or_else(|| Outcome::SetupFailure(format!("print host: {error}")));
+                }
+            };
             let completion = if asynchronous {
-                match AsyncCompletion::install(&mut realm) {
-                    Ok(completion) => Some(completion),
-                    Err(error) => {
-                        return host_failure(&error, Stage::Harness).unwrap_or_else(|| {
-                            Outcome::SetupFailure(format!("async print host: {error}"))
-                        });
-                    }
-                }
+                Some(print)
             } else {
-                for name in ["print", "$DONE"] {
-                    realm.reserve_unsupported_global(name);
-                }
+                realm.reserve_unsupported_global("$DONE");
                 None
             };
             let files = metadata.harness_files();

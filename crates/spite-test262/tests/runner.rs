@@ -263,7 +263,7 @@ fn unsupported_and_limits_are_never_negative_passes() {
         }
     ));
     assert!(matches!(
-        negative("runtime", "TypeError", "print"),
+        negative("runtime", "TypeError", "$DONE"),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..
@@ -281,7 +281,7 @@ fn unsupported_and_limits_are_never_negative_passes() {
         }
     ));
     assert!(matches!(
-        negative("runtime", "ReferenceError", "print"),
+        negative("runtime", "ReferenceError", "$DONE"),
         Outcome::Unsupported {
             stage: Stage::Runtime,
             ..
@@ -395,7 +395,7 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
         .unwrap();
     assert_eq!(cases[0].outcome, Outcome::Passed);
     let cases = Runner::default()
-        .run(&original, None, |_| Ok("print".into()))
+        .run(&original, None, |_| Ok("$DONE".into()))
         .unwrap();
     assert!(matches!(
         cases[0].outcome,
@@ -425,18 +425,17 @@ fn harness_runs_in_order_in_the_same_realm_but_its_errors_are_setup_failures() {
 #[test]
 fn unsupported_host_helpers_never_appear_missing_or_undefined() {
     for body in [
-        "print",
         "$DONE",
         "Reflect.get($262,'IsHTMLDDA')",
-        "typeof print",
+        "typeof $DONE",
         "typeof $262.createRealm().IsHTMLDDA",
         "$262.AbstractModuleSource",
         "typeof $262.AbstractModuleSource",
         "typeof $262.IsHTMLDDA",
         "$262.IsHTMLDDA",
-        "delete print",
-        "print = 1",
-        "var print",
+        "delete $DONE",
+        "$DONE = 1",
+        "var $DONE",
     ] {
         assert!(
             matches!(
@@ -622,7 +621,7 @@ fn outcome_snapshot_keeps_non_passing_categories_visible() {
     let outcomes = [
         raw("1"),
         raw("throw 1"),
-        negative("runtime", "ReferenceError", "print"),
+        negative("runtime", "ReferenceError", "$DONE"),
         negative("parse", "SyntaxError", "@"),
     ];
     insta::assert_debug_snapshot!(outcomes);
@@ -804,7 +803,7 @@ fn module_evaluation_checks_await_rejection_pending_jobs_and_async_completion() 
             cases[0].outcome
         );
     }
-    for body in ["import 'other'", "await print"] {
+    for body in ["import 'other'", "await $DONE"] {
         let cases = Runner::default()
             .run(
                 &source(
@@ -917,4 +916,31 @@ fn child_realm_globals_intrinsics_and_shared_symbols_work_in_both_runner_modes()
     for case in cases {
         assert!(matches!(case.outcome, Outcome::Passed), "{case:?}");
     }
+}
+
+#[test]
+fn synchronous_print_captures_diagnostics_without_async_completion_requirements() {
+    let original = source("flags: [raw]", "print('diagnostic')");
+    let cases = Runner {
+        limits: Limits {
+            max_source_bytes: Some(original.len()),
+            ..Limits::default()
+        },
+    }
+    .run(&original, None, |_| panic!("raw test requested a harness"))
+    .unwrap();
+    assert_eq!(cases[0].outcome, Outcome::Passed);
+    assert_eq!(
+        raw(
+            "let seen='';let result=print({toString(){seen+='s';return 'diagnostic'}});print('Test262:AsyncTestFailure: ordinary diagnostic');if(seen!=='s'||result!==undefined||typeof print!=='function')throw 1"
+        ),
+        Outcome::Passed
+    );
+    assert!(matches!(
+        negative("runtime", "ReferenceError", "$DONE"),
+        Outcome::Unsupported {
+            stage: Stage::Runtime,
+            ..
+        }
+    ));
 }

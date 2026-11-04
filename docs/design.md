@@ -3162,9 +3162,9 @@ binding or constructor/prototype property. Lexical this follows captured functio
 environments and otherwise resolves to the realm's global this value.
 Every call restores caller strictness and active scopes on success or abrupt exit.
 The evaluator bounds recursive control-statement/expression work across calls to
-64, as well as call re-entry. Expression statement wrappers pay their work tick
-and check depth before delegating the recursion slot to their expression; they
-do not charge a second slot for the same evaluation. Strict ordinary functions,
+64, as well as call re-entry. Expression and return statement wrappers pay their
+work tick and check depth before delegating the recursion slot to their
+expression; they do not charge a second slot for the same evaluation. Strict ordinary functions,
 methods and arrows return
 owned tail-call requests for direct calls in return/concise-body positions,
 including parentheses, conditionals, logical operators and comma chains (15.10).
@@ -3303,10 +3303,14 @@ span/message review for parse negatives, without a Script strict-mode prefix.
 Valid parse negatives fail the gate; unsupported grammar and host limits never
 count as passes. Modules use isolated Module records and never enter Script
 evaluation. Raw async setup and agent configuration remain unsupported.
-Async Script variants execute the original doneprintHandle.js and selected
-includes, then drain the explicit Promise queue. A private print capture requires
-exactly one completion, rejects failure or duplicate messages, and keeps reported
-job exceptions separate from printed failure names. Host failures retain their
+All executed variants receive a private diagnostic print capture. Its constant
+host bootstrap is parsed separately from test-supplied source, then evaluated
+under the normal Realm limits; test, harness and imported source keep their
+configured source-size checks. Async Script
+variants execute the original doneprintHandle.js and selected includes, then drain
+the explicit Promise queue. Only async variants require exactly one completion
+and reject failure or duplicate completion messages. Reported job exceptions stay
+separate from printed failure names. Host failures retain their
 own categories. The runner adds no default execution or job quotas. While the
 grammar is partial, parse-negative passes additionally
 require a reviewed expected diagnostic span and message; an empty span is valid

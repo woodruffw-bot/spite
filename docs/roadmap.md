@@ -375,6 +375,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Align regress Unicode property and folding tables with the workspace Unicode 18 baseline.
 - [x] Report explicit backend representation limits after original Pattern syntax validation.
 - [ ] Audit remaining edition-17 RegExp behavior through the shared backend.
+- [x] Preserve transparent return-wrapper work/preflight without a second expression recursion slot, with unchanged native guards and 2 MiB stack checks.
+- [x] Supply synchronous Test262 diagnostic print through the existing capture while retaining async-only completion validation and missing-helper failure accounting.
 - [x] Add Date, binary buffers, typed arrays, and DataView.
 - [x] Implement ordinary ArrayBuffer construction, fixed/resizable/detached storage, species-aware slicing, resizing, transfer, state getters, and intrinsic reflection.
 - [x] Implement ordinary DataView construction, all integer/BigInt/Float16/Float32/Float64 accessors, fixed and length-tracking resizable views, live bounds and detachment checks, and intrinsic reflection.
