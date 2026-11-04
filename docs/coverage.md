@@ -59,7 +59,26 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 73091 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 73233 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete iterator-prototype baseline inventories
+
+The 71 added whole originals pass all 142 modes across ArrayIteratorPrototype,
+StringIteratorPrototype, RegExpStringIteratorPrototype, AsyncIteratorPrototype
+and AsyncFromSyncIteratorPrototype. They complete all 93 edition-17 originals
+in these inventories, with nine whole async-disposal proposal sources outside
+the baseline. Receiver brands, prototype/descriptor metadata, async completion,
+iteration results, detachment and RegExp consumer behavior keep their original
+sources, flags and helper order.
+
+Counts are 38,240 fixtures, twenty-eight helpers, 38,024 reviewed sources,
+73,233 variants and 78 controls.
+
+
+Verification passes all 73,233 variants, 78 controls and 84 Test262 package
+tests (corpus 494.99 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policy/inventory checks, CLI tests and doctests. All 93
+retained iterator-prototype originals match their pinned upstream Git blobs.
 
 ## Error constructors and global conversion inventories
 

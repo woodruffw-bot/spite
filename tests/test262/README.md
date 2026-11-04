@@ -1,9 +1,17 @@
 # Test262 regression fixtures
 
-These 38169 unmodified test fixtures and twenty-eight harness files come from
+These 38240 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Complete iterator-prototype inventories
+
+The iterator-prototype audit adds 71 unchanged originals and 142 modes, retaining
+all 93 published-baseline sources across the Array, String, RegExp String, Async
+and Async-from-Sync iterator prototypes. Nine async-disposal proposal sources
+remain outside edition 17. All source bytes, flags and helpers stay intact.
+Counts are 38,024 reviewed sources and 73,233 variants, plus 78 controls.
 
 ## Error constructors and global conversion inventories
 

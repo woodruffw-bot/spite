@@ -325,6 +325,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add the shared Iterator tag getter and setter with receiver checks and strict own-property updates.
 - [x] Add the abstract Iterator constructor, newTarget prototype selection, and protected prototype constructor accessor.
 - [x] Add Iterator.from with ordered iterable/direct acquisition, intrinsic instance identity, and branded next/return wrappers.
+- [x] Audit all published Array/String/RegExp String/Async/Async-from-Sync iterator-prototype originals for branding, metadata, results and asynchronous completion.
 - [x] Add lazy Iterator.concat with ordered method capture, native helper suspension/closing, reentry rejection, and complete static reflection.
 - [x] Add Iterator.prototype.toArray with direct acquisition, ordered consumption, and intrinsic Array results.
 - [x] Add Iterator.prototype.forEach with callback validation/closing, ordered direct iteration, and exact mathematical indices.
