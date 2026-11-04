@@ -26486,3 +26486,449 @@ test/language/expressions/class/method/params-trailing-comma-multiple.js	-	-	-
 test/language/expressions/class/method/params-trailing-comma-single.js	-	-	-
 test/language/expressions/class/method/rest-param-strict-body.js	6008	6049	use strict directive with non-simple parameters
 test/language/expressions/class/method/rest-params-trailing-comma-early-error.js	2531	2532	expected )
+test/language/statements/class/elements/async-gen-private-method-static/await-as-binding-identifier-escaped.js	1074	1084	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method-static/await-as-binding-identifier.js	1066	1071	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method-static/await-as-identifier-reference-escaped.js	1082	1092	await cannot be an identifier in an async function
+test/language/statements/class/elements/async-gen-private-method-static/await-as-identifier-reference.js	1079	1080	expected an expression
+test/language/statements/class/elements/async-gen-private-method-static/await-as-label-identifier-escaped.js	1064	1074	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method-static/await-as-label-identifier.js	1056	1061	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-binding-identifier-escaped.js	1074	1084	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-binding-identifier.js	1066	1071	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-identifier-reference-escaped.js	1082	1092	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-identifier-reference.js	1074	1079	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-label-identifier-escaped.js	1064	1074	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method-static/yield-as-label-identifier.js	1056	1061	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method-static/yield-identifier-spread-strict.js	1164	1169	invalid binding in strict mode
+test/language/statements/class/elements/async-gen-private-method-static/yield-identifier-strict.js	1004	1009	invalid binding in strict mode
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next-catch.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-promise-reject-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-spread-obj.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-async-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-async-return.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-async-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-expr-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-sync-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-sync-return.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method-static/yield-star-sync-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/await-as-binding-identifier-escaped.js	1039	1049	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method/await-as-binding-identifier.js	1031	1036	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method/await-as-identifier-reference-escaped.js	1047	1057	await cannot be an identifier in an async function
+test/language/statements/class/elements/async-gen-private-method/await-as-identifier-reference.js	1044	1045	expected an expression
+test/language/statements/class/elements/async-gen-private-method/await-as-label-identifier-escaped.js	1029	1039	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method/await-as-label-identifier.js	1021	1026	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method/yield-as-binding-identifier-escaped.js	1039	1049	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method/yield-as-binding-identifier.js	1031	1036	invalid binding identifier
+test/language/statements/class/elements/async-gen-private-method/yield-as-identifier-reference-escaped.js	1047	1057	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/async-gen-private-method/yield-as-identifier-reference.js	1039	1044	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/async-gen-private-method/yield-as-label-identifier-escaped.js	1029	1039	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method/yield-as-label-identifier.js	1021	1026	invalid label identifier
+test/language/statements/class/elements/async-gen-private-method/yield-identifier-spread-strict.js	1129	1134	invalid binding in strict mode
+test/language/statements/class/elements/async-gen-private-method/yield-identifier-strict.js	969	974	invalid binding in strict mode
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next-catch.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-promise-reject-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-spread-obj.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-async-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-async-return.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-async-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-expr-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-sync-next.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-sync-return.js	-	-	-
+test/language/statements/class/elements/async-gen-private-method/yield-star-sync-throw.js	-	-	-
+test/language/statements/class/elements/async-private-method-static/await-as-binding-identifier-escaped.js	1026	1036	invalid binding identifier
+test/language/statements/class/elements/async-private-method-static/await-as-binding-identifier.js	1018	1023	invalid binding identifier
+test/language/statements/class/elements/async-private-method-static/await-as-identifier-reference-escaped.js	1034	1044	await cannot be an identifier in an async function
+test/language/statements/class/elements/async-private-method-static/await-as-identifier-reference.js	1031	1032	expected an expression
+test/language/statements/class/elements/async-private-method-static/await-as-label-identifier-escaped.js	1016	1026	invalid label identifier
+test/language/statements/class/elements/async-private-method-static/await-as-label-identifier.js	1008	1013	invalid label identifier
+test/language/statements/class/elements/async-private-method/await-as-binding-identifier-escaped.js	991	1001	invalid binding identifier
+test/language/statements/class/elements/async-private-method/await-as-binding-identifier.js	983	988	invalid binding identifier
+test/language/statements/class/elements/async-private-method/await-as-identifier-reference-escaped.js	999	1009	await cannot be an identifier in an async function
+test/language/statements/class/elements/async-private-method/await-as-identifier-reference.js	996	997	expected an expression
+test/language/statements/class/elements/async-private-method/await-as-label-identifier-escaped.js	981	991	invalid label identifier
+test/language/statements/class/elements/async-private-method/await-as-label-identifier.js	973	978	invalid label identifier
+test/language/statements/class/elements/gen-private-method-static/yield-as-binding-identifier-escaped.js	977	987	invalid binding identifier
+test/language/statements/class/elements/gen-private-method-static/yield-as-binding-identifier.js	969	974	invalid binding identifier
+test/language/statements/class/elements/gen-private-method-static/yield-as-identifier-reference-escaped.js	985	995	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/gen-private-method-static/yield-as-identifier-reference.js	977	982	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/gen-private-method-static/yield-as-label-identifier-escaped.js	967	977	invalid label identifier
+test/language/statements/class/elements/gen-private-method-static/yield-as-label-identifier.js	959	964	invalid label identifier
+test/language/statements/class/elements/gen-private-method-static/yield-identifier-spread-strict.js	1084	1089	invalid binding in strict mode
+test/language/statements/class/elements/gen-private-method-static/yield-identifier-strict.js	924	929	invalid binding in strict mode
+test/language/statements/class/elements/gen-private-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/elements/gen-private-method-static/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/elements/gen-private-method-static/yield-spread-obj.js	-	-	-
+test/language/statements/class/elements/gen-private-method/yield-as-binding-identifier-escaped.js	943	953	invalid binding identifier
+test/language/statements/class/elements/gen-private-method/yield-as-binding-identifier.js	935	940	invalid binding identifier
+test/language/statements/class/elements/gen-private-method/yield-as-identifier-reference-escaped.js	951	961	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/gen-private-method/yield-as-identifier-reference.js	943	948	yield cannot be an identifier in a generator context
+test/language/statements/class/elements/gen-private-method/yield-as-label-identifier-escaped.js	933	943	invalid label identifier
+test/language/statements/class/elements/gen-private-method/yield-as-label-identifier.js	925	930	invalid label identifier
+test/language/statements/class/elements/gen-private-method/yield-identifier-spread-strict.js	1049	1054	invalid binding in strict mode
+test/language/statements/class/elements/gen-private-method/yield-identifier-strict.js	889	894	invalid binding in strict mode
+test/language/statements/class/elements/gen-private-method/yield-spread-arr-multiple.js	-	-	-
+test/language/statements/class/elements/gen-private-method/yield-spread-arr-single.js	-	-	-
+test/language/statements/class/elements/gen-private-method/yield-spread-obj.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-escape-sequence-ZWJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-escape-sequence-ZWNJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-escape-sequence-u2118.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-escape-sequence-u6F.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-ZWJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-ZWNJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-common.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-dollar.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-u2118.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/inst-private-name-underscore.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-escape-sequence-ZWJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-escape-sequence-ZWNJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-escape-sequence-u2118.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-escape-sequence-u6F.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-ZWJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-ZWNJ.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-common.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-dollar.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-u2118.js	-	-	-
+test/language/statements/class/elements/private-accessor-name/static-private-name-underscore.js	-	-	-
+test/language/statements/class/elements/private-methods/prod-private-async-generator.js	-	-	-
+test/language/statements/class/elements/private-methods/prod-private-async-method.js	-	-	-
+test/language/statements/class/elements/private-methods/prod-private-generator.js	-	-	-
+test/language/statements/class/elements/private-methods/prod-private-method-initialize-order.js	-	-	-
+test/language/statements/class/elements/private-methods/prod-private-method.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-binding-identifier-escaped.js	1079	1089	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-binding-identifier.js	1071	1076	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-identifier-reference-escaped.js	1087	1097	await cannot be an identifier in an async function
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-identifier-reference.js	1084	1085	expected an expression
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-label-identifier-escaped.js	1069	1079	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method-static/await-as-label-identifier.js	1061	1066	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-binding-identifier-escaped.js	1079	1089	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-binding-identifier.js	1071	1076	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-identifier-reference-escaped.js	1087	1097	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-identifier-reference.js	1079	1084	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-label-identifier-escaped.js	1069	1079	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method-static/yield-as-label-identifier.js	1061	1066	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method-static/yield-identifier-spread-strict.js	1169	1174	invalid binding in strict mode
+test/language/expressions/class/elements/async-gen-private-method-static/yield-identifier-strict.js	1009	1014	invalid binding in strict mode
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next-catch.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-promise-reject-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-spread-obj.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-async-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-async-return.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-async-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-expr-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-sync-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-sync-return.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method-static/yield-star-sync-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/await-as-binding-identifier-escaped.js	1044	1054	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method/await-as-binding-identifier.js	1036	1041	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method/await-as-identifier-reference-escaped.js	1052	1062	await cannot be an identifier in an async function
+test/language/expressions/class/elements/async-gen-private-method/await-as-identifier-reference.js	1049	1050	expected an expression
+test/language/expressions/class/elements/async-gen-private-method/await-as-label-identifier-escaped.js	1034	1044	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method/await-as-label-identifier.js	1026	1031	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method/yield-as-binding-identifier-escaped.js	1044	1054	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method/yield-as-binding-identifier.js	1036	1041	invalid binding identifier
+test/language/expressions/class/elements/async-gen-private-method/yield-as-identifier-reference-escaped.js	1052	1062	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/async-gen-private-method/yield-as-identifier-reference.js	1044	1049	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/async-gen-private-method/yield-as-label-identifier-escaped.js	1034	1044	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method/yield-as-label-identifier.js	1026	1031	invalid label identifier
+test/language/expressions/class/elements/async-gen-private-method/yield-identifier-spread-strict.js	1134	1139	invalid binding in strict mode
+test/language/expressions/class/elements/async-gen-private-method/yield-identifier-strict.js	974	979	invalid binding in strict mode
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next-catch.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next-for-await-of-async-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next-for-await-of-sync-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next-yield-star-async-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next-yield-star-sync-iterator.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-promise-reject-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-spread-obj.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-async-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-async-return.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-async-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-expr-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-null-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-async-undefined-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-getiter-sync-returns-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-call-done-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-call-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-call-value-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-non-object-ignores-then.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-boolean-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-null-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-number-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-object-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-string-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-symbol-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-not-callable-undefined-throw.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-get-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-boolean-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-null-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-number-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-object-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-string-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-symbol-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-non-callable-undefined-fulfillpromise.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-next-then-returns-abrupt.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-sync-next.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-sync-return.js	-	-	-
+test/language/expressions/class/elements/async-gen-private-method/yield-star-sync-throw.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/await-as-binding-identifier-escaped.js	1031	1041	invalid binding identifier
+test/language/expressions/class/elements/async-private-method-static/await-as-binding-identifier.js	1023	1028	invalid binding identifier
+test/language/expressions/class/elements/async-private-method-static/await-as-identifier-reference-escaped.js	1039	1049	await cannot be an identifier in an async function
+test/language/expressions/class/elements/async-private-method-static/await-as-identifier-reference.js	1036	1037	expected an expression
+test/language/expressions/class/elements/async-private-method-static/await-as-label-identifier-escaped.js	1021	1031	invalid label identifier
+test/language/expressions/class/elements/async-private-method-static/await-as-label-identifier.js	1013	1018	invalid label identifier
+test/language/expressions/class/elements/async-private-method-static/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/returns-async-arrow.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/returns-async-function-returns-newtarget.js	-	-	-
+test/language/expressions/class/elements/async-private-method-static/returns-async-function.js	-	-	-
+test/language/expressions/class/elements/async-private-method/await-as-binding-identifier-escaped.js	996	1006	invalid binding identifier
+test/language/expressions/class/elements/async-private-method/await-as-binding-identifier.js	988	993	invalid binding identifier
+test/language/expressions/class/elements/async-private-method/await-as-identifier-reference-escaped.js	1004	1014	await cannot be an identifier in an async function
+test/language/expressions/class/elements/async-private-method/await-as-identifier-reference.js	1001	1002	expected an expression
+test/language/expressions/class/elements/async-private-method/await-as-label-identifier-escaped.js	986	996	invalid label identifier
+test/language/expressions/class/elements/async-private-method/await-as-label-identifier.js	978	983	invalid label identifier
+test/language/expressions/class/elements/async-private-method/returns-async-arrow-returns-arguments-from-parent-function.js	-	-	-
+test/language/expressions/class/elements/async-private-method/returns-async-arrow-returns-newtarget.js	-	-	-
+test/language/expressions/class/elements/async-private-method/returns-async-arrow.js	-	-	-
+test/language/expressions/class/elements/async-private-method/returns-async-function-returns-arguments-from-own-function.js	-	-	-
+test/language/expressions/class/elements/async-private-method/returns-async-function-returns-newtarget.js	-	-	-
+test/language/expressions/class/elements/async-private-method/returns-async-function.js	-	-	-
+test/language/expressions/class/elements/gen-private-method-static/yield-as-binding-identifier-escaped.js	991	1001	invalid binding identifier
+test/language/expressions/class/elements/gen-private-method-static/yield-as-binding-identifier.js	983	988	invalid binding identifier
+test/language/expressions/class/elements/gen-private-method-static/yield-as-identifier-reference-escaped.js	999	1009	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/gen-private-method-static/yield-as-identifier-reference.js	991	996	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/gen-private-method-static/yield-as-label-identifier-escaped.js	981	991	invalid label identifier
+test/language/expressions/class/elements/gen-private-method-static/yield-as-label-identifier.js	973	978	invalid label identifier
+test/language/expressions/class/elements/gen-private-method-static/yield-identifier-spread-strict.js	1089	1094	invalid binding in strict mode
+test/language/expressions/class/elements/gen-private-method-static/yield-identifier-strict.js	929	934	invalid binding in strict mode
+test/language/expressions/class/elements/gen-private-method-static/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/elements/gen-private-method-static/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/elements/gen-private-method-static/yield-spread-obj.js	-	-	-
+test/language/expressions/class/elements/gen-private-method/yield-as-binding-identifier-escaped.js	955	965	invalid binding identifier
+test/language/expressions/class/elements/gen-private-method/yield-as-binding-identifier.js	947	952	invalid binding identifier
+test/language/expressions/class/elements/gen-private-method/yield-as-identifier-reference-escaped.js	963	973	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/gen-private-method/yield-as-identifier-reference.js	955	960	yield cannot be an identifier in a generator context
+test/language/expressions/class/elements/gen-private-method/yield-as-label-identifier-escaped.js	945	955	invalid label identifier
+test/language/expressions/class/elements/gen-private-method/yield-as-label-identifier.js	937	942	invalid label identifier
+test/language/expressions/class/elements/gen-private-method/yield-identifier-spread-strict.js	1054	1059	invalid binding in strict mode
+test/language/expressions/class/elements/gen-private-method/yield-identifier-strict.js	894	899	invalid binding in strict mode
+test/language/expressions/class/elements/gen-private-method/yield-spread-arr-multiple.js	-	-	-
+test/language/expressions/class/elements/gen-private-method/yield-spread-arr-single.js	-	-	-
+test/language/expressions/class/elements/gen-private-method/yield-spread-obj.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-escape-sequence-ZWJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-escape-sequence-ZWNJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-escape-sequence-u2118.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-escape-sequence-u6F.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-ZWJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-ZWNJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-common.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-dollar.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-u2118.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/inst-private-name-underscore.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-escape-sequence-ZWJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-escape-sequence-ZWNJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-escape-sequence-u2118.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-escape-sequence-u6F.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-ZWJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-ZWNJ.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-common.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-dollar.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-u2118.js	-	-	-
+test/language/expressions/class/elements/private-accessor-name/static-private-name-underscore.js	-	-	-
+test/language/expressions/class/elements/private-methods/prod-private-async-generator.js	-	-	-
+test/language/expressions/class/elements/private-methods/prod-private-async-method.js	-	-	-
+test/language/expressions/class/elements/private-methods/prod-private-generator.js	-	-	-
+test/language/expressions/class/elements/private-methods/prod-private-method-initialize-order.js	-	-	-
+test/language/expressions/class/elements/private-methods/prod-private-method.js	-	-	-

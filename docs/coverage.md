@@ -59,7 +59,25 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 51086 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 51962 reviewed Test262 variants, twenty-seven pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Private class method and accessor inventories
+
+All 458 originals across sixteen private-method/accessor inventories are now
+retained. The 446 added whole files pass 876 variants: 668 evaluated modes from
+334 originals and 208 exact reviewed parse-negative modes from 112 originals.
+Coverage includes instance/static Unicode and escaped private accessor names,
+method installation before fields, private ordinary/generator/async/async-generator
+forms, delegated iteration and Promise handling. Fourteen negative families
+exercise await/yield bindings, references, labels and inherited strictness.
+
+Counts are 27,018 fixtures, twenty-seven helpers, 26,933 reviewed sources,
+51,962 variants and 78 controls. Original source bytes, flags and helpers remain
+unchanged.
+
+Full verification passes all 51,962 variants, 78 controls and 81 Test262 package
+tests (corpus 326.04 seconds), plus formatting, strict Clippy, Rust 1.99
+all-target checks, policies, CLI tests and doctests.
 
 ## Class methods and accessors
 
