@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt bitwise temporary allocation
+
+Bitwise operations check the temporary width and reserve each complete operand
+once through fallible allocation before copying or sign conversion. This removes
+clone-then-grow allocation while preserving the width, per-word charge, sign
+extension and result-magnitude checks. Allocation refusal uses the existing
+host-limit result.
+
+Twenty-four quiet single-CPU ABBA process runs measure 14.3% lower evaluation
+time for the new mixed-sign bitwise workload. The pooled radix-overflow row is
+15.3% higher, with an increase in both batches; its Core parser instructions are
+unchanged apart from relocations, and the timing cause is not established.
+Both batches and their full scope are retained in the
+[benchmarking record](benchmarking.md#bigint-bitwise-temporary-allocation).
+
+The seeded arithmetic audit matches all 17,600 exact Python-integer results
+before and after the change, across 1,600 cases of arithmetic, bitwise operations,
+signed shifts and width reduction. Validation passes all 36 BigInt tests,
+112 Core tests, 573 Runtime units, 2,430 non-RegExp integrations and the full
+quality gate. All 5,153 official modes from 2,589 unchanged numeric/Date originals
+pass with zero nonpassing outcomes. Test and fixture inventories are unchanged.
+
 ## Radix Number overflow and rounding
 
 After complete digit validation, Core's binary/octal/hexadecimal Number parser

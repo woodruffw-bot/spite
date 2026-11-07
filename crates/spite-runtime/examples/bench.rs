@@ -68,6 +68,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "bigint_bitwise",
+        source: "(()=>{let x=-(1n<<2048n)+1n,sum=0;const mask=(1n<<2048n)-1n;for(let i=0;i<64;i++){x=((x&mask)^(x>>13n))|(1n<<BigInt(i));sum+=Number(x&65535n)}return sum})()",
+        expected: 2_258_539.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_radix",
         source: "(()=>{let x=(1n<<2048n)-1n,sum=0;for(let i=0;i<32;i++){const hex=x.toString(16),base32=x.toString(32);sum+=hex.length+base32.length+parseInt(hex.slice(-6),16)+parseInt(base32.slice(-6),32);x=x*3n+BigInt(i)}return sum})()",
         expected: 26_296_828_883.0,

@@ -574,10 +574,15 @@ impl BigInt {
     /// Combines infinitely sign-extended bits (ECMA-262 6.1.6.2.17).
     pub fn bitwise(&self, other: &Self, op: BitwiseOp, budget: &mut Budget) -> Result<Self, Error> {
         // An extra word preserves the sign after a finite two's complement operation.
-        let width = self.words.len().max(other.words.len()) + 1;
+        let width = self
+            .words
+            .len()
+            .max(other.words.len())
+            .checked_add(1)
+            .ok_or(Error::Limit)?;
         budget.charge(width.checked_mul(6).ok_or(Error::Limit)?)?;
-        let mut left = self.twos_complement(width);
-        let right = other.twos_complement(width);
+        let mut left = self.twos_complement(width)?;
+        let right = other.twos_complement(width)?;
         for (a, b) in left.iter_mut().zip(right) {
             *a = match op {
                 BitwiseOp::And => *a & b,
@@ -664,13 +669,15 @@ impl BigInt {
         Ok(words)
     }
 
-    fn twos_complement(&self, width: usize) -> Vec<u32> {
-        let mut words = self.words.clone();
+    fn twos_complement(&self, width: usize) -> Result<Vec<u32>, Error> {
+        let mut words = Vec::new();
+        words.try_reserve_exact(width).map_err(|_| Error::Limit)?;
+        words.extend_from_slice(&self.words[..self.words.len().min(width)]);
         words.resize(width, 0);
         if self.negative {
             Self::negate_words(&mut words);
         }
-        words
+        Ok(words)
     }
 
     fn negate_words(words: &mut [u32]) {

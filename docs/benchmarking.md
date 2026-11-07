@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all sixteen program workloads |
+| parse_all | Parse and drop the ASTs for all seventeen program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -29,6 +29,7 @@ and collection medians are computed independently.
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
+| bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_decimal | Format changing 2,048-bit integers in decimal across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
@@ -234,6 +235,36 @@ Values are microseconds, using medians of six per-process medians per revision.
 Repeat evaluation is 95.1% and 83.1% lower. Other program evaluation changes range
 from -9.2% to +4.6%; parsing and initialization differ by +2.9% and -0.6%.
 These observations add no CI timing threshold or execution allowance.
+
+## BigInt bitwise temporary allocation
+
+Each two's-complement operand reserves its final width with try_reserve_exact,
+then copies and extends the magnitude. This avoids growing a freshly cloned
+vector, reports allocation refusal through the existing host-limit result and
+retains the same word accounting and sign conversion.
+
+The added bigint_bitwise workload performs 64 mixed-sign AND/XOR/OR and shift
+steps from a 2,048-bit input, checking its low-word checksum. Both compared
+binaries contain identical workloads. Baseline production is 6c03c45ad; the
+candidate changes bitwise temporary allocation and checks width addition.
+Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU and no active
+builds/tests. Two batches of twelve ABBA process runs provide twelve runs per
+revision, each with seven samples and ten iterations; the table pools both batches.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_bitwise | 348.7 | 298.7 | 168.4 | 161.4 |
+| radix_overflow | 980.0 | 1129.5 | 156.7 | 159.5 |
+| parse_all | 425.6 | 408.2 | 0 | 0 |
+| initialize_and_drop | 639.9 | 637.5 | 0 | 0 |
+
+Values are microseconds, using medians of per-process medians. Bitwise evaluation
+is 14.3% lower. The radix-overflow row is 15.3% higher in this executable, confirmed
+in both batches. Its Core parser instructions match apart from address relocations;
+the cause of the timing difference is not established. Other program evaluation
+changes range from -2.8% to +5.7%, and collection changes from -4.8% to +5.7%.
+Parsing and initialization differ by -4.1% and -0.4%. These observations add no
+CI timing threshold or execution allowance.
 
 ## Radix Number overflow
 

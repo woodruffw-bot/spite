@@ -1376,7 +1376,11 @@ language's separate equality algorithms.
 
 BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
 words. Zero has no words and no negative sign. Start with straightforward carry,
-borrow, multiplication, and division algorithms. Divisors whose magnitude fits
+borrow, multiplication, and division algorithms. Bitwise operands reserve their
+complete two's-complement width once, copy the retained words and extend with
+zeroes before sign conversion. Width overflow and reservation failure return a
+host limit; per-word work charging and infinite sign extension are unchanged.
+Divisors whose magnitude fits
 one u32 word use division from the highest word down, carrying a remainder in
 u64. Larger divisors use binary long division. Both paths truncate the quotient
 toward zero and give a nonzero remainder the dividend's sign (6.1.6.2.5–6).
