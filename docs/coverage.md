@@ -61,6 +61,33 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Unchanged ASCII URI encoding prefixes
+
+URI encoders copy the initial unchanged ASCII prefix in one checked append
+when work accounting and agent control are inactive. A shared byte predicate
+keeps URI/component escape sets identical in the prefix scan and remaining
+UTF-16 loop. Unicode validation, UTF-8 escaping and accounted per-point checks
+retain their existing behavior (19.2.6.3–5).
+
+A direct encoder unit regression verifies output-limit precedence over a later
+malformed surrogate, URIError after a prefix that fits, and scan/append work
+charging under an explicit allowance. Integration checks retain host-abort
+behavior for oversized inputs and prefixes. All 1,126 expanded audit batches
+match Node before and after the change, covering 427,068 calls: every UTF-16
+unit for all four URI functions, all two-octet escaped sequences for both
+decoders, selected supplementary pairs after four prefix lengths, malformed
+escapes and coercion effects.
+
+Twelve quiet single-CPU ABBA runs measure 86.9% and 87.0% lower evaluation time
+for unchanged and mixed encoding workloads. The unrelated radix-overflow row
+is 7.1% higher in these executables; full measurements are in
+[benchmarking](benchmarking.md#unchanged-ascii-uri-encoding-prefixes).
+
+Validation passes all 574 Runtime units, 2,430 non-RegExp integrations and the
+full quality gate. All 346 official modes from 173 unchanged URI originals
+pass with zero nonpassing outcomes. The added unit regression increases the
+runtime unit inventory by one; integration and fixture inventories are unchanged.
+
 ## ASCII String case conversion
 
 String casing uses standard ASCII upper/lower operations and fixed ASCII Cased

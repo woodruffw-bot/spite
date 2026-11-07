@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirty-one program workloads |
+| parse_all | Parse and drop the ASTs for all thirty-three program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -49,6 +49,8 @@ and collection medians are computed independently.
 | json_escaped | Repeat json_strings with a newline, quote and lone surrogate appended to each input |
 | uri_decode | Decode a long literal BMP prefix and trailing lone surrogate sixteen times, checking length and final unit |
 | uri_decode_mixed | Alternate URI/component decoding of the same prefix ending in reserved and UTF-8 escapes, checking length and final unit |
+| uri_encode | Encode a 12,309-unit unchanged URL/ASCII input sixteen times, checking length and final unit |
+| uri_encode_mixed | Alternate URI/component encoding of a 12,288-unit ASCII prefix and a reserved/Unicode suffix sixteen times |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
 | generator | Create, resume and consume a 128-value source generator |
 | async_jobs | Execute 64 awaits, drain Promise jobs and read the completed sum |
@@ -66,6 +68,35 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Unchanged ASCII URI encoding prefixes
+
+Without work accounting or agent control, URI encoding copies the initial
+unchanged ASCII span in one checked append. A shared predicate preserves both
+escape sets; remaining points retain Unicode validation and UTF-8 conversion.
+Accounted and controlled calls keep their per-point scan/append checks.
+
+The two added workloads encode unchanged and mixed inputs sixteen times.
+Both compared binaries contain identical workloads. Baseline production is
+4d03027de; the candidate adds prefix copying and a shared byte escape-set
+predicate. Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU,
+no active builds/tests, twelve ABBA process runs, seven samples and ten
+iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| uri_encode | 2967.9 | 390.2 | 163.7 | 159.0 |
+| uri_encode_mixed | 2926.0 | 380.3 | 163.7 | 161.8 |
+| radix_overflow | 707.8 | 758.3 | 155.7 | 151.5 |
+| parse_all | 801.5 | 798.4 | 0 | 0 |
+| initialize_and_drop | 628.2 | 601.5 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Encoding evaluation is 86.9% and 87.0% lower. The unrelated radix-overflow
+row is 7.1% higher in these executables; no cause is established. Remaining
+program evaluation changes range from -5.4% to +2.8%, and collection changes
+from -7.5% to +4.4%. Parsing and initialization differ by -0.4% and -4.2%.
+These observations add no CI timing threshold or execution allowance.
 
 ## ASCII String case conversion
 

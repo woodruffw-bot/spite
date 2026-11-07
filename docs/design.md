@@ -2779,6 +2779,13 @@ function roots independently of replaceable global bindings. Prepay output work
 and check optional string quotas/addressable capacity before fallible reservation;
 no default output, work, or heap quota is imposed. URIError materialization uses
 the retained native prototype.
+Without work accounting or agent control, copy the initial unchanged ASCII
+prefix in one checked append. The shared escape-set predicate accepts only
+ASCII, so decoding resumes at a complete UTF-16 code-point boundary. Other
+points retain Unicode validation and UTF-8 escaping; accounted and controlled
+calls keep their per-point scan/append checks. Output-limit failures still
+precede a later malformed surrogate when the valid prefix already exceeds
+the limit.
 
 URI decoding (19.2.6.1–2, 6) performs string-hint ToString once and preserves raw
 UTF-16 code units, including lone surrogates. Validate percent triplets with ASCII

@@ -603,6 +603,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Restore retained UTF-16 source by encoding scalar spans and walking recorded lone surrogates in order, preserving exact nested ranges and replacement characters.
 - [x] Parse larger unaccounted BigInt inputs in u32-sized digit groups with fallible carry capacity, retaining per-digit behavior for short inputs and explicit quotas.
 - [x] Use standard ASCII case mappings and fixed ASCII context properties before pinned Unicode lookups, preserving Final_Sigma, surrogates and per-point work/output checks.
+- [x] Copy unchanged ASCII URI-encoding prefixes in one checked append without work accounting or agent control, preserving escape sets, UTF-8 conversion and limit/error order.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

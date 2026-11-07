@@ -78,16 +78,26 @@ impl Realm {
     ) -> Result<Value, Error> {
         // ToString precedes Unicode validation and uses the string hint.
         let string = self.string(value, span)?;
+        let units = string.code_units();
         let mut result = Vec::new();
-        for point in char::decode_utf16(string.code_units().iter().copied()) {
+        let mut start = 0;
+        if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
+            // Every unchanged prefix unit is ASCII, so its end is also a
+            // code-point boundary for the remaining UTF-16 decoder.
+            start = units
+                .iter()
+                .position(|&unit| !uri_unescaped(u32::from(unit), component))
+                .unwrap_or(units.len());
+            if start != 0 {
+                self.append_uri_units(&mut result, &units[..start], span)?;
+            }
+        }
+        for point in char::decode_utf16(units[start..].iter().copied()) {
             self.tick(span)?;
             let point = point.map_err(|_| {
                 Self::exception(ExceptionKind::URIError, span, "unpaired URI surrogate")
             })?;
-            if point.is_ascii_alphanumeric()
-                || "_-.!~*'()".contains(point)
-                || (!component && RESERVED.contains(point))
-            {
+            if uri_unescaped(point as u32, component) {
                 self.append_uri_units(&mut result, &[point as u16], span)?;
             } else {
                 let mut utf8 = [0; 4];
@@ -130,6 +140,14 @@ impl Realm {
     }
 }
 
+fn uri_unescaped(point: u32, component: bool) -> bool {
+    u8::try_from(point).is_ok_and(|byte| {
+        byte.is_ascii_alphanumeric()
+            || b"_-.!~*'()".contains(&byte)
+            || (!component && RESERVED.as_bytes().contains(&byte))
+    })
+}
+
 fn parse_octet(escape: &[u16], span: Span) -> Result<u8, Error> {
     let [0x25, high, low, ..] = escape else {
         return Err(malformed_uri(span));
@@ -160,5 +178,39 @@ fn uri_limit(span: Span) -> Error {
     Error::Limit {
         span,
         message: "URI output exceeds host or platform capacity".into(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encoder_limits_preserve_prefix_error_order_and_accounted_scanning() {
+        for component in [false, true] {
+            let mut realm = Realm::default();
+            realm.eval("").unwrap();
+            realm.limits.max_string_units = Some(2);
+            let input = |units: &[u16]| Value::String(JsString::from_code_units(units.to_vec()));
+            let span = Span::default();
+            assert!(matches!(
+                realm.encode_uri(input(&[0x61, 0x62, 0x63, 0xd800]), component, span),
+                Err(Error::Limit { .. })
+            ));
+            assert!(matches!(
+                realm.encode_uri(input(&[0x61, 0x62, 0xd800]), component, span),
+                Err(Error::Exception {
+                    kind: ExceptionKind::URIError,
+                    ..
+                })
+            ));
+            // Three unchanged ASCII points consume both scan and append work.
+            realm.limits.max_string_units = None;
+            realm.remaining_steps = Some(5);
+            assert!(matches!(
+                realm.encode_uri(Value::String(JsString::from("abc")), component, span),
+                Err(Error::Limit { .. })
+            ));
+        }
     }
 }

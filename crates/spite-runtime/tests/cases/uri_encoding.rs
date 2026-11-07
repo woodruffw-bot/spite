@@ -184,11 +184,21 @@ fn large_default_outputs_are_allowed_and_opted_in_host_failures_abort_handlers()
     });
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
-    assert!(matches!(
-        realm.eval("try{encodeURI(' ');}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    for expression in [
+        "encodeURI(' ')",
+        "encodeURI('abc')",
+        "encodeURIComponent('abc')",
+        "encodeURI('abc\\uD800')",
+        "encodeURIComponent('abc\\uD800')",
+    ] {
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
