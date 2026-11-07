@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all twenty-five program workloads |
+| parse_all | Parse and drop the ASTs for all twenty-eight program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -39,6 +39,9 @@ and collection medians are computed independently.
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_decimal | Format changing 2,048-bit integers in decimal across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
+| bigint_parse_decimal | Parse a 2,048-digit decimal String sixteen times, checking low-word checksums |
+| bigint_parse_hex | Parse a 2,048-digit hexadecimal String sixteen times, checking low-word checksums |
+| bigint_parse_small | Convert the decimal Strings for integers 0–1,023 to BigInt, checking their numeric sum |
 | json_strings | Stringify a pair of 3,584-unit ordinary BMP strings sixteen times, checking lengths and closing quotes |
 | json_escaped | Repeat json_strings with a newline, quote and lone surrogate appended to each input |
 | uri_decode | Decode a long literal BMP prefix and trailing lone surrogate sixteen times, checking length and final unit |
@@ -60,6 +63,37 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Grouped BigInt input parsing
+
+Unsigned parsing groups inputs longer than 32 bytes into u32-sized values when
+both work and magnitude quotas are disabled. Each group multiplies the current
+magnitude by its radix power and adds the group's value, reserving possible
+carry capacity fallibly. Short and explicitly limited inputs retain per-digit
+validation and accounting.
+
+The three added workloads parse decimal/hexadecimal inputs or small decimal
+controls. Both compared binaries contain identical workloads. Baseline
+production is 2b860ee04; the candidate changes only digit parsing. Rust
+1.99/conformance-profile Linux x86_64 measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_parse_decimal | 2568.2 | 448.3 | 162.0 | 158.4 |
+| bigint_parse_hex | 3129.7 | 609.0 | 164.8 | 154.9 |
+| bigint_parse_small | 3208.6 | 3203.4 | 299.3 | 294.4 |
+| radix_overflow | 707.9 | 761.7 | 156.3 | 157.2 |
+| parse_all | 685.4 | 690.5 | 0 | 0 |
+| initialize_and_drop | 629.1 | 619.8 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Large-input evaluation is 82.5% and 80.5% lower, and the small-input control
+differs by -0.2%. The unrelated radix-overflow row is 7.6% higher in these
+executables; no cause is established. Remaining program evaluation changes
+range from -4.4% to +4.1%, and collection changes from -6.0% to +3.9%.
+Parsing and initialization differ by +0.7% and -1.5%. These observations add
+no CI timing threshold or execution allowance.
 
 ## Sequential lossless source conversion
 

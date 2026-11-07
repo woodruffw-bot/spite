@@ -21,6 +21,14 @@ fn radix_round_trips_and_sign_normalization() {
             assert_eq!(parse(&digits, radix), integer);
             assert_eq!(parse(&digits.to_uppercase(), radix), integer);
             assert_eq!(parse(&format!("000{digits}"), radix), integer);
+            assert_eq!(
+                BigInt::parse_digits(
+                    &format!("{}{digits}", "0".repeat(37)),
+                    radix,
+                    &mut Budget::with_limits(None, None),
+                ),
+                Ok(integer)
+            );
         }
     }
     for value in [i64::MIN, -1, 0, 1, i64::MAX] {
@@ -140,6 +148,17 @@ fn large_radix_constants_cross_many_words() {
         "340282366920938463463374607431768211456"
     );
     assert_eq!(max.bit_length(), 128);
+    for (digits, radix) in [
+        ("340282366920938463463374607431768211455".to_owned(), 10),
+        ("f".repeat(32), 16),
+        ("1".repeat(128), 2),
+        (format!("3{}", "7".repeat(42)), 8),
+    ] {
+        assert_eq!(
+            BigInt::parse_digits(&digits, radix, &mut Budget::with_limits(None, None)),
+            Ok(max.clone())
+        );
+    }
 }
 
 #[test]
@@ -267,6 +286,15 @@ fn unlimited_work_preserves_the_integer_size_limit() {
         Err(Error::Limit)
     );
     assert_eq!(budget.remaining_work(), None);
+    let invalid_tail = format!("{}!", "1".repeat(40));
+    assert_eq!(
+        BigInt::parse_digits(&invalid_tail, 10, &mut budget),
+        Err(Error::Limit)
+    );
+    assert_eq!(
+        BigInt::parse_digits(&invalid_tail, 10, &mut Budget::with_limits(None, None)),
+        Err(Error::InvalidDigit)
+    );
 }
 
 #[test]

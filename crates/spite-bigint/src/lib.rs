@@ -155,6 +155,26 @@ impl BigInt {
         }
         budget.charge(1)?;
         let mut value = Self::default();
+        // Leave short inputs and explicit quotas on the per-digit path. Large
+        // unaccounted inputs can multiply by an entire u32-sized digit group.
+        if digits.len() > u32::BITS as usize
+            && budget.max_bits.is_none()
+            && budget.remaining_work.is_none()
+        {
+            let width = u32::MAX.ilog(radix) as usize;
+            for group in digits.as_bytes().chunks(width) {
+                let mut addend = 0;
+                for &byte in group {
+                    let digit = char::from(byte)
+                        .to_digit(radix)
+                        .ok_or(Error::InvalidDigit)?;
+                    addend = addend * radix + digit;
+                }
+                value.words.try_reserve(1).map_err(|_| Error::Limit)?;
+                value.multiply_add_small(radix.pow(group.len() as u32), addend);
+            }
+            return Ok(value);
+        }
         for byte in digits.bytes() {
             let digit = char::from(byte)
                 .to_digit(radix)

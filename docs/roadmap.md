@@ -601,6 +601,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share growing-prefix copying between String repetition and padding, repeating only filler units after existing receiver text and preserving truncated UTF-16 boundaries.
 - [x] Return valid toWellFormed input directly and copy its valid prefix before repairing unpaired units, preserving output limits and decoder lookahead with fallible reservation.
 - [x] Restore retained UTF-16 source by encoding scalar spans and walking recorded lone surrogates in order, preserving exact nested ranges and replacement characters.
+- [x] Parse larger unaccounted BigInt inputs in u32-sized digit groups with fallible carry capacity, retaining per-digit behavior for short inputs and explicit quotas.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Grouped BigInt input parsing
+
+Unsigned BigInt digit parsing uses u32-sized groups for inputs longer than 32
+bytes when neither work nor magnitude quotas are active. Every group uses the
+same ASCII digit validation and reserves capacity for a carry word fallibly.
+Short inputs and explicit quotas keep their existing per-digit path, preserving
+work charging and size-limit precedence over a later invalid digit.
+
+Strengthened native regressions cover leading zeroes in every radix, exact
+128-bit values and the quota/invalid-tail boundary. All 10,399 audit cases match
+Python exact integers before and after the change, including radices 2–36,
+group and word boundaries, partial groups, uppercase digits, long zero inputs,
+invalid positions and Unicode lookalikes. Twelve quiet single-CPU ABBA process
+runs measure 82.5% and 80.5% lower evaluation time for large decimal and
+hexadecimal inputs; the small-input control differs by -0.2%. The unrelated
+radix-overflow row is 7.6% higher; full scope and remaining measurements are in
+[benchmarking](benchmarking.md#grouped-bigint-input-parsing).
+
+Validation passes all 36 BigInt tests, 112 Core tests, 18 Parser units, 443
+Parser integrations, 573 Runtime units, 2,430 non-RegExp integrations and the
+full quality gate. All 5,454 official modes from 2,746 unchanged numeric,
+BigInt, Date and numeric-literal originals pass with zero nonpassing outcomes.
+Test and fixture inventories are unchanged.
+
 ## Sequential lossless source conversion
 
 Retained source conversion encodes scalar spans and restores recorded lone

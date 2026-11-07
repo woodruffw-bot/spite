@@ -128,6 +128,24 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "bigint_parse_decimal",
+        source: "(()=>{const text='9'.repeat(2048);let sum=0;for(let i=0;i<16;i++)sum+=Number(BigInt.asUintN(32,BigInt(text)));return sum})()",
+        expected: 68_719_476_720.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_parse_hex",
+        source: "(()=>{const text='0x'+'abcdef0123456789'.repeat(128);let sum=0;for(let i=0;i<16;i++)sum+=Number(BigInt.asUintN(32,BigInt(text)));return sum})()",
+        expected: 9_468_016_784.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_parse_small",
+        source: "(()=>{let sum=0;for(let i=0;i<1024;i++)sum+=Number(BigInt(String(i)));return sum})()",
+        expected: 523_776.0,
+        jobs: false,
+    },
+    Case {
         name: "json_strings",
         source: "(()=>{const text='plain café 漢字 '.repeat(256);let sum=0;for(let i=0;i<16;i++){const output=JSON.stringify([text,text]);sum+=output.length+output.charCodeAt(output.length-2)}return sum})()",
         expected: 115344.0,
