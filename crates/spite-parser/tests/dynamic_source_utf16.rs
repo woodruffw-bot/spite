@@ -126,7 +126,7 @@ fn invalid_code_points_and_separate_goals_report_exact_syntax_ranges() {
 }
 
 #[test]
-fn valid_pairs_and_nested_scalar_sources_remain_exact_utf8() {
+fn valid_pairs_and_nested_source_ranges_restore_exact_units() {
     let body = JsString::from("return '😀�';");
     let utf16 = parse_dynamic_function_utf16(&JsString::default(), &body).unwrap();
     assert_eq!(utf16, parse_dynamic_function("", "return '😀�';").unwrap());
@@ -142,4 +142,28 @@ fn valid_pairs_and_nested_scalar_sources_remain_exact_utf8() {
         function.body.function_declarations()[0].source.as_str(),
         Some("function inner(){return 7;}")
     );
+    assert_eq!(
+        function.body.function_declarations()[0]
+            .source
+            .to_js_string(),
+        JsString::from("function inner(){return 7;}")
+    );
+    let inner = string(&[
+        JsString::from("function inner(){/*�😀").code_units(),
+        &[0xd800, 0xd800, 0xdc00, 0xdfff],
+        JsString::from("�*/return '😀';}").code_units(),
+    ]);
+    let body = string(&[
+        JsString::from("/*").code_units(),
+        &[0xdfff],
+        JsString::from("😀*/").code_units(),
+        inner.code_units(),
+        JsString::from("/*").code_units(),
+        &[0xd800],
+        JsString::from("*/return inner;").code_units(),
+    ]);
+    let function = parse_dynamic_function_utf16(&JsString::default(), &body).unwrap();
+    let source = &function.body.function_declarations()[0].source;
+    assert_eq!(source.to_js_string(), inner);
+    assert!(source.as_str().is_none());
 }

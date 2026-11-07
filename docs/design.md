@@ -2464,6 +2464,10 @@ the original line endings. Functions share the source allocation; slicing a
 scalar-only nested function still permits borrowed UTF-8 even if surrounding
 source contains surrogates. `FunctionSource::as_str` returns `None` for a range
 with lone surrogates; `to_js_string` returns exact source code units (20.2.3.5).
+Source conversion locates the first recorded surrogate in the selected range,
+encodes the intervening scalar spans with the standard UTF-16 iterator and
+restores each recorded unit in source order. It skips metadata outside the
+range and preserves actual U+FFFD characters without a lookup per scalar.
 
 CreateDynamicFunction converts parameter arguments in order, then the body, before
 parsing or reading newTarget.prototype. Calling uses the retained intrinsic Function

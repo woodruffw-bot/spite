@@ -61,6 +61,33 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Sequential lossless source conversion
+
+Retained source conversion encodes scalar spans and restores recorded lone
+surrogates in order, replacing a binary search for every character. Nested
+ranges exclude surrounding surrogate metadata and preserve actual U+FFFD,
+supplementary pairs and original line endings (11.1, 20.2.3.5).
+
+The strengthened Parser regression checks scalar and mixed nested ranges.
+All 1,096 differential audit batches match Node before and after the change,
+including every UTF-16 unit across functions sharing a source allocation,
+ordinary/async/generator functions, arrows, methods/accessors, classes, private
+methods and dynamic constructors. The host collects after retaining the
+functions and before reading their source; public name getters cannot affect
+the result.
+
+Twelve quiet single-CPU ABBA runs measure 22.2% and 81.6% lower evaluation time
+for scalar and surrogate-heavy source workloads. The unrelated radix-overflow
+row is 15.2% higher in these executables; remaining program changes range from
+-2.8% to +3.8%. Full measurements are in
+[benchmarking](benchmarking.md#sequential-lossless-source-conversion).
+
+Validation passes all 18 Parser units, 443 Parser integrations, 573 Runtime
+units, 2,430 non-RegExp integrations and the full quality gate. All 3,751
+official modes from 1,941 unchanged Function-family, eval, String and
+String/template-literal originals pass with zero nonpassing outcomes.
+Test and fixture inventories are unchanged.
+
 ## String well-formedness prefix handling
 
 toWellFormed scans to the first unpaired unit, returns valid input directly and

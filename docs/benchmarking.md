@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all twenty-three program workloads |
+| parse_all | Parse and drop the ASTs for all twenty-five program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -32,6 +32,8 @@ and collection medians are computed independently.
 | string_wellformed | Run toWellFormed sixteen times over a valid 10,240-unit BMP/supplementary input, checking length and final unit |
 | string_wellformed_mixed | Alternate an unpaired leading/trailing surrogate around that input, checking length and repaired unit |
 | map_iteration | Populate and iterate a 256-entry Map |
+| function_source | Compile a function with a 10,240-unit BMP/supplementary comment, then stringify it sixteen times, checking lengths and final units |
+| function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
@@ -58,6 +60,34 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Sequential lossless source conversion
+
+Retained source conversion encodes scalar spans with the standard UTF-16
+iterator and restores recorded lone surrogates in order. It performs one
+metadata search for the selected range rather than one search per character.
+Actual U+FFFD characters and supplementary pairs remain ordinary scalar text.
+
+The two added workloads compile one function and read its exact source sixteen
+times. Both compared binaries contain identical workloads. Baseline production
+is 57f59da12; the candidate changes only source conversion. Rust 1.99/conformance
+profile Linux x86_64 measurements use one CPU, no active builds/tests, twelve
+ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| function_source | 797.7 | 620.8 | 164.3 | 159.3 |
+| function_source_surrogates | 4793.1 | 879.8 | 174.2 | 161.4 |
+| radix_overflow | 688.6 | 793.0 | 153.9 | 154.4 |
+| parse_all | 639.1 | 623.1 | 0 | 0 |
+| initialize_and_drop | 639.4 | 639.7 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Source-workload evaluation is 22.2% and 81.6% lower. The unrelated radix-overflow
+row is 15.2% higher in these executables; no cause is established. Remaining
+program evaluation changes range from -2.8% to +3.8%, and collection changes
+from -2.7% to +3.3%. Parsing and initialization differ by -2.5% and +0.04%.
+These observations add no CI timing threshold or execution allowance.
 
 ## Trace constructor inlining
 

@@ -86,6 +86,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "function_source",
+        source: "(()=>{const f=Function('/*'+'ab漢💩'.repeat(2048)+'*/return 1');let sum=0;for(let i=0;i<16;i++){const text=f.toString();sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
+        expected: 166_448.0,
+        jobs: false,
+    },
+    Case {
+        name: "function_source_surrogates",
+        source: "(()=>{const f=Function('/*'+'ab漢\\ud800x\\udc00'.repeat(2048)+'*/return 1');let sum=0;for(let i=0;i<16;i++){const text=f.toString();sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
+        expected: 199_216.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint",
         source: "(()=>{let x=1n<<256n;for(let i=0;i<64;i++)x=(x*3n+BigInt(i))/2n;return Number(x&65535n)})()",
         expected: 5661.0,

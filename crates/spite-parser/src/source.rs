@@ -119,14 +119,21 @@ impl SourceText {
 
     pub(crate) fn to_js_string(&self, range: Range<usize>) -> JsString {
         let mut units = Vec::new();
-        for (offset, scalar) in self.text[range.clone()].char_indices() {
-            let point = self.original_code_point(range.start + offset, scalar);
-            if point <= 0xffff {
-                units.push(point as u16);
-            } else {
-                units.extend_from_slice(scalar.encode_utf16(&mut [0; 2]));
-            }
+        let index = self
+            .surrogates
+            .partition_point(|&(pos, _)| pos < range.start);
+        let mut start = range.start;
+        // Restore only recorded lone surrogates. Scalar spans, including actual
+        // U+FFFD characters, can use the standard UTF-16 encoder unchanged.
+        for &(pos, unit) in self.surrogates[index..]
+            .iter()
+            .take_while(|&&(pos, _)| pos < range.end)
+        {
+            units.extend(self.text[start..pos].encode_utf16());
+            units.push(unit);
+            start = pos + char::REPLACEMENT_CHARACTER.len_utf8();
         }
+        units.extend(self.text[start..range.end].encode_utf16());
         JsString::from_code_units(units)
     }
 }
