@@ -82,6 +82,35 @@ Validation: 21 async-class and thirteen derived-class Runtime integration groups
 and the full quality gate pass. No production algorithm, fixture, helper, flag,
 review or test inventory changes.
 
+## Grouped BigInt formatting
+
+For non-power-of-two radices, magnitudes larger than one word now divide by
+the largest radix power that fits u32. Each division emits a digit group;
+lower groups keep their zero padding and the highest group stays minimal.
+One-word inputs retain single-digit division. Capacity checks cover both the
+temporary magnitude and output; work accounting covers processed words and
+emitted digits. Sign, lowercase spelling and existing-value magnitude behavior
+are unchanged.
+
+Independent constant vectors cover decimal, base-36 and ternary group boundaries,
+zero padding, both signs and work refusal followed by retry. The seeded
+3,000-case Python-integer radix audit has zero mismatches. Twelve quiet
+single-CPU ABBA process runs show 82.0% lower large-decimal evaluation time;
+small-decimal evaluation differs by +0.3%. Full measurement scope is in
+[benchmarking](benchmarking.md#grouped-bigint-formatting-in-other-radices).
+
+The opt-in work regression retains its 2^8192 input and exact decimal-length
+assertion. Its selected quota is lower because grouped formatting completes
+within the former 100,000-step allowance; the test still verifies a host refusal
+and unlimited-default success. It does not assert a fixed algorithmic cost.
+
+Validation: all 36 BigInt tests, 111 Core tests, 18 Parser units, 443 Parser
+integrations, 573 Runtime units and 2,429 non-RegExp Runtime integrations pass.
+All 5,153 official modes from 2,589 unchanged numeric/Date originals pass with
+zero nonpassing outcomes. Formatting, strict Clippy, Rust 1.99 all-target checks,
+repository policies, metadata, facade and documentation checks pass. The BigInt
+test inventory grows from 35 to 36; Runtime and Test262 inventories are unchanged.
+
 ## Linear BigInt formatting for binary radices
 
 BigInt formatting in radices 2, 4, 8, 16 and 32 extracts each digit from a u64

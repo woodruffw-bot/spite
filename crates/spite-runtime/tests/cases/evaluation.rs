@@ -299,11 +299,22 @@ fn bitwise_operations_use_modulo_conversion() {
 
 #[test]
 fn execution_work_limits_are_opt_in() {
-    for source in [
-        "function f(){var n=0;while(n<20000)n++;return n;}f()===20000",
-        "'a'.repeat(2000).indexOf('a'.repeat(999)+'b')===-1",
-        "`${2n**8192n}`.length===2467",
-        "let o={length:4000};o[Symbol.isConcatSpreadable]=true;[].concat(o).length===4000",
+    for (source, max_steps) in [
+        (
+            "function f(){var n=0;while(n<20000)n++;return n;}f()===20000",
+            100_000,
+        ),
+        (
+            "'a'.repeat(2000).indexOf('a'.repeat(999)+'b')===-1",
+            100_000,
+        ),
+        // Grouped decimal formatting does less work than digit-at-a-time
+        // division; keep its selected quota below the optimized workload.
+        ("`${2n**8192n}`.length===2467", 10_000),
+        (
+            "let o={length:4000};o[Symbol.isConcatSpreadable]=true;[].concat(o).length===4000",
+            100_000,
+        ),
     ] {
         assert_eq!(
             Realm::default().eval(source),
@@ -313,7 +324,7 @@ fn execution_work_limits_are_opt_in() {
         assert!(
             matches!(
                 Realm::new(Limits {
-                    max_steps: Some(100_000),
+                    max_steps: Some(max_steps),
                     ..Limits::default()
                 })
                 .eval(source),

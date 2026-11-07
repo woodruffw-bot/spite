@@ -206,23 +206,57 @@ impl BigInt {
             }
             return Ok(String::from_utf8(digits).expect("radix digits are ASCII"));
         }
-        let mut magnitude = self.words.clone();
+        // Extract the largest digit group that fits a magnitude word. Keep
+        // one-word inputs on the existing single-digit path.
+        let group_width = if self.words.len() == 1 {
+            1
+        } else {
+            u32::MAX.ilog(radix)
+        };
+        let group_radix = radix.pow(group_width);
+        let mut magnitude = Vec::new();
+        magnitude
+            .try_reserve_exact(self.words.len())
+            .map_err(|_| Error::Limit)?;
+        magnitude.extend_from_slice(&self.words);
         let mut digits = Vec::new();
         while !magnitude.is_empty() {
             budget.charge(magnitude.len())?;
             let mut remainder = 0u64;
             for word in magnitude.iter_mut().rev() {
                 let n = (remainder << 32) | u64::from(*word);
-                *word = (n / u64::from(radix)) as u32;
-                remainder = n % u64::from(radix);
+                *word = (n / u64::from(group_radix)) as u32;
+                remainder = n % u64::from(group_radix);
             }
             while magnitude.last() == Some(&0) {
                 magnitude.pop();
             }
             digits
-                .push(char::from_digit(remainder as u32, radix).expect("valid radix digit") as u8);
+                .try_reserve(group_width as usize)
+                .map_err(|_| Error::Limit)?;
+            if group_width == 1 {
+                digits.push(
+                    char::from_digit(remainder as u32, radix).expect("valid radix digit") as u8,
+                );
+                continue;
+            }
+            let pad = !magnitude.is_empty();
+            let mut chunk = remainder as u32;
+            for index in 0..group_width {
+                if index != 0 {
+                    budget.charge(1)?;
+                }
+                digits
+                    .push(char::from_digit(chunk % radix, radix).expect("valid radix digit") as u8);
+                chunk /= radix;
+                // Lower groups retain zeroes; the highest group is minimal.
+                if chunk == 0 && !pad {
+                    break;
+                }
+            }
         }
         if self.negative {
+            digits.try_reserve(1).map_err(|_| Error::Limit)?;
             digits.push(b'-');
         }
         digits.reverse();

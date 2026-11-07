@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all nine program workloads |
+| parse_all | Parse and drop the ASTs for all eleven program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | properties | Create, populate and read 128 computed object properties |
@@ -27,6 +27,8 @@ and collection medians are computed independently.
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
+| bigint_decimal | Format changing 2,048-bit integers in decimal across 32 steps, checking lengths and trailing-digit checksums |
+| bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
 | generator | Create, resume and consume a 128-value source generator |
 | async_jobs | Execute 64 awaits, drain Promise jobs and read the completed sum |
@@ -146,3 +148,30 @@ Values are microseconds, using medians of six per-process medians per revision.
 The radix workload's evaluation is about 91% lower. Other program evaluation
 changes range from -3.0% to +4.9%; parsing and initialization differ by -2.8% and
 -1.1%. These observations add no CI timing threshold or execution allowance.
+
+## Grouped BigInt formatting in other radices
+
+Non-power-of-two radices divide larger magnitudes by the largest radix power
+that fits u32, emitting one group per division. Lower groups retain leading
+zeroes; the highest group has minimal spelling. One-word inputs retain their
+single-digit path. Capacity and work checks remain active.
+
+The added bigint_decimal workload formats a changing integer starting at
+2^2048 - 1 across 32 steps; bigint_small_decimal checks 0–1,023. Both compared
+binaries contain identical workloads. Baseline production is 455e965bf; the
+candidate changes only non-power-of-two formatting. Rust 1.99/conformance-profile
+Linux x86_64 measurements use one CPU, no active builds/tests, twelve ABBA
+process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_decimal | 4849.5 | 871.9 | 178.5 | 161.7 |
+| bigint_small_decimal | 3842.5 | 3855.8 | 512.9 | 510.6 |
+| parse_all | 260.9 | 246.4 | 0 | 0 |
+| initialize_and_drop | 680.7 | 649.9 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Large-decimal evaluation is 82.0% lower; small-decimal evaluation differs by
++0.3%. Other program evaluation changes range from -7.6% to +1.9%; parsing and
+initialization differ by -5.6% and -4.5%. These observations add no CI timing
+threshold or execution allowance.

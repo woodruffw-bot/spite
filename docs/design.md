@@ -1382,6 +1382,11 @@ u64. Larger divisors use binary long division. Both paths truncate the quotient
 toward zero and give a nonzero remainder the dividend's sign (6.1.6.2.5–6).
 Quotient storage uses checked capacity; each processed word charges work before
 division, and result-magnitude checks still apply to both outputs.
+Formatting extracts bits directly for radices 2/4/8/16/32. Other radices divide
+by the largest radix power that fits u32 and emit padded lower digit groups;
+one-word inputs retain single-digit division. Formatting checks allocation
+capacity and charges processed words and emitted digits without imposing a
+result-magnitude quota on an existing integer.
 Each arithmetic operation takes
 a budget that bounds result bits and optionally charges word operations before
 doing the work. The runtime translates budget exhaustion into a host limit, while division

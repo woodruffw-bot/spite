@@ -56,6 +56,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "bigint_decimal",
+        source: "(()=>{let x=(1n<<2048n)-1n,sum=0;for(let i=0;i<32;i++){const digits=x.toString();sum+=digits.length+parseInt(digits.slice(-8),10);x=x*3n+BigInt(i)}return sum})()",
+        expected: 1_654_203_804.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_small_decimal",
+        source: "(()=>{let x=0n,sum=0;for(let i=0;i<1024;i++){const digits=x.toString();sum+=digits.length+parseInt(digits,10);x++}return sum})()",
+        expected: 526_762.0,
+        jobs: false,
+    },
+    Case {
         name: "regexp",
         source: "(()=>{const text='aaaab'.repeat(128),re=/(?<prefix>a+)(?<suffix>b)/gu;let sum=0,match;while((match=re.exec(text))!==null)sum+=match[0].length;return sum})()",
         expected: 640.0,

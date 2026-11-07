@@ -90,6 +90,47 @@ fn power_of_two_radices_extract_cross_word_digits_without_leading_zeroes() {
 }
 
 #[test]
+fn grouped_radix_output_pads_lower_groups_and_keeps_the_high_group_minimal() {
+    for (radix, input, expected) in [
+        (10, "12a05f200", "5000000000"),
+        (10, "12a05f201", "5000000001"),
+        (10, "de0b6b3a7640000", "1000000000000000000"),
+        (10, "de0b6b3a7640001", "1000000000000000001"),
+        (10, "de0b6b3a763ffff", "999999999999999999"),
+        (36, "1037e2001", "2000001"),
+        (36, "41c21cb8e1000000", "1000000000000"),
+        (36, "41c21cb8e1000001", "1000000000001"),
+        (36, "41c21cb8e0ffffff", "zzzzzzzzzzzz"),
+        (
+            3,
+            "a8b8b452291fe822",
+            "10000000000000000000000000000000000000001",
+        ),
+        (
+            3,
+            "a8b8b452291fe820",
+            "2222222222222222222222222222222222222222",
+        ),
+    ] {
+        let value = parse(input, 16);
+        assert_eq!(value.to_radix(radix, &mut budget()).unwrap(), expected);
+        assert_eq!(
+            value
+                .neg(&mut budget())
+                .unwrap()
+                .to_radix(radix, &mut budget())
+                .unwrap(),
+            format!("-{expected}")
+        );
+        assert_eq!(
+            value.to_radix(radix, &mut Budget::new(4096, 1)),
+            Err(Error::Limit)
+        );
+        assert_eq!(value.to_radix(radix, &mut budget()).unwrap(), expected);
+    }
+}
+
+#[test]
 fn large_radix_constants_cross_many_words() {
     let max = parse("340282366920938463463374607431768211455", 10);
     assert_eq!(max, parse("ffffffffffffffffffffffffffffffff", 16));
