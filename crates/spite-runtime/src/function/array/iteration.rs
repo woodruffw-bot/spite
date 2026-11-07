@@ -88,8 +88,7 @@ impl Realm {
         let result = if state.kind == ArrayIterationKind::Key {
             Value::Number(index as f64)
         } else {
-            let value =
-                self.get_property(&array, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(&array, &JsString::from_index(index), span)?;
             if state.kind == ArrayIterationKind::Value {
                 value
             } else {

@@ -618,6 +618,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect fresh private-name identities stamped onto shared Proxy receivers through revocation and collection, retaining lexical class/eval scope boundaries.
 - [x] Execute raw asynchronous Test262 Script and Module modes through the existing private print protocol without harness injection, preserving completion and negative/host-failure accounting.
 - [x] Materialize unaccounted Object.groupBy results from already distinct keys without repeated property scans, retaining capacity checks, tracing, index metadata and the quota/agent dispatch path.
+- [x] Reuse direct unsigned UTF-16 index formatting in Array element creation, movement, iteration, search, find, reduction and slicing, retaining Number rounding for spread indices above the safe-integer bound.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

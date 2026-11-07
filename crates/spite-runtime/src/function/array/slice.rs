@@ -27,7 +27,7 @@ impl Realm {
         let result = self.array_species_create(&source, count, span)?;
         for index in start..end {
             self.tick(span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             if self.has_property(&source, &key, span)? {
                 let value = self.get_property(&source, &key, span)?;
                 self.create_array_element(&result, index - start, value, span)?;

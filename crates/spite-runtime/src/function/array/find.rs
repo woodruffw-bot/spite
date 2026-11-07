@@ -44,8 +44,7 @@ impl Realm {
             };
             // Get every index, without HasProperty: holes and deleted elements
             // are visited as undefined unless the prototype supplies a value.
-            let value =
-                self.get_property(&object, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(&object, &JsString::from_index(index), span)?;
             self.object_work(span, |_, budget| {
                 budget.value(&this_arg)?;
                 budget.value(&value)

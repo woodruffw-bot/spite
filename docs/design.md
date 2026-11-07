@@ -1926,6 +1926,11 @@ cyclic arrays, is bounded by the existing host call limit. LengthOfArrayLike is
 shared with String.raw and Function.prototype.apply. Generic Array at snapshots
 length before converting its index, applies ToIntegerOrInfinity, and performs Get
 only for an in-range index. It uses u64 indices through the full ToLength range.
+Element creation, movement, iteration, search, find, reduction and slicing build
+unsigned decimal keys directly in UTF-16 through the shared index formatter.
+ArrayAccumulation still converts spread indices above MAX_SAFE_INTEGER through
+Number before stringification; the exact unsigned formatter cannot replace that
+rounding step.
 Push and pop also use generic LengthOfArrayLike. Each performs observable indexed
 Set/Get/Delete operations before the final length Set, preserving partial effects
 on failure. Push rejects lengths above 2^53 - 1 before writing elements, while

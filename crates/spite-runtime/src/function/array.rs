@@ -119,8 +119,8 @@ impl Realm {
         to: u64,
         span: Span,
     ) -> Result<(), Error> {
-        let from_key = JsString::from(from.to_string().as_str());
-        let to_key = JsString::from(to.to_string().as_str());
+        let from_key = JsString::from_index(from);
+        let to_key = JsString::from_index(to);
         if self.has_property(object, &from_key, span)? {
             let value = self.get_property(object, &from_key, span)?;
             self.set_property_or_throw(object, to_key, value, span)
@@ -349,7 +349,7 @@ impl Realm {
         // indices within the safe-integer range; very large spread indices
         // still require Number rounding before converting the property name.
         let key = if index <= 9_007_199_254_740_991 {
-            JsString::from(index.to_string().as_str())
+            JsString::from_index(index)
         } else {
             self.string(Value::Number(index as f64), span)?
         };

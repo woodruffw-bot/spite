@@ -58,7 +58,7 @@ impl Realm {
             } else {
                 start + offset
             };
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             // includes uses Get even for holes. The index searches skip absent
             // properties and compare only present own or inherited elements.
             if !includes && !self.has_property(&object, &key, span)? {

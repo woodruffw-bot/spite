@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Shared Array index formatting
+
+Eight Array index conversions reuse the shared exact unsigned UTF-16 formatter
+instead of constructing temporary UTF-8 Strings. Element creation and movement,
+iterator values/entries, search, find, reduction and slicing keep their existing
+property operations and work charges. Spread indices above MAX_SAFE_INTEGER
+still require Number rounding before stringification.
+
+All 113 Core tests and 574 Runtime units pass, including the existing above-bound
+spread regression. All 7,884 official Object/Array modes from 3,991 unchanged
+originals pass, as do 1,734 indexed-collection protocol comparisons and 5,164
+unchanged work-budget outcomes/traces. All 2,431 non-RegExp integrations and the
+full quality gate pass. Existing large-key tests protect generic
+receivers through the full safe-integer range. No new tests, dependencies,
+inventories or runtime defaults are introduced; no timing improvement is claimed.
+
 ## Object.groupBy result construction
 
 After grouping has established distinct converted keys, unaccounted execution
