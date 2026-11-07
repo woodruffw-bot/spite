@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Combined arithmetic and Arc String gate
+
+A fresh full Test262 package run passes on clean f51c25bd9 after the combined
+ASCII casing, URI encoding, direct BigInt parsing/division and Arc String
+construction changes. All 85 package tests pass, including all 80,028 official
+modes from 41,531 reviewed originals with zero nonpassing outcomes. The corpus
+binary completes in 1,330.90 seconds. Production stays unchanged throughout.
+
+Supplemental audits on that same production tree preserve exact results:
+
+- All 69,973 iterator strings match Python UTF-16 decoding, including every
+  code unit, 4,096 supplementary pairs, surrogate combinations and empty input.
+- All 3,950 String boundary/coercion cases match Node.
+- All 23,716 addition cases match Node on operand evaluation, ToPrimitive/
+  ToString order, result types and failures. Inputs include empty Strings,
+  Symbols, BigInts, wrappers, Date coercion, getters and Proxies.
+- All 267,264 raw UTF-16 joins match exact code-unit concatenation, including
+  every unit with empty/nonempty operands and 4,096 pairs formed across joins.
+
+These local matrices add no Test262 passing credit. Fixture/helper/flag/review
+inventories and all default quotas remain unchanged.
+
 ## Direct borrowed-slice UTF-16 String construction
 
 JsString copies borrowed UTF-16 slices directly into owned Arc storage.
