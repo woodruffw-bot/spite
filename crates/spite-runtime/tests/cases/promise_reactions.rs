@@ -104,6 +104,44 @@ fn pending_and_queued_reaction_captures_survive_collection_and_release_after_exe
 }
 
 #[test]
+fn queued_reaction_arguments_keep_weak_map_keys_and_values_alive_until_execution() {
+    for key in ["{}", "Symbol()"] {
+        for settle in ["resolve", "reject"] {
+            let mut realm = Realm::default();
+            // Define the handler outside the setup scope so its environment
+            // cannot retain the key/value independently of the queued argument.
+            realm
+                .eval(&format!(
+                    "let observed=false,state={{map:new WeakMap()}};\
+                     function observe(argument){{observed=argument===state.key.deref()&&\
+                     state.map.get(argument)===state.value.deref()}}\
+                     (()=>{{const key={key},value={{}};state.key=new WeakRef(key);\
+                     state.value=new WeakRef(value);state.map.set(key,value);\
+                     Promise.{settle}(key).then(observe,observe)}})()"
+                ))
+                .unwrap();
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            assert_eq!(
+                realm.eval("state.key.deref()!==undefined&&state.value.deref()!==undefined"),
+                Ok(Value::Boolean(true)),
+                "{settle} {key}"
+            );
+            realm.clear_kept_objects().unwrap();
+            drain(&mut realm);
+            assert_eq!(realm.eval("observed"), Ok(Value::Boolean(true)));
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            assert_eq!(
+                realm.eval("state.key.deref()===undefined&&state.value.deref()===undefined"),
+                Ok(Value::Boolean(true)),
+                "{settle} {key}"
+            );
+        }
+    }
+}
+
+#[test]
 fn default_realms_accept_large_reaction_lists_without_automatic_execution() {
     let mut realm = Realm::default();
     assert_eq!(

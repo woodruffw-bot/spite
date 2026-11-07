@@ -467,7 +467,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Service Test262 dynamic imports with one source/record cache per execution variant, shared static/dynamic identities and explicit non-passing preparation failures.
 - [x] Propagate unavailable-source and imported-syntax loading exceptions through dynamic import Promises while preserving root parse, unsupported, resource and filesystem-confinement failures.
 - [x] Audit all host-compatible Module, import/export, import.meta and dynamic-import baseline originals, with exact imported-syntax evidence and unchanged helper graphs.
-- [ ] Add generators, promises, async functions, async iteration, and job handling.
+- [x] Add generators, promises, async functions, async iteration, and job handling.
 - [x] Add shared Promise capability executors and generic withResolvers/reject/try dispatch through supplied constructors.
 - [x] Add generic Promise.prototype.catch with live then lookup, original receivers, exact argument forwarding and abrupt completion propagation.
 - [x] Add branded Promise construction/resolution, shared first-settlement functions, identity-preserving resolve/try, and explicitly scheduled FIFO thenable jobs with traced captures.
@@ -547,7 +547,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Evaluate dynamic-import operands, including await/yield, and reject specifier/options/attribute-value language failures through fresh intrinsic Promises while preserving host-abort behavior.
 - [x] Implement dynamic import, import.meta, and top-level await through host hooks.
 - [x] Validate import attribute keys against a fixed host list before loading, with static SyntaxError and dynamic Promise TypeError behavior.
-- [ ] Implement explicit resource management where required by the baseline.
+- [x] Verify queued Promise reaction arguments retain object/Symbol weak keys and their ephemeron values until execution, then release them.
+- [x] Implement explicit resource management where required by the baseline.
+- [x] Keep await-using declarations outside the published edition-17 requirement; retain the explicit unsupported boundary until a baseline update.
 
 ## 6. Completion and hardening
 

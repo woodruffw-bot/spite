@@ -61,6 +61,37 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Generator, Promise and suspension review
+
+The remaining generator/async milestone now reflects its completed components:
+ordinary and async generator construction/resumption/delegation, all Promise
+methods and capabilities, async function forms, AsyncFromSync iteration,
+for-await-of and explicitly scheduled jobs. The shared source interpreter has
+continuation cases for every expression and statement form; nested function
+definitions establish their own execution boundary. Existing async/generator
+regressions check suspended references, partial results, iterator cleanup,
+protected completions, parameter/body errors and cross-realm callback execution.
+Module top-level await and dynamic-import host requests use the same Promise
+and job machinery.
+
+A new Promise reaction regression isolates queued arguments from handler
+captures and the original settled Promise. It checks fulfillment and rejection
+with both object and non-registered Symbol keys. Collection must retain the
+argument and its WeakMap value before the job, the handler must observe both,
+and collection must release both after execution. All four cases pass with the
+existing safe storage and collector; no production algorithm changes are needed.
+
+Explicit resource management is not a remaining edition-17 requirement. The
+reviewed published es2026 source contains neither await-using grammar nor the
+disposal-stack proposal algorithms; those appear in the later draft. Existing
+synchronous using and disposal-stack support remains covered separately.
+Await-using stays explicitly unsupported, rather than being treated as a missing
+mandatory production or a passing negative.
+
+Validation: all 572 Runtime units and 2,426 non-RegExp integrations pass, as do
+formatting, strict Clippy, Rust 1.99 all-target checks and repository policies.
+No upstream source, diagnostic review or snapshot changes were needed.
+
 ## Published declaration and statement review
 
 The declaration/reference review follows the shared scope and expression
