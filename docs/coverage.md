@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Object.groupBy temporary key lookup
+
+Unaccounted Object.groupBy grouping without agent control indexes converted
+String/Symbol keys in a standard HashMap. The existing vector preserves first-key
+and within-group order. Capacity is fallible. Explicit work accounting and agent
+control retain the previous charged scan; a callback that enables agent control
+discards the index before its value is added. Result-object materialization
+retains ordinary property definition and its separate lookup cost.
+
+Existing native tests now cover 256 distinct repeated groups and a callback
+that registers an asynchronous atomic wait after earlier keys are grouped.
+Both first-key ordering and waiter notification results remain correct.
+
+Twelve quiet single-CPU ABBA runs measure 22.1% lower evaluation time for
+1,024 distinct Object groups. Four-group evaluation differs by +2.0% and
+collection by +8.0%; the Map control differs by +0.6% and +2.1%. Full scope
+and other controls are in
+[benchmarking](benchmarking.md#objectgroupby-group-lookup).
+
+All 756 protocol comparisons still match Node. All 5,164 before/after work-budget
+cases preserve exact outcomes and observation traces: 2,459 complete and 2,705
+report HostLimit at the same points. Validation passes all 574 Runtime units,
+2,431 non-RegExp integrations, all 56 official modes from 28 unchanged groupBy
+originals and the full quality gate. Test and fixture inventories are unchanged.
+
 ## Array constructor reflection through Proxies
 
 Proxy own-key dispatch now reads the Array constructor's complete ordinary

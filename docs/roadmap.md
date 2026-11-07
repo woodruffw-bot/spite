@@ -611,6 +611,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reserve the complete String addition buffer before bulk copies and reuse immutable inputs for empty operands, preserving coercion order, length checks and raw UTF-16 joins.
 - [x] Format StringCreate index keys directly into stack UTF-16 digits before Arc construction, preserving exact decimal keys, descriptors and work accounting.
 - [x] Forward the complete Array constructor key set through Proxy own-key dispatch, preserving trap order, fixed-key invariants and reflection/integrity consumers.
+- [x] Index unaccounted Object.groupBy temporary keys with a standard HashMap, retaining first-key order, fallible capacity and charged scans for work limits and agent control.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

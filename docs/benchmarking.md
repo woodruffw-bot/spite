@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all forty program workloads |
+| parse_all | Parse and drop the ASTs for all forty-three program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -40,6 +40,9 @@ and collection medians are computed independently.
 | string_case_ascii | Lowercase/uppercase a 12,288-unit ASCII input eight times each, checking lengths and selected units |
 | string_case_context | Repeat the casing checks over 11,264 units of ASCII, Greek sigma, combining marks and lone surrogates |
 | string_case_unicode | Repeat over 7,168 units of Greek, supplementary letters, expanding mappings and joiners as a Unicode control |
+| object_group_by | Group 1,024 integers under distinct String keys, checking the key count and endpoint values |
+| object_group_by_few | Group 4,096 integers under four repeating String keys, checking group sizes and the final value |
+| map_group_by | Repeat object_group_by with Map.groupBy as a control |
 | map_iteration | Populate and iterate a 256-entry Map |
 | function_source | Compile a function with a 10,240-unit BMP/supplementary comment, then stringify it sixteen times, checking lengths and final units |
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
@@ -75,6 +78,38 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Object.groupBy group lookup
+
+A standard HashMap indexes already-converted temporary keys when work is
+unaccounted and agent control is absent. The existing group vector preserves
+order. Accounted/agent paths retain their charged scan, including when a
+callback enables agent control. Result materialization still uses ordinary
+property definition and can retain its own linear scans.
+
+The three added workloads measure distinct Object keys, four repeating keys and
+distinct Map keys. Baseline production is fd6e97d95. Both compared binaries
+contain identical workloads. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| object_group_by | 12055.5 | 9386.2 | 947.3 | 952.5 |
+| object_group_by_few | 38740.4 | 39504.7 | 3612.1 | 3902.1 |
+| map_group_by | 6060.2 | 6094.0 | 903.3 | 922.4 |
+| radix_overflow | 713.3 | 753.9 | 148.4 | 149.5 |
+| parse_all | 1068.9 | 1081.1 | 0 | 0 |
+| initialize_and_drop | 612.0 | 633.6 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Distinct Object grouping evaluation is 22.1% lower; its collection differs by
++0.6%. Four-group evaluation differs by +2.0% and collection by +8.0%. The
+Map control differs by +0.6% and +2.1%. The unrelated radix-overflow row differs
+by +5.7%; remaining program evaluation changes range from -6.5% to +5.2%,
+and collection changes from -2.9% to +5.0%. Parsing and initialization differ
+by +1.1% and +3.5%. These observations add no CI timing threshold or execution
+allowance.
 
 ## Stack-formatted String wrapper index keys
 

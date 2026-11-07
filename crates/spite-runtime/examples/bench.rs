@@ -134,6 +134,24 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "object_group_by",
+        source: "(()=>{const values=Array.from({length:1024},(_,i)=>i),groups=Object.groupBy(values,v=>'g'+v);return Object.keys(groups).length+groups.g0[0]+groups.g1023[0]})()",
+        expected: 2047.0,
+        jobs: false,
+    },
+    Case {
+        name: "object_group_by_few",
+        source: "(()=>{const values=Array.from({length:4096},(_,i)=>i),groups=Object.groupBy(values,v=>'g'+v%4);return groups.g0.length+groups.g1.length+groups.g2.length+groups.g3.length+groups.g3[1023]})()",
+        expected: 8191.0,
+        jobs: false,
+    },
+    Case {
+        name: "map_group_by",
+        source: "(()=>{const values=Array.from({length:1024},(_,i)=>i),groups=Map.groupBy(values,v=>'g'+v);return groups.size+groups.get('g0')[0]+groups.get('g1023')[0]})()",
+        expected: 2047.0,
+        jobs: false,
+    },
+    Case {
         name: "map_iteration",
         source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
         expected: 32640.0,

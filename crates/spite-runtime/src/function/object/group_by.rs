@@ -2,6 +2,7 @@
 
 use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
 use spite_core::{PropertyKey, Span, WellKnownSymbol};
+use std::collections::HashMap;
 
 type Groups = Vec<(PropertyKey, Vec<Value>)>;
 
@@ -61,6 +62,11 @@ impl Realm {
             })?;
         let mut iterator = self.get_iterator_from_method(items, method, span)?;
         let mut groups = Vec::new();
+        // PropertyKey hashes immutable UTF-16 contents or Symbol identity.
+        // Keep the existing charged scan for explicit work limits and agents.
+        #[allow(clippy::mutable_key_type)]
+        let mut lookup =
+            (self.remaining_steps.is_none() && self.atomic_waits.is_none()).then(HashMap::new);
         loop {
             self.tick(span)?;
             // This specification bound precedes the next step, even when that
@@ -88,7 +94,7 @@ impl Realm {
                     span,
                 )?;
                 let key = self.property_key(key, span)?;
-                self.add_property_group(&mut groups, key, value, span)
+                self.add_property_group(&mut groups, &mut lookup, key, value, span)
             })();
             if let Err(error) = add {
                 return Err(self.iterator_close_error(&iterator, error, span));
@@ -97,26 +103,44 @@ impl Realm {
         }
     }
 
+    // Symbol liveness does not participate in PropertyKey Hash/Eq.
+    #[allow(clippy::mutable_key_type)]
     fn add_property_group(
         &mut self,
         groups: &mut Groups,
+        lookup: &mut Option<HashMap<PropertyKey, usize>>,
         key: PropertyKey,
         value: Value,
         span: Span,
     ) -> Result<(), Error> {
         // AddValueToKeyedGroup compares converted strings by code units and
         // Symbols by identity. Preserve first-key and within-group value order.
-        for (existing, values) in groups.iter_mut() {
-            self.object_work(span, |_, budget| {
-                budget.charge(key.as_string().map_or(1, |s| s.len() + 1))
-            })?;
-            if existing == &key {
-                values
-                    .try_reserve(1)
-                    .map_err(|_| Self::group_capacity_error(span))?;
-                values.push(value);
-                return Ok(());
+        // Callbacks can lazily register atomic waits and enable agent control.
+        if lookup.is_some() && (self.remaining_steps.is_some() || self.atomic_waits.is_some()) {
+            *lookup = None;
+        }
+        let existing = if let Some(lookup) = lookup.as_ref() {
+            lookup.get(&key).copied()
+        } else {
+            let mut found = None;
+            for (index, (existing, _)) in groups.iter().enumerate() {
+                self.object_work(span, |_, budget| {
+                    budget.charge(key.as_string().map_or(1, |s| s.len() + 1))
+                })?;
+                if existing == &key {
+                    found = Some(index);
+                    break;
+                }
             }
+            found
+        };
+        if let Some(index) = existing {
+            let values = &mut groups[index].1;
+            values
+                .try_reserve(1)
+                .map_err(|_| Self::group_capacity_error(span))?;
+            values.push(value);
+            return Ok(());
         }
         groups
             .try_reserve(1)
@@ -126,6 +150,12 @@ impl Realm {
             .try_reserve(1)
             .map_err(|_| Self::group_capacity_error(span))?;
         values.push(value);
+        if let Some(lookup) = lookup {
+            lookup
+                .try_reserve(1)
+                .map_err(|_| Self::group_capacity_error(span))?;
+            lookup.insert(key.clone(), groups.len());
+        }
         groups.push((key, values));
         Ok(())
     }

@@ -143,6 +143,14 @@ fn result_arrays_use_intrinsics_and_bypass_setters_and_public_constructors() {
     check(
         "let source=Array.from({length:2000},(v,i)=>i),o=Object.groupBy(source,()=> 'all');o.all.length===2000 && o.all[1999]===1999 && Object.keys(o.all).length===2000",
     );
+    check(
+        "let source=Array.from({length:512},(_,i)=>i),o=Object.groupBy(source,v=>'key'+v%256),keys=Object.keys(o);keys.length===256&&keys.every((key,i)=>key==='key'+i&&o[key].length===2&&o[key][0]===i&&o[key][1]===i+256)",
+    );
+    // Registering a wait during a callback enables agent control after earlier
+    // keys have already been grouped without it.
+    check(
+        "let view=new Int32Array(new SharedArrayBuffer(4)),pending,source=Array.from({length:64},(_,i)=>i),o=Object.groupBy(source,v=>{if(v===8)pending=Atomics.waitAsync(view,0,0);return 'key'+v%4});pending.async&&pending.value instanceof Promise&&Atomics.notify(view,0,1)===1&&Object.keys(o).join(',')==='key0,key1,key2,key3'&&o.key0.length===16&&o.key0[15]===60&&o.key3[15]===63",
+    );
 }
 
 #[test]

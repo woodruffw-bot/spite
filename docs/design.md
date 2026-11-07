@@ -3017,6 +3017,12 @@ callability before iterator acquisition, then call with undefined this and exact
 value/index. Convert returned keys before adding each original value to its group.
 Preserve first-key and within-group order with string code-unit and Symbol identity
 comparisons. Checked temporary storage and comparisons charge opted-in work.
+Without work accounting or agent control, a standard HashMap indexes temporary
+groups by converted property key; the existing vector preserves group order.
+Explicit work limits and agents retain the charged scan. If a callback enables
+agent control, discard the index before adding its value and resume that scan.
+Index capacity remains fallible. Result materialization still uses ordinary
+property definition and is not made linear by this lookup change.
 The specification's safe-integer counter bound closes before the next step.
 Callback/key-conversion throws close; step/host failures do not. After exhaustion,
 create a null-prototype object and dense intrinsic Arrays with own data properties.
