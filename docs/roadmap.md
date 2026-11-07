@@ -89,8 +89,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve ordinary using identifiers before in/instanceof in statements, loop headers and awaited expressions.
 - [x] Dispose using resources at lexical scope and loop exits while preserving abrupt completions.
 - [x] Reject static module declarations and import.meta under Script/dynamic-function goals as syntax errors, preserving the valid dynamic-import host boundary.
-- [ ] Complete remaining statement early errors and completions.
-- [ ] Complete strict mode, declarations, early errors, and reference semantics.
+- [x] Complete remaining statement early errors and completions.
+- [x] Complete strict mode, declarations, early errors, and reference semantics.
+- [x] Review declaration scopes, strict references and all published statement forms against their shared validators and completion paths.
 - [x] Audit block-scope redeclarations, reference targets, property access/construction, computed property names, hashbang placement and object-literal shorthand/method/rest/spread behavior.
 - [x] Audit Unicode identifier declarations, strict directives, keywords/reserved words, comments/whitespace, super and optional-chain references against unchanged published-baseline originals.
 - [x] Add prefix and postfix updates with reference and line-terminator rules.

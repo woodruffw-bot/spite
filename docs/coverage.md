@@ -61,6 +61,44 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Published declaration and statement review
+
+The declaration/reference review follows the shared scope and expression
+validators as well as the syntax productions. It checks duplicate lexical names,
+nested var conflicts, parameter/body boundaries, catch patterns, loop-header
+bindings, strict identifiers and assignment/delete targets. Script, Module,
+direct eval and independently parsed dynamic-function goals retain their own
+contexts; arrows inherit lexical context while ordinary functions start fresh
+control and super contexts.
+
+The clause-14 review covers every statement form and both normal and abrupt
+completion paths. The implementation evidence is grouped below; suspended
+execution uses the same binding/reference operations and explicit continuation
+state, with separate async/generator regression files.
+
+| Published behavior | Implementation | Regression evidence |
+| --- | --- | --- |
+| Scope names, declarations and strict reference restrictions (8.2, 13.1, 14.2–14.3) | Parser scope/binding/expression validators; Runtime environments, declaration instantiation and references | var.rs, var_patterns.rs, lexical_patterns.rs, assignment.rs, delete.rs and eval cases |
+| Empty/expression/if statements and debugger (14.4–14.6, 14.16) | Parser statement placement/ASI; Runtime StatementList and UpdateEmpty | evaluation.rs, script_module_syntax.rs and debugger.rs |
+| Iteration, break and continue (14.7–14.9) | Header binding checks, fresh iteration environments, iterator closing and targeted completions | loops.rs, for_loops.rs, for_in.rs, for_of.rs, for_await.rs and labels.rs |
+| Return and throw (14.10, 14.14) | Function/control boundaries, restricted line terminators and exact completion values | function bodies, try_finally.rs and async/generator completion cases |
+| With and switch (14.11–14.12) | Strict with rejection, live object environments and one lexical scope across switch clauses | with.rs, switch.rs and suspended switch cases |
+| Labels and try/catch/finally (14.13, 14.15) | Active-label targets, fresh function/static-block control contexts, catch pattern scopes and finalizer overrides | labels.rs, catch_patterns.rs, class_static_blocks.rs and try_finally.rs |
+
+An additional 680-case grammar audit exercised nested label/control boundaries,
+catch bindings and loop declaration conflicts. Four cases differ from Node
+because this host disables the Annex B catch-parameter var-redeclaration
+extension, including inside strict catch bodies. The published core early errors
+require these rejections. The separate 2,662-case completion audit described
+below agreed with Node for all selected cases. Neither audit changes the
+established Annex B policy or substitutes unsupported outcomes for SyntaxErrors.
+
+The reviewed implementation passes all 8,112 exact parse-negative modes, the
+Parser suite and 2,425 non-RegExp Runtime integrations recorded below. Whole
+baseline language originals are already retained under the documented host and
+edition exclusions. These findings close the statement and strict-declaration
+milestones; they do not close the remaining whole-specification review.
+
 ## Published lexical grammar review
 
 The clause-12 review accounts for all five lexical goals and every lexical
