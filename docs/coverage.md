@@ -61,6 +61,32 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Combined implementation regression gate
+
+At b256a9fa3, the complete Test262 package passes all 85 tests, including all
+80,028 official modes from 41,531 reviewed originals with every nonpassing count
+zero. The corpus takes 1,329.94 seconds with Rust 1.99's conformance profile and
+the existing three workers. This validates the combined BigInt formatting and
+allocation, JSON quoting, String repetition and radix Number conversion changes.
+Pinned sources, helpers, flags, reviews and ordinary host defaults are unchanged.
+
+## Suspended computed references
+
+A supplemental 4,608-case audit combines computed assignments, compound/logical
+assignments, updates, reads/deletion, optional and ordinary calls, tagged templates
+and destructuring across await and yield. String/Symbol keys, Proxy traps,
+uncoerced operands, null bases, method replacement and abrupt completion record
+observable effects. Ordinary execution and collection after every Promise job
+produce identical results and traces in all cases.
+
+Node agrees directly on 4,272 cases. The remaining 336 repeat ToPropertyKey at
+PutValue, while published [GetValue](https://262.ecma-international.org/17.0/#sec-getvalue)
+updates the Reference Record's ReferencedName with its converted key. A strict
+comparison explains only that extra call and the resulting selected write key;
+all raw differences are retained, and there are zero unexplained differences.
+The implementation already follows the published caching rule. No production
+behavior, test inventory or fixture changes are needed.
+
 ## ASCII radix digit scanning
 
 Core's binary/octal/hexadecimal integer parser now iterates bytes during digit

@@ -33,8 +33,8 @@ impl Realm {
         let (target, _) = operands(data, state, &path);
         if has_supported_await(target) {
             let target = child_path(&path, ExprChild::Left, span)?;
-            // Only ordinary/private Member targets currently contain supported
-            // awaits. Parentheses retain reference identity through this path.
+            // Awaited member and super targets retain their reference identity
+            // through parentheses on this path.
             self.begin_async_member(
                 data,
                 state,
