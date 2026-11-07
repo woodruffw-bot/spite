@@ -2524,10 +2524,13 @@ repeat validates the converted count before returning an empty string; finite
 counts on empty input take no repetition loop (22.1.3.18). After checked output
 reservation, it copies the input once and extends from the growing prefix with
 safe Vec operations, clipping the final batch to the exact output length.
-padStart/padEnd apply
-ToLength and return early before filler conversion when no padding is required
+padStart/padEnd apply ToLength and return early before filler conversion when no
+padding is required
 (22.1.3.16–17). Empty fillers preserve the input even for huge target lengths.
 Both operations copy UTF-16 units directly, including truncated surrogate pairs.
+Padding and repetition share growing-prefix copies. The copy range starts after
+any existing receiver text, so padEnd repeats only its filler; the final batch
+clips to the requested number of units.
 Checked arithmetic, precharged output work, and fallible capacity reservation
 keep size/capacity failures distinct from ECMAScript RangeErrors.
 indexOf/lastIndexOf convert receiver, search text, and position in that order

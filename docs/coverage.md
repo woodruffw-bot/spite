@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Shared String padding and repetition copies
+
+String padding and repetition share one growing-prefix copy operation over the
+already checked output buffer. Each append tracks its own start; padEnd copies
+only filler units after the receiver text. A partial final copy preserves UTF-16
+units, including truncated surrogate pairs. Conversion, early returns, output
+work charging and fallible reservation retain their existing order.
+
+The padding audit matches Node before and after the change on all 4,912 cases of short-circuiting,
+coercion/error order, arbitrary UTF-16 fillers and non-power-of-two lengths.
+Twelve quiet single-CPU ABBA process runs measure 90.3% and 89.4% lower evaluation
+time for default-space and mixed-filler padding. Repeat controls differ by -1.3%
+and +0.7%; the radix-overflow row is 10.6% higher. Full scope and other measured
+changes are in
+[benchmarking](benchmarking.md#shared-string-padding-and-repetition-copies).
+
+All 1,342 repetition audit cases also match Node after sharing the helper.
+Validation passes all 573 Runtime units, 2,430 non-RegExp integrations and the
+full quality gate. All 2,441 official modes from 1,222 unchanged String originals
+pass with zero nonpassing outcomes. Test and fixture inventories are unchanged.
+
 ## URI decoding of literal prefixes
 
 URI decoders copy the literal prefix before the first percent sign in one checked

@@ -598,6 +598,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reserve complete BigInt bitwise temporary widths through fallible capacity checks, preserving word work accounting and infinite sign extension.
 - [x] Scan radix Number digits as ASCII bytes while retaining complete validation and exact binary64 rounding.
 - [x] Copy literal URI-decoding prefixes in one checked append without work accounting or agent control, preserving raw UTF-16 units and escaped UTF-8 validation.
+- [x] Share growing-prefix copying between String repetition and padding, repeating only filler units after existing receiver text and preserving truncated UTF-16 boundaries.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all nineteen program workloads |
+| parse_all | Parse and drop the ASTs for all twenty-one program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -27,6 +27,8 @@ and collection medians are computed independently.
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
+| string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
+| string_pad_wide | Repeat string_pad with a three-unit BMP/lone-surrogate filler and a partial final copy |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
@@ -291,6 +293,36 @@ Radix conversion evaluation is 35.3% lower. Other program evaluation changes
 range from -1.5% to +2.9%, and collection changes from -2.5% to +2.9%.
 Parsing and initialization differ by +2.3% and -1.0%. These observations add
 no CI timing threshold or execution allowance.
+
+## Shared String padding and repetition copies
+
+Padding reuses the growing-prefix copy operation used by repeat. Each append
+records its start in the checked output buffer and copies only the appended
+pattern. This preserves padEnd's receiver prefix and permits a partial final
+copy of arbitrary UTF-16 units. Length, work and reservation checks precede copying.
+
+Both compared binaries include identical default-space and mixed-filler padding
+workloads and the existing repeat controls. Baseline production is 46b1685a3;
+the candidate shares the copy helper and routes padding through it. Rust
+1.99/conformance-profile Linux x86_64 measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_pad | 2110.1 | 204.4 | 172.6 | 168.4 |
+| string_pad_wide | 1870.8 | 199.1 | 175.9 | 168.1 |
+| string_repeat | 216.3 | 213.6 | 166.1 | 168.9 |
+| string_repeat_wide | 203.9 | 205.3 | 165.2 | 172.2 |
+| radix_overflow | 706.6 | 781.8 | 155.3 | 151.6 |
+| parse_all | 510.7 | 500.1 | 0 | 0 |
+| initialize_and_drop | 625.0 | 626.2 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Padding evaluation is 90.3% and 89.4% lower; repeat controls differ by -1.3% and
++0.7%. The radix-overflow row is 10.6% higher in this executable. Remaining
+program evaluation changes range from -6.8% to +3.6%, and collection changes from
+-5.0% to +2.8%. Parsing and initialization differ by -2.1% and +0.2%.
+These observations add no CI timing threshold or execution allowance.
 
 ## URI decoding of literal prefixes
 

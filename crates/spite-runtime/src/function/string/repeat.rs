@@ -35,13 +35,7 @@ impl Realm {
             .checked_mul(count)
             .ok_or_else(|| length_limit(span))?;
         let mut result = self.repeated_string_buffer(length, span)?;
-        result.extend_from_slice(string.code_units());
-        // The checked buffer covers the complete output. Copy the growing
-        // repeated prefix in batches instead of appending each copy separately.
-        while result.len() < length {
-            let additional = result.len().min(length - result.len());
-            result.extend_from_within(..additional);
-        }
+        append_repeated_units(&mut result, string.code_units(), length);
         Ok(Value::String(JsString::from_code_units(result)))
     }
 
@@ -83,7 +77,7 @@ impl Realm {
         if !at_start {
             result.extend_from_slice(string.code_units());
         }
-        result.extend(fill.code_units().iter().copied().cycle().take(fill_length));
+        append_repeated_units(&mut result, fill.code_units(), fill_length);
         if at_start {
             result.extend_from_slice(string.code_units());
         }
@@ -106,6 +100,17 @@ impl Realm {
             .try_reserve_exact(length)
             .map_err(|_| length_limit(span))?;
         Ok(result)
+    }
+}
+
+fn append_repeated_units(result: &mut Vec<u16>, units: &[u16], length: usize) {
+    // Callers reserve the complete output and provide a nonempty pattern.
+    let start = result.len();
+    result.extend_from_slice(&units[..units.len().min(length)]);
+    while result.len() - start < length {
+        let written = result.len() - start;
+        let additional = written.min(length - written);
+        result.extend_from_within(start..start + additional);
     }
 }
 

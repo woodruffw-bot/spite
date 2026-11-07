@@ -56,6 +56,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_pad",
+        source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text=i%2?'ab'.padStart(65536):'ab'.padEnd(65536);sum+=text.length+text.charCodeAt(i%2?0:text.length-1)}return sum})()",
+        expected: 1_049_088.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_pad_wide",
+        source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text=i%2?'ab'.padStart(65536,'é漢\\ud800'):'ab'.padEnd(65536,'é漢\\ud800');sum+=text.length+text.charCodeAt(i%2?0:text.length-1)}return sum})()",
+        expected: 1_278_040.0,
+        jobs: false,
+    },
+    Case {
         name: "map_iteration",
         source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
         expected: 32640.0,
