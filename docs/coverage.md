@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Checked String addition preallocation
+
+Core String concatenation checks the combined length and reserves the complete
+buffer before its two bulk copies. An empty operand reuses the other immutable
+String. The runtime still evaluates both operands, converts primitives/Strings
+in order and checks output length before calling the concatenation helper.
+Surrogate units remain raw, including pairs formed across the join. Repeated
+nonempty additions retain eager copying and its quadratic total copy cost.
+
+All 23,716 addition/coercion cases match Node before and after the change,
+including empty Strings, Symbol failures, BigInts, wrappers, Date conversion,
+getters and Proxies. All 267,264 UTF-16 joins match exact code-unit concatenation.
+Existing Core surrogate tests now check both empty-operand paths.
+
+Twelve quiet single-CPU ABBA runs measure 11.0% lower evaluation time for
+growing additions and 48.0% lower time for empty operands. Collection differs
+by -4.0% and -13.2%. Full scope and controls are in
+[benchmarking](benchmarking.md#checked-string-addition-preallocation).
+
+Validation passes all 112 Core tests, 574 Runtime units, 2,430 non-RegExp
+integrations and the full quality gate. All 2,441 official modes from 1,222
+unchanged String originals pass with zero nonpassing outcomes. Test and
+fixture inventories are unchanged.
+
 ## Combined arithmetic and Arc String gate
 
 A fresh full Test262 package run passes on clean f51c25bd9 after the combined

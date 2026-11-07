@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirty-eight program workloads |
+| parse_all | Parse and drop the ASTs for all forty program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -29,6 +29,8 @@ and collection medians are computed independently.
 | string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
 | string_slice | Alternate sixteen slice/substring copies from a 16,384-unit BMP/lone-surrogate input, checking lengths and edge units |
 | string_iteration | Iterate a 768-unit ASCII/BMP/supplementary/lone-surrogate input, checking yielded lengths and first units |
+| string_add | Append a four-unit BMP/lone-surrogate fragment 2,048 times with String addition, checking length and final unit |
+| string_add_empty | Alternate empty left/right operands around a 16,384-unit String 64 times, checking length and final unit |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
@@ -73,6 +75,36 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Checked String addition preallocation
+
+Nonempty concatenation checks and reserves its complete output length before
+the two bulk copies. Empty operands reuse the other immutable input. Runtime
+coercions and output-length checks retain their existing order. Repeated
+nonempty additions still copy eagerly and retain their quadratic total cost.
+
+The two added workloads measure growing additions and empty operands.
+Both compared binaries contain identical workloads. Baseline production is
+f51c25bd9 (the following 854346fb8 changes documentation only); the candidate
+changes only the Core concatenation helper. Rust 1.99/conformance-profile Linux
+x86_64 measurements use one CPU, no active builds/tests, twelve ABBA process
+runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_add | 1948.5 | 1734.2 | 156.6 | 150.3 |
+| string_add_empty | 357.7 | 186.2 | 186.6 | 161.9 |
+| radix_overflow | 779.5 | 682.2 | 151.2 | 151.0 |
+| parse_all | 994.8 | 998.4 | 0 | 0 |
+| initialize_and_drop | 622.1 | 606.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Growing-addition evaluation is 11.0% lower and empty-operand evaluation is 48.0%
+lower. Their collection times differ by -4.0% and -13.2%. The unrelated
+radix-overflow row differs by -12.5%; remaining program evaluation changes range
+from -6.2% to +2.6%, and collection changes from -3.7% to +4.0%. Parsing and
+initialization differ by +0.4% and -2.6%. These observations add no CI timing
+threshold or execution allowance.
 
 ## Direct borrowed-slice UTF-16 String construction
 

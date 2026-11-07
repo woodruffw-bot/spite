@@ -115,8 +115,10 @@ to supplementary code points and preserve lone surrogates as source code points
 surrogate. JavaScript strings retain every UTF-16 code unit.
 JsString uses shared immutable Arc slice storage. Cloning a String value does
 not copy its code units, so repeated custom exec calls and iterator snapshots do
-not duplicate the complete input. Concatenation and substrings build independent
-storage; equality, hashing and ordering compare UTF-16 contents, and the public
+not duplicate the complete input. Concatenation checks and reserves its complete
+output buffer before copying nonempty operands, and reuses the other input when
+either is empty. Substrings copy into owned storage. Equality, hashing and
+ordering compare UTF-16 contents, and the public
 type remains Send/Sync. Existing optional work charges stay conservative and
 unchanged; actual scans and output allocations retain their checks.
 Fixed UTF-16 arrays convert directly through the standard Arc array conversion.

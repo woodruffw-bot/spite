@@ -132,8 +132,19 @@ impl JsString {
 
     /// Concatenates two strings without interpreting surrogate pairs.
     pub fn concat(&self, other: &Self) -> Self {
-        let mut units = self.code_units().to_vec();
-        units.extend_from_slice(&other.0);
+        if self.is_empty() {
+            return other.clone();
+        }
+        if other.is_empty() {
+            return self.clone();
+        }
+        let length = self
+            .len()
+            .checked_add(other.len())
+            .expect("string length exceeds addressable capacity");
+        let mut units = Vec::with_capacity(length);
+        units.extend_from_slice(self.code_units());
+        units.extend_from_slice(other.code_units());
         Self(units.into())
     }
 }
@@ -319,6 +330,9 @@ mod tests {
     fn utf16_preserves_surrogates_and_counts_code_units() {
         assert_eq!(JsString::from("💩").len(), 2);
         let lone = JsString::from([0xd800]);
+        let empty = JsString::default();
+        assert_eq!(empty.concat(&lone), lone);
+        assert_eq!(lone.concat(&empty), lone);
         assert!(lone.to_utf8().is_err());
         assert_eq!(format!("{lone:?}"), "\"\\ud800\"");
         let pair = lone.concat(&JsString::from_code_units(vec![0xdc00]));
