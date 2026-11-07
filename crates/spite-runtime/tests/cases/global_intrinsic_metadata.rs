@@ -47,6 +47,65 @@ fn published_intrinsic_properties_have_their_specified_roles() {
 }
 
 #[test]
+fn published_intrinsics_survive_removing_public_roots_and_configurable_properties() {
+    let mut realm = Realm::default();
+    let inventory = include_str!("fixtures/edition17_intrinsic_inventory.js");
+    let source = format!(
+        r#"(function(){{
+            {inventory}
+            let values=rows.map(row=>row[1]);
+            const ownKeys=Reflect.ownKeys,descriptor=Object.getOwnPropertyDescriptor,g=globalThis;
+            for(let i=0;i<values.length;i++){{
+                const object=values[i],keys=ownKeys(object);
+                for(let j=0;j<keys.length;j++){{
+                    const key=keys[j];
+                    if(descriptor(object,key).configurable&&!delete object[key])throw 1;
+                }}
+            }}
+            const keys=ownKeys(g);
+            for(let i=0;i<keys.length;i++){{
+                const key=keys[i];
+                if(descriptor(g,key).configurable&&!delete g[key])throw 2;
+            }}
+            return values;
+        }})()"#
+    );
+    let values = realm.eval(&source).unwrap();
+    assert_eq!(
+        realm.read_property(&values, &JsString::from("length")),
+        Ok(Value::Number(70.0))
+    );
+    let Value::Object(snapshot) = values.clone() else {
+        unreachable!("snapshot Array")
+    };
+    let handles: Vec<_> = (0..70)
+        .map(|index| {
+            let value = realm
+                .read_property(&values, &JsString::from(index.to_string().as_str()))
+                .unwrap();
+            let Value::Object(handle) = value else {
+                panic!("intrinsic {index} must be an object: {value:?}")
+            };
+            handle
+        })
+        .collect();
+    drop(values);
+    realm.collect(usize::MAX).unwrap();
+    assert!(matches!(
+        realm.inspect_object(&snapshot),
+        Err(spite_runtime::object::Error::Heap(
+            spite_heap::Error::StaleHandle
+        ))
+    ));
+    for (index, handle) in handles.iter().enumerate() {
+        assert!(
+            realm.inspect_object(handle).is_ok(),
+            "lost intrinsic {index}"
+        );
+    }
+}
+
+#[test]
 fn deferred_intrinsic_metadata_graph_matches_edition_17() {
     let result = Realm::default().eval(r#"
         let rows=[],graph=[];

@@ -129,7 +129,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Release inactive ephemeron entries and their primitive values after successful marking.
 - [x] Add checked object-key WeakMap storage with conditional value tracing and dense inactive-entry removal.
 - [x] Trace mixed object/Symbol ephemerons with host Symbol ownership, atomic weak-upgrade retirement, and failure-before-sweep guarantees.
-- [ ] Root interpreter temporaries, environments, intrinsics, and host-held object values.
+- [x] Protect evaluation temporaries with between-turn collection, trace suspended state/environments and retained intrinsics, and provide explicit roots for host-held object values.
 - [x] Add checked host-root tokens with clone/drop lifetimes and bounded registry reuse.
 - [x] Add object identity values and trace object-valued data properties, including cycles.
 - [x] Implement ordinary objects, descriptors, prototypes, and property order.
@@ -427,7 +427,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit all published WeakRef and FinalizationRegistry originals for constructor metadata, brands, weak target/token validation and unregister identity.
 - [x] Implement ordinary-buffer Atomics integer access and read-modify-write operations, isLockFree, notify, and non-shared wait rejection with ordered conversions and live buffer checks.
 - [x] Add Atomics.pause with a native processor spin-loop hint and standard zero-arity metadata.
-- [ ] Audit all edition-17 intrinsics against the specification inventory.
+- [x] Audit all edition-17 intrinsics against the specification inventory.
 - [x] Audit all published Error/NativeError/AggregateError/ThrowTypeError and global value/conversion originals, including strict descriptors, cross-realm behavior, coercion and URI errors.
 - [x] Check the 70 JavaScript-reachable base intrinsic objects from the edition-17 table for names, arities, prototype relationships, constructor capability and distinct identities within and across Realms.
 - [x] Audit the published intrinsic property headings across concrete NativeError/TypedArray families for own-property presence, data/method/accessor roles, non-enumerability and built-in function metadata attributes and constructor capability.

@@ -61,6 +61,27 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Published intrinsic inventory and collection roots
+
+The published well-known-intrinsic table has 72 entries. The existing inventory
+checks all 70 observable identities and roles in two independent Realms; the other
+two are the internal Async-from-Sync and for-in iterator prototypes. Existing
+property checks cover 646 roles, including 456 callable members.
+
+The root audit follows active/inactive Realm records, environment and template
+edges, Promise jobs/capabilities and owned suspended execution state. Ordinary
+evaluation never invokes collection; host-retained objects use explicit root
+tokens. A new native regression prunes configurable properties and globals,
+collects the unrooted temporary snapshot, and verifies all 70 observable
+intrinsics remain live. This extends the earlier 54-object metadata retention
+check without changing the collector or runtime policy.
+
+Validation: all 32 focused intrinsic, Realm-collection, host-root and inactive-Realm
+retention groups pass. Formatting, strict Clippy, Rust 1.99 all-target checks,
+repository policies, facade tests and doctests pass. The full 80,028-variant
+corpus already passed on the same production code; this increment adds one native
+regression and records the collection contract.
+
 ## Complete compatible Unicode property and RegExp inventories
 
 All 290 unchanged exhaustive property datasets whose membership agrees between

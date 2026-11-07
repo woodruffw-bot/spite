@@ -3307,6 +3307,22 @@ Module loading, clocks, entropy, and agent creation
 are host capabilities. The default host exposes no non-standard JavaScript globals.
 Test262 host helpers exist only in the conformance host.
 
+### Collection boundaries and roots
+
+Collection runs only at an explicit host boundary between evaluations or jobs.
+Native evaluation and allocation never invoke it, so live interpreter temporaries
+remain protected without a separate temporary-root registry. Await, Yield and
+other suspended continuations move their retained values, references, iterators,
+environments and partial class/module state into traced heap records. Current and
+inactive Realm records retain their intrinsic graphs and template caches. Promise
+jobs and native asynchronous capabilities contribute their own roots.
+
+Embedding code roots returned or thrown object values with RootedValue before
+collection. Cloned root tokens retain the value until their last owner drops;
+an ordinary ObjectHandle carries identity and does not itself prevent collection.
+WeakRef kept objects use the agent-wide checkpoint described below. Root discovery
+and tracing failures return before sweeping, preserving the existing heap.
+
 ## Validation
 
 Use unit tests for algorithms and integration tests for observable behavior. Use
