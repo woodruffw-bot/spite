@@ -1029,6 +1029,33 @@ impl Objects {
         Ok(true)
     }
 
+    /// Appends an already deduplicated key to a fresh extensible ordinary object.
+    /// The caller must exclude exotic objects and existing keys. This is used
+    /// after GroupBy has established distinct keys, without executing user code.
+    pub(crate) fn append_unique_data_property(
+        &mut self,
+        object: &Handle,
+        key: PropertyKey,
+        value: Value,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        if let Value::Object(handle) = &value {
+            self.inspect(handle)?;
+        }
+        budget.value(&value)?;
+        self.object_mut(object)?
+            .append_unique_property(
+                key,
+                Property::Data(DataProperty {
+                    value,
+                    writable: true,
+                    enumerable: true,
+                    configurable: true,
+                }),
+            )
+            .map_err(|_| Error::PropertyLimit)
+    }
+
     /// Applies an own descriptor, validating value edges and accessor callability.
     ///
     /// Array length values must already be Numbers in the u32 range; this storage

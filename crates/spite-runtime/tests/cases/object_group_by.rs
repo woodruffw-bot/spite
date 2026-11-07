@@ -146,6 +146,9 @@ fn result_arrays_use_intrinsics_and_bypass_setters_and_public_constructors() {
     check(
         "let source=Array.from({length:512},(_,i)=>i),o=Object.groupBy(source,v=>'key'+v%256),keys=Object.keys(o);keys.length===256&&keys.every((key,i)=>key==='key'+i&&o[key].length===2&&o[key][0]===i&&o[key][1]===i+256)",
     );
+    check(
+        "let s=Symbol(),keys=[0,1,'x',2,s,'4294967295'],o=Object.groupBy(keys,(_,i)=>keys[i]);delete o[0];o[0]=[7];o.x.push(8);Object.freeze(o);Reflect.ownKeys(o).every((key,i)=>key===['0','1','2','x','4294967295',s][i]) && o[0][0]===7 && o[1][0]===1 && o[2][0]===2 && o.x[1]===8 && o[s][0]===s && Object.isFrozen(o) && !Reflect.set(o,'new',3)",
+    );
     // Registering a wait during a callback enables agent control after earlier
     // keys have already been grouped without it.
     check(
@@ -168,9 +171,12 @@ fn metadata_deletion_and_collected_group_edges_remain_correct() {
     realm
         .eval("let value={x:7},o=group([value],()=> 'x');value=null")
         .unwrap();
+    realm
+        .eval("let grouped=group([{x:11},{x:12},{x:13}],(_,i)=>i===0?Symbol('only'):i-1)")
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
-        realm.eval("o.x[0].x===7 && group([1,2],()=> 'x').x.length===2"),
+        realm.eval("o.x[0].x===7 && group([1,2],()=> 'x').x.length===2 && grouped[Reflect.ownKeys(grouped)[2]][0].x===11 && grouped[0][0].x===12 && grouped[1][0].x===13"),
         Ok(Value::Boolean(true))
     );
 }
@@ -204,21 +210,24 @@ fn host_failures_during_grouping_materialization_or_cleanup_skip_handlers() {
         Ok(Value::Boolean(true))
     );
 
-    let mut realm = Realm::new(Limits {
-        max_properties: Some(100),
-        ..Limits::default()
-    });
-    realm.eval("let closed=0,flag=0,steps=0,calls=0,source={[Symbol.iterator](){return {next(){let n=steps++;return n<101?{value:n}:{done:true};},return(){closed++;return {};}};}}").unwrap();
-    assert!(matches!(
-        realm.eval(
-            "try{Object.groupBy(source,v=>{calls++;return 'x';});}catch{flag=1;}finally{flag=2;}"
-        ),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("closed===0 && flag===0 && steps===102 && calls===101"),
-        Ok(Value::Boolean(true))
-    );
+    // One group exhausts the Array capacity; distinct keys exhaust the result.
+    for key in ["'x'", "v"] {
+        let mut realm = Realm::new(Limits {
+            max_properties: Some(100),
+            ..Limits::default()
+        });
+        realm.eval("let closed=0,flag=0,steps=0,calls=0,source={[Symbol.iterator](){return {next(){let n=steps++;return n<101?{value:n}:{done:true};},return(){closed++;return {};}};}}").unwrap();
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{Object.groupBy(source,v=>{{calls++;return {key};}});}}catch{{flag=1;}}finally{{flag=2;}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(
+            realm.eval("closed===0 && flag===0 && steps===102 && calls===101"),
+            Ok(Value::Boolean(true))
+        );
+    }
 
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("gap");

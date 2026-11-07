@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Object.groupBy result construction
+
+After grouping has established distinct converted keys, unaccounted execution
+without agent control appends them to the fresh null-prototype result without
+repeated property lookup. Ordinary capacity checks and dense-index metadata are
+shared with descriptor insertion. Keys and values remain ordinary traced edges;
+explicit work budgets and agents retain the existing definition path.
+
+Extended regressions protect mixed numeric/String/Symbol key order after deletion,
+reinsertion and freezing, collection of values and Symbol keys reachable only
+through the result, and property limits in either a group Array or the result.
+All 574 Runtime units, 2,431 non-RegExp integrations, 56 official groupBy modes,
+756 protocol comparisons and 5,164 unchanged work-budget outcomes/traces pass,
+along with the full quality gate. Inventories, defaults and dependencies do not
+change. The matched benchmark reduces distinct-key evaluation time by 16.02%;
+collection and other workloads remain mixed, as recorded in
+[benchmarking](benchmarking.md#objectgroupby-result-construction).
+
 ## Frozen raw-async runner conformance gate
 
 A full gate compiled on clean bffbadfc7 passes all 87 noncorpus Test262 package

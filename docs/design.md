@@ -3025,8 +3025,11 @@ Without work accounting or agent control, a standard HashMap indexes temporary
 groups by converted property key; the existing vector preserves group order.
 Explicit work limits and agents retain the charged scan. If a callback enables
 agent control, discard the index before adding its value and resume that scan.
-Index capacity remains fallible. Result materialization still uses ordinary
-property definition and is not made linear by this lookup change.
+Index capacity remains fallible. Without work accounting or agent control,
+materialization appends the already distinct keys to its fresh ordinary result
+without another property scan. This shares ordinary capacity checks and dense
+index metadata; stored keys and values remain normal traced property edges.
+Explicit work limits and agents retain ordinary property-definition dispatch.
 The specification's safe-integer counter bound closes before the next step.
 Callback/key-conversion throws close; step/host failures do not. After exhaustion,
 create a null-prototype object and dense intrinsic Arrays with own data properties.

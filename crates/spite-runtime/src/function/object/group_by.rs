@@ -20,6 +20,15 @@ impl Realm {
         for (key, values) in groups {
             self.tick(span)?;
             let value = self.create_array_from_list(values, span)?;
+            // GroupBy has already deduplicated these converted keys. The
+            // null-prototype result stays private and extensible throughout
+            // materialization. Retain the charged dispatch for quotas/agents.
+            if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
+                self.object_work(span, |objects, budget| {
+                    objects.append_unique_data_property(&result, key, value, budget)
+                })?;
+                continue;
+            }
             self.define_property_or_throw(
                 &result,
                 key,

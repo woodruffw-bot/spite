@@ -435,6 +435,17 @@ impl OrdinaryObject {
         if !self.extensible {
             return Ok(false);
         }
+        self.append_unique_property(key, descriptor.complete())?;
+        Ok(true)
+    }
+
+    // The caller has established that this extensible ordinary record does
+    // not contain key. Keep capacity checks and dense-index metadata shared.
+    fn append_unique_property(
+        &mut self,
+        key: PropertyKey,
+        property: Property,
+    ) -> Result<(), PropertyLimit> {
         if self
             .max_properties
             .is_some_and(|limit| self.properties.len() >= limit)
@@ -442,9 +453,9 @@ impl OrdinaryObject {
             return Err(PropertyLimit);
         }
         self.properties.try_reserve(1).map_err(|_| PropertyLimit)?;
-        self.properties.push((key, descriptor.complete()));
+        self.properties.push((key, property));
         self.record_property_append();
-        Ok(true)
+        Ok(())
     }
 
     /// Implements OrdinaryDelete (10.1.10.1), without strict-mode throw handling.

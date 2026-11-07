@@ -81,6 +81,30 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Object.groupBy result construction
+
+The fresh ordinary result now appends GroupBy's already distinct keys without
+another property scan when work accounting and agent control are absent.
+Baseline production is 6eb513777. Both binaries use the same 45 program workloads,
+Rust 1.99 and the conformance profile. Measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| object_group_by | 9903.3 | 8317.1 | 1028.9 | 1049.5 |
+| object_group_by_few | 43034.5 | 42467.0 | 4605.6 | 4756.0 |
+| map_group_by | 6522.0 | 6449.3 | 972.7 | 978.1 |
+| radix_overflow | 761.4 | 733.3 | 158.9 | 158.2 |
+| parse_all | 1185.1 | 1139.1 | 0 | 0 |
+| initialize_and_drop | 646.9 | 686.7 | 0 | 0 |
+
+Values are microseconds, using medians of six process medians per revision.
+Distinct-key evaluation decreases 16.02%; its collection time increases 2.00%.
+The few-key workload decreases 1.32% and Map control decreases 1.12%, with
+collection increasing 3.27% and 0.56%. Other program evaluation medians range
+from -4.43% to +10.01%, and collection from -6.35% to +6.69%. These observations
+support the distinct-key improvement without claiming a general speedup.
+
 ## Shared radix rounding for parseInt
 
 Without work/magnitude quotas or agent control, parseInt in bases 2/8/16 shares
