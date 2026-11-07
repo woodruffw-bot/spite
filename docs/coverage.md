@@ -61,6 +61,24 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Indexed and keyed collection review
+
+The [review index](spec-review.md#indexed-and-keyed-collections) records
+clause-23 Array/TypedArray factories, traversal, mutation, copying, sorting and
+Uint8Array text codecs, plus clause-24 Map/Set/WeakMap/WeakSet operations.
+Existing native and whole-source cases cover sparse/inherited properties,
+species, iterable closing, asynchronous factories, buffer invalidation,
+raw-byte overlap, live collection mutation and weak object/Symbol identities.
+
+A supplemental 1,734-case Array/TypedArray audit matches Node on results,
+errors, final source properties/values and Proxy/callback/conversion traces.
+It includes relative/nonfinite indices, frozen/accessor/sparse sources and
+numeric TypedArray kinds. No production or fixture change is needed.
+
+Validation: 482 Array-filtered, 107 Map-filtered, 178 Set-filtered and 40
+Uint8Array-codec-filtered Runtime integrations pass (filters can overlap),
+along with the full quality gate.
+
 ## String and RegExp review
 
 The [review index](spec-review.md#text-processing) records clause-22 String

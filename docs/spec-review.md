@@ -26,8 +26,8 @@ documentation. Exact fixture inventories and test receipts belong in
 | 20: fundamental objects | Reviewed | Object/Function/Boolean/Symbol/Error construction and methods below |
 | 21: Numbers and Dates | Reviewed | Number/BigInt conversion, Math special values and Date normalization below |
 | 22: text processing | Reviewed | UTF-16 String operations, Unicode transforms and RegExp protocols below |
-| 23: indexed collections | Pending | |
-| 24: keyed collections | Pending | |
+| 23: indexed collections | Reviewed | Array/TypedArray factories, sparse access, copying, sorting and byte codecs below |
+| 24: keyed collections | Reviewed | Ordered Map/Set storage, set-like records and weak-key operations below |
 | 25: structured data | Pending | |
 | 26: managing memory | Pending | |
 | 27: control abstraction objects | Pending | [Generator/Promise milestone review](coverage.md#generator-promise-and-suspension-review) records the completed implementation components |
@@ -277,3 +277,31 @@ documented non-ECMA-402 policy and canonical-equivalence requirement. The sole
 approved Unicode pair-start RegExpBuiltinExec resolution remains documented in
 the design. Backend capacity/work interruption stays separate from Pattern
 syntax errors and ordinary language exceptions.
+
+## Indexed and keyed collections
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Array construction and factories | [Array factories](../crates/spite-runtime/src/function/array), distinct iterable/array-like paths and traced sequential fromAsync state | Array constructor/of/from/fromAsync cases: constructor arguments, captured iterator methods, mapper validation, awaits, closing and safe-integer limits |
+| Array access, mutation and callbacks | Generic length snapshots, live HasProperty/Get/Set/delete, explicit callback order and shared species creation | Sparse/inherited elements, callback mutation, short circuits, search equality, reductions, front/range/splice and custom/cross-realm species cases |
+| Array flattening, sorting, copies and iteration | Explicit flattening stack, stable fallible merge sort, intrinsic copies and live iterator lengths | Holes versus own undefined, stable ties, skipped replaced/discarded reads, nested depth, iterator reentry and TypedArray iterator witnesses |
+| TypedArray construction and methods | [TypedArray overloads](../crates/spite-runtime/src/function/typed_array.rs), twelve element kinds, internal buffer witnesses and live indexed access | Primitive/iterable/buffer/typed-source order, content types, detached/resized views, species, callbacks, raw-byte copies, overlap, numeric sort and NaN/signed-zero cases |
+| Uint8Array text codecs | [Hex](../crates/spite-runtime/src/function/uint8_hex.rs) and [Base64](../crates/spite-runtime/src/function/uint8_base64.rs), exact alphabets/chunks and partial-write records | Options/Get order, String brands, malformed input, strict overflow bits, capacity-limited prefixes, read/written counts and resized receivers |
+| Map and Set constructors/keyed methods | Hash-indexed ordered storage, identity keys and canonical positive-zero insertion; cached constructor adders | Primitive/object/Symbol identity, NaN/zero, closing, overwritten entries, deletion/reinsertion, subclassing and complete reflection |
+| Collection iteration and grouping/insertion | Live ordered cursors/forEach, intrinsic Map.groupBy and reentrant computed insertion | Mutation during traversal, permanently finished iterators, key order, callback throws/closing, intrinsic bypass and callback insertion/deletion/clear cases |
+| Set-like combination and predicates | [Ordered Set records](../crates/spite-runtime/src/function/set/combine.rs), specified size branches, snapshot/live traversals and early closing | All seven operations, duplicate keys, size/has/keys lookup order, callback mutation, Infinity/fractional sizes and iterator close precedence |
+| WeakMap and WeakSet | Checked object/non-registered-Symbol identities, non-retaining hash storage and ephemeron tracing | Key eligibility, incompatible receivers, constructor closing, weak computed insertion/reentry, collection fixed points and Symbol lifetime cases |
+
+A supplemental 1,734-case Array/TypedArray audit agrees with Node on results,
+errors, resulting source properties/values and observed Proxy/callback/coercion
+traces. It exercises sparse/inherited/accessor/frozen sources, relative and
+nonfinite indices, copying/mutation/search/callback methods and three numeric
+TypedArray kinds. Sorting comparison order is implementation-defined; existing
+regressions instead check stable ordering and the specified snapshot/write
+boundaries.
+
+Copying methods preserve their specified distinction between holes and own
+undefined. TypedArray methods use internal witnesses rather than public length
+properties, revalidate only at required steps and preserve raw representations
+where required. Map/Set hashing does not call user coercion hooks; weak keys do
+not become strong roots through the hash index.
