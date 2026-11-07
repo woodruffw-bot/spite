@@ -94,3 +94,28 @@ The search workload's evaluation is 35.1% lower; its collection is 3.0% higher.
 Other program evaluation changes range from -1.9% to +1.3%. The parse row is
 6.9% higher, although parser code is unchanged; initialization is 0.9% lower.
 These observations describe this workload/configuration and add no CI threshold.
+
+## BigInt division by a word
+
+When a divisor's magnitude fits u32, the integer kernel divides one 32-bit
+magnitude word at a time with a u64 carry. Larger divisors retain binary long
+division. The bigint workload performs 64 multiply/add/divide steps with a
+divisor of two, so it exercises the new path directly.
+
+Rust 1.99/conformance-profile Linux x86_64 measurements use the same eight
+program workloads, pinned to one CPU with no active builds or tests. Two batches
+of twelve ABBA process runs provide twelve runs per revision, each with seven
+samples and ten iterations. The table pools all 24 runs, retaining initialization
+outliers. The baseline is e4bdb4fb2 production; the candidate changes only integer
+division.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint | 246.5 | 131.4 | 153.2 | 152.5 |
+| parse_all | 161.8 | 162.1 | 0 | 0 |
+| initialize_and_drop | 628.4 | 629.3 | 0 | 0 |
+
+Values are microseconds, using medians of per-process medians. BigInt evaluation
+is 46.7% lower and collection 0.4% lower. Other program evaluation changes range
+from -1.2% to +2.5%; parsing and initialization differ by about +0.2% and +0.1%.
+Work and result limits remain opt-in; this adds no timing gate or allowance.

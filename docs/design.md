@@ -1374,7 +1374,13 @@ language's separate equality algorithms.
 
 BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
 words. Zero has no words and no negative sign. Start with straightforward carry,
-borrow, multiplication, and division algorithms. Each arithmetic operation takes
+borrow, multiplication, and division algorithms. Divisors whose magnitude fits
+one u32 word use division from the highest word down, carrying a remainder in
+u64. Larger divisors use binary long division. Both paths truncate the quotient
+toward zero and give a nonzero remainder the dividend's sign (6.1.6.2.5–6).
+Quotient storage uses checked capacity; each processed word charges work before
+division, and result-magnitude checks still apply to both outputs.
+Each arithmetic operation takes
 a budget that bounds result bits and optionally charges word operations before
 doing the work. The runtime translates budget exhaustion into a host limit, while division
 by zero and negative exponents become JavaScript RangeError exceptions.

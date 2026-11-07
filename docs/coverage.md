@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt division by a word
+
+Divisors whose magnitude fits u32 now use one pass over the dividend's magnitude
+words with a u64 carry. Quotients still truncate toward zero, remainders retain
+the dividend's sign, and zero remains unsigned. Larger divisors retain binary
+long division. Quotient allocation is fallible and processed words charge work
+before division; both outputs retain their result-magnitude checks.
+
+Ten independent constant vectors cover carry boundaries, maximum words,
+nonzero remainders, zero and smaller dividends under all four sign combinations.
+A separate 2,400-case Python-integer audit checks exact quotient/remainder
+results for random magnitudes through 2,048 bits, including zero, u32-boundary
+and larger divisors. It has zero mismatches.
+
+Twenty-four quiet single-CPU ABBA process runs show the existing BigInt workload
+46.7% faster in evaluation, with initialization differing by 0.1%. Complete
+measurement scope and values are in [benchmarking](benchmarking.md#bigint-division-by-a-word).
+
+Validation: all 34 BigInt tests, 111 Core tests, 18 Parser units, 443 Parser
+integrations, 573 Runtime units and 2,428 non-RegExp Runtime integrations pass.
+All 5,153 official modes from 2,589 unchanged admitted BigInt/numeric/Date sources
+pass with zero nonpassing outcomes. The full quality gate passes. Upstream
+sources, reviews, helpers, flags and the 80,028-variant inventory are unchanged;
+the BigInt test inventory grows from 33 to 34.
+
 ## String substring scan
 
 Substring search now uses standard slice iterators when work accounting and

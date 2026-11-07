@@ -272,6 +272,64 @@ fn large_products_and_division_reconstruct_the_dividend() {
 }
 
 #[test]
+fn single_word_division_preserves_carries_and_signed_remainders() {
+    // Independent integer constants include maximum numerator words and
+    // remainders immediately below the divisor, across several limb boundaries.
+    for (dividend, divisor, quotient, remainder) in [
+        ("ffffffffffffffff", 4294967295, "100000001", 0),
+        ("fffffffffffffffe", 4294967295, "100000000", 4294967294),
+        (
+            "ffffffffffffffffffffffff",
+            4294967295,
+            "10000000100000001",
+            0,
+        ),
+        (
+            "ffffffffffffffffffffffff",
+            2147483649,
+            "1fffffffc00000007",
+            2147483640,
+        ),
+        ("800000000000000000000001", 3, "2aaaaaaaaaaaaaaaaaaaaaab", 0),
+        ("10000000000000000", 2, "8000000000000000", 0),
+        (
+            "1000000010000000100000001",
+            65537,
+            "ffff0001fffe0002fffd",
+            4,
+        ),
+        (
+            "ffffffff00000000ffffffff",
+            4294967294,
+            "10000000100000003",
+            5,
+        ),
+        ("fffffffe", 4294967295, "0", 4294967294),
+        ("0", 1, "0", 0),
+    ] {
+        for negative_dividend in [false, true] {
+            for negative_divisor in [false, true] {
+                let signed = |value: BigInt, negative| {
+                    if negative {
+                        value.neg(&mut budget()).unwrap()
+                    } else {
+                        value
+                    }
+                };
+                let dividend = signed(parse(dividend, 16), negative_dividend);
+                let divisor = signed(BigInt::from(divisor), negative_divisor);
+                let quotient = signed(parse(quotient, 16), negative_dividend != negative_divisor);
+                let remainder = signed(BigInt::from(remainder), negative_dividend);
+                assert_eq!(
+                    dividend.div_rem(&divisor, &mut budget()).unwrap(),
+                    (quotient, remainder)
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn multiplication_and_division_limits_are_checked() {
     assert_eq!(
         BigInt::from(1).div_rem(&BigInt::default(), &mut budget()),

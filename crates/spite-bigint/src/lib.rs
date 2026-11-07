@@ -404,7 +404,28 @@ impl BigInt {
         if self.cmp_magnitude(other).is_lt() {
             return Ok((Self::default(), budget.finish(self.clone())?));
         }
-        let mut quotient = vec![0u32; self.words.len()];
+        let mut quotient = Self::zero_words(self.words.len())?;
+        if other.words.len() == 1 {
+            let divisor = u64::from(other.words[0]);
+            let mut remainder = 0u64;
+            for (word, output) in self.words.iter().zip(&mut quotient).rev() {
+                budget.charge(4)?;
+                // remainder < divisor <= u32::MAX: the combined dividend
+                // fits u64, and its quotient fits the next u32 output word.
+                let dividend = (remainder << 32) | u64::from(*word);
+                *output = (dividend / divisor) as u32;
+                remainder = dividend % divisor;
+            }
+            let remainder = if self.negative {
+                -(remainder as i64)
+            } else {
+                remainder as i64
+            };
+            return Ok((
+                budget.finish(Self::normalized(self.negative != other.negative, quotient))?,
+                budget.finish(Self::from(remainder))?,
+            ));
+        }
         let mut remainder = Self::default();
         let step_work = other
             .words
