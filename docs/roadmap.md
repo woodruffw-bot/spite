@@ -571,7 +571,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit all host-compatible SharedArrayBuffer and Atomics baseline originals, including multi-agent FIFO notifications, counts, timeouts and separate wait locations.
 - [x] Audit normative optional features and host-defined behavior.
 - [x] Record published host-hook policies, the enabled optional WeakRef constructor property and shared-Agent kept-object checkpoints.
-- [ ] Review every specification section and record implementation evidence.
+- [ ] Review every specification section and record implementation evidence in the [review index](spec-review.md).
+- [x] Review clause-6 value identities, numeric operations, property descriptors and specification-record representations.
+- [x] Review clause-7 conversion, object and iterator operation groups, including abrupt completion and host-abort boundaries.
 - [x] Review primitive/mixed comparison dispatch, ordered object conversion and exact BigInt/String comparisons after ToPrimitive.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
 
