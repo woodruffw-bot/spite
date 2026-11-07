@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Intrinsic Array index keys
+
+CreateArrayFromList reuses the exact decimal UTF-16 key constructor already used
+by StringCreate. One conversion call replaces temporary Rust String formatting
+and UTF-16 buffering. Own-element definition, descriptors and Array length
+handling retain their existing runtime operations.
+
+The same forty-three workloads have mixed end-to-end timing changes across
+twelve quiet single-CPU ABBA runs. Scope and all controls are in
+[benchmarking](benchmarking.md#intrinsic-array-index-keys).
+
+All 1,734 indexed-collection comparisons match Node before and after the change,
+including sparse/inherited/accessor/frozen sources, proxy effects and TypedArrays.
+All 5,164 work-budget cases preserve exact outcomes and observation traces.
+Validation passes all 574 Runtime units, 2,431 non-RegExp integrations, all 7,884
+official modes from 3,991 unchanged Array/Proxy/reflection originals and the full
+quality gate. Test and fixture inventories are unchanged.
+
 ## Object.groupBy temporary key lookup
 
 Unaccounted Object.groupBy grouping without agent control indexes converted

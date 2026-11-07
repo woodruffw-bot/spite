@@ -612,6 +612,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Format StringCreate index keys directly into stack UTF-16 digits before Arc construction, preserving exact decimal keys, descriptors and work accounting.
 - [x] Forward the complete Array constructor key set through Proxy own-key dispatch, preserving trap order, fixed-key invariants and reflection/integrity consumers.
 - [x] Index unaccounted Object.groupBy temporary keys with a standard HashMap, retaining first-key order, fallible capacity and charged scans for work limits and agent control.
+- [x] Reuse direct decimal UTF-16 index construction in CreateArrayFromList, preserving own-element descriptors, Array length behavior and work accounting.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

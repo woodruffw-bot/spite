@@ -79,6 +79,36 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Intrinsic Array index keys
+
+CreateArrayFromList reuses exact decimal UTF-16 index construction instead of
+formatting a temporary Rust String and encoding it into another temporary buffer.
+Element definition and Array length handling continue through the same runtime
+operations. The production change replaces one conversion call.
+
+Baseline production is c42845b0d. Both compared binaries contain identical
+forty-three program workloads. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| object_group_by | 9593.2 | 9787.2 | 969.9 | 938.6 |
+| object_group_by_few | 40414.6 | 40906.1 | 4098.9 | 3770.5 |
+| map_group_by | 6175.4 | 6129.9 | 923.8 | 913.6 |
+| radix_overflow | 781.7 | 694.1 | 150.9 | 151.1 |
+| parse_all | 1100.9 | 1072.4 | 0 | 0 |
+| initialize_and_drop | 636.2 | 634.6 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Distinct Object, four-group Object and Map evaluation differ by +2.0%, +1.2%
+and -0.7%; their collection differs by -3.2%, -8.0% and -1.1%. The unrelated
+radix-overflow row differs by -11.2%. Remaining program evaluation changes
+range from -4.8% to +7.6%, and collection changes from -5.5% to +10.6%, with
+RegExp collection at the upper end. Parsing and initialization differ by -2.6%
+and -0.2%. These are mixed end-to-end timings for a shared-construction cleanup
+with fewer temporary buffers. They add no CI timing threshold or execution allowance.
+
 ## Object.groupBy group lookup
 
 A standard HashMap indexes already-converted temporary keys when work is
