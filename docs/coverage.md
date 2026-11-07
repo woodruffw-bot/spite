@@ -59,7 +59,33 @@ not an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 79448 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+
+## Complete compatible Unicode property and RegExp inventories
+
+All 290 unchanged exhaustive property datasets whose membership agrees between
+Unicode17 and pinned Unicode18 pass both required modes (580 variants). The
+original regExpUtils.js helper builds and checks the full code-point strings;
+no source, loop, helper, flag, worker stack or execution allowance was changed.
+The first whole Script=Vai benchmark passed both modes in 7.766 seconds before
+the complete cohort was admitted.
+
+Together with the earlier finite and syntax-only sources, this retains all
+2,027 compatible published-baseline originals in the 2,119-source RegExp and
+RegExp-literal inventory. Ninety whole datasets require old Unicode17 membership
+that contradicts actual Unicode18 tables, with real-backend counterexamples
+recorded for every dataset. Two older whole literal loops assume obsolete
+join-control ID_Continue membership. Those 92 whole sources remain excluded
+under the documented Unicode18 baseline, with no fragments admitted.
+
+Counts are 41,747 fixtures, twenty-eight helpers, 41,531 reviewed sources,
+80,028 variants and 78 controls.
+
+Validation: all 80,028 variants, 78 controls and 85 Test262 package checks pass
+(the complete corpus took 1,413.24 seconds). The separate 580-variant candidate
+run passed in 825.332 seconds. All 2,027 retained scope sources match their exact
+pinned Git blobs. Formatting, strict Clippy, Rust 1.99 all-target checks and
+repository policies pass.
 
 ## Published host policies and cross-Realm kept objects
 

@@ -1,9 +1,20 @@
 # Test262 regression fixtures
 
-These 41457 unmodified test fixtures and twenty-eight harness files come from
+These 41747 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Completed compatible RegExp property inventories
+
+The 290 unchanged exhaustive Unicode property originals pass 580 modes using
+their original full-code-point helpers and default runtime configuration. All
+2,027 compatible originals from the 2,119-source RegExp/literal inventory are
+retained. Ninety datasets require Unicode17 membership contradicted by the
+pinned Unicode18 data; two whole old literal loops assume obsolete join-control
+membership. These 92 originals remain excluded whole. No test or helper bytes,
+flags, loops, stack sizes or execution allowances changed. Counts are 41,531
+reviewed sources and 80,028 variants, plus 78 controls.
 
 ## Object, declaration and finite Unicode fixture audits
 

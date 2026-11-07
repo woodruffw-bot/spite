@@ -376,7 +376,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Report optional execution-work interruption separately from completed match failure and JavaScript exceptions.
 - [x] Align regress Unicode property and folding tables with the workspace Unicode 18 baseline.
 - [x] Report explicit backend representation limits after original Pattern syntax validation.
-- [ ] Audit remaining edition-17 RegExp behavior through the shared backend.
+- [x] Audit remaining edition-17 RegExp behavior through the shared backend.
+- [x] Complete Unicode18-compatible property membership, finite string-property/UnicodeSets vectors and the published RegExp/literal inventory with unchanged full-code-point originals.
 - [x] Preserve transparent return-wrapper work/preflight without a second expression recursion slot, with unchanged native guards and 2 MiB stack checks.
 - [x] Supply synchronous Test262 diagnostic print through the existing capture while retaining async-only completion validation and missing-helper failure accounting.
 - [x] Add Date, binary buffers, typed arrays, and DataView.
