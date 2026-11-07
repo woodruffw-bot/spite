@@ -2151,13 +2151,15 @@ awaiting it; a missing throw performs normal synchronous closing before rejectio
 
 Array.fromAsync (23.1.2.2) selects async iteration before synchronous iteration
 and otherwise captures an array-like length. Iterator acquisition precedes generic
-output construction. A traced native cursor advances sequentially through next,
+output construction. The synchronous adapter retains the original cached next
+method without reading it again. A traced native cursor advances through next,
 item, mapping and closing awaits, using the same internal Await helper as async
 resource disposal. Async iterator values pass through without an extra Await;
 synchronous iterator and array-like values are awaited. Mapper results are always
 awaited. Mapping and property-definition failures await iterator closing with the
 original throw taking precedence over closing language failures. Step failures
-and final length failures skip closing. Host failures bypass rejection and closing;
+and final length failures skip closing. A false final Proxy set result is a
+TypeError because Set uses Throw=true. Host failures bypass rejection and closing;
 completion releases cursor captures even after a host allowance is exhausted.
 No public then/species hook or replacement Promise binding participates in native
 Await. Array constructor own-key reflection is now complete. Source for-await-of

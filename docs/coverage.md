@@ -104,6 +104,11 @@ turn and eight exceed a separate two-second Node-process observation. These
 probe bounds do not change engine quotas. Exact trace checks leave zero
 unexplained differences (23.1.2.2, AsyncIteratorClose, 27.1.5.1/.3).
 
+Existing native factory tests additionally reject a second read of the original
+synchronous next method and check false final Proxy length writes for async,
+sync and array-like inputs. All ten Array.fromAsync integration groups and the
+full quality gate pass; test and fixture inventories are unchanged.
+
 All 756 supplemental Object.groupBy/Map.groupBy cases also match Node, covering
 property-key conversion, Symbol/object identity, null-prototype results, strict
 callback receivers, proxy calls and iterator cleanup precedence.

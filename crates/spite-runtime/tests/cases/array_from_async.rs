@@ -100,6 +100,28 @@ fn iterator_acquisition_precedes_construction_and_next_is_cached() {
         &mut realm,
         "other instanceof D&&other.length===2&&Object.hasOwn(other,'1')",
     );
+    // GetIteratorFromMethod caches the original synchronous next method before
+    // CreateAsyncFromSyncIterator reads next from its new intrinsic adapter.
+    realm
+        .eval(
+            r#"
+        let syncGets=0,syncIndex=0,syncResult;
+        const syncSource={
+            [Symbol.iterator](){return this},
+            get next(){
+                if(++syncGets!==1)throw 8;
+                return function(){return {value:9,done:syncIndex++>0}};
+            }
+        };
+        Array.fromAsync(syncSource).then(a=>{syncResult=a});
+    "#,
+        )
+        .unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "syncGets===1&&syncResult.length===1&&syncResult[0]===9",
+    );
 }
 
 #[test]
@@ -161,6 +183,32 @@ fn define_failure_closes_but_final_length_failure_does_not() {
         "#,key=if define {"0"} else {"length"})).unwrap();
         drain(&mut realm);
         check(&mut realm, &format!("ok&&closed==={}", u8::from(define)));
+    }
+    // Both branches of 23.1.2.2 use Set with Throw=true for the final length.
+    // A false Proxy set result rejects after exhaustion without iterator close.
+    for input in [
+        "{[Symbol.asyncIterator](){return this},next(){return {value:1,done:n++>0}},return(){closed++;return {}}}",
+        "{[Symbol.iterator](){return this},next(){return {value:1,done:n++>0}},return(){closed++;return {}}}",
+        "{0:1,length:1}",
+    ] {
+        let mut realm = Realm::default();
+        realm
+            .eval(&format!(
+                r#"
+            let n=0,closed=0,sets=0,ok=false,target={{}};
+            function C(){{return new Proxy(target,{{set(t,k,v){{
+                if(k!=='length'||v!==1)throw 2;
+                sets++;return false;
+            }}}})}}
+            Array.fromAsync.call(C,{input}).catch(e=>{{ok=e instanceof TypeError}});
+        "#
+            ))
+            .unwrap();
+        drain(&mut realm);
+        check(
+            &mut realm,
+            "ok&&sets===1&&closed===0&&target[0]===1&&!Object.hasOwn(target,'length')",
+        );
     }
 }
 
