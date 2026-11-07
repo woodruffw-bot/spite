@@ -4631,7 +4631,8 @@ Arc identities survive copies and moves; concurrent atomic writes outside the
 range are preserved. A failure before commit changes no logical bytes.
 On targets with native 64-bit atomics the word is AtomicU64; otherwise it is
 AtomicU32. Shared 8-byte Atomics require native 64-bit support and explicitly
-refuse on other targets. Agent integration remains implementation work. Multipebibyte eager-allocation
+refuse on other targets. Isolated agents share native backing and deliver
+notifications through their owning job queues, as described below. Multipebibyte eager-allocation
 assumptions do not define a default quota for the logical buffer domain.
 
 An embedding can retain a SharedBuffer through share_array_buffer and install a

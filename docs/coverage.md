@@ -61,6 +61,26 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Control abstractions, reflection, memory model and annex review
+
+The [review index](spec-review.md#control-abstractions-and-reflection) now records
+clauses 27–29 and Annexes A/E/F. Iterator/Promise/source-suspension cases retain
+their completed milestone evidence. Reflect/Proxy/Module namespace operations
+use the reviewed internal-method and live-binding implementations. The memory
+review connects standard atomic words, shared page ownership, no-tear access,
+SeqCst operations and owning-Agent wait jobs to existing native concurrency and
+whole-source worker tests.
+
+Annex A's 381 references name 376 distinct productions covered by the existing
+lexical/syntax/Pattern reviews. All 12 distinct Annex-E and 41 Annex-F links
+resolve into reviewed current algorithms with the recorded compatibility
+regressions. These counts organize the source review and add no test credit.
+Stale design text describing agent integration as future work is corrected.
+Executable code, fixtures, helpers, flags and resource policies are unchanged.
+
+The full quality gate passes. A fresh whole-source Test262 run is in progress
+before closing the roadmap's whole-specification review milestone.
+
 ## Structured data and weak-memory API review
 
 The [review index](spec-review.md#structured-data-and-memory-management) records

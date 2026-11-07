@@ -2,9 +2,9 @@
 
 Review against [ECMA-262 edition 17](https://262.ecma-international.org/17.0/)
 and its [published es2026 source](https://github.com/tc39/ecma262/blob/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html).
-The roadmap's whole-specification review remains open until every pending row
-has implementation and regression evidence. Pending rows require further review
-documentation. Exact fixture inventories and test receipts belong in
+This ledger connects the published clause groups to their implementation and
+regression evidence. The roadmap's whole-specification milestone also requires
+the final regression gate. Exact fixture inventories and test receipts belong in
 [coverage](coverage.md).
 
 | Clauses | Review | Evidence |
@@ -30,14 +30,14 @@ documentation. Exact fixture inventories and test receipts belong in
 | 24: keyed collections | Reviewed | Ordered Map/Set storage, set-like records and weak-key operations below |
 | 25: structured data | Reviewed | Buffer/view witnesses, Atomics and JSON protocols below |
 | 26: managing memory | Reviewed | WeakRef kept objects and FinalizationRegistry cleanup below |
-| 27: control abstraction objects | Pending | [Generator/Promise milestone review](coverage.md#generator-promise-and-suspension-review) records the completed implementation components |
-| 28: reflection | Pending | |
-| 29: memory model | Pending | |
-| Annex A: grammar summary | Pending | |
+| 27: control abstraction objects | Reviewed | Iterator, Promise and source-suspension operations below; [milestone evidence](coverage.md#generator-promise-and-suspension-review) |
+| 28: reflection | Reviewed | Reflect, Proxy and Module namespace boundaries below |
+| 29: memory model | Reviewed | Shared word storage, ordering and Agent boundaries below |
+| Annex A: grammar summary | Reviewed | Production references cross-checked with the lexical, syntax and Pattern reviews below |
 | Annex B: optional web features | Reviewed | [Published host policies](design.md#published-host-policies); disabled extensions remain excluded whole |
 | Annex C: strict mode | Reviewed | [Declaration/reference review](coverage.md#published-declaration-and-statement-review); strictness remains independent of Script/Module goals |
 | Annex D: host layering | Reviewed | [Published host-hook choices](design.md#published-host-policies) |
-| Annexes E–F: historical compatibility notes | Pending | |
+| Annexes E–F: historical compatibility notes | Reviewed | Referenced current algorithms and compatibility regressions below |
 
 ## Types, values and specification records
 
@@ -332,3 +332,58 @@ Promise capabilities. Weak cleanup remains host-scheduled and cannot run during
 evaluation or collection. The production trace-inlining validation includes
 all 302 unchanged admitted WeakRef/WeakMap/WeakSet/FinalizationRegistry sources,
 executed in their 603 official runner modes with no failures or allowances.
+
+## Control abstractions and reflection
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Iterator acquisition, wrappers and helpers | [Shared iterator records](../crates/spite-runtime/src/function/iterator/operations.rs), direct/flattenable acquisition, lazy helpers/concat and eager consumers | Cached next and receivers, validation/closing order, exact unbounded counters, skipped drop values, flatMap inner/outer closing, helper reentry and retained captures |
+| Async iteration | [Async-from-sync adapter](../crates/spite-runtime/src/function/async_iterator/from_sync.rs), Promise continuation and source for-await-of | next/return/throw lookup, missing methods, value unwrapping, rejected sync values, closing precedence and job timing |
+| Promise construction and reaction jobs | Capabilities, shared already-resolved state, thenable assimilation, species-aware then/catch/finally and FIFO Agent jobs | Executor/capability order, self-resolution, callback identity/Realm, reaction propagation, custom species and queued object/Symbol argument lifetimes |
+| Promise static methods | Generic resolve/reject/try/withResolvers, ordered race/all/allSettled/any and per-input aggregation guards | Constructor resolve capture, iterable closing, synchronous custom thenables, repeated callbacks, ordered values/errors and empty inputs |
+| Generator/AsyncGenerator/AsyncFunction objects | Intrinsic constructor/prototype graphs, shared traced source interpreter and serialized async-generator requests | Lazy generator bodies, call-time parameters, next/return/throw, yield delegation, protected finally, awaited return/yield, queue order and cross-realm resumption |
+| Reflect | [All thirteen operations](../crates/spite-runtime/src/function/reflect.rs), explicit target/key/descriptor/list validation and receiver forwarding | Primitive rejection, absent versus explicit undefined, Boolean internal-method rejection, own String/Symbol keys, construction/new.target and Proxy consumers |
+| Proxy and Module namespace objects | Proxy creation/revocation and cached capabilities; intrinsic per-Module namespace identity | Revocation without traps, all internal-method invariants, fixed namespace prototype/extensibility, sorted exports and live binding/TDZ behavior |
+
+Suspended source frames retain references, partial results, environments and
+pending completion targets until resumption or release. Dynamic constructors
+parse independent goals. Host servicing advances Promise/async jobs explicitly;
+language rejection and host abort remain separate outcomes. The ordinary/exotic
+and Script/Module reviews cover the internal methods used by reflection.
+
+## Memory model
+
+| Requirement group | Implementation and evidence |
+| --- | --- |
+| Shared data-block identity and initialization | Shared backing identity survives native handle clones and receiving-Realm wrappers; sparse pages represent zero initialization, monotonic growth and stable owned pages |
+| Unordered view access and no-tear configurations | Ordinary shared views and Atomics use the same native atomic words; aligned integer elements fit a word, masked updates preserve adjacent bytes, and permitted unaligned fragments retain original byte ranges |
+| Sequentially consistent Atomics | Prepared Arc-owned accesses perform SeqCst loads/CAS after directory preparation; no storage lock/raw pointer is retained by the atomic memory step |
+| Synchronization and Agent order | Wait registration compares under the waiter-list critical section; per-location FIFO notification, timeout/termination arbitration and owning-Agent job queues preserve the specified ordering |
+| Candidate-execution constraints | Native atomic operations provide concrete executions subject to the specification's ordering/coherence/no-tear rules; abstract event/relation records need no JavaScript-visible object or stored execution graph |
+| Regression evidence and platform boundary | Native store-buffering tests reject the forbidden both-zero result; first-touch/adjacent-update, raw/atomic visibility, copy destination isolation and isolated-Realm agent tests protect shared state. Eight-byte shared Atomics explicitly require a target with native 64-bit atomics |
+
+The implementation may provide stronger ordering than an unordered access
+requires. Tests sample concurrency outcomes; the ordering argument also depends
+on the native atomics and ownership discipline, rather than treating sampled
+executions as proof of every possible interleaving. Directory/growth/waiter
+locks contain no user callbacks. Project code remains safe Rust with standard
+atomic words, Arc and synchronization primitives.
+
+## Grammar summary and historical compatibility notes
+
+Annex A contains 381 production references to 376 distinct names. Its lexical,
+numeric-String, RegExp and syntactic grammar groups refer back to the reviewed
+Core/Parser implementations and clauses 12–16/22; it adds no independent
+evaluation algorithm. Script/Module goals, parameterized await/yield/return/in
+contexts, cover grammars and early errors retain their existing regressions.
+
+Annex E's 12 and Annex F's 41 distinct clause links all resolve into the
+reviewed current algorithms. Existing regressions cover own global-declaration
+checks, Array length recapture, positive-zero TimeClip, Date parsing/invalid
+formatting, RegExp source escaping and empty-match advancement, stable NaN
+comparison, numeric-String radices, per-site templates, Unicode whitespace and
+case mapping, lexical let/ASI, declaration restrictions and UpdateEmpty,
+primitive Object APIs, bound/function/Error metadata and async job timing.
+The historical notes do not reinstate superseded behavior or enable disabled
+Annex B policies. Reference counts organize this cross-check; they do not
+represent additional conformance tests.
