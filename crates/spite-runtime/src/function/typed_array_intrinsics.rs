@@ -49,7 +49,7 @@ pub(crate) enum Member {
     ToStringTag,
     Iterator(ArrayIterationKind),
     // Indices come only from enumerating the corresponding fixed tables.
-    Deferred(u8),
+    PrototypeMethod(u8),
     Uint8Encoding(u8),
 }
 
@@ -64,23 +64,22 @@ impl Member {
             Self::Iterator(ArrayIterationKind::Key) => "keys",
             Self::Iterator(ArrayIterationKind::Value) => "values",
             Self::Iterator(ArrayIterationKind::KeyValue) => "entries",
-            Self::Deferred(index) => DEFERRED_METHODS[usize::from(index)].0,
+            Self::PrototypeMethod(index) => PROTOTYPE_METHODS[usize::from(index)].0,
             Self::Uint8Encoding(index) => UINT8_METHODS[usize::from(index)].0,
         }
     }
 
     pub(super) fn length(self) -> f64 {
         match self {
-            Self::Deferred(index) => f64::from(DEFERRED_METHODS[usize::from(index)].1),
+            Self::PrototypeMethod(index) => f64::from(PROTOTYPE_METHODS[usize::from(index)].1),
             Self::Uint8Encoding(index) => f64::from(UINT8_METHODS[usize::from(index)].1),
             _ => 0.0,
         }
     }
 }
 
-// Standard descriptors remain reflectable while invocation reports a host
-// Unsupported result, never a catchable JavaScript substitute.
-const DEFERRED_METHODS: [(&str, u8); 27] = [
+// Names and initial lengths for the implemented prototype-method dispatch.
+const PROTOTYPE_METHODS: [(&str, u8); 27] = [
     ("at", 1),
     ("copyWithin", 2),
     ("every", 1),
@@ -309,8 +308,8 @@ impl Realm {
             true,
             span,
         )?;
-        for (index, (name, _)) in DEFERRED_METHODS.into_iter().enumerate() {
-            let member = Member::Deferred(index as u8);
+        for (index, (name, _)) in PROTOTYPE_METHODS.into_iter().enumerate() {
+            let member = Member::PrototypeMethod(index as u8);
             let method =
                 self.new_builtin(function_prototype, Builtin::TypedArrayMember(member), span)?;
             self.define_builtin_property(
@@ -414,9 +413,9 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if let Member::Deferred(index) = member
+        if let Member::PrototypeMethod(index) = member
             && let Some(method) = super::typed_array_methods::Method::from_name(
-                DEFERRED_METHODS[usize::from(index)].0,
+                PROTOTYPE_METHODS[usize::from(index)].0,
             )
         {
             return self.typed_array_method(method, receiver, arguments, span);
@@ -434,7 +433,7 @@ impl Realm {
             }
         }
         let unsupported_owner = match member {
-            Member::Deferred(_) => Some("TypedArray.prototype"),
+            Member::PrototypeMethod(_) => Some("TypedArray.prototype"),
             Member::Uint8Encoding(index) => Some(if UINT8_METHODS[usize::from(index)].2 {
                 "Uint8Array"
             } else {
@@ -508,8 +507,8 @@ impl Realm {
                 }
                 self.array_iterator(Value::Object(object), kind, span)
             }
-            Member::Deferred(_) | Member::Uint8Encoding(_) => {
-                unreachable!("deferred methods returned above")
+            Member::PrototypeMethod(_) | Member::Uint8Encoding(_) => {
+                unreachable!("method dispatch returned above")
             }
         }
     }

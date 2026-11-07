@@ -61,6 +61,13 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## TypedArray dispatch labels
+
+Internal selector and table names now describe the 27 implemented prototype
+methods. The stale deferred-invocation comment is removed. JavaScript names,
+descriptors and dispatch behavior are unchanged. All 123 selected TypedArray
+integration tests and the full quality gate pass; inventories are unchanged.
+
 ## Private class environments and revoked Proxy receivers
 
 All 288 supplemental class-environment cases match Node before and after
