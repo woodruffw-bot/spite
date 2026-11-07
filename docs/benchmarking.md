@@ -69,6 +69,35 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Linear BigInt parsing in power-of-two radices
+
+Larger unaccounted inputs in radices 2/4/8/16/32 validate their digits and pack
+them directly into checked, fallibly reserved magnitude words. Leading zeroes
+need no magnitude storage. Other radices retain grouped multiply/add, while
+short and explicitly limited inputs keep the per-digit path.
+
+This comparison reuses all existing workloads; no benchmark program changes.
+Baseline production is 3f54035af; the candidate changes only power-of-two
+parsing. Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU,
+no active builds/tests, twelve ABBA process runs, seven samples and ten
+iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_parse_hex | 590.0 | 210.4 | 149.8 | 147.4 |
+| bigint_parse_decimal | 446.8 | 441.7 | 151.1 | 149.0 |
+| bigint_parse_small | 3071.9 | 3090.9 | 285.6 | 275.7 |
+| radix_overflow | 752.0 | 717.1 | 150.7 | 150.4 |
+| parse_all | 778.4 | 771.8 | 0 | 0 |
+| initialize_and_drop | 611.8 | 610.7 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Hexadecimal parsing evaluation is 64.3% lower. Decimal and small-input controls
+differ by -1.1% and +0.6%; the unrelated radix-overflow row differs by -4.6%.
+Remaining program evaluation changes range from -2.8% to +3.5%, and collection
+changes from -5.3% to +1.6%. Parsing and initialization differ by -0.9% and
+-0.2%. These observations add no CI timing threshold or execution allowance.
+
 ## Unchanged ASCII URI encoding prefixes
 
 Without work accounting or agent control, URI encoding copies the initial

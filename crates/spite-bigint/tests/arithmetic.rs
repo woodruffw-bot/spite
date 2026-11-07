@@ -44,7 +44,7 @@ fn radix_round_trips_and_sign_normalization() {
 }
 
 #[test]
-fn power_of_two_radices_extract_cross_word_digits_without_leading_zeroes() {
+fn power_of_two_radices_preserve_cross_word_digits_without_leading_zeroes() {
     let value = parse("123456789abcdef0123456789abcdef", 16);
     let negative = value.neg(&mut budget()).unwrap();
     for (radix, expected) in [
@@ -61,6 +61,16 @@ fn power_of_two_radices_extract_cross_word_digits_without_leading_zeroes() {
         (32, "14d2mf2dbpnng28q5cu4qnjff"),
     ] {
         assert_eq!(value.to_radix(radix, &mut budget()).unwrap(), expected);
+        for digits in [expected.to_owned(), expected.to_uppercase()] {
+            assert_eq!(
+                BigInt::parse_digits(
+                    &format!("{}{digits}", "0".repeat(37)),
+                    radix,
+                    &mut Budget::with_limits(None, None),
+                ),
+                Ok(value.clone())
+            );
+        }
         assert_eq!(
             negative.to_radix(radix, &mut budget()).unwrap(),
             format!("-{expected}")

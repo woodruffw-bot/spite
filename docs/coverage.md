@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Linear BigInt parsing in power-of-two radices
+
+Larger BigInt inputs in radices 2/4/8/16/32 validate their digits and pack bits
+directly into little-endian words when work and magnitude quotas are disabled.
+Bit/word capacity is checked before fallible allocation. Leading zeroes consume
+no magnitude storage, cross-word digits retain both parts and normalization
+removes an unused high word. Other radices keep grouped multiply/add; short
+inputs and explicit quotas retain the per-digit path.
+
+Strengthened native oracles check exact cross-word constants in upper/lowercase
+with leading zeroes. All 10,399 Python-integer audit cases match before and
+after the change, including every radix, word/group boundaries, partial high
+words, zero inputs and invalid digits/Unicode lookalikes. Twelve quiet
+single-CPU ABBA runs measure 64.3% lower evaluation time for large hexadecimal
+parsing. Decimal and small-input controls differ by -1.1% and +0.6%.
+Full measurements are in
+[benchmarking](benchmarking.md#linear-bigint-parsing-in-power-of-two-radices).
+
+Validation passes all 36 BigInt tests, 112 Core tests, 18 Parser units,
+443 Parser integrations, 574 Runtime units, 2,430 non-RegExp integrations
+and the full quality gate. All 5,454 official modes from 2,746 unchanged
+numeric, BigInt, Date and numeric-literal originals pass with zero nonpassing
+outcomes. Test and fixture inventories are unchanged.
+
 ## Unchanged ASCII URI encoding prefixes
 
 URI encoders copy the initial unchanged ASCII prefix in one checked append

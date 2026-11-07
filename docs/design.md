@@ -1391,10 +1391,12 @@ by the largest radix power that fits u32 and emit padded lower digit groups;
 one-word inputs retain single-digit division. Formatting checks allocation
 capacity and charges processed words and emitted digits without imposing a
 result-magnitude quota on an existing integer.
-Unsigned digit parsing groups inputs longer than 32 bytes when both work and
-magnitude quotas are disabled. Each group's radix power and value fit u32, so
-one multiply/add replaces a pass over the magnitude for every digit. Capacity
-for a possible carry word is reserved fallibly. Short inputs and explicit
+Unsigned digit parsing handles inputs longer than 32 bytes without work or
+magnitude quotas in word-sized operations. Radices 2/4/8/16/32 validate digits,
+check the complete bit/word capacity and pack fixed-width digits directly into
+little-endian words, including cross-word digits and partial high words.
+Leading zeroes require no magnitude storage. Other radices multiply/add u32-sized
+digit groups, reserving a possible carry word fallibly. Short inputs and explicit
 quotas retain per-digit validation, work charges and magnitude checks, including
 host limits that precede a later invalid digit.
 Each arithmetic operation takes

@@ -161,6 +161,9 @@ impl BigInt {
             && budget.max_bits.is_none()
             && budget.remaining_work.is_none()
         {
+            if radix.is_power_of_two() {
+                return Self::parse_power_of_two_digits(digits, radix);
+            }
             let width = u32::MAX.ilog(radix) as usize;
             for group in digits.as_bytes().chunks(width) {
                 let mut addend = 0;
@@ -189,6 +192,35 @@ impl BigInt {
             }
         }
         Ok(value)
+    }
+
+    // Unaccounted inputs only: validate before reserving the complete magnitude,
+    // then pack fixed-width digits directly into little-endian words.
+    fn parse_power_of_two_digits(digits: &str, radix: u32) -> Result<Self, Error> {
+        let digits = digits.trim_start_matches('0');
+        if digits.is_empty() {
+            return Ok(Self::default());
+        }
+        for byte in digits.bytes() {
+            char::from(byte)
+                .to_digit(radix)
+                .ok_or(Error::InvalidDigit)?;
+        }
+        let width = radix.trailing_zeros() as usize;
+        let bits = digits.len().checked_mul(width).ok_or(Error::Limit)?;
+        let mut words = Self::zero_words(bits.div_ceil(32))?;
+        for (index, byte) in digits.bytes().rev().enumerate() {
+            let digit = char::from(byte)
+                .to_digit(radix)
+                .expect("validated radix digit");
+            let bit = index * width;
+            let offset = bit % 32;
+            words[bit / 32] |= digit << offset;
+            if offset + width > 32 {
+                words[bit / 32 + 1] |= digit >> (32 - offset);
+            }
+        }
+        Ok(Self::normalized(false, words))
     }
 
     /// Formats the integer using lowercase digits in radix 2 through 36.
