@@ -30,7 +30,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 ## 2. Grammar and execution core
 
 - [x] Parse, validate and evaluate left-associated binary expression chains iteratively, preserving precedence, prefix spans, coercion order and short circuit semantics.
-- [ ] Complete lexical goals, templates, RegExp literals, and numeric literals.
+- [x] Complete lexical goals, templates, RegExp literals, and numeric literals.
+- [x] Review every published clause-12 lexical production and record its implementation, regression coverage and source-goal boundaries.
 - [x] Scan syntactic lookahead on demand and preserve lexical failures across Script, eval, and dynamic Function grammar goals.
 - [x] Point missing required radix/exponent digits at complete offending code points while preserving empty EOF spans.
 - [x] Audit the complete BigInt, Boolean, null, numeric, String and template-literal baseline inventories with unchanged strictness and exact rejection evidence.

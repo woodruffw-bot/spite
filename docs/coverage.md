@@ -61,6 +61,46 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Published lexical grammar review
+
+The clause-12 review accounts for all five lexical goals and every lexical
+production in the published edition. The implementation and regression evidence
+below complement the retained whole-source Test262 inventories; passing an
+inventory alone does not establish that the grammar review is complete.
+
+| Published clause | Implementation | Regression evidence |
+| --- | --- | --- |
+| 12, input elements and lexical goals | Parser-selected goals in lexer.rs/lib.rs, scanner checkpoints and grammar-directed cover probes | Lexer goal/checkpoint units; lexical_goals.rs, streaming.rs, arrow_covers.rs and pattern_covers.rs |
+| 12.1, Unicode format controls | Unicode18 identifier properties, whitespace predicates and lossless SourceText | identifiers.rs, scripts_utf16.rs and dynamic_source_utf16.rs |
+| 12.2–12.3, whitespace and line terminators | Shared Core predicates; scanner trivia and newline metadata | Core predicate units; retained whitespace/line-terminator originals; templates.rs and updates.rs |
+| 12.4–12.5, comments and hashbang | Scanner comment trivia and initial HashbangOrRegExp goal | Lexer checkpoint/hashbang units; retained comment and hashbang originals |
+| 12.6–12.7, tokens, names and keywords | Maximal token scanning, Unicode/escaped names and separate context/strict early errors | identifiers.rs, private_elements.rs and unchanged identifier-token originals |
+| 12.8, punctuators | Longest-match punctuation, optional-chain decimal restriction and private-name adjacency | optional_chaining.rs, private_elements.rs and operator grammar cases |
+| 12.9.1–12.9.2, null and Boolean literals | Exact unescaped literal tokens | parser.rs, identifiers.rs and retained literal originals |
+| 12.9.3, numeric literals | Radix/separator/exponent scanning, strict legacy checks and Number/BigInt literal values | bigint.rs, legacy_literals.rs and retained numeric-value originals |
+| 12.9.4, String literals | Lossless UTF-16 escapes, code-point escapes, continuations and strict legacy checks | legacy_literals.rs, scripts_utf16.rs and dynamic_source_utf16.rs |
+| 12.9.5, RegExp literals | Goal-selected body/flag scanning; independent Pattern/flag early errors | lexical_goals.rs, regexp_literals.rs and shared Pattern tests |
+| 12.9.6, template components | Raw/cooked UTF-16, normalized line endings, nested tails and tagged invalid escapes | templates.rs and tagged_templates.rs |
+| 12.10, ASI | Statement boundaries and restricted productions; header and await/yield exceptions | updates.rs, function_bodies.rs, loops.rs, for_loops.rs and identifiers.rs |
+
+The selected Unicode18 and RegExp boundary policy remain as documented in the
+design. Disabled Annex B HTML comments do not extend the lexical grammar.
+RegExp execution constraints are separate from literal token boundaries.
+
+An additional local audit checked 2,232 numeric, String/template escape and
+RegExp-boundary combinations, 5,236 contextual statement combinations and 14,280
+function/arrow parameter combinations. Node agreed except for two static-block
+labels named arguments: published ContainsArguments visits IdentifierReferences,
+so those labels are valid under 15.7.2/15.7.9. The implementation follows the
+published grammar. A separate 2,662-case normal/abrupt statement-completion audit
+agreed across labels, loops, switch, catch and finally.
+
+This review closes the lexical milestone, without extending that conclusion to
+the remaining declaration, completion or specification-review milestones. The
+current Parser suite, 8,112 exact reviewed parse-negative modes and 2,425
+non-RegExp Runtime integrations passed on the reviewed implementation. This
+documentation increment changes no source, fixture, review or execution flags.
+
 ## Let declaration lookahead and expression boundaries
 
 Statement lists and for headers now share BindingIdentifier/binding-pattern
