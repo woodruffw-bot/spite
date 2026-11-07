@@ -554,6 +554,8 @@ then raises the protocol TypeError. A missing return awaits the incoming value
 again as YieldExpression specifies. Awaited method rejection propagates to the
 outer body without being forwarded to the delegate's throw method. Iterator and
 cached-method captures use the existing object/Symbol tracing path.
+An abrupt next call or awaited next result propagates without looking up return;
+the yield* algorithm supplies no iterator-closing step on that path.
 
 Standalone Modules use Realm::eval_module/evaluate_module and a fresh Module
 environment outside the global environment (16.2.1). Module var bindings start
@@ -2104,9 +2106,10 @@ The prototype and both methods remain independent intrinsic roots.
 The Async-from-Sync prototype inherits that prototype and supplies next, return
 and throw (27.1.4.5). Wrappers trace the synchronous iterator and cached next;
 return and throw are looked up live. Continuations read done before value, await
-value even for a completed result, and create fresh iterator results. Rejected
-values close unfinished iterators for next/throw, while return never closes.
-Getter failures skip closing. A missing return embeds its argument without
+value even for a completed result, and create fresh iterator results. Failed
+PromiseResolve or rejected values close unfinished iterators for next/throw,
+while return never closes. A thrown synchronous next call and failed done/value
+getters reject before that continuation closing path. A missing return embeds its argument without
 awaiting it; a missing throw performs normal synchronous closing before rejection.
 
 Array.fromAsync (23.1.2.2) selects async iteration before synchronous iteration

@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Async delegation stepping failures
+
+A new Runtime regression protects queued async-generator requests when a
+synchronous next call throws, an async next call throws, or its returned Promise
+rejects. Each failure reaches the outer generator's catch with the original
+reason, without reading the delegate's return property.
+
+A 2,772-case audit combines 21 generator bodies, 22 request sequences and six
+value forms. Ordinary job draining and collection after every idle job checkpoint
+produce identical results/traces for every case. Node agrees on 2,730 cases. The
+remaining 42 differ only because Node additionally reads/calls return after a
+synchronous next throws. Published yield* propagates abrupt Call/Await results;
+%AsyncFromSyncIteratorPrototype%.next rejects IteratorNext failures before the
+continuation's value-rejection closing step. The new regression protects those
+specified boundaries. All observed reference differences are explained; raw
+differences remain recorded separately rather than counted as Node matches.
+
+Validation: 30 async-generator Runtime integration groups, twelve async-iterator
+units and the full quality gate pass. Production algorithms and upstream
+fixtures/helpers/reviews/flags are unchanged. Runtime integration inventory
+becomes 5,046 (2,429 non-RegExp and 2,617 RegExp); unit inventory remains 573 and
+the reviewed Test262 inventory remains 80,028 variants.
+
 ## Nested expression effects and suspension collection
 
 A seeded 4,000-case synchronous expression audit matches Node for results,

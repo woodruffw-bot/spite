@@ -103,6 +103,28 @@ fn rejected_method_results_reach_outer_catch_instead_of_delegate_throw() {
 }
 
 #[test]
+fn failed_next_propagates_without_closing_sync_or_async_delegates() {
+    // 15.5 propagates abrupt Call/Await results. The sync adapter's next
+    // rejects IteratorNext failures before AsyncFromSyncIteratorContinuation
+    // (sec-%asyncfromsynciteratorprototype%.next), without IteratorClose.
+    for (protocol, failure) in [
+        ("iterator", "throw reason"),
+        ("asyncIterator", "throw reason"),
+        ("asyncIterator", "return Promise.reject(reason)"),
+    ] {
+        let mut realm = Realm::default();
+        realm.eval(&format!(
+            "let events=[],results,reason={{}},calls=0,inner={{[Symbol.{protocol}](){{return this}},next(){{events.push('next');if(calls++===0)return{{value:1,done:false}};{failure}}},get return(){{events.push('return');throw 99}}}};async function*outer(){{try{{yield*inner}}catch(e){{yield e===reason}}}}let iterator=outer();Promise.all([iterator.next(),iterator.next(),iterator.next()]).then(value=>results=value)"
+        )).unwrap();
+        drain(&mut realm);
+        check(
+            &mut realm,
+            "events.join(',')==='next,next'&&results[0].value===1&&!results[0].done&&results[1].value===true&&!results[1].done&&results[2].done&&results[2].value===undefined",
+        );
+    }
+}
+
+#[test]
 fn completed_return_preserves_raw_value_while_missing_return_performs_its_own_await() {
     let mut realm = Realm::default();
     realm.eval("let results=[],raw=Promise.resolve(7);let inner={[Symbol.asyncIterator](){return this},next(){return {done:false,value:1}},return(){return {done:true,value:raw}}};async function*g(){try{yield*inner}finally{}}let iterator=g();iterator.next()").unwrap();
