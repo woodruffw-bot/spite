@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Radix Number overflow and rounding
+
+After complete digit validation, Core's binary/octal/hexadecimal Number parser
+stops bit accumulation once 1,025 significant bits make overflow certain.
+Leading zeroes remain excluded from that count. Finite values and 1,024-bit
+overflow-midpoint cases retain the existing guard/sticky-bit rounding, following
+Number type conversion (6.1.6.1).
+
+A new Core regression checks the integer immediately below 2^1024 - 2^970,
+the exact midpoint, larger values, leading zeroes and invalid trailing digits in
+all three radices. Twelve quiet single-CPU ABBA process runs measure 46.5% lower
+evaluation time for the new overflowing/invalid-suffix conversion workload;
+full scope is in [benchmarking](benchmarking.md#radix-number-overflow).
+
+All 5,522 seeded Python-integer rounding cases match before and after the change,
+including midpoint neighbors, leading zeroes, invalid digits and values through
+4,096 bits. Validation passes all 112 Core tests, 18 Parser units, 443 Parser
+integrations, 573 Runtime units, 2,430 non-RegExp integrations and the full quality
+gate. All 5,454 official modes from 2,746 unchanged numeric originals pass with
+zero nonpassing outcomes. The Core inventory grows from 111 to 112; Runtime and
+Test262 inventories are unchanged.
+
 ## Batched String repetition
 
 String.prototype.repeat copies its input once and then copies the growing output

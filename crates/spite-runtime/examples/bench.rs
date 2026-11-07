@@ -26,6 +26,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "radix_overflow",
+        source: "(()=>{const text='0x'+'f'.repeat(8192);let sum=0;for(let i=0;i<16;i++){if(Number(text)===Infinity)sum++;if(Number.isNaN(Number(text+'g')))sum++}return sum})()",
+        expected: 32.0,
+        jobs: false,
+    },
+    Case {
         name: "properties",
         source: "(()=>{const object={};for(let i=0;i<128;i++)object['k'+i]=i;let sum=0;for(let i=0;i<128;i++)sum+=object['k'+i];return sum})()",
         expected: 8128.0,

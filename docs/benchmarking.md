@@ -19,9 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all fifteen program workloads |
+| parse_all | Parse and drop the ASTs for all sixteen program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
+| radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
 | properties | Create, populate and read 128 computed object properties |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
@@ -232,4 +233,29 @@ runs, seven samples and ten iterations per sample.
 Values are microseconds, using medians of six per-process medians per revision.
 Repeat evaluation is 95.1% and 83.1% lower. Other program evaluation changes range
 from -9.2% to +4.6%; parsing and initialization differ by +2.9% and -0.6%.
+These observations add no CI timing threshold or execution allowance.
+
+## Radix Number overflow
+
+Core's radix integer parser validates the entire input, then accumulates at most
+1,025 significant bits before returning Infinity. Finite results and the overflow
+midpoint retain the existing exact guard/sticky-bit rounding. Leading zeroes do
+not count toward the significant-bit threshold.
+
+The added radix_overflow workload converts an 8,192-digit hexadecimal string
+and the same text with an invalid suffix sixteen times. It checks Infinity and
+NaN separately. Both compared binaries contain identical workloads. Baseline
+production is 64cbff78e; the candidate adds only the overflow return. Rust
+1.99/conformance-profile Linux x86_64 measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| radix_overflow | 2162.3 | 1155.9 | 161.4 | 157.6 |
+| parse_all | 396.2 | 401.7 | 0 | 0 |
+| initialize_and_drop | 656.3 | 627.9 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+The radix workload's evaluation is 46.5% lower. Other program evaluation changes
+range from -8.2% to +2.6%; parsing and initialization differ by +1.4% and -4.3%.
 These observations add no CI timing threshold or execution allowance.

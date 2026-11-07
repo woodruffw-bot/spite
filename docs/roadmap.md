@@ -594,6 +594,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Format larger BigInts in other radices by dividing into u32-sized digit groups, preserving minimal leading groups, padded lower groups and checked work/capacity.
 - [x] Copy ordinary BMP prefixes during JSON quoting in one checked append, retaining per-unit work and agent-control paths and shared escape/surrogate handling.
 - [x] Build repeated Strings by copying the growing prefix within the checked output buffer, preserving prepaid work and arbitrary UTF-16 code units.
+- [x] Stop radix Number bit accumulation once overflow is certain, preserving complete digit validation, leading zeroes and exact ties at the finite/Infinity midpoint.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

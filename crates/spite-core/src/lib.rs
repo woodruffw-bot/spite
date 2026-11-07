@@ -199,6 +199,11 @@ pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
                 continue;
             }
             count += 1;
+            // Every digit was validated above. At 1,025 significant bits the
+            // value already exceeds binary64's finite range.
+            if count > 1024 {
+                return Some(f64::INFINITY);
+            }
             if count <= 53 {
                 significand = (significand << 1) | u64::from(bit);
             } else if count == 54 {
@@ -230,6 +235,44 @@ pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn radix_integer_overflow_rounds_at_the_midpoint_and_validates_the_entire_input() {
+        // The overflow midpoint is 2^1024 - 2^970; the integer immediately
+        // below it rounds to MAX, and the tie rounds to Infinity.
+        for (radix, below, midpoint, overflowing) in [
+            (
+                2,
+                "1".repeat(53) + "0" + &"1".repeat(970),
+                "1".repeat(54) + &"0".repeat(970),
+                "1".to_owned() + &"0".repeat(1024),
+            ),
+            (
+                8,
+                "1".to_owned() + &"7".repeat(17) + "5" + &"7".repeat(323),
+                "1".to_owned() + &"7".repeat(17) + "6" + &"0".repeat(323),
+                "4".to_owned() + &"0".repeat(341),
+            ),
+            (
+                16,
+                "f".repeat(13) + "b" + &"f".repeat(242),
+                "f".repeat(13) + "c" + &"0".repeat(242),
+                "1".to_owned() + &"0".repeat(256),
+            ),
+        ] {
+            assert_eq!(parse_radix_integer(&below, radix), Some(f64::MAX));
+            assert_eq!(parse_radix_integer(&midpoint, radix), Some(f64::INFINITY));
+            assert_eq!(
+                parse_radix_integer(&overflowing, radix),
+                Some(f64::INFINITY)
+            );
+            assert_eq!(parse_radix_integer(&(overflowing + "g"), radix), None);
+            assert_eq!(
+                parse_radix_integer(&("0".repeat(2048) + &below), radix),
+                Some(f64::MAX)
+            );
+        }
+    }
 
     #[test]
     fn string_values_keep_content_hashing_order_and_thread_safe_ownership() {

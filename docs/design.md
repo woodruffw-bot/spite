@@ -2680,6 +2680,13 @@ every radix and rounds once to binary64; it does not use the optional approximat
 allowances. Preserve negative zero and the specified hexadecimal prefix rules.
 Input length, scan work, and integer arithmetic remain bounded by realm limits.
 
+Binary, octal and hexadecimal Number conversion shares Core's exact integer
+parser (6.1.6.1, 7.1.4.1, 12.9.3). It validates every digit before accumulating
+significant bits, then rounds once using 53 retained bits, guard and sticky bits.
+At 1,025 significant bits the result is necessarily Infinity, so accumulation
+stops. Leading zeroes do not advance that count; invalid suffixes remain rejected
+by the complete validation pass.
+
 Global isFinite and isNaN use ordinary ToNumber (19.2.2–3), including object
 coercion with the number hint and TypeError for BigInt. They are separate builtin
 objects from Number.isFinite and Number.isNaN, which never coerce their argument.
