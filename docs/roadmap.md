@@ -579,6 +579,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Review clause-13 expression/reference evaluation, clause-15 function/class instantiation and clause-16 Script/Module lifecycle and host boundaries.
 - [x] Review clause-19 globals and clause-20 Object/Function/Boolean/Symbol/Error construction, conversion order and reflection.
 - [x] Review clause-21 Number/BigInt methods, Math rounding and exact summation, and Date normalization, conversion order and host policies.
+- [x] Review clause-22 UTF-16 String operations, pinned Unicode transforms, pattern delegation and regress-backed RegExp protocols.
 - [x] Review primitive/mixed comparison dispatch, ordered object conversion and exact BigInt/String comparisons after ToPrimitive.
 - [x] Benchmark and optimize only after the conformance gate is stable.
 - [x] Add manual parser, initialization, evaluation, Promise-job and collection benchmarks with checked workload results and separate timing columns.

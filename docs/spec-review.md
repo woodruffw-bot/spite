@@ -25,7 +25,7 @@ documentation. Exact fixture inventories and test receipts belong in
 | 19: global object | Reviewed | Global bindings, eval, numeric prefix parsing and URI operations below |
 | 20: fundamental objects | Reviewed | Object/Function/Boolean/Symbol/Error construction and methods below |
 | 21: Numbers and Dates | Reviewed | Number/BigInt conversion, Math special values and Date normalization below |
-| 22: text processing | Pending | |
+| 22: text processing | Reviewed | UTF-16 String operations, Unicode transforms and RegExp protocols below |
 | 23: indexed collections | Pending | |
 | 24: keyed collections | Pending | |
 | 25: structured data | Pending | |
@@ -253,3 +253,27 @@ Locale methods follow the documented ECMA-262 fallback without ECMA-402.
 Implementation-approximated Math/radix results and host-dependent Date strings
 are reviewed against their published requirements rather than requiring Node's
 particular approximation or host configuration.
+
+## Text processing
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| String construction, wrappers and static methods | [String intrinsics](../crates/spite-runtime/src/function/string.rs), character encoding and array-like raw templates | String wrapper/character/raw cases: Symbol call special case, conversion before new.target prototype lookup, immutable UTF-16 indices and ordered literal/substitution reads |
+| Character, sequence, search, repeat and padding methods | String modules operate on original UTF-16 units with explicit integer/length conversion and generic receivers | Character/sequence/search/predicate/repeat cases: lone surrogates, relative/clamped indices, empty searches, IsRegExp hooks, skipped fill conversion and invalid repetition counts |
+| Unicode transforms and String iteration | Pinned Unicode 18 full case mappings, contextual Final_Sigma, iterative normalization, well-formedness and code-point iteration | Case/normalization/well-formedness/iterator cases: expansion, canonical ordering/blocking, Hangul, compatibility forms, surrogate preservation/replacement and paired iterator advancement |
+| Pattern delegation and substitution | Ordered object-only Symbol hooks, intrinsic RegExpCreate fallback, UTF-16 split/replace and shared GetSubstitution scanner | String matching/split/replace/replaceAll cases: original receiver forwarding, global checks before delegation, conversion order, callback arguments and nonrecursive dollar expansion |
+| RegExp syntax and matching | Parser validates published Pattern/flags; [shared regress adapter](../crates/spite-core/src/regexp_program.rs) preserves original UTF-16 ranges and captures | Retained whole Pattern originals and 2,617 Runtime RegExp groups, including UnicodeSets, lookaround, backreferences, modifiers, empty matches and undefined captures |
+| RegExp construction and protocol methods | [RegExp intrinsics](../crates/spite-runtime/src/function/regexp.rs), native slots, live exec/species dispatch, lastIndex and match/iterator result construction | Construction/metadata/exec/match/search/replace/split/matchAll cases: identity shortcuts, ordered Gets/conversions, readonly state, custom results, captures/indices, species and iterator lifetime |
+
+A supplemental 3,950-case String audit agrees with Node for UTF-16 character
+access, forward/backward search, predicates, slicing, substring and splitting,
+including result/error kinds and conversion-hook traces. It includes lone
+surrogates, signed/nonfinite positions, BigInt/Symbol conversion failures and
+empty strings/searches.
+
+Published String pattern consumers consult Symbol hooks on object arguments.
+Unicode normalization/casing uses pinned data; locale methods retain the
+documented non-ECMA-402 policy and canonical-equivalence requirement. The sole
+approved Unicode pair-start RegExpBuiltinExec resolution remains documented in
+the design. Backend capacity/work interruption stays separate from Pattern
+syntax errors and ordinary language exceptions.

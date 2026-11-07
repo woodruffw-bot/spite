@@ -61,6 +61,26 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## String and RegExp review
+
+The [review index](spec-review.md#text-processing) records clause-22 String
+construction, UTF-16 sequence/search operations, pinned Unicode transforms,
+pattern delegation and RegExp construction/execution protocols. A supplemental
+3,950-case String audit agrees with Node on results, error kinds and conversion
+traces across character access, search predicates, slice/substring and split.
+The audit includes lone surrogates, empty inputs, nonfinite positions and
+BigInt/Symbol conversion failures.
+
+Retained native and whole-source regressions cover Unicode 18 normalization and
+case mapping, String raw/replacement/iteration, and the shared regress backend's
+captures, flags, matching state and protocol consumers. No production or fixture
+change is needed. The documented pair-start resolution remains the only approved
+RegExp specification exception; backend capacity failures remain distinct.
+
+Validation: String-filtered Runtime integrations and the full quality gate pass.
+The latest production change also passed all 5,045 Runtime integrations,
+including all 2,617 RegExp groups; this review changes no executable code.
+
 ## Number, BigInt, Math and Date review
 
 The [review index](spec-review.md#numbers-and-dates) records clause-21
