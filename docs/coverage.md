@@ -61,6 +61,20 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Global and fundamental built-in review
+
+The [review index](spec-review.md) records global descriptors, eval, numeric
+prefix parsing and URI functions, plus Object/Function/Boolean/Symbol/Error and
+AggregateError construction and methods. Shared property, call, boxing and
+iterator operations retain their distinct conversion and completion rules.
+
+Evidence includes the complete intrinsic metadata inventory, retained whole
+baseline originals and native generic-receiver, descriptor, coercion, registry,
+exception, iterable and cross-realm cases. Numeric prefix parsers already retain
+valid prefixes before lone-surrogate tails. Prototype property predicates and
+static Object.hasOwn already implement their different key/receiver order.
+No production or fixture changes are needed for these groups.
+
 ## Expression, function/class and Script/Module review
 
 The [review index](spec-review.md) records clause-13 literal/reference/operator

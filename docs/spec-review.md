@@ -22,8 +22,8 @@ documentation. Exact fixture inventories and test receipts belong in
 | 15: functions and classes | Reviewed | Function creation, parameters, bodies and class evaluation below |
 | 16: Scripts and Modules | Reviewed | Instantiation, linking, evaluation and host requests below |
 | 17–18: language extensions and standard built-in conventions | Reviewed | [Published host policies](design.md#published-host-policies); [intrinsic inventory](coverage.md#published-intrinsic-inventory-and-collection-roots) |
-| 19: global object | Pending | |
-| 20: fundamental objects | Pending | |
+| 19: global object | Reviewed | Global bindings, eval, numeric prefix parsing and URI operations below |
+| 20: fundamental objects | Reviewed | Object/Function/Boolean/Symbol/Error construction and methods below |
 | 21: Numbers and Dates | Pending | |
 | 22: text processing | Pending | |
 | 23: indexed collections | Pending | |
@@ -206,3 +206,25 @@ An unconfigured host retains its documented unsupported boundary. Imported
 syntax errors, link failures and language evaluation throws keep their specified
 phase and completion identity. Original Module/helper graphs and execution flags
 are retained in the baseline corpus.
+
+## Global and fundamental built-ins
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Global values, constructors and namespaces | Complete intrinsic/global descriptors, property-backed bindings and retained Realm graphs | Global intrinsic metadata, mutation/deletion/shadowing, fixed NaN/Infinity/undefined and independent/child Realm identity cases |
+| eval | Direct/indirect [eval execution](../crates/spite-runtime/src/eval.rs), independent Script parsing and caller/global declaration instantiation | Non-String identity, lexical/private/super/new.target contexts, deletable bindings, strictness and restored caller state |
+| Numeric global functions | [UTF-16 prefix parsing](../crates/spite-runtime/src/function/number/parse.rs), shared Number aliases and numeric predicates | String-before-radix conversion, whitespace, signed zero, radix stripping, exponent rollback, rounding and surrogate/non-ASCII tails |
+| URI functions | [URI/component codecs](../crates/spite-runtime/src/function/uri.rs), String-hint conversion, exact escape sets and strict UTF-8 decoding | Reserved-escape preservation, malformed/overlong/surrogate sequences, raw UTF-16, URIError identity and conversion order |
+| Object construction/static/prototype methods | Intrinsic boxing/allocation, new.target fallback and shared property/integrity/copy/group operations | Generic receivers, descriptor/prototype audits, primitive Object APIs, assign/fromEntries/groupBy, own string/Symbol order and Proxy behavior |
+| Function constructor/prototype methods | Independent dynamic source goals, captured call/apply/bind targets, strict poison accessors and ordinary hasInstance | Callable validation/argument order, array-like apply, bound construction/metadata, exact source retention, custom hasInstance and cross-realm fallback |
+| Boolean construction and branding | [Boolean data slots](../crates/spite-runtime/src/function/boolean.rs), primitive versus boxed results and new.target prototype selection | Truthiness without coercion, borrowed methods, incompatible/Proxy receivers, subclassing and reflection |
+| Symbol construction/prototype/registry | Primitive identities, description/value access, well-known Symbols and [append-only shared registry](../crates/spite-runtime/src/function/symbol/registry.rs) | Unique versus registered identity, for/keyFor conversion and type checks, realms/threads, wrapper brands and weak-key eligibility |
+| Error and NativeError families | [ErrorData and construction](../crates/spite-runtime/src/function/error.rs), ordered message/cause installation and generic toString | Prototype/new.target behavior, inherited cause and Proxy options, conversion/throw order, branding, descriptors and intrinsic exception materialization |
+| AggregateError | [IteratorToList and intrinsic result Array](../crates/spite-runtime/src/function/error/aggregate.rs), after prototype/message/cause setup | Iterable protocol, ordered hooks, step failures, exact element identities, subclassing and reflection |
+
+Prototype hasOwnProperty/propertyIsEnumerable convert the key before boxing the
+receiver; static Object.hasOwn uses its specified target-first order. Numeric
+prefix parsers stop at non-ASCII/surrogate tails without discarding an earlier
+valid prefix. Error construction checks prototype/message/cause/iteration in
+the required order. Registered Symbols remain distinct from unique Symbols
+with equal descriptions. Optional legacy properties follow the host policy.
