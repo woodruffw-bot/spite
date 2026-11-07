@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Batched String repetition
+
+String.prototype.repeat copies its input once and then copies the growing output
+prefix with Vec::extend_from_within. Checked length, output work charging and
+fallible reservation still precede copying. The result preserves arbitrary UTF-16
+units; empty-input/count and conversion/error ordering retain their existing paths.
+
+Twelve quiet single-CPU ABBA process runs show 95.1% and 83.1% lower evaluation
+time for the added one-unit and mixed BMP/lone-surrogate workloads. Full scope
+and other measured changes are in
+[benchmarking](benchmarking.md#batched-string-repetition).
+
+All 1,342 repeat audit cases match Node, covering conversion/error order, count
+boundaries, arbitrary UTF-16 inputs and copies that join surrogate boundaries.
+The broader 3,950-case String audit also has zero differences. Validation passes
+all 573 Runtime units, 2,430 non-RegExp integrations, 2,441 official modes from
+1,222 unchanged String originals and the full quality gate. Test and fixture
+inventories are unchanged; output work accounting retains its existing charge.
+
 ## Generator expression effects and interruption
 
 A seeded 4,000-case audit combines yields and delegation inside unary, binary,

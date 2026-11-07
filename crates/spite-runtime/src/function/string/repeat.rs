@@ -35,8 +35,12 @@ impl Realm {
             .checked_mul(count)
             .ok_or_else(|| length_limit(span))?;
         let mut result = self.repeated_string_buffer(length, span)?;
-        for _ in 0..count {
-            result.extend_from_slice(string.code_units());
+        result.extend_from_slice(string.code_units());
+        // The checked buffer covers the complete output. Copy the growing
+        // repeated prefix in batches instead of appending each copy separately.
+        while result.len() < length {
+            let additional = result.len().min(length - result.len());
+            result.extend_from_within(..additional);
         }
         Ok(Value::String(JsString::from_code_units(result)))
     }

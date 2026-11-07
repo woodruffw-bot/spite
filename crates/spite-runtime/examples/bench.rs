@@ -38,6 +38,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_repeat",
+        source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text=String.fromCharCode(97+i).repeat(65536);sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
+        expected: 1_050_248.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_repeat_wide",
+        source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text='ab漢\\ud800'.repeat(16384);sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
+        expected: 1_933_312.0,
+        jobs: false,
+    },
+    Case {
         name: "map_iteration",
         source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
         expected: 32640.0,

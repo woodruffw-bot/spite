@@ -2517,7 +2517,10 @@ equivalent to decoding code points for this membership test; surrogates cannot
 match. Scanning and copying are charged separately. Optional trimLeft/trimRight
 aliases remain disabled with other Annex B methods.
 repeat validates the converted count before returning an empty string; finite
-counts on empty input take no repetition loop (22.1.3.18). padStart/padEnd apply
+counts on empty input take no repetition loop (22.1.3.18). After checked output
+reservation, it copies the input once and extends from the growing prefix with
+safe Vec operations, clipping the final batch to the exact output length.
+padStart/padEnd apply
 ToLength and return early before filler conversion when no padding is required
 (22.1.3.16–17). Empty fillers preserve the input even for huge target lengths.
 Both operations copy UTF-16 units directly, including truncated surrogate pairs.

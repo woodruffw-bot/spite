@@ -19,11 +19,13 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirteen program workloads |
+| parse_all | Parse and drop the ASTs for all fifteen program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | properties | Create, populate and read 128 computed object properties |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
+| string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
+| string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
@@ -204,3 +206,30 @@ Evaluation is 80.6% and 81.5% lower for the two JSON workloads. Other program
 evaluation changes range from -5.5% to +5.0%; parsing and initialization differ
 by -2.8% and -2.9%. These observations add no CI timing threshold or execution
 allowance.
+
+## Batched String repetition
+
+String.prototype.repeat copies its input once, then extends from the growing
+output prefix using Vec::extend_from_within. The existing checked buffer covers
+the complete result before copying starts. This keeps output-linear copying and
+prepaid work accounting while reducing the number of append calls to logarithmic
+in the repeat count. Arbitrary UTF-16 units retain their order.
+
+The two added repeat workloads each create sixteen 65,536-unit results, using
+single-unit inputs and a four-unit BMP/lone-surrogate input respectively. Both
+compared binaries include identical workloads. Baseline production is 7b793527f;
+the candidate changes only repeated copying. Rust 1.99/conformance-profile Linux
+x86_64 measurements use one CPU, no active builds/tests, twelve ABBA process
+runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_repeat | 4437.3 | 217.4 | 179.9 | 170.5 |
+| string_repeat_wide | 1234.4 | 208.2 | 172.3 | 170.3 |
+| parse_all | 345.1 | 355.2 | 0 | 0 |
+| initialize_and_drop | 635.7 | 631.8 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Repeat evaluation is 95.1% and 83.1% lower. Other program evaluation changes range
+from -9.2% to +4.6%; parsing and initialization differ by +2.9% and -0.6%.
+These observations add no CI timing threshold or execution allowance.
