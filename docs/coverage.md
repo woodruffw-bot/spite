@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Suspended class heritage and key order
+
+The existing async heritage regression now includes awaited computed keys and
+an invalid superclass prototype. It requires constructor/prototype validation
+before any key evaluation, including after heritage suspension, as specified by
+ClassDefinitionEvaluation (15.7.14).
+
+A 768-case audit combines awaited heritage, computed String/Symbol names,
+class-name TDZ, private fields, abrupt key coercion, expression/declaration forms
+and object/Symbol captures. Ordinary execution and collection after every idle
+job checkpoint produce identical results and traces. Node agrees on 512 cases;
+128 reference differences delay a Proxy superclass's prototype Get until after
+the keys, and 128 delay rejecting a non-constructor until after them. The
+published algorithm performs both checks before ClassElementEvaluation, matching
+the existing implementation. Every reference difference is explained and
+retained separately from matches.
+
+Validation: 21 async-class and thirteen derived-class Runtime integration groups
+and the full quality gate pass. No production algorithm, fixture, helper, flag,
+review or test inventory changes.
+
 ## Linear BigInt formatting for binary radices
 
 BigInt formatting in radices 2, 4, 8, 16 and 32 extracts each digit from a u64

@@ -49,19 +49,22 @@ fn heritage_waits_without_replaying_effects_and_preserves_internal_class_tdz() {
 
 #[test]
 fn resumed_heritage_validates_superclass_and_reads_its_prototype_once() {
+    // 15.7.14 checks IsConstructor/Get(superclass, "prototype") before
+    // ClassElementEvaluation, including a computed key that later awaits.
     let mut realm = Realm::default();
     realm.eval(r#"
         let events=[],seen=[];
-        async function f(value){class C extends (await value){static initialized=events.push('static')}return C}
+        async function f(value){class C extends (await value){[(events.push('key'),await 'm')](){}static initialized=events.push('static')}return C}
         let base=new Proxy(function(){},{get(t,k,r){if(k==='prototype')events.push('prototype');return Reflect.get(t,k,r)}});
         f(base).then(C=>seen.push(Object.getPrototypeOf(C)===base));
         f(null).then(C=>seen.push(Object.getPrototypeOf(C.prototype)===null));
-        for(let bad of [0,{},()=>{}])f(bad).catch(e=>seen.push(e instanceof TypeError));
+        const badPrototype=function(){};badPrototype.prototype=7;
+        for(let bad of [0,{},()=>{},badPrototype])f(bad).catch(e=>seen.push(e instanceof TypeError));
     "#).unwrap();
     drain(&mut realm);
     check(
         &mut realm,
-        "seen.length===5&&seen.every(Boolean)&&events.filter(x=>x==='prototype').length===1&&events.filter(x=>x==='static').length===2",
+        "seen.length===6&&seen.every(Boolean)&&events.join(',')==='prototype,key,key,static,static'",
     );
 }
 
