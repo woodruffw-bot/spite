@@ -1,5 +1,4 @@
-//! Source proposal for the complete edition-17 Proxy surface (10.5, 28.2).
-//! This off-repository draft has not been parsed by Spite, compiled, or executed.
+//! Proxy internal methods and invariants (10.5, 28.2).
 
 use crate::common::REALM_ENTRIES;
 use spite_core::JsString;
@@ -455,6 +454,52 @@ fn own_keys_preserves_string_symbol_order_and_rejects_nonkeys_without_coercion()
     expectTypeError(()=>Reflect.ownKeys(new Proxy({},{ownKeys(){return [a,a];}})));
     expectTypeError(()=>Reflect.ownKeys(new Proxy({},{ownKeys(){return ['x','x'];}})));
     coerced===0
+    "#,
+    );
+}
+
+#[test]
+fn array_constructor_own_keys_forward_and_validate_through_nested_proxies() {
+    // 10.5.11 forwards to the ordinary Array constructor and validates the
+    // complete target key set after a supplied trap returns.
+    check(
+        r#"
+        const expected=Reflect.ownKeys(Array);
+        for(const p of [
+            new Proxy(Array,{}),
+            new Proxy(new Proxy(Array,{}),{}),
+            new Proxy(Array,{ownKeys(t){return Reflect.ownKeys(t)}})
+        ]){
+            const keys=Reflect.ownKeys(p),descriptors=Object.getOwnPropertyDescriptors(p);
+            assert(keys.length===expected.length&&keys.every((k,i)=>k===expected[i]));
+            assert(Object.getOwnPropertyNames(p).length===7);
+            assert(Object.getOwnPropertySymbols(p)[0]===Symbol.species);
+            assert(descriptors.fromAsync.value===Array.fromAsync&&descriptors.prototype.value===Array.prototype);
+            assert(Object.keys(p).length===0&&Object.values(p).length===0&&Object.entries(p).length===0);
+            assert(Reflect.ownKeys({...p}).length===0&&Reflect.ownKeys(Object.assign({},p)).length===0);
+            let seen=0;for(const key in Object.create(p))seen++;
+            assert(seen===0);
+        }
+        Array.extra=7;delete Array.fromAsync;
+        const p=new Proxy(Array,{});
+        assert(Object.keys(p).join(',')==='extra'&&({...p}).extra===7);
+        !Reflect.ownKeys(p).includes('fromAsync')&&Reflect.ownKeys(p).includes('extra')
+    "#,
+    );
+    check(
+        r#"
+        const keys=Reflect.ownKeys(Array);
+        const reversed=new Proxy(Array,{ownKeys(){return keys.slice().reverse()}});
+        assert(Reflect.ownKeys(reversed).every((k,i)=>k===keys[keys.length-1-i]));
+        expectTypeError(()=>Reflect.ownKeys(new Proxy(Array,{ownKeys(){return keys.filter(k=>k!=='prototype')}})));
+        const omitted=new Proxy(Array,{ownKeys(){return keys.filter(k=>k!=='name')}});
+        assert(!Reflect.ownKeys(omitted).includes('name'));
+        Object.preventExtensions(Array);
+        expectTypeError(()=>Reflect.ownKeys(omitted));
+        const p=new Proxy(new Proxy(Array,{}),{});
+        assert(Reflect.ownKeys(p).every((k,i)=>k===keys[i]));
+        Object.freeze(p);
+        Object.isFrozen(Array)&&Object.isFrozen(p)
     "#,
     );
 }

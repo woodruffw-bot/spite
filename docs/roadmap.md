@@ -610,6 +610,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Copy borrowed UTF-16 slices directly into standard Arc storage for String copies and iterator yields, preserving raw units, checks and code-point boundaries.
 - [x] Reserve the complete String addition buffer before bulk copies and reuse immutable inputs for empty operands, preserving coercion order, length checks and raw UTF-16 joins.
 - [x] Format StringCreate index keys directly into stack UTF-16 digits before Arc construction, preserving exact decimal keys, descriptors and work accounting.
+- [x] Forward the complete Array constructor key set through Proxy own-key dispatch, preserving trap order, fixed-key invariants and reflection/integrity consumers.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -832,25 +832,9 @@ impl Realm {
                     objects.delete(&object, &key, budget)
                 })?)
             }
-            ObjectOperation::OwnPropertyKeys => {
-                if object
-                    == self
-                        .record
-                        .intrinsics
-                        .as_ref()
-                        .expect("initialized")
-                        .array
-                        .constructor
-                {
-                    return Err(Self::unsupported(
-                        span,
-                        "own keys of this incomplete intrinsic are not implemented",
-                    ));
-                }
-                ObjectReply::Keys(
-                    self.object_work(span, |objects, budget| objects.own_keys(&object, budget))?,
-                )
-            }
+            ObjectOperation::OwnPropertyKeys => ObjectReply::Keys(
+                self.object_work(span, |objects, budget| objects.own_keys(&object, budget))?,
+            ),
         };
         Ok(ObjectStep::Reply(reply))
     }

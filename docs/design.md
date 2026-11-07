@@ -465,9 +465,9 @@ reached. Ignore Symbols, check own descriptors live, and visit string names only
 once. Deleted own keys do not suppress inherited keys; present non-enumerable keys
 do. No property values or user iterator hooks are read. Assignment targets follow
 key retrieval, and lexical bindings receive fresh iteration environments. RHS
-comma expressions are allowed, unlike for-of. Host quotas remain opt-in. Chains
-that reach an incomplete intrinsic report Unsupported, preserving prior effects;
-The complete String prototype property inventory uses ordinary ordered enumeration.
+comma expressions are allowed, unlike for-of. Host quotas remain opt-in.
+Intrinsic constructor and prototype properties use ordinary ordered enumeration,
+including Array constructors reached through Proxies.
 With the Annex B extension disabled, var initializers in for-in headers are
 SyntaxErrors in strict and non-strict code (14.7.5). Eval and all dynamic function
 constructor families expose the normal catchable SyntaxError before declaration
@@ -2295,7 +2295,7 @@ string and future calls return fresh completed results. Each step reads/copies
 at most two units instead of cloning the entire captured string. This specializes
 the closure-based GeneratorResume algorithm (22.1.5.1.1, 27.5.3.3): the String
 closure never calls user code between resumes, so no executing state can be
-observed. General generators will require their own execution-state machine.
+observed. Source generators use their separate traced execution-state machine.
 The String iterator prototype inherits the shared Iterator prototype, with its
 own next function and non-writable/configurable String Iterator tag.
 
@@ -2980,8 +2980,8 @@ descriptor's enumerability, and converts all selected descriptors before the fir
 definition (20.1.2.3.1). Conversion failure performs no definitions; user getter
 side effects remain observable. Definition failure retains earlier successful
 definitions. Key copying and sorting consume
-bounded work. Enumeration of the incomplete Array constructor reports Unsupported
-until its own key set is complete. Object.freeze/seal and
+bounded work. The complete Array constructor key set supports enumeration
+through ordinary objects and Proxies. Object.freeze/seal and
 isFrozen/isSealed implement SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 They preserve accessor identity without invoking getters, perform shallow changes,
 and use mapped-argument descriptor rules when freezing indexed properties.
@@ -3455,7 +3455,8 @@ test result. Module variants use the real Module parser and the same exact
 span/message review for parse negatives, without a Script strict-mode prefix.
 Valid parse negatives fail the gate; unsupported grammar and host limits never
 count as passes. Modules use isolated Module records and never enter Script
-evaluation. Raw async setup and agent configuration remain unsupported.
+evaluation. Raw async setup remains unsupported. Metadata selects suspending or
+nonsuspending Test262 agents.
 All executed variants receive a private diagnostic print capture. Its constant
 host bootstrap is parsed separately from test-supplied source, then evaluated
 under the normal Realm limits; test, harness and imported source keep their

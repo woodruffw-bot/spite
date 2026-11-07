@@ -61,6 +61,53 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Array constructor reflection through Proxies
+
+Proxy own-key dispatch now reads the Array constructor's complete ordinary
+property set. A stale incomplete-intrinsic guard previously returned Unsupported
+for forwarding and ownKeys trap validation. Removing it enables reflection,
+enumeration, copying and integrity operations through nested Proxies while
+retaining trap-result order and fixed-key/nonextensible-target invariants (10.5.11).
+
+A new native regression exercises forwarding and supplied traps, String/Symbol
+keys, descriptors, copying, for-in, deletion/addition, rejected omission of fixed
+keys, nonextensible targets and freezing.
+
+All 1,296 supplemental cases match Node after the fix, compared with 756
+Unsupported differences beforehand. The comparison establishes the same
+ordinary creation order for the configurable Array methods in both engines;
+native tests also compare untouched constructor keys with Proxy forwarding.
+All 7,884 official modes from 3,991 unchanged Proxy, Array, reflection and
+for-in originals pass with zero nonpassing outcomes.
+
+Validation also passes all 574 Runtime units and 2,431 non-RegExp integrations,
+plus formatting, strict workspace Clippy, Rust 1.99 checks, dependency/inventory
+policies and the remaining quality gate. The new regression brings the Runtime
+inventory to 5,048 integrations; fixture counts and runtime defaults are unchanged.
+
+## Combined String storage gate and async protocol audit
+
+A fresh full Test262 package run passes on clean 414e94ef7 after String addition
+preallocation, empty-operand sharing and direct decimal String index construction.
+All 85 package tests pass, including all 80,028 official modes from 41,531
+reviewed originals with zero nonpassing outcomes. The corpus binary completes
+in 1,297.09 seconds. The complete tree stays unchanged throughout the run.
+
+An 814-case Array.fromAsync protocol audit has identical raw results with and
+without collection after every Promise job. Of these, 564 match Node 24 exactly.
+The other 250 follow the published algorithms: 124 differ only in Node's extra
+synchronous next lookup; 72 expose duplicate closing after rejected sync values;
+32 expose extra closing after step errors; six expose ignored false final-length
+writes; and sixteen preserve the original throw where Node does not settle within
+the probe's observation. Eight of the latter remain pending at the first idle
+turn and eight exceed a separate two-second Node-process observation. These
+probe bounds do not change engine quotas. Exact trace checks leave zero
+unexplained differences (23.1.2.2, AsyncIteratorClose, 27.1.5.1/.3).
+
+All 756 supplemental Object.groupBy/Map.groupBy cases also match Node, covering
+property-key conversion, Symbol/object identity, null-prototype results, strict
+callback receivers, proxy calls and iterator cleanup precedence.
+
 ## Stack-formatted String wrapper index keys
 
 StringCreate writes exact decimal index digits into a fixed UTF-16 stack buffer

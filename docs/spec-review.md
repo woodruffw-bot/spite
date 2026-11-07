@@ -137,6 +137,10 @@ resulting descriptor and the complete has/get/key-conversion observation order
 are compared. Existing prototype tests also protect the ordinary cycle-check
 boundary: it stops at a Proxy without invoking its getPrototypeOf trap.
 
+Array constructor reflection also traverses nested Proxies. The ordinary target
+provides its complete own-key set for both forwarding and trap-invariant checks;
+nonconfigurable keys and nonextensible targets retain the rules of 10.5.11.
+
 ## Source text
 
 [SourceText](../crates/spite-parser/src/source.rs) retains scalar UTF-8 unchanged
