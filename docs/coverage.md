@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Private class environments and revoked Proxy receivers
+
+All 288 supplemental class-environment cases match Node before and after
+collection, with identical complete result hashes. They cover shadowed/inherited
+private names, heritage versus body scope, static/instance fields and accessors,
+methods, repeated class evaluations, ordinary/returned/proxy receivers, direct
+and indirect eval, dynamic Function rejection, and bound/ordinary/arrow readers.
+
+The existing private-field tracing regression now stamps same-spelled private
+names from two distinct class evaluations onto one Proxy. Both stored values
+and brands remain distinct after revocation and a kept-object checkpoint/full
+collection. All thirteen private-field integration groups and the full quality
+gate pass. Production behavior and test/fixture inventories are unchanged.
+
 ## Shared radix rounding for parseInt
 
 For bases 2/8/16 without work or integer-magnitude quotas and without agent

@@ -3918,6 +3918,9 @@ Extensibility and ordinary property descriptors do not affect private fields;
 reflection, serialization, and copying never enumerate them. Storage checks object
 handles and opt-in work budgets before mutation and traces every stored object
 value, including cycles. Private fields do not consume ordinary property capacity.
+The storage belongs to the receiver itself, including a Proxy; revocation does
+not remove its private elements. Same-spelled names from distinct class
+evaluations can coexist on that receiver and remain distinct through collection.
 Public/private instance fields share ordered initialization before base parameters
 and after derived BindThisValue; default forwarding initializes superclass fields
 before subclass fields. Static fields and blocks retain their source order.

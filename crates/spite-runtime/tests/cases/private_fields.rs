@@ -148,6 +148,27 @@ fn tracing_retains_private_values_and_closures_then_reclaims_cycles() {
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("new C().read()"), Ok(Value::Number(8.0)));
+
+    // Distinct evaluations can stamp same-spelled private names onto one
+    // Proxy. Revocation does not remove those receiver-owned fields.
+    realm.eval(r#"
+        let retainedPrivate;
+        (()=>{
+            const pair=Proxy.revocable({},{});
+            class Base{constructor(){return pair.proxy}}
+            function make(value){return class extends Base{
+                #x={value};
+                static has(object){return #x in object}
+                static read(object){return object.#x.value}
+            }}
+            const A=make(7),B=make(8),object=new A;
+            new B;pair.revoke();
+            retainedPrivate=()=>A.has(object)&&B.has(object)&&A.read(object)===7&&B.read(object)===8;
+        })();
+    "#).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("retainedPrivate()"), Ok(Value::Boolean(true)));
 }
 
 #[test]
