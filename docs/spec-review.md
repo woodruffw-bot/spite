@@ -12,8 +12,8 @@ documentation. Exact fixture inventories and test receipts belong in
 | 1–5: scope, conformance, references, overview and notation | Reviewed | [Scope and architecture](design.md#scope); implementation separates language completions, unsupported features and host limits |
 | 6: types and values | Reviewed | Value and specification-record representations below |
 | 7: abstract operations | Reviewed | Operation groups below |
-| 8: syntax-directed operations | Pending | |
-| 9: execution contexts and environments | Pending | |
+| 8: syntax-directed operations | Reviewed | Scope, containment, naming and tail-position operations below |
+| 9: execution contexts and environments | Reviewed | Environment, Realm and host-job boundaries below |
 | 10: ordinary and exotic objects | Pending | |
 | 11: source text | Pending | |
 | 12: lexical grammar | Reviewed | [Production/implementation ledger](coverage.md#published-lexical-grammar-review), including all five lexical goals |
@@ -84,3 +84,36 @@ Validation includes the unchanged whole-source baseline, exact parse-negative
 reviews, native conversion/descriptor/iterator cases and the targeted comparison
 and queued-argument regressions recorded in coverage. Esid references help locate
 tests; a matching reference alone does not establish algorithm coverage.
+
+## Syntax-directed operations
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Declared/bound names and scope traversal | [AST name traversal](../crates/spite-parser/src/ast.rs), shared Parser scope validators and Module import/export records; nested function/static-block boundaries start fresh scopes | var/lexical/catch/parameter patterns, block redeclarations, loop headers, switch scope and Module binding originals |
+| Containment, assignment targets and private-name validity | Parser expression/cover validation, separate private-name scopes and class initialization context flags | Assignment/delete/update/for-head early errors; private-name shadowing/rollback; ContainsArguments crosses arrows and computed names but excludes ordinary function bodies and labels |
+| Simple parameters, expected argument counts and strict directives | Parameter metadata and function validators; exact unescaped String directive recognition | Rest/default/destructuring length, unique/duplicate parameters, inherited strictness and independent dynamic parameter/body goals |
+| Function definitions, naming and source identity | Shared named evaluation and retained FunctionSource; computed property/function names | Function name/length/toString, inferred names in defaults/assignments/fields, symbol property names and UTF-16 source originals |
+| Label targets and tail positions | Active label/iteration validation and [strict tail-expression dispatch](../crates/spite-runtime/src/function/tail_call.rs) | Local control boundaries, logical/conditional/comma/optional/tagged tails, direct-eval handling and native/ordinary call transfer cases |
+
+The class-initialization regression specifically permits literal and escaped
+arguments labels and their break/continue targets in static blocks and field
+initializer arrows. Published ContainsArguments tests IdentifierReferences,
+which these label positions do not contain. The existing negative cases still
+reject actual arguments references in both initialization forms.
+
+## Execution contexts and environments
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Declarative, function, object and global environments | [Binding state](../crates/spite-runtime/src/environment.rs), reference resolution, declaration instantiation and [eval](../crates/spite-runtime/src/eval.rs) | TDZ/mutability/deletability, parameter aliases, non-strict with/unscopables, global descriptors, eval conflicts and closures |
+| Module and private environments | Live import cells, Module records and distinct private-name identities | Read-only live imports, cycles, namespace TDZ, private brands, nested shadowing and eval access |
+| This, super and new.target | Ordinary/arrow invocation contexts, home objects and derived-constructor state | Uninitialized this, super receivers, lexical arrows, default parameters, fields/static blocks and dynamic function independence |
+| Realm/context transitions | [Checked Realm entry/restoration](../crates/spite-runtime/src/function/realm.rs), inactive records and retained intrinsic graphs | Caller restoration after throws/host aborts, cross-realm constructors/prototypes, revoked callbacks and inactive-Realm collection |
+| Host jobs and agent checkpoints | Shared FIFO Promise/module/notification jobs, explicit host servicing and kept-object checkpoints | Reaction/thenable ordering, async generators, top-level await, module requests, cross-agent wait/notify and child-Realm WeakRef lifetimes |
+
+Job execution establishes the captured Realm/module context and restores the
+caller afterward. Preflight failures retain queued work; started-job failures
+have explicit reported outcomes. Evaluation/allocation never collect, while
+explicit collection traces suspended state and all retained context graphs.
+Kept objects belong to the Agent, including its child Realms, and hosts choose
+the documented idle checkpoints.

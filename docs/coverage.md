@@ -61,6 +61,23 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Syntax-directed operations and execution contexts
+
+The [review index](spec-review.md) now records clause-8 scope/name traversal,
+containment, parameter metadata, naming and tail-position operations, together
+with clause-9 environments, Realm restoration and explicit host-job boundaries.
+
+New Parser and Runtime cases protect literal and escaped labels named arguments
+inside static blocks and field-initializer arrows, including break/continue
+targets. Published ContainsArguments visits IdentifierReferences; labels do not
+select that branch. Actual arguments references remain rejected by the existing
+initialization-context negatives. This follows the published algorithm without
+adding a Node compatibility exception or changing production code.
+
+Validation: all 18 Parser units, 443 Parser integrations and 11 static-block
+Runtime groups pass. Formatting, strict Clippy, Rust 1.99 all-target checks and
+repository policies pass. Snapshots and upstream sources/reviews are unchanged.
+
 ## Manual performance measurements
 
 The dependency-free Runtime benchmark example separates parser/AST lifetime,

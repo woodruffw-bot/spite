@@ -57,6 +57,19 @@ fn block_control_flow_is_local_and_normal_statement_values_are_discarded() {
 }
 
 #[test]
+fn arguments_labels_are_valid_in_static_blocks_and_field_initializer_arrows() {
+    // ContainsArguments (15.7.9) recognizes IdentifierReferences. Label names
+    // and break/continue targets do not make class initialization contain one.
+    for label in ["arguments", r"arg\u0075ments"] {
+        check(&format!(
+            "class C{{static{{let n=0;{label}:for(let i=0;i<4;i++){{\
+             if(i===1)continue {label};if(i===3)break {label};n+=i}}this.n=n}}\
+             x=(()=>{{{label}:{{break {label};}}return 7}})()}}C.n===2&&new C().x===7"
+        ));
+    }
+}
+
+#[test]
 fn thrown_blocks_preserve_completed_elements_and_the_internal_class_name() {
     check(
         "let saved,log='',caught=false;try{class C{static x=(log+='A',1);static{saved=()=>C;log+='B';throw 7;}static y=(log+='Y',2);static m(){return 3;}}}catch(e){caught=e===7;}let D=saved();caught && log==='AB' && D.x===1 && !Object.hasOwn(D,'y') && D.m()===3",
