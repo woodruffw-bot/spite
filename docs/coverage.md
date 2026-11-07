@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## URI decoding of literal prefixes
+
+URI decoders copy the literal prefix before the first percent sign in one checked
+append when neither work accounting nor agent control is active. Literal UTF-16
+units, including lone surrogates, remain unchanged. The existing loop retains
+escaped UTF-8 validation, reserved-escape spelling and per-unit host checks.
+
+The boundary audit batches every UTF-16 unit for all four URI functions and
+every two-octet sequence for both decoders, plus longer UTF-8 boundaries,
+malformed escapes and coercion effects. All 1,062 batches match Node before and
+after the change. Twelve quiet single-CPU ABBA process runs measure 92.1% and 91.8% lower
+evaluation time for literal and mixed-input workloads; full scope and other
+measured changes are in
+[benchmarking](benchmarking.md#uri-decoding-of-literal-prefixes).
+
+Validation passes all 573 Runtime units, 2,430 non-RegExp integrations and the
+full quality gate. All 346 official modes from 173 unchanged URI originals pass
+with zero nonpassing outcomes (90.85 seconds). Test and fixture inventories are
+unchanged.
+
 ## Combined implementation regression gate
 
 At b256a9fa3, the complete Test262 package passes all 85 tests, including all

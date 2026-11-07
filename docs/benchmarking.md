@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all seventeen program workloads |
+| parse_all | Parse and drop the ASTs for all nineteen program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -35,6 +35,8 @@ and collection medians are computed independently.
 | bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
 | json_strings | Stringify a pair of 3,584-unit ordinary BMP strings sixteen times, checking lengths and closing quotes |
 | json_escaped | Repeat json_strings with a newline, quote and lone surrogate appended to each input |
+| uri_decode | Decode a long literal BMP prefix and trailing lone surrogate sixteen times, checking length and final unit |
+| uri_decode_mixed | Alternate URI/component decoding of the same prefix ending in reserved and UTF-8 escapes, checking length and final unit |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
 | generator | Create, resume and consume a 128-value source generator |
 | async_jobs | Execute 64 awaits, drain Promise jobs and read the completed sum |
@@ -288,6 +290,34 @@ Values are microseconds, using medians of six per-process medians per revision.
 Radix conversion evaluation is 35.3% lower. Other program evaluation changes
 range from -1.5% to +2.9%, and collection changes from -2.5% to +2.9%.
 Parsing and initialization differ by +2.3% and -1.0%. These observations add
+no CI timing threshold or execution allowance.
+
+## URI decoding of literal prefixes
+
+Without work accounting or agent control, decodeURI/decodeURIComponent copy the
+literal UTF-16 prefix before the first percent sign in one checked append. Raw
+lone surrogates remain literal units. Escaped UTF-8 validation and reserved-escape
+handling retain their existing loop; accounted and agent-controlled calls keep
+their per-unit checks.
+
+The two added workloads decode sixteen strings with an 8,213-unit literal
+prefix, followed by a lone surrogate or reserved/UTF-8 escapes. Both compared
+binaries contain identical workloads. Baseline production is a738c8fa5; the
+candidate adds only prefix copying. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| uri_decode | 1589.3 | 125.3 | 162.0 | 161.8 |
+| uri_decode_mixed | 1598.7 | 130.9 | 159.5 | 161.0 |
+| parse_all | 456.7 | 474.6 | 0 | 0 |
+| initialize_and_drop | 634.4 | 631.8 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+URI evaluation is 92.1% and 91.8% lower. Other program evaluation changes range
+from -2.9% to +7.9%, and collection changes from -6.2% to +3.7%.
+Parsing and initialization differ by +3.9% and -0.4%. These observations add
 no CI timing threshold or execution allowance.
 
 ## Radix Number overflow

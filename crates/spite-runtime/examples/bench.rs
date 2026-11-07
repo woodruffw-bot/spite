@@ -104,6 +104,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "uri_decode",
+        source: "(()=>{const input='https://example.test/'+'abé漢'.repeat(2048)+'\\ud800';let sum=0;for(let i=0;i<16;i++){const output=decodeURI(input);sum+=output.length+output.charCodeAt(output.length-1)}return sum})()",
+        expected: 1_016_160.0,
+        jobs: false,
+    },
+    Case {
+        name: "uri_decode_mixed",
+        source: "(()=>{const input='https://example.test/'+'abé漢'.repeat(2048)+'%2f%20%E2%82%AC';let sum=0;for(let i=0;i<16;i++){const output=(i%2?decodeURIComponent:decodeURI)(input);sum+=output.length+output.charCodeAt(output.length-1)}return sum})()",
+        expected: 265_296.0,
+        jobs: false,
+    },
+    Case {
         name: "regexp",
         source: "(()=>{const text='aaaab'.repeat(128),re=/(?<prefix>a+)(?<suffix>b)/gu;let sum=0,match;while((match=re.exec(text))!==null)sum+=match[0].length;return sum})()",
         expected: 640.0,

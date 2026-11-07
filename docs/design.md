@@ -2768,6 +2768,9 @@ hexadecimal spelling. Neither decoder rescans decoded percent signs, normalizes
 Unicode, or changes plus signs. Ignore receivers and extra values after argument
 evaluation. Retain both intrinsic roots; use the shared checked, fallible output
 accumulator and existing opt-in quotas without imposing defaults.
+Without work accounting or agent control, copy the initial literal span before
+the first percent sign in one checked append. The escaped decoder and accounted
+per-unit path retain their existing checks.
 
 Error objects include Error and the six NativeError constructors,
 Error.prototype.toString, Error.isError, and ordered message/cause initialization

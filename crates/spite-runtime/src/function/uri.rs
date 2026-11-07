@@ -17,6 +17,17 @@ impl Realm {
         let units = string.code_units();
         let mut result = Vec::new();
         let mut index = 0;
+        // Literal UTF-16 units need no decoding, including lone surrogates.
+        // Keep the per-unit checks for work accounting and agent control.
+        if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
+            index = units
+                .iter()
+                .position(|&unit| unit == u16::from(b'%'))
+                .unwrap_or(units.len());
+            if index != 0 {
+                self.append_uri_units(&mut result, &units[..index], span)?;
+            }
+        }
         while index < units.len() {
             self.tick(span)?;
             if units[index] != u16::from(b'%') {
