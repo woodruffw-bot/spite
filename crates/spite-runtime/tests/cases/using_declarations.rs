@@ -18,6 +18,46 @@ fn drain(realm: &mut Realm) {
 }
 
 #[test]
+fn ordinary_using_identifiers_accept_word_operators_and_loop_headers() {
+    check(
+        &mut Realm::default(),
+        r#"
+        for(const prefix of ['', '"use strict";']){
+            if(eval(prefix+"let using='key';using in {key:1}")!==true)throw 1;
+            if(eval(prefix+'let using={};using instanceof Object')!==true)throw 2;
+        }
+        let using,keys=[],turns=0;
+        for(using in {a:1,b:2})keys.push(using);
+        for(using instanceof Object;turns<1;turns++){using={};}
+        keys.join(',')==='a,b'&&turns===1&&using instanceof Object
+        "#,
+    );
+}
+
+#[test]
+fn await_using_identifiers_resume_before_word_operators() {
+    let mut realm = Realm::default();
+    check(
+        &mut realm,
+        r#"
+        let state={};
+        async function membership(using){return await using in {key:1}}
+        async function instance(using){return await using instanceof Object}
+        membership(Promise.resolve('key')).then(v=>state.member=v,e=>state.error=e);
+        membership({then(resolve){resolve('absent')}}).then(v=>state.absent=v,e=>state.error=e);
+        instance(Promise.resolve({})).then(v=>state.object=v,e=>state.error=e);
+        instance(Promise.resolve(1)).then(v=>state.primitive=v,e=>state.error=e);
+        Object.keys(state).length===0
+        "#,
+    );
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "state.member===true&&state.absent===false&&state.object===true&&state.primitive===false&&!Object.hasOwn(state,'error')",
+    );
+}
+
+#[test]
 fn block_bindings_cache_disposers_and_preserve_receivers_and_reverse_order() {
     check(
         &mut Realm::default(),

@@ -13,6 +13,13 @@ impl Parser {
         if next.newline || !matches!(next.kind, Kind::Word(_)) {
             return false;
         }
+        // These words are operators after the ordinary identifier `using`,
+        // rather than BindingIdentifiers starting a resource declaration.
+        if !next.escaped
+            && matches!(&next.kind, Kind::Word(name) if matches!(name.as_str(), "in" | "instanceof"))
+        {
+            return false;
+        }
         if for_header && !next.escaped && matches!(&next.kind, Kind::Word(name) if name == "of") {
             // ForDeclaration's lookahead excludes `using of`. A three-clause
             // initializer can still declare `of` when followed by `=`.

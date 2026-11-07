@@ -61,6 +61,24 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Contextual using identifiers before word operators
+
+Resource-declaration lookahead now leaves in and instanceof to expression parsing
+when they follow an ordinary identifier named using (13.10). This restores valid
+expression statements, for-in assignment headers and three-clause for initializers.
+It also lets await using in object and await using instanceof Object parse as an
+awaited identifier followed by a relational operator. Resource declarations still
+use the existing binding, newline and for-of lookahead rules.
+
+Parser regressions cover Script/UTF-16, strict, class and async contexts. Native
+checks exercise eval in both strictness modes, ordinary loop headers, resolved
+Promises and thenables, and true/false results after draining the Promise queue.
+
+Validation: Parser 18 unit and 443 integration tests, all 2,423 non-RegExp
+Runtime integrations and 84 other Test262 package checks pass. All five original
+CLI repros now execute successfully. Formatting, strict Clippy, Rust 1.99
+all-target checks and repository policies pass; snapshots are unchanged.
+
 ## Disabled for-in initializer grammar and compilation errors
 
 With Annex B disabled, the published core ForBinding production permits an

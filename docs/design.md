@@ -2809,11 +2809,13 @@ The native continuation retains remaining resources, its result capability and
 the pending error across jobs, and releases them on completion or host abort.
 Object and Symbol tracing includes every stored value, including closed
 ephemeron cycles. Resource storage and quotas remain shared with synchronous
-stacks; general await expressions and suspended Script contexts remain work.
+stacks; source awaits use the asynchronous execution continuations described above.
 
 Synchronous using declarations (14.3.1, 14.7.4–5) have explicit statement,
-three-clause initializer and for-of binding nodes. Only an unescaped using prefix
-followed by an IdentifierName without a line break selects declaration grammar.
+three-clause initializer and for-of binding nodes. An unescaped using prefix
+without a line break can select declaration grammar. Lookahead excludes the
+word operators in and instanceof, preserving ordinary IdentifierReferences and
+await expressions before relational operators (13.10).
 Bindings require identifiers and initializers, except the single uninitialized
 for-of binding. For-in declarations are forbidden. The using-of lookahead keeps
 ordinary assignments to an identifier named using distinct from declarations.

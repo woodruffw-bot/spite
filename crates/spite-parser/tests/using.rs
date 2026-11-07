@@ -1,7 +1,7 @@
 //! Contextual resource bindings, scope early errors and loop grammar.
 
-use spite_core::DiagnosticKind;
-use spite_parser::parse_script;
+use spite_core::{DiagnosticKind, JsString};
+use spite_parser::{parse_script, parse_script_utf16};
 
 #[test]
 fn using_statements_and_both_loop_headers_snapshot() {
@@ -75,6 +75,14 @@ fn ordinary_using_identifiers_linebreaks_and_for_of_lookahead_remain_distinct() 
         "let using=1;using+=1;using;",
         "function using(){};using();",
         "let using={};using.x=1;using['x']=2;",
+        "using in object;",
+        "using instanceof Object;",
+        "'use strict';using in object;using instanceof Object;",
+        "for(using in object){}",
+        "for(using instanceof Object;false;){}",
+        "async function f(using){return await using in object}",
+        "async function f(using){return await using instanceof Object}",
+        "class C{m(using){using in this;return using instanceof Object}}",
         "{using\nx=null;}",
         "{using\nlet=1;var using,let;}",
         "var using,of=[[9],[8],[7]];for(using of of[0,1,2]){}",
@@ -86,6 +94,10 @@ fn ordinary_using_identifiers_linebreaks_and_for_of_lookahead_remain_distinct() 
             parse_script(source).is_ok(),
             "{source}: {:?}",
             parse_script(source)
+        );
+        assert!(
+            parse_script_utf16(&JsString::from(source)).is_ok(),
+            "UTF-16: {source}"
         );
     }
 }
