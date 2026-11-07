@@ -61,6 +61,22 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Manual performance measurements
+
+The dependency-free Runtime benchmark example separates parser/AST lifetime,
+fresh-Realm initialization/destruction, resident Script evaluation and explicit
+collection. Seven checked workloads exercise arithmetic, properties, Map
+iteration, BigInt, RegExp, generators and Promise jobs. Setup, timing boundaries
+and CSV interpretation are documented in [benchmarking](benchmarking.md).
+
+The initial Rust 1.99 conformance-profile run passes every workload result with
+the default seven samples and ten iterations, plus warm-up. An even-sample run
+also passes; zero/malformed counts and extra arguments reject correctly.
+Formatting, strict Clippy, Rust 1.99 all-target checks and repository policies
+pass. The example adds no dependency, production behavior, CI timing threshold
+or test allowance. The reviewed parser implementation's full hosted seventeen-job
+gate is green before these measurements begin.
+
 ## Primitive and mixed comparison review
 
 The 7.2 comparison review follows primitive equality and ordering in value.rs,

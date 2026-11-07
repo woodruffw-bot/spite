@@ -57,6 +57,9 @@ one harness. For example, run a subset with
 Add each new case file to the harness module list; CI checks for omitted or
 duplicate files. Keep fixture helpers under `cases/fixtures`.
 
+Manual parser, initialization, evaluation and collection measurements are
+available through the dependency-free [benchmark example](docs/benchmarking.md).
+
 ## Embed
 
 ```rust

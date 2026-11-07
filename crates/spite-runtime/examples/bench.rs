@@ -1,0 +1,166 @@
+//! Manual parser, Realm initialization, evaluation and collection measurements.
+
+use spite_parser::parse_script;
+use spite_runtime::{PromiseJobOutcome, Realm, Value};
+use std::{
+    error::Error,
+    hint::black_box,
+    num::NonZeroUsize,
+    time::{Duration, Instant},
+};
+
+type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
+struct Case {
+    name: &'static str,
+    source: &'static str,
+    expected: f64,
+    jobs: bool,
+}
+
+const CASES: &[Case] = &[
+    Case {
+        name: "arithmetic",
+        source: "(()=>{let sum=0;for(let i=0;i<1000;i++)sum=(sum+i)|0;return sum})()",
+        expected: 499500.0,
+        jobs: false,
+    },
+    Case {
+        name: "properties",
+        source: "(()=>{const object={};for(let i=0;i<128;i++)object['k'+i]=i;let sum=0;for(let i=0;i<128;i++)sum+=object['k'+i];return sum})()",
+        expected: 8128.0,
+        jobs: false,
+    },
+    Case {
+        name: "map_iteration",
+        source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
+        expected: 32640.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint",
+        source: "(()=>{let x=1n<<256n;for(let i=0;i<64;i++)x=(x*3n+BigInt(i))/2n;return Number(x&65535n)})()",
+        expected: 5661.0,
+        jobs: false,
+    },
+    Case {
+        name: "regexp",
+        source: "(()=>{const text='aaaab'.repeat(128),re=/(?<prefix>a+)(?<suffix>b)/gu;let sum=0,match;while((match=re.exec(text))!==null)sum+=match[0].length;return sum})()",
+        expected: 640.0,
+        jobs: false,
+    },
+    Case {
+        name: "generator",
+        source: "(()=>{function* values(){for(let i=0;i<128;i++)yield i}let sum=0;for(const value of values())sum+=value;return sum})()",
+        expected: 8128.0,
+        jobs: false,
+    },
+    Case {
+        name: "async_jobs",
+        source: "globalThis.__spite_bench_result=-1;(async()=>{let sum=0;for(let i=0;i<64;i++)sum+=await i;return sum})().then(value=>{globalThis.__spite_bench_result=value});0",
+        expected: 2016.0,
+        jobs: true,
+    },
+];
+
+fn measure(
+    name: &str,
+    samples: usize,
+    iterations: usize,
+    mut run: impl FnMut() -> Result<(Duration, Duration)>,
+) -> Result<()> {
+    // Warm-up and validation use the same path as each measured invocation.
+    run()?;
+    let mut evaluation = Vec::new();
+    let mut collection = Vec::new();
+    for _ in 0..samples {
+        let (mut elapsed, mut collected) = (Duration::ZERO, Duration::ZERO);
+        for _ in 0..iterations {
+            let (run, gc) = run()?;
+            elapsed += run;
+            collected += gc;
+        }
+        evaluation.push(elapsed);
+        collection.push(collected);
+    }
+    evaluation.sort_unstable();
+    collection.sort_unstable();
+    let micros = |times: &[Duration]| {
+        let middle = times.len() / 2;
+        let seconds = if times.len().is_multiple_of(2) {
+            (times[middle - 1].as_secs_f64() + times[middle].as_secs_f64()) / 2.0
+        } else {
+            times[middle].as_secs_f64()
+        };
+        seconds * 1e6 / iterations as f64
+    };
+    println!(
+        "{name},{samples},{iterations},{:.3},{:.3}",
+        micros(&evaluation),
+        micros(&collection),
+    );
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let mut arguments = std::env::args().skip(1);
+    let samples = arguments
+        .next()
+        .unwrap_or_else(|| "7".into())
+        .parse::<NonZeroUsize>()?
+        .get();
+    let iterations = arguments
+        .next()
+        .unwrap_or_else(|| "10".into())
+        .parse::<NonZeroUsize>()?
+        .get();
+    if arguments.next().is_some() {
+        return Err("usage: bench [positive sample count] [positive iterations per sample]".into());
+    }
+    println!("case,samples,iterations,median_us,collection_median_us");
+    measure("parse_all", samples, iterations, || {
+        let start = Instant::now();
+        for case in CASES {
+            drop(black_box(parse_script(black_box(case.source))?));
+        }
+        Ok((start.elapsed(), Duration::ZERO))
+    })?;
+    let empty = parse_script("")?;
+    measure("initialize_and_drop", samples, iterations, || {
+        let start = Instant::now();
+        let mut realm = Realm::default();
+        black_box(realm.evaluate(&empty)?);
+        drop(realm);
+        Ok((start.elapsed(), Duration::ZERO))
+    })?;
+    let result_script = parse_script("globalThis.__spite_bench_result")?;
+    for case in CASES {
+        let script = parse_script(case.source)?;
+        let mut realm = Realm::default();
+        // Initialize outside evaluation measurements; warm-up also collects.
+        realm.evaluate(&empty)?;
+        measure(case.name, samples, iterations, || {
+            let start = Instant::now();
+            let mut result = realm.evaluate(black_box(&script))?;
+            if case.jobs {
+                loop {
+                    match realm.run_next_promise_job()? {
+                        PromiseJobOutcome::NoJob => break,
+                        PromiseJobOutcome::Completed => (),
+                        PromiseJobOutcome::Reported(error) => return Err(error.into()),
+                    }
+                }
+                result = realm.evaluate(&result_script)?;
+            }
+            let elapsed = start.elapsed();
+            if !black_box(result).same_value(&Value::Number(case.expected)) {
+                return Err(format!("{} produced an incorrect result", case.name).into());
+            }
+            let start = Instant::now();
+            realm.clear_kept_objects()?;
+            realm.collect(usize::MAX)?;
+            Ok((elapsed, start.elapsed()))
+        })?;
+    }
+    Ok(())
+}

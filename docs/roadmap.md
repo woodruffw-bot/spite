@@ -576,6 +576,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Review clause-7 conversion, object and iterator operation groups, including abrupt completion and host-abort boundaries.
 - [x] Review primitive/mixed comparison dispatch, ordered object conversion and exact BigInt/String comparisons after ToPrimitive.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
+- [x] Add manual parser, initialization, evaluation, Promise-job and collection benchmarks with checked workload results and separate timing columns.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
