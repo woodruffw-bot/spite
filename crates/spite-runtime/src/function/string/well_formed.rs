@@ -29,7 +29,25 @@ impl Realm {
                 message: "string length limit exceeded".into(),
             });
         }
-        let mut result = Vec::with_capacity(string.len());
+        let mut prefix = 0;
+        for point in decoded.by_ref() {
+            match point {
+                Ok(point) => prefix += point.len_utf16(),
+                Err(_) => break,
+            }
+        }
+        if prefix == string.len() {
+            return Ok(Value::String(string));
+        }
+        let mut result = Vec::new();
+        result
+            .try_reserve_exact(string.len())
+            .map_err(|_| Error::Limit {
+                span,
+                message: "string allocation failed".into(),
+            })?;
+        result.extend_from_slice(&string.code_units()[..prefix]);
+        result.push(0xfffd);
         for point in decoded {
             let point = point.unwrap_or(char::REPLACEMENT_CHARACTER);
             result.extend_from_slice(point.encode_utf16(&mut [0; 2]));

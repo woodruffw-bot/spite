@@ -112,10 +112,17 @@ fn well_formedness_bounds_scans_and_replacement_allocation() {
     }
     realm.remaining_steps = Some(1000);
     realm.limits.max_string_units = Some(99);
-    assert!(matches!(
-        realm.string_well_formed(input.clone(), true, Span::new(0, 0)),
-        Err(Error::Limit { .. })
-    ));
+    for limited in [
+        input.clone(),
+        Value::String(JsString::from("x".repeat(100).as_str())),
+        Value::String(JsString::from("💩".repeat(50).as_str())),
+    ] {
+        realm.remaining_steps = Some(1000);
+        assert!(matches!(
+            realm.string_well_formed(limited, true, Span::new(0, 0)),
+            Err(Error::Limit { .. })
+        ));
+    }
     realm.limits.max_string_units = Some(100);
     assert_eq!(
         realm.string_well_formed(input, true, Span::new(0, 0)),

@@ -2508,6 +2508,9 @@ UTF-16 with the standard library (22.1.3.10/31, 7.2.7). Decoding errors identify
 individual unpaired surrogates; toWellFormed replaces those units with U+FFFD and
 preserves every valid pair. Scans charge work in advance, and replacement checks
 the unchanged output length before allocation.
+toWellFormed returns the existing String when decoding finds no unpaired unit.
+Otherwise it reserves output fallibly, copies the valid prefix, replaces the first
+error and continues the same decoder so buffered lookahead is preserved.
 concat uses String-hint conversion for its receiver and each argument in order,
 checking cumulative output lengths before extending the result (22.1.3.5).
 slice and substring convert the receiver, start, and end in order even for empty

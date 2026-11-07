@@ -68,6 +68,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_wellformed",
+        source: "(()=>{const input='ab漢💩'.repeat(2048);let sum=0;for(let i=0;i<16;i++){const output=input.toWellFormed();sum+=output.length+output.charCodeAt(output.length-1)}return sum})()",
+        expected: 1_067_664.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_wellformed_mixed",
+        source: "(()=>{const base='ab漢💩'.repeat(2048);let sum=0;for(let i=0;i<16;i++){const input=i%2?'\\ud800'+base:base+'\\ud800',output=input.toWellFormed();sum+=output.length+output.charCodeAt(i%2?0:output.length-1)}return sum})()",
+        expected: 1_212_384.0,
+        jobs: false,
+    },
+    Case {
         name: "map_iteration",
         source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
         expected: 32640.0,

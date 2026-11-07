@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all twenty-one program workloads |
+| parse_all | Parse and drop the ASTs for all twenty-three program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -29,6 +29,8 @@ and collection medians are computed independently.
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
 | string_pad_wide | Repeat string_pad with a three-unit BMP/lone-surrogate filler and a partial final copy |
+| string_wellformed | Run toWellFormed sixteen times over a valid 10,240-unit BMP/supplementary input, checking length and final unit |
+| string_wellformed_mixed | Alternate an unpaired leading/trailing surrogate around that input, checking length and repaired unit |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
@@ -238,6 +240,33 @@ runs, seven samples and ten iterations per sample.
 Values are microseconds, using medians of six per-process medians per revision.
 Repeat evaluation is 95.1% and 83.1% lower. Other program evaluation changes range
 from -9.2% to +4.6%; parsing and initialization differ by +2.9% and -0.6%.
+These observations add no CI timing threshold or execution allowance.
+
+## String well-formedness prefix handling
+
+toWellFormed decodes until the first unpaired unit. Valid input returns the
+existing String after its output-limit check. Repair reserves the unchanged
+output length fallibly, copies the valid prefix, emits the first replacement
+and continues the decoder with its retained lookahead. Input work charging is
+unchanged.
+
+Both compared binaries include identical valid and mixed-repair workloads over
+a 10,240-unit BMP/supplementary base. Baseline production is 0e286d58b; the
+candidate changes this scan/copy path. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_wellformed | 852.6 | 431.2 | 165.2 | 156.9 |
+| string_wellformed_mixed | 887.7 | 742.8 | 165.8 | 170.7 |
+| parse_all | 600.1 | 595.9 | 0 | 0 |
+| initialize_and_drop | 622.1 | 626.3 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Evaluation is 49.4% lower for valid input and 16.3% lower for mixed repairs.
+Other program evaluation changes range from -3.8% to +6.7%, and collection
+changes from -3.4% to +6.0%. Parsing and initialization differ by -0.7% and +0.7%.
 These observations add no CI timing threshold or execution allowance.
 
 ## BigInt bitwise temporary allocation

@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## String well-formedness prefix handling
+
+toWellFormed scans to the first unpaired unit, returns valid input directly and
+copies the valid prefix before repairing the remaining decoder stream. The first
+replacement consumes exactly its unpaired unit; continuing the decoder preserves
+any buffered following unit. Output-limit checks precede the valid-input return,
+and repair allocation now uses fallible reservation. Input work charging is
+unchanged.
+
+The output-limit regression now includes valid BMP and supplementary inputs as
+well as invalid input. All 153 audit batches match Node before and after the
+change, covering every UTF-16 unit, 1,029 surrogate combinations and coercion.
+Twelve quiet single-CPU ABBA process runs measure 49.4% and 16.3% lower evaluation
+time for valid and mixed-repair inputs. Full scope and other measured changes
+are in [benchmarking](benchmarking.md#string-well-formedness-prefix-handling).
+
+Validation passes all 573 Runtime units, including the strengthened quota
+regression, all 2,430 non-RegExp integrations and the full quality gate.
+All 2,441 official modes from 1,222 unchanged String originals pass with zero
+nonpassing outcomes. Test and fixture inventories are unchanged.
+
 ## Shared String padding and repetition copies
 
 String padding and repetition share one growing-prefix copy operation over the
