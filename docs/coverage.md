@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Composed iterator helpers and collection
+
+A new regression composes flatMap, filter, drop and take, collecting before and
+between yields. Source iterators, cached next methods and the mapper remain live
+while suspended. Explicit return and take exhaustion both close inner before
+outer, preserve the inner throw over a later outer throw, complete every helper
+and release all captures even while the completed helpers remain reachable.
+
+A supplemental 5,005-case audit combines eight pipelines, five next/return
+sequences, step/getter/callback failures, seven return-method behaviors and
+caught callback reentry. Results and observable traces match Node in every case,
+both normally and with collection after every Promise job. These checks add no
+Test262 passing credit or execution allowances.
+
+Validation: all 162 Iterator-filtered Runtime integration groups and the full
+quality gate pass. Runtime integrations grow from 5,046 to 5,047; the new group
+is non-RegExp. Production algorithms and Test262 inputs are unchanged.
+
 ## Suspended class heritage and key order
 
 The existing async heritage regression now includes awaited computed keys and

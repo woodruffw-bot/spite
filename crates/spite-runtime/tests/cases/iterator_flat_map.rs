@@ -198,6 +198,69 @@ fn outer_mapper_cached_next_and_active_inner_captures_survive_collection_and_rel
 }
 
 #[test]
+fn composed_helpers_retain_captures_and_complete_after_nested_close_errors() {
+    // Iterator Helper return (27.1.2.1.2) and flatMap (27.1.3.3.6)
+    // close inner before outer, preserving the first throw through each layer.
+    for close in ["h.return()", "h.next()"] {
+        let mut realm = Realm::default();
+        realm
+            .eval(
+                "let log='',marker={},captures,layers,h;
+                (()=>{
+                    let index=0;
+                    const outer={next:()=>({done:false,value:7}),return(){log+='outer;';throw 9;}};
+                    const inner={next:()=>({done:false,value:{id:index++}}),return(){log+='inner;';throw marker;}};
+                    const mapper=()=>inner;
+                    const mapped=Iterator.prototype.flatMap.call(outer,mapper);
+                    const filtered=mapped.filter(value=>value.id%2===0);
+                    const dropped=filtered.drop(1);
+                    h=dropped.take(2);
+                    layers=[mapped,filtered,dropped,h];
+                    captures=[outer,outer.next,inner,inner.next,mapper];
+                })()",
+            )
+            .unwrap();
+        let captures = (0..5)
+            .map(|index| {
+                let Value::Object(handle) = realm.eval(&format!("captures[{index}]")).unwrap()
+                else {
+                    panic!("capture")
+                };
+                handle
+            })
+            .collect::<Vec<_>>();
+        realm.eval("captures=null").unwrap();
+        for expected in [2.0, 4.0] {
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            assert!(
+                captures
+                    .iter()
+                    .all(|handle| realm.inspect_object(handle).is_ok())
+            );
+            assert_eq!(realm.eval("h.next().value.id"), Ok(Value::Number(expected)));
+        }
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert_eq!(
+            realm.eval(&format!(
+                "let caught=false;try{{{close}}}catch(error){{caught=error===marker}}
+                caught && log==='inner;outer;' && layers.every(layer=>layer.next().done && layer.return().done) && log==='inner;outer;'"
+            )),
+            Ok(Value::Boolean(true)),
+            "{close}"
+        );
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert!(
+            captures
+                .iter()
+                .all(|handle| realm.inspect_object(handle).is_err())
+        );
+    }
+}
+
+#[test]
 fn metadata_and_shared_helper_brand_are_standard() {
     check(
         "let f=Iterator.prototype.flatMap,d=Object.getOwnPropertyDescriptor(Iterator.prototype,'flatMap'),h=[7].values().flatMap(x=>[x]),p=Object.getPrototypeOf(h),c=Iterator.concat();f.name==='flatMap' && f.length===1 && Object.getPrototypeOf(f)===Function.prototype && !Object.hasOwn(f,'prototype') && d.value===f && d.writable && !d.enumerable && d.configurable && h instanceof Iterator && Object.getPrototypeOf(p)===Iterator.prototype && Object.prototype.toString.call(h)==='[object Iterator Helper]' && h.next===c.next && h.return===c.return && h[Symbol.iterator]()===h",
