@@ -17,10 +17,10 @@ documentation. Exact fixture inventories and test receipts belong in
 | 10: ordinary and exotic objects | Reviewed | Internal-method and descriptor dispatch below |
 | 11: source text | Reviewed | Lossless representation and independent grammar goals below |
 | 12: lexical grammar | Reviewed | [Production/implementation ledger](coverage.md#published-lexical-grammar-review), including all five lexical goals |
-| 13: expressions | Pending | [Comparison review](coverage.md#primitive-and-mixed-comparison-review) records one completed part |
+| 13: expressions | Reviewed | Reference/value evaluation and operator groups below |
 | 14: statements and declarations | Reviewed | [Scope, control and completion ledger](coverage.md#published-declaration-and-statement-review) |
-| 15: functions and classes | Pending | |
-| 16: Scripts and Modules | Pending | |
+| 15: functions and classes | Reviewed | Function creation, parameters, bodies and class evaluation below |
+| 16: Scripts and Modules | Reviewed | Instantiation, linking, evaluation and host requests below |
 | 17–18: language extensions and standard built-in conventions | Reviewed | [Published host policies](design.md#published-host-policies); [intrinsic inventory](coverage.md#published-intrinsic-inventory-and-collection-roots) |
 | 19: global object | Pending | |
 | 20: fundamental objects | Pending | |
@@ -157,3 +157,52 @@ RegExp source/metadata, tagged-template and dynamic-constructor cases, together
 with the retained whole hashbang/comment/identifier/literal inventories.
 HostHasSourceTextAvailable follows the recorded host policy; native/bound/proxy
 toString results use the required implementation-defined native form.
+
+## Expressions
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Literals, arrays, objects and templates | Shared literal creation, ordered property/spread operations, per-Realm template sites and retained raw/cooked source | Complete literal inventories, holes/spread, computed keys, shorthand/methods, duplicate prototype setters, tagged templates and lossless UTF-16 cases |
+| References, member access, calls and new | Reference/value separation, cached property keys, captured receivers/callees, argument/spread accumulation and shared call/construct drivers | Primitive/super/private properties, key conversion, getter/setter order, eval, optional chains, constructor/new.target and cross-realm tests |
+| Unary, update and numeric operators | Ordered GetValue/ToPrimitive/ToNumeric/PutValue, Number special cases and exact BigInt arithmetic | Delete/typeof reference boundaries, strict targets, prefix/postfix results, mixed numeric errors, exponent grammar, shifts and signed/nonfinite values |
+| Equality, relational and conditional/logical operators | Primitive comparison plus ordered object conversion; lazy selected operands and branch completion | The 12,800-case comparison audit, exact BigInt/String conversion, custom hasInstance/in, nullish/logical grammar and side-effect order |
+| Assignment and destructuring | Saved references, short-circuit writes, shared nested patterns, excluded property keys and iterator closing | Simple/compound/logical assignments, nested defaults/rest, elisions that skip value getters, target timing and abrupt cleanup |
+| Await and yield in expressions | Explicit source-expression continuation tasks and nested-function boundaries | Suspended operands, calls/new, properties, optional chains, templates, assignments/patterns and partial class definitions; ordinary/async delegation |
+
+The published GetValue/PutValue algorithms convert and cache a non-property-key
+ReferencedName in the Reference Record. The implementation preserves this rule:
+member evaluation retains the raw key, GetValue/PutValue perform the specified
+conversion, and later writes use the cached key. Optional-chain short circuits
+skip later operands; grouping retains its specified reference/value boundary.
+
+## Functions and classes
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Ordinary, arrow, async and generator forms | Retained function kind/source, lexical versus ordinary contexts, shared closure/intrinsic builders and independent dynamic grammar goals | Declarations/expressions/methods, unique/default/rest/destructured parameters, inherited strictness, lexical this/super/new.target, name/length/toString and dynamic constructors |
+| Parameter/body instantiation and completion | Separate parameter/body environments where required, mapped arguments, body declaration checks and shared invocation/tail transfer | Defaults and parameter aliases, eval in parameters/bodies, duplicate-name rules, hoisting, tail positions and error restoration |
+| Class definition and element order | [Shared class builder](../crates/spite-runtime/src/function/class.rs), name TDZ, heritage/prototype checks, method installation and deferred static initialization | Heritage and constructor hooks, computed-name order, inferred/internal names, public/private fields/accessors/methods and static blocks |
+| Construction and private elements | Base/derived this state, default constructors, dynamic super lookup, private identity/brand slots and scoped private environments | Primitive/object constructor returns, new.target/Proxy/bound forwarding, early super errors, private duplicate/accessor rules, shadowing and eval |
+| Suspended function bodies | Shared source interpreter, serialized generator requests, intrinsic Promise reactions and protected completions | Lazy generator bodies, call-time parameter setup, next/return/throw, async rejection, await/yield delegation, scopes and finally/closing across suspension |
+
+Class code is strict. Ordinary function bodies establish their own argument and
+control contexts; arrows retain lexical context. Computed names use the enclosing
+context, while class initialization enforces its own containment rules. Inferred
+function/class names are available at the required point before static elements
+run. Generator/async object algorithms also appear in clause 27's remaining
+built-in review.
+
+## Scripts and Modules
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Script/eval instantiation | Shared declaration analysis, persistent global environment and distinct direct/indirect eval contexts | Restricted global properties, var/function versus lexical declarations, deletable eval bindings, caller restoration and catchable syntax errors |
+| Module records and linking | [Host graph linking](../crates/spite-runtime/src/module/link.rs), live import/export cells, namespace records and retained record identity | Duplicate/unresolved/ambiguous exports, star cycles/diamonds, function/var/lexical initialization and namespace TDZ/live aliases |
+| Synchronous/asynchronous evaluation | [Persistent cycle roots](../crates/spite-runtime/src/module/evaluation.rs), async dependency/parent state and cached evaluation Promises | Dependency order, cycles with top-level await, repeated evaluation identity, language rejection, host abort and collection of retained state |
+| import.meta and dynamic import | Per-record metadata plus [explicit import requests/completion](../crates/spite-runtime/src/module/dynamic.rs), fixed host attribute policy and intrinsic Promise continuation | Operand/ToString/options/attribute order, static versus dynamic errors, referrers, metadata identity, loaded-module errors and namespace resolution |
+
+The host supplies graph sources and completes enabled dynamic-import requests.
+An unconfigured host retains its documented unsupported boundary. Imported
+syntax errors, link failures and language evaluation throws keep their specified
+phase and completion identity. Original Module/helper graphs and execution flags
+are retained in the baseline corpus.

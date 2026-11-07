@@ -61,6 +61,24 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Expression, function/class and Script/Module review
+
+The [review index](spec-review.md) records clause-13 literal/reference/operator
+evaluation, clause-15 function/class creation and instantiation, and clause-16
+Script/Module linking and evaluation. It connects shared invocation, pattern,
+iterator and suspension operations to their native and whole-source regressions.
+
+The review follows the published deferred/cached property-key rules, selected
+optional-chain operands, strict and lexical function contexts, parameter/body
+boundaries, class-name TDZ/static ordering, live Module bindings and asynchronous
+cycle roots. Host import requests and language failures retain their distinct
+outcomes. No new implementation change is needed for these groups.
+
+This review uses the retained complete baseline language inventory, existing
+Parser/Runtime regressions and the supplemental comparison/grammar audits
+recorded above. The whole-specification milestone remains open for the remaining
+built-in, memory-model and grammar-summary chapters.
+
 ## Optimized trace iterator construction
 
 Three inline hints expose Entry, ordinary-object and environment trace iterator
