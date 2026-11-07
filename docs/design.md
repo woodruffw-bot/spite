@@ -462,8 +462,8 @@ SyntaxErrors in strict and non-strict code (14.7.5). Eval and all dynamic functi
 constructor families expose the normal catchable SyntaxError before declaration
 instantiation or initializer/body execution.
 
-Arrow parsing supports non-async arrows with binding parameters, optional
-defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the
+Arrow parsing supports ordinary and async arrows with binding parameters, optional
+defaults, and assignment-expression or block bodies (15.3, 15.9). Grammatical lookahead refines the
 parenthesized parameter cover without changing ordinary parenthesized expressions.
 Parameters are unique in both modes, strict binding rules are inherited, and no
 line terminator may precede the arrow. Expression bodies inherit the In grammar
@@ -473,7 +473,7 @@ including legacy tokens before the directive and in nested functions. An own Use
 Strict Directive is forbidden with non-simple parameters, while inherited strictness is allowed.
 Defaults parse as AssignmentExpression with In enabled. Top-level
 lexical declarations cannot conflict with any parameter BoundName (15.3.1).
-Async arrows remain an explicit gap. Function source ranges share an owned source allocation and preserve exact
+Function source ranges share an owned source allocation and preserve exact
 text for Function.prototype.toString. Arrow instantiation captures the current environment identity and strictness.
 
 Ordinary function expressions and declarations share the binding parameter and
@@ -483,9 +483,10 @@ strict or non-simple lists require unique names. A function's own strict directi
 also constrains its optional name, parameters, and nested code. Function
 expressions may appear in call/member positions, and nested bodies reset control
 targets. Function heads and bodies each charge parser depth; declarations cannot
-bypass expression recursion limits. Ordinary functions instantiate; strict calls
-and non-strict calls with object, global, Boolean, or Number receivers execute. Ordinary
-construction also executes; other primitive wrappers remain a runtime gap.
+bypass expression recursion limits. Strict calls preserve their receiver.
+Non-strict calls preserve objects, substitute the global object for nullish
+receivers and box Boolean, Number, String, Symbol and BigInt primitives.
+Ordinary construction shares the retained constructor/prototype graph.
 Generator execution retains call scopes for lazy body entry, as described below. Async declaration
 and expression syntax is retained with an explicit FunctionKind, exact source
 ranges and separate parameter/body Await contexts. Bindings follow the grammar's
@@ -2493,8 +2494,9 @@ scalars and three bytes per lone surrogate, with checked capacities throughout
 dynamic source assembly. All host quotas remain opt-in.
 The constructor and prototype remain intrinsic roots after public deletion.
 
-Native Object.prototype.valueOf returns fresh Boolean/Number/String wrappers for their primitive
-receivers; other primitive wrappers remain Unsupported. Arrow closures use the same callable dispatch with
+Native Object.prototype.valueOf applies ToObject: it preserves object receivers,
+rejects nullish values and boxes Boolean, Number, String, Symbol and BigInt
+primitives. Arrow closures use the same callable dispatch with
 their captured environment identity.
 
 String construction follows 22.1.1.1, converting the argument before observing
@@ -2507,8 +2509,8 @@ descriptor machinery, while charging length plus one against property capacity.
 Bulk construction charges work before publishing the wrapper; a later virtual
 representation can improve storage without changing semantics. Primitive index
 reads stay virtual and precede prototype access, and primitive writes to those
-indices cannot invoke inherited setters. String prototype methods and statics not
-yet implemented remain explicit gaps.
+indices cannot invoke inherited setters. String prototype methods and statics
+follow the published baseline and the documented host choices below.
 
 String.fromCharCode and fromCodePoint perform ordered numeric conversions and
 construct UTF-16 without rejecting lone surrogates (22.1.2.1–2). Character access
@@ -2748,11 +2750,11 @@ patterns become empty; matchAll supplies g while match/search supply undefined
 flags. Invoke reads the new object's live Symbol method and calls it with that
 object as receiver and the converted String as its sole argument. Missing or
 non-callable methods throw TypeError. Default matchAll creates its lazy native
-iterator; execution uses the native matcher for supported ordinary literal
-Patterns and reports Unsupported for the remaining productions. These native
-methods complete the baseline String
-property inventory, enabling ordered reflection, enumeration, copying, and integrity
-operations independently of the broader native matching gaps.
+iterator and executes through the shared regress-backed RegExpProgram described
+above, including ordinary/u/v modes, captures, original UTF-16 boundaries and
+documented backend capacity constraints. These methods participate in the
+complete baseline String property inventory for ordered reflection, enumeration,
+copying and integrity operations.
 
 String toLowerCase/toUpperCase use the full Unicode 18 default case mappings
 (22.1.3.29–31, 35). Generate reproducible, digest-pinned tables from UnicodeData,
@@ -3720,8 +3722,10 @@ its callable metadata still permits apply to read the argument list first.
 Construction shares ordinary base allocation, newTarget prototype selection,
 strict parameter/body execution, and object-versus-primitive return rules. The
 empty default constructor implements the base branch of 15.7.14 and initializes
-instance elements. Async/generator methods remain Unsupported. Existing
-native-stack guards and opt-in quotas are unchanged.
+instance elements. Instance/static methods, including private, async, generator
+and async-generator forms, share their function-family execution paths and retain
+class home objects and private environments. Native-stack guards and opt-in
+quotas apply to these paths.
 
 Class constructors inherit Function.prototype and own a non-writable,
 non-enumerable, non-configurable prototype property. Their prototype's constructor
