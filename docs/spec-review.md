@@ -24,7 +24,7 @@ documentation. Exact fixture inventories and test receipts belong in
 | 17–18: language extensions and standard built-in conventions | Reviewed | [Published host policies](design.md#published-host-policies); [intrinsic inventory](coverage.md#published-intrinsic-inventory-and-collection-roots) |
 | 19: global object | Reviewed | Global bindings, eval, numeric prefix parsing and URI operations below |
 | 20: fundamental objects | Reviewed | Object/Function/Boolean/Symbol/Error construction and methods below |
-| 21: Numbers and Dates | Pending | |
+| 21: Numbers and Dates | Reviewed | Number/BigInt conversion, Math special values and Date normalization below |
 | 22: text processing | Pending | |
 | 23: indexed collections | Pending | |
 | 24: keyed collections | Pending | |
@@ -228,3 +228,28 @@ prefix parsers stop at non-ASCII/surrogate tails without discarding an earlier
 valid prefix. Error construction checks prototype/message/cause/iteration in
 the required order. Registered Symbols remain distinct from unique Symbols
 with equal descriptions. Optional legacy properties follow the host policy.
+
+## Numbers and Dates
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Number construction, predicates and branded methods | [Number intrinsics](../crates/spite-runtime/src/function/number.rs), exact decimal formatting and radix conversion | Number/number_formatting cases: omitted versus undefined arguments, BigInt construction, incompatible receivers, conversion order, signed zero, subnormals and 100-digit limits |
+| BigInt construction and methods | [BigInt intrinsics](../crates/spite-runtime/src/function/bigint.rs), exact integer conversion and ordered width reduction | bigint_api/bigint_width cases: integral Number acceptance, String parsing, brands, radix bounds, ToIndex before ToBigInt and arbitrarily wide sign extension |
+| Math constants and numeric methods | [Math dispatch](../crates/spite-runtime/src/function/math.rs), direct binary16 rounding, special exponent rules and compensated hypot | Math rounding/integer/extrema/power/root/log/trigonometric cases: signed zeros, infinities, NaNs, coercion order, exact powers of two and rounding boundaries |
+| Math.sumPrecise and random | [Exact summation](../crates/spite-runtime/src/function/math/sum.rs), full iterator observation and Realm-specific random state | Exact cancellation/ties, noncoercing Number validation, continued iteration after nonfinite values, closing/error precedence, empty negative zero and random range/Realm independence |
+| Date construction, UTC/parse and calendar operations | [Date dispatch](../crates/spite-runtime/src/function/date.rs), [Core calendar arithmetic](../crates/spite-core/src/date.rs) and exact MakeDay normalization | Date/UTC cases: ordered component conversion, copied Date slots, short-year adjustment, calendar rollover, enormous cancelling inputs and final TimeClip boundaries |
+| Date methods and host policies | UTC/local getters and setters, branded time access, generic toJSON/toPrimitive and documented parsing/time-zone/locale policy | Date setter/getter/String cases: invalid-time recovery, conversion after NaN, prototype lookup order, DST boundaries, UTF-16 parse input and generic protocol hooks |
+
+A supplemental 1,050-case decimal-formatting audit agrees with Node for results,
+error kinds and argument-conversion observations. Fixed formatting checks its
+precision range before returning a nonfinite spelling; exponential and
+precision formatting retain their different specified ordering. Existing Date
+regressions already protect mathematical month normalization and enormous
+component cancellation before the final timestamp is clipped. Number-based
+calendar and summation work does not acquire a JavaScript BigInt magnitude
+quota merely because the implementation uses exact integer arithmetic.
+
+Locale methods follow the documented ECMA-262 fallback without ECMA-402.
+Implementation-approximated Math/radix results and host-dependent Date strings
+are reviewed against their published requirements rather than requiring Node's
+particular approximation or host configuration.

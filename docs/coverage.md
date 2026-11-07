@@ -61,6 +61,27 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Number, BigInt, Math and Date review
+
+The [review index](spec-review.md#numbers-and-dates) records clause-21
+construction, branded numeric methods, width reduction, Math and calendar
+operations. A supplemental 1,050-case decimal-formatting matrix matches Node's
+results, error kinds and precision-conversion observations, including nonfinite
+receivers, incompatible brands and 100-digit boundaries.
+
+Existing Date UTC regressions already cover enormous cancelling components,
+exact month normalization and clipping only the combined final timestamp.
+Existing Math regressions cover direct binary16 rounding, large odd integral
+rounding, signed zeros, complete argument coercion and exact iterable summation
+with specified closing/error precedence. No production or fixture change is
+needed for this chapter. Locale/time-zone and implementation-approximated
+results retain their documented policies.
+
+Validation: 50 Number-filtered, 52 BigInt-filtered, 71 Math-filtered and 203
+Date-filtered Runtime integrations pass (filters can overlap). Formatting,
+strict workspace Clippy, Rust 1.99 all-target checking, dependency/inventory
+policies, metadata/CLI tests and documentation tests also pass.
+
 ## Global and fundamental built-in review
 
 The [review index](spec-review.md) records global descriptors, eval, numeric
