@@ -19,12 +19,14 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirty-four program workloads |
+| parse_all | Parse and drop the ASTs for all thirty-six program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
 | properties | Create, populate and read 128 computed object properties |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
+| string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
+| string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
@@ -69,6 +71,35 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Direct fixed-array UTF-16 String construction
+
+Fixed UTF-16 arrays use standard Arc conversion. Single-unit values produced
+by String boxing, at/charAt and primitive indexed reads avoid first constructing
+a Vec. Their immutable storage, contents and work/quota checks retain the
+existing behavior.
+
+The two added workloads measure boxing and character access. Both compared
+binaries contain identical workloads. Baseline production is b53051bfe; the
+candidate adds array conversion and updates the three construction sites.
+Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_box | 1702.3 | 1456.5 | 1201.1 | 1142.7 |
+| string_character | 11640.3 | 11739.1 | 1442.7 | 1568.3 |
+| radix_overflow | 693.5 | 683.5 | 149.3 | 150.5 |
+| parse_all | 878.8 | 870.8 | 0 | 0 |
+| initialize_and_drop | 599.3 | 618.4 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Boxing evaluation is 14.4% lower and collection is 4.9% lower. Character-access
+evaluation differs by +0.9% and collection is 8.7% higher. The unrelated
+radix-overflow row differs by -1.4%. Remaining program evaluation changes range
+from -2.1% to +3.6%, and collection changes from -1.0% to +6.1%. Parsing and
+initialization differ by -0.9% and +3.2%. These observations add no CI timing
+threshold or execution allowance.
 
 ## Word division for 64-bit BigInt magnitudes
 

@@ -144,6 +144,12 @@ impl From<&str> for JsString {
     }
 }
 
+impl<const N: usize> From<[u16; N]> for JsString {
+    fn from(value: [u16; N]) -> Self {
+        Self(Arc::from(value))
+    }
+}
+
 impl fmt::Debug for JsString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("\"")?;
@@ -281,7 +287,7 @@ mod tests {
     #[test]
     fn string_values_keep_content_hashing_order_and_thread_safe_ownership() {
         use std::collections::{BTreeSet, HashSet};
-        let original = JsString::from_code_units(vec![0xd800, 0, 0xdc00]);
+        let original = JsString::from([0xd800, 0, 0xdc00]);
         let independent = JsString::from_code_units(vec![0xd800, 0, 0xdc00]);
         let values = HashSet::from([original.clone(), independent]);
         assert_eq!(values.len(), 1);
@@ -302,7 +308,7 @@ mod tests {
     #[test]
     fn utf16_preserves_surrogates_and_counts_code_units() {
         assert_eq!(JsString::from("💩").len(), 2);
-        let lone = JsString::from_code_units(vec![0xd800]);
+        let lone = JsString::from([0xd800]);
         assert!(lone.to_utf8().is_err());
         assert_eq!(format!("{lone:?}"), "\"\\ud800\"");
         let pair = lone.concat(&JsString::from_code_units(vec![0xdc00]));

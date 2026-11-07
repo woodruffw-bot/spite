@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct fixed-array UTF-16 String construction
+
+JsString accepts fixed UTF-16 arrays through standard Arc conversion.
+String boxing, at/charAt and primitive indexed reads use it for single-unit
+values instead of creating a temporary Vec. Shared immutable storage, content
+equality/hash/order, thread ownership, raw surrogates and existing quota/work
+checks retain their behavior.
+
+Existing Core regressions now exercise array construction alongside independent
+Vec construction and check lone surrogates, hashing, ordering and cross-thread
+ownership. All 65,536 UTF-16 units retain their exact value through at, charAt,
+primitive indexing and boxed indexing in 256 audit batches before and after
+the change. The broader 3,950-case String boundary/coercion audit also matches
+Node with zero differences.
+
+Twelve quiet single-CPU ABBA runs measure 14.4% lower boxing evaluation time
+and 4.9% lower collection time. Character-access evaluation differs by +0.9%
+and collection is 8.7% higher in the same runs. Full measurements are in
+[benchmarking](benchmarking.md#direct-fixed-array-utf-16-string-construction).
+
+Validation passes all 112 Core tests, 574 Runtime units, 2,430 non-RegExp
+integrations and the full quality gate. All 2,441 official modes from 1,222
+unchanged String originals pass with zero nonpassing outcomes. Test and
+fixture inventories are unchanged.
+
 ## Word division for 64-bit BigInt magnitudes
 
 BigInt division by two-word magnitudes uses a u128 carry when both work and

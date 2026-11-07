@@ -119,6 +119,9 @@ not duplicate the complete input. Concatenation and substrings build independent
 storage; equality, hashing and ordering compare UTF-16 contents, and the public
 type remains Send/Sync. Existing optional work charges stay conservative and
 unchanged; actual scans and output allocations retain their checks.
+Fixed UTF-16 arrays convert directly through the standard Arc array conversion.
+Single-unit String indices, boxed String properties and at/charAt results use
+this path instead of first building a Vec. Raw surrogates remain unchanged.
 
 Let-declaration lookahead is shared by statement lists and loop headers and
 recognizes only BindingIdentifier or binding-pattern starts. Word operators and

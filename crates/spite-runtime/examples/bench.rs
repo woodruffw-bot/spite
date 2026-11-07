@@ -44,6 +44,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_box",
+        source: "(()=>{const text='ab漢\\ud800'.repeat(512);let sum=0;for(let i=0;i<8;i++){const boxed=Object(text);sum+=boxed.length+boxed[0].charCodeAt(0)+boxed[boxed.length-1].charCodeAt(0)}return sum})()",
+        expected: 459_528.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_character",
+        source: "(()=>{const text='ab漢\\ud800';let sum=0;for(let i=0;i<4096;i++){const c=i%2?text.at(i%4):text.charAt(i%4);sum+=c.charCodeAt(0)}return sum})()",
+        expected: 85_955_584.0,
+        jobs: false,
+    },
+    Case {
         name: "string_repeat",
         source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text=String.fromCharCode(97+i).repeat(65536);sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
         expected: 1_050_248.0,

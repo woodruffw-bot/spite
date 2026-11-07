@@ -217,9 +217,7 @@ impl Realm {
                 return Ok(Value::Number(string.len() as f64));
             }
             if let Some(index) = string_index(string, key) {
-                return Ok(Value::String(JsString::from_code_units(vec![
-                    string.code_units()[index],
-                ])));
+                return Ok(Value::String(JsString::from([string.code_units()[index]])));
             }
         }
         if let Some(prototype) = self.primitive_prototype(base) {

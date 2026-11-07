@@ -467,7 +467,7 @@ impl Objects {
             object.properties.push((
                 key.into(),
                 Property::Data(DataProperty {
-                    value: Value::String(JsString::from_code_units(vec![unit])),
+                    value: Value::String(JsString::from([unit])),
                     writable: false,
                     enumerable: true,
                     configurable: false,
