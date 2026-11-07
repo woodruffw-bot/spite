@@ -4174,8 +4174,11 @@ keep ordinary property behavior. The maximum canonical numeric spelling has
 This is a classification rule, not a property-key length limit.
 
 Same-receiver Set converts its value before rechecking current index validity.
-Distinct receivers follow the specification's separate validity and ordinary
-receiver rules. DefineOwnProperty rejects invalid indices or incompatible
+Distinct receivers return true for invalid numeric indices before converting the
+value or inspecting the receiver (10.4.5.6). Forwarding Proxies are distinct
+receivers; explicitly supplying their underlying TypedArray selects same-receiver
+conversion instead. Valid indices follow ordinary receiver rules.
+DefineOwnProperty rejects invalid indices or incompatible
 descriptors before conversion, then commits against current bounds. Element
 descriptors report writable, enumerable, and configurable true, but valid elements
 cannot be deleted. Own keys contain current indices followed by ordinary strings

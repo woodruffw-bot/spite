@@ -88,6 +88,12 @@ fn distinct_receiver_set_skips_invalid_indices_and_preserves_ordinary_receiver_r
         // index reports success before inspecting a distinct receiver.
         "view[0]=3;let hits=0,value={valueOf(){hits++;throw 7;}},receiver={};Object.defineProperty(receiver,'-0',{value:1,writable:false});if(!Reflect.set(view,'-0',value,receiver) || !Reflect.set(view,'9',value,null) || hits!==0 || receiver['-0']!==1)return false;if(!Reflect.set(view,'0',value,receiver))return false;let d=Object.getOwnPropertyDescriptor(receiver,'0');if(d.value!==value || !d.writable || !d.enumerable || !d.configurable || view[0]!==3 || hits!==0)return false;let setterHits=0,accessor={};Object.defineProperty(accessor,'0',{set(){setterHits++;},configurable:true});let readonly={};Object.defineProperty(readonly,'0',{value:1,writable:false});if(Reflect.set(view,'0',value,accessor) || Reflect.set(view,'0',value,readonly) || Reflect.set(view,'0',value,null))return false;let child=Object.create(view);child[0]=value;child[9]=value;return Object.hasOwn(child,'0') && child[0]===value && !Object.hasOwn(child,'9') && setterHits===0 && hits===0 && view[0]===3;",
     );
+    // A forwarding Proxy is a distinct receiver. Supplying the underlying
+    // TypedArray explicitly instead selects conversion before index validity.
+    check(
+        &mut realm,
+        "let hits=0,value={valueOf(){hits++;throw 7;}},proxy=new Proxy(view,{getOwnPropertyDescriptor(){throw 8;},defineProperty(){throw 9;}}),outer=new Proxy(proxy,{});for(let key of ['-0','2','9']){if(!Reflect.set(proxy,key,value) || !Reflect.set(outer,key,value) || !Reflect.set(view,key,value,outer) || hits!==0)return false;}let caught=false;try{Reflect.set(outer,'9',value,view);}catch(e){caught=e===7;}return caught && hits===1 && view[0]===3;",
+    );
 }
 
 #[test]

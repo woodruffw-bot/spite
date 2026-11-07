@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## TypedArray receiver writes through Proxies
+
+A 7,092-case supplemental audit covers all twelve element kinds, direct and
+forwarding targets, ordinary/inherited/proxy/primitive receivers, numeric and
+ordinary keys, fixed/tracking views, and detachment/resize/throws during key,
+value and receiver operations.
+
+Raw Node 24 comparison agrees on 3,951 cases. The other 3,141 expose its value
+conversion for invalid numeric indices with a distinct receiver. Published
+10.4.5.6 instead returns true before that conversion or receiver inspection.
+An oracle implementing exactly that early-return guard and delegating every
+other operation to Node agrees on all 7,092 cases. The same cases pass after
+collection before the write, with identical complete result hashes.
+
+The existing native receiver regression now checks nested forwarding Proxies,
+skipped receiver traps and explicit underlying TypedArray receivers. The focused
+unit and full quality gate pass. Production behavior, test inventories, fixtures,
+dependencies and runtime defaults are unchanged.
+
 ## Intrinsic Array index keys
 
 CreateArrayFromList reuses the exact decimal UTF-16 key constructor already used
