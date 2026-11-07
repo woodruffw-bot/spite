@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Frozen raw-async runner conformance gate
+
+A full gate compiled on clean bffbadfc7 passes all 87 noncorpus Test262 package
+controls and all 80,028 official modes from 41,531 unchanged originals, with zero
+other outcomes. This includes the shared parseInt radix conversion and raw async
+runner support. The saved three-worker executable and complete pinned fixtures
+retain their SHA-256 hashes throughout the run, which finishes in 1,434.22 seconds.
+The later module-graph regression commit 6eb513777 does not change production code.
+
+A supplemental raw JSON audit matches Node on all 67,357 inputs, covering every
+UTF-16 code unit, explicit escapes and primitive/prefix/suffix grammar boundaries.
+It checks branding, null prototype, frozen state, the single own key and its
+attributes, exact raw text and exact stringify embedding. Quoted raw text retains
+unescaped lone surrogates; ordinary JSON string quoting remains a separate path.
+No source, harness, fixture, review row or runtime default changes for these audits.
+
 ## Raw asynchronous Test262 execution
 
 Raw async Scripts and Modules now use the existing private print-completion host

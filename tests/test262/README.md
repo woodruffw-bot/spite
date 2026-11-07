@@ -19,6 +19,11 @@ Static and dynamic module sources use the same completion capture: asynchronous
 dependencies settle before final classification, and duplicate signals anywhere
 in the loaded graph fail.
 
+The full gate compiled on clean bffbadfc7 passes all 87 noncorpus package controls
+and all 80,028 modes from 41,531 unchanged originals. The saved three-worker
+executable and pinned input hashes remain unchanged throughout its 1,434.22-second
+corpus run. The later module-graph regression adds no production-code change.
+
 ## Completed compatible RegExp property inventories
 
 The 290 unchanged exhaustive Unicode property originals pass 580 modes using
