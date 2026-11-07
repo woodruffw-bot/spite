@@ -113,6 +113,24 @@ impl Realm {
         if start > last {
             return Ok(None);
         }
+        // Without work accounting or an agent termination handle, this scan
+        // has no observable per-candidate checks. Slice iterators let the
+        // optimizer keep the UTF-16 comparison loop independent of the Realm.
+        if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
+            let units = if backwards {
+                &string.code_units()[..start + search.len()]
+            } else {
+                &string.code_units()[start..]
+            };
+            let mut candidates = units.windows(search.len());
+            return Ok(if backwards {
+                candidates.rposition(|candidate| candidate == search.code_units())
+            } else {
+                candidates
+                    .position(|candidate| candidate == search.code_units())
+                    .map(|offset| start + offset)
+            });
+        }
         let count = if backwards {
             start + 1
         } else {

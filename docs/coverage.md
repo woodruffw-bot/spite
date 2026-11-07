@@ -61,6 +61,26 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## String substring scan
+
+Substring search now uses standard slice iterators when work accounting and
+agent control are inactive. The selected UTF-16 range, empty/overlong cases and
+forward/backward positions are unchanged. Accounted and controlled searches
+retain their per-candidate checks. A new unit protects termination without a
+work quota; existing units protect repeated-candidate work exhaustion.
+
+Quiet single-CPU ABBA measurements show the checked search workload 35.1% faster
+in evaluation, with collection 3.0% higher. The workload and all other measured
+changes are recorded in [benchmarking](benchmarking.md#string-substring-scanning).
+No dependency, allocation scheme, matching engine or default quota is added.
+
+Validation: all ten focused String units and 213 String-filtered Runtime
+integrations pass, as do 3,950 generated String audit cases and all 2,441 official
+modes from the 1,222 unchanged admitted String sources. Nonpassing outcomes are
+zero. Formatting, strict workspace Clippy, Rust 1.99 checking, policy/inventory,
+metadata/CLI and documentation checks pass. Runtime unit inventory becomes 573;
+Runtime integration and upstream-source inventories are unchanged.
+
 ## Completed published implementation review
 
 Every clause/annex group in the [review index](spec-review.md) now has

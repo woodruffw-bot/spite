@@ -587,6 +587,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Benchmark and optimize only after the conformance gate is stable.
 - [x] Add manual parser, initialization, evaluation, Promise-job and collection benchmarks with checked workload results and separate timing columns.
 - [x] Expose trace iterator constructors to optimized collection across codegen units, preserving field order, work accounting and failure-before-sweep behavior.
+- [x] Use standard slice iterators for unaccounted UTF-16 substring searches without agent control, retaining checked budget and termination behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

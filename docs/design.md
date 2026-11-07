@@ -2506,9 +2506,11 @@ keep size/capacity failures distinct from ECMAScript RangeErrors.
 indexOf/lastIndexOf convert receiver, search text, and position in that order
 (22.1.3.9/11). NaN means position zero for indexOf and positive infinity for
 lastIndexOf. Searches compare UTF-16 slices without decoding, return the clamped
-position for empty needles, and charge the needle length before each candidate
-comparison. This bounds the initial quadratic algorithm without introducing a
-more complex matching implementation before it is needed.
+position for empty needles, and charge opted-in work before each candidate
+comparison. With no work allowance or agent control, standard slice iterators
+scan the same UTF-16 ranges without entering Realm accounting per candidate.
+Controlled agents retain the checked loop and cooperative termination. Both
+paths use direct slice comparisons with the same quadratic worst case.
 includes shares bounded substring search; startsWith/endsWith compare just their
 selected range (22.1.3.7/8/24). Empty searches match, including clamped endpoints.
 endsWith defaults undefined to the receiver length; other position conversions

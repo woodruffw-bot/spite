@@ -19,10 +19,11 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all seven program workloads |
+| parse_all | Parse and drop the ASTs for all eight program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | properties | Create, populate and read 128 computed object properties |
+| string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
@@ -68,3 +69,28 @@ candidate adds only those three compiler hints.
 Collection time falls 74–84% in these workloads. Evaluation changes range from
 about -4% to +1.4%; the measurements establish a collection improvement on this
 configuration. Parsing and initialization medians differ by -1.2% and +2.8%.
+
+## String substring scanning
+
+Unaccounted searches without an agent control use standard slice iterators over
+the selected UTF-16 range. Searches with a work allowance or agent control keep
+their existing per-candidate checks. The algorithm still compares candidate
+slices and retains its quadratic worst case; it adds no allocation or dependency.
+
+The added string_search workload checks eight searches of a 4,097-unit input for
+a 129-unit needle at index 3,968. Both binaries include that same benchmark row.
+The baseline production code is 8a691c5b1; the candidate adds the slice scan.
+Rust 1.99/conformance-profile Linux x86_64 runs use one CPU, no active builds or
+tests, and twelve ABBA process runs with seven samples and ten iterations each.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_search | 316.5 | 205.3 | 147.0 | 151.3 |
+| parse_all | 150.2 | 160.6 | 0 | 0 |
+| initialize_and_drop | 626.6 | 621.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+The search workload's evaluation is 35.1% lower; its collection is 3.0% higher.
+Other program evaluation changes range from -1.9% to +1.3%. The parse row is
+6.9% higher, although parser code is unchanged; initialization is 0.9% lower.
+These observations describe this workload/configuration and add no CI threshold.

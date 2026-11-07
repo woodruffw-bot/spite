@@ -251,6 +251,21 @@ fn repetition_and_padding_charge_output_work_before_allocating() {
 }
 
 #[test]
+fn substring_search_observes_agent_termination_without_a_work_quota() {
+    let input = JsString::from("zzabzzab");
+    let search = JsString::from("ab");
+    for backwards in [false, true] {
+        let mut realm = Realm::default();
+        realm.agent_control().terminate();
+        assert_eq!(realm.remaining_steps, None);
+        assert!(matches!(
+            realm.find_string(&input, &search, if backwards { 8 } else { 0 }, backwards, Span::new(0, 0)),
+            Err(Error::Host { message, .. }) if message == "agent terminated by host"
+        ));
+    }
+}
+
+#[test]
 fn substring_search_bounds_repeated_candidate_comparisons() {
     let mut realm = Realm::default();
     let input = Value::String(JsString::from("a".repeat(100).as_str()));
