@@ -3483,6 +3483,8 @@ All executed variants receive a private diagnostic print capture. Its constant
 host bootstrap is parsed separately from test-supplied source, then evaluated
 under the normal Realm limits; test, harness and imported source keep their
 configured source-size checks.
+The global print property is writable, configurable and non-enumerable, matching
+INTERPRETING.md's Host-Defined Functions requirements.
 Print converts its value before appending or advancing the private index, so a
 caught conversion throw leaves no hole and reentrant prints stay visible.
 Async Script variants execute the original doneprintHandle.js and selected

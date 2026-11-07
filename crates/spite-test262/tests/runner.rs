@@ -623,6 +623,8 @@ fn raw_async_scripts_keep_source_and_require_one_print_completion() {
     let original = "#!/usr/bin/env js\n/*---\nflags: [raw, async]\n---*/\n\
         if((function(){return this})()!==globalThis)throw 1;\n\
         if(Reflect.ownKeys(globalThis).includes('assert')||Reflect.ownKeys(globalThis).includes('$DONE'))throw 2;\n\
+        let pd=Object.getOwnPropertyDescriptor(globalThis,'print');\n\
+        if(!pd.writable||pd.enumerable||!pd.configurable||pd.value!==globalThis.print)throw 3;\n\
         let print=7;Promise.resolve().then(()=>globalThis.print('Test262:AsyncTestComplete'));";
     let cases = Runner::default()
         .run(original, None, |_| panic!("raw test loaded harness"))

@@ -621,6 +621,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse direct unsigned UTF-16 index formatting in Array element creation, movement, iteration, search, find, reduction and slicing, retaining Number rounding for spread indices above the safe-integer bound.
 - [x] Keep private Test262 print capture contiguous through throwing and reentrant value conversion so later failures and duplicate completions cannot be hidden.
 - [x] Reject printed asynchronous failures and duplicate signals even when a runtime-negative exception matches, including messages from constructor/name inspection, while retaining distinct host failures.
+- [x] Define the Test262 print global with the required writable, configurable and non-enumerable descriptor while preserving private completion capture and raw source behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -8,10 +8,15 @@ const PRINT_HOST: &str = r#"
 (function() {
     const messages = Object.create(null), asString = String;
     let next = 0;
-    globalThis.print = function print(value) {
-        const message = asString(value);
-        messages[next++] = message;
-    };
+    Object.defineProperty(globalThis, 'print', {
+        value: function print(value) {
+            const message = asString(value);
+            messages[next++] = message;
+        },
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
     return messages;
 })()
 "#;

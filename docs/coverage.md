@@ -61,6 +61,15 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Test262 print host descriptor
+
+The print host now defines its global property as writable, configurable and
+non-enumerable, as required by pinned INTERPRETING.md. Assignment previously made
+it enumerable. The existing raw async source-preservation regression checks the
+complete descriptor while retaining lexical print shadowing and queued completion.
+It fails before the fix; all 87 noncorpus controls and the full quality gate pass
+afterward. Runtime defaults and test/fixture inventories remain unchanged.
+
 ## Printed failures and runtime negatives
 
 An explicit asynchronous failure or duplicate completion now fails even when a
