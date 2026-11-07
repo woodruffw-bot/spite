@@ -28,8 +28,8 @@ documentation. Exact fixture inventories and test receipts belong in
 | 22: text processing | Reviewed | UTF-16 String operations, Unicode transforms and RegExp protocols below |
 | 23: indexed collections | Reviewed | Array/TypedArray factories, sparse access, copying, sorting and byte codecs below |
 | 24: keyed collections | Reviewed | Ordered Map/Set storage, set-like records and weak-key operations below |
-| 25: structured data | Pending | |
-| 26: managing memory | Pending | |
+| 25: structured data | Reviewed | Buffer/view witnesses, Atomics and JSON protocols below |
+| 26: managing memory | Reviewed | WeakRef kept objects and FinalizationRegistry cleanup below |
 | 27: control abstraction objects | Pending | [Generator/Promise milestone review](coverage.md#generator-promise-and-suspension-review) records the completed implementation components |
 | 28: reflection | Pending | |
 | 29: memory model | Pending | |
@@ -305,3 +305,30 @@ undefined. TypedArray methods use internal witnesses rather than public length
 properties, revalidate only at required steps and preserve raw representations
 where required. Map/Set hashing does not call user coercion hooks; weak keys do
 not become strong roots through the hash index.
+
+## Structured data and memory management
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| ArrayBuffer creation, resizing, slicing and transfer | [Buffer operations](../crates/spite-runtime/src/function/array_buffer.rs), checked sparse byte storage and detach state | Ordered length/options/prototype conversion, resize/detach during hooks, species-result validation, preserved copy ranges, transfer resizability and allocation-failure preservation |
+| SharedArrayBuffer | [Shared construction/grow/slice](../crates/spite-runtime/src/function/shared_array_buffer.rs), shared native backing and monotonic published length | Shared brands/metadata, zero-filled growth, same-backing species rejection, receiving-Realm wrappers and concurrent native-thread visibility |
+| DataView and binary encoding | [Live view witnesses](../crates/spite-runtime/src/function/data_view.rs) and element codecs for all eleven view types | All 22 get/set methods, unaligned endian access, integer/BigInt conversion, direct Float16 rounding, offset/value order and fixed/tracking resize/detach recovery |
+| Atomics numeric operations | [Integer TypedArray validation](../crates/spite-runtime/src/function/atomics.rs), ordered index/operand conversion and atomic backing operations | All eight integer types, ordinary/shared buffers, modular operations, compareExchange, conversion errors, invalidated views and native-thread updates |
+| Atomics waiting, notification and pause | Per-location FIFO native waiters, owning-Agent capabilities/jobs, condition variables and cooperative processor hints | Immediate/async/synchronous wait results, count/timeout conversion, race-safe timeout/notify, cross-agent delivery, termination and metadata-configured Test262 workers |
+| JSON parsing and revivers | Independent ECMA-404 parser, intrinsic materialization and [iterative InternalizeJSONProperty](../crates/spite-runtime/src/function/json/reviver.rs) | Exact grammar/UTF-16, duplicate names, primitive source contexts, snapshotted children/live values, callback mutation, rejected updates and deep traversal |
+| JSON stringify and raw values | Iterative serialization, ordered toJSON/replacer/wrapper processing, exact quoting and unforgeable frozen raw brand | Property lists, indentation, holes/omissions, BigInt hooks, raw spelling, cycles versus aliases, Proxy/errors and surrogate-safe quoting |
+| WeakRef and kept objects | [Checked weak slots](../crates/spite-runtime/src/function/weak_ref.rs), Agent-wide kept roots and explicit idle checkpoints | Object/non-registered-Symbol targets, constructor/brand order, cleared targets, work-failure preservation and child-Realm lifetime |
+| FinalizationRegistry | [Weak target/token cells](../crates/spite-runtime/src/function/finalization_registry.rs), strong held/callback captures and rooted cleanup jobs | Registration identity/order, unregister, target/held distinction, collection, reentry, queued callback lifetime and owning-Realm execution |
+
+A supplemental 1,613-case JSON/DataView audit agrees with Node on results,
+error kinds, callback/conversion traces and resulting bytes. It covers JSON
+replacers/indentation, primitive reviver source contexts, callback mutation and
+raw validation, plus unaligned integer/Float16/Float64 setters whose offset/value
+hooks resize or detach fixed and tracking views.
+
+Shared backing contains no JavaScript heap values. Wait notifications carry
+native identities to the owning Agent, which retains and services its own
+Promise capabilities. Weak cleanup remains host-scheduled and cannot run during
+evaluation or collection. The production trace-inlining validation includes
+all 302 unchanged admitted WeakRef/WeakMap/WeakSet/FinalizationRegistry sources,
+executed in their 603 official runner modes with no failures or allowances.

@@ -581,6 +581,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Review clause-21 Number/BigInt methods, Math rounding and exact summation, and Date normalization, conversion order and host policies.
 - [x] Review clause-22 UTF-16 String operations, pinned Unicode transforms, pattern delegation and regress-backed RegExp protocols.
 - [x] Review clause-23 indexed factories, traversal, copying, sorting and byte codecs, and clause-24 ordered/weak collection protocols.
+- [x] Review clause-25 buffers/views, Atomics and JSON, and clause-26 kept-object and finalization lifetime protocols.
 - [x] Review primitive/mixed comparison dispatch, ordered object conversion and exact BigInt/String comparisons after ToPrimitive.
 - [x] Benchmark and optimize only after the conformance gate is stable.
 - [x] Add manual parser, initialization, evaluation, Promise-job and collection benchmarks with checked workload results and separate timing columns.

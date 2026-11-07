@@ -61,6 +61,25 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Structured data and weak-memory API review
+
+The [review index](spec-review.md#structured-data-and-memory-management) records
+clause-25 buffers/views, Atomics and JSON, and clause-26 WeakRef and
+FinalizationRegistry. Existing native/whole-source cases cover conversion and
+buffer-witness order, binary encodings, multi-agent wait/notify, iterative JSON
+protocols and host-scheduled weak lifetimes.
+
+A supplemental 1,613-case JSON/DataView audit matches Node on results, error
+kinds, callback/conversion traces and final bytes. It includes reviver source
+contexts and mutation, raw JSON validation, and offset/value hooks that resize
+or detach fixed/tracking views. The 302-source, 603-mode weak-lifetime cohort
+also passed for the latest production change, as recorded below. No production
+or fixture changes are needed for these chapters.
+
+Validation: 58 buffer-filtered, 28 DataView-filtered, 38 Atomics-filtered, 32
+JSON-filtered, 23 WeakRef-filtered and 31 finalization-filtered Runtime
+integrations pass (filters can overlap), along with the full quality gate.
+
 ## Indexed and keyed collection review
 
 The [review index](spec-review.md#indexed-and-keyed-collections) records
