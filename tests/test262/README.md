@@ -6378,11 +6378,10 @@ by upstream `INTERPRETING.md`. These checked host reads execute getters normally
 inspection failures cannot satisfy the original expected exception. Primitive
 throws and missing/non-string constructor names do not pass an error expectation.
 
-The `spite-test262` command runs 18378 variants from 9463 reviewed sources.
-The cohort sections above describe the admitted whole originals and deferred
-prerequisites; `runner.tsv` enumerates every source and
-expected outcome. Nineteen other fixtures remain component regressions outside
-this execution inventory.
+The `spite-test262` command runs 80,028 variants from 41,531 reviewed sources.
+The cohort sections above record the successive whole-original reviews;
+`runner.tsv` enumerates every current source and expected outcome. Other
+vendored fixtures remain outside this execution inventory without pass credit.
 
 Arrow reviews cover the no-line-terminator restriction, duplicate simple
 parameters, default-parameter duplicates, strict/reserved bindings and initializer
@@ -6418,13 +6417,15 @@ The original Pattern validator remains independent of matching. Backend native
 representation limits are host failures and cannot satisfy a negative fixture.
 That migration kept fixture, harness and reviewed-entry inventories unchanged.
 
-These results do not measure whole-suite conformance. Other tests require grammar,
-objects, functions, or harness facilities that have not been implemented yet.
-The `spite-test262` crate now reads a documented subset of frontmatter and plans
-execution modes and harness include order. Its Script runner now separates parse,
-harness, and runtime outcomes, requiring a reviewed diagnostic for parse-negative
-passes. Harness support is limited to the executed paths above; modules, raw
-async setup and agent configuration remain unsupported.
+These results do not establish whole-suite conformance. The current review targets
+the published edition 17 baseline, retaining documented host-policy exclusions
+and Unicode-version differences. The runner reads a documented subset of
+frontmatter and plans Script, Module, strict, raw and asynchronous execution with
+the required harness order. It separates parse, harness, resolution and runtime
+outcomes, requires reviewed diagnostics for parse negatives, and supports host
+module loading and isolated Test262 agents. Missing host facilities, unsupported
+features and opted-in limits remain non-passing outcomes. Raw async tests supply
+their own completion messages without harness injection.
 
 Run `python3 tools/check-test262.py` to verify the vendored bytes. Git attributes
 prevent line-ending normalization of fixtures. Do not edit the source files to
