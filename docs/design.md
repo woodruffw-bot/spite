@@ -3482,14 +3482,16 @@ selects suspending or nonsuspending Test262 agents.
 All executed variants receive a private diagnostic print capture. Its constant
 host bootstrap is parsed separately from test-supplied source, then evaluated
 under the normal Realm limits; test, harness and imported source keep their
-configured source-size checks. Async Script
-variants execute the original doneprintHandle.js and selected includes, then drain
-the explicit Promise queue. Only async variants require exactly one completion
+configured source-size checks.
+Print converts its value before appending or advancing the private index, so a
+caught conversion throw leaves no hole and reentrant prints stay visible.
+Async Script variants execute the original doneprintHandle.js and selected
+includes, then drain the explicit Promise queue. Only async variants require exactly one completion
 and reject failure or duplicate completion messages. Reported job exceptions stay
 separate from printed failure names. Host failures retain their
-own categories. The runner adds no default execution or job quotas. While the
-grammar is partial, parse-negative passes additionally
-require a reviewed expected diagnostic span and message; an empty span is valid
+own categories. The runner adds no default execution or job quotas.
+Parse-negative passes additionally require a reviewed expected diagnostic span
+and message; an empty span is valid
 only at the unchanged source's EOF. Strict Script prefix insertion adjusts both
 positions consistently. Interior empty spans, invalid UTF-8 boundaries and
 out-of-range spans remain invalid corpus reviews. An arbitrary syntax error

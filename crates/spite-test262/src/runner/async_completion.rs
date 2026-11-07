@@ -9,7 +9,8 @@ const PRINT_HOST: &str = r#"
     const messages = Object.create(null), asString = String;
     let next = 0;
     globalThis.print = function print(value) {
-        messages[next++] = asString(value);
+        const message = asString(value);
+        messages[next++] = message;
     };
     return messages;
 })()

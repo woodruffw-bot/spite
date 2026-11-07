@@ -18,6 +18,8 @@ helper and review inventories are unchanged.
 Static and dynamic module sources use the same completion capture: asynchronous
 dependencies settle before final classification, and duplicate signals anywhere
 in the loaded graph fail.
+Print values are converted before reserving their capture index, so caught
+conversion throws and reentrant prints cannot hide later completion messages.
 
 The full gate compiled on clean bffbadfc7 passes all 87 noncorpus package controls
 and all 80,028 modes from 41,531 unchanged originals. The saved three-worker

@@ -640,6 +640,26 @@ fn raw_async_scripts_keep_source_and_require_one_print_completion() {
             "let $DONE=()=>print('Test262:AsyncTestComplete');Promise.resolve().then($DONE)",
             true,
         ),
+        (
+            "try{print({toString(){throw 7}})}catch(e){if(e!==7)throw e}print('Test262:AsyncTestComplete')",
+            true,
+        ),
+        (
+            "try{print({toString(){print('Test262:AsyncTestComplete');throw 7}})}catch(e){if(e!==7)throw e}",
+            true,
+        ),
+        (
+            "print('Test262:AsyncTestComplete');try{print({toString(){throw 7}})}catch{}print('Test262:AsyncTestFailure: must be observed')",
+            false,
+        ),
+        (
+            "print('Test262:AsyncTestComplete');try{print({toString(){throw 7}})}catch{}print('Test262:AsyncTestComplete')",
+            false,
+        ),
+        (
+            "print({toString(){print('Test262:AsyncTestComplete');return 'Test262:AsyncTestComplete'}})",
+            false,
+        ),
         ("1", false),
         (
             "print('Test262:AsyncTestComplete');print('Test262:AsyncTestComplete')",

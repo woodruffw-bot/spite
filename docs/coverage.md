@@ -61,6 +61,19 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Print conversion and asynchronous completion
+
+The private Test262 print host converts each value before advancing its capture
+index. A caught conversion throw previously left a hole: inspection could miss
+a valid completion or incorrectly ignore a later failure/duplicate signal.
+Successful reentrant prints now remain contiguous even when the outer conversion
+throws. The existing raw async group covers those cases and duplicate messages
+produced by reentrant conversion.
+
+The regression fails before the fix. All 87 noncorpus package controls and the
+full quality gate pass afterward. Production changes only the capture append
+order; fixtures, helpers, review rows, test inventories and defaults are unchanged.
+
 ## Shared Array index formatting
 
 Eight Array index conversions reuse the shared exact unsigned UTF-16 formatter
