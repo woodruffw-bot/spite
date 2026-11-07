@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Frozen Array and grouping conformance gate
+
+A full gate compiled on clean 824eae646 passes after the Proxy Array reflection
+fix, Object.groupBy lookup index and intrinsic Array index-key reuse. All 84
+noncorpus Test262 package controls pass. A separately saved executable uses the
+same three-worker corpus API and passes all 80,028 official modes from 41,531
+originals, asserting exact counts and zero other outcomes.
+
+The executable and complete pinned fixtures are saved before the run; their
+SHA-256 hashes remain unchanged at completion. The corpus process completes in
+1,490.05 seconds. This allows continued semantic audits and the later test/docs
+commit 7630cb651 while preserving the exact production and input scope of the gate.
+
+Supplemental numeric-prefix checks match Node on all 61,770 calls across 12,354
+Strings. They compare binary64 results, distinguishing negative zero and
+normalizing NaN, for Number, parseFloat and parseInt with decimal/binary/hex
+radices. Inputs cover ASCII boundaries, whitespace, malformed exponents, long
+inputs, surrogate suffixes, subnormal ties and finite/Infinity boundaries.
+
+All 19,868 normalization calls across 4,967 Strings also match Node for selected
+characters assigned before Unicode 18. All four forms cover combining order and
+blockers, Hangul, compatibility mappings, supplementary scalars and raw lone
+surrogates. The comparison uses Node's Unicode 17 data for those stable characters;
+the implementation retains pinned Unicode 18 data.
+
 ## TypedArray receiver writes through Proxies
 
 A 7,092-case supplemental audit covers all twelve element kinds, direct and
