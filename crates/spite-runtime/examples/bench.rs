@@ -80,6 +80,24 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_case_ascii",
+        source: "(()=>{const text=\"AbC09 .:^`'z\".repeat(1024);let sum=0;for(let i=0;i<8;i++){const lower=text.toLowerCase(),upper=text.toUpperCase();sum+=lower.length+upper.length+lower.charCodeAt(2)+upper.charCodeAt(2)}return sum})()",
+        expected: 197_936.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_case_context",
+        source: "(()=>{const text=\"AΣ\\u0345B \\ud800aΣ: .\".repeat(1024);let sum=0;for(let i=0;i<8;i++){const lower=text.toLowerCase(),upper=text.toUpperCase();sum+=lower.length+upper.length+lower.charCodeAt(2)+upper.charCodeAt(2)}return sum})()",
+        expected: 194_288.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_case_unicode",
+        source: "(()=>{const text='Σ\\u0345𐐀ß漢\\u200d'.repeat(1024);let sum=0;for(let i=0;i<8;i++){const lower=text.toLowerCase(),upper=text.toUpperCase();sum+=lower.length+upper.length+lower.charCodeAt(2)+upper.charCodeAt(2)}return sum})()",
+        expected: 1_007_632.0,
+        jobs: false,
+    },
+    Case {
         name: "map_iteration",
         source: "(()=>{const map=new Map();for(let i=0;i<256;i++)map.set(i,i);let sum=0;for(const value of map.values())sum+=value;return sum})()",
         expected: 32640.0,

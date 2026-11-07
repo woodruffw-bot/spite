@@ -34,6 +34,10 @@ fn sigma_context_uses_original_cased_and_case_ignorable_properties() {
         ("AΣ B", "aς b"),
         ("AΣ+B", "aς+b"),
         ("AΣ'B", "aσ'b"),
+        ("AΣ.B", "aσ.b"),
+        ("AΣ:B", "aσ:b"),
+        ("AΣ^B", "aσ^b"),
+        ("AΣ`B", "aσ`b"),
         ("AΣ'", "aς'"),
         ("AΣ\\u0301", "aς\\u0301"),
         ("AΣ\\u0301B", "aσ\\u0301b"),
@@ -186,11 +190,19 @@ fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
     });
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
-    assert!(matches!(
-        realm.eval("try{'ß'.toUpperCase();}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    for expression in [
+        "'ß'.toUpperCase()",
+        "'AB'.toLowerCase()",
+        "'ab'.toUpperCase()",
+    ] {
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
         ..Limits::default()

@@ -19,12 +19,21 @@ pub fn unicode_case_mapping(point: char, uppercase: bool) -> Option<&'static [u1
 
 /// Returns the pinned Unicode Cased property used in default contextual casing.
 pub fn is_unicode_cased(point: char) -> bool {
-    contains(CASED, point as u32)
+    if point.is_ascii() {
+        point.is_ascii_alphabetic()
+    } else {
+        contains(CASED, point as u32)
+    }
 }
 
 /// Returns the pinned Unicode Case_Ignorable property used in contextual casing.
 ///
 /// A scalar may be both Cased and Case_Ignorable. Context scans ignore it first.
 pub fn is_unicode_case_ignorable(point: char) -> bool {
-    contains(CASE_IGNORABLE, point as u32)
+    if point.is_ascii() {
+        // The five ASCII Case_Ignorable points in the pinned Unicode data.
+        matches!(point, '\u{27}' | '.' | ':' | '^' | '`')
+    } else {
+        contains(CASE_IGNORABLE, point as u32)
+    }
 }

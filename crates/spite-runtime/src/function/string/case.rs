@@ -35,6 +35,13 @@ impl Realm {
                 && !self.following_cased(decoded.clone(), span)?;
             if final_sigma {
                 self.append_case_units(&mut result, &[0x03c2], span)?;
+            } else if point.is_ascii() {
+                let mapped = if uppercase {
+                    point.to_ascii_uppercase()
+                } else {
+                    point.to_ascii_lowercase()
+                };
+                self.append_case_units(&mut result, &[mapped as u16], span)?;
             } else if let Some(mapping) = unicode_case_mapping(point, uppercase) {
                 self.append_case_units(&mut result, mapping, span)?;
             } else {

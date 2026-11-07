@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## ASCII String case conversion
+
+String casing uses standard ASCII upper/lower operations and fixed ASCII Cased
+and Case_Ignorable properties. Other scalars retain the pinned Unicode 18
+tables. Greek sigma still examines original input, and every point keeps its
+existing work, termination and checked-output path (22.1.3.29–31, 35).
+
+Strengthened native regressions cover all five ASCII Case_Ignorable points
+around sigma and output-limit failures in both ASCII mappings. All 7,840
+selected casing strings match Node before and after the change, including
+every ASCII unit, overlapping context properties, expansions, supplementary
+letters and lone surrogates. These selected characters use matching Unicode
+17/18 properties; the Node oracle does not replace pinned Unicode 18 data.
+
+Twelve quiet single-CPU ABBA runs measure 61.3% lower evaluation time for
+ASCII input and 47.0% lower time for mixed sigma/surrogate text. The Unicode
+control differs by +0.6%. The unrelated radix-overflow row is 10.0% higher in
+these executables. Full measurements are in
+[benchmarking](benchmarking.md#ascii-string-case-conversion).
+
+Validation passes all 112 Core tests, 573 Runtime units, 2,430 non-RegExp
+integrations and the full quality gate. All 2,441 official modes from 1,222
+unchanged String originals pass with zero nonpassing outcomes. Test and
+fixture inventories are unchanged.
+
 ## Combined main gate and protocol interruption audits
 
 A fresh full Test262 package run on 45e966271 covers the combined URI,

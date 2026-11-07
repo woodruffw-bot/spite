@@ -602,6 +602,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Return valid toWellFormed input directly and copy its valid prefix before repairing unpaired units, preserving output limits and decoder lookahead with fallible reservation.
 - [x] Restore retained UTF-16 source by encoding scalar spans and walking recorded lone surrogates in order, preserving exact nested ranges and replacement characters.
 - [x] Parse larger unaccounted BigInt inputs in u32-sized digit groups with fallible carry capacity, retaining per-digit behavior for short inputs and explicit quotas.
+- [x] Use standard ASCII case mappings and fixed ASCII context properties before pinned Unicode lookups, preserving Final_Sigma, surrogates and per-point work/output checks.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

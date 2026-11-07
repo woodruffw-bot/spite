@@ -2763,6 +2763,11 @@ fallible reservation. The host's fixed locale-neutral default means
 toLocaleLowerCase/toLocaleUpperCase use the same mappings and ignore ECMA-402's
 reserved arguments. All four methods remain generic with once-only string-hint
 conversion, zero length, and separate retained function identities.
+ASCII mappings use the standard ASCII upper/lower operations. ASCII Cased means
+letters; its Case_Ignorable set is U+0027, U+002E, U+003A, U+005E and U+0060,
+as recorded in the pinned Unicode data. Other scalars retain the generated
+lookups. All paths keep the same per-point work/termination checks and checked
+output appends, including during Final_Sigma lookahead.
 
 URI encoding (19.2.6.3–5) first performs string-hint ToString. Traverse UTF-16
 iteratively, reject every unpaired surrogate with URIError, and encode valid code

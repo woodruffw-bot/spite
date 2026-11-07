@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all twenty-eight program workloads |
+| parse_all | Parse and drop the ASTs for all thirty-one program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -31,6 +31,9 @@ and collection medians are computed independently.
 | string_pad_wide | Repeat string_pad with a three-unit BMP/lone-surrogate filler and a partial final copy |
 | string_wellformed | Run toWellFormed sixteen times over a valid 10,240-unit BMP/supplementary input, checking length and final unit |
 | string_wellformed_mixed | Alternate an unpaired leading/trailing surrogate around that input, checking length and repaired unit |
+| string_case_ascii | Lowercase/uppercase a 12,288-unit ASCII input eight times each, checking lengths and selected units |
+| string_case_context | Repeat the casing checks over 11,264 units of ASCII, Greek sigma, combining marks and lone surrogates |
+| string_case_unicode | Repeat over 7,168 units of Greek, supplementary letters, expanding mappings and joiners as a Unicode control |
 | map_iteration | Populate and iterate a 256-entry Map |
 | function_source | Compile a function with a 10,240-unit BMP/supplementary comment, then stringify it sixteen times, checking lengths and final units |
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
@@ -63,6 +66,37 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## ASCII String case conversion
+
+ASCII case mappings and their Cased/Case_Ignorable properties use standard
+ASCII operations and the fixed ASCII property values from the pinned Unicode
+data. Other scalars retain their generated tables. Work, termination and
+output checks still run per point, including during sigma-context lookahead.
+
+The three added workloads compare ASCII, mixed contextual text and a Unicode
+control. Both compared binaries contain identical workloads. Baseline
+production is 45e966271 (the following 5b8f5b35b changes documentation only);
+the candidate changes only casing. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_case_ascii | 8136.4 | 3144.9 | 165.3 | 162.1 |
+| string_case_context | 7604.0 | 4030.6 | 166.8 | 160.9 |
+| string_case_unicode | 3891.6 | 3914.3 | 161.6 | 165.1 |
+| radix_overflow | 713.6 | 785.0 | 153.0 | 159.6 |
+| parse_all | 758.8 | 753.8 | 0 | 0 |
+| initialize_and_drop | 613.4 | 614.4 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+ASCII and mixed-context evaluation is 61.3% and 47.0% lower. The Unicode
+control differs by +0.6%. The unrelated radix-overflow row is 10.0% higher
+in these executables; no cause is established. Remaining program evaluation
+changes range from -8.8% to +4.9%, and collection changes from -4.0% to +3.1%.
+Parsing and initialization differ by -0.7% and +0.2%. These observations add
+no CI timing threshold or execution allowance.
 
 ## Grouped BigInt input parsing
 
