@@ -223,6 +223,30 @@ fn relational_comparisons_handle_mixed_types_without_rounding() {
 }
 
 #[test]
+fn relational_comparisons_parse_object_produced_strings_as_bigints() {
+    // IsLessThan (7.2.12) selects StringToBigInt after ToPrimitive, before
+    // ToNumeric. Object-produced Strings must neither round through Number nor
+    // accept Number-only fraction/exponent syntax.
+    for (integer, text, ordered) in [
+        ("9007199254740993n", "9007199254740993", true),
+        ("-9007199254740993n", "-9007199254740993", true),
+        ("1n", "1.5", false),
+        ("10n", "1e1", false),
+    ] {
+        for method in ["[Symbol.toPrimitive]", "valueOf", "toString"] {
+            let object = format!("({{{method}(){{return {text:?}}}}})");
+            for (left, right) in [(integer, object.as_str()), (object.as_str(), integer)] {
+                for (operator, expected) in
+                    [("<", false), (">", false), ("<=", ordered), (">=", ordered)]
+                {
+                    boolean(&format!("{left} {operator} {right}"), expected);
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn numeric_errors_are_catchable_and_preserve_evaluation_order() {
     for (source, kind) in [
         ("+1n", ExceptionKind::TypeError),

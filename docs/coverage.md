@@ -61,6 +61,34 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Primitive and mixed comparison review
+
+The 7.2 comparison review follows primitive equality and ordering in value.rs,
+ordered ToPrimitive dispatch in realm_object.rs and operator evaluation in
+Runtime lib.rs. BigInt/Number comparisons use exact integer/binary64 ordering;
+String pairs compare UTF-16 code units. BigInt/String ordering selects
+StringToBigInt after object conversion, preserving integer precision and
+returning unordered for fraction/exponent syntax. SameValue distinguishes
+signed zero and equates NaNs; strict equality uses the language type first.
+
+A 12,800-case local audit covers equality and all four relational operators
+across primitives, boxed conversion hooks, subnormals, infinities and BigInts
+beyond the Number precision/range boundaries. Two results differ from Node
+24.19.0 when an object produces the String 9007199254740993: the published
+IsLessThan algorithm compares that String exactly with the same BigInt, while
+Node's <= and > results are consistent with rounding it through Number.
+The implementation follows the published algorithm; no compatibility exception
+or production change is introduced.
+
+A native regression protects both operand orders, positive/negative precision
+boundaries, all relational operators and Number-only String syntax through
+Symbol.toPrimitive, valueOf and toString. Its expected results come from the
+published post-ToPrimitive StringToBigInt branches, rather than Node output.
+
+Validation: nine BigInt Runtime groups, six object-coercion groups and all 33
+BigInt crate tests pass. Formatting, strict Clippy, Rust 1.99 all-target checks
+and repository policies pass; production code and upstream fixtures are unchanged.
+
 ## Generator, Promise and suspension review
 
 The remaining generator/async milestone now reflects its completed components:

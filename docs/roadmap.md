@@ -572,6 +572,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit normative optional features and host-defined behavior.
 - [x] Record published host-hook policies, the enabled optional WeakRef constructor property and shared-Agent kept-object checkpoints.
 - [ ] Review every specification section and record implementation evidence.
+- [x] Review primitive/mixed comparison dispatch, ordered object conversion and exact BigInt/String comparisons after ToPrimitive.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
 
 Full conformance requires more than a passing subset or a test count. Every
