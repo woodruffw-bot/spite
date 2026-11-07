@@ -20,6 +20,10 @@ dependencies settle before final classification, and duplicate signals anywhere
 in the loaded graph fail.
 Print values are converted before reserving their capture index, so caught
 conversion throws and reentrant prints cannot hide later completion messages.
+Printed async failures and duplicate signals also fail runtime-negative tests,
+including signals from constructor/name getters during exception inspection.
+Expected language exceptions still pass without a completion message; Unsupported
+and host-limit outcomes retain their categories.
 
 The full gate compiled on clean bffbadfc7 passes all 87 noncorpus package controls
 and all 80,028 modes from 41,531 unchanged originals. The saved three-worker

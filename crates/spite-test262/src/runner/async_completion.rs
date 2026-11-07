@@ -33,7 +33,11 @@ impl AsyncCompletion {
         Ok(Self { messages })
     }
 
-    pub(super) fn finish(&self, realm: &mut Realm) -> Result<(), Outcome> {
+    pub(super) fn finish(
+        &self,
+        realm: &mut Realm,
+        require_completion: bool,
+    ) -> Result<(), Outcome> {
         let mut index = 0usize;
         let mut complete = 0usize;
         let mut failure = None;
@@ -80,7 +84,7 @@ impl AsyncCompletion {
         if let Some(message) = failure {
             return Err(failed(Stage::Runtime, message));
         }
-        if complete != 1 {
+        if require_completion && complete != 1 {
             return Err(failed(
                 Stage::Runtime,
                 "asynchronous test did not signal completion",

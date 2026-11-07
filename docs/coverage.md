@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Printed failures and runtime negatives
+
+An explicit asynchronous failure or duplicate completion now fails even when a
+later language exception matches a runtime-negative expectation. Validation runs
+after constructor/name inspection, so failure messages printed by those getters
+also remain visible. Expected language exceptions still pass without a completion
+message; Unsupported and host-limit outcomes retain their categories, including
+failures during exception inspection. This follows the pinned INTERPRETING.md
+requirement that the async failure prefix always signals failure.
+
+The existing raw Script/Module groups protect direct and awaited exceptions,
+constructor/name getters, duplicate signals and the host-failure boundaries.
+All 87 noncorpus controls, the full quality gate and final strict Clippy checks
+pass, including exact Failed/Runtime classification for the new Module cases.
+All 53 modes from the 32 unchanged pinned runtime-negative originals pass.
+The pin contains no async runtime-negative originals; the new combinations are
+runner controls and add no fixture passing credit.
+
 ## Print conversion and asynchronous completion
 
 The private Test262 print host converts each value before advancing its capture

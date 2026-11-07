@@ -698,8 +698,34 @@ fn raw_async_scripts_keep_source_and_require_one_print_completion() {
 fn raw_async_failures_keep_language_host_and_printed_outcomes_separate() {
     for (body, kind) in [
         ("throw new TypeError()", 0),
+        (
+            "print('Test262:AsyncTestComplete');throw new TypeError()",
+            0,
+        ),
+        ("print('diagnostic');throw new TypeError()", 0),
         ("print('Test262:AsyncTestFailure:TypeError: failed')", 1),
+        (
+            "print('Test262:AsyncTestFailure: explicit failure');throw new TypeError()",
+            1,
+        ),
+        (
+            "print('Test262:AsyncTestComplete');print('Test262:AsyncTestComplete');throw new TypeError()",
+            1,
+        ),
+        (
+            "throw {get constructor(){print('Test262:AsyncTestFailure: constructor');return TypeError}}",
+            1,
+        ),
+        (
+            "throw {constructor:{get name(){print('Test262:AsyncTestFailure: name');return 'TypeError'}}}",
+            1,
+        ),
         ("$DONE()", 2),
+        ("print('Test262:AsyncTestFailure: failed');$DONE()", 2),
+        (
+            "throw {get constructor(){print('Test262:AsyncTestFailure: failed');$DONE()}}",
+            2,
+        ),
     ] {
         let error_type = if kind == 2 {
             "ReferenceError"
@@ -733,36 +759,76 @@ fn raw_async_failures_keep_language_host_and_printed_outcomes_separate() {
             _ => unreachable!(),
         }
     }
-    let cases = Runner {
-        limits: Limits {
-            max_steps: Some(100_000),
-            ..Limits::default()
-        },
+    for prefix in ["", "print('Test262:AsyncTestFailure: failed');"] {
+        let cases = Runner {
+            limits: Limits {
+                max_steps: Some(100_000),
+                ..Limits::default()
+            },
+        }
+        .run(
+            &source(
+                "flags: [raw, async]\nnegative:\n  phase: runtime\n  type: TypeError",
+                &format!("{prefix}Promise.resolve().then(()=>{{while(true){{}}}})"),
+            ),
+            None,
+            |_| panic!("raw test loaded harness"),
+        )
+        .unwrap();
+        assert_eq!(cases.len(), 1);
+        assert!(
+            matches!(
+                cases[0].outcome,
+                Outcome::Limit {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{cases:?}"
+        );
     }
-    .run(
-        &source(
-            "flags: [raw, async]\nnegative:\n  phase: runtime\n  type: TypeError",
-            "Promise.resolve().then(()=>{while(true){}})",
-        ),
-        None,
-        |_| panic!("raw test loaded harness"),
-    )
-    .unwrap();
-    assert_eq!(cases.len(), 1);
-    assert!(
-        matches!(
-            cases[0].outcome,
-            Outcome::Limit {
-                stage: Stage::Runtime,
-                ..
-            }
-        ),
-        "{cases:?}"
-    );
 }
 
 #[test]
 fn raw_async_modules_await_without_harness_injection() {
+    for (body, passed) in [
+        ("await 0;throw new TypeError()", true),
+        (
+            "await 0;print('Test262:AsyncTestFailure: rejected');throw new TypeError()",
+            false,
+        ),
+        (
+            "await 0;throw {get constructor(){print('Test262:AsyncTestFailure: constructor');return TypeError}}",
+            false,
+        ),
+    ] {
+        let cases = Runner::default()
+            .run(
+                &source(
+                    "flags: [module, raw, async]\nnegative:\n  phase: runtime\n  type: TypeError",
+                    body,
+                ),
+                None,
+                |_| panic!("raw test loaded harness"),
+            )
+            .unwrap();
+        assert_eq!(cases.len(), 1);
+        assert_eq!(cases[0].mode, Mode::Module);
+        if passed {
+            assert_eq!(cases[0].outcome, Outcome::Passed);
+        } else {
+            assert!(
+                matches!(
+                    cases[0].outcome,
+                    Outcome::Failed {
+                        stage: Stage::Runtime,
+                        ..
+                    }
+                ),
+                "{body}: {cases:?}"
+            );
+        }
+    }
     for (body, passed) in [
         (
             "if(this!==undefined)throw 1;await 0;print('Test262:AsyncTestComplete')",

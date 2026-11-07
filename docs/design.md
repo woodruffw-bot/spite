@@ -3490,6 +3490,11 @@ includes, then drain the explicit Promise queue. Only async variants require exa
 and reject failure or duplicate completion messages. Reported job exceptions stay
 separate from printed failure names. Host failures retain their
 own categories. The runner adds no default execution or job quotas.
+Explicit failure messages and duplicate completions override a matching runtime
+negative. Inspect completion after the thrown value's constructor/name reads,
+because their getters can print too. A matching language exception needs no
+completion message, while Unsupported and host failures retain their categories
+without completion inspection.
 Parse-negative passes additionally require a reviewed expected diagnostic span
 and message; an empty span is valid
 only at the unchanged source's EOF. Strict Script prefix insertion adjusts both

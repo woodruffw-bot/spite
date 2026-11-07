@@ -425,13 +425,8 @@ impl Runner {
                     }
                 }
             }
-            if result.is_ok()
-                && let Some(completion) = completion
-                && let Err(outcome) = completion.finish(&mut realm)
-            {
-                return outcome;
-            }
-            match result {
+            let require_completion = result.is_ok();
+            let outcome = match result {
                 Ok(_) if metadata.negative.is_none() => Outcome::Passed,
                 Ok(_) => failed(
                     Stage::Runtime,
@@ -478,7 +473,23 @@ impl Runner {
                         }),
                     }
                 }
+            };
+            // Constructor-name inspection can execute getters and print, too.
+            // INTERPRETING.md requires printed async failures to fail even if
+            // the language exception matches a runtime negative. Host failures
+            // during inspection retain their category without completion reads.
+            if matches!(
+                outcome,
+                Outcome::Unsupported { .. } | Outcome::Limit { .. } | Outcome::SetupFailure(_)
+            ) {
+                return outcome;
             }
+            if let Some(completion) = completion
+                && let Err(outcome) = completion.finish(&mut realm, require_completion)
+            {
+                return outcome;
+            }
+            outcome
         })();
         if let Err(error) = realm.finish_test262_agents() {
             return host_failure(&error, Stage::Runtime).unwrap_or_else(|| {
