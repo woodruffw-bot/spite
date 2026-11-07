@@ -179,11 +179,12 @@ pub fn is_whitespace(c: char) -> bool {
 
 /// Converts an unsigned base-2, base-8, or base-16 integer to binary64.
 ///
-/// Rejects empty or invalid digits. Rounds once, with ties to even.
+/// Accepts ASCII digits only; rejects empty or invalid input. Rounds once,
+/// with ties to even.
 pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
     if !matches!(radix, 2 | 8 | 16)
         || digits.is_empty()
-        || !digits.chars().all(|c| c.is_digit(radix))
+        || !digits.bytes().all(|byte| char::from(byte).is_digit(radix))
     {
         return None;
     }
@@ -192,7 +193,10 @@ pub fn parse_radix_integer(digits: &str, radix: u32) -> Option<f64> {
     let mut significand = 0u64;
     let mut guard = false;
     let mut sticky = false;
-    for digit in digits.chars().filter_map(|c| c.to_digit(radix)) {
+    for digit in digits
+        .bytes()
+        .filter_map(|byte| char::from(byte).to_digit(radix))
+    {
         for shift in (0..width).rev() {
             let bit = digit & (1 << shift) != 0;
             if count == 0 && !bit {

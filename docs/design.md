@@ -2687,6 +2687,7 @@ Input length, scan work, and integer arithmetic remain bounded by realm limits.
 Binary, octal and hexadecimal Number conversion shares Core's exact integer
 parser (6.1.6.1, 7.1.4.1, 12.9.3). It validates every digit before accumulating
 significant bits, then rounds once using 53 retained bits, guard and sticky bits.
+Validation and accumulation iterate bytes because accepted digits are ASCII.
 At 1,025 significant bits the result is necessarily Infinity, so accumulation
 stops. Leading zeroes do not advance that count; invalid suffixes remain rejected
 by the complete validation pass.

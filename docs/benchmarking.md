@@ -266,6 +266,30 @@ changes range from -2.8% to +5.7%, and collection changes from -4.8% to +5.7%.
 Parsing and initialization differ by -4.1% and -0.4%. These observations add no
 CI timing threshold or execution allowance.
 
+## ASCII radix digit scanning
+
+Core's radix integer parser iterates bytes during validation and accumulation;
+accepted binary/octal/hexadecimal digits are ASCII. Complete validation still
+precedes bounded accumulation and exact binary64 rounding.
+
+Both compared binaries retain all seventeen program workloads, including the
+checked radix_overflow row. Baseline production is 8e2091265; the candidate
+changes only these iterators. Rust 1.99/conformance-profile Linux x86_64
+measurements use one CPU, no active builds/tests, twelve ABBA process runs,
+seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| radix_overflow | 1072.9 | 694.8 | 153.5 | 151.7 |
+| parse_all | 396.5 | 405.5 | 0 | 0 |
+| initialize_and_drop | 620.8 | 614.5 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Radix conversion evaluation is 35.3% lower. Other program evaluation changes
+range from -1.5% to +2.9%, and collection changes from -2.5% to +2.9%.
+Parsing and initialization differ by +2.3% and -1.0%. These observations add
+no CI timing threshold or execution allowance.
+
 ## Radix Number overflow
 
 Core's radix integer parser validates the entire input, then accumulates at most

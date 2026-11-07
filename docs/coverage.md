@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## ASCII radix digit scanning
+
+Core's binary/octal/hexadecimal integer parser now iterates bytes during digit
+validation and accumulation. Accepted digits are ASCII; complete validation,
+leading-zero handling, the overflow bound and exact guard/sticky-bit rounding
+retain their existing order and behavior.
+
+All 5,630 exact Python-integer audit cases match before and after the change,
+including non-ASCII digits/characters at the start, end and after overflowing
+input. Twelve quiet single-CPU ABBA process runs measure 35.3% lower evaluation
+time for radix conversion; full scope and other measured changes are in
+[benchmarking](benchmarking.md#ascii-radix-digit-scanning).
+
+Validation passes all 112 Core tests, 18 Parser units, 443 Parser integrations,
+573 Runtime units, 2,430 non-RegExp integrations and the full quality gate.
+All 5,454 official modes from 2,746 unchanged numeric originals pass with zero
+nonpassing outcomes. Test and fixture inventories are unchanged.
+
 ## BigInt bitwise temporary allocation
 
 Bitwise operations check the temporary width and reserve each complete operand
