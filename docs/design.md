@@ -812,7 +812,8 @@ Default/fallback prototypes use the retained async intrinsics, while explicit
 newTarget prototypes and subclasses remain observable after all conversions and
 validation. UTF-16 literals/comments and source remain lossless. Await bodies
 compile with retained AwaitExpression nodes and share source body execution.
-General nested await expressions retain explicit Unsupported boundaries.
+Nested awaits use expression tasks and the dedicated pattern/class continuations
+described below.
 
 Async arrows (15.9) retain an explicit kind and their complete source prefix.
 Their heads use +Await independently of ordinary calls named async; their bodies
@@ -886,8 +887,8 @@ unresolved-identifier typeof handling stays in the ordinary evaluator. Expressio
 tasks and current results participate in object tracing and the physical Symbol inventory. Their
 root return/throw/statement/binding action runs only after the complete expression value
 is available. Var target references therefore still resolve before the entire RHS.
-Opaque parent forms use ordinary evaluation and keep their explicit await gaps,
-including class definitions and remaining pattern defaults. Ordinary calls support awaited arguments and
+Class definitions and pattern defaults use dedicated continuations described
+below. Ordinary calls support awaited arguments and
 value callees (13.3.6.1, 13.3.8.1). Shared call preparation evaluates the callee
 reference, captures its receiver and checks intrinsic eval identity before any
 argument. A later suspension retains that target and every preceding argument;
@@ -1022,9 +1023,8 @@ values. Magic prototype definitions remain distinct from computed/shorthand keys
 Continuations retain the partial object and converted key as Values, tracing both
 and counting physically repeated Symbol slots. Converted key input objects are
 released before awaited values; rejected or abandoned literals release their
-partial state before handlers or host abort. Tests retain positive coverage of
-formerly unsupported object-await forms; remaining boundary controls exercise
-awaited pattern defaults after optional chains gained suspension support.
+partial state before handlers or host abort. Optional-chain, class-element and
+pattern suspension are described below.
 
 Optional chains suspend in bases, computed keys and call arguments (13.3.10).
 Each optional nullish check skips its whole ungrouped suffix before evaluating
@@ -1721,8 +1721,9 @@ unreachable conditional cycles do not root themselves. Stale weak keys are
 ignored across generation reuse. Foreign keys and invalid active values abort
 before sweeping. Ephemeron inspections and activations consume caller-selected
 collection work; scratch and sweep free-list allocations are checked before
-removal. Object-key WeakMap JavaScript methods use this ephemeron path; weak
-Symbol-key reachability remains an explicit Unsupported boundary.
+removal. Object-key WeakMap JavaScript methods use this ephemeron path;
+non-registered Symbol keys use the Symbol reachability fixpoint described with
+the weak collections below.
 After marking reaches its fixpoint, reachable containers can remove entries
 whose keys were not retained. Cleanup work is prepaid during enumeration, and
 validated key generations prevent reused slots from preserving stale entries.
@@ -4838,7 +4839,6 @@ replaced, shadowed through prototypes, or deleted. Deleted names follow ordinary
 lookup and typeof rules. Lexical bindings remain separate from global properties.
 Configured host reservations still report explicit host gaps and install no
 properties. Names outside the selected edition receive no implicit reservation.
-The incomplete Array constructor retains its separate fromAsync barrier.
 
 ## Atomics and empty shared waiter lists
 

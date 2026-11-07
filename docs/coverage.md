@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Generator expression effects and interruption
+
+A seeded 4,000-case audit combines yields and delegation inside unary, binary,
+conditional, assignment, array/object and method-call expressions. Accessors,
+numeric conversions and captured callees record observable effects. Eleven
+next/return/throw request patterns interrupt those expressions through catch and
+yielding finally blocks, with state changes and idle checkpoints between requests.
+All results and traces match Node, both normally and with collection after every
+Promise job. Production code and fixture/test inventories are unchanged; these
+supplemental checks add no Test262 passing credit.
+
+The design now describes completed nested-await, class/pattern and weak-Symbol
+support consistently with their implementation sections, and removes the obsolete
+Array.fromAsync barrier description.
+
 ## JSON quoting of ordinary prefixes
 
 QuoteJSONString copies the initial ordinary BMP span in one checked append
