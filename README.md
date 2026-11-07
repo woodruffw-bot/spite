@@ -3,7 +3,9 @@
 A JavaScript parser and interpreter written in safe Rust.
 
 spite targets [ECMAScript 2026](https://262.ecma-international.org/17.0/).
-It implements an initial subset and is **not a conforming engine yet**.
+The [published-specification review](docs/spec-review.md) is complete; exact
+[coverage and implementation constraints](docs/coverage.md) are recorded separately.
+Full conformance is not claimed.
 Node.js compatibility, browser APIs, and syntax extensions are outside its scope.
 
 Production crates use std and workspace crates, regress for RegExp matching, and
@@ -46,7 +48,7 @@ their normal unoptimized profile. Test builds retain line and function debug
 information while omitting full variable and type details to reduce linking costs.
 Link-time optimization is disabled for test builds.
 
-The complete Test262 gate explicitly uses two corpus workers. Every reviewed
+The complete Test262 gate explicitly uses three corpus workers. Every reviewed
 variant runs, and reports retain manifest order. Each evaluated variant uses a
 fresh realm, ordinary native stacks, and runtime defaults with JavaScript quotas
 disabled. The library's `run_corpus` API and the CLI use serial execution.
@@ -75,8 +77,9 @@ Every `Limits` field is optional and defaults to `None`. For example,
 `max_heap_entries: Some(10_000)` opts into a shared object/environment slot quota.
 Platform capacity checks and the interpreter's native-stack guards remain active.
 
-The workspace contains `spite-core`, `spite-parser`, `spite-runtime`, and the
-`spite` facade and CLI. All members live under `crates/`.
+The workspace contains `spite-core`, `spite-bigint`, `spite-heap`, `spite-parser`,
+`spite-runtime`, `spite-test262`, and the `spite` facade and CLI. All members live
+under `crates/`.
 
 See the [design](docs/design.md), [roadmap](docs/roadmap.md), and
 [current coverage](docs/coverage.md). GitHub Actions checks formatting, Clippy,

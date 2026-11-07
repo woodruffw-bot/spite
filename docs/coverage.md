@@ -1,8 +1,8 @@
 # Implemented coverage
 
-spite is an initial executable subset, not a conforming ECMAScript engine.
-The target is ECMAScript 2026, edition 17. This file records implementation status,
-not an alternative language specification.
+spite targets ECMAScript 2026, edition 17. This file records implementation
+status, host choices, regression evidence and known constraints. It does not
+claim complete conformance or define an alternative language specification.
 
 ## Available now
 

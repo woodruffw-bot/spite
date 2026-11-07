@@ -10,7 +10,7 @@
 //! assert_eq!(realm.eval("x = x + 1; x").unwrap(), Value::Number(7.0));
 //! ```
 //!
-//! The supported subset and remaining conformance work are documented in the
+//! Implementation status, conformance evidence and constraints are documented in the
 //! repository. Unsupported features are not treated as JavaScript exceptions.
 
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
