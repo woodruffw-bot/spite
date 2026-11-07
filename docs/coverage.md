@@ -61,6 +61,26 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Object internal methods and lossless source review
+
+The [review index](spec-review.md) records ordinary/function/Array/String/
+arguments/TypedArray/Module/Proxy internal methods and their regression evidence,
+plus UTF-16 source representation, grammar goals and dynamic-source joins.
+
+A local 7,168-case descriptor audit agrees with Node on both outcomes and exact
+has/get/key-conversion observation order. It covers own/inherited Proxy-observed
+descriptor fields, partial/mixed data/accessors, frozen NaN/signed-zero values
+and nonextensible targets. Existing prototype cases protect the Proxy boundary
+of ordinary cycle checks. No implementation change is needed.
+
+Library sources and dependencies are unchanged from the parser revision whose
+full seventeen-job hosted gate passed. This increment records the source review;
+the subsequent checked regressions and benchmark tool remain separate evidence.
+
+Validation: 27 native descriptor/prototype/mapped-arguments groups pass, together
+with formatting, strict Clippy, Rust 1.99 all-target checks and repository
+policies. No fixture, snapshot, execution flag or diagnostic review changes.
+
 ## Syntax-directed operations and execution contexts
 
 The [review index](spec-review.md) now records clause-8 scope/name traversal,

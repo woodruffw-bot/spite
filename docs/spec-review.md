@@ -14,8 +14,8 @@ documentation. Exact fixture inventories and test receipts belong in
 | 7: abstract operations | Reviewed | Operation groups below |
 | 8: syntax-directed operations | Reviewed | Scope, containment, naming and tail-position operations below |
 | 9: execution contexts and environments | Reviewed | Environment, Realm and host-job boundaries below |
-| 10: ordinary and exotic objects | Pending | |
-| 11: source text | Pending | |
+| 10: ordinary and exotic objects | Reviewed | Internal-method and descriptor dispatch below |
+| 11: source text | Reviewed | Lossless representation and independent grammar goals below |
 | 12: lexical grammar | Reviewed | [Production/implementation ledger](coverage.md#published-lexical-grammar-review), including all five lexical goals |
 | 13: expressions | Pending | [Comparison review](coverage.md#primitive-and-mixed-comparison-review) records one completed part |
 | 14: statements and declarations | Reviewed | [Scope, control and completion ledger](coverage.md#published-declaration-and-statement-review) |
@@ -117,3 +117,43 @@ have explicit reported outcomes. Evaluation/allocation never collect, while
 explicit collection traces suspended state and all retained context graphs.
 Kept objects belong to the Agent, including its child Realms, and hosts choose
 the documented idle checkpoints.
+
+## Ordinary and exotic objects
+
+| Group | Implementation | Regression evidence |
+| --- | --- | --- |
+| Ordinary internal methods and property compatibility | [Object storage](../crates/spite-runtime/src/object/store.rs), partial/complete descriptors and Realm get/set/define/prototype dispatch | Descriptor, integrity, prototype and property-order cases; inherited accessors, receiver-sensitive writes, immutable prototypes and cycle checks |
+| ECMAScript and built-in function internal methods | [Ordinary calls/construction](../crates/spite-runtime/src/function/ordinary.rs), builtin dispatch and function-Realm metadata | Strict/nonstrict this, parameter/body instantiation, call/construct capability, derived returns, new.target and cross-realm fallback |
+| Bound functions and arguments exotics | [Bound calls](../crates/spite-runtime/src/function/bound.rs) and mapped parameter cells | Bound argument/receiver/new.target forwarding, live parameter aliases, deletion/accessor unmapping and descriptor changes |
+| Array, String and integer-indexed exotics | [Array storage](../crates/spite-runtime/src/object/array.rs), String virtual indices and [TypedArray dispatch](../crates/spite-runtime/src/object/typed_array.rs) | ArraySetLength conversion/truncation, UTF-16 fixed properties, canonical numeric keys, invalid-index coercion, resize/detachment and alternate receivers |
+| Module namespace exotics | [Namespace slots](../crates/spite-runtime/src/object/module_namespace.rs) and [live bindings](../crates/spite-runtime/src/module/namespace.rs) | Sorted exports, symbols, live aliases/TDZ, fixed prototype/extensibility and descriptor/write/delete restrictions |
+| Proxy internal methods | [Iterative Proxy dispatch](../crates/spite-runtime/src/realm_proxy.rs) | All thirteen methods, trap lookup/argument order, frozen/nonextensible invariants, revoked state, cached call/construct capability and dependent consumers |
+
+An additional 7,168-case descriptor audit agrees with Node for all selected
+cases. It checks Object.defineProperty and Reflect.defineProperty through
+Proxy-observed own/inherited descriptor fields, partial/mixed descriptors,
+nonextensible targets, frozen signed-zero/NaN data and fixed accessors. Both the
+resulting descriptor and the complete has/get/key-conversion observation order
+are compared. Existing prototype tests also protect the ordinary cycle-check
+boundary: it stops at a Proxy without invoking its getPrototypeOf trap.
+
+## Source text
+
+[SourceText](../crates/spite-parser/src/source.rs) retains scalar UTF-8 unchanged
+and records each unpaired UTF-16 surrogate separately at its scanner-byte
+offset. Scanner placeholders remain internal; literal contents, comments,
+RegExp body/flags, raw/cooked templates, import strings and FunctionSource use
+the original code points. Spans never split a scanner code point. Joins check
+capacity and relocate surrogate offsets, preserving exact dynamic source.
+
+Script, Module, eval and [dynamic function](../crates/spite-parser/src/dynamic_function.rs)
+entry points use their specified grammar/strictness contexts. Dynamic parameter
+and body texts validate independently before combined early errors; the required
+body line feeds also prevent hashbang acceptance inside FunctionBody. Initial
+Script/Module hashbang goals remain distinct from later lexical goals.
+
+Evidence includes scripts_utf16, dynamic_source_utf16, lexical_goals, streaming,
+RegExp source/metadata, tagged-template and dynamic-constructor cases, together
+with the retained whole hashbang/comment/identifier/literal inventories.
+HostHasSourceTextAvailable follows the recorded host policy; native/bound/proxy
+toString results use the required implementation-defined native form.
