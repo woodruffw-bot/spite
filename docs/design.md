@@ -450,8 +450,10 @@ key retrieval, and lexical bindings receive fresh iteration environments. RHS
 comma expressions are allowed, unlike for-of. Host quotas remain opt-in. Chains
 that reach an incomplete intrinsic report Unsupported, preserving prior effects;
 The complete String prototype property inventory uses ordinary ordered enumeration.
-The Annex B initialized-var extension remains Unsupported in non-strict code and
-is a SyntaxError in strict code; it never changes the core binding algorithm.
+With the Annex B extension disabled, var initializers in for-in headers are
+SyntaxErrors in strict and non-strict code (14.7.5). Eval and all dynamic function
+constructor families expose the normal catchable SyntaxError before declaration
+instantiation or initializer/body execution.
 
 Arrow parsing supports non-async arrows with binding parameters, optional
 defaults, and assignment-expression or block bodies (15.3). A bounded token lookahead refines the

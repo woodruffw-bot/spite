@@ -61,6 +61,27 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Disabled for-in initializer grammar and compilation errors
+
+With Annex B disabled, the published core ForBinding production permits an
+identifier or pattern without an initializer (14.7.5). Identifier var initializers
+in for-in headers now report a syntax diagnostic in non-strict code as well as
+strict code. Direct and indirect eval and all four dynamic function constructor
+families expose a catchable SyntaxError. Rejection precedes declaration
+instantiation and initializer/body effects. Valid core headers, strict binding
+checks, original diagnostic spans/messages and resource guards are preserved.
+
+Parser regressions cover Script/UTF-16 input and ordinary, arrow, generator,
+async and async-generator bodies. Native regressions check direct/indirect/strict
+eval and calls/construction through all four dynamic constructor families.
+
+Validation: all 18 Parser unit and 443 integration tests pass without snapshot
+changes; Runtime 572 unit and 2,421 non-RegExp integration tests pass. All 84
+other Test262 package checks pass, including worker startup distinctions between
+SyntaxError setup failures and unavailable syntax. Formatting, strict Clippy,
+Rust 1.99 all-target checks and repository policies pass. The native CLI now
+returns "SyntaxError" from the original catch repro.
+
 ## Published intrinsic inventory and collection roots
 
 The published well-known-intrinsic table has 72 entries. The existing inventory
@@ -5649,7 +5670,7 @@ iterator hooks are never read. Tests cover mutation, ordered Array indices,
 primitive boxing, nullish skipping, closures, TDZ, and completion values. Complete
 String and shared Iterator
 chains use ordinary ordered enumeration. The non-strict Annex B
-initialized-var extension remains a separate unsupported feature.
+initialized-var extension is disabled and rejected as a SyntaxError.
 
 Strict ordinary functions execute with preserved receivers, shared lexical captures,
 hoisting, defaults, and return completions. Unmapped arguments expose original

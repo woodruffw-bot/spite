@@ -1420,20 +1420,16 @@ fn validate_statement<'a>(
                 ForBinding::Var(binding) => {
                     binding::validate_pattern(&binding.pattern, strict)?;
                     if let Some(initializer) = &binding.initializer {
-                        // Annex B's initialized for-in extension is not enabled. Keep its
-                        // non-strict extension separate from core early errors.
-                        return Err(if strict {
-                            early(
-                                initializer.span,
-                                "for-in var initializer is forbidden in strict mode",
-                            )
-                        } else {
-                            Diagnostic::new(
-                                DiagnosticKind::Unsupported,
-                                initializer.span,
-                                "initialized for-in var declarations require Annex B",
-                            )
-                        });
+                        // Core ForBinding has no Initializer (14.7.5); the
+                        // optional Annex B grammar is disabled for this host.
+                        return Err(early(
+                            initializer.span,
+                            if strict {
+                                "for-in var initializer is forbidden in strict mode"
+                            } else {
+                                "initialized for-in var declarations require Annex B"
+                            },
+                        ));
                     }
                 }
                 ForBinding::Lexical { binding, .. } | ForBinding::Using(binding) => {

@@ -881,9 +881,21 @@ fn worker_exceptions_and_unsupported_syntax_cannot_satisfy_main_runtime_negative
             .all(|case| matches!(case.outcome, Outcome::SetupFailure(_))),
         "{cases:?}"
     );
-    // Initialized for-in is a recognized, unavailable Annex B extension. Startup
-    // must parse it before acknowledging readiness, even if the main then throws.
+    // Disabled Annex B grammar is a syntax error. Worker startup must report it
+    // before acknowledging readiness, even if the main then throws.
     let body = "$262.agent.start(\"for(var value=0 in {}){}\");throw new TypeError('main')";
+    let cases = runner
+        .run(&source(metadata, body), None, |_| Ok("".into()))
+        .unwrap();
+    assert!(
+        cases.iter().all(|case| matches!(
+            &case.outcome,
+            Outcome::SetupFailure(message) if message.contains("SyntaxError")
+        )),
+        "{cases:?}"
+    );
+    // A genuinely unsupported form remains separate from worker syntax errors.
+    let body = "$262.agent.start(\"async function gap(){await using resource=null;}\");throw new TypeError('main')";
     let cases = runner
         .run(&source(metadata, body), None, |_| Ok("".into()))
         .unwrap();

@@ -11,6 +11,41 @@ fn check(source: &str) {
 }
 
 #[test]
+fn disabled_annex_b_initializers_are_catchable_syntax_errors_in_eval() {
+    check(
+        r#"
+        let touched=0,caught=0;
+        const source='for(var forInLeaked=(touched=1) in {key:1}){}';
+        for(const compile of [()=>eval(source),()=>(0,eval)(source),()=>eval('"use strict";'+source)]){
+            try{compile();throw 1;}
+            catch(error){if(!(error instanceof SyntaxError))throw error;caught++;}
+        }
+        caught===3&&touched===0&&typeof forInLeaked==='undefined'&&!Object.hasOwn(globalThis,'forInLeaked')
+        "#,
+    );
+}
+
+#[test]
+fn dynamic_function_families_reject_disabled_for_in_initializers_during_compilation() {
+    check(
+        r#"
+        let touched=0,caught=0;
+        const source='for(var forInLeaked=(touched=1) in {key:1}){}';
+        const constructors=[Function,Object.getPrototypeOf(function*(){}).constructor,
+            Object.getPrototypeOf(async function(){}).constructor,
+            Object.getPrototypeOf(async function*(){}).constructor];
+        for(const C of constructors){
+            for(const compile of [()=>C(source),()=>Reflect.construct(C,[source])]){
+                try{compile();throw 1;}
+                catch(error){if(!(error instanceof SyntaxError))throw error;caught++;}
+            }
+        }
+        caught===8&&touched===0&&typeof forInLeaked==='undefined'
+        "#,
+    );
+}
+
+#[test]
 fn own_and_inherited_strings_are_ordered_and_symbols_are_skipped() {
     check(
         "let proto={9:1,p:2},obj={2:3,1:4,z:5,a:6,[Symbol()]:7};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='1,2,z,a,9,p'",

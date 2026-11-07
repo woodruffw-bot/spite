@@ -63,6 +63,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit three-clause for header/body scope, destructuring initialization and closing, name inference, per-iteration bindings and grammar/target restrictions.
 - [x] Parse/evaluate synchronous for-of with assignment/var/lexical bindings, fresh iteration scopes, and iterator closing.
 - [x] Parse/evaluate for-in over complete ordinary/exotic prototype chains with live descriptors and inherited-name suppression.
+- [x] Reject disabled Annex B for-in var initializers as catchable SyntaxErrors across Script/UTF-16 parsing, eval and dynamic function compilation.
 - [x] Audit synchronous iteration enumeration, resizable views, binding/assignment patterns, closing, generator contexts and grammar restrictions.
 - [x] Parse switch clauses and validate their lexical scope and control flow.
 - [x] Evaluate switch selection, fall-through, and completion values.

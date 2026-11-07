@@ -1,7 +1,7 @@
 //! For-in headers, declaration inventories, and static semantics (14.7.5).
 
-use spite_core::DiagnosticKind;
-use spite_parser::{MAX_DEPTH, parse_script};
+use spite_core::{DiagnosticKind, JsString};
+use spite_parser::{MAX_DEPTH, parse_script, parse_script_utf16};
 
 #[test]
 fn syntax_and_diagnostics_snapshots() {
@@ -47,6 +47,12 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
         "for(x,y in {}) ;",
         "for(this in {}) ;",
         "for(var x,y in {}) ;",
+        "for(var x=1 in {}) ;",
+        "function f(){for(var x=1 in {}) ;}",
+        "(()=>{for(var x=1 in {}) ;})",
+        "function* f(){for(var x=1 in {}) ;}",
+        "async function f(){for(var x=1 in {}) ;}",
+        "async function* f(){for(var x=1 in {}) ;}",
         "for(let x,y in {}) ;",
         "for(let x=1 in {}) ;",
         "for(const x=1 in {}) ;",
@@ -66,6 +72,13 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
             DiagnosticKind::Syntax,
             "{source}"
         );
+        assert_eq!(
+            parse_script_utf16(&JsString::from(source))
+                .unwrap_err()
+                .kind,
+            DiagnosticKind::Syntax,
+            "UTF-16: {source}"
+        );
     }
     for name in ["arguments", "eval"] {
         let source = format!("'use strict';for(var {name}=1 in {{}}) ;");
@@ -76,11 +89,11 @@ fn invalid_targets_declarations_and_lexical_conflicts_are_syntax_errors() {
 }
 
 #[test]
-fn patterns_parse_and_annex_b_initializers_remain_unsupported() {
+fn patterns_parse_and_disabled_annex_b_initializers_are_syntax_errors() {
     assert!(parse_script("for({x} in {}) ;").is_ok());
     assert_eq!(
         parse_script("for(var x=1 in {}) ;").unwrap_err().kind,
-        DiagnosticKind::Unsupported
+        DiagnosticKind::Syntax
     );
     let source = format!("{};", "for(let x in {}) ".repeat(MAX_DEPTH * 2));
     assert_eq!(

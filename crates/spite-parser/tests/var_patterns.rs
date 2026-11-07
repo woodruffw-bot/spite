@@ -74,7 +74,7 @@ fn all_nested_bound_names_conflict_with_enclosing_lexical_and_catch_names() {
     }
     assert_eq!(
         parse_script("for(var x=1 in {}) ;").unwrap_err().kind,
-        DiagnosticKind::Unsupported
+        DiagnosticKind::Syntax
     );
 }
 
