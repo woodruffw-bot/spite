@@ -2,7 +2,7 @@
 
 use spite_core::Span;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
-use spite_test262::{Mode, Outcome, ParseExpectation, Runner, Stage};
+use spite_test262::{Mode, ModuleSource, Outcome, ParseExpectation, Runner, Stage};
 
 fn source(metadata: &str, body: &str) -> String {
     format!("/*---\n{metadata}\n---*/\n{body}")
@@ -770,6 +770,58 @@ fn raw_async_modules_await_without_harness_injection() {
                     }
                 ),
                 "{body}: {cases:?}"
+            );
+        }
+    }
+    for (flags, body, dependency, passed) in [
+        (
+            "flags: [raw, async]",
+            "import('leaf').then(ns=>{if(ns.value!==42)throw 1;print('Test262:AsyncTestComplete')})",
+            "export const value=42",
+            true,
+        ),
+        (
+            "flags: [module, raw, async]",
+            "import{value}from'leaf';if(value!==42)throw 1;await 0;print('Test262:AsyncTestComplete')",
+            "await 0;export const value=42",
+            true,
+        ),
+        (
+            "flags: [module, raw, async]",
+            "import{value}from'leaf';print('Test262:AsyncTestComplete')",
+            "print('Test262:AsyncTestComplete');export const value=42",
+            false,
+        ),
+    ] {
+        let cases = Runner::default()
+            .run_with_module_loader(
+                &source(flags, body),
+                None,
+                "root",
+                |_| panic!("raw test loaded harness"),
+                |referrer, request| {
+                    assert_eq!(referrer, "root");
+                    assert_eq!(request.specifier.to_utf8().unwrap(), "leaf");
+                    Ok(ModuleSource {
+                        identifier: "leaf".into(),
+                        source: dependency.into(),
+                    })
+                },
+            )
+            .unwrap();
+        assert_eq!(cases.len(), 1);
+        if passed {
+            assert_eq!(cases[0].outcome, Outcome::Passed, "{body}");
+        } else {
+            assert!(
+                matches!(
+                    cases[0].outcome,
+                    Outcome::Failed {
+                        stage: Stage::Runtime,
+                        ..
+                    }
+                ),
+                "{cases:?}"
             );
         }
     }

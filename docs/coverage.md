@@ -84,6 +84,11 @@ All 87 noncorpus Test262 package controls pass, along with formatting, strict
 workspace Clippy, Rust 1.99 checks, dependency/inventory policy and the remaining
 quality gate. The three new groups bring the package total to 88 tests.
 
+The existing raw Module group also exercises dynamic imports from raw Scripts,
+static imports of asynchronous dependencies, and duplicate completion signals
+across a loaded graph. All 23 runner groups and the full quality gate pass;
+package and fixture inventories remain unchanged.
+
 ## TypedArray dispatch labels
 
 Internal selector and table names now describe the 27 implemented prototype

@@ -15,6 +15,9 @@ duplicate completion messages fail. Actual runtime exceptions retain phase/type
 matching, printed failures cannot satisfy negatives, and missing `$DONE` remains
 Unsupported until supplied by the source. Runtime defaults and pinned fixture,
 helper and review inventories are unchanged.
+Static and dynamic module sources use the same completion capture: asynchronous
+dependencies settle before final classification, and duplicate signals anywhere
+in the loaded graph fail.
 
 ## Completed compatible RegExp property inventories
 
