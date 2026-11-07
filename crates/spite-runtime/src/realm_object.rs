@@ -520,9 +520,10 @@ impl Realm {
     /// without changing any roots. After any evaluation result, an inactive host
     /// may clear the list and then explicitly collect.
     ///
-    /// Realms currently have independent heaps and execution domains. A host that
-    /// groups several domains into one synchronous sequence must wait until the
-    /// complete sequence finishes before calling their checkpoints.
+    /// Child realms within this agent share the kept-object list. Independently
+    /// constructed `Realm` instances have separate heaps and execution domains.
+    /// A host that groups several domains into one synchronous sequence must wait
+    /// until the complete sequence finishes before calling their checkpoints.
     pub fn clear_kept_objects(&mut self) -> Result<(), Error> {
         if self.call_depth != 0 || self.evaluation_depth != 0 || self.job_active {
             return Err(Error::Host {

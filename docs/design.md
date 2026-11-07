@@ -25,6 +25,43 @@ core [Forbidden Extensions](https://262.ecma-international.org/17.0/#sec-forbidd
 restrictions. Calls through eval, dynamic constructors, bound functions and
 call/apply do not enable caller-chain inspection.
 
+### Published host policies
+
+The edition-17 normative optional clauses have explicit choices: the legacy
+Object.prototype accessor and lookup helpers remain disabled, while
+[WeakRef.prototype.constructor](https://262.ecma-international.org/17.0/#sec-weak-ref.prototype.constructor)
+is enabled and initially equals the intrinsic WeakRef constructor. The latter
+choice preserves the existing constructor/prototype graph and reflection tests.
+The example clauses in the conformance chapter introduce no additional options.
+Annex B's browser-specific host-hook overrides remain disabled with that annex.
+
+The following choices record the existing non-browser host behavior. They do not
+enable additional APIs or change resource limits.
+
+| Specification operation or host choice | Policy |
+| --- | --- |
+| InitializeHostDefinedRealm | Embedding constructors initialize standard globals and intrinsic graphs on demand. Test262 extras require explicit host installation. |
+| HostEnsureCanAddPrivateElement | Default behavior; no additional restrictions on private elements. Nonextensibility does not prevent adding private elements. |
+| HostEnsureCanCompileStrings, HostHasSourceTextAvailable | Default behavior: string compilation is allowed and function source remains available. Ordinary parsing and configured resource checks still apply. |
+| HostMakeJobCallback, HostCallJobCallback | Default callback records and calls, retaining function identity and its defining Realm. |
+| HostEnqueueGenericJob, HostEnqueuePromiseJob | Agent-owned jobs advanced through the explicit host job API; Promise jobs retain FIFO order. |
+| HostEnqueueTimeoutJob | Native monotonic deadlines serviced at idle host boundaries, never before the requested delay. |
+| HostEnqueueFinalizationRegistryCleanupJob | Rooted cleanup jobs run through explicit host checkpoints and job processing. Collection is host requested. |
+| HostPromiseRejectionTracker | Default no-op; rejection remains Promise state rather than an extra reported job exception. |
+| HostLoadImportedModule, HostGetSupportedImportAttributes | Explicit embedding loader with stable source identities; supported attribute keys are fixed at Realm creation and default to an empty list. |
+| HostGetImportMetaProperties, HostFinalizeImportMeta | Default empty properties and no finalization changes; each Module caches its null-prototype import.meta object. |
+| HostResizeArrayBuffer, HostGrowSharedArrayBuffer | Existing sparse backing storage, checked native capacity and serialized monotonic shared growth. |
+| AgentCanSuspend, HostEventSet | Ordinary agents cannot suspend; explicit suspending construction enables waits. Native shared-memory operations add no separate host memory events. |
+| DebuggerStatement | No active debugging facility; execution returns a normal empty completion. |
+| Math.random | Existing process-randomized, distinct per-Realm pseudo-random sequences. |
+| Time and locale behavior without ECMA-402 | Existing host clock and explicit/system time-zone selection. Number and BigInt locale methods use ordinary numeric formatting; Date locale methods use the corresponding local Date formats. String locale comparison orders NFD UTF-16 units, preserving canonical equivalence. |
+
+Realm records within one agent share its heap, jobs and kept-object checkpoint.
+Independently constructed Rust Realm instances are separate execution domains.
+The embedding host finishes the entire synchronous sequence before clearing kept
+objects in each participating domain. Collection occurs between evaluations;
+the kept-object checkpoint rejects active execution.
+
 Production crates use Rust's standard library and workspace crates. Approved direct
 external production dependencies are `regex` or `regress` for regular expressions,
 `jiff` for host time-zone discovery, and `jiff-tzdb` for portable raw IANA time-zone
@@ -3241,8 +3278,8 @@ alias indices, or vice versa. Argument values and receiver captures remain trace
 after returns or abrupt default initialization. Their own Symbol.iterator property
 aliases the intrinsic Array values function, independent of public replacements.
 Object.prototype.toString recognizes the Arguments tag. Boolean, Number, String,
-and Symbol non-strict receivers are boxed; other
-primitive receivers still report Unsupported until their wrappers are implemented. Call failures restore strictness, scopes, and nesting counters.
+Symbol and BigInt non-strict receivers are boxed. Call failures restore
+strictness, scopes, and nesting counters.
 
 Non-strict simple parameter lists use mapped arguments (10.4.4.1–7). Internal maps
 store checked environment handles and parameter names instead of exposing hidden
@@ -3265,8 +3302,8 @@ Captured environments, functions, and ordinary objects form one traced graph, so
 shared bindings survive caller exit and unreachable closure cycles are reclaimed.
 
 Modules use standard module records and host resolution hooks. Promises use a job
-queue. Async functions use explicit resumable interpreter frames; generator
-execution remains work. Module loading, clocks, entropy, and agent creation
+queue. Async functions and generators use explicit resumable interpreter frames.
+Module loading, clocks, entropy, and agent creation
 are host capabilities. The default host exposes no non-standard JavaScript globals.
 Test262 host helpers exist only in the conformance host.
 
@@ -3881,10 +3918,12 @@ intrinsic initialization or work-quota reset. Active execution rejects it withou
 changing roots; detached roots drop outside object borrows and the Symbol gate.
 Independent host roots remain live.
 
-The current Realm heaps and execution domains are independent. Hosts grouping
-several domains into one synchronous sequence must wait for the entire sequence
-before clearing each domain. Shared-Agent and foreign-realm coordination remain
-deferred. No automatic collection, default quota or cleanup scheduling is added.
+Realm records within one agent share the heap, jobs and kept-object list, including
+child realms created by the Test262 host. The agent's checkpoint covers all of
+them. Independently constructed Rust Realm instances have separate execution
+domains; hosts grouping those domains into one synchronous sequence wait for its
+completion before clearing each domain. No automatic collection or default quota
+is added; cleanup scheduling uses the explicit host APIs described below.
 
 ## FinalizationRegistry and explicit cleanup jobs
 

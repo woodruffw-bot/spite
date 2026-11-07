@@ -61,6 +61,25 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 79448 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Published host policies and cross-Realm kept objects
+
+The edition-17 optional clauses and host layering points now have an explicit
+policy table in the design. It records the existing enabled optional
+WeakRef.prototype.constructor, disabled legacy/browser extensions, default string
+compilation/source/rejection hooks, module host choices, jobs, clocks, locale
+fallbacks and shared-memory host behavior. No runtime policy changes.
+
+A native regression constructs a WeakRef in a child Realm, verifies that its
+target survives collection while kept, then clears the parent agent checkpoint
+and verifies collection. The child and parent share the same agent list; separate
+Rust Realm instances remain separate domains. Stale documentation claiming all
+Realm heaps were independent is corrected, together with obsolete unsupported
+wrapper/generator descriptions. Fixture and variant counts remain unchanged.
+
+Validation: all 34 focused WeakRef, Realm-collection and host-root groups pass,
+including the new cross-Realm checkpoint case. Formatting, strict Clippy, Rust
+1.99 all-target checks, repository policies, facade tests and doctests pass.
+
 ## Published lexical, object and declaration inventories
 
 The baseline audit adds 378 unchanged declaration/reference originals (724

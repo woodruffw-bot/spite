@@ -4,6 +4,25 @@ use crate::common::REALM_ENTRIES;
 use spite_core::{JsString, WellKnownSymbol};
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
+#[test]
+fn child_realm_targets_share_the_agents_kept_object_checkpoint() {
+    let mut realm = Realm::default();
+    realm.install_test262_host().unwrap();
+    realm
+        .eval(
+            "let child=$262.createRealm();let reference=child.evalScript('new WeakRef({value:7})')",
+        )
+        .unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(
+        realm.eval("reference.deref().value"),
+        Ok(Value::Number(7.0))
+    );
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert_eq!(realm.eval("reference.deref()"), Ok(Value::Undefined));
+}
+
 fn check(source: &str) {
     assert_eq!(
         Realm::default().eval(source),

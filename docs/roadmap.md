@@ -561,7 +561,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Run isolated suspending Test262 worker Scripts with startup validation, native string reports, timing methods, job progress and cooperative shutdown.
 - [x] Deliver native shared backing and numeric broadcast values to isolated Test262 workers, acknowledge retrieval before callbacks and preserve timeout/notification progress across agents.
 - [x] Audit all host-compatible SharedArrayBuffer and Atomics baseline originals, including multi-agent FIFO notifications, counts, timeouts and separate wait locations.
-- [ ] Audit normative optional features and host-defined behavior.
+- [x] Audit normative optional features and host-defined behavior.
+- [x] Record published host-hook policies, the enabled optional WeakRef constructor property and shared-Agent kept-object checkpoints.
 - [ ] Review every specification section and record implementation evidence.
 - [ ] Benchmark and optimize only after the conformance gate is stable.
 
