@@ -25,10 +25,6 @@ impl Realm {
             return Ok(Value::Undefined);
         }
         // LengthOfArrayLike bounds this integral index below 2^53 - 1.
-        self.get_property(
-            &object,
-            &JsString::from((index as u64).to_string().as_str()),
-            span,
-        )
+        self.get_property(&object, &JsString::from_index(index as u64), span)
     }
 }

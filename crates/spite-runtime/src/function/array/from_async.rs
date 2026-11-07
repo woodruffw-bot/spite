@@ -168,8 +168,7 @@ impl Realm {
         } else if index == length.expect("array-like length") {
             self.complete_array_from_async(state, span)
         } else {
-            let value =
-                self.get_property(&source, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(&source, &JsString::from_index(index), span)?;
             Ok(Step::Await(AsyncArrayPhase::Item, value))
         }
     }

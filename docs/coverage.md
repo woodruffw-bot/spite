@@ -61,6 +61,32 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Array index formatting across indexed algorithms
+
+The remaining 26 temporary UTF-8 index conversions across fourteen Array modules
+now use the shared exact unsigned UTF-16 formatter. This covers synchronous and
+asynchronous factories, at, callbacks, fill, reverse, push/pop, shift/unshift,
+copying, concatenation, flattening, sorting, splicing and stringification. Unsigned
+length/index bounds and all Get/Has/Set/Delete operations retain their order.
+The existing spread-index Number-rounding path remains separate.
+
+All 113 Core tests, 574 Runtime units, 2,431 non-RegExp integrations, 7,884 official
+modes from 3,991 unchanged Object/Array originals and the full quality gate pass.
+All 1,734 indexed-collection comparisons match Node, and all 5,164 work-budget
+outcomes/traces retain their previous results. Existing large-key, sparse/proxy,
+species, callback and async-factory regressions protect observable operations.
+Inventories, dependencies and runtime defaults are unchanged. No timing
+improvement is claimed for this refactor.
+
+## Frozen Object.groupBy materialization gate
+
+A full gate compiled on clean 75497345c passes all 87 noncorpus Test262 package
+controls and all 80,028 official modes from 41,531 originals, with zero other
+outcomes. It includes the distinct-key result append path. The saved three-worker
+executable and complete pinned input hashes remain unchanged throughout its
+1,703.58-second corpus run. Later Array formatter and runner changes have their
+own focused checks and are outside this frozen production scope.
+
 ## Test262 print host descriptor
 
 The print host now defines its global property as writable, configurable and

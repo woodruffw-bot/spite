@@ -59,8 +59,7 @@ impl Realm {
         for index in 0..length {
             self.tick(span)?;
             // Get every index, including holes; only the source length is fixed.
-            let value =
-                self.get_property(&source, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(&source, &JsString::from_index(index), span)?;
             let value =
                 self.array_from_map(value, index, mapping.then_some(&mapper), &this_arg, span)?;
             self.create_array_element(&result, index, value, span)?;

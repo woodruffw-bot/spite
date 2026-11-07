@@ -33,7 +33,7 @@ impl Realm {
         let mut items = Vec::new();
         for index in 0..length {
             self.tick(span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             if copy || self.has_property(&object, &key, span)? {
                 let value = self.get_property(&object, &key, span)?;
                 // Grow only as values are observed, never from an untrusted len.
@@ -51,7 +51,7 @@ impl Realm {
             } else {
                 self.set_property_or_throw(
                     &output,
-                    JsString::from(index.to_string().as_str()),
+                    JsString::from_index(index as u64),
                     value,
                     span,
                 )?;
@@ -60,11 +60,7 @@ impl Realm {
         if !copy {
             for index in count..length {
                 self.tick(span)?;
-                self.delete_property_or_throw(
-                    &output,
-                    &JsString::from(index.to_string().as_str()),
-                    span,
-                )?;
+                self.delete_property_or_throw(&output, &JsString::from_index(index), span)?;
             }
         }
         Ok(Value::Object(output))

@@ -25,12 +25,7 @@ impl Realm {
         for index in start..end {
             self.tick(span)?;
             self.object_work(span, |_, budget| budget.value(&value))?;
-            self.set_property_or_throw(
-                &object,
-                JsString::from(index.to_string().as_str()),
-                value.clone(),
-                span,
-            )?;
+            self.set_property_or_throw(&object, JsString::from_index(index), value.clone(), span)?;
         }
         Ok(Value::Object(object))
     }

@@ -11,8 +11,8 @@ impl Realm {
         let length = self.length_of_array_like(&object, span)?;
         for lower in 0..length / 2 {
             self.tick(span)?;
-            let lower_key = JsString::from(lower.to_string().as_str());
-            let upper_key = JsString::from((length - lower - 1).to_string().as_str());
+            let lower_key = JsString::from_index(lower);
+            let upper_key = JsString::from_index(length - lower - 1);
             let lower_value = if self.has_property(&object, &lower_key, span)? {
                 Some(self.get_property(&object, &lower_key, span)?)
             } else {
@@ -64,12 +64,7 @@ impl Realm {
         }
         for value in arguments {
             self.tick(span)?;
-            self.set_property_or_throw(
-                &object,
-                JsString::from(length.to_string().as_str()),
-                value,
-                span,
-            )?;
+            self.set_property_or_throw(&object, JsString::from_index(length), value, span)?;
             length += 1;
         }
         // Even with no arguments, Set must observe a setter or reject a
@@ -98,7 +93,7 @@ impl Realm {
             return Ok(Value::Undefined);
         }
         let new_length = length - 1;
-        let key = JsString::from(new_length.to_string().as_str());
+        let key = JsString::from_index(new_length);
         let element = self.get_property(&object, &key, span)?;
         self.delete_property_or_throw(&object, &key, span)?;
         self.set_property_or_throw(

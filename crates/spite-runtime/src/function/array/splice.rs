@@ -44,7 +44,7 @@ impl Realm {
         let result = self.array_species_create(&object, delete_count, span)?;
         for index in 0..delete_count {
             self.tick(span)?;
-            let key = JsString::from((start + index).to_string().as_str());
+            let key = JsString::from_index(start + index);
             if self.has_property(&object, &key, span)? {
                 let value = self.get_property(&object, &key, span)?;
                 self.create_array_element(&result, index, value, span)?;
@@ -67,11 +67,7 @@ impl Realm {
             // keeps every preceding copy/delete; there is no rollback.
             for index in (new_length..length).rev() {
                 self.tick(span)?;
-                self.delete_property_or_throw(
-                    &object,
-                    &JsString::from(index.to_string().as_str()),
-                    span,
-                )?;
+                self.delete_property_or_throw(&object, &JsString::from_index(index), span)?;
             }
         } else if insert_count > delete_count {
             for index in (start..length - delete_count).rev() {
@@ -83,7 +79,7 @@ impl Realm {
             self.tick(span)?;
             self.set_property_or_throw(
                 &object,
-                JsString::from((start + offset as u64).to_string().as_str()),
+                JsString::from_index(start + offset as u64),
                 value,
                 span,
             )?;

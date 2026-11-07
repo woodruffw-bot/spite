@@ -23,8 +23,7 @@ impl Realm {
                 self.object_work(span, |_, budget| budget.charge(separator.len()))?;
                 self.append_string(&mut result, &separator, span)?;
             }
-            let element =
-                self.get_property(&object, &JsString::from(index.to_string().as_str()), span)?;
+            let element = self.get_property(&object, &JsString::from_index(index), span)?;
             if !matches!(element, Value::Undefined | Value::Null) {
                 // Invoke preserves primitive receivers, including for getters.
                 self.object_work(span, |_, budget| budget.value(&element))?;
@@ -61,8 +60,7 @@ impl Realm {
                 self.object_work(span, |_, budget| budget.charge(separator.len()))?;
                 self.append_string(&mut result, &separator, span)?;
             }
-            let element =
-                self.get_property(&object, &JsString::from(index.to_string().as_str()), span)?;
+            let element = self.get_property(&object, &JsString::from_index(index), span)?;
             if !matches!(element, Value::Undefined | Value::Null) {
                 let string = self.string(element, span)?;
                 self.object_work(span, |_, budget| budget.charge(string.len()))?;

@@ -37,7 +37,7 @@ impl Realm {
         let mut selected = 0u64;
         for index in 0..length {
             self.tick(span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             // Presence and value are observed anew on each iteration. Only the
             // range is fixed; callbacks may add, replace, or delete properties.
             if !self.has_property(&object, &key, span)? {

@@ -108,7 +108,7 @@ impl Realm {
             let source_index = frame.index;
             let depth = frame.depth;
             frame.index += 1;
-            let key = JsString::from(source_index.to_string().as_str());
+            let key = JsString::from_index(source_index);
             if !self.has_property(&source, &key, span)? {
                 continue;
             }

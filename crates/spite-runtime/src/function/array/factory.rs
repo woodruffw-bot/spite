@@ -35,7 +35,7 @@ impl Realm {
             // accessors/non-writable properties; inherited setters are skipped.
             self.define_property_or_throw(
                 &object,
-                JsString::from(index.to_string().as_str()),
+                JsString::from_index(index as u64),
                 DataDescriptor {
                     value: Some(value),
                     writable: Some(true),

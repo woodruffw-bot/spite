@@ -35,7 +35,7 @@ impl Realm {
                 }
                 for index in 0..length {
                     self.tick(span)?;
-                    let key = JsString::from(index.to_string().as_str());
+                    let key = JsString::from_index(index);
                     if self.has_property(&object, &key, span)? {
                         let value = self.get_property(&object, &key, span)?;
                         self.create_array_element(&result, target, value, span)?;

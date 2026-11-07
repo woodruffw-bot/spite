@@ -24,11 +24,7 @@ impl Realm {
             self.tick(span)?;
             self.copy_array_element(&object, from, from - 1, span)?;
         }
-        self.delete_property_or_throw(
-            &object,
-            &JsString::from((length - 1).to_string().as_str()),
-            span,
-        )?;
+        self.delete_property_or_throw(&object, &JsString::from_index(length - 1), span)?;
         self.set_property_or_throw(
             &object,
             JsString::from("length"),
@@ -65,7 +61,7 @@ impl Realm {
                 self.tick(span)?;
                 self.set_property_or_throw(
                     &object,
-                    JsString::from(index.to_string().as_str()),
+                    JsString::from_index(index as u64),
                     value,
                     span,
                 )?;

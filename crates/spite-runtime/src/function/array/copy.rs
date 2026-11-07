@@ -44,8 +44,7 @@ impl Realm {
         let mut target = 0;
         for from in 0..start {
             self.tick(span)?;
-            let value =
-                self.get_property(&object, &JsString::from(from.to_string().as_str()), span)?;
+            let value = self.get_property(&object, &JsString::from_index(from), span)?;
             self.create_array_element(&array, target, value, span)?;
             target += 1;
         }
@@ -58,8 +57,7 @@ impl Realm {
         // ToLength range even when deleting most of a huge array-like object.
         for from in start + skip..length {
             self.tick(span)?;
-            let value =
-                self.get_property(&object, &JsString::from(from.to_string().as_str()), span)?;
+            let value = self.get_property(&object, &JsString::from_index(from), span)?;
             self.create_array_element(&array, target, value, span)?;
             target += 1;
         }
@@ -78,7 +76,7 @@ impl Realm {
         let array = self.create_intrinsic_array(length, span)?;
         for index in 0..length {
             self.tick(span)?;
-            let from = JsString::from((length - index - 1).to_string().as_str());
+            let from = JsString::from_index(length - index - 1);
             let value = self.get_property(&object, &from, span)?;
             // ArrayCreate has validated the u32 length bound. Get turns holes
             // into own undefined elements; inherited setters are bypassed.
@@ -122,7 +120,7 @@ impl Realm {
                 // supplied replacement rather than cloning its payload.
                 replacement.take().expect("one replacement index")
             } else {
-                self.get_property(&object, &JsString::from(index.to_string().as_str()), span)?
+                self.get_property(&object, &JsString::from_index(index), span)?
             };
             self.create_array_element(&array, index, value, span)?;
         }
