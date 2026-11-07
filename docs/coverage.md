@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Linear BigInt formatting for binary radices
+
+BigInt formatting in radices 2, 4, 8, 16 and 32 extracts each digit from a u64
+window over adjacent magnitude words. It preserves lowercase minimal spelling,
+sign and zero while handling digits across word boundaries. Output capacity is
+checked, work is charged before extraction, and formatting an existing value
+does not acquire an integer-result magnitude quota. Other radices retain their
+existing formatter.
+
+Independent constant vectors and 1,024-bit all-ones patterns cover every affected
+radix, negative values, leading-digit boundaries and work refusal. A seeded
+3,000-case Python-integer audit across radices 2–36 and magnitudes through
+2,048 bits has zero mismatches. The added checked hexadecimal/base-32 workload
+measures about 91% lower evaluation time in twelve quiet single-CPU ABBA process
+runs; exact scope and other measured changes are in
+[benchmarking](benchmarking.md#bigint-formatting-in-power-of-two-radices).
+
+Validation: all 35 BigInt tests, 111 Core tests, 18 Parser units, 443 Parser
+integrations, 573 Runtime units and 2,429 non-RegExp Runtime integrations pass.
+All 5,153 official modes from the 2,589 unchanged numeric/Date originals pass
+with zero nonpassing outcomes, along with the full quality gate. The BigInt
+test inventory grows from 34 to 35; Runtime and Test262 inventories are unchanged.
+
 ## Async delegation stepping failures
 
 A new Runtime regression protects queued async-generator requests when a

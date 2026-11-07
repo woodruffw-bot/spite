@@ -19,13 +19,14 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all eight program workloads |
+| parse_all | Parse and drop the ASTs for all nine program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | properties | Create, populate and read 128 computed object properties |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | map_iteration | Populate and iterate a 256-entry Map |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
+| bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
 | generator | Create, resume and consume a 128-value source generator |
 | async_jobs | Execute 64 awaits, drain Promise jobs and read the completed sum |
@@ -119,3 +120,29 @@ Values are microseconds, using medians of per-process medians. BigInt evaluation
 is 46.7% lower and collection 0.4% lower. Other program evaluation changes range
 from -1.2% to +2.5%; parsing and initialization differ by about +0.2% and +0.1%.
 Work and result limits remain opt-in; this adds no timing gate or allowance.
+
+## BigInt formatting in power-of-two radices
+
+Radices 2, 4, 8, 16 and 32 now extract fixed-width digits from adjacent magnitude
+words, including digits that cross word boundaries. This makes their formatting
+linear in output length. The formatter reserves checked output capacity, charges
+work before extraction and preserves sign, lowercase digits and minimal spelling.
+
+The added bigint_radix workload formats hexadecimal/base-32 strings from an
+integer starting at 2^2048 - 1, then multiplies/adds across 32 steps. Its checksum
+checks both string lengths and trailing digits. Both compared binaries include
+the same workload; baseline production is c564b9e72, and the candidate changes
+the formatter. Rust 1.99/conformance-profile Linux x86_64 measurements use one
+CPU, no active builds/tests, twelve ABBA process runs, seven samples and ten
+iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_radix | 5167.5 | 467.8 | 172.9 | 161.4 |
+| parse_all | 196.2 | 190.7 | 0 | 0 |
+| initialize_and_drop | 638.8 | 632.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+The radix workload's evaluation is about 91% lower. Other program evaluation
+changes range from -3.0% to +4.9%; parsing and initialization differ by -2.8% and
+-1.1%. These observations add no CI timing threshold or execution allowance.

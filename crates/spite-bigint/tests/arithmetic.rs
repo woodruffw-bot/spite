@@ -36,6 +36,60 @@ fn radix_round_trips_and_sign_normalization() {
 }
 
 #[test]
+fn power_of_two_radices_extract_cross_word_digits_without_leading_zeroes() {
+    let value = parse("123456789abcdef0123456789abcdef", 16);
+    let negative = value.neg(&mut budget()).unwrap();
+    for (radix, expected) in [
+        (
+            2,
+            "1001000110100010101100111100010011010101111001101111011110000000100100011010001010110011110001001101010111100110111101111",
+        ),
+        (
+            4,
+            "1020310111213202122233031323300010203101112132021222330313233",
+        ),
+        (8, "11064254742325715736004432126361152746757"),
+        (16, "123456789abcdef0123456789abcdef"),
+        (32, "14d2mf2dbpnng28q5cu4qnjff"),
+    ] {
+        assert_eq!(value.to_radix(radix, &mut budget()).unwrap(), expected);
+        assert_eq!(
+            negative.to_radix(radix, &mut budget()).unwrap(),
+            format!("-{expected}")
+        );
+        assert_eq!(
+            BigInt::default().to_radix(radix, &mut budget()).unwrap(),
+            "0"
+        );
+        // Formatting creates no integer result; its magnitude quota does not
+        // constrain an existing value, while the work quota remains active.
+        assert_eq!(
+            value
+                .to_radix(radix, &mut Budget::with_work_limit(0, None))
+                .unwrap(),
+            expected
+        );
+        assert_eq!(
+            value.to_radix(radix, &mut Budget::new(4096, 5)),
+            Err(Error::Limit)
+        );
+    }
+    let all_ones = parse(&"f".repeat(256), 16);
+    for (radix, prefix, digit, count) in [
+        (2, "", "1", 1024),
+        (4, "", "3", 512),
+        (8, "1", "7", 341),
+        (16, "", "f", 256),
+        (32, "f", "v", 204),
+    ] {
+        assert_eq!(
+            all_ones.to_radix(radix, &mut budget()).unwrap(),
+            format!("{prefix}{}", digit.repeat(count))
+        );
+    }
+}
+
+#[test]
 fn large_radix_constants_cross_many_words() {
     let max = parse("340282366920938463463374607431768211455", 10);
     assert_eq!(max, parse("ffffffffffffffffffffffffffffffff", 16));

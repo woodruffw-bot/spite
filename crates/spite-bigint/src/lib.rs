@@ -180,6 +180,32 @@ impl BigInt {
         if self.is_zero() {
             return Ok("0".into());
         }
+        if radix.is_power_of_two() {
+            let width = radix.trailing_zeros() as usize;
+            let count = self.bit_length().div_ceil(width);
+            budget.charge(count.checked_mul(2).ok_or(Error::Limit)?)?;
+            let capacity = count
+                .checked_add(usize::from(self.negative))
+                .ok_or(Error::Limit)?;
+            let mut digits = Vec::new();
+            digits
+                .try_reserve_exact(capacity)
+                .map_err(|_| Error::Limit)?;
+            if self.negative {
+                digits.push(b'-');
+            }
+            for index in (0..count).rev() {
+                let bit = index * width;
+                let word = bit / 32;
+                // A digit spans at most two words, including octal/base32
+                // digits that cross a 32-bit magnitude boundary.
+                let window = u64::from(self.words[word])
+                    | (u64::from(self.words.get(word + 1).copied().unwrap_or(0)) << 32);
+                let digit = ((window >> (bit % 32)) & u64::from(radix - 1)) as u32;
+                digits.push(char::from_digit(digit, radix).expect("valid radix digit") as u8);
+            }
+            return Ok(String::from_utf8(digits).expect("radix digits are ASCII"));
+        }
         let mut magnitude = self.words.clone();
         let mut digits = Vec::new();
         while !magnitude.is_empty() {

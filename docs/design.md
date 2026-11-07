@@ -1414,7 +1414,12 @@ BigInt tag. Wrappers retain an immutable integer slot, independently of their
 current prototype. ToObject and non-strict calls box BigInts through that intrinsic.
 Branded valueOf/toString/toLocaleString reject impostors without coercion.
 ToString validates the brand before radix conversion, uses exact integer formatting,
-and checks opted-in output quotas. ToLocaleString follows the non-ECMA-402 decimal
+and checks opted-in output quotas. Radices 2, 4, 8, 16 and 32 extract digits from
+adjacent magnitude words with linear output work, including octal/base-32 digits
+that cross word boundaries. Output capacity is checked and work is charged
+before extraction; other bases retain repeated division. Formatting an existing
+value creates no integer result and does not apply its magnitude quota.
+ToLocaleString follows the non-ECMA-402 decimal
 fallback, ignoring reserved arguments. BigInt.asIntN/asUintN (21.2.2.1–2)
 finish ToIndex on the width before ToBigInt on the value, even for zero width.
 Reduce modulo 2^bits by copying low words and masking the partial high word;
