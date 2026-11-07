@@ -1,7 +1,7 @@
 //! ECMAScript identifier grammar and early errors.
 
-use spite_core::{DiagnosticKind, Span};
-use spite_parser::{ast::*, parse_script};
+use spite_core::{DiagnosticKind, JsString, Span};
+use spite_parser::{ast::*, parse_script, parse_script_utf16};
 
 #[test]
 fn unicode_identifier_names_and_byte_spans() {
@@ -266,6 +266,23 @@ fn escaped_reserved_words_never_become_keywords_or_literals() {
 
 #[test]
 fn contextual_identifiers_and_strict_early_errors_use_decoded_names() {
+    for source in [
+        "var let='key';let in {key:1}",
+        "var let={};let instanceof Object",
+        "var let=1;let\nif(true){}",
+        "var let=1;let\nclass C{}",
+        "var let=1;let\nconst bound=2;",
+        "function f(){var let=1;let\nreturn 7}",
+        "var let=1;let\nbound=2;",
+        "var let=1;let\n[bound]=[2];",
+        "var let=1;let\n{bound}={bound:2};",
+    ] {
+        assert!(parse_script(source).is_ok(), "{source}");
+        assert!(
+            parse_script_utf16(&JsString::from(source)).is_ok(),
+            "UTF-16: {source}"
+        );
+    }
     for name in [
         r"aw\u0061it",
         r"y\u0069eld",
@@ -289,6 +306,9 @@ fn contextual_identifiers_and_strict_early_errors_use_decoded_names() {
         r"'use strict'; y\u0069eld;",
         r"'use strict'; let \u0065val;",
         r"'use strict'; arg\u0075ments = 1;",
+        "async function f(){let\nawait 0;}",
+        "function* f(){let\nyield 7;}",
+        "async function* f(){let\nawait 0;let\nyield 7;}",
     ] {
         assert_eq!(
             parse_script(source).unwrap_err().kind,

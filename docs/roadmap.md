@@ -107,6 +107,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.
 - [x] Audit var/let/const declaration scope, initialization, TDZ, descriptors, strict bindings and grammar-placement constraints.
+- [x] Share grammatical let-declaration lookahead across statements/headers, preserving non-strict identifier expressions, keyword ASI and await/yield early errors.
 - [x] Parse/evaluate var binding patterns in statements and for/for-in/for-of headers, with complete hoisted BoundNames, repeated bindings, and ordered ResolveBinding/PutValue through with environments.
 - [x] Add arbitrary-precision BigInt and primitive numeric conversions.
 - [x] Add normalized integer storage, radix conversion, signed addition, and work budgets.

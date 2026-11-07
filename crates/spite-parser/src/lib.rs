@@ -449,12 +449,7 @@ impl Parser {
         {
             return Err(self.error("expression statement cannot start with let ["));
         }
-        let lexical = self.at("const")
-            || (allow_declaration
-                && self.at("let")
-                && self
-                    .token_at(self.index + 1)
-                    .is_some_and(|t| matches!(t.kind, Kind::Word(_) | Kind::Punct("[" | "{"))));
+        let lexical = self.at("const") || (allow_declaration && self.at_let_declaration());
         // 14.5's ExpressionStatement lookahead cannot turn declarations into
         // statements, even when the declaration's body is not implemented yet.
         if !allow_declaration && (self.at("class") || self.at_async_function()) {

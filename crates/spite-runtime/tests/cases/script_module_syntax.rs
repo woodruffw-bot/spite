@@ -1,6 +1,55 @@
-//! Catchable Script module-syntax errors and retained dynamic-import host gaps.
+//! Script grammar, catchable module-syntax errors and dynamic-import host gaps.
 
 use spite_runtime::{Error, Realm, Value};
+
+#[test]
+fn non_strict_let_identifiers_preserve_word_operators_and_asi() {
+    for source in [
+        "var let='key';let in {key:1}",
+        "var let={};let instanceof Object",
+        "var let=1;let\nif(true){}true",
+        "function f(){var let=1;let\nreturn 7}f()===7",
+        "var let=1;let\nclass C{}typeof C==='function'",
+        "var let=1;let\nconst bound=2;bound===2",
+        "var let=1;let\nbound=2;let===1&&bound===2",
+        "var let=1;let\n[bound]=[2];let===1&&bound===2",
+        "var let=1;let\n{bound}={bound:2};let===1&&bound===2",
+    ] {
+        assert_eq!(
+            Realm::default().eval(source),
+            Ok(Value::Boolean(true)),
+            "{source}"
+        );
+    }
+    for source in ["var let=1;let if(true){}", "'use strict';let in {key:1}"] {
+        let script = format!(
+            "let caught=false;try{{eval({source:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
+        );
+        assert_eq!(
+            Realm::default().eval(&script),
+            Ok(Value::Boolean(true)),
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn let_binding_early_errors_prevent_asi_before_await_and_yield() {
+    for source in [
+        "async function f(){let\nawait 0;}",
+        "function* f(){let\nyield 8;}",
+        "async function* f(){let\nawait 0;let\nyield 10;}",
+    ] {
+        let script = format!(
+            "let caught=false;try{{eval({source:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
+        );
+        assert_eq!(
+            Realm::default().eval(&script),
+            Ok(Value::Boolean(true)),
+            "{source}"
+        );
+    }
+}
 
 #[test]
 fn eval_and_dynamic_function_constructors_report_catchable_syntax_errors() {

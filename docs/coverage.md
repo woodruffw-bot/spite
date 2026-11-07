@@ -61,6 +61,26 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Let declaration lookahead and expression boundaries
+
+Statement lists and for headers now share BindingIdentifier/binding-pattern
+lookahead for let declarations. This restores ordinary non-strict let identifiers
+before in/instanceof and allows ASI before keywords such as if, return, class and
+const. A following valid binding name or pattern still selects declaration
+grammar, including across a line break.
+
+The published 13.1 grammar deliberately admits await/yield as BindingIdentifiers
+and rejects disallowed contexts with early errors to prevent ASI. Those errors
+remain unchanged. Parser and eval regressions cover both the valid expression/
+keyword boundaries and the forbidden await/yield alternatives.
+
+Validation: Parser 18 unit and 443 integration tests, 2,425 non-RegExp Runtime
+integrations and 84 other Test262 package checks pass. All 4,367 unchanged
+parse-negative originals pass their 8,112 modes with their original exact
+diagnostic reviews. Five valid CLI repros and three early-error controls pass.
+Formatting, strict Clippy, Rust 1.99 all-target checks and repository policies
+pass; upstream bytes, execution flags and snapshots are unchanged.
+
 ## Contextual using identifiers before word operators
 
 Resource-declaration lookahead now leaves in and instanceof to expression parsing

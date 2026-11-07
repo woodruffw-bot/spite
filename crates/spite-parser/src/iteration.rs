@@ -107,16 +107,7 @@ impl Parser {
             Some(ForInitializer::Var(self.binding_list(false, true, false)?))
         } else if self.at_using_declaration(true) {
             Some(ForInitializer::Using(self.using_bindings(true)?))
-        } else if self.at("const")
-            || (self.at("let")
-                && self
-                    .token_at(self.index + 1)
-                    .is_some_and(|t| match &t.kind {
-                        Kind::Word(name) => !reserved(name),
-                        Kind::Punct("[" | "{") => true,
-                        _ => false,
-                    }))
-        {
+        } else if self.at("const") || self.at_let_declaration() {
             let (mutable, bindings) = self.lexical_bindings(true)?;
             Some(ForInitializer::Lexical { mutable, bindings })
         } else {

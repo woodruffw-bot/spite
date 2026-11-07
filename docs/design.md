@@ -120,6 +120,13 @@ storage; equality, hashing and ordering compare UTF-16 contents, and the public
 type remains Send/Sync. Existing optional work charges stay conservative and
 unchanged; actual scans and output allocations retain their checks.
 
+Let-declaration lookahead is shared by statement lists and loop headers and
+recognizes only BindingIdentifier or binding-pattern starts. Word operators and
+other reserved keywords can therefore continue ordinary non-strict let identifier
+expressions or follow an ASI boundary. BindingIdentifier admits await and yield
+grammatically; their contextual early errors remain separate, as required by
+13.1 to prevent ASI before those tokens.
+
 The parser controls lexical goals for division, regular expressions, and template
 tails. Preserve whether trivia contains a line terminator. Do not approximate ASI
 by splitting lines. Carry grammar parameters for strict mode, await, yield, return,

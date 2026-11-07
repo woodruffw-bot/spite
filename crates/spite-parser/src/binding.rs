@@ -3,6 +3,20 @@
 use super::*;
 
 impl Parser {
+    pub(super) fn at_let_declaration(&mut self) -> bool {
+        if !self.at("let") {
+            return false;
+        }
+        // BindingIdentifier admits await/yield grammatically, then rejects
+        // forbidden contexts with early errors to prevent ASI (13.1).
+        self.token_at(self.index + 1)
+            .is_some_and(|token| match &token.kind {
+                Kind::Word(name) => !reserved(name),
+                Kind::Punct("[" | "{") => true,
+                _ => false,
+            })
+    }
+
     pub(super) fn binding_pattern(&mut self) -> Result<BindingPattern, Diagnostic> {
         self.enter()?;
         let result = self.binding_pattern_inner();
