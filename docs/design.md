@@ -2715,10 +2715,13 @@ and Number.parseInt (19.2.4–5, 21.1.2.12–13). Coerce the input to String fir
 parseInt then coerces radix with ToInt32. Scan UTF-16 units for the decimal/radix
 prefix after ECMAScript leading whitespace, so an unpaired surrogate after valid
 digits terminates the prefix rather than invalidating it. Decimal exponents only
-join a prefix when they contain digits. parseInt accumulates an exact integer in
-every radix and rounds once to binary64; it does not use the optional approximation
+join a prefix when they contain digits. parseInt selects the exact integer prefix
+in every radix and rounds once to binary64; it does not use the optional approximation
 allowances. Preserve negative zero and the specified hexadecimal prefix rules.
-Input length, scan work, and integer arithmetic remain bounded by realm limits.
+For bases 2/8/16 without work or magnitude quotas and without agent control,
+share Core's exact radix rounding instead of constructing a BigInt magnitude.
+Other paths retain BigInt conversion. Existing optional input, work and integer
+magnitude limits retain their checks.
 
 Binary, octal and hexadecimal Number conversion shares Core's exact integer
 parser (6.1.6.1, 7.1.4.1, 12.9.3). It validates every digit before accumulating

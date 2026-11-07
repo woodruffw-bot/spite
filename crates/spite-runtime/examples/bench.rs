@@ -32,6 +32,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "parse_int_overflow",
+        source: "(()=>{const text='0x'+'f'.repeat(8192);let sum=0;for(let i=0;i<16;i++){if(parseInt(text)===Infinity)sum++;if(parseInt(text+'g',16)===Infinity)sum++}return sum})()",
+        expected: 32.0,
+        jobs: false,
+    },
+    Case {
+        name: "parse_int_small",
+        source: "(()=>{let sum=0;for(let i=0;i<1024;i++)sum+=parseInt(i.toString(16),16);return sum})()",
+        expected: 523_776.0,
+        jobs: false,
+    },
+    Case {
         name: "properties",
         source: "(()=>{const object={};for(let i=0;i<128;i++)object['k'+i]=i;let sum=0;for(let i=0;i<128;i++)sum+=object['k'+i];return sum})()",
         expected: 8128.0,

@@ -614,6 +614,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Index unaccounted Object.groupBy temporary keys with a standard HashMap, retaining first-key order, fallible capacity and charged scans for work limits and agent control.
 - [x] Reuse direct decimal UTF-16 index construction in CreateArrayFromList, preserving own-element descriptors, Array length behavior and work accounting.
 - [x] Protect invalid TypedArray index writes through nested Proxy receivers, retaining early success without value conversion and explicit underlying-receiver conversion.
+- [x] Share exact radix-to-binary64 conversion for unaccounted parseInt prefixes in bases 2/8/16, retaining prefix termination, signed zero and existing quota/agent paths.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

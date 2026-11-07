@@ -19,10 +19,12 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all forty-three program workloads |
+| parse_all | Parse and drop the ASTs for all forty-five program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
+| parse_int_overflow | Parse an overflowing 8,192-digit hexadecimal prefix and its non-digit suffix sixteen times, checking Infinity for both |
+| parse_int_small | Parse the hexadecimal Strings for integers 0–1,023, checking their numeric sum |
 | properties | Create, populate and read 128 computed object properties |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
@@ -78,6 +80,35 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Shared radix rounding for parseInt
+
+Without work/magnitude quotas or agent control, parseInt in bases 2/8/16 shares
+Core's exact radix-to-binary64 conversion. It avoids constructing a BigInt
+magnitude after selecting the fully validated ASCII prefix. Prefix scanning,
+coercions, negative zero and the other radix/quota paths retain their behavior.
+
+The two added workloads measure long overflowing prefixes and small hexadecimal
+values. Baseline production is 35b6fee20; both compared binaries contain identical
+workloads. Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU,
+no active builds/tests, twelve ABBA process runs, seven samples and ten
+iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| parse_int_overflow | 1178.5 | 778.7 | 154.5 | 152.1 |
+| parse_int_small | 4134.7 | 4118.7 | 284.8 | 289.0 |
+| radix_overflow | 686.9 | 702.4 | 149.1 | 150.7 |
+| parse_all | 1067.0 | 1114.4 | 0 | 0 |
+| initialize_and_drop | 615.9 | 602.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Overflowing-prefix evaluation is 33.9% lower; small hexadecimal parsing differs
+by -0.4%. Their collection differs by -1.6% and +1.5%. The unrelated
+radix-overflow row differs by +2.3%; remaining program evaluation changes range
+from -5.4% to +5.0%, and collection changes from -3.6% to +4.1%. Parsing and
+initialization differ by +4.4% and -2.3%. These observations add no CI timing
+threshold or execution allowance.
 
 ## Intrinsic Array index keys
 

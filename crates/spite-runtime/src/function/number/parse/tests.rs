@@ -7,11 +7,21 @@ fn scanner_and_integer_failures_abort_and_restore_call_state() {
         .eval("let flag=0;let text='12345678901234567890'")
         .unwrap();
     realm.limits.max_bigint_bits = Some(8);
-    assert!(matches!(
-        realm.eval("try{parseInt(text);}catch{flag=1;}finally{flag=2;}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    for expression in [
+        "parseInt(text)",
+        "parseInt('0x100')",
+        "parseInt('100',16)",
+        "parseInt('400',8)",
+        "parseInt('100000000',2)",
+    ] {
+        assert!(matches!(
+            realm.eval(&format!(
+                "try{{{expression};}}catch{{flag=1;}}finally{{flag=2;}}"
+            )),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
+    }
     assert_eq!(realm.eval("parseInt('12')"), Ok(Value::Number(12.0)));
     realm.remaining_steps = Some(0);
     assert!(matches!(

@@ -2,7 +2,7 @@
 
 use crate::{Error, Realm, Value, value::to_uint32};
 use spite_bigint::BigInt;
-use spite_core::{JsString, Span, is_line_terminator, is_whitespace};
+use spite_core::{JsString, Span, is_line_terminator, is_whitespace, parse_radix_integer};
 
 #[cfg(test)]
 mod tests;
@@ -108,9 +108,19 @@ impl Realm {
         if digits.is_empty() {
             return Ok(f64::NAN);
         }
-        let number = self.integer_work(span, |budget| {
-            BigInt::parse_digits(&digits, radix as u32, budget)?.to_f64(budget)
-        })?;
+        let number = if self.remaining_steps.is_none()
+            && self.limits.max_bigint_bits.is_none()
+            && self.atomic_waits.is_none()
+            && matches!(radix, 2 | 8 | 16)
+        {
+            // The selected prefix is fully validated ASCII. Share Number's
+            // exact binary64 rounding without constructing a BigInt magnitude.
+            parse_radix_integer(&digits, radix as u32).expect("validated radix prefix")
+        } else {
+            self.integer_work(span, |budget| {
+                BigInt::parse_digits(&digits, radix as u32, budget)?.to_f64(budget)
+            })?
+        };
         Ok(if negative { -number } else { number })
     }
 }

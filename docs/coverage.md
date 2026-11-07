@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Shared radix rounding for parseInt
+
+For bases 2/8/16 without work or integer-magnitude quotas and without agent
+control, parseInt reuses Core's exact radix-to-binary64 converter. This avoids
+constructing a BigInt magnitude for the selected ASCII prefix. Input conversion,
+radix coercion, prefix termination, negative zero and other radix/quota paths
+retain their existing behavior.
+
+The existing quota regression additionally checks binary, octal and hexadecimal
+inputs exceeding an opted-in magnitude limit, including handler bypass and call
+state recovery. Independent integer-to-float checks cover signs, zero padding,
+mixed-case hexadecimal digits, surrogate suffixes, word/precision boundaries,
+the finite/Infinity midpoint and random magnitudes through 4,096 bits.
+
+Twelve quiet single-CPU ABBA runs measure 33.9% lower overflowing-prefix
+evaluation time; small hexadecimal parsing differs by -0.4%. Full scope and
+all controls are in
+[benchmarking](benchmarking.md#shared-radix-rounding-for-parseint).
+
+All 3,378 independent integer-to-binary64 cases match before and after, as do
+all 61,770 numeric-prefix calls against Node. Validation passes all 113 Core
+tests, 574 Runtime units, 2,431 non-RegExp integrations, all 5,672 official modes
+from 2,855 unchanged numeric originals and the full quality gate. Test/fixture
+inventories, dependencies and runtime defaults are unchanged.
+
 ## Frozen Array and grouping conformance gate
 
 A full gate compiled on clean 824eae646 passes after the Proxy Array reflection
