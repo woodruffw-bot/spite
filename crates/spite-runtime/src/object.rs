@@ -498,6 +498,7 @@ impl OrdinaryObject {
 }
 
 impl Trace for OrdinaryObject {
+    #[inline]
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         let bound = self.callable.as_ref().and_then(|callable| match callable {
             Callable::Builtin(_)

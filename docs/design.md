@@ -3334,6 +3334,10 @@ an ordinary ObjectHandle carries identity and does not itself prevent collection
 WeakRef kept objects use the agent-wide checkpoint described below. Root discovery
 and tracing failures return before sweeping, preserving the existing heap.
 
+Entry, ordinary-object and environment trace iterator constructors carry inline
+hints so optimized callers can simplify their composed iterators across codegen
+units. Marking retains the ordered field traversal and its existing work charges.
+
 ## Validation
 
 Use unit tests for algorithms and integration tests for observable behavior. Use

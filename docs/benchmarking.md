@@ -42,3 +42,29 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Trace constructor inlining
+
+Three inline hints on Entry, ordinary-object and environment trace constructors
+let optimized collection simplify the composed iterator layers across codegen
+units. The traversal expressions and collection algorithm are identical.
+
+The comparison below uses Rust 1.99, the conformance profile and Linux x86_64,
+pinned to one allowed CPU. Twelve alternating process runs provide six runs per
+revision, each with seven samples and ten iterations. Values are medians of the
+per-process medians, in microseconds. The baseline library is 7fbb5a97c; the
+candidate adds only those three compiler hints.
+
+| Workload | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| arithmetic | 1032.9 | 1005.8 | 1079.6 | 280.7 |
+| properties | 514.5 | 520.8 | 978.3 | 184.2 |
+| map_iteration | 700.2 | 683.0 | 1032.3 | 214.9 |
+| bigint | 262.6 | 251.7 | 970.1 | 155.0 |
+| regexp | 606.4 | 614.5 | 1035.3 | 218.9 |
+| generator | 425.6 | 414.8 | 1018.1 | 203.9 |
+| async_jobs | 605.0 | 588.8 | 1066.3 | 244.0 |
+
+Collection time falls 74–84% in these workloads. Evaluation changes range from
+about -4% to +1.4%; the measurements establish a collection improvement on this
+configuration. Parsing and initialization medians differ by -1.2% and +2.8%.

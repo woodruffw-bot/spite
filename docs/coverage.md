@@ -61,6 +61,25 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Optimized trace iterator construction
+
+Three inline hints expose Entry, ordinary-object and environment trace iterator
+constructors to optimized collection across codegen units. The traversal
+expressions, fields, edge order and work accounting are identical; storage and
+public APIs do not change.
+
+Twelve alternating process runs, pinned to one CPU with Rust 1.99's conformance
+profile, show collection time 74–84% lower across the seven checked workloads.
+Evaluation changes range from about -4% to +1.4%. Exact timing boundaries,
+configuration and before/after values are in [benchmarking](benchmarking.md#trace-constructor-inlining).
+
+Validation: all 32 Heap tests, 572 Runtime units and 5,045 Runtime integrations
+pass, including RegExp cases. All 302 unchanged whole WeakRef/WeakMap/WeakSet/
+FinalizationRegistry originals pass their 603 official Runner modes in the
+optimized profile, with zero failures, unsupported or unverified outcomes.
+Formatting, strict Clippy, Rust 1.99 all-target checks and repository policies
+pass. No fixture, snapshot, review, execution flag or quota changes are needed.
+
 ## Object internal methods and lossless source review
 
 The [review index](spec-review.md) records ordinary/function/Array/String/
@@ -73,9 +92,9 @@ descriptor fields, partial/mixed data/accessors, frozen NaN/signed-zero values
 and nonextensible targets. Existing prototype cases protect the Proxy boundary
 of ordinary cycle checks. No implementation change is needed.
 
-Library sources and dependencies are unchanged from the parser revision whose
-full seventeen-job hosted gate passed. This increment records the source review;
-the subsequent checked regressions and benchmark tool remain separate evidence.
+At this review increment, library sources and dependencies matched the parser
+revision whose full seventeen-job hosted gate passed. The review, checked
+regressions and later performance measurements have separate receipts.
 
 Validation: 27 native descriptor/prototype/mapped-arguments groups pass, together
 with formatting, strict Clippy, Rust 1.99 all-target checks and repository

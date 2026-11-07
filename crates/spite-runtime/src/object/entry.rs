@@ -15,6 +15,7 @@ pub(super) enum Entry {
 }
 
 impl Trace for Entry {
+    #[inline]
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         let (object, environment) = match self {
             Self::Object(object) => (Some(object), None),

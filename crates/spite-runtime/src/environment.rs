@@ -56,6 +56,7 @@ pub(crate) struct FunctionContext {
 }
 
 impl Trace for Environment {
+    #[inline]
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         std::iter::once(self.outer.as_ref().map(|outer| &outer.0))
             .chain(self.inactive_realm.iter().flat_map(|realm| realm.trace()))
