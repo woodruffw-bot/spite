@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Word division for 64-bit BigInt magnitudes
+
+BigInt division by two-word magnitudes uses a u128 carry when both work and
+magnitude quotas are disabled. Each combined dividend fits 96 bits and each
+quotient digit fits u32. Quotient storage and native remainder construction
+remain fallible. Signs retain truncation toward zero and the dividend's sign
+for a nonzero remainder. Explicit quotas keep the existing paths, and divisors
+larger than 64 bits retain binary long division (6.1.6.2.5–6).
+
+Native arithmetic oracles now check unlimited calls alongside their checked
+counterparts. All 4,084 Python-integer cases match before and after the change,
+including signed boundaries around 2^32, 2^63 and 2^64, zero divisors, smaller
+dividends, exact multiples and random inputs through 4,096 bits. Twelve quiet
+single-CPU ABBA runs measure 93.3% lower evaluation time for changing large
+dividends with a 64-bit divisor. The small-divisor control differs by +0.6%;
+the parsing control is 5.1% higher. Full measurements are in
+[benchmarking](benchmarking.md#word-division-for-64-bit-bigint-magnitudes).
+
+Validation passes all 36 BigInt tests, 112 Core tests, 18 Parser units,
+443 Parser integrations, 574 Runtime units, 2,430 non-RegExp integrations
+and the full quality gate. All 5,454 official modes from 2,746 unchanged
+numeric, BigInt, Date and numeric-literal originals pass with zero nonpassing
+outcomes. Test and fixture inventories are unchanged.
+
 ## Linear BigInt parsing in power-of-two radices
 
 Larger BigInt inputs in radices 2/4/8/16/32 validate their digits and pack bits

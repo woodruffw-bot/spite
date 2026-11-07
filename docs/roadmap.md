@@ -605,6 +605,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Use standard ASCII case mappings and fixed ASCII context properties before pinned Unicode lookups, preserving Final_Sigma, surrogates and per-point work/output checks.
 - [x] Copy unchanged ASCII URI-encoding prefixes in one checked append without work accounting or agent control, preserving escape sets, UTF-8 conversion and limit/error order.
 - [x] Parse larger unaccounted BigInts in radices 2/4/8/16/32 by packing validated digits directly into checked magnitude words, preserving cross-word digits and explicit quota behavior.
+- [x] Divide unaccounted BigInts by two-word magnitudes with a u128 carry, retaining checked quotient storage, exact signed remainders and existing explicit-quota paths.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

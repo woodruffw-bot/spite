@@ -352,6 +352,10 @@ fn multiplication_and_division_match_exact_native_arithmetic() {
                         .unwrap(),
                     x
                 );
+                let (unlimited_q, unlimited_r) =
+                    x.div_rem(&y, &mut Budget::with_limits(None, None)).unwrap();
+                assert_eq!(unlimited_q, q);
+                assert_eq!(unlimited_r, r);
             }
         }
     }

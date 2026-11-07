@@ -1381,12 +1381,14 @@ borrow, multiplication, and division algorithms. Bitwise operands reserve their
 complete two's-complement width once, copy the retained words and extend with
 zeroes before sign conversion. Width overflow and reservation failure return a
 host limit; per-word work charging and infinite sign extension are unchanged.
-Divisors whose magnitude fits
-one u32 word use division from the highest word down, carrying a remainder in
-u64. Larger divisors use binary long division. Both paths truncate the quotient
-toward zero and give a nonzero remainder the dividend's sign (6.1.6.2.5–6).
-Quotient storage uses checked capacity; each processed word charges work before
-division, and result-magnitude checks still apply to both outputs.
+Divisors whose magnitude fits one u32 word use division from the highest word
+down, carrying a remainder in u64. Without work or magnitude quotas, two-word
+divisors similarly use a u128 carry; each combined dividend fits 96 bits and
+each quotient digit fits u32. Larger divisors and explicitly limited two-word
+division retain binary long division. All paths truncate the quotient toward
+zero and give a nonzero remainder the dividend's sign (6.1.6.2.5–6).
+Quotient storage uses checked capacity. Accounted paths charge before processing;
+result-magnitude checks apply to both outputs.
 Formatting extracts bits directly for radices 2/4/8/16/32. Other radices divide
 by the largest radix power that fits u32 and emit padded lower digit groups;
 one-word inputs retain single-digit division. Formatting checks allocation

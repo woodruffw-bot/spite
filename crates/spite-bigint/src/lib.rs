@@ -538,6 +538,23 @@ impl BigInt {
                 budget.finish(Self::from(remainder))?,
             ));
         }
+        if other.words.len() == 2 && budget.max_bits.is_none() && budget.remaining_work.is_none() {
+            let divisor = (u128::from(other.words[1]) << 32) | u128::from(other.words[0]);
+            let mut remainder = 0u128;
+            for (word, output) in self.words.iter().zip(&mut quotient).rev() {
+                // remainder < divisor <= u64::MAX, so this dividend fits
+                // 96 bits and its quotient fits one u32 magnitude word.
+                let dividend = (remainder << 32) | u128::from(*word);
+                *output = (dividend / divisor) as u32;
+                remainder = dividend % divisor;
+            }
+            let mut remainder = Self::from_u64(remainder as u64, budget)?;
+            remainder.negative = self.negative && !remainder.is_zero();
+            return Ok((
+                budget.finish(Self::normalized(self.negative != other.negative, quotient))?,
+                budget.finish(remainder)?,
+            ));
+        }
         let mut remainder = Self::default();
         let step_work = other
             .words

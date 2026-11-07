@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirty-three program workloads |
+| parse_all | Parse and drop the ASTs for all thirty-four program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -39,6 +39,7 @@ and collection medians are computed independently.
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
+| bigint_divide_u64 | Perform 32 quotient/remainder steps by 2^63+17 from a changing 2,048-bit integer, checking a low-word checksum |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_decimal | Format changing 2,048-bit integers in decimal across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
@@ -68,6 +69,35 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Word division for 64-bit BigInt magnitudes
+
+Unaccounted division by two-word magnitudes carries the remainder in u128 and
+processes one u32 magnitude word at a time. Each combined dividend fits 96 bits;
+the quotient digit fits u32. Quotient storage and remainder construction remain
+fallible. Explicit quotas keep their existing paths.
+
+The added workload performs quotient and remainder operations across 32 changing
+large dividends. Both compared binaries contain identical workloads. Baseline
+production is ba1dc92b7 (the following c0f3e1ea9 changes documentation only);
+the candidate adds only the two-word division path. Rust 1.99/conformance-profile
+Linux x86_64 measurements use one CPU, no active builds/tests, twelve ABBA process
+runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| bigint_divide_u64 | 2710.5 | 182.4 | 156.4 | 150.7 |
+| bigint | 132.1 | 132.9 | 154.6 | 152.6 |
+| radix_overflow | 760.8 | 692.5 | 150.6 | 148.8 |
+| parse_all | 801.9 | 842.8 | 0 | 0 |
+| initialize_and_drop | 606.8 | 606.1 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+The 64-bit-divisor workload's evaluation is 93.3% lower. The small-divisor
+control differs by +0.6%, and the unrelated radix-overflow row by -9.0%.
+Remaining program evaluation changes range from -7.9% to +2.3%, and collection
+changes from -6.2% to +6.3%. Parsing is 5.1% higher and initialization differs
+by -0.1%. These observations add no CI timing threshold or execution allowance.
 
 ## Linear BigInt parsing in power-of-two radices
 
