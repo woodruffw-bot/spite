@@ -460,7 +460,7 @@ impl Objects {
             .try_reserve_exact(count)
             .map_err(|_| Error::PropertyLimit)?;
         for (index, &unit) in value.code_units().iter().enumerate() {
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index as u64);
             budget.charge(key.len() + 1)?;
             // Fresh keys are unique. Their order also places every String
             // index before length, including indices beyond the array range.

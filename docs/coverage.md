@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Stack-formatted String wrapper index keys
+
+StringCreate writes exact decimal index digits into a fixed UTF-16 stack buffer
+and copies them directly into standard Arc storage. Keys retain their decimal
+spelling, order, immutable descriptors and existing work charges. The helper
+formats the unsigned integer directly, including values above Number's exact
+integer range; it does not perform ECMAScript Number-to-String conversion.
+
+A new Core test compares against standard integer formatting for small indices,
+decimal/binary width boundaries, full-width values and deterministic samples.
+Before/after supplemental checks cover every UTF-16 code unit plus 44 wrapper
+cases through length 10,001, checking complete own-key order, descriptors,
+length attributes and failed writes/deletions. All agree with exact expectations.
+
+Twelve quiet single-CPU ABBA runs measure 49.2% lower boxing evaluation time
+and 6.4% lower collection time. Full scope and controls are in
+[benchmarking](benchmarking.md#stack-formatted-string-wrapper-index-keys).
+
+Validation passes all 113 Core tests, 574 Runtime units, 2,430 non-RegExp
+integrations and the full quality gate. All 2,441 official modes from 1,222
+unchanged String originals pass with zero nonpassing outcomes. Runtime and
+fixture inventories are unchanged.
+
 ## Checked String addition preallocation
 
 Core String concatenation checks the combined length and reserves the complete

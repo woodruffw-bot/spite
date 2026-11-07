@@ -127,6 +127,9 @@ this path instead of first building a Vec. Raw surrogates remain unchanged.
 Borrowed UTF-16 slices likewise copy directly into owned Arc storage for
 substring/trim/split results and String iterator yields. Existing output-length,
 work, code-point pairing and iterator-position checks precede the same copies.
+StringCreate formats unsigned index keys into a fixed stack buffer before
+copying the digits into Arc storage. It avoids temporary UTF-8 and UTF-16
+buffers while retaining exact decimal keys, index ordering and work charges.
 
 Let-declaration lookahead is shared by statement lists and loop headers and
 recognizes only BindingIdentifier or binding-pattern starts. Word operators and

@@ -609,6 +609,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Construct fixed UTF-16 arrays through standard Arc conversion, avoiding temporary single-unit Vecs in String boxing, character access and primitive indexing.
 - [x] Copy borrowed UTF-16 slices directly into standard Arc storage for String copies and iterator yields, preserving raw units, checks and code-point boundaries.
 - [x] Reserve the complete String addition buffer before bulk copies and reuse immutable inputs for empty operands, preserving coercion order, length checks and raw UTF-16 joins.
+- [x] Format StringCreate index keys directly into stack UTF-16 digits before Arc construction, preserving exact decimal keys, descriptors and work accounting.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

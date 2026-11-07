@@ -76,6 +76,32 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Stack-formatted String wrapper index keys
+
+StringCreate formats index keys into a fixed twenty-unit UTF-16 stack buffer,
+then copies the digits into standard Arc storage. It avoids temporary UTF-8
+Strings and UTF-16 Vecs. The existing string_box workload covers 2,048 indices
+per wrapper; every other workload is retained as a control.
+
+Baseline production is 0f0857860. Both binaries contain identical workloads.
+Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU, no active
+builds/tests, twelve ABBA process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_box | 1471.9 | 747.6 | 1143.2 | 1070.1 |
+| string_character | 11940.5 | 11913.9 | 1600.3 | 1607.7 |
+| radix_overflow | 690.4 | 773.7 | 153.6 | 153.9 |
+| parse_all | 986.6 | 990.7 | 0 | 0 |
+| initialize_and_drop | 626.7 | 620.2 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Boxing evaluation is 49.2% lower and collection is 6.4% lower. The unrelated
+radix-overflow row differs by +12.1%; remaining program evaluation changes range
+from -3.1% to +10.0%, with mixed String repair at the upper end. Collection
+changes range from -4.9% to +4.9%. Parsing and initialization differ by +0.4%
+and -1.0%. These observations add no CI timing threshold or execution allowance.
+
 ## Checked String addition preallocation
 
 Nonempty concatenation checks and reserves its complete output length before

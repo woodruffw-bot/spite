@@ -110,6 +110,22 @@ impl JsString {
         Self(units.into())
     }
 
+    /// Creates the exact decimal representation of an unsigned property index.
+    ///
+    /// Formats the integer directly, without converting it to an ECMAScript Number.
+    pub fn from_index(mut index: u64) -> Self {
+        let mut units = [0u16; 20];
+        let mut start = units.len();
+        loop {
+            start -= 1;
+            units[start] = u16::from(b'0') + (index % 10) as u16;
+            index /= 10;
+            if index == 0 {
+                return Self::from(&units[start..]);
+            }
+        }
+    }
+
     /// Returns the underlying UTF-16 code units.
     pub fn code_units(&self) -> &[u16] {
         &self.0
@@ -297,6 +313,31 @@ mod tests {
             assert_eq!(
                 parse_radix_integer(&("0".repeat(2048) + &below), radix),
                 Some(f64::MAX)
+            );
+        }
+    }
+
+    #[test]
+    fn decimal_indices_match_integer_formatting_at_full_width_boundaries() {
+        let mut indices: Vec<u64> = (0..10_000).collect();
+        for power in (0..=19).map(|exponent| 10u64.pow(exponent)) {
+            indices.extend([power - 1, power, power + 1]);
+        }
+        for bit in 0..64 {
+            let power = 1u64 << bit;
+            indices.extend([power - 1, power, power + 1]);
+        }
+        indices.extend([u64::MAX - 1, u64::MAX]);
+        let mut sample = 0x1234_5678_9abc_def0u64;
+        for _ in 0..4096 {
+            sample = sample.wrapping_mul(6364136223846793005).wrapping_add(1);
+            indices.push(sample);
+        }
+        for index in indices {
+            assert_eq!(
+                JsString::from_index(index).code_units(),
+                index.to_string().encode_utf16().collect::<Vec<_>>(),
+                "{index}"
             );
         }
     }
