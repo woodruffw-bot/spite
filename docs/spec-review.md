@@ -3,8 +3,8 @@
 Review against [ECMA-262 edition 17](https://262.ecma-international.org/17.0/)
 and its [published es2026 source](https://github.com/tc39/ecma262/blob/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html).
 This ledger connects the published clause groups to their implementation and
-regression evidence. The roadmap's whole-specification milestone also requires
-the final regression gate. Exact fixture inventories and test receipts belong in
+regression evidence. The completed review and final regression gate are recorded
+in coverage. Exact fixture inventories and test receipts belong in
 [coverage](coverage.md).
 
 | Clauses | Review | Evidence |

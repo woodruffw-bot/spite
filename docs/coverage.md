@@ -61,6 +61,28 @@ not an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Completed published implementation review
+
+Every clause/annex group in the [review index](spec-review.md) now has
+implementation and regression evidence against the published edition-17
+baseline. The roadmap's whole-specification review is complete. This source
+review does not turn a test count into a universal conformance claim or remove
+the documented host policies and implementation constraints.
+
+The [complete seventeen-job hosted gate](https://github.com/woodruffw-bot/spite/actions/runs/42347540922)
+passes for production revision 63e16f334, including the 80,028-variant corpus,
+native suites and quality checks on both operating systems/toolchains. Every
+intervening committed change through 8a691c5b1 affects documentation only;
+production code and conformance sources/helpers/reviews are identical. A
+duplicate local full run was stopped after this completed hosted result was
+verified; it supplies no additional passing-test credit.
+
+Supplemental audits also check 1,428 Set combination/predicate cases with
+reentrant size/has/keys/next hooks against Node, and 1,608 exact-summation cases
+against a Python Fraction oracle rounded once to binary64. Both have zero
+mismatches. The latter uses finite random bit patterns, cancellation, signed
+zeros and nonfinite cases; it is independent of the Runtime accumulator.
+
 ## Control abstractions, reflection, memory model and annex review
 
 The [review index](spec-review.md#control-abstractions-and-reflection) now records
@@ -78,8 +100,7 @@ regressions. These counts organize the source review and add no test credit.
 Stale design text describing agent integration as future work is corrected.
 Executable code, fixtures, helpers, flags and resource policies are unchanged.
 
-The full quality gate passes. A fresh whole-source Test262 run is in progress
-before closing the roadmap's whole-specification review milestone.
+The full quality gate and the hosted whole-source gate recorded above pass.
 
 ## Structured data and weak-memory API review
 
