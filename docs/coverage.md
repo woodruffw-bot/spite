@@ -61,6 +61,45 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Combined main gate and protocol interruption audits
+
+A fresh full Test262 package run on 45e966271 covers the combined URI,
+String padding/repair, retained source and BigInt input changes. All 85 package
+tests pass, including all 80,028 official modes from 41,531 reviewed originals
+with zero nonpassing outcomes (1,417.89 seconds for the corpus binary).
+The run starts from a clean tree, with production unchanged throughout.
+It complements the earlier 80,028-mode receipt at b256a9fa3.
+
+Supplemental audits on that production tree check behavior beyond individual
+originals:
+
+- All 6,504 TypedArray set cases match Node with and without collection before
+  the operation. The matrix covers all twelve element kinds, fixed/auto
+  resizable views, offset/length/index/value hooks, resize/detachment/throws,
+  and overlapping copies with different element widths.
+- All 1,376 generic Promise finally cases match Node with and without
+  collection after every job. Custom species constructors, executor failures,
+  repeated wrappers, callback reentry and cleanup then protocols preserve
+  complete results and traces.
+- All 4,550 Proxy cases match Node across thirteen internal methods, revocation
+  during trap lookup/calls, nested revoked targets, nonextensible/frozen targets
+  and invalid trap returns.
+- All 7,840 selected casing inputs match Node's Unicode 17 behavior in 62
+  batches. They exercise every ASCII unit, Greek sigma context, overlapping
+  Cased/Case_Ignorable properties, expansions and surrogate boundaries; they
+  do not substitute Node's tables for the pinned Unicode 18 data.
+- Independent Base64 oracles pass 271,336 strict/loose static decodes across
+  every UTF-16 unit, malformed padding, whitespace, alphabet selection and
+  strict overflow bits. Python's standard-library codec and an RFC 4648 grammar
+  supply expected bytes and syntax rejection.
+- Another 11,040 bounded Base64 writes match known encoded bytes and a
+  complete-quantum capacity model for all three tail modes. Checks include
+  exact read/written counts and retained prefixes/unwritten bytes on failure.
+
+The supplemental matrices preserve complete outcomes rather than adding
+Test262 passing credit. Production behavior, test/fixture inventories, reviewed
+sources, helpers, flags and default quotas are unchanged by this receipt.
+
 ## Grouped BigInt input parsing
 
 Unsigned BigInt digit parsing uses u32-sized groups for inputs longer than 32
