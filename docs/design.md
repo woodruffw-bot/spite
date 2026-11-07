@@ -3467,8 +3467,10 @@ test result. Module variants use the real Module parser and the same exact
 span/message review for parse negatives, without a Script strict-mode prefix.
 Valid parse negatives fail the gate; unsupported grammar and host limits never
 count as passes. Modules use isolated Module records and never enter Script
-evaluation. Raw async setup remains unsupported. Metadata selects suspending or
-nonsuspending Test262 agents.
+evaluation. Raw async variants supply their own print-completion messages without
+injected harness files, preserving their source bytes and execution mode. A missing
+$DONE remains an Unsupported host boundary unless the source defines it. Metadata
+selects suspending or nonsuspending Test262 agents.
 All executed variants receive a private diagnostic print capture. Its constant
 host bootstrap is parsed separately from test-supplied source, then evaluated
 under the normal Realm limits; test, harness and imported source keep their

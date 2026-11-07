@@ -5,6 +5,17 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Raw asynchronous execution
+
+The runner supports raw async Scripts and Modules without injecting harness files.
+Tests provide their own `Test262:AsyncTestComplete` print message or define their
+own completion helper. Raw Script bytes retain hashbang/directive behavior;
+Modules retain their own goal and top-level Await handling. Missing, failed or
+duplicate completion messages fail. Actual runtime exceptions retain phase/type
+matching, printed failures cannot satisfy negatives, and missing `$DONE` remains
+Unsupported until supplied by the source. Runtime defaults and pinned fixture,
+helper and review inventories are unchanged.
+
 ## Completed compatible RegExp property inventories
 
 The 290 unchanged exhaustive Unicode property originals pass 580 modes using

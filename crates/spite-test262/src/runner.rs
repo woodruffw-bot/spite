@@ -102,9 +102,9 @@ impl Runner {
     /// variants use the unchanged doneprintHandle.js completion protocol and drain
     /// Promise jobs. Module parse negatives use the Module goal and the same exact
     /// review checks. CanBlockIsFalse selects a nonsuspending agent; other cases
-    /// use a suspending Test262 host. Raw async harness setup
-    /// remains explicitly unsupported. Host helper names are reserved so missing helpers
-    /// cannot masquerade as ReferenceError
+    /// use a suspending Test262 host. Raw async variants supply their own print
+    /// completion messages without injected harness files. Host helper names
+    /// remain reserved so missing helpers cannot masquerade as ReferenceError
     /// passes. The default JavaScript host is not modified by this runner.
     pub fn run(
         &self,
@@ -241,12 +241,6 @@ impl Runner {
             return self.run_module_resolution(module, original, negative, modules);
         }
         let asynchronous = metadata.has_flag("async");
-        if asynchronous && metadata.has_flag("raw") {
-            return unsupported(
-                Stage::Harness,
-                "raw asynchronous Test262 harness setup is not implemented",
-            );
-        }
         let mut realm = if metadata.has_flag("CanBlockIsFalse") {
             Realm::new(self.limits)
         } else {
@@ -265,6 +259,11 @@ impl Runner {
                 }
             };
             let completion = if asynchronous {
+                if metadata.has_flag("raw") {
+                    // Raw tests supply the print protocol themselves. Missing
+                    // helpers must not satisfy ReferenceError negatives.
+                    realm.reserve_unsupported_global("$DONE");
+                }
                 Some(print)
             } else {
                 realm.reserve_unsupported_global("$DONE");

@@ -572,17 +572,19 @@ fn suspending_agent_flags_run_real_waits_and_preserve_negative_accounting() {
 }
 
 #[test]
-fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
+fn runtime_modes_and_unsafe_harness_paths_are_classified() {
     let cases = Runner::default()
         .run(&source("flags: [async, raw]", "throw 7"), None, |_| {
-            panic!("unsupported host loaded harness")
+            panic!("raw test loaded harness")
         })
         .unwrap();
-    assert!(
-        cases
-            .iter()
-            .all(|case| matches!(case.outcome, Outcome::Unsupported { .. }))
-    );
+    assert!(cases.iter().all(|case| matches!(
+        case.outcome,
+        Outcome::Failed {
+            stage: Stage::Runtime,
+            ..
+        }
+    )));
     for flags in ["[module]", "[module, raw]"] {
         let cases = Runner::default()
             .run(&source(&format!("flags: {flags}"), "throw 7"), None, |_| {
@@ -613,6 +615,163 @@ fn unsupported_modes_and_unsafe_harness_paths_do_not_execute() {
                 .iter()
                 .all(|case| matches!(case.outcome, Outcome::SetupFailure(_)))
         );
+    }
+}
+
+#[test]
+fn raw_async_scripts_keep_source_and_require_one_print_completion() {
+    let original = "#!/usr/bin/env js\n/*---\nflags: [raw, async]\n---*/\n\
+        if((function(){return this})()!==globalThis)throw 1;\n\
+        if(Reflect.ownKeys(globalThis).includes('assert')||Reflect.ownKeys(globalThis).includes('$DONE'))throw 2;\n\
+        let print=7;Promise.resolve().then(()=>globalThis.print('Test262:AsyncTestComplete'));";
+    let cases = Runner::default()
+        .run(original, None, |_| panic!("raw test loaded harness"))
+        .unwrap();
+    assert_eq!(cases.len(), 1);
+    assert_eq!(cases[0].mode, Mode::Script);
+    assert_eq!(cases[0].outcome, Outcome::Passed);
+    for (body, passed) in [
+        ("print('Test262:AsyncTestComplete')", true),
+        (
+            "(async()=>{await 0;print('Test262:AsyncTestComplete')})()",
+            true,
+        ),
+        (
+            "let $DONE=()=>print('Test262:AsyncTestComplete');Promise.resolve().then($DONE)",
+            true,
+        ),
+        ("1", false),
+        (
+            "print('Test262:AsyncTestComplete');print('Test262:AsyncTestComplete')",
+            false,
+        ),
+        (
+            "print('Test262:AsyncTestComplete');Promise.resolve().then(()=>print('Test262:AsyncTestComplete'))",
+            false,
+        ),
+        ("print('Test262:AsyncTestFailure:TypeError: failed')", false),
+    ] {
+        let cases = Runner::default()
+            .run(&source("flags: [raw, async]", body), None, |_| {
+                panic!("raw test loaded harness")
+            })
+            .unwrap();
+        assert_eq!(cases.len(), 1);
+        if passed {
+            assert_eq!(cases[0].outcome, Outcome::Passed, "{body}");
+        } else {
+            assert!(
+                matches!(
+                    cases[0].outcome,
+                    Outcome::Failed {
+                        stage: Stage::Runtime,
+                        ..
+                    }
+                ),
+                "{body}: {cases:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn raw_async_failures_keep_language_host_and_printed_outcomes_separate() {
+    for (body, kind) in [
+        ("throw new TypeError()", 0),
+        ("print('Test262:AsyncTestFailure:TypeError: failed')", 1),
+        ("$DONE()", 2),
+    ] {
+        let error_type = if kind == 2 {
+            "ReferenceError"
+        } else {
+            "TypeError"
+        };
+        let metadata =
+            format!("flags: [raw, async]\nnegative:\n  phase: runtime\n  type: {error_type}");
+        let cases = Runner::default()
+            .run(&source(&metadata, body), None, |_| {
+                panic!("raw test loaded harness")
+            })
+            .unwrap();
+        assert_eq!(cases.len(), 1);
+        match kind {
+            0 => assert_eq!(cases[0].outcome, Outcome::Passed),
+            1 => assert!(matches!(
+                cases[0].outcome,
+                Outcome::Failed {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            )),
+            2 => assert!(matches!(
+                cases[0].outcome,
+                Outcome::Unsupported {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            )),
+            _ => unreachable!(),
+        }
+    }
+    let cases = Runner {
+        limits: Limits {
+            max_steps: Some(100_000),
+            ..Limits::default()
+        },
+    }
+    .run(
+        &source(
+            "flags: [raw, async]\nnegative:\n  phase: runtime\n  type: TypeError",
+            "Promise.resolve().then(()=>{while(true){}})",
+        ),
+        None,
+        |_| panic!("raw test loaded harness"),
+    )
+    .unwrap();
+    assert_eq!(cases.len(), 1);
+    assert!(
+        matches!(
+            cases[0].outcome,
+            Outcome::Limit {
+                stage: Stage::Runtime,
+                ..
+            }
+        ),
+        "{cases:?}"
+    );
+}
+
+#[test]
+fn raw_async_modules_await_without_harness_injection() {
+    for (body, passed) in [
+        (
+            "if(this!==undefined)throw 1;await 0;print('Test262:AsyncTestComplete')",
+            true,
+        ),
+        ("await new Promise(()=>{})", false),
+        ("await 0", false),
+    ] {
+        let cases = Runner::default()
+            .run(&source("flags: [module, raw, async]", body), None, |_| {
+                panic!("raw test loaded harness")
+            })
+            .unwrap();
+        assert_eq!(cases.len(), 1);
+        assert_eq!(cases[0].mode, Mode::Module);
+        if passed {
+            assert_eq!(cases[0].outcome, Outcome::Passed);
+        } else {
+            assert!(
+                matches!(
+                    cases[0].outcome,
+                    Outcome::Failed {
+                        stage: Stage::Runtime,
+                        ..
+                    }
+                ),
+                "{body}: {cases:?}"
+            );
+        }
     }
 }
 

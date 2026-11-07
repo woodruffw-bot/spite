@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Raw asynchronous Test262 execution
+
+Raw async Scripts and Modules now use the existing private print-completion host
+without loading harness files. Exact Script bytes preserve hashbang and directive
+behavior; Modules keep their grammar goal and top-level Await. A test can print
+its own completion message or define its own helper. Missing, failed and duplicate
+messages remain failures.
+
+The missing $DONE host boundary remains Unsupported until the source supplies it,
+so it cannot satisfy a ReferenceError negative. Actual language exceptions retain
+phase/type matching; printed failure names cannot satisfy negatives. Explicit
+host work limits remain HostLimit. No default execution/job allowance is added.
+
+Three new runner groups cover source/mode preservation, zero harness loads,
+synchronous and queued completion, source-defined helpers, missing/duplicate/failure
+messages, language/host failure separation, and pending/settled raw async Modules.
+The earlier blanket-Unsupported control now verifies actual runtime execution.
+Pinned fixtures, helper bytes, flags, review rows and runtime defaults are unchanged.
+
+All 87 noncorpus Test262 package controls pass, along with formatting, strict
+workspace Clippy, Rust 1.99 checks, dependency/inventory policy and the remaining
+quality gate. The three new groups bring the package total to 88 tests.
+
 ## TypedArray dispatch labels
 
 Internal selector and table names now describe the 27 implemented prototype

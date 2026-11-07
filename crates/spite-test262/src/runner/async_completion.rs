@@ -82,7 +82,7 @@ impl AsyncCompletion {
         if complete != 1 {
             return Err(failed(
                 Stage::Runtime,
-                "asynchronous test did not complete through $DONE",
+                "asynchronous test did not signal completion",
             ));
         }
         Ok(())

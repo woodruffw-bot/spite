@@ -616,6 +616,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect invalid TypedArray index writes through nested Proxy receivers, retaining early success without value conversion and explicit underlying-receiver conversion.
 - [x] Share exact radix-to-binary64 conversion for unaccounted parseInt prefixes in bases 2/8/16, retaining prefix termination, signed zero and existing quota/agent paths.
 - [x] Protect fresh private-name identities stamped onto shared Proxy receivers through revocation and collection, retaining lexical class/eval scope boundaries.
+- [x] Execute raw asynchronous Test262 Script and Module modes through the existing private print protocol without harness injection, preserving completion and negative/host-failure accounting.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
