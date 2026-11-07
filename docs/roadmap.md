@@ -592,6 +592,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Divide BigInts by a u32 magnitude one word at a time with u64 carry, signed remainders, checked capacity and per-word work accounting.
 - [x] Format BigInts in radices 2/4/8/16/32 by extracting digits across magnitude-word boundaries with checked output capacity and charged linear work.
 - [x] Format larger BigInts in other radices by dividing into u32-sized digit groups, preserving minimal leading groups, padded lower groups and checked work/capacity.
+- [x] Copy ordinary BMP prefixes during JSON quoting in one checked append, retaining per-unit work and agent-control paths and shared escape/surrogate handling.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

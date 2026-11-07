@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## JSON quoting of ordinary prefixes
+
+QuoteJSONString copies the initial ordinary BMP span in one checked append
+when neither work accounting nor agent control is active. The shared loop still
+handles escapes and surrogates; accounted and agent-controlled calls retain
+their per-unit checks. Output length/capacity checks and hook order are unchanged.
+
+The existing exhaustive UTF-16 roundtrip test now also covers an ordinary prefix
+before every code unit and a completely ordinary string, including U+2028/U+2029.
+Twelve quiet single-CPU ABBA process runs measure 80.6% and 81.5% lower evaluation
+time for plain strings and strings needing escapes near the end. Exact scope and
+all other measured changes are in
+[benchmarking](benchmarking.md#json-quoting-of-ordinary-prefixes).
+
+The exact-output audit covers all 65,536 UTF-16 units after ordinary prefixes
+and escape/surrogate boundaries at several positions and lengths: all 871 cases
+match Node. The 1,613-case JSON/DataView audit also has zero differences.
+Validation passes all 573 Runtime units, 2,430 non-RegExp integrations and
+330 official modes from 165 unchanged JSON originals, with zero nonpassing
+outcomes. The full quality gate passes; test and fixture inventories are unchanged.
+
 ## Composed iterator helpers and collection
 
 A new regression composes flatMap, filter, drop and take, collecting before and

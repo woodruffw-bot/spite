@@ -3581,7 +3581,10 @@ Serialize each property with live Get, then callable toJSON, then the replacer,
 then raw branding or wrapper conversion. BigInt throws unless a hook replaces it;
 omitted array values become null, while omitted object values are excluded.
 QuoteJSONString uses lowercase escapes for controls and lone surrogates, retaining
-valid surrogate pairs. Retained intrinsic prototypes create the root holder.
+valid surrogate pairs. Without work accounting or agent control, it copies the
+initial span of ordinary BMP units in one checked append, then resumes the same
+escape/surrogate loop. Accounted or agent-controlled calls retain per-unit checks.
+Retained intrinsic prototypes create the root holder.
 Explicit frames snapshot object keys or array length and emit into one fallible
 UTF-16 buffer. A set of active object identities detects cycles after hooks while
 allowing repeated aliases; heap identity and slot generation are part of hashing.

@@ -42,6 +42,19 @@ impl Realm {
         self.json_append(output, &[0x22], span)?;
         let units = string.code_units();
         let mut index = 0;
+        // Copy an ordinary BMP prefix at once when no per-unit work or agent
+        // checks are needed. Escapes and surrogates keep the shared loop below.
+        if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
+            index = units
+                .iter()
+                .position(|&unit| {
+                    unit < 0x20 || unit == 0x22 || unit == 0x5c || (0xd800..=0xdfff).contains(&unit)
+                })
+                .unwrap_or(units.len());
+            if index != 0 {
+                self.json_append(output, &units[..index], span)?;
+            }
+        }
         while index < units.len() {
             let unit = units[index];
             index += 1;
@@ -89,14 +102,21 @@ mod tests {
 
     #[test]
     fn every_utf16_unit_roundtrips_and_quote_escapes_are_lowercase() {
-        let original = JsString::from_code_units((0..=u16::MAX).collect());
-        let mut output = Vec::new();
-        Realm::default()
-            .json_quote(&mut output, &original, Span::new(0, 0))
-            .unwrap();
-        let quoted = JsString::from_code_units(output);
-        let parsed = parse_json(&quoted).unwrap();
-        assert_eq!(parsed.nodes[parsed.root].kind, JsonKind::String(original));
+        let plain = "plain café 漢字 \u{2028}\u{2029}";
+        for units in [
+            (0..=u16::MAX).collect(),
+            plain.encode_utf16().collect(),
+            plain.encode_utf16().chain(0..=u16::MAX).collect(),
+        ] {
+            let original = JsString::from_code_units(units);
+            let mut output = Vec::new();
+            Realm::default()
+                .json_quote(&mut output, &original, Span::new(0, 0))
+                .unwrap();
+            let quoted = JsString::from_code_units(output);
+            let parsed = parse_json(&quoted).unwrap();
+            assert_eq!(parsed.nodes[parsed.root].kind, JsonKind::String(original));
+        }
         let mut output = Vec::new();
         Realm::default()
             .json_quote(

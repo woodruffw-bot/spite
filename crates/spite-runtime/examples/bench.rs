@@ -68,6 +68,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "json_strings",
+        source: "(()=>{const text='plain café 漢字 '.repeat(256);let sum=0;for(let i=0;i<16;i++){const output=JSON.stringify([text,text]);sum+=output.length+output.charCodeAt(output.length-2)}return sum})()",
+        expected: 115344.0,
+        jobs: false,
+    },
+    Case {
+        name: "json_escaped",
+        source: "(()=>{const text='plain café 漢字 '.repeat(256)+String.fromCharCode(10,34,0xd800);let sum=0;for(let i=0;i<16;i++){const output=JSON.stringify([text,text]);sum+=output.length+output.charCodeAt(output.length-2)}return sum})()",
+        expected: 115664.0,
+        jobs: false,
+    },
+    Case {
         name: "regexp",
         source: "(()=>{const text='aaaab'.repeat(128),re=/(?<prefix>a+)(?<suffix>b)/gu;let sum=0,match;while((match=re.exec(text))!==null)sum+=match[0].length;return sum})()",
         expected: 640.0,

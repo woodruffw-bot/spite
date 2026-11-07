@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all eleven program workloads |
+| parse_all | Parse and drop the ASTs for all thirteen program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | properties | Create, populate and read 128 computed object properties |
@@ -29,6 +29,8 @@ and collection medians are computed independently.
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_decimal | Format changing 2,048-bit integers in decimal across 32 steps, checking lengths and trailing-digit checksums |
 | bigint_small_decimal | Format the integers 0–1,023 in decimal, checking lengths and parsed values |
+| json_strings | Stringify a pair of 3,584-unit ordinary BMP strings sixteen times, checking lengths and closing quotes |
+| json_escaped | Repeat json_strings with a newline, quote and lone surrogate appended to each input |
 | regexp | Construct a RegExp literal and consume 128 named-capture matches |
 | generator | Create, resume and consume a 128-value source generator |
 | async_jobs | Execute 64 awaits, drain Promise jobs and read the completed sum |
@@ -175,3 +177,30 @@ Large-decimal evaluation is 82.0% lower; small-decimal evaluation differs by
 +0.3%. Other program evaluation changes range from -7.6% to +1.9%; parsing and
 initialization differ by -5.6% and -4.5%. These observations add no CI timing
 threshold or execution allowance.
+
+## JSON quoting of ordinary prefixes
+
+QuoteJSONString copies its initial span of ordinary BMP code units with one
+append. Escape and surrogate handling continue in the shared loop. The prefix
+scan runs only without work accounting or agent control; their per-unit checks
+retain the existing path. Output length and capacity checks remain active.
+
+The added json_strings workload stringifies two 3,584-unit strings sixteen
+times. json_escaped appends a newline, quote and lone surrogate to each input.
+Both compared binaries include identical workloads. Baseline production is
+555b72194; the candidate adds only prefix copying. Rust 1.99/conformance-profile
+Linux x86_64 measurements use one CPU, no active builds/tests, twelve ABBA
+process runs, seven samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| json_strings | 1250.8 | 242.8 | 165.4 | 164.2 |
+| json_escaped | 1286.7 | 238.3 | 171.3 | 159.9 |
+| parse_all | 324.1 | 314.9 | 0 | 0 |
+| initialize_and_drop | 644.8 | 626.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Evaluation is 80.6% and 81.5% lower for the two JSON workloads. Other program
+evaluation changes range from -5.5% to +5.0%; parsing and initialization differ
+by -2.8% and -2.9%. These observations add no CI timing threshold or execution
+allowance.
