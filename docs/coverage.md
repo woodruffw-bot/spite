@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Nested expression effects and suspension collection
+
+A seeded 4,000-case synchronous expression audit matches Node for results,
+error kinds, coercion/getter/setter traces and final assignment state. Cases
+combine unary/numeric/comparison operators, conditionals, short circuits,
+updates and ordinary/logical compound assignments.
+
+A separate 4,000-case async expression audit also matches Node under ordinary
+FIFO job draining and under explicit collection after initial evaluation and
+every completed Promise job. It combines await/thenable fulfillment and
+rejection with partial Array/object construction, method receivers/callees,
+argument lists, assignments and operator operands. The host clears kept objects
+at each collection checkpoint. Suspended values survive through the existing
+traced continuations; no production change is needed.
+
+All cases use fresh Realms, ordinary unlimited JavaScript defaults and public
+job/collection APIs. These supplemental audits change no upstream fixture,
+helper, flag, review or inventory and add no Test262 passing-test credit.
+
 ## BigInt division by a word
 
 Divisors whose magnitude fits u32 now use one pass over the dividend's magnitude
