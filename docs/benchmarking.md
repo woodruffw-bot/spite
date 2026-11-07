@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all thirty-six program workloads |
+| parse_all | Parse and drop the ASTs for all thirty-eight program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -27,6 +27,8 @@ and collection medians are computed independently.
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
 | string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
+| string_slice | Alternate sixteen slice/substring copies from a 16,384-unit BMP/lone-surrogate input, checking lengths and edge units |
+| string_iteration | Iterate a 768-unit ASCII/BMP/supplementary/lone-surrogate input, checking yielded lengths and first units |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
@@ -71,6 +73,35 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Direct borrowed-slice UTF-16 String construction
+
+Borrowed UTF-16 slices copy directly into owned Arc storage. The shared
+substring/trim/split helper and String iterator yields avoid first creating
+a Vec. Existing output/work checks and iterator boundaries are unchanged.
+
+The two added workloads measure substring copying and String iteration.
+Both compared binaries contain identical workloads. Baseline production is
+8933cca32; the candidate adds slice conversion and updates the two construction
+sites. Rust 1.99/conformance-profile Linux x86_64 measurements use one CPU,
+no active builds/tests, twelve ABBA process runs, seven samples and ten
+iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_slice | 105.6 | 91.5 | 154.0 | 153.4 |
+| string_iteration | 1397.2 | 1406.3 | 353.4 | 339.8 |
+| radix_overflow | 768.9 | 757.8 | 149.9 | 153.5 |
+| parse_all | 912.7 | 916.0 | 0 | 0 |
+| initialize_and_drop | 611.3 | 624.4 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Slice/substring evaluation is 13.4% lower. String iteration differs by +0.7%
+in evaluation and -3.9% in collection. The unrelated radix-overflow row differs
+by -1.4%. Remaining program evaluation changes range from -1.3% to +9.9%, with
+mixed String repair at the upper end; collection changes range from -4.3%
+to +3.5%. Parsing and initialization differ by +0.4% and +2.1%. These
+observations add no CI timing threshold or execution allowance.
 
 ## Direct fixed-array UTF-16 String construction
 

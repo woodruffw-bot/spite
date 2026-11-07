@@ -122,6 +122,9 @@ unchanged; actual scans and output allocations retain their checks.
 Fixed UTF-16 arrays convert directly through the standard Arc array conversion.
 Single-unit String indices, boxed String properties and at/charAt results use
 this path instead of first building a Vec. Raw surrogates remain unchanged.
+Borrowed UTF-16 slices likewise copy directly into owned Arc storage for
+substring/trim/split results and String iterator yields. Existing output-length,
+work, code-point pairing and iterator-position checks precede the same copies.
 
 Let-declaration lookahead is shared by statement lists and loop headers and
 recognizes only BindingIdentifier or binding-pattern starts. Word operators and

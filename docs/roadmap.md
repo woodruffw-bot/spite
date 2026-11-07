@@ -607,6 +607,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Parse larger unaccounted BigInts in radices 2/4/8/16/32 by packing validated digits directly into checked magnitude words, preserving cross-word digits and explicit quota behavior.
 - [x] Divide unaccounted BigInts by two-word magnitudes with a u128 carry, retaining checked quotient storage, exact signed remainders and existing explicit-quota paths.
 - [x] Construct fixed UTF-16 arrays through standard Arc conversion, avoiding temporary single-unit Vecs in String boxing, character access and primitive indexing.
+- [x] Copy borrowed UTF-16 slices directly into standard Arc storage for String copies and iterator yields, preserving raw units, checks and code-point boundaries.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -238,6 +238,6 @@ impl Realm {
             });
         }
         self.object_work(span, |_, budget| budget.charge(units.len()))?;
-        Ok(Value::String(JsString::from_code_units(units.to_vec())))
+        Ok(Value::String(JsString::from(units)))
     }
 }

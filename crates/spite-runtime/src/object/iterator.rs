@@ -253,7 +253,7 @@ impl Objects {
             1
         };
         budget.charge(count)?;
-        let result = JsString::from_code_units(units[index..index + count].to_vec());
+        let result = JsString::from(&units[index..index + count]);
         state.next_index += count;
         Ok(Some(result))
     }

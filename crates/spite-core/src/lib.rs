@@ -150,6 +150,12 @@ impl<const N: usize> From<[u16; N]> for JsString {
     }
 }
 
+impl From<&[u16]> for JsString {
+    fn from(value: &[u16]) -> Self {
+        Self(Arc::from(value))
+    }
+}
+
 impl fmt::Debug for JsString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("\"")?;
@@ -289,7 +295,11 @@ mod tests {
         use std::collections::{BTreeSet, HashSet};
         let original = JsString::from([0xd800, 0, 0xdc00]);
         let independent = JsString::from_code_units(vec![0xd800, 0, 0xdc00]);
-        let values = HashSet::from([original.clone(), independent]);
+        let values = HashSet::from([
+            original.clone(),
+            independent,
+            JsString::from(original.code_units()),
+        ]);
         assert_eq!(values.len(), 1);
         let copy = original.clone();
         let extended =

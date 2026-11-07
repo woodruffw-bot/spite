@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct borrowed-slice UTF-16 String construction
+
+JsString copies borrowed UTF-16 slices directly into owned Arc storage.
+The shared substring/trim/split copy helper and String iterator yields use
+this conversion instead of first creating a Vec. Output-length and work checks,
+surrogate pairing, iterator position and exhaustion retain their behavior.
+
+Core content/hash/order tests exercise slice construction alongside independent
+array and Vec construction. All 69,973 iterator strings match Python's UTF-16
+codec before and after the change, including every UTF-16 unit, 4,096 selected
+supplementary pairs, surrogate combinations and empty input. All 3,950 broader
+String boundary/coercion cases also match Node.
+
+Twelve quiet single-CPU ABBA runs measure 13.4% lower slice/substring evaluation
+time. String iteration differs by +0.7% in evaluation and -3.9% in collection.
+The separate mixed-repair workload is 9.9% higher in these executables;
+full measurements are in
+[benchmarking](benchmarking.md#direct-borrowed-slice-utf-16-string-construction).
+
+Validation passes all 112 Core tests, 574 Runtime units, 2,430 non-RegExp
+integrations and the full quality gate. All 2,441 official modes from 1,222
+unchanged String originals pass with zero nonpassing outcomes. Test and
+fixture inventories are unchanged.
+
 ## Direct fixed-array UTF-16 String construction
 
 JsString accepts fixed UTF-16 arrays through standard Arc conversion.
