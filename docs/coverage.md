@@ -88,11 +88,28 @@ and fifty-two CSV rows, including parsing and initialization measurements.
 Five checked evaluation/collection iterations, including initialization and
 parsing, record 251,795,101 instructions before and 242,012,203 after (-3.89%)
 in Callgrind. Rust calls to free drop from 126,369 to 105,889: exactly 20,480
-fewer, matching the unresolved lookups. This is instruction/allocation evidence;
-post-change wall-time measurements remain pending.
+fewer, matching the unresolved lookups. This is instruction/allocation evidence.
 All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
 pass, including 25 CLI groups and existing configured-host failure cases.
 Fixture/test inventories and work charges are unchanged.
+
+A frozen four-worker gate compiled on clean f7509a4b7 passes all 87 controls and
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. The
+corpus ran from 2026-11-08 08:19:12.461 to 08:40:20.988 UTC (1,268.527 seconds).
+Executable SHA-256 5f7a20c772864f90d9f7462ecb9f1e661675f5bd9e59ebc7eb9201ec96c342f9
+and fixture SHA-256 bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169
+match before and after execution.
+
+The quiet comparison uses twelve ABBA-ordered processes, seven samples of ten
+iterations, the same fifty checked programs and conformance profile, and CPU 0
+affinity under Rust 1.99.0. Unresolved-name evaluation measures 5,090.195 to
+4,973.238 microseconds (-2.30%); collection measures 725.569 to 710.913 (-2.02%).
+Other workload evaluation changes range from -7.11% to +3.76%, and collection
+from -7.80% to +7.78%; parsing measures -1.11% and initialization/drop -4.20%.
+These timings fall within workload variation and do not establish a wall-time
+speedup. The direct empty-set return retains the measured allocation reduction.
+This comparison uses the frozen f7509a4b7 executable before the later mechanical
+Number registration cleanup.
 
 ## Queued async-generator delegation requests
 
