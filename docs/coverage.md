@@ -61,6 +61,15 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Facade UTF-16 Scripts and cleanup outcomes
+
+The embedding facade now reexports parse_script_utf16 and
+FinalizationCleanupOutcome. Executable examples preserve an unpaired surrogate
+through parsing/evaluation and explicitly collect and deliver a queued cleanup
+job, then observe the empty queue. All three facade doctests and the full quality
+gate pass, including 30 CLI groups. Parser/Runtime behavior, snapshots and source
+inventories are unchanged.
+
 ## Direct parameter arguments-name checks
 
 Ordinary call setup checks identifier parameters directly when deciding whether

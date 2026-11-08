@@ -133,7 +133,9 @@ so an earlier failed graph cannot block an unrelated later import.
 The --max-steps allowance applies separately to evaluation and each host job,
 using the existing Runtime limit semantics. There is no default work or job-count
 quota. Module, check and limit flags can appear in any order before the input.
-The facade reexports PromiseJobOutcome for hosts driving the same public API.
+The facade reexports PromiseJobOutcome and FinalizationCleanupOutcome for hosts
+driving the same public APIs. It also exposes parse_script_utf16 so embeddings
+can pass lossless UTF-16 Scripts to Realm::evaluate.
 
 CLI diagnostics recognize physically branded Error values and inspect stored
 string name/message properties through the physical prototype chain. Accessors,
