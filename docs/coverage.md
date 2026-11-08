@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Unavailable-host-name lookup
+
+The missing-global-property query returns directly when the unavailable-host-name
+set is empty, as it is in ordinary production Realms. The three-line check avoids
+decoding a UTF-16 property name solely to query an empty set. Configured host
+names retain their existing matching and Unsupported behavior, including the
+distinction from ordinary unresolved references and language exceptions.
+
+The fiftieth checked benchmark evaluates 4,096 typeof queries for an unresolved
+global name and verifies the result. Matched binaries use the same fifty programs
+and fifty-two CSV rows, including parsing and initialization measurements.
+
+Five checked evaluation/collection iterations, including initialization and
+parsing, record 251,795,101 instructions before and 242,012,203 after (-3.89%)
+in Callgrind. Rust calls to free drop from 126,369 to 105,889: exactly 20,480
+fewer, matching the unresolved lookups. This is instruction/allocation evidence;
+post-change wall-time measurements remain pending.
+All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including 25 CLI groups and existing configured-host failure cases.
+Fixture/test inventories and work charges are unchanged.
+
 ## Queued async-generator delegation requests
 
 Async-from-Sync throw regressions now distinguish a throwing method getter,

@@ -489,6 +489,9 @@ impl Realm {
     }
 
     pub(super) fn missing_global_property(&self, key: &JsString) -> bool {
+        if self.record.unsupported_host_globals.is_empty() {
+            return false;
+        }
         // Identifier names are UTF-8 scalar strings, while arbitrary property
         // names may contain lone surrogates; those never name configured host barriers.
         String::from_utf16(key.code_units())

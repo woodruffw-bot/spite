@@ -50,6 +50,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "unresolved_globals",
+        source: "(()=>{let sum=0;for(let i=0;i<4096;i++)if(typeof missingName==='undefined')sum++;return sum})()",
+        expected: 4096.0,
+        jobs: false,
+    },
+    Case {
         name: "string_search",
         source: "(()=>{const text='a'.repeat(4096)+'b',needle='a'.repeat(128)+'b';let sum=0;for(let i=0;i<8;i++)sum+=text.indexOf(needle);return sum})()",
         expected: 31744.0,

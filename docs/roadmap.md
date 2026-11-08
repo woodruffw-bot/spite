@@ -644,6 +644,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Compute a binding identifier's bound name/span and zero pattern-expression depth directly, avoiding traversal stacks while retaining composite-pattern analysis and initializer handling.
 - [x] Construct short ASCII String values and property keys through initialized stack storage, retaining exact UTF-16 conversion and shared immutable ownership.
 - [x] Protect queued async-generator request arguments across collection and Async-from-Sync throw failures without extra closing or changed Await/reaction order.
+- [x] Skip unavailable-host-name UTF-16 decoding when no names are configured, retaining ordinary unresolved references and configured host-failure behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

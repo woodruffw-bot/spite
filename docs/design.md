@@ -588,6 +588,8 @@ branded lazy instance (15.6.2). Prototype methods reject unbranded receivers usi
 fresh intrinsic Promises. Generic host-abort controls
 reserve an explicit unavailable host name, independently of partial language
 features; ordinary production realms reserve no extra names.
+An empty unavailable-host-name set bypasses property-name decoding. Configured
+names retain the same exact scalar conversion and distinct host failure paths.
 
 Async-generator requests serialize next/return/throw capabilities in a traced
 queue (27.6.3). Shared source contexts and the existing source interpreter retain
