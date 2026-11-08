@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Set-like method validation before size shortcuts
+
+Set combination regressions distinguish GetSetRecord's IsCallable validation from
+invocation. Classes, bound classes and revoked callable Proxies remain valid
+methods on unused branches; required calls throw. Non-callable has/keys values
+still fail in getter order before empty-receiver and size shortcuts.
+
+All 336 audited programs match Node 26.13.0 in ordinary execution and with
+collection between jobs, for 672 comparisons. The matrix covers all seven methods,
+eight callable/getter forms, three receiver/size configurations and either has or
+keys replacement. It observes getter/call order, receivers, argument counts,
+results and failure identity. Runtime behavior and fixture inventories are
+unchanged; the existing Set-record integration group retains the cases.
+
 ## Direct ASCII allocation and scalar source restoration
 
 JsString now collects ASCII bytes widened to UTF-16 through the standard Arc

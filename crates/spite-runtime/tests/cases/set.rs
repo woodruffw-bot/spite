@@ -177,6 +177,50 @@ fn set_like_records_convert_size_and_read_has_then_keys_before_branching() {
             "let log='',other={{get size(){{log+='s';return {size};}},get has(){{log+='h';return ()=>false;}},get keys(){{log+='k';return ()=>{{throw 7;}};}}}};!new Set([1]).{method}(other) && log==='shk'"
         ));
     }
+    // 24.2.1.2 GetSetRecord validates both methods before any size shortcut.
+    // IsCallable accepts classes and revoked callable Proxies without calling them.
+    for callable in [
+        "class {}",
+        "(class {}).bind(null)",
+        "(()=>{let r=Proxy.revocable(()=>{},{});r.revoke();return r.proxy;})()",
+        "(()=>{let r=Proxy.revocable(class {},{});r.revoke();return r.proxy;})()",
+    ] {
+        for (method, values, size, expected) in [
+            ("difference", "[]", 0, "result.size===0"),
+            ("intersection", "[]", 0, "result.size===0"),
+            ("isSubsetOf", "[]", 0, "result===true"),
+            ("isDisjointFrom", "[]", 0, "result===true"),
+            ("isSubsetOf", "[1]", 0, "result===false"),
+            ("isSupersetOf", "[]", 1, "result===false"),
+        ] {
+            check(&format!(
+                "let log='',method={callable},other={{get size(){{log+='s';return {size};}},get has(){{log+='h';return method;}},get keys(){{log+='k';return method;}}}},result=new Set({values}).{method}(other);{expected} && log==='shk'"
+            ));
+        }
+        for method in ["union", "symmetricDifference", "isSupersetOf"] {
+            type_error(&format!(
+                "new Set().{method}({{size:0,has:{callable},keys:{callable}}})"
+            ));
+        }
+        type_error(&format!(
+            "new Set([1]).intersection({{size:1,has:{callable},keys(){{throw 7;}}}})"
+        ));
+    }
+    for method in [
+        "union",
+        "intersection",
+        "difference",
+        "symmetricDifference",
+        "isSubsetOf",
+        "isSupersetOf",
+        "isDisjointFrom",
+    ] {
+        for (has, keys, expected) in [("null", "()=>{}", "sh"), ("()=>{}", "null", "shk")] {
+            check(&format!(
+                "let log='',caught=false;try{{new Set().{method}({{get size(){{log+='s';return 1;}},get has(){{log+='h';return {has};}},get keys(){{log+='k';return {keys};}}}})}}catch(error){{caught=error instanceof TypeError;}}caught && log==='{expected}'"
+            ));
+        }
+    }
     for size in ["undefined", "NaN", "1n", "Symbol()"] {
         type_error(&format!(
             "new Set().union({{size:{size},has(){{}},keys(){{}}}})"
