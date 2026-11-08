@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## UTF-16 parser source-limit execution receipt
+
+A frozen gate compiled on clean 2c8918e33 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,378.965-second run.
+This includes the UTF-16 parser limit APIs from 7372a7de8. The corpus uses its
+unchanged source entry points; native boundary tests and facade examples exercise
+the new opt-in limits. Fixture bytes, helpers, reviews and execution limits are
+unchanged. This receipt predates the later primitive-boxing cleanup.
+
 ## Parameter arguments-name execution receipt
 
 A frozen gate compiled on clean 38ca6e357 passes all 87 runner controls and all

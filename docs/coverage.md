@@ -109,6 +109,13 @@ integrations, 574 Runtime units, 2,431 non-RegExp integrations and the full qual
 gate pass, including three facade doctests and 30 CLI groups. Snapshots and
 test/fixture inventories are unchanged.
 
+A frozen gate compiled on clean 2c8918e33, including the UTF-16 limit APIs from
+7372a7de8, passes all 87 controls and all 80,060 modes from 41,550 originals,
+with zero other outcomes. Saved executable and fixture hashes match across its
+1,378.965-second four-worker run. Existing unlimited paths retain their behavior;
+the new explicit limits are separately exercised by parser boundary tests and
+facade examples. This receipt predates the later primitive-boxing cleanup.
+
 ## Facade UTF-16 Scripts and cleanup outcomes
 
 The embedding facade now reexports parse_script_utf16 and
