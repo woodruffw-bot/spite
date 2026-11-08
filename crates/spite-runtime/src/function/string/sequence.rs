@@ -56,6 +56,15 @@ impl Realm {
                 std::mem::swap(&mut from, &mut to);
             }
         }
+        // Retain S for a complete substring after both endpoint conversions.
+        // Keep the copy helper's output-length check before its work charge.
+        if from == 0 && to == string.len() {
+            let length = string.len();
+            let value = Value::String(string);
+            self.check_string(&value, span)?;
+            self.object_work(span, |_, budget| budget.charge(length))?;
+            return Ok(value);
+        }
         self.copy_string_units(&string.code_units()[from..to], span)
     }
 }

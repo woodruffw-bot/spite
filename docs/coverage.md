@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Whole-range String slice/substring storage
+
+String.prototype.slice and substring now reuse the converted receiver's immutable
+UTF-16 storage when their normalized endpoints select its entire range. Receiver,
+start and end conversions still run in order, including for empty input and
+swapped substring bounds. The existing output-length check precedes the result
+work charge. Partial ranges retain checked slice construction. The change adds
+no state or dependency.
+
+All 574 Runtime units, 2,431 non-RegExp integrations and 2,441 modes from 1,222
+unchanged String originals pass. The cohort's 1,222 review rows and all 1,250
+original/helper files match the live pinned corpus exactly. All 1,012 Node cases
+match, covering 756 receiver/endpoint-coercion cases and every UTF-16 code unit.
+All 6,144 before/after quota cases have identical complete results, including
+limit messages and visible flags. The new manual workload has checked results;
+no post-change timing is claimed yet. Inventories and default quotas are unchanged.
+The full quality gate passes, including 25 CLI groups and dependency/inventory checks.
+
 ## Uint8Array encoding method catalogue
 
 The six hex/Base64 methods now carry their implementation in the same ordered

@@ -74,6 +74,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_slice_full",
+        source: "(()=>{const base='ab漢\\ud800'.repeat(4096);let sum=0;for(let i=0;i<64;i++){const out=i%2?base.slice():base.substring();sum+=out.length+out.charCodeAt(out.length-1)}return sum})()",
+        expected: 4_587_520.0,
+        jobs: false,
+    },
+    Case {
         name: "string_iteration",
         source: "(()=>{const text='ab漢💩\\ud800'.repeat(128);let sum=0;for(const c of text)sum+=c.length+c.charCodeAt(0);return sum})()",
         expected: 17_830_912.0,
