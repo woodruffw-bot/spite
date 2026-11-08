@@ -61,6 +61,19 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Captured super references across collection
+
+The existing awaited-super assignment regression now removes every ordinary
+reference to the selected prototype and deferred Symbol-key object while the RHS
+is suspended. Both remain reachable across explicit collection, conversion occurs
+after the awaited RHS, and the original setter receives the value. After the
+continuation completes, another collection releases both objects.
+
+All six awaited-super groups, thirteen ordinary-super groups and the full quality
+gate pass. Runtime behavior and inventories are unchanged. Edition 17 13.3.7.1/3
+requires the base snapshot before the RHS; a Node 24.19.0 comparison instead uses
+the newly assigned prototype in that case. The engine retains published behavior.
+
 ## Dynamic Module files in the CLI
 
 Module mode services dynamic-import requests through the same file/record cache

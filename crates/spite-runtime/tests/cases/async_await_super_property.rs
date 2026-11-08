@@ -78,6 +78,32 @@ fn super_assignments_and_updates_keep_the_selected_base_through_a_later_rhs_awai
         &mut realm,
         "second===7&&home.savedY===7&&third===4&&home.savedZ===5",
     );
+
+    // 13.3.7.1/3: the selected base and unconverted key remain part of the
+    // reference while its RHS awaits, even after the home prototype changes.
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let release,gate=new Promise(resolve=>{release=resolve}),result,events=[],keyWeak;
+        const symbol=Symbol('key');
+        let proto={set [symbol](value){events.push('set');this.saved=value}},baseWeak=new WeakRef(proto);
+        function makeKey(){let key={[Symbol.toPrimitive](hint){events.push(hint);return symbol}};keyWeak=new WeakRef(key);return key}
+        let home={__proto__:proto,async f(){return super[makeKey()]=await gate}};
+        home.f().then(value=>{result=value});
+        Object.setPrototypeOf(home,{set [symbol](value){throw 9}});proto=null;
+    "#).unwrap();
+    collect(&mut realm);
+    check(
+        &mut realm,
+        "baseWeak.deref()!==undefined&&keyWeak.deref()!==undefined&&result===undefined&&events.length===0",
+    );
+    realm.eval("release(7)").unwrap();
+    collect(&mut realm);
+    drain(&mut realm);
+    collect(&mut realm);
+    check(
+        &mut realm,
+        "result===7&&home.saved===7&&events.join(',')==='string,set'&&baseWeak.deref()===undefined&&keyWeak.deref()===undefined",
+    );
 }
 
 #[test]
