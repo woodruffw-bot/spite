@@ -21,9 +21,10 @@ cargo run -p spite -- --eval 'let x = 6; x * 7'
 cargo run -p spite -- example.js
 printf '1 + 2' | cargo run -p spite -- -
 cargo run -p spite -- --module --eval 'export const answer = await Promise.resolve(42)'
+cargo run -p spite -- --check --eval 'function square(value) { return value * value; }'
 ```
 
-The CLI drains queued Promise jobs, then prints the Script's completion value.
+By default, the CLI drains queued Promise jobs, then prints the Script's completion value.
 Dynamic import() calls load Module files through the same cache as Module mode.
 An idle pending Promise does not delay Script completion. Strings use a quoted
 representation that preserves lone surrogates. Source input must be UTF-8. The
@@ -38,6 +39,12 @@ including cycles. Paths are read as UTF-8 Module source without package or exten
 search. Imported syntax errors reject dynamic imports with SyntaxError; filesystem,
 unsupported-feature and opted-in limit failures remain host failures.
 Uncaught Error values show their stored name and message in diagnostics.
+
+Use `--check` to validate syntax and early errors, with `--module` for the Module
+goal. Argument, file and stdin inputs share the same UTF-8 handling. Successful
+checks produce no output; diagnostics go to stderr with a failing exit status.
+Module dependencies are loaded only during evaluation. Execution work limits
+apply to evaluations and jobs.
 
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a work limit for each evaluation or job. Work units count interpreter and

@@ -89,6 +89,12 @@ measurements identify a problem and conformance tests protect the behavior.
 
 ## Command-line host
 
+The --check option selects Script or Module parsing and early-error validation
+through the same public Parser entry points. Successful checks produce no output.
+Input errors and Syntax/Unsupported/Limit diagnostics retain failing statuses.
+Module dependency loading and runtime work limits belong to evaluation; checking
+validates only the supplied UTF-8 source.
+
 The default CLI goal is Script. It retains the completion while FIFO Promise jobs
 drain, including jobs queued by earlier jobs. Reported job failures abort the host
 turn; ordinary rejected Promises retain the no-op rejection-tracker policy. An

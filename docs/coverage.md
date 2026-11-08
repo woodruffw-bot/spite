@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## CLI syntax checking
+
+The --check option validates the supplied source with the existing Script or
+Module parser and early-error validators. Argument, file and stdin input retain
+UTF-8 handling. Valid input produces no output; malformed or unsupported source
+retains its diagnostic kind and failing status. The check completes before Realm
+creation, evaluation, Promise jobs and Module dependency loading. Runtime work
+limits apply only to evaluations and jobs.
+
+All 28 CLI groups pass, including three new groups for argument/file/stdin
+checking, zero runtime work allowance, missing Module imports, goal-specific
+early errors and unsupported-source diagnostics. The full quality gate passes.
+Runtime and Test262 fixture inventories are unchanged.
+
 ## Escaped async super-call environments
 
 Awaited-super regressions now retain two async arrows after their derived

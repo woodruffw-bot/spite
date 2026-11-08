@@ -647,6 +647,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Skip unavailable-host-name UTF-16 decoding when no names are configured, retaining ordinary unresolved references and configured host-failure behavior.
 - [x] Share Number prototype method registration in one ordered loop, preserving intrinsic identities, metadata, descriptors and retained roots.
 - [x] Protect escaped async super calls sharing a derived this binding across field failures and collection, and revoked newTarget capability when base Proxy construction supplies the result.
+- [x] Expose Script/Module syntax and early-error validation through CLI --check for arguments, files and stdin, preserving diagnostics before evaluation and Module loading.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

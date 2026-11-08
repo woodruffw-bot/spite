@@ -17,6 +17,102 @@ fn evaluates_an_argument() {
 }
 
 #[test]
+fn syntax_checks_do_not_evaluate_source_or_load_modules() {
+    for source in ["throw 7", "missingCall()", "function f(a,a){}"] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--check", "--max-steps", "0", "--eval", source])
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{source}: {output:?}");
+        assert!(output.stdout.is_empty() && output.stderr.is_empty());
+    }
+    for flags in [["--check", "--module"], ["--module", "--check"]] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(flags)
+            .args(["--eval", "import './absent.mjs' with {type:'json'};export const answer=await Promise.resolve(42);throw 7"])
+            .output().unwrap();
+        assert!(output.status.success(), "{output:?}");
+        assert!(output.stdout.is_empty() && output.stderr.is_empty());
+    }
+}
+
+#[test]
+fn syntax_checks_preserve_goal_early_errors_and_unsupported_diagnostics() {
+    for (module, source, expected) in [
+        (false, "const x;", "Syntax"),
+        (false, "export {};", "Syntax"),
+        (false, "import.meta", "Syntax"),
+        (true, "export {missing};", "Syntax"),
+        (true, "function f(a,a){}", "Syntax"),
+        (true, "with({}){}", "Syntax"),
+        (
+            false,
+            "async function f(){await using resource=null}",
+            "Unsupported",
+        ),
+    ] {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_spite"));
+        command.arg("--check");
+        if module {
+            command.arg("--module");
+        }
+        let output = command.args(["--eval", source]).output().unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+}
+
+#[test]
+fn syntax_checks_accept_files_and_lossless_utf8_stdin() {
+    for (module, path) in [
+        (
+            false,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph/dynamic-script.js"
+            ),
+        ),
+        (
+            true,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph/root.mjs"
+            ),
+        ),
+    ] {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_spite"));
+        command.current_dir(std::env::temp_dir()).arg("--check");
+        if module {
+            command.arg("--module");
+        }
+        let output = command.arg(path).output().unwrap();
+        assert!(output.status.success(), "{output:?}");
+        assert!(output.stdout.is_empty() && output.stderr.is_empty());
+    }
+    for (flags, source) in [
+        (vec!["--check"], "const π=42;throw π"),
+        (vec!["--module", "--check"], "const π=await 42;export{π}"),
+    ] {
+        let output = stdin_with_flags(source.as_bytes(), &flags);
+        assert!(output.status.success(), "{output:?}");
+        assert!(output.stdout.is_empty() && output.stderr.is_empty());
+        let output = stdin_with_flags(&[0xff], &flags);
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .contains("valid UTF-8")
+        );
+    }
+}
+
+#[test]
 fn execution_work_limit_is_optional() {
     let source = "'a'.repeat(2000).indexOf('a'.repeat(999)+'b')";
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))

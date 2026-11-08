@@ -13,7 +13,7 @@ use std::{
     time::Duration,
 };
 
-const USAGE: &str = "Usage: spite [--max-steps N] [--module] (--eval SOURCE | FILE | -)";
+const USAGE: &str = "Usage: spite [--max-steps N] [--module] [--check] (--eval SOURCE | FILE | -)";
 
 fn read_source(mut reader: impl Read) -> Result<String, String> {
     let mut bytes = Vec::new();
@@ -162,8 +162,13 @@ fn main() -> ExitCode {
     let mut args = args.as_slice();
     let mut max_steps = None;
     let mut module = false;
+    let mut check = false;
     loop {
         match args {
+            [flag, rest @ ..] if flag == "--check" => {
+                check = true;
+                args = rest;
+            }
             [flag, rest @ ..] if flag == "--module" => {
                 module = true;
                 args = rest;
@@ -186,7 +191,7 @@ fn main() -> ExitCode {
     }
     if args.len() == 1 && (args[0] == "--help" || args[0] == "-h") {
         println!(
-            "{USAGE}\n\nEvaluates a Script with dynamic file imports, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with static file imports and top-level Await.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
+            "{USAGE}\n\nEvaluates a Script with dynamic file imports, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with static file imports and top-level Await.\nUse --check to validate syntax and early errors without evaluating input.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
         );
         return ExitCode::SUCCESS;
     }
@@ -213,19 +218,30 @@ fn main() -> ExitCode {
         }
     };
     let result = source.and_then(|source| {
+        if check {
+            let parsed = if module {
+                spite::parse_module(&source).map(drop)
+            } else {
+                spite::parse_script(&source).map(drop)
+            };
+            return parsed.map(|()| None).map_err(|error| error.to_string());
+        }
         let mut realm = Realm::new(Limits {
             max_steps,
             ..Limits::default()
         });
-        if module {
+        let value = if module {
             evaluate_module(&mut realm, &source, filename.as_deref())
         } else {
             evaluate_script(&mut realm, &source, filename.as_deref())
-        }
+        }?;
+        Ok(Some(value))
     });
     match result {
         Ok(value) => {
-            println!("{value}");
+            if let Some(value) = value {
+                println!("{value}");
+            }
             ExitCode::SUCCESS
         }
         Err(error) => {
