@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Escaped async super-call environments
+
+Awaited-super regressions now retain two async arrows after their derived
+constructor returns an unrelated object. They share the original this binding:
+the first resumed call binds this and initializes fields, including a throwing
+initializer; a later call constructs before BindThisValue rejects, without
+repeating fields. Both inheritance chains and external constructor references
+are detached before collection, protecting the suspended superclass values.
+A separate case retains a revoked new.target Proxy's constructor capability
+when a base Proxy trap supplies an object without reading its prototype.
+
+The bounded audit covers 80 superclass-mutation programs and 80 stable-superclass
+controls, with ordinary execution and collection between jobs: 320 executions.
+All match the scoped controls and published
+[SuperCall evaluation order](https://262.ecma-international.org/17.0/#sec-super-keyword-runtime-semantics-evaluation).
+Node 24.19.0 differs in 144 raw mutation comparisons because it selects the
+superclass after awaited arguments. Holding that superclass stable gives the
+same observations required by the published before-arguments selection for these
+programs. Other prototype/revocation mutations, field failures, release order,
+constructor calls, private brands and shared this state remain observed.
+All seven awaited-super integration groups and the full quality gate pass,
+including 25 CLI groups. Runtime implementation and test inventories are
+unchanged.
+
 ## Number prototype registration
 
 Six Number prototype property definitions now share one ordered loop, matching

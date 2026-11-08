@@ -75,6 +75,23 @@ fn super_new_target_prototype_is_read_after_arguments_and_fields_use_the_active_
         &mut realm,
         "events.join(',')==='prototype'&&Object.getPrototypeOf(result)===proto&&result.value===7&&Derived.prototype.read.call(result)===9",
     );
+
+    // IsConstructor retains the Proxy's [[Construct]] capability after revoke.
+    // A base Proxy trap returning an object never reads newTarget.prototype.
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let resume,result,seen=false,prototypeReads=0,release;
+        let gate=new Promise(resolve=>release=resolve);
+        let Base=new Proxy(function(){},{construct(target,args,newTarget){seen=newTarget===proxy;return {value:args[0]}}});
+        class Derived extends Base{#x=9;constructor(){resume=async()=>super(await gate);return {}}}
+        function Target(){}let {proxy,revoke}=Proxy.revocable(Target,{get(target,key,receiver){if(key==='prototype')prototypeReads++;return Reflect.get(target,key,receiver)}});
+        Reflect.construct(Derived,[],proxy);resume().then(value=>result=value);
+        revoke();Derived=null;Base=null;resume=null;
+    "#).unwrap();
+    collect(&mut realm);
+    realm.eval("release(7);release=null").unwrap();
+    drain(&mut realm);
+    check(&mut realm, "seen&&prototypeReads===0&&result.value===7");
 }
 
 #[test]
@@ -96,6 +113,44 @@ fn a_repeated_super_call_constructs_before_bind_this_rejects_without_repeating_f
         &mut realm,
         "calls===2&&fields===1&&failed===true&&observed.value===1&&observed.field===1",
     );
+
+    // Both escaped arrows share the original function environment (9.1.1.3.1).
+    // BindThisValue precedes fields, even when initialization throws (13.3.7.2).
+    for throws in [false, true] {
+        let mut realm = Realm::default();
+        realm.eval(&format!(r#"
+            let release1,release2,first,second,read,brand,calls=0,fields=0,outcomes=[],reason={{}};
+            let gate1=new Promise(resolve=>release1=resolve),gate2=new Promise(resolve=>release2=resolve);
+            function field(){{fields++;if({throws})throw reason;return 11}}
+            class Base{{constructor(value){{calls++;this.value=value}}}}
+            class Derived extends Base{{#x=9;field=field();constructor(){{first=async()=>super(await gate1);second=async()=>super(await gate2);read=()=>this;brand=value=>value.#x;return {{}}}}}}
+            function Target(){{}}Target.prototype={{}};
+            Reflect.construct(Derived,[],Target);
+            first().then(()=>outcomes[0]='wrong',error=>outcomes[0]=error.name);
+            second().then(value=>outcomes[1]=value.value===2&&value.field===11&&brand(value)===9?'ok':'bad',error=>outcomes[1]=error===reason?'field':error.name);
+            Object.setPrototypeOf(Derived,class{{constructor(){{throw 99}}}});
+            Object.setPrototypeOf(Derived.prototype,null);
+            Derived=null;Base=null;first=null;second=null;
+        "#)).unwrap();
+        collect(&mut realm);
+        realm.eval("release2(2);release2=null").unwrap();
+        drain(&mut realm);
+        collect(&mut realm);
+        check(
+            &mut realm,
+            "calls===1&&fields===1&&read().value===2&&brand(read())===9",
+        );
+        realm.eval("release1(1);release1=null").unwrap();
+        drain(&mut realm);
+        collect(&mut realm);
+        let expected = if throws { "field" } else { "ok" };
+        check(
+            &mut realm,
+            &format!(
+                "calls===2&&fields===1&&read().value===2&&outcomes[0]==='ReferenceError'&&outcomes[1]==='{expected}'"
+            ),
+        );
+    }
 }
 
 #[test]
