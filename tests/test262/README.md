@@ -17,6 +17,12 @@ The checker requires every standalone original to appear in runner.tsv: 41,550
 originals and 80,060 variants. The remaining 197 files are Module dependencies,
 loaded by their importing tests. Fixture/harness counts remain 41,747/28.
 
+A full gate compiled on clean e7ed664b7 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+three-worker executable and fixture hashes match across the 1,596.30-second run.
+The counted driver checks both totals explicitly and rejects incorrect expected
+counts. This is the retained corpus's execution result, not a whole-suite claim.
+
 ## Raw asynchronous execution
 
 The runner supports raw async Scripts and Modules without injecting harness files.

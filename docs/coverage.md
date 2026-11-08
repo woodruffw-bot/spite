@@ -93,6 +93,16 @@ All 32 added modes, 18 Parser units, 443 Parser integrations, 87 runner controls
 22 CLI groups and the full quality gate pass. Every previous review row and all
 original/helper bytes are retained.
 
+A full gate compiled on clean e7ed664b7 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. The frozen corpus run
+takes 1,596.30 seconds. Its executable SHA-256 is
+1aeea601cda7f2d8a9ea519000c3163b99395148168edc26c68f4a54d159e25f;
+its fixture-tree SHA-256 is
+bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169.
+Both hashes match before and after execution. The counted driver checks the
+expected original/mode totals explicitly; its independent self-check rejects
+either incorrect count. This gate precedes the catalogue refactor described above.
+
 ## Argument-free String.concat storage
 
 String.prototype.concat with no arguments now returns its converted receiver
