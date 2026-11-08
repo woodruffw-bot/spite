@@ -65,6 +65,57 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
         &mut realm,
         "results[2].done&&results[2].value===10&&events.join(',')==='next:undefined,return:4:1,throw:7:1,finally'",
     );
+
+    // 27.1.4.5.3-4 reject abrupt GetMethod/Call/result-field operations.
+    // They neither IteratorClose nor bypass yield*'s Await of that rejection.
+    for (method, expected, prefix) in [
+        (
+            "get throw(){events.push('get');throw reason}",
+            "error===reason",
+            "get",
+        ),
+        (
+            "get throw(){events.push('get');return 1}",
+            "error instanceof TypeError",
+            "get",
+        ),
+        (
+            "throw(value){events.push('call:'+value);return 1}",
+            "error instanceof TypeError",
+            "call:7",
+        ),
+        (
+            "throw(value){events.push('call:'+value);return {get done(){events.push('done');throw reason}}}",
+            "error===reason",
+            "call:7,done",
+        ),
+        (
+            "throw(value){events.push('call:'+value);return {done:false,get value(){events.push('value');throw reason}}}",
+            "error===reason",
+            "call:7,value",
+        ),
+    ] {
+        let mut realm = Realm::default();
+        realm.eval(&format!(
+            "let events=[],outcomes=[],reason={{}},inner={{[Symbol.iterator](){{return this}},next(){{return {{done:false,value:1}}}},return(){{events.push('close');return {{done:true}}}},{method}}};async function*g(){{try{{yield*inner}}finally{{events.push('finally')}}}}let iterator=g(),first=iterator.next(),failed=iterator.throw(7),last=iterator.next();first.then(result=>{{events.push('first');outcomes.push(result.value===1&&!result.done)}});failed.catch(error=>{{events.push('rejected');outcomes.push({expected})}});last.then(result=>{{events.push('last');outcomes.push(result.done)}})"
+        )).unwrap();
+        realm.collect(usize::MAX).unwrap();
+        loop {
+            match realm.run_next_promise_job().unwrap() {
+                PromiseJobOutcome::NoJob => break,
+                PromiseJobOutcome::Completed => {
+                    realm.collect(usize::MAX).unwrap();
+                }
+                PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
+            }
+        }
+        check(
+            &mut realm,
+            &format!(
+                "outcomes.join(',')==='true,true,true'&&events.join(',')==='{prefix},first,finally,rejected,last'"
+            ),
+        );
+    }
 }
 
 #[test]
@@ -159,6 +210,19 @@ fn delegation_records_keep_iterators_and_cached_next_alive_then_release_them() {
         &mut realm,
         "weakIterator.deref()===undefined&&weakNext.deref()===undefined",
     );
+
+    realm.eval("let weakQueued,queuedSeen=false,queuedPromise;let queuedInner={[Symbol.asyncIterator](){return this},next(){return new Promise(r=>release=r)},throw(value){queuedSeen=value===weakQueued.deref();return {done:true,value:7}}};let queued=(async function*(){return yield*queuedInner})();queued.next();(()=>{let held={};weakQueued=new WeakRef(held);queuedPromise=queued.throw(held)})();queuedPromise.then(result=>queuedSeen=queuedSeen&&result.done&&result.value===7)").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weakQueued.deref()!==undefined");
+    realm
+        .eval("release({done:false,value:1});release=null")
+        .unwrap();
+    drain(&mut realm);
+    check(&mut realm, "queuedSeen");
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    check(&mut realm, "weakQueued.deref()===undefined");
 }
 
 #[test]

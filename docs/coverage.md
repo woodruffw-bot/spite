@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Queued async-generator delegation requests
+
+Async-from-Sync throw regressions now distinguish a throwing method getter,
+noncallable method, primitive result and throwing done/value getters. These
+abrupt operations reject the adapter promise directly, without closing the
+synchronous iterator. Delegating yield* awaits that rejection before running
+its finalizer; already queued promise reactions retain their specified order.
+A collection regression keeps a queued throw argument alive while the delegate
+is pending, then verifies release after the request completes.
+
+A bounded audit checks 108 programs combining synchronous/asynchronous delegates,
+return/throw requests, nine method/result shapes and three later request kinds.
+Both ordinary execution and collection between jobs pass all 216 comparisons
+against the published adapter model and direct asynchronous controls.
+Node 24.19.0 differs in 30 raw comparisons
+around synchronous throw failures: it closes in cases where
+[GetMethod/Call/result-field failures reject directly](https://262.ecma-international.org/17.0/#sec-%asyncfromsynciteratorprototype%.throw),
+or changes the Await/reaction order. Final outcomes agree. The model implements
+the published adapter using intrinsic Promise and ordinary result objects;
+direct asynchronous delegates retain the Node comparison as controls.
+All nine delegation integration groups and the full quality gate pass, including
+25 CLI groups. Runtime implementation and fixture inventories are unchanged.
+
 ## Short ASCII String construction
 
 JsString conversion widens UTF-8 inputs of at most sixteen ASCII bytes in an
