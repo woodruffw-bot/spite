@@ -29,11 +29,12 @@ console, process, filesystem, or other non-standard JavaScript globals.
 
 Use `--module` for Module sources from an argument, file or stdin.
 Module mode waits for top-level Await and prints the evaluation completion value,
-normally `undefined`. Rejected or unsettled evaluations fail. Static imports are
+normally `undefined`. Rejected or unsettled evaluations fail. Static and dynamic imports are
 literal filesystem paths resolved relative to their importing file, or the current
 directory for argument/stdin sources. Canonical paths share dependency records,
 including cycles. Paths are read as UTF-8 Module source without package or extension
-search. Dynamic imports currently require the embedding loader API.
+search. Imported syntax errors reject dynamic imports with SyntaxError; filesystem,
+unsupported-feature and opted-in limit failures remain host failures.
 
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a work limit for each evaluation or job. Work units count interpreter and

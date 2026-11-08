@@ -322,6 +322,52 @@ fn module_file_loading_preserves_syntax_host_and_attribute_failures() {
 }
 
 #[test]
+fn dynamic_file_imports_share_static_records_and_follow_nested_referrers() {
+    for file in ["dynamic-root.mjs", "dynamic-errors.mjs"] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph"
+            ))
+            .args(["--module", file])
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{file}: {output:?}");
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "undefined"
+        );
+        assert!(output.stderr.is_empty());
+    }
+}
+
+#[test]
+fn dynamic_file_imports_keep_host_failures_outside_language_rejections() {
+    for (file, expected) in [
+        ("./absent.mjs", "Host"),
+        ("./unsupported.mjs", "Unsupported"),
+        ("./forever.mjs", "Limit"),
+    ] {
+        let source = format!("try{{await import('{file}')}}catch{{}}finally{{throw 7}}");
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph"
+            ))
+            .args(["--module", "--max-steps", "100000", "--eval", &source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+}
+
+#[test]
 fn help_and_usage() {
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))
         .arg("--help")

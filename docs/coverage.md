@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Dynamic Module files in the CLI
+
+Module mode services dynamic-import requests through the same file/record cache
+as static loading. Concurrent and repeated imports retain namespace and evaluation
+identity, including nested imports from asynchronous dependencies. Graph expansion
+is scoped to the requested root, allowing an unrelated import after an earlier
+graph failed. Imported syntax and static-attribute errors become SyntaxError
+rejections; evaluation failures preserve their original JavaScript values.
+Host, Unsupported and Limit failures remain distinct and uncatchable.
+
+Two new CLI groups cover static/dynamic identity sharing, concurrent aliases,
+nested referrers, failure recovery, constructor types, original rejection identity,
+cached evaluation failure, missing files, unsupported source and work exhaustion
+inside an imported body. All twenty CLI groups, the facade smoke/doc tests and
+the full quality gate pass. Runtime and pinned Test262 inventories are unchanged.
+
 ## Static Module files in the CLI
 
 Module mode loads static imports as literal paths relative to their referring

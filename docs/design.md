@@ -101,7 +101,11 @@ records before their requests are expanded, preserving shared dependencies and
 cycles. Graph loading is iterative and runs no module body before linking.
 Unknown import-attribute keys reject before file access. Filesystem/encoding
 failures remain Host errors; imported syntax retains its parser diagnostic.
-Dynamic import requests remain an embedding responsibility.
+Dynamic requests use the same retained file cache, serviced between Promise jobs.
+Imported syntax and static-attribute errors reject with SyntaxError; evaluation
+rejections retain their original JavaScript values. Host/Unsupported/Limit errors
+remain uncatchable host failures. Expansion is scoped to each requested graph,
+so an earlier failed graph cannot block an unrelated later import.
 
 The --max-steps allowance applies separately to evaluation and each host job,
 using the existing Runtime limit semantics. There is no default work or job-count

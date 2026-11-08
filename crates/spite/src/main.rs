@@ -26,7 +26,9 @@ fn evaluate_module(
     source: &str,
     filename: Option<&Path>,
 ) -> Result<Value, String> {
-    let module = module_files::load(realm, source, filename).map_err(|e| e.to_string())?;
+    let (mut files, module) =
+        module_files::FileModules::load(realm, source, filename).map_err(|e| e.to_string())?;
+    realm.enable_module_imports();
     let promise = realm
         .evaluate_module_record(&module)
         .map_err(|e| e.to_string())?;
@@ -37,6 +39,7 @@ fn evaluate_module(
         unreachable!("Module evaluation returns a Promise")
     };
     loop {
+        files.service_requests(realm).map_err(|e| e.to_string())?;
         match realm.run_next_promise_job().map_err(|e| e.to_string())? {
             PromiseJobOutcome::Completed => continue,
             PromiseJobOutcome::Reported(error) => return Err(error.to_string()),
@@ -96,7 +99,7 @@ fn main() -> ExitCode {
     }
     if args.len() == 1 && (args[0] == "--help" || args[0] == "-h") {
         println!(
-            "{USAGE}\n\nEvaluates a Script and prints its completion value.\nUse --module for a Module with static file imports, awaiting its evaluation.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
+            "{USAGE}\n\nEvaluates a Script and prints its completion value.\nUse --module for a Module with file imports, awaiting its evaluation.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
         );
         return ExitCode::SUCCESS;
     }
