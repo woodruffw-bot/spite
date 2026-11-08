@@ -107,7 +107,22 @@ A separate 1,037-program audit matches independent Python integer-to-binary64
 rounding exactly through JavaScript DataView result bits. All 575 Runtime units,
 2,432 non-RegExp integrations and the quality gate pass, including formatting,
 strict Clippy, the explicit MSRV, policy/inventory checks, 30 CLI groups and all
-three facade doctests. Full-corpus and quiet timing evidence remain pending.
+three facade doctests.
+
+A frozen gate compiled on clean 15fd96b65 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,359.943-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 54a009e0e with 15fd96b65 using
+the same 58 checked workloads and 60 CSV rows, seven samples of ten iterations.
+The BigInt conversion workload measures 4,768.015 to 3,702.457 microseconds
+(-22.35%); separate collection measures 482.791 to
+480.073 (-0.56%). Other evaluation changes range from
+-8.77% to +10.67%, and collection from -9.00% to +12.80%.
+Parse-all changes -5.50% and initialization/drop
++0.34%. These measurements do not establish a general wall-time
+speedup; retain the short-circuit for its scoped instruction reduction and simpler
+rounding predicate.
 
 ## Short-circuit exact-sum rounding analysis
 
