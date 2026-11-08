@@ -95,6 +95,65 @@ fn close_and_rejection_rules_distinguish_body_step_and_exhausted_resolve_failure
     );
 }
 
+// 27.2.4: the aggregation sentinel survives an abrupt iteration. Subscription
+// failures close the iterator; IteratorStepValue failures already mark it done.
+#[test]
+fn reentrant_callbacks_do_not_complete_aggregates_after_iteration_aborts() {
+    for method in ["all", "allSettled", "any", "race"] {
+        for stage in ["resolve", "thenGet", "thenCall", "next", "done", "value"] {
+            for close_failure in ["none", "get", "call"] {
+                let source = r#"
+                    let method='METHOD',stage='STAGE',closeFailure='CLOSE';
+                    let pairs=[],fulfilled=[],rejected=[],closed=0,index=0;
+                    let result={},original={},other={},fired=false;
+                    function C(executor){
+                        executor(v=>{fulfilled.push(v)},e=>{rejected.push(e)});
+                        return result;
+                    }
+                    function fire(at){
+                        if(at!==stage||fired)return;
+                        fired=true;
+                        pairs[0][0]('first');pairs[0][1]('reason');
+                        throw original;
+                    }
+                    C.resolve=v=>{
+                        if(v===2)fire('resolve');
+                        return{get then(){
+                            if(v===2)fire('thenGet');
+                            return(a,b)=>{pairs.push([a,b]);if(v===2)fire('thenCall')};
+                        }};
+                    };
+                    let iterator={
+                        next(){
+                            if(index===1)fire('next');
+                            if(index===2)return{done:true};
+                            let v=++index;
+                            return{get done(){if(v===2)fire('done');return false},
+                                   get value(){if(v===2)fire('value');return v}};
+                        },
+                        get return(){
+                            closed++;
+                            if(closeFailure==='get')throw other;
+                            return()=>{if(closeFailure==='call')throw other;return{}};
+                        }
+                    };
+                    let out=Promise[method].call(C,{[Symbol.iterator](){return iterator}});
+                    for(const pair of pairs){pair[0]('later');pair[1]('laterReason')}
+                    out===result&&fired&&pairs.length===(stage==='thenCall'?2:1)&&
+                    closed===(['next','done','value'].includes(stage)?0:1)&&
+                    rejected.filter(e=>e===original).length===1&&!rejected.includes(other)&&
+                    fulfilled.length===(method==='any'||method==='race'?pairs.length+1:0)&&
+                    rejected.length===(method==='all'||method==='race'?pairs.length+2:1)
+                "#
+                .replace("METHOD", method)
+                .replace("STAGE", stage)
+                .replace("CLOSE", close_failure);
+                check(&source);
+            }
+        }
+    }
+}
+
 #[test]
 fn pending_aggregate_values_and_symbols_survive_collection_and_release_after_completion() {
     let mut realm = Realm::default();

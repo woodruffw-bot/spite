@@ -480,6 +480,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Implement Promise.all with ordered traced result lists, guarded native resolve elements, synchronous-callback reentry handling and intrinsic result Arrays.
 - [x] Implement Promise.allSettled with shared fulfill/reject guards, ordered intrinsic settlement snapshots and the common aggregation path.
 - [x] Implement Promise.any with first-fulfillment resolution, guarded ordered rejection reasons and intrinsic AggregateError creation.
+- [x] Audit Promise combinator callback reentry from iteration and subscription, preserving abrupt cleanup precedence and incomplete aggregate sentinels.
 - [x] Parse async function declarations/expressions with retained kind/source and correct parameter/body Await binding contexts.
 - [x] Parse synchronous generator declarations/expressions and yield/yield* with retained kind/source, Yield contexts and exact syntax boundaries before unimplemented runtime object creation.
 - [x] Parse async-generator declarations/expressions and object/class/static/private methods with joint Await/Yield contexts, shared early errors, independent dynamic parameter/body goals and lossless UTF-16 source; retain an explicit function-object creation boundary.

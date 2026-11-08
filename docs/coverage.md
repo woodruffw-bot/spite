@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Promise combinator callbacks during abrupt iteration
+
+Promise.all, allSettled, any and race retain their existing behavior under
+callback reentry from a later iterator next/done/value access, constructor
+resolve, then getter or then call (27.2.4). A focused regression checks all six
+stages with normal iterator return, a throwing return getter and a throwing
+return method. Subscription failures close the iterator; stepping failures mark
+it done. The original thrown value wins over cleanup failures. Saved callbacks
+remain usable after rejection, and aggregate element callbacks cannot complete
+an aggregate whose iteration aborted.
+
+A separate 216-program audit compares ordinary and between-turn collection runs
+with Node 26.13.0: 324 of 432 observations match exactly. The remaining 108 differ
+only in the final custom settlement callback's return value. The published
+edition-17 element closures return the Call result; Spite preserves that result,
+while Node returns undefined. Existing native tests already guard these returns.
+There are no unexplained differences or Runtime changes. The 72 regression
+sources also pass independently in Node.
+
+All 58 selected Promise-related integration groups and the quality gate pass,
+including formatting, strict Clippy, the explicit MSRV, dependency/inventory
+checks, 30 CLI groups and all three facade doctests.
+
 ## Share the arguments-name predicate
 
 Ordinary call setup reuses one stateless local predicate for parameter and body
