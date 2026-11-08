@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Saved with-environment references across Await
+
+The existing assignment regression now also deletes a selected Proxy-backed
+binding during Await, drops its external references and collects before resuming.
+The resumed write recreates the property on the originally selected object;
+the outer binding is unchanged. Required HasProperty/Get/Set trap order is checked,
+and the Proxy is reclaimed after completion. This follows assignment evaluation
+(13.15.2) and Object Environment SetMutableBinding/GetBindingValue (9.1.1.2.5–6).
+
+A separate audit runs 320 nested with-environment programs normally and with
+collection between Promise jobs. All 640 executions match an explicit model of
+the published binding operations, covering assignment, compound/logical assignment,
+destructuring defaults, direct eval, closures and for-of. The model compares the
+x-binding trace and final state, filtering unrelated identifier lookups. All 320
+raw Node 24.19.0 traces differ in lookup timing or required HasProperty calls;
+the raw differences are retained. No compatibility exception or Runtime behavior
+change is introduced. Native test and fixture inventories are unchanged.
+The extended regression and full quality gate pass, including 25 CLI groups.
+
 ## Direct TypedArray observer reads
 
 Without work accounting or agent control, at, reduce/reduceRight and

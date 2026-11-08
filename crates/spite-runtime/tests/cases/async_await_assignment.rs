@@ -149,6 +149,37 @@ fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
     realm.eval("release(7)").unwrap();
     drain(&mut realm);
     check(&mut realm, "holder.x===7&&x===5&&result===5");
+
+    // 13.15.2 selects lRef before Await. Object Environment SetMutableBinding
+    // (9.1.1.2.5) still checks HasProperty when the selected property was deleted.
+    let mut realm = Realm::default();
+    realm
+        .eval(
+            r#"
+        let release,gate=new Promise(resolve=>{release=resolve}),events=[],result,x=5,state={};
+        let target={x:1},holder=new Proxy(target,{
+            has(t,k){if(k==='x')events.push('has');return Reflect.has(t,k)},
+            get(t,k,r){if(k==='x')events.push('get');return Reflect.get(t,k,r)},
+            set(t,k,v,r){if(k==='x')events.push('put:'+v);return Reflect.set(t,k,v,r)}
+        }),weak=new WeakRef(holder);
+        with(holder){state.f=async()=>{x=await gate;return x}}
+        state.f().then(value=>{result=value});delete target.x;holder=null;state.f=null;
+    "#,
+        )
+        .unwrap();
+    collect(&mut realm);
+    check(
+        &mut realm,
+        "events.join(',')==='has'&&weak.deref()!==undefined&&result===undefined",
+    );
+    realm.eval("release(7)").unwrap();
+    drain(&mut realm);
+    check(
+        &mut realm,
+        "target.x===7&&x===5&&result===7&&events.join(',')==='has,has,put:7,has,has,get'",
+    );
+    collect(&mut realm);
+    check(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
