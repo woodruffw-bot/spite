@@ -61,6 +61,38 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Async-generator adapter rejection boundaries
+
+Seven additional cases strengthen existing queued-delegation regressions for
+throwing/class/revoked callbacks and failed result getters. All nine delegation
+groups and the quality gate pass, including collection between Promise jobs.
+Runtime behavior and native group inventories are unchanged.
+
+The independent audit covers 5,916 distinct programs and another 5,916 repeats
+with collection after evaluation and every Promise job. It combines synchronous
+adaptation and direct async delegates, queued next/return/throw, plain/Promise
+results and values, protocol failures and retained synchronous disposal. All
+normalized results and error graphs agree with Node v26.13.0; 5,722 traces also
+match exactly. The remaining 194 Node traces add return lookups/calls after
+immediate sync-adapter failures. Published edition 17 uses direct
+IfAbruptRejectPromise at these stages (27.1.4.5.1/.3–4), without closing. Spite
+matches those published expectations in all programs and collection repeats.
+
+A reduced three-case check distinguishes direct next/throw rejection from the
+required closing on a rejected yielded value. Node's reporting of unused rejected
+payloads is captured separately; the observer leaves all language observations
+byte-identical. This adds no compatibility exception, syntax, fixture edits or
+Test262 passing credit.
+
+## BigInt AND-with-zero execution receipt
+
+The frozen gate compiled on clean 08199bf18 passes all 87 runner controls and
+all 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+Executable and fixture hashes match across the 1,124.645-second four-worker run.
+This receipt includes the integer shortcut before the delegation test extensions;
+production behavior is unchanged by those extensions. Fixtures, helpers, modes
+and reviews are unchanged.
+
 ## BigInt AND with zero
 
 The integer backend returns canonical zero for AND with either zero operand

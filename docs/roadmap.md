@@ -689,6 +689,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain nonempty String storage for a single repetition after count conversion and the existing output-length, work and agent checks.
 - [x] Reuse converted one-unit Strings for successful at/charAt results after index conversion and range checks.
 - [x] Return canonical zero for BigInt AND with a zero operand after the existing width-based work charge and result validation.
+- [x] Guard immediate sync-adapter failures through queued async-generator requests, preserving published closing boundaries and collection lifetimes.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -2241,9 +2241,10 @@ and throw (27.1.4.5). Wrappers trace the synchronous iterator and cached next;
 return and throw are looked up live. Continuations read done before value, await
 value even for a completed result, and create fresh iterator results. Failed
 PromiseResolve or rejected values close unfinished iterators for next/throw,
-while return never closes. A thrown synchronous next call and failed done/value
-getters reject before that continuation closing path. A missing return embeds its argument without
-awaiting it; a missing throw performs normal synchronous closing before rejection.
+while return never closes. Abrupt next/throw calls, invalid result objects and
+failed done/value getters reject before that continuation closing path. A missing
+return embeds its argument without awaiting it; a missing throw performs normal
+synchronous closing before rejection.
 
 Array.fromAsync (23.1.2.2) selects async iteration before synchronous iteration
 and otherwise captures an array-like length. Iterator acquisition precedes generic

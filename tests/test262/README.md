@@ -5,6 +5,22 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Async-generator rejection boundary regressions
+
+Seven additional cases strengthen existing delegation groups; all nine groups
+and the quality gate pass. The 5,916-program audit plus 5,916 collection repeats
+meet published expectations. All normalized results/error graphs agree with
+Node; 194 traces retain edition 17's direct rejection instead of Node's extra
+closing. No compatibility exception or fixture change is added.
+
+## BigInt AND-with-zero execution receipt
+
+A frozen gate compiled on clean 08199bf18 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,124.645-second run.
+This precedes delegation test extensions with unchanged Runtime production.
+Fixture bytes, helpers, modes and reviews are unchanged.
+
 ## BigInt AND-with-zero regression
 
 All 37 BigInt tests, 113 Core tests, 577 Runtime units, 2,441 non-RegExp

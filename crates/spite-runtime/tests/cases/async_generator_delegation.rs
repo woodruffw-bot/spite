@@ -85,6 +85,21 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
             "call:7",
         ),
         (
+            "throw(value){events.push('call:'+value);throw reason}",
+            "error===reason",
+            "call:7",
+        ),
+        (
+            "get throw(){events.push('get');return class Uncallable{}}",
+            "error instanceof TypeError",
+            "get",
+        ),
+        (
+            "get throw(){events.push('get');let pair=Proxy.revocable(()=>{},{});pair.revoke();return pair.proxy}",
+            "error instanceof TypeError",
+            "get",
+        ),
+        (
             "throw(value){events.push('call:'+value);return {get done(){events.push('done');throw reason}}}",
             "error===reason",
             "call:7,done",
@@ -160,7 +175,14 @@ fn failed_next_propagates_without_closing_sync_or_async_delegates() {
     // (sec-%asyncfromsynciteratorprototype%.next), without IteratorClose.
     for (protocol, failure) in [
         ("iterator", "throw reason"),
+        ("iterator", "return {get done(){throw reason}}"),
+        ("iterator", "return {done:false,get value(){throw reason}}"),
         ("asyncIterator", "throw reason"),
+        ("asyncIterator", "return {get done(){throw reason}}"),
+        (
+            "asyncIterator",
+            "return {done:false,get value(){throw reason}}",
+        ),
         ("asyncIterator", "return Promise.reject(reason)"),
     ] {
         let mut realm = Realm::default();
