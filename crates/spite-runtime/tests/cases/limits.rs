@@ -1,7 +1,7 @@
 //! Host resource quotas are opt-in and independent of language exceptions.
 
 use spite_core::DiagnosticKind;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 #[test]
 fn default_realms_accept_programs_beyond_the_former_resource_quotas() {
@@ -103,4 +103,62 @@ fn string_to_number_scans_consume_evaluation_work() {
                 .same_value(&Value::Number(-0.0))
         );
     }
+}
+
+#[test]
+fn numeric_comparison_string_scans_consume_evaluation_work() {
+    let digits = "0".repeat(4096) + "1";
+    for source in [
+        format!("'{digits}'==1"),
+        format!("1=='{digits}'"),
+        format!("'{digits}'==true"),
+        format!("true=='{digits}'"),
+        format!("'{digits}'<2"),
+        format!("0<'{digits}'"),
+        format!("'{digits}'>=1"),
+        format!("1<='{digits}'"),
+    ] {
+        let script = spite_parser::parse_script(&source).unwrap();
+        assert_eq!(Realm::default().evaluate(&script), Ok(Value::Boolean(true)));
+        let mut realm = Realm::new(Limits {
+            max_steps: Some(512),
+            max_bigint_bits: Some(0),
+            ..Limits::default()
+        });
+        assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("1<'2'"), Ok(Value::Boolean(true)));
+    }
+
+    for source in [
+        format!("'{digits}'==null"),
+        format!("(void 0)=='{digits}'"),
+        format!("'{digits}'===1"),
+    ] {
+        let script = spite_parser::parse_script(&source).unwrap();
+        assert_eq!(
+            Realm::new(Limits {
+                max_steps: Some(512),
+                ..Limits::default()
+            })
+            .evaluate(&script),
+            Ok(Value::Boolean(false))
+        );
+    }
+
+    let digits = "0".repeat(16384) + "1";
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(8192),
+        ..Limits::default()
+    });
+    assert!(matches!(
+        realm.eval(&format!("Symbol()<'{digits}'")),
+        Err(Error::Exception {
+            kind: ExceptionKind::TypeError,
+            ..
+        })
+    ));
+    assert!(matches!(
+        realm.eval(&format!("'{digits}'<Symbol()")),
+        Err(Error::Limit { .. })
+    ));
 }

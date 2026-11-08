@@ -106,6 +106,16 @@ impl Value {
         })
     }
 
+    pub(crate) fn to_number_with_budget(
+        &self,
+        budget: &mut Budget,
+    ) -> Result<f64, ConversionError> {
+        if let Self::String(text) = self {
+            budget.charge(text.len())?;
+        }
+        self.to_number()
+    }
+
     /// Applies primitive ToString; objects explicitly require realm context.
     /// Integer formatting consumes the supplied arithmetic work budget.
     pub fn to_js_string(&self, budget: &mut Budget) -> Result<JsString, ConversionError> {
@@ -152,8 +162,8 @@ impl Value {
     ) -> Result<bool, ConversionError> {
         Ok(match (self, other) {
             (Self::Null, Self::Undefined) | (Self::Undefined, Self::Null) => true,
-            (Self::Number(a), Self::String(b)) => *a == string_to_number(b),
-            (Self::String(a), Self::Number(b)) => string_to_number(a) == *b,
+            (Self::Number(a), b @ Self::String(_)) => *a == b.to_number_with_budget(budget)?,
+            (a @ Self::String(_), Self::Number(b)) => a.to_number_with_budget(budget)? == *b,
             (Self::BigInt(a), Self::String(b)) | (Self::String(b), Self::BigInt(a)) => {
                 string_to_bigint(b, budget)?.is_some_and(|b| *a == b)
             }
@@ -194,9 +204,13 @@ impl Value {
             (Self::BigInt(a), Self::String(b)) => string_to_bigint(b, budget)?.map(|b| a.cmp(&b)),
             (Self::String(a), Self::BigInt(b)) => string_to_bigint(a, budget)?.map(|a| a.cmp(b)),
             (Self::BigInt(a), Self::BigInt(b)) => Some(a.cmp(b)),
-            (Self::BigInt(a), b) => a.cmp_f64(b.to_number()?, budget)?,
-            (a, Self::BigInt(b)) => b.cmp_f64(a.to_number()?, budget)?.map(Ordering::reverse),
-            (a, b) => a.to_number()?.partial_cmp(&b.to_number()?),
+            (Self::BigInt(a), b) => a.cmp_f64(b.to_number_with_budget(budget)?, budget)?,
+            (a, Self::BigInt(b)) => b
+                .cmp_f64(a.to_number_with_budget(budget)?, budget)?
+                .map(Ordering::reverse),
+            (a, b) => a
+                .to_number_with_budget(budget)?
+                .partial_cmp(&b.to_number_with_budget(budget)?),
         })
     }
 

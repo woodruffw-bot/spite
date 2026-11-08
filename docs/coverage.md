@@ -68,12 +68,21 @@ conversion (7.1.4–7.1.4.1). A pre-parsed literal previously needed three work
 units regardless of input length. The minimum allowance now increases by
 exactly 1, 65, 4,097 and 16,385 units for those input lengths.
 
-The new native group checks valid and invalid long inputs, host-abort cleanup
-boundaries, subsequent evaluation, signed zero and independence from a zero
-BigInt magnitude quota. All 577 Runtime units, 2,442 non-RegExp integrations
-and the quality gate pass. The 824-program conversion audit matches Node
-before and after, including all 65,536 single UTF-16 units, long decimal/radix
-inputs and 309 primitive-conversion hooks. No fixture or default quota changes.
+Numeric comparison branches share that budgeted primitive conversion
+(7.2.12–7.2.13). Their formerly constant four-unit allowance increases by the
+same input lengths, while the unary conversion curve remains unchanged.
+Two native groups check long inputs, host-abort cleanup boundaries, recovery,
+signed zero, Boolean recursion, type-only decisions, Symbol error order and
+independence from a zero BigInt magnitude quota. All 577 Runtime units,
+2,443 non-RegExp integrations and the quality gate pass.
+
+The initial 824-program conversion audit matches Node before and after,
+including all 65,536 single UTF-16 units. The comparison extension's 1,508
+programs match published expectations before and after; 1,500 also match Node
+exactly. Eight cases retain the already documented post-ToPrimitive
+StringToBigInt behavior instead of Node's Number conversion. The raw comparison
+observations are byte-identical across the change. No fixture or default quota
+changes.
 
 ## Async-generator adapter rejection boundaries
 

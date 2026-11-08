@@ -460,12 +460,7 @@ impl Realm {
 
     fn number(&mut self, value: Value, span: Span) -> Result<f64, Error> {
         let value = self.primitive(value, Hint::Number, span)?;
-        if let Value::String(text) = &value {
-            self.integer_work(span, |budget| budget.charge(text.len()))?;
-        }
-        value
-            .to_number()
-            .map_err(|error| Self::conversion_error(error, span))
+        self.conversion_work(span, |budget| value.to_number_with_budget(budget))
     }
 
     fn numeric(&mut self, value: Value, span: Span) -> Result<Value, Error> {

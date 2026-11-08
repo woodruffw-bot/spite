@@ -691,6 +691,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Return canonical zero for BigInt AND with a zero operand after the existing width-based work charge and result validation.
 - [x] Guard immediate sync-adapter failures through queued async-generator requests, preserving published closing boundaries and collection lifetimes.
 - [x] Charge StringToNumber input scans after primitive conversion, including literal inputs, while preserving independent Number and BigInt limits.
+- [x] Share budgeted primitive ToNumber with numeric comparison branches, preserving type-only decisions, conversion order and exact BigInt/String comparisons.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

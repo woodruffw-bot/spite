@@ -7,12 +7,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 
 ## String-to-Number work regression
 
-One native group checks long-input scan refusal, host-abort cleanup boundaries,
-recovery, signed zero and independent Number/BigInt limits. All 577 Runtime
-units, 2,442 non-RegExp integrations and the quality gate pass. All 824
-conversion programs match Node before and after, including every single
-UTF-16 unit. The full corpus receipt for this change is pending; fixture bytes,
-helpers, modes and reviews are unchanged.
+Two native groups check long-input scan refusal, host-abort cleanup boundaries,
+recovery, signed zero, comparison branch selection and independent Number/BigInt
+limits. All 577 Runtime units, 2,443 non-RegExp integrations and the quality gate
+pass. The initial 824 conversion programs match Node before and after, including
+every single UTF-16 unit. Another 1,508 comparison programs meet published
+expectations before and after; eight retain the documented StringToBigInt
+behavior where Node differs. The full corpus receipt for these changes is
+pending; fixture bytes, helpers, modes and reviews are unchanged.
 
 ## Async-generator rejection boundary regressions
 

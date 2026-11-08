@@ -1769,6 +1769,11 @@ Realm-level ToNumber charges the complete UTF-16 String input before
 StringToNumber scans it, after ToPrimitive succeeds (7.1.4–7.1.4.1). This also
 accounts for literal inputs that require no charged String copy. The work debit
 does not impose the separate BigInt magnitude limit on Number conversion.
+Loose equality and relational comparison use the same budgeted primitive
+ToNumber operation when their selected branches require it (7.2.12–7.2.13).
+String/String and BigInt/String branches retain their own semantics; type-only
+equality decisions do not scan String contents. Numeric conversion still runs
+left to right, preserving an earlier Symbol error before a later String scan.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution
