@@ -57,7 +57,7 @@ impl Realm {
         let Some(queue) = &self.module_import_requests else {
             return Err(Self::unsupported(
                 span,
-                "dynamic module loading is not implemented",
+                "dynamic module loading requires an enabled host loader",
             ));
         };
         let work = if queue.len() == queue.capacity() {
