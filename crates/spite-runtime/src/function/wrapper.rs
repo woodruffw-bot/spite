@@ -15,7 +15,7 @@ impl Realm {
             Value::String(_) => Some(intrinsics.string.prototype.clone()),
             Value::Symbol(_) => Some(intrinsics.symbol.prototype.clone()),
             Value::BigInt(_) => Some(intrinsics.bigint.prototype.clone()),
-            _ => None,
+            Value::Undefined | Value::Null | Value::Object(_) => None,
         }
     }
 
@@ -24,19 +24,18 @@ impl Realm {
         if matches!(value, Value::Object(_)) {
             return Ok(value);
         }
-        let Some(prototype) = self.primitive_prototype(&value) else {
-            return Err(Self::unsupported(
-                span,
-                "this primitive wrapper type is not implemented",
-            ));
-        };
+        let prototype = self
+            .primitive_prototype(&value)
+            .expect("coercible primitive has an intrinsic prototype");
         self.object_work(span, |objects, budget| match value {
             Value::Boolean(value) => objects.create_boolean(&prototype, value),
             Value::Number(value) => objects.create_number(&prototype, value),
             Value::String(value) => objects.create_string(&prototype, value, budget),
             Value::Symbol(value) => objects.create_symbol(&prototype, value),
             Value::BigInt(value) => objects.create_bigint(&prototype, value),
-            _ => unreachable!("primitive with an implemented prototype"),
+            Value::Undefined | Value::Null | Value::Object(_) => {
+                unreachable!("coercible primitive after object fast path")
+            }
         })
         .map(Value::Object)
     }

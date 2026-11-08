@@ -665,6 +665,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Check identifier parameter names directly when deciding whether an ordinary call needs an arguments object, retaining composite-pattern traversal and default/rest binding semantics.
 - [x] Expose lossless UTF-16 Script parsing and explicit FinalizationRegistry cleanup outcomes through the embedding facade.
 - [x] Apply opt-in encoded source-byte limits to lossless UTF-16 Script and Module parsing before scanner allocation, preserving exact spans and grammar diagnostics.
+- [x] Make primitive prototype selection and boxing exhaustive across Value kinds, retaining nullish errors and object identity while removing the obsolete unsupported-wrapper fallback.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

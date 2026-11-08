@@ -61,6 +61,19 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Exhaustive primitive boxing
+
+ToObject (7.1.18) now handles every Value kind explicitly in prototype selection
+and primitive allocation. Nullish values still fail before prototype lookup,
+objects keep their identity and all five primitive kinds retain the same
+intrinsic and allocation calls. The unreachable unsupported-wrapper fallback is
+removed. Adding a Value kind now requires both matches to be updated.
+
+The cleanup removes one production line without changing work charges, state or
+dependencies. All 574 Runtime units, 2,431 non-RegExp integrations and the full
+quality gate pass, including three facade doctests and 30 CLI groups. Snapshots
+and fixture inventories are unchanged.
+
 ## Opt-in UTF-16 parser source-byte limits
 
 Script and Module parsing now offer lossless UTF-16 entry points with an explicit
