@@ -195,17 +195,9 @@ impl Realm {
             // alias effects. The species layer already checked content types.
             for index in 0..count {
                 self.tick(span)?;
-                let value = self.get_property(
-                    &witness.object,
-                    &JsString::from((start + index).to_string().as_str()),
-                    span,
-                )?;
-                self.set_property_or_throw(
-                    &result,
-                    JsString::from(index.to_string().as_str()),
-                    value,
-                    span,
-                )?;
+                let value =
+                    self.get_property(&witness.object, &JsString::from_index(start + index), span)?;
+                self.set_property_or_throw(&result, JsString::from_index(index), value, span)?;
             }
         }
         Ok(result)
@@ -276,15 +268,10 @@ impl Realm {
             self.tick(span)?;
             let value = self.get_property(
                 &witness.object,
-                &JsString::from((witness.length - index - 1).to_string().as_str()),
+                &JsString::from_index(witness.length - index - 1),
                 span,
             )?;
-            self.set_property_or_throw(
-                &result,
-                JsString::from(index.to_string().as_str()),
-                value,
-                span,
-            )?;
+            self.set_property_or_throw(&result, JsString::from_index(index), value, span)?;
         }
         Ok(result)
     }
@@ -323,7 +310,7 @@ impl Realm {
         let mut numeric = Some(numeric);
         for index in 0..witness.length {
             self.tick(span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             let value = if index as f64 == actual {
                 // Move the already converted replacement exactly once. Skip
                 // source Get at that index and do not clone a large BigInt.

@@ -85,11 +85,7 @@ impl Realm {
             return Ok(Value::Undefined);
         }
         // The witness bounds finite integral indices below 2^53 - 1.
-        self.get_property(
-            object,
-            &JsString::from((index as u64).to_string().as_str()),
-            span,
-        )
+        self.get_property(object, &JsString::from_index(index as u64), span)
     }
 
     fn typed_array_read_search(
@@ -142,7 +138,7 @@ impl Realm {
             } else {
                 start + offset
             };
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             // Invalidated indices remain terminal at the exotic object.
             // includes reads undefined; strict searches skip the absent index.
             if !includes && !self.has_property(object, &key, span)? {
@@ -199,8 +195,7 @@ impl Realm {
             };
             // TypedArray reduction never performs HasProperty, including after
             // a callback has detached the buffer or shrunk the view out of bounds.
-            let value =
-                self.get_property(object, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(object, &JsString::from_index(index), span)?;
             accumulator = Some(match accumulator {
                 None => value,
                 Some(previous) => self.call(
@@ -240,8 +235,7 @@ impl Realm {
             if index > 0 {
                 self.typed_array_read_append(&mut result, separator, span)?;
             }
-            let element =
-                self.get_property(object, &JsString::from(index.to_string().as_str()), span)?;
+            let element = self.get_property(object, &JsString::from_index(index), span)?;
             if matches!(element, Value::Undefined) || (locale && matches!(element, Value::Null)) {
                 continue;
             }

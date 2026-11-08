@@ -75,7 +75,7 @@ impl Realm {
                         self.tick(span)?;
                         self.set_property_or_throw(
                             &result,
-                            JsString::from(index.to_string().as_str()),
+                            JsString::from_index(index as u64),
                             value,
                             span,
                         )?;
@@ -86,7 +86,7 @@ impl Realm {
                     let result = self.allocate_typed_array(element, &prototype, length, span)?;
                     for index in 0..length {
                         self.tick(span)?;
-                        let key = JsString::from(index.to_string().as_str());
+                        let key = JsString::from_index(index);
                         let value = self.get_property(&source, &key, span)?;
                         self.set_property_or_throw(&result, key, value, span)?;
                     }
@@ -420,7 +420,7 @@ impl Realm {
                 )?;
                 self.set_property_or_throw(
                     &result,
-                    JsString::from(index.to_string().as_str()),
+                    JsString::from_index(index as u64),
                     value,
                     span,
                 )?;
@@ -434,7 +434,7 @@ impl Realm {
             let result = self.typed_array_factory_result(receiver, length, span)?;
             for index in 0..length {
                 self.tick(span)?;
-                let key = JsString::from(index.to_string().as_str());
+                let key = JsString::from_index(index);
                 let value = self.get_property(&source, &key, span)?;
                 let value = self.typed_array_map_value(
                     value,
@@ -461,12 +461,7 @@ impl Realm {
         let result = self.typed_array_factory_result(receiver, length, span)?;
         for (index, value) in arguments.enumerate() {
             self.tick(span)?;
-            self.set_property_or_throw(
-                &result,
-                JsString::from(index.to_string().as_str()),
-                value,
-                span,
-            )?;
+            self.set_property_or_throw(&result, JsString::from_index(index as u64), value, span)?;
         }
         Ok(Value::Object(result))
     }

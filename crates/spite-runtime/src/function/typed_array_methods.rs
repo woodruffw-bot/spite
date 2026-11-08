@@ -287,7 +287,7 @@ impl Realm {
             } else {
                 offset
             };
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             // No HasProperty or additional ValidateTypedArray: callbacks still
             // visit captured indices after source shrinkage or detachment.
             let value = self.get_property(&witness.object, &key, span)?;
@@ -362,7 +362,7 @@ impl Realm {
                     self.tick(span)?;
                     self.set_property_or_throw(
                         &output,
-                        JsString::from(index.to_string().as_str()),
+                        JsString::from_index(index as u64),
                         value,
                         span,
                     )?;

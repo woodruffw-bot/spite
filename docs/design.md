@@ -1964,6 +1964,9 @@ mutations, sorting and stringification.
 ArrayAccumulation still converts spread indices above MAX_SAFE_INTEGER through
 Number before stringification; the exact unsigned formatter cannot replace that
 rounding step.
+TypedArray constructors, factories and indexed methods use the same formatter for
+their validated unsigned indices, retaining witness refresh, coercion and work
+accounting at the existing algorithm steps.
 Push and pop also use generic LengthOfArrayLike. Each performs observable indexed
 Set/Get/Delete operations before the final length Set, preserving partial effects
 on failure. Push rejects lengths above 2^53 - 1 before writing elements, while

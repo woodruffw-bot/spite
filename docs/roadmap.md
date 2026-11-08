@@ -628,6 +628,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Service CLI dynamic file imports through the shared Module cache and native completion API, preserving namespace/evaluation identity, language rejection and host-failure boundaries.
 - [x] Protect the selected super base and deferred Symbol-key object across an awaited RHS and collection, releasing both after continuation completion while retaining published reference ordering.
 - [x] Report branded CLI Error values with stored name/message diagnostics without invoking JavaScript getters, Proxy traps or coercion, preserving control characters and lone surrogates.
+- [x] Share exact unsigned UTF-16 index formatting across TypedArray constructors, factories, reads, callbacks, copies, mutations and sorting, retaining witness/coercion order and quota behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

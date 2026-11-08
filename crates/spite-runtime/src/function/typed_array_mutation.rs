@@ -249,8 +249,8 @@ impl Realm {
         for lower in 0..length / 2 {
             self.tick(span)?;
             let upper = length - lower - 1;
-            let lower_key = JsString::from(lower.to_string().as_str());
-            let upper_key = JsString::from(upper.to_string().as_str());
+            let lower_key = JsString::from_index(lower);
+            let upper_key = JsString::from_index(upper);
             // 23.2.3.25 is numeric Get/Get/Set/Set, not raw-byte swapping.
             // Both reads precede either write, including on host failure.
             let lower_value = self.get_property(&view.object, &lower_key, span)?;
@@ -290,8 +290,7 @@ impl Realm {
         let offset = Self::typed_array_set_offset(offset, source_length, target_length, span)?;
         for index in 0..source_length {
             self.tick(span)?;
-            let value =
-                self.get_property(&source, &JsString::from(index.to_string().as_str()), span)?;
+            let value = self.get_property(&source, &JsString::from_index(index), span)?;
             // Reentrant getters/conversions can invalidate target. Conversion
             // still runs before its current bounds check; old writes remain.
             self.set_typed_array_element(&target.object, (offset + index) as f64, value, span)?;

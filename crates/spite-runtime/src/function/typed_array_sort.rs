@@ -40,11 +40,7 @@ impl Realm {
         let mut items = Vec::new();
         for index in 0..witness.length {
             self.tick(span)?;
-            let value = self.get_property(
-                &witness.object,
-                &JsString::from(index.to_string().as_str()),
-                span,
-            )?;
+            let value = self.get_property(&witness.object, &JsString::from_index(index), span)?;
             self.object_work(span, |_, budget| {
                 if items.len() == items.capacity() {
                     budget.charge(items.len())?;
@@ -60,12 +56,7 @@ impl Realm {
             // Comparator calls and result conversions may invalidate source.
             // Keep the captured range and the ordinary live setter's behavior;
             // no extra ValidateTypedArray or deletion phase is permitted here.
-            self.set_property_or_throw(
-                &output,
-                JsString::from(index.to_string().as_str()),
-                value,
-                span,
-            )?;
+            self.set_property_or_throw(&output, JsString::from_index(index as u64), value, span)?;
         }
         Ok(Value::Object(output))
     }

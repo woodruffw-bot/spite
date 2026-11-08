@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Shared TypedArray index formatting
+
+Twenty-one index conversions across six TypedArray modules now use the shared
+exact unsigned UTF-16 formatter. Constructors, factories, callbacks, reads,
+reductions, stringification, copies, mutation and sorting keep their existing
+property operations, buffer witnesses and conversion order. This consolidates
+integer key construction without a timing claim.
+
+All 113 Core tests, 574 Runtime units, 2,431 non-RegExp integrations and the full
+quality gate pass. All 4,448 modes from 2,247 unchanged TypedArray/Uint8Array
+originals pass. All 1,734 indexed-collection comparisons match Node. The 7,092
+receiver cases match the existing published-rule oracle before and after
+collection, with identical complete result hashes. The established Node invalid-
+index difference remains classified; this adds no compatibility exception.
+Test/fixture inventories, dependencies and default quotas are unchanged.
+
 ## Readable CLI Error diagnostics
 
 Uncaught branded Error values now display their stored name and message instead
