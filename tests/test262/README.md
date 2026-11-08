@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## ASCII/source restoration execution receipt
+
+A frozen gate compiled on clean 8eadb3455 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,381.197-second run.
+The direct ASCII allocation and scalar source-restoration changes retain the
+existing lone-surrogate path. Fixture bytes, helpers, reviews and work charges
+are unchanged. This receipt predates the later metadata/parameter changes; it is
+a retained-corpus execution result, not a complete-conformance claim.
+
 ## Complete-program identifier and ASI execution
 
 The retained eight positive identifier datasets, five identifier-escape syntax

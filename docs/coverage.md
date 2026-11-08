@@ -122,14 +122,27 @@ Five checked ASCII-source evaluation/collection iterations, including initializa
 and parsing, record 81,743,288 instructions before and 39,633,011 after (-51.52%)
 in Callgrind. Rust calls to free fall from 4,939 to 4,746. The callback control
 records 1,421,895,262 to 1,426,991,149 instructions (+0.36%) and 1,086,584 to
-1,086,471 frees. These are scoped instruction/allocation counts; wall-time
-measurements remain pending. The earlier constructor-only experiment measured
+1,086,471 frees. The earlier constructor-only experiment measured
 +0.32% source and +0.14% callback instructions before source restoration reused
 the shared conversion; those results are retained separately.
 
 All 113 Core units, 18 Parser units, 443 Parser integrations, 574 Runtime units,
 2,431 non-RegExp integrations and the full quality gate pass, including 28 CLI
 groups. Fixture/test inventories and work charges are unchanged.
+
+The frozen gate compiled on clean 8eadb3455 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes remain unchanged across its 1,381.197-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes use the same 51 checked workloads and
+53 CSV rows, with seven samples of ten iterations. ASCII function-source
+evaluation measures 875.782 to 376.442 microseconds (-57.02%); its separate
+collection measures 171.504 to 168.056 (-2.01%). Initialization/drop measures
+541.226 to 476.863 (-11.89%), and parse-all measures 1,298.803 to 1,331.988
+(+2.56%). Other evaluation changes range from -22.65% to +27.43%, and collection
+from -7.70% to +6.40%. The measured source-workload reduction supports that scoped
+result; the variation does not support a general speedup claim. These binaries
+compare 7952bc71c with 8eadb3455, before the later metadata/parameter changes.
 
 ## Lazy concat open-method capabilities
 
