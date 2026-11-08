@@ -82,6 +82,36 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Shared TypedArray index keys
+
+Twenty-one TypedArray key conversions reuse the exact unsigned UTF-16 formatter.
+The added typed_array_indices workload constructs and maps 1,024-element
+Float64Arrays eight times, then reduces the mapped values to a checked total.
+Baseline production is 2bb90c1d3 and candidate production is 4e5fea077. Both saved
+binaries contain the same 46 program workloads. The candidate's full 80,028-mode
+gate passed before timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| typed_array_indices | 46563.9 | 45655.8 | 10028.1 | 10180.5 |
+| arithmetic | 978.1 | 968.1 | 273.1 | 262.8 |
+| properties | 478.8 | 476.6 | 176.9 | 179.1 |
+| object_group_by | 7348.6 | 7403.3 | 928.9 | 908.3 |
+| parse_all | 1138.5 | 1143.2 | 0 | 0 |
+| initialize_and_drop | 613.4 | 614.2 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+TypedArray evaluation is 1.95% lower and collection 1.52% higher. Other program
+evaluation changes range from -12.89% to +12.50%, and collection changes from
+-6.28% to +3.02%. Parsing and initialization differ by +0.41% and +0.13%.
+The target difference lies within variation among unchanged workloads, so this
+batch does not establish a speedup. It adds no CI timing threshold or execution
+allowance.
+
 ## Object.groupBy result construction
 
 The fresh ordinary result now appends GroupBy's already distinct keys without

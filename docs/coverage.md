@@ -100,7 +100,7 @@ Twenty-one index conversions across six TypedArray modules now use the shared
 exact unsigned UTF-16 formatter. Constructors, factories, callbacks, reads,
 reductions, stringification, copies, mutation and sorting keep their existing
 property operations, buffer witnesses and conversion order. This consolidates
-integer key construction without a timing claim.
+integer key construction; its matched benchmark does not establish a speedup.
 
 All 113 Core tests, 574 Runtime units, 2,431 non-RegExp integrations and the full
 quality gate pass. All 4,448 modes from 2,247 unchanged TypedArray/Uint8Array
@@ -109,6 +109,18 @@ receiver cases match the existing published-rule oracle before and after
 collection, with identical complete result hashes. The established Node invalid-
 index difference remains classified; this adds no compatibility exception.
 Test/fixture inventories, dependencies and default quotas are unchanged.
+
+A full gate compiled on clean 4e5fea077 passes all 87 noncorpus controls and all
+80,028 modes from 41,531 reviewed originals, with zero other outcomes. The frozen
+corpus run takes 1,999.98 seconds; saved fixtures and executable hashes match
+before and after execution. Its executable SHA-256 is
+e18fc3067aea7e87abc6a64ac27810acd615a7e26ebeae4d49e96bfc6d367421.
+Later generic-key and numeric-classification changes are outside this binary.
+
+The twelve-run matched benchmark records TypedArray evaluation -1.95% and
+collection +1.52%, within the variation across unchanged workloads. Its exact
+production revisions, common workloads and control ranges are recorded in
+[the benchmark receipt](benchmarking.md#shared-typedarray-index-keys).
 
 ## Readable CLI Error diagnostics
 
