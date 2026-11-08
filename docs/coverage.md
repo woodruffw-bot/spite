@@ -75,6 +75,10 @@ getter/coercion poisoning, Proxy fallback, newlines and unpaired surrogates.
 All 21 CLI groups, facade smoke/doc tests and the full quality gate pass. Runtime,
 dependency and pinned fixture inventories are unchanged.
 
+Bare --eval, including after --module, now reports a missing source argument with
+usage status 2. Four direct checks cover both missing-argument forms and valid
+Script/Module inputs; all 21 CLI groups, strict Clippy and dependency policy pass.
+
 ## Captured super references across collection
 
 The existing awaited-super assignment regression now removes every ordinary

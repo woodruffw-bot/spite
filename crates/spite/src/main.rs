@@ -162,6 +162,10 @@ fn main() -> ExitCode {
         _ => None,
     };
     let source = match args {
+        [flag] if flag == "--eval" => {
+            eprintln!("--eval requires a source argument");
+            return ExitCode::from(2);
+        }
         [flag, text] if flag == "--eval" => text
             .clone()
             .into_string()
