@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## TypedArray method catalogue
+
+All 27 shared prototype methods now store their implementation enum beside the
+initial name and length in one ordered catalogue. Invocation uses that enum
+directly, removing the duplicate name-to-method switch and its obsolete prototype
+fallback. Function objects, property order, metadata and operation bodies retain
+their existing construction and behavior. This is a 37-line source reduction
+without a timing claim.
+
+All 27 previous name/length/implementation mappings and their order are identical.
+All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes from 2,247
+unchanged TypedArray/Uint8Array originals, 1,734 Node collection comparisons and
+the full quality gate pass. Inventories, dependencies and default quotas are unchanged.
+
 ## Whole-program identifier and ASI originals
 
 Nineteen retained originals now also run as complete programs in all 32 declared

@@ -34,43 +34,6 @@ pub(super) enum Method {
     ToSorted,
 }
 
-impl Method {
-    // The intrinsic module retains the existing metadata table and function
-    // objects. Only invocation of implemented entries changes.
-    pub(super) fn from_name(name: &str) -> Option<Self> {
-        Some(match name {
-            "at" => Self::At,
-            "every" => Self::Every,
-            "some" => Self::Some,
-            "forEach" => Self::ForEach,
-            "find" => Self::Find,
-            "findIndex" => Self::FindIndex,
-            "findLast" => Self::FindLast,
-            "findLastIndex" => Self::FindLastIndex,
-            "includes" => Self::Includes,
-            "indexOf" => Self::IndexOf,
-            "lastIndexOf" => Self::LastIndexOf,
-            "join" => Self::Join,
-            "toLocaleString" => Self::ToLocaleString,
-            "reduce" => Self::Reduce,
-            "reduceRight" => Self::ReduceRight,
-            "map" => Self::Map,
-            "filter" => Self::Filter,
-            "copyWithin" => Self::CopyWithin,
-            "fill" => Self::Fill,
-            "reverse" => Self::Reverse,
-            "set" => Self::Set,
-            "slice" => Self::Slice,
-            "subarray" => Self::Subarray,
-            "toReversed" => Self::ToReversed,
-            "with" => Self::With,
-            "sort" => Self::Sort,
-            "toSorted" => Self::ToSorted,
-            _ => return None,
-        })
-    }
-}
-
 pub(super) struct TypedArrayWitness {
     pub(super) object: ObjectHandle,
     pub(super) element: ElementType,

@@ -1,6 +1,6 @@
 //! TypedArray intrinsic graph, state accessors, and iterator wrappers (23.2).
 
-use super::Builtin;
+use super::{Builtin, typed_array_methods::Method};
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     binary_data::ElementType,
@@ -78,35 +78,35 @@ impl Member {
     }
 }
 
-// Names and initial lengths for the implemented prototype-method dispatch.
-const PROTOTYPE_METHODS: [(&str, u8); 27] = [
-    ("at", 1),
-    ("copyWithin", 2),
-    ("every", 1),
-    ("fill", 1),
-    ("filter", 1),
-    ("find", 1),
-    ("findIndex", 1),
-    ("findLast", 1),
-    ("findLastIndex", 1),
-    ("forEach", 1),
-    ("includes", 1),
-    ("indexOf", 1),
-    ("join", 1),
-    ("lastIndexOf", 1),
-    ("map", 1),
-    ("reduce", 1),
-    ("reduceRight", 1),
-    ("reverse", 0),
-    ("set", 1),
-    ("slice", 2),
-    ("some", 1),
-    ("sort", 1),
-    ("subarray", 2),
-    ("toLocaleString", 0),
-    ("toReversed", 0),
-    ("toSorted", 1),
-    ("with", 2),
+// Initial names, lengths and invocation methods share one ordered catalogue.
+const PROTOTYPE_METHODS: [(&str, u8, Method); 27] = [
+    ("at", 1, Method::At),
+    ("copyWithin", 2, Method::CopyWithin),
+    ("every", 1, Method::Every),
+    ("fill", 1, Method::Fill),
+    ("filter", 1, Method::Filter),
+    ("find", 1, Method::Find),
+    ("findIndex", 1, Method::FindIndex),
+    ("findLast", 1, Method::FindLast),
+    ("findLastIndex", 1, Method::FindLastIndex),
+    ("forEach", 1, Method::ForEach),
+    ("includes", 1, Method::Includes),
+    ("indexOf", 1, Method::IndexOf),
+    ("join", 1, Method::Join),
+    ("lastIndexOf", 1, Method::LastIndexOf),
+    ("map", 1, Method::Map),
+    ("reduce", 1, Method::Reduce),
+    ("reduceRight", 1, Method::ReduceRight),
+    ("reverse", 0, Method::Reverse),
+    ("set", 1, Method::Set),
+    ("slice", 2, Method::Slice),
+    ("some", 1, Method::Some),
+    ("sort", 1, Method::Sort),
+    ("subarray", 2, Method::Subarray),
+    ("toLocaleString", 0, Method::ToLocaleString),
+    ("toReversed", 0, Method::ToReversed),
+    ("toSorted", 1, Method::ToSorted),
+    ("with", 2, Method::With),
 ];
 
 // The last column selects a constructor property rather than a prototype one.
@@ -308,7 +308,7 @@ impl Realm {
             true,
             span,
         )?;
-        for (index, (name, _)) in PROTOTYPE_METHODS.into_iter().enumerate() {
+        for (index, (name, _, _)) in PROTOTYPE_METHODS.into_iter().enumerate() {
             let member = Member::PrototypeMethod(index as u8);
             let method =
                 self.new_builtin(function_prototype, Builtin::TypedArrayMember(member), span)?;
@@ -413,12 +413,13 @@ impl Realm {
         arguments: std::vec::IntoIter<Value>,
         span: Span,
     ) -> Result<Value, Error> {
-        if let Member::PrototypeMethod(index) = member
-            && let Some(method) = super::typed_array_methods::Method::from_name(
-                PROTOTYPE_METHODS[usize::from(index)].0,
-            )
-        {
-            return self.typed_array_method(method, receiver, arguments, span);
+        if let Member::PrototypeMethod(index) = member {
+            return self.typed_array_method(
+                PROTOTYPE_METHODS[usize::from(index)].2,
+                receiver,
+                arguments,
+                span,
+            );
         }
         if let Member::Uint8Encoding(index) = member {
             if let Some(method) =
@@ -433,7 +434,6 @@ impl Realm {
             }
         }
         let unsupported_owner = match member {
-            Member::PrototypeMethod(_) => Some("TypedArray.prototype"),
             Member::Uint8Encoding(index) => Some(if UINT8_METHODS[usize::from(index)].2 {
                 "Uint8Array"
             } else {

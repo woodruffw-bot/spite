@@ -633,6 +633,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Recognize canonical Array-index keys directly in TypedArray numeric-index classification, preserving exact Number spelling, negative zero and work charges for every key.
 - [x] Drain queued CLI Script Promise jobs transitively before reporting completion, retaining object values and propagating reported job failures and opted-in work limits.
 - [x] Return the converted receiver for argument-free String.concat, reusing immutable UTF-16 storage after the existing work and output-length checks.
+- [x] Bind TypedArray prototype catalogue entries directly to their implementation enums, keeping initial names, lengths and property order in one table.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
