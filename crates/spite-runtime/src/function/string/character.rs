@@ -93,7 +93,14 @@ impl Realm {
         let index = index as usize;
         let first = string.code_units()[index];
         match builtin {
-            Builtin::StringAt | Builtin::StringCharAt => Ok(Value::String(JsString::from([first]))),
+            Builtin::StringAt | Builtin::StringCharAt => {
+                // A complete one-unit result can share the converted receiver.
+                Ok(Value::String(if string.len() == 1 {
+                    string
+                } else {
+                    JsString::from([first])
+                }))
+            }
             Builtin::StringCharCodeAt => Ok(Value::Number(f64::from(first))),
             Builtin::StringCodePointAt => {
                 let mut point = u32::from(first);

@@ -183,8 +183,10 @@ hashing and ordering compare UTF-16 contents, and the public
 type remains Send/Sync. Existing optional work charges stay conservative and
 unchanged; actual scans and output allocations retain their checks.
 Fixed UTF-16 arrays convert directly through the standard Arc array conversion.
-Single-unit String indices, boxed String properties and at/charAt results use
-this path instead of first building a Vec. Raw surrogates remain unchanged.
+Single-unit String indices, boxed String properties and partial at/charAt results
+use this path instead of first building a Vec. Complete one-unit at/charAt
+results share the converted input after index conversion and bounds checks.
+Raw surrogates remain unchanged.
 Borrowed UTF-16 slices likewise copy directly into owned Arc storage for copied
 substring/trim/split results and String iterator yields. Existing output-length,
 work, code-point pairing and iterator-position checks precede the same copies.

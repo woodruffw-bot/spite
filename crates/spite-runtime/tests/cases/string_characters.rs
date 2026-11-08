@@ -134,6 +134,12 @@ fn indexed_methods_use_utf16_and_keep_distinct_out_of_range_results() {
         ));
     }
     check("'abc'.at(-1.9)==='c' && 'abc'.charAt(1.9)==='b' && 'abc'.charAt('2')==='c'");
+    for unit in [97, 0x6f22, 0xd800, 0xdc00] {
+        check(&format!(
+            "let text=String.fromCharCode({unit});[undefined,NaN,null,false,0,-0,0.5,-0.5].every(i=>text.at(i)===text&&text.charAt(i)===text)&&text.at(-1)===text&&text.at(-1.9)===text&&text.charAt(-1)===''&&text.at(1)===undefined&&text.charAt(1)===''"
+        ));
+    }
+    check("'💩'.at(0).charCodeAt(0)===0xd83d&&'💩'.charAt(1).charCodeAt(0)===0xdca9");
 }
 
 #[test]

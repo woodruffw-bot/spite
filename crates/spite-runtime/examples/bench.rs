@@ -128,6 +128,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_character_single",
+        source: "(()=>{const texts=['a','b','漢','\\ud800'];let sum=0;for(let i=0;i<4096;i++){const text=texts[i%4],c=i%2?text.at(-1):text.charAt(0);sum+=c.charCodeAt(0)}return sum})()",
+        expected: 85_955_584.0,
+        jobs: false,
+    },
+    Case {
         name: "string_character",
         source: "(()=>{const text='ab漢\\ud800';let sum=0;for(let i=0;i<4096;i++){const c=i%2?text.at(i%4):text.charAt(i%4);sum+=c.charCodeAt(0)}return sum})()",
         expected: 85_955_584.0,

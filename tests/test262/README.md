@@ -5,6 +5,22 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## One-unit character access regression
+
+All 577 Runtime units, 2,441 non-RegExp integrations and the quality gate pass
+after at/charAt reuse complete one-unit inputs. The strengthened native group
+retains surrogate and index boundaries. All 65,536 UTF-16 units and 1,428
+coercion/error programs match independent expectations before and after;
+both matched benchmark smokes pass all 67 rows. Fixtures are unchanged.
+
+## Partial-class collection execution receipt
+
+A frozen gate compiled on clean 5122dd4ee passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,397.770-second run.
+All 17 CI jobs pass. This receipt precedes the two String storage-reuse changes.
+Fixture bytes, helpers, modes and reviews are unchanged.
+
 ## Single-count String repetition regression
 
 All 577 Runtime units, 2,441 non-RegExp integrations and the quality gate pass

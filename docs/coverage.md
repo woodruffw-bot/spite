@@ -61,6 +61,34 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## One-unit character access
+
+For a valid at/charAt index into a one-unit String, the result shares the
+converted receiver's storage (22.1.3.1–2). Index conversion and range checks
+precede this return. Extraction from longer inputs retains fixed-array storage.
+
+The strengthened native regression covers ASCII, BMP, lone-surrogate and
+supplementary inputs with fractional, negative and out-of-range positions.
+All six character groups, 577 Runtime units, 2,441 non-RegExp integrations and
+the quality gate pass. All 65,536 UTF-16 units pass in 128 batches, and all
+1,428 coercion/error programs match Node before and after. Both matched
+benchmark smokes pass 65 workloads and 67 CSV rows. Dedicated profiles show
+1.104% fewer instructions and 20,480 fewer Rust deallocations over 20,480 target
+calls; the four-unit control retains its deallocation count. This supports no
+elapsed-time or general workload speedup claim; see
+[benchmarking](benchmarking.md#one-unit-character-access). Native groups,
+fixtures, snapshots and default quotas are unchanged.
+
+## Partial-class collection execution receipt
+
+The frozen gate compiled on clean 5122dd4ee passes all 87 runner controls and
+all 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+Executable and fixture hashes match across the 1,397.770-second four-worker run.
+All 17 CI jobs also pass in
+[run 42522583794](https://github.com/woodruffw-bot/spite/actions/runs/42522583794).
+This records partial-class scan accounting before the two String storage-reuse
+changes. Fixtures, helpers, modes and reviews are unchanged.
+
 ## Single-count String repetition
 
 For nonempty input, repeat retains the converted String when ToIntegerOrInfinity

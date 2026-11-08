@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 64 program workloads |
+| parse_all | Parse and drop the ASTs for all 65 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
@@ -39,6 +39,7 @@ and collection medians are computed independently.
 | string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
 | string_codes_single | Construct BMP and supplementary Strings from one numeric input 4,096 times each, checking decoded code points |
 | string_codes_multiple | Repeat with multiple numeric inputs per construction as a control, checking lengths and decoded code points |
+| string_character_single | Alternate at/charAt over 4,096 one-unit ASCII/BMP/lone-surrogate inputs, checking their numeric code units |
 | string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
 | string_slice | Alternate sixteen slice/substring copies from a 16,384-unit BMP/lone-surrogate input, checking lengths and edge units |
 | string_slice_full | Alternate slice/substring of that complete input 64 times, checking length and final unit |
@@ -99,6 +100,30 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## One-unit character access
+
+Successful at/charAt calls on a one-unit String retain the converted input after
+index conversion and bounds checks (22.1.3.1–2). Baseline production is 4e41cf9c8.
+Matched executables use identical 65-workload sources, Rust 1.99, optimized
+conformance libraries, debug assertions and overflow checks.
+
+Each dedicated Callgrind program evaluates five times, with 4,096 character
+calls per evaluation. The target selects one-unit ASCII/BMP/lone-surrogate
+inputs; the control indexes the existing four-unit String. Counts include
+initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| One-unit inputs | 765,212,294 | 756,764,387 | 382,691 | 362,211 |
+| Four-unit control | 639,028,393 | 638,913,389 | 228,936 | 228,936 |
+
+The target uses 1.104% fewer instructions and 20,480 fewer Rust deallocations,
+one per character call. The control instruction count differs by -0.018% and
+retains its deallocation count. Both benchmark smokes pass all 67 CSV rows.
+All 65,536 UTF-16 units and 1,428 coercion/error programs match independent
+expectations before and after. These counts support no elapsed-time or general
+workload speedup claim and add no CI timing threshold.
 
 ## Single-count String repetition
 
