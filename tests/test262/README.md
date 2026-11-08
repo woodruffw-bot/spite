@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Parameter arguments-name execution receipt
+
+A frozen gate compiled on clean 38ca6e357 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,259.801-second run.
+Identifier parameters use direct arguments-name checks; composite traversal and
+arguments creation semantics are unchanged. Fixture bytes, helpers, reviews and
+work charges are unchanged. This records retained-corpus execution and predates
+the later UTF-16 parser limit APIs.
+
 ## Simple var-name iterator execution receipt
 
 A frozen gate compiled on clean fa3b2d950 passes all 87 runner controls and all

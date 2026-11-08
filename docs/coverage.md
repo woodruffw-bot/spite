@@ -100,8 +100,22 @@ are scoped instruction/allocation counts, with no wall-time speedup claim.
 
 All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
 pass, including 30 CLI groups and existing mapped/default/rest/destructuring
-arguments coverage. Snapshots and fixture inventories are unchanged; full-corpus
-and quiet timing evidence remain pending.
+arguments coverage. Snapshots and fixture inventories are unchanged.
+
+A frozen gate compiled on clean 38ca6e357 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,259.801-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare saved fa3b2d950 and 38ca6e357
+builds. The baseline is production-equivalent through 4643018ba. Both use the same
+53 checked workloads and 55 CSV rows, seven samples of ten iterations.
+The local-var workload measures 7,734.759 to 7,640.748 microseconds (-1.22%);
+separate collection measures 2,012.076 to 2,017.035 (+0.25%). Other evaluation
+changes range from -6.79% to +7.90%, and collection from -6.17% to +6.13%.
+Parse-all changes -3.48% and initialization/drop +0.21%. These timings do not
+establish a wall-time speedup; retain the direct arguments-name check for its
+scoped allocation/instruction reduction. This receipt predates the later UTF-16
+parser limit APIs.
 
 ## Bound function metadata reentry
 
