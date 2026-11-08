@@ -1,12 +1,18 @@
 //! Owned strict tail transfers (15.10), dispatched after caller restoration.
 
 use super::CallTarget;
-use crate::{Completion, CompletionKind, Error, ExceptionKind, Realm, Value};
+use crate::{
+    Completion, CompletionKind, Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle,
+};
 use spite_core::Span;
 use spite_parser::ast::{BinaryOp, ChainStepKind, Expr, ExprKind};
 
 #[derive(Debug)]
 pub(crate) struct TailCall {
+    // Retain only the caller's Realm identity after restoring its local scopes.
+    // Proxy [[Call]] errors use this Realm (10.5.12), while ordinary and builtin
+    // callees enter their own Realms (10.2.1, 10.3.1).
+    pub realm: Option<EnvironmentHandle>,
     pub function: Value,
     pub this: Value,
     pub arguments: Vec<Value>,
@@ -56,9 +62,13 @@ impl Realm {
     pub(super) fn finish_call_outcome(&mut self, outcome: CallOutcome) -> Result<Value, Error> {
         match outcome {
             CallOutcome::Value(value) => Ok(value),
-            CallOutcome::Tail(call) => {
-                self.call_inner(call.function, call.this, call.arguments, call.span)
-            }
+            CallOutcome::Tail(call) => self.call_inner(
+                call.function,
+                call.this,
+                call.arguments,
+                call.span,
+                call.realm,
+            ),
         }
     }
 
@@ -193,6 +203,7 @@ impl Realm {
         }
         let CallTarget { function, this, .. } = target;
         Ok(CallOutcome::Tail(Box::new(TailCall {
+            realm: self.record.global_environment.clone(),
             function,
             this,
             arguments,

@@ -6,16 +6,23 @@ use super::{
 use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
 
-fn forward_call(function: Value, this: Value, arguments: Vec<Value>, span: Span) -> CallOutcome {
-    CallOutcome::Tail(Box::new(TailCall {
-        function,
-        this,
-        arguments,
-        span,
-    }))
-}
-
 impl Realm {
+    fn forward_call(
+        &self,
+        function: Value,
+        this: Value,
+        arguments: Vec<Value>,
+        span: Span,
+    ) -> CallOutcome {
+        CallOutcome::Tail(Box::new(TailCall {
+            realm: self.record.global_environment.clone(),
+            function,
+            this,
+            arguments,
+            span,
+        }))
+    }
+
     pub(super) fn call_step(
         &mut self,
         function: Value,
@@ -48,7 +55,7 @@ impl Realm {
         if let Some(proxy) = proxy {
             match self.proxy_call(proxy, &this, arguments.as_slice(), span)? {
                 proxy::ProxyInvocation::Forward(target) => {
-                    return Ok(forward_call(
+                    return Ok(self.forward_call(
                         Value::Object(target),
                         this,
                         arguments.collect(),
@@ -78,12 +85,7 @@ impl Realm {
             self.check_argument_count(count, span)?;
             let mut values = bound.arguments;
             values.extend(arguments);
-            return Ok(forward_call(
-                Value::Object(bound.target),
-                bound.this,
-                values,
-                span,
-            ));
+            return Ok(self.forward_call(Value::Object(bound.target), bound.this, values, span));
         }
         if let Some(realm) = creation_realm {
             self.with_function_realm(&realm, span, |realm| {
@@ -335,7 +337,7 @@ impl Realm {
                 // 20.2.3.3 is a tail call. Transfer ownership of the receiver and
                 // advance the argument iterator without Rust stack recursion.
                 let receiver = arguments.next().unwrap_or(Value::Undefined);
-                return Ok(forward_call(this, receiver, arguments.collect(), span));
+                return Ok(self.forward_call(this, receiver, arguments.collect(), span));
             }
             Builtin::FunctionBind => {
                 return self
@@ -358,7 +360,7 @@ impl Realm {
                 } else {
                     self.argument_list_from_array_like(array_like, span)?
                 };
-                return Ok(forward_call(this, this_argument, values, span));
+                return Ok(self.forward_call(this, this_argument, values, span));
             }
             Builtin::ReflectApply => {
                 // 28.1.1: check the target before CreateListFromArrayLike.
@@ -374,7 +376,7 @@ impl Realm {
                 let receiver = arguments.next().unwrap_or(Value::Undefined);
                 let list = arguments.next().unwrap_or(Value::Undefined);
                 let values = self.argument_list_from_array_like(list, span)?;
-                return Ok(forward_call(target, receiver, values, span));
+                return Ok(self.forward_call(target, receiver, values, span));
             }
             builtin => self.call_builtin(builtin, this, arguments, span),
         }?;

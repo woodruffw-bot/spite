@@ -13,6 +13,50 @@ fn check(realm: &mut Realm, source: &str) {
 }
 
 #[test]
+fn forwarded_call_errors_use_the_forwarding_realm_until_the_callee_enters_its_own() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        // 10.5.12, 20.2.3.1/3, 28.1.1: a revoked Proxy has no callee context.
+        // 10.2.1: class-call rejection occurs after entering the class's Realm.
+        const globals=[globalThis,$262.createRealm().global];
+        function rejectsIn(invoke,target,expected){
+            try{invoke(target)}catch(e){return Object.getPrototypeOf(e)===expected.TypeError.prototype}
+            return false;
+        }
+        let correct=true;
+        for(const G of globals){
+            const forwards=[
+                t=>G.Reflect.apply(t,null,[]),
+                t=>Reflect.apply(G.Function.prototype.apply,t,[null,[]]),
+                t=>Reflect.apply(G.Function.prototype.call,t,[null]),
+                G.Function('t',"'use strict';return t()"),
+                G.Function("'use strict';return (t)=>t()")()
+            ];
+            for(const target of [undefined,{},1]){
+                for(const forward of forwards)correct=rejectsIn(forward,target,G)&&correct;
+            }
+            for(const origin of globals){
+                for(const kind of ['direct','bound','proxy']){
+                    const pair=origin.Proxy.revocable(origin.Function(''),{});
+                    const target=kind==='bound'?pair.proxy.bind(null):
+                        kind==='proxy'?new origin.Proxy(pair.proxy,{}):pair.proxy;
+                    pair.revoke();
+                    for(const forward of forwards)correct=rejectsIn(forward,target,G)&&correct;
+                }
+                const C=origin.Function('return class C{}')();
+                for(const target of [C,C.bind(null)]){
+                    for(const forward of forwards)correct=rejectsIn(forward,target,origin)&&correct;
+                }
+            }
+        }
+        correct
+        "#,
+    );
+}
+
+#[test]
 fn host_installation_is_explicit_with_the_current_global_and_native_method_metadata() {
     let mut realm = Realm::default();
     check(&mut realm, "typeof $262==='undefined'");

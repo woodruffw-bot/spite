@@ -1550,7 +1550,7 @@ impl Realm {
     ) -> Result<Value, Error> {
         self.enter_call(span)?;
         let tail_scope = self.tail_scope.take();
-        let result = self.call_inner(function, this, arguments, span);
+        let result = self.call_inner(function, this, arguments, span, None);
         self.call_depth -= 1;
         self.tail_scope = tail_scope;
         result
@@ -1575,13 +1575,22 @@ impl Realm {
         mut this: Value,
         arguments: Vec<Value>,
         mut span: Span,
+        mut invocation_realm: Option<crate::environment::EnvironmentHandle>,
     ) -> Result<Value, Error> {
         self.check_argument_count(arguments.len(), span)?;
         let mut arguments = arguments.into_iter();
         loop {
-            match self.call_step(function, this, arguments, span)? {
+            let outcome = if let Some(realm) = invocation_realm.take() {
+                self.with_function_realm(&realm, span, |realm| {
+                    realm.call_step(function, this, arguments, span)
+                })?
+            } else {
+                self.call_step(function, this, arguments, span)?
+            };
+            match outcome {
                 CallOutcome::Value(value) => return Ok(value),
                 CallOutcome::Tail(call) => {
+                    invocation_realm = call.realm;
                     function = call.function;
                     this = call.this;
                     arguments = call.arguments.into_iter();

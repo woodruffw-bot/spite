@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Forwarded-call Realm regression
+
+The native regression adds 130 cross-Realm call checks for revoked targets,
+non-callables and classes. All 576 Runtime units and 2,434 non-RegExp integration
+groups pass. An independent 720-program reference comparison reproduces 132
+incorrect error Realms before the fix and matches every case afterward. The
+transfer keeps only the forwarding Realm identity after restoring local scopes.
+Original fixture bytes, helpers, modes and reviews are unchanged.
+
 ## String code-construction execution receipt
 
 A frozen gate compiled on clean 16338f8a6 passes all 87 runner controls and all

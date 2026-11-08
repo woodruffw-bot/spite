@@ -581,7 +581,8 @@ fn source_constructor_late_errors_and_tail_forwarding_restore_the_caller_realm()
             expect(child.Parameter,child.ReferenceError,'parameter');
             expect(child.Field,child.TypeError,'field');
             expect(child.Callback,TypeError,'callback');
-            expect(child.Tail,TypeError,'tail');
+            // 10.5.12: the revoked call occurs in the constructor body's Realm.
+            expect(child.Tail,child.TypeError,'tail');
             class ParentPrimitive extends Object {constructor(){return 1;}}
             class ParentMissing extends Object {constructor(){}}
             class ParentBody extends Object {constructor(){null.x;}}

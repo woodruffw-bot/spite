@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Forwarded-call exception Realms
+
+Pending synchronous calls retain the forwarding Realm's global-environment
+identity after local scope restoration. The iterative dispatcher activates it
+before Proxy/bound forwarding and ordinary callee entry. Revoked Proxy and
+non-callable errors now use the forwarding Realm; class-call rejection still
+uses the class's Realm (10.2.1, 10.3.1, 10.5.12, 20.2.3.1/3, 28.1.1).
+The transfer retains no caller local scopes and adds no recursion or dependency.
+
+An independent 720-program Node 26.13.0 comparison reproduces 132 mismatches
+before the fix and matches all 720 afterward. It covers three Realms, foreign
+Reflect.apply and Function.prototype.call/apply, strict ordinary/arrow tails,
+class/bound/Proxy calls, revoked targets, constructor rejection and foreign
+traps. The original 216-program reproducer also matches in full after the fix.
+
+One new native group checks 130 revoked, non-callable and class-call cases
+through both Realms. A constructor-tail assertion now expects the body Realm,
+confirmed by a focused before/after reference check. All 576 Runtime units and
+2,434 non-RegExp integration groups pass, including 4,096 alternating-Realm
+tail calls and record-restoration checks.
+The quality gate also passes formatting, strict Clippy, the explicit MSRV,
+dependency/inventory checks, 30 CLI groups and all three facade doctests.
+
 ## Instance checks across callable revocation
 
 A 144-program audit matches Node 26.13.0 exactly for instanceof and direct

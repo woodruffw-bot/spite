@@ -5276,6 +5276,13 @@ The computed caller ScriptOrModule fallback is preserved for built-ins (9.4.1,
 become Error objects before their Realm is removed. Host failures restore state
 and bypass language handlers. The outer call loop forwards only after record
 restoration, so alternating-Realm tail calls do not grow the native stack.
+Pending synchronous calls retain the forwarding caller's global-environment
+identity after its local scopes are restored. Each iteration activates that
+Realm before dispatch: revoked Proxy and non-callable errors use the caller's
+intrinsics (10.5.12, 20.2.3.3), while ordinary and builtin callees then enter
+their own Realms (10.2.1, 10.3.1). Class-call errors therefore still use the
+class's Realm. This identity retains no caller local scopes, and forwarding
+continues through the same iterative loop.
 Entry and exit are also available as owned transition state, containing the
 checked previous/target keys, caller source context and tail-call state. The
 scoped call wrapper uses the same primitives. A caller can retain and unwind
