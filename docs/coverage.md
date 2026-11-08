@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Array length coercion reentry
+
+All 720 audited programs match Node 26.13.0 using arrays of at most seven slots.
+The matrix combines eight paired conversion results, mutations in either numeric
+conversion, requested writable flags and initially read-only lengths. It observes
+conversion order, return/error kinds, extensibility, surviving keys and complete
+property flags.
+
+Focused regressions protect ArraySetLength's separate ToUint32/ToNumber calls
+(10.4.2.4): a first result of 2^32+2 followed by 2, or 4.5 followed by 4, is valid.
+Length freezing and newly blocked higher indices during either conversion retain
+partial-shrink and read-only rules; mismatched conversions throw RangeError before
+checking the old writable flag. All three truncation groups pass with unchanged
+snapshots. Runtime code and test/fixture inventories are unchanged.
+
 ## CLI source-byte limits
 
 The CLI exposes --max-source-bytes for the existing per-source UTF-8 byte limit.

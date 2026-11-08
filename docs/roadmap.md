@@ -658,6 +658,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect Array.fromAsync mapper reasons across pending close and collection, retaining direct-async versus sync-adapter result inspection and original-failure precedence.
 - [x] Protect restricted line terminators through comments and Unicode separators, retaining async versus ordinary function kinds, exact source and yield-star boundaries.
 - [x] Expose opt-in CLI source-byte limits for syntax checks, evaluation, imported Modules and generated eval/Function source, preserving host-failure behavior.
+- [x] Protect ArraySetLength reentry during both numeric conversions, preserving wrapped/fractional first results, live writable state and partial truncation after new deletion blockers.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

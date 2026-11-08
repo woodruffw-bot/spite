@@ -33,6 +33,23 @@ fn array_linear_truncation_first_failure_snapshot() {
 
 #[test]
 fn array_linear_truncation_accessors_prototypes_and_maximum_index() {
+    // 10.4.2.4 compares ToUint32's result with a separate ToNumber call.
+    for (first, second) in [("4294967298", "2"), ("4.5", "4")] {
+        check(&format!(
+            "let a=[0,1,2,3],calls=0;let ok=Reflect.defineProperty(a,'length',{{value:{{valueOf(){{return ++calls===1?{first}:{second}}}}}}});ok&&calls===2&&a.length==={second}&&Object.keys(a).length==={second}"
+        ));
+    }
+    for phase in [1, 2] {
+        check(&format!(
+            "let a=[0,1,2,3],calls=0;let ok=Reflect.defineProperty(a,'length',{{value:{{valueOf(){{if(++calls==={phase})Object.defineProperty(a,'length',{{writable:false}});return 2}}}},writable:false}});!ok&&calls===2&&a.length===4&&a[3]===3&&!Object.getOwnPropertyDescriptor(a,'length').writable"
+        ));
+        check(&format!(
+            "let a=[0,1,2,3],calls=0;let ok=Reflect.defineProperty(a,'length',{{value:{{valueOf(){{if(++calls==={phase}){{a[6]=6;Object.defineProperty(a,'5',{{value:5,writable:true,enumerable:true,configurable:false}})}}return 1}}}},writable:false}});!ok&&calls===2&&a.length===6&&a[5]===5&&!Object.hasOwn(a,'6')&&Object.keys(a).join(',')==='0,1,2,3,5'&&!Object.getOwnPropertyDescriptor(a,'length').writable"
+        ));
+    }
+    check(
+        "let a=[0,1,2,3],calls=0,caught=false;Object.defineProperty(a,'length',{writable:false});try{Reflect.defineProperty(a,'length',{value:{valueOf(){return ++calls===1?2:3}}})}catch(error){caught=error instanceof RangeError}caught&&calls===2&&a.length===4",
+    );
     check(
         "let calls=0,a=[0,1,2,3];Object.defineProperty(a,'1',{get(){calls++;return 9},set(v){calls++},configurable:false});Object.defineProperty(a,'3',{get(){calls++;return 8},configurable:true});let ok=Reflect.defineProperty(a,'length',{value:0,writable:false});!ok&&calls===0&&a.length===2&&!Object.hasOwn(a,'2')&&!Object.hasOwn(a,'3')&&!Object.getOwnPropertyDescriptor(a,'length').writable&&Object.hasOwn(a,'0')&&Object.hasOwn(a,'1')",
     );
