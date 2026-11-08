@@ -89,10 +89,10 @@ embedding requirement. Its previous Windows main-thread stack was insufficient.
 A 1 MiB parent-stack reproduction fails before the fix and passes all three
 examples afterward. Crate documentation and the README expose the requirement.
 
-All four workspace-rest CI jobs on b457c937d now pass their documentation steps,
-covering Linux/Windows on Rust 1.99 and stable. The full local quality gate also
-passes, including 30 CLI groups. Runtime code, resource quotas and CI stack
-settings are unchanged.
+All 17 CI jobs on b457c937d pass, including the full Test262 jobs. All four
+workspace-rest documentation steps pass on Linux/Windows with Rust 1.99 and
+stable. The full local quality gate also passes, including 30 CLI groups.
+Runtime code, resource quotas and CI stack settings are unchanged.
 
 ## Contextual using through comment line terminators
 
