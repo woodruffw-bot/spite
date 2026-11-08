@@ -90,6 +90,28 @@ fn complete_unicode_18_normalization_invariants() {
 
 #[test]
 fn intermediate_decomposition_does_not_consume_the_final_string_quota() {
+    for form in [Form::Nfc, Form::Nfd, Form::Nfkc, Form::Nfkd] {
+        let mut realm = Realm::new(crate::Limits {
+            max_string_units: Some(1),
+            ..crate::Limits::default()
+        });
+        assert_eq!(
+            realm.normalize_string(&JsString::from("a"), form, Span::new(0, 0)),
+            Ok(JsString::from("a"))
+        );
+        assert!(matches!(
+            realm.normalize_string(&JsString::from("ab"), form, Span::new(0, 0)),
+            Err(Error::Limit { .. })
+        ));
+        let mut realm = Realm::new(crate::Limits {
+            max_steps: Some(1),
+            ..crate::Limits::default()
+        });
+        assert!(matches!(
+            realm.normalize_string(&JsString::from("ab"), form, Span::new(0, 0)),
+            Err(Error::Limit { .. })
+        ));
+    }
     let mut realm = Realm::new(crate::Limits {
         max_string_units: Some(1),
         ..crate::Limits::default()

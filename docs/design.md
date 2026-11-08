@@ -2820,6 +2820,11 @@ opt-in and host aborts bypass JavaScript cleanup. The complete unchanged Unicode
 NormalizationTest oracle verifies all specified column invariants and scalar
 identity outside its Part 1 inventory.
 
+Without work accounting or agent termination control, ASCII input within the
+output-length limit reuses its immutable String storage: every normalization form
+leaves ASCII unchanged. Form conversion and validation precede this check. Input
+beyond the output limit follows the existing checked normalization path.
+
 String.localeCompare uses this host's fixed locale-neutral collation without
 ECMA-402 (22.1.3.10). RequireObjectCoercible and ToString of the receiver precede
 ToString of the comparison value. Compare NFD strings lexicographically by UTF-16

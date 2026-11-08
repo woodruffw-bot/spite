@@ -14,6 +14,9 @@ fn check(source: &str) {
 #[test]
 fn all_forms_handle_recursive_mappings_reordering_blocking_and_hangul() {
     check(
+        "let text=Array.from({length:128},(_,i)=>String.fromCharCode(i)).join('').repeat(16);['NFC','NFD','NFKC','NFKD'].every(form=>text.normalize(form)===text)",
+    );
+    check(
         "'e\\u0301'.normalize()==='é' && 'é'.normalize('NFD')==='e\\u0301' && 'é'.normalize(undefined)==='é'",
     );
     check(

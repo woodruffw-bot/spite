@@ -69,6 +69,17 @@ impl Realm {
         form: Form,
         span: Span,
     ) -> Result<JsString, Error> {
+        // ASCII has no decomposition, reordering or composition in any form.
+        if self.remaining_steps.is_none()
+            && self.atomic_waits.is_none()
+            && self
+                .limits
+                .max_string_units
+                .is_none_or(|limit| string.len() <= limit)
+            && string.code_units().iter().all(|&unit| unit <= 0x7f)
+        {
+            return Ok(string.clone());
+        }
         let mut points = Vec::new();
         let mut pending = Vec::new();
         for decoded in char::decode_utf16(string.code_units().iter().copied()) {

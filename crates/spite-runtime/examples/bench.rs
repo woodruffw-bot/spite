@@ -86,6 +86,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_normalize_ascii",
+        source: "(()=>{const text='ASCII 09'.repeat(2048),forms=['NFC','NFD','NFKC','NFKD'];let sum=0;for(let i=0;i<16;i++){const output=text.normalize(forms[i%4]);sum+=output.length+output.charCodeAt(output.length-1)}return sum})()",
+        expected: 263_056.0,
+        jobs: false,
+    },
+    Case {
         name: "string_iteration",
         source: "(()=>{const text='ab漢💩\\ud800'.repeat(128);let sum=0;for(const c of text)sum+=c.length+c.charCodeAt(0);return sum})()",
         expected: 17_830_912.0,

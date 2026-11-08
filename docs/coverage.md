@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Reusing ASCII normalization input
+
+String normalization reuses ASCII input within the output-length limit when work
+accounting and agent termination control are absent. All four normalization forms
+leave ASCII unchanged. The eleven-line guard follows form validation, uses shared
+immutable storage and adds no state or dependency. Existing checked paths retain
+quota failures and termination checks.
+
+The fifty-second workload normalizes 16,384 ASCII units sixteen times across all
+four forms. All 52 checked outputs pass with 54 CSV rows. Five checked
+evaluation/collection iterations, including initialization and parsing, record
+782,334,189 instructions before and 23,156,098 after (-97.04%) in Callgrind.
+Rust calls to free fall from 5,286 to 4,966 (-320). These are scoped counts;
+full-corpus and wall-time evidence remain pending.
+
+All 574 Runtime units and 2,431 non-RegExp integrations pass, including the
+complete Unicode 18 normalization oracle. Added cases cover all ASCII code points,
+all four forms, output-length boundaries and opted-in work limits; test/fixture
+inventories are unchanged.
+
 ## Single simple-parameter name analysis
 
 Shared function initialization skips duplicate-name analysis for exactly one
