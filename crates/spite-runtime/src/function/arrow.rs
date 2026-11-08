@@ -139,11 +139,14 @@ impl Realm {
         let environment = self.scopes.last().expect("parameter environment").clone();
         let mut names = BTreeSet::new();
         let mut duplicates = false;
-        for (name, _) in parameters
-            .iter()
-            .flat_map(|parameter| parameter.binding().pattern.bound_names())
-        {
-            duplicates |= !names.insert(name);
+        // A single plain identifier cannot introduce duplicate bound names.
+        if !matches!(parameters, [parameter] if parameter.is_simple()) {
+            for (name, _) in parameters
+                .iter()
+                .flat_map(|parameter| parameter.binding().pattern.bound_names())
+            {
+                duplicates |= !names.insert(name);
+            }
         }
         // 10.2.11: duplicate names only occur in simple, sloppy lists. Their
         // bindings start at undefined and use assignment initialization.

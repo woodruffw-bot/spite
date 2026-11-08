@@ -653,6 +653,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse lossless scalar source ranges through the shared String conversion, preserving recorded lone-surrogate restoration and exact function source.
 - [x] Protect Set-like method validation before size shortcuts, retaining unused class/revoked callable methods and rejecting non-callables in getter order.
 - [x] Dispatch every global metadata member through one exhaustive match, preserving Proxy/FinalizationRegistry calls and removing the obsolete unsupported fallback.
+- [x] Skip duplicate bound-name collection for exactly one simple identifier parameter, preserving existing initialization and other parameter-list analysis.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

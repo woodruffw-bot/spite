@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Single simple-parameter name analysis
+
+Shared function initialization skips duplicate-name analysis for exactly one
+ordinary identifier without a default. The existing Parameter::is_simple query
+establishes that it has one bound name; all other lists retain their existing
+analysis. This adds three production lines without cached state or dependencies.
+
+Five checked callback evaluation/collection iterations, including initialization
+and parsing, record 1,424,028,036 instructions before and 1,402,503,918 after
+(-1.51%) in Callgrind. Rust calls to free fall from 1,086,471 to 1,004,551,
+removing 81,920 temporary name-list/set allocations (-7.54%). All 51 checked
+workload results pass with 53 CSV rows. These are scoped instruction/allocation
+counts; full-corpus and wall-time evidence remain pending.
+
+All 574 Runtime units and 2,431 non-RegExp integrations pass, including existing
+duplicate/sloppy parameter, mapped-arguments, default/rest and destructuring
+coverage. Work charges and fixture inventories are unchanged.
+
 ## Exhaustive metadata method dispatch
 
 All 36 global metadata members now use one exhaustive dispatcher. Proxy.revocable
