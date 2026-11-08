@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Short ASCII String construction
+
+JsString conversion widens UTF-8 inputs of at most sixteen ASCII bytes in an
+initialized stack buffer before copying into shared immutable Arc storage.
+PropertyKey conversion shares this path. Longer and non-ASCII inputs retain the
+existing UTF-16 encoder. The eight-line change removes the temporary vector for
+common intrinsic names such as next, done, value and length.
+
+All 113 Core units pass. The existing String conversion regression now covers
+all 128 ASCII values at lengths 0, 1, 15, 16, 17 and 32, plus BMP, supplementary
+and mixed text at those lengths. Existing surrogate preservation, content
+equality, hashing, ordering and thread ownership checks remain in place.
+All 18 Parser units, 443 Parser integrations, 574 Runtime units and 2,431
+non-RegExp integrations pass, along with the full quality gate and its 25 CLI
+groups. Test inventories, default quotas and work charges are unchanged.
+
+Five checked TypedArray workload evaluation/collection iterations, including
+initialization and parsing, record 1,511,440,779 instructions before and
+1,421,895,286 after (-5.92%) in Callgrind. Rust calls to free drop from 1,294,301
+to 1,086,584 (-16.05%). Both profiles use the same workload and compiler settings;
+these counts describe this workload, with no wall-time result claimed yet.
+
 ## Binding identifier metadata without traversal stacks
 
 BindingPattern bound-name and expression-depth queries now return directly for an

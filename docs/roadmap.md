@@ -642,6 +642,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect permitted shortest decimal spellings, required explicit-precision tie rounding and canonical numeric-key consistency without locking implementation-defined digit choices.
 - [x] Protect with-bound ordinary/optional call receivers and direct eval context across awaited arguments, binding deletion, unscopables changes and collection.
 - [x] Compute a binding identifier's bound name/span and zero pattern-expression depth directly, avoiding traversal stacks while retaining composite-pattern analysis and initializer handling.
+- [x] Construct short ASCII String values and property keys through initialized stack storage, retaining exact UTF-16 conversion and shared immutable ownership.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

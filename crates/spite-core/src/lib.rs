@@ -167,6 +167,14 @@ impl JsString {
 
 impl From<&str> for JsString {
     fn from(value: &str) -> Self {
+        // Most intrinsic property names fit without a temporary heap buffer.
+        if value.len() <= 16 && value.is_ascii() {
+            let mut units = [0u16; 16];
+            for (unit, byte) in units.iter_mut().zip(value.bytes()) {
+                *unit = u16::from(byte);
+            }
+            return Self::from(&units[..value.len()]);
+        }
         Self(value.encode_utf16().collect())
     }
 }
@@ -369,6 +377,23 @@ mod tests {
 
     #[test]
     fn utf16_preserves_surrogates_and_counts_code_units() {
+        for length in [0, 1, 15, 16, 17, 32] {
+            for byte in 0..=127u8 {
+                let source = char::from(byte).to_string().repeat(length);
+                let string = JsString::from(source.as_str());
+                assert_eq!(string.code_units(), vec![u16::from(byte); length]);
+                assert_eq!(string.to_utf8().unwrap(), source);
+            }
+            for text in ["é", "Ā", "𐀀", "💩", "a\0é💩"] {
+                let source = text.repeat(length);
+                let string = JsString::from(source.as_str());
+                assert_eq!(
+                    string.code_units(),
+                    source.encode_utf16().collect::<Vec<_>>()
+                );
+                assert_eq!(string.to_utf8().unwrap(), source);
+            }
+        }
         assert_eq!(JsString::from("💩").len(), 2);
         let lone = JsString::from([0xd800]);
         let empty = JsString::default();
