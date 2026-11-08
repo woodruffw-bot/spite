@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 62 program workloads |
+| parse_all | Parse and drop the ASTs for all 64 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
@@ -31,6 +31,8 @@ and collection medians are computed independently.
 | parse_int_small | Parse the hexadecimal Strings for integers 0–1,023, checking their numeric sum |
 | properties | Create, populate and read 128 computed object properties |
 | unresolved_globals | Query typeof for an unresolved global 4,096 times, checking the count |
+| string_repeat_single | Repeat a 16,384-unit BMP/lone-surrogate String once, sixteen times, checking length and final code unit |
+| string_repeat_multiple | Repeat the same input twice as a copying control, checking each 32,768-unit result |
 | string_raw_single | Call String.raw sixteen times over one 16,384-unit BMP/lone-surrogate literal, checking length and final code unit |
 | string_raw_multiple | Repeat with two literals and an empty substitution, checking each 32,768-unit result as a concatenation control |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
@@ -97,6 +99,28 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Single-count String repetition
+
+Nonempty input with a converted repetition count of one retains its immutable
+String after the same length and work checks (22.1.3.18). Baseline production is
+5122dd4ee. Matched executables use identical 64-workload sources, Rust 1.99,
+optimized conformance libraries, debug assertions and overflow checks.
+
+The dedicated Callgrind programs each evaluate five times, with sixteen calls
+per evaluation on a 16,384-unit BMP/lone-surrogate input. Counts include Realm
+initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| One repetition | 184,017,560 | 178,565,168 | 4,641 | 4,481 |
+| Two-repetition control | 189,274,242 | 189,179,969 | 4,641 | 4,641 |
+
+The target uses 2.963% fewer instructions and 160 fewer Rust deallocations.
+The control instruction count differs by -0.050%. Both complete benchmark
+smokes pass all 66 CSV rows, and all 288 coercion/error/UTF-16 cases match Node
+before and after. Loaded smoke durations support no elapsed-time claim, and
+these counts establish no general workload speedup or CI threshold.
 
 ## TypedArray observer reads
 

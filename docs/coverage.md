@@ -61,6 +61,48 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Single-count String repetition
+
+For nonempty input, repeat retains the converted String when ToIntegerOrInfinity
+produces one (22.1.3.18). Receiver/count conversion, invalid-count rejection,
+output limits, output work and agent checks retain their order. Other counts
+keep the checked growing-prefix copy path.
+
+The new quota group checks exact and insufficient work, output rejection before
+work debit, and host termination for both 1 and 1.75. All 577 Runtime units,
+2,441 non-RegExp integrations and the quality gate pass. All 288 independent
+coercion/error/UTF-16 cases match Node before and after; both matched benchmark
+smokes pass 64 workloads and 66 CSV rows. The dedicated profile uses 2.963% fewer
+instructions and 160 fewer Rust deallocations over 80 single-repeat calls; the
+two-repeat control retains its deallocation count. This supports no elapsed-time
+or general workload speedup claim. See [benchmarking](benchmarking.md#single-count-string-repetition).
+Fixtures, snapshots, native integration inventory and default quotas are unchanged.
+
+## Suspended-binding collection execution receipt
+
+The frozen gate compiled on clean 94e5dc052 passes all 87 runner controls and
+all 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+Executable and fixture hashes match across the 1,228.767-second four-worker run.
+All 17 CI jobs also pass in
+[run 42521648946](https://github.com/woodruffw-bot/spite/actions/runs/42521648946).
+This records binding-key scan accounting before the later partial-class change.
+Fixtures, helpers, modes and reviews are unchanged.
+
+## Word-boundary arithmetic and object-copy audits
+
+On 5122dd4ee, all 1,024 generated BigInt programs match both Python integer
+arithmetic and Node. Each checks twelve operations: arithmetic, signed quotient
+and remainder, bitwise combinations, signed shifts and width truncation. The
+seeded inputs span zero through 4,096 bits and word-boundary shifts/widths.
+
+All 780 distinct object-copy programs match Node for spread and declaration,
+assignment and awaited rest bindings. They cover ordinary/Proxy sources,
+string/index/Symbol exclusions, getter-driven deletion/addition/enumerability
+changes and descriptor/get/target failures. Another 780 repeats with collection
+after evaluation and each Promise job retain those results and traces. These
+supplemental audits change no production behavior, native groups or Test262
+passing credit.
+
 ## Suspended class metadata collection work
 
 Partially defined classes previously filtered absent initializers, string field

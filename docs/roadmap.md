@@ -686,6 +686,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Charge class-field metadata scans without initializers, preserving field definitions and bounded collector steps under opt-in work limits.
 - [x] Charge stored string-key scans in suspended object bindings during Symbol collection, preserving retained Symbols and rest exclusions after budget refusal.
 - [x] Charge partial class-definition metadata scans across computed-name suspension, retaining instance/static fields and reference order through collector refusal and resumption.
+- [x] Retain nonempty String storage for a single repetition after count conversion and the existing output-length, work and agent checks.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

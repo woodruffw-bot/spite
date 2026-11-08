@@ -34,6 +34,18 @@ impl Realm {
             .len()
             .checked_mul(count)
             .ok_or_else(|| length_limit(span))?;
+        // A single repetition can retain S after the same output and work checks.
+        if count == 1 {
+            if self
+                .limits
+                .max_string_units
+                .is_some_and(|limit| length > limit)
+            {
+                return Err(length_limit(span));
+            }
+            self.object_work(span, |_, budget| budget.charge(length))?;
+            return Ok(Value::String(string));
+        }
         let mut result = self.repeated_string_buffer(length, span)?;
         append_repeated_units(&mut result, string.code_units(), length);
         Ok(Value::String(JsString::from_code_units(result)))

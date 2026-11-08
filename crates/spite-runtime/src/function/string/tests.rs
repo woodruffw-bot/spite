@@ -326,3 +326,37 @@ fn search_predicates_charge_comparisons_before_inspecting_code_units() {
         ));
     }
 }
+
+#[test]
+fn single_repetition_keeps_output_work_and_agent_checks() {
+    let span = Span::new(0, 0);
+    let input = Value::String(JsString::from_code_units(vec![0xd800, 0, 0x4e2d, 0xdc00]));
+    for count in [1.0, 1.75] {
+        let mut realm = Realm::default();
+        realm.limits.max_string_units = Some(4);
+        realm.remaining_steps = Some(5);
+        assert_eq!(
+            realm.string_repeat(input.clone(), Value::Number(count), span),
+            Ok(input.clone())
+        );
+        assert_eq!(realm.remaining_steps, Some(0));
+        realm.remaining_steps = Some(4);
+        assert!(matches!(
+            realm.string_repeat(input.clone(), Value::Number(count), span),
+            Err(Error::Limit { .. })
+        ));
+        // Length rejection precedes work debit, as in repeated_string_buffer.
+        realm.limits.max_string_units = Some(3);
+        realm.remaining_steps = Some(5);
+        assert!(
+            matches!(realm.string_repeat(input.clone(), Value::Number(count), span), Err(Error::Limit { message, .. }) if message == "string allocation limit exceeded")
+        );
+        assert_eq!(realm.remaining_steps, Some(5));
+        realm.limits.max_string_units = Some(4);
+        realm.remaining_steps = None;
+        realm.agent_control().terminate();
+        assert!(
+            matches!(realm.string_repeat(input.clone(), Value::Number(count), span), Err(Error::Host { message, .. }) if message == "agent terminated by host")
+        );
+    }
+}

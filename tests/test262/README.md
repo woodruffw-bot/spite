@@ -5,6 +5,23 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Single-count String repetition regression
+
+All 577 Runtime units, 2,441 non-RegExp integrations and the quality gate pass
+after single-repeat storage reuse. A new unit group retains exact work, output
+and termination checks; all 288 independent cases match Node before and after.
+Both matched benchmark smokes pass all 66 rows. Fixture bytes, helpers, modes
+and reviews are unchanged.
+
+## Suspended-binding collection execution receipt
+
+A frozen gate compiled on clean 94e5dc052 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,228.767-second run.
+All 17 CI jobs also pass. Outside the corpus, the later 5122dd4ee Runtime matches independent oracles on
+1,024 BigInt programs and 780 object-copy programs plus 780 collection repeats.
+Fixture bytes, helpers, modes and reviews are unchanged.
+
 ## Suspended class collection regression
 
 One native group checks partial class metadata scan charges for instance/static
