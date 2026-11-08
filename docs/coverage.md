@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct parameter arguments-name checks
+
+Ordinary call setup checks identifier parameters directly when deciding whether
+to create an arguments object (10.2.11). Default/rest identifier bindings use the
+same direct check; composite patterns retain the existing BoundNames traversal.
+The five-line change adds no public API, cached state or work charges.
+
+Five checked local-var workload evaluations with collection, including
+initialization and parsing, record 355,526,515 instructions before and
+352,048,423 after (-0.98%) in Callgrind. Rust calls to free fall from 228,876 to
+218,636 (-10,240/-4.47%). All 53 checked workloads pass with 55 CSV rows. These
+are scoped instruction/allocation counts, with no wall-time speedup claim.
+
+All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including 30 CLI groups and existing mapped/default/rest/destructuring
+arguments coverage. Snapshots and fixture inventories are unchanged; full-corpus
+and quiet timing evidence remain pending.
+
 ## Bound function metadata reentry
 
 All 144 audited programs match Node 26.13.0 across proxy metadata mutations and

@@ -6,7 +6,7 @@ use crate::{
     object::DataDescriptor,
 };
 use spite_core::{JsString, Span};
-use spite_parser::ast::{ArrowBody, Function, Parameter};
+use spite_parser::ast::{ArrowBody, BindingPatternKind, Function, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Inputs consumed by ordinary and method call setup before body execution.
@@ -91,11 +91,16 @@ impl Realm {
             .iter()
             .any(|parameter| !parameter.is_simple());
         let has_parameter_expressions = code.parameters.iter().any(Parameter::contains_expression);
-        let parameter_arguments = code
-            .parameters
-            .iter()
-            .flat_map(|parameter| parameter.binding().pattern.bound_names())
-            .any(|(name, _)| name == "arguments");
+        let parameter_arguments = code.parameters.iter().any(|parameter| {
+            let pattern = &parameter.binding().pattern;
+            match &pattern.kind {
+                BindingPatternKind::Identifier(name) => name == "arguments",
+                _ => pattern
+                    .bound_names()
+                    .into_iter()
+                    .any(|(name, _)| name == "arguments"),
+            }
+        });
         let body_arguments = body
             .statements()
             .iter()
