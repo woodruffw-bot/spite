@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 57 program workloads |
+| parse_all | Parse and drop the ASTs for all 58 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
@@ -60,6 +60,7 @@ and collection medians are computed independently.
 | function_source | Compile a function with a 10,240-unit BMP/supplementary comment, then stringify it sixteen times, checking lengths and final units |
 | function_source_ascii | Repeat source stringification with a 16,384-byte ASCII comment |
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
+| bigint_to_number_integer | Convert a 513-bit BigInt to Number 2,048 times, checking the exact power of two |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
 | bigint_divide_u64 | Perform 32 quotient/remainder steps by 2^63+17 from a changing 2,048-bit integer, checking a low-word checksum |

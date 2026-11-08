@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Short-circuit BigInt-to-Number rounding analysis
+
+BigInt-to-Number conversion skips the pure discarded-bit scan when the guard
+and retained low bit already determine rounding (21.1.1.1). It retains the same
+ties-to-even predicate and every upfront work charge, including exact quota
+refusals. The change removes one production line without a new helper, state,
+allocation or API. All surrounding conversion code is byte-identical.
+
+The fifty-eighth workload converts a 513-bit BigInt 2,048 times and checks the
+exact power-of-two result. All 58 checked workloads pass with 60 CSV rows; Node
+26.13.0 independently checks the new workload. Five checked evaluation/collection
+iterations, including initialization and parsing, record 210,466,793 to
+163,603,108 instructions (22.27% fewer) and the same 64,941 Rust frees.
+These scoped instruction counts do not establish a wall-time speedup.
+
+All 36 BigInt tests pass, including both signs, distant sticky bits, halfway and
+overflow boundaries, every integral exponent and exact work-budget refusals.
+A separate 1,037-program audit matches independent Python integer-to-binary64
+rounding exactly through JavaScript DataView result bits. All 575 Runtime units,
+2,432 non-RegExp integrations and the quality gate pass, including formatting,
+strict Clippy, the explicit MSRV, policy/inventory checks, 30 CLI groups and all
+three facade doctests. Full-corpus and quiet timing evidence remain pending.
+
 ## Short-circuit exact-sum rounding analysis
 
 Math.sumPrecise only scans discarded bits when the guard bit is set and the

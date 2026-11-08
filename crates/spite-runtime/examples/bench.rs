@@ -254,6 +254,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "bigint_to_number_integer",
+        source: "(()=>{const value=1n<<512n;let count=0;for(let i=0;i<2048;i++)if(Number(value)===2**512)count++;return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint",
         source: "(()=>{let x=1n<<256n;for(let i=0;i<64;i++)x=(x*3n+BigInt(i))/2n;return Number(x&65535n)})()",
         expected: 5661.0,
