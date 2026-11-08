@@ -667,6 +667,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Apply opt-in encoded source-byte limits to lossless UTF-16 Script and Module parsing before scanner allocation, preserving exact spans and grammar diagnostics.
 - [x] Make primitive prototype selection and boxing exhaustive across Value kinds, retaining nullish errors and object identity while removing the obsolete unsupported-wrapper fallback.
 - [x] Reuse unchanged ASCII case-conversion input without work accounting or agent control, preserving output limits and the existing Unicode-context mapping path.
+- [x] Protect retained synchronous using lookahead through comment line terminators, preserving ordinary expression kinds, exact source and for-of head restrictions.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

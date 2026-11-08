@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Contextual using through comment line terminators
+
+Regression checks distinguish a resource declaration from two ordinary
+expressions across fifteen gaps, including comment-contained LF/CR/CRLF/LS/PS.
+They check statement kinds, exact function source and for-of restrictions in
+Script and Module goals. All 18 Parser units, 443 integrations and the full
+quality gate pass, including three facade doctests and 30 CLI groups.
+
+Of 384 audited goal comparisons, 376 match Node 26.13.0 directly. The eight raw
+differences are Node's acceptance of an escaped using keyword. The retained
+resource grammar uses literal using, and terminal symbols exclude escapes
+(5.1.5.1); the existing rejection is preserved. Resource declarations are outside
+the published edition-17 grammar, so this protects existing support without adding
+published-baseline conformance credit. Parser/Runtime code, snapshots and fixture
+inventories are unchanged.
+
 ## Reuse unchanged ASCII case conversions
 
 String case conversion reuses its input when every unit is ASCII and no letter

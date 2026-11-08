@@ -1,7 +1,7 @@
 //! Contextual resource bindings, scope early errors and loop grammar.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{parse_script, parse_script_utf16};
+use spite_parser::{ast::StatementKind, parse_module, parse_script, parse_script_utf16};
 
 #[test]
 fn using_statements_and_both_loop_headers_snapshot() {
@@ -99,6 +99,54 @@ fn ordinary_using_identifiers_linebreaks_and_for_of_lookahead_remain_distinct() 
             parse_script_utf16(&JsString::from(source)).is_ok(),
             "UTF-16: {source}"
         );
+    }
+    for (gap, newline) in [
+        (" ", false),
+        ("\t", false),
+        ("/**/", false),
+        ("/*x*/", false),
+        ("//x\n", true),
+        ("\n", true),
+        ("\r", true),
+        ("\r\n", true),
+        ("\u{2028}", true),
+        ("\u{2029}", true),
+        ("/*\n*/", true),
+        ("/*\r*/", true),
+        ("/*\r\n*/", true),
+        ("/*\u{2028}*/", true),
+        ("/*\u{2029}*/", true),
+    ] {
+        let source = format!("function f(){{using{gap}x=null;}}");
+        let script = parse_script(&source).unwrap();
+        let module = parse_module(&source).unwrap();
+        for statements in [script.statements(), module.statements()] {
+            let StatementKind::Function(function) = &statements[0].kind else {
+                panic!("function")
+            };
+            let body = function.body.statements();
+            assert_eq!(body.len(), if newline { 2 } else { 1 }, "{gap:?}");
+            assert_eq!(
+                matches!(body[0].kind, StatementKind::Using(_)),
+                !newline,
+                "{gap:?}"
+            );
+            assert_eq!(function.source.as_str(), Some(source.as_str()));
+        }
+        let source = format!("function f(){{for(using{gap}x of []){{}}}}");
+        if newline {
+            assert_eq!(
+                parse_script(&source).unwrap_err().kind,
+                DiagnosticKind::Syntax
+            );
+            assert_eq!(
+                parse_module(&source).unwrap_err().kind,
+                DiagnosticKind::Syntax
+            );
+        } else {
+            assert!(parse_script(&source).is_ok());
+            assert!(parse_module(&source).is_ok());
+        }
     }
 }
 
