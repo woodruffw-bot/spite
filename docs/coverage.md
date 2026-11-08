@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct TypedArray observer reads
+
+Without work accounting or agent control, at, reduce/reduceRight and
+join/toLocaleString use the existing live element reader for their known numeric
+indices. This avoids creating and reparsing property keys. Each read still checks
+the current buffer bounds; callbacks and coercions can detach, resize or regrow
+the buffer. Budgeted and agent-controlled calls retain their previous property
+dispatch. No state, storage representation or dependency changes.
+
+All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes from 2,247
+unchanged TypedArray/Uint8Array originals and the full quality gate pass, including
+25 CLI groups. All 1,734 indexed-collection comparisons match Node. A further
+1,152 cases across all twelve element kinds and fixed/length-tracking resizable
+views match both the previous implementation and Node exactly, including shrinking,
+regrowth, detachment, prototype replacement and callback failures. Inventories and
+default quotas are unchanged. Matched timing binaries are saved; no post-change
+timing is claimed yet.
+
 ## Whole-range String slice/substring storage
 
 String.prototype.slice and substring now reuse the converted receiver's immutable

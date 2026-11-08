@@ -638,6 +638,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse the converted String when trim/trimStart/trimEnd leaves its full UTF-16 range intact, preserving both work charges and output-length validation.
 - [x] Retain the converted String for whole-range slice/substring results after endpoint coercion and normalization, preserving output-length validation and result work accounting.
 - [x] Store each Uint8Array hex/Base64 method's implementation beside its name, length and constructor/prototype placement, removing duplicate string dispatch and obsolete unsupported fallbacks.
+- [x] Read known indices in TypedArray at/reduce/reduceRight/join/toLocaleString through the existing live element reader without work accounting or agent control, preserving the charged dispatch when enabled.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
