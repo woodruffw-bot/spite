@@ -627,6 +627,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Load CLI static Module graphs from canonical file paths, retaining shared/cyclic records, re-exports and asynchronous dependencies, with import-attribute validation before file access.
 - [x] Service CLI dynamic file imports through the shared Module cache and native completion API, preserving namespace/evaluation identity, language rejection and host-failure boundaries.
 - [x] Protect the selected super base and deferred Symbol-key object across an awaited RHS and collection, releasing both after continuation completion while retaining published reference ordering.
+- [x] Report branded CLI Error values with stored name/message diagnostics without invoking JavaScript getters, Proxy traps or coercion, preserving control characters and lone surrogates.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

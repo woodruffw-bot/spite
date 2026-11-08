@@ -35,6 +35,7 @@ directory for argument/stdin sources. Canonical paths share dependency records,
 including cycles. Paths are read as UTF-8 Module source without package or extension
 search. Imported syntax errors reject dynamic imports with SyntaxError; filesystem,
 unsupported-feature and opted-in limit failures remain host failures.
+Uncaught Error values show their stored name and message in diagnostics.
 
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a work limit for each evaluation or job. Work units count interpreter and

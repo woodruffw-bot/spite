@@ -2,7 +2,7 @@
 
 mod module_files;
 
-use spite::{Error, Limits, PromiseJobOutcome, PromiseState, Realm, Value};
+use spite::{Error, JsString, Limits, ObjectHandle, PromiseJobOutcome, PromiseState, Realm, Value};
 use std::{
     env,
     fs::File,
@@ -21,17 +21,66 @@ fn read_source(mut reader: impl Read) -> Result<String, String> {
     String::from_utf8(bytes).map_err(|_| "source must be valid UTF-8".into())
 }
 
+fn data_string(realm: &Realm, object: &ObjectHandle, key: &str) -> Option<JsString> {
+    let key = JsString::from(key);
+    let mut next = Some(object.clone());
+    while let Some(handle) = next {
+        let object = realm.inspect_object(&handle).ok()?;
+        if let Some(property) = object.own_property(&key) {
+            return match &property.as_data()?.value {
+                Value::String(value) => Some(value.clone()),
+                _ => None,
+            };
+        }
+        next = object.prototype().cloned();
+    }
+    None
+}
+
+fn diagnostic_text(value: &JsString) -> String {
+    value.to_utf8().map_or_else(
+        |_| format!("{value:?}"),
+        |text| text.escape_debug().to_string(),
+    )
+}
+
+fn display_error(realm: &Realm, error: Error) -> String {
+    let Error::Thrown(Value::Object(handle)) = &error else {
+        return error.to_string();
+    };
+    if !realm
+        .inspect_object(handle)
+        .is_ok_and(|object| object.is_error())
+    {
+        return error.to_string();
+    }
+    // Inspect only stored data. Diagnostics must not execute getters, Proxy
+    // traps, user toString methods or coercion while reporting an exception.
+    let name = data_string(realm, handle, "name").unwrap_or_else(|| JsString::from("Error"));
+    let message = data_string(realm, handle, "message").unwrap_or_default();
+    let name = diagnostic_text(&name);
+    let message = diagnostic_text(&message);
+    let text = if name.is_empty() {
+        message
+    } else if message.is_empty() {
+        name
+    } else {
+        format!("{name}: {message}")
+    };
+    format!("uncaught {text}")
+}
+
 fn evaluate_module(
     realm: &mut Realm,
     source: &str,
     filename: Option<&Path>,
 ) -> Result<Value, String> {
-    let (mut files, module) =
-        module_files::FileModules::load(realm, source, filename).map_err(|e| e.to_string())?;
+    let (mut files, module) = module_files::FileModules::load(realm, source, filename)
+        .map_err(|e| display_error(realm, e))?;
     realm.enable_module_imports();
     let promise = realm
         .evaluate_module_record(&module)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| display_error(realm, e))?;
     let promise = realm
         .root_value(promise, usize::MAX)
         .map_err(|e| e.to_string())?;
@@ -39,10 +88,15 @@ fn evaluate_module(
         unreachable!("Module evaluation returns a Promise")
     };
     loop {
-        files.service_requests(realm).map_err(|e| e.to_string())?;
-        match realm.run_next_promise_job().map_err(|e| e.to_string())? {
+        files
+            .service_requests(realm)
+            .map_err(|e| display_error(realm, e))?;
+        match realm
+            .run_next_promise_job()
+            .map_err(|e| display_error(realm, e))?
+        {
             PromiseJobOutcome::Completed => continue,
-            PromiseJobOutcome::Reported(error) => return Err(error.to_string()),
+            PromiseJobOutcome::Reported(error) => return Err(display_error(realm, error)),
             PromiseJobOutcome::NoJob => {}
         }
         match realm
@@ -52,14 +106,14 @@ fn evaluate_module(
         {
             Some(PromiseState::Fulfilled(value)) => return Ok(value.clone()),
             Some(PromiseState::Rejected(reason)) => {
-                return Err(Error::Thrown(reason.clone()).to_string());
+                return Err(display_error(realm, Error::Thrown(reason.clone())));
             }
             Some(PromiseState::Pending) => {}
             None => unreachable!("Module evaluation Promise"),
         }
         if realm
             .run_next_atomics_wait_job()
-            .map_err(|e| e.to_string())?
+            .map_err(|e| display_error(realm, e))?
         {
             continue;
         }
@@ -129,7 +183,7 @@ fn main() -> ExitCode {
         if module {
             evaluate_module(&mut realm, &source, filename.as_deref())
         } else {
-            realm.eval(&source).map_err(|e| e.to_string())
+            realm.eval(&source).map_err(|e| display_error(&realm, e))
         }
     });
     match result {

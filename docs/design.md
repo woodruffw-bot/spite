@@ -112,6 +112,13 @@ using the existing Runtime limit semantics. There is no default work or job-coun
 quota. Module and limit flags can appear in either order before the input.
 The facade reexports PromiseJobOutcome for hosts driving the same public API.
 
+CLI diagnostics recognize physically branded Error values and inspect stored
+string name/message properties through the physical prototype chain. Accessors,
+Proxy traps and coercion hooks never run during reporting. Missing or non-data
+names fall back to Error; unavailable messages remain empty. UTF-8 text escapes
+control characters, and strings containing lone surrogates use lossless UTF-16
+debug escaping. Other thrown values retain their ordinary host representation.
+
 ## Crates
 
 | Crate | Responsibility | Dependencies |

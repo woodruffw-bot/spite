@@ -368,6 +368,66 @@ fn dynamic_file_imports_keep_host_failures_outside_language_rejections() {
 }
 
 #[test]
+fn error_diagnostics_show_data_without_executing_user_code() {
+    insta::allow_duplicates! {
+        for flags in [vec![], vec!["--module"]] {
+            let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+                .args(flags)
+                .args(["--eval", "throw new TypeError('failure')"])
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(1));
+            assert!(output.stdout.is_empty());
+            insta::assert_snapshot!(String::from_utf8(output.stderr).unwrap(), @"uncaught TypeError: failure");
+        }
+    }
+    for (source, expected) in [
+        (
+            "let e=new TypeError('failure');e.toString=()=>{e.message='changed';return 'changed'};throw e",
+            "uncaught TypeError: failure",
+        ),
+        (
+            "let e=new TypeError('failure');Object.defineProperty(e,'name',{get(){e.message='changed';return 'Changed'}});throw e",
+            "uncaught Error: failure",
+        ),
+        (
+            "let e=new TypeError('failure');Object.defineProperty(e,'message',{get(){e.name='Changed';return 'changed'}});throw e",
+            "uncaught TypeError",
+        ),
+        (
+            "throw new Error('line\\nnext')",
+            "uncaught Error: line\\nnext",
+        ),
+        (
+            "throw new Error('bad-\\ud800')",
+            "uncaught Error: \"bad-\\ud800\"",
+        ),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--module", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert_eq!(String::from_utf8(output.stderr).unwrap().trim(), expected);
+    }
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args([
+            "--module",
+            "--eval",
+            "throw new Proxy(new Error('x'),{get(){throw 7},getPrototypeOf(){throw 8}})",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .starts_with("uncaught Object(")
+    );
+}
+
+#[test]
 fn help_and_usage() {
     let output = Command::new(env!("CARGO_BIN_EXE_spite"))
         .arg("--help")

@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Readable CLI Error diagnostics
+
+Uncaught branded Error values now display their stored name and message instead
+of an opaque heap handle, for both Scripts and Module evaluation/job failures.
+Inspection reads only physical string data properties: accessors, Proxy traps,
+user toString and coercion hooks never execute. Control characters are escaped;
+lone-surrogate strings retain their exact UTF-16 units through debug escaping.
+Host, Unsupported and Limit reporting retains its existing categories.
+
+The new CLI group checks Script/Module parity, a shared inline diagnostic snapshot,
+getter/coercion poisoning, Proxy fallback, newlines and unpaired surrogates.
+All 21 CLI groups, facade smoke/doc tests and the full quality gate pass. Runtime,
+dependency and pinned fixture inventories are unchanged.
+
 ## Captured super references across collection
 
 The existing awaited-super assignment regression now removes every ordinary
