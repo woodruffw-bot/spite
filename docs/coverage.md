@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Bound function metadata reentry
+
+All 144 audited programs match Node 26.13.0 across proxy metadata mutations and
+throws, four length values, two argument counts and null/ordinary prototypes.
+The audit independently observes trap order, result descriptors and name units.
+
+Regressions protect Function.prototype.bind (20.2.3.2): deleting length during
+GetPrototypeOf skips its later Get, while deleting it after HasOwnProperty still
+performs Get. A length getter can change the subsequently read name. Throws at
+each metadata stage prevent later reads and preserve the original reason. The
+existing bound-function units and the proxy integration group pass, along with
+the full quality gate including 30 CLI groups. Runtime code, snapshots and test
+inventories are unchanged.
+
 ## Simple var names without temporary vectors
 
 The private variable-name iterator emits identifier names directly through a

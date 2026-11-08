@@ -669,6 +669,38 @@ fn bind_order_and_class_super_dispatch_observe_proxy_prototypes_and_new_target()
     assert(bound.length===1 && bound.name==='bound sum' && bound(2)===3);
     rows.join('|')
     "#), @"proto|own:length|get:length|get:name");
+    // 20.2.3.2: HasOwnProperty precedes Get(length), and abrupt metadata reads
+    // prevent every later read. Reentry must observe live target properties.
+    check(
+        r#"
+    for(let phase of ['proto','own','length']){
+        let rows=[],target=function original(a,b,c){},name='original';
+        Object.defineProperty(target,'name',{get(){return name;}});
+        let p=new Proxy(target,{
+            getPrototypeOf(t){rows.push('proto');if(phase==='proto')delete t.length;return null;},
+            getOwnPropertyDescriptor(t,k){rows.push('own');let d=Reflect.getOwnPropertyDescriptor(t,k);if(phase==='own')delete t.length;return d;},
+            get(t,k,r){rows.push(k);if(k==='length' && phase==='length')name='changed';return Reflect.get(t,k,r);}
+        });
+        let bound=Function.prototype.bind.call(p,null,1);
+        assert(Object.getPrototypeOf(bound)===null);
+        assert(bound.length===(phase==='length'?2:0) && !Object.is(bound.length,-0));
+        assert(bound.name===(phase==='length'?'bound changed':'bound original'));
+        assert(rows.join('|')===(phase==='proto'?'proto|own|name':'proto|own|length|name'));
+    }
+    for(let stop of ['proto','own','length','name']){
+        let rows=[],marker={},target=function target(){};
+        function step(key){rows.push(key);if(key===stop)throw marker;}
+        let p=new Proxy(target,{
+            getPrototypeOf(t){step('proto');return null;},
+            getOwnPropertyDescriptor(t,k){step('own');return Reflect.getOwnPropertyDescriptor(t,k);},
+            get(t,k,r){step(k);return Reflect.get(t,k,r);}
+        });
+        let caught=false;try{Function.prototype.bind.call(p,null);}catch(error){caught=error===marker;}
+        assert(caught && rows.join('|')===['proto','own','length','name'].slice(0,['proto','own','length','name'].indexOf(stop)+1).join('|'));
+    }
+    true
+    "#,
+    );
     check(
         r#"
     let newTarget,receiver;
