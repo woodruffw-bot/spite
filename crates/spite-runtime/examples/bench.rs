@@ -32,6 +32,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "lexical_bindings",
+        source: "(()=>{function f(value){let a=value,b=a+1;return b}let sum=0;for(let i=0;i<2048;i++)sum+=f(i);return sum})()",
+        expected: 2_098_176.0,
+        jobs: false,
+    },
+    Case {
         name: "var_bindings",
         source: "(()=>{function f(value){var a=value,b=a+1;return b}let sum=0;for(let i=0;i<2048;i++)sum+=f(i);return sum})()",
         expected: 2_098_176.0,

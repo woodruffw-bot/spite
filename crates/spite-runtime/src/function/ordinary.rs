@@ -6,7 +6,7 @@ use crate::{
     object::DataDescriptor,
 };
 use spite_core::{JsString, Span};
-use spite_parser::ast::{ArrowBody, BindingPatternKind, Function, Parameter};
+use spite_parser::ast::{ArrowBody, BindingPattern, BindingPatternKind, Function, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Inputs consumed by ordinary and method call setup before body execution.
@@ -91,16 +91,17 @@ impl Realm {
             .iter()
             .any(|parameter| !parameter.is_simple());
         let has_parameter_expressions = code.parameters.iter().any(Parameter::contains_expression);
-        let parameter_arguments = code.parameters.iter().any(|parameter| {
-            let pattern = &parameter.binding().pattern;
-            match &pattern.kind {
-                BindingPatternKind::Identifier(name) => name == "arguments",
-                _ => pattern
-                    .bound_names()
-                    .into_iter()
-                    .any(|(name, _)| name == "arguments"),
-            }
-        });
+        let binds_arguments = |pattern: &BindingPattern| match &pattern.kind {
+            BindingPatternKind::Identifier(name) => name == "arguments",
+            _ => pattern
+                .bound_names()
+                .into_iter()
+                .any(|(name, _)| name == "arguments"),
+        };
+        let parameter_arguments = code
+            .parameters
+            .iter()
+            .any(|parameter| binds_arguments(&parameter.binding().pattern));
         // 10.2.11: body lexical/function names suppress arguments when parameters
         // have no expressions; a parameter named arguments always suppresses it.
         let arguments_needed = !parameter_arguments
@@ -116,8 +117,7 @@ impl Realm {
                         spite_parser::ast::StatementKind::Lexical { bindings, .. }
                         | spite_parser::ast::StatementKind::Using(bindings) => bindings
                             .iter()
-                            .flat_map(|binding| binding.pattern.bound_names())
-                            .any(|(name, _)| name == "arguments"),
+                            .any(|binding| binds_arguments(&binding.pattern)),
                         _ => false,
                     }));
         let mut bindings = self.pattern_bindings(

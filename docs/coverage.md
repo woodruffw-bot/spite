@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Share the arguments-name predicate
+
+Ordinary call setup reuses one stateless local predicate for parameter and body
+binding names (10.2.11). Simple identifiers compare directly with arguments;
+composite patterns retain their existing BoundNames traversal. This removes the
+body path's temporary singleton name lists while preserving the parameter check,
+short-circuit rules, work charges and all other setup. The change adds no
+production lines, public API or stored metadata.
+
+The fifty-sixth workload calls a plain-parameter function with two local lexical
+bindings 2,048 times. All 56 checked workloads pass with 58 CSV rows. Five checked
+evaluation/collection iterations, including initialization and parsing, record
+356,401,368 instructions before and 351,661,010 after (-1.33%) in Callgrind.
+Rust calls to free fall from 300,581 to 280,101 (-20,480/-6.81%). These are scoped
+instruction/allocation counts; full-corpus and quiet timing evidence are pending.
+
+All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including three facade doctests and 30 CLI groups. Existing arguments and
+destructuring tests cover both paths. Snapshots and fixture inventories are
+unchanged.
+
 ## Lazy body-name analysis for arguments
 
 Ordinary calls inspect body declaration names only when parameter information
