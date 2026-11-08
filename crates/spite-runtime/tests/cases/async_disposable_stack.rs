@@ -18,6 +18,120 @@ fn check(realm: &mut Realm, source: &str) {
 }
 
 #[test]
+fn internal_disposer_wrappers_keep_registration_realms_across_borrowed_disposal_methods() {
+    let mut realm = Realm::default();
+    realm.install_test262_host().unwrap();
+    realm.eval(r#"
+        const globals=[globalThis,$262.createRealm().global],jobs=[];
+        let correct=true,seen=0,complete=false;
+        const kinds=['sync_adopt','sync_defer','async_adopt','async_defer','async_use_sync','async_use_async'];
+        for(const kind of kinds)for(const U of globals)for(const D of globals)for(const T of globals){
+            for(const mode of ['revoked','throw','return']){
+                const async=kind.startsWith('async'),C=async?'AsyncDisposableStack':'DisposableStack';
+                const stack=new globalThis[C]();
+                let method=T.Function(mode==='throw'?'return null.x':''),revoke;
+                if(mode==='revoked'){
+                    const pair=T.Proxy.revocable(method,{});method=pair.proxy;revoke=pair.revoke;
+                }
+                const member=kind.includes('adopt')?'adopt':kind.includes('defer')?'defer':'use';
+                const args=member==='adopt'?[17,method]:member==='defer'?[method]:
+                    [{[kind==='async_use_sync'?Symbol.dispose:Symbol.asyncDispose]:method}];
+                Reflect.apply(U[C].prototype[member],stack,args);if(revoke)revoke();
+                // GetDisposeMethod and adopt create builtins in U (10.3.3).
+                // defer and direct async disposal have no intervening wrapper.
+                const expected=mode==='throw'?T:kind.includes('adopt')||kind==='async_use_sync'?U:D;
+                const finish=(error)=>{
+                    seen++;
+                    correct=(mode==='return'?error===undefined:
+                        error!==undefined&&Object.getPrototypeOf(error)===expected.TypeError.prototype)&&correct;
+                };
+                if(async){
+                    const promise=Reflect.apply(D[C].prototype.disposeAsync,stack,[]);
+                    correct=Object.getPrototypeOf(promise)===D.Promise.prototype&&correct;
+                    jobs.push(promise.then(()=>finish(undefined),finish));
+                }else{
+                    try{Reflect.apply(D[C].prototype.dispose,stack,[]);finish(undefined)}catch(e){finish(e)}
+                }
+            }
+        }
+        Promise.all(jobs).then(()=>{complete=true});
+    "#).unwrap();
+    drain(&mut realm);
+    check(&mut realm, "complete&&correct&&seen===144");
+}
+
+#[test]
+fn sync_fallback_promise_uses_the_registration_realm_before_awaiting() {
+    let mut realm = Realm::default();
+    realm.install_test262_host().unwrap();
+    realm
+        .eval(
+            r#"
+        const G=$262.createRealm().global,marker={},stack=new AsyncDisposableStack;
+        let calls=0,thenReads=0,rejected=false;
+        Reflect.apply(G.AsyncDisposableStack.prototype.use,stack,[{
+            [Symbol.dispose](){calls++;return {get then(){thenReads++;throw 9}}}
+        }]);
+        Object.defineProperty(G.Promise.prototype,'constructor',{get(){throw marker}});
+        stack.disposeAsync().then(()=>{},e=>{rejected=e===marker});
+    "#,
+        )
+        .unwrap();
+    drain(&mut realm);
+    check(&mut realm, "rejected&&calls===1&&thenReads===0");
+}
+
+#[test]
+fn internal_disposer_wrappers_retain_then_release_their_unreachable_registration_realm() {
+    for (constructor, member, arguments) in [
+        ("DisposableStack", "adopt", "[17,()=>{}]"),
+        ("AsyncDisposableStack", "adopt", "[17,()=>{}]"),
+        ("AsyncDisposableStack", "use", "[{[Symbol.dispose](){}}]"),
+    ] {
+        let mut realm = Realm::default();
+        realm.install_test262_host().unwrap();
+        let delay = if constructor == "DisposableStack" {
+            ""
+        } else {
+            "original.defer(()=>new Promise(resolve=>{release=resolve}))"
+        };
+        realm
+            .eval(&format!(
+                r#"
+            let child=$262.createRealm(),G=child.global;
+            let release;
+            const weakRealm=new WeakRef(G),original=new {constructor};
+            Reflect.apply(G.{constructor}.prototype.{member},original,{arguments});
+            {delay}
+            const stack=original.move();
+            child=null;G=null;
+        "#
+            ))
+            .unwrap();
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        check(&mut realm, "weakRealm.deref()!==undefined");
+        realm
+            .eval(if constructor == "DisposableStack" {
+                "stack.dispose()"
+            } else {
+                "stack.disposeAsync()"
+            })
+            .unwrap();
+        if constructor != "DisposableStack" {
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            check(&mut realm, "weakRealm.deref()!==undefined");
+            realm.eval("release()").unwrap();
+        }
+        drain(&mut realm);
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        check(&mut realm, "weakRealm.deref()===undefined");
+    }
+}
+
+#[test]
 fn constructor_metadata_descriptors_subclasses_and_prototype_selection() {
     check(
         &mut Realm::default(),

@@ -2953,6 +2953,11 @@ Adopt accepts any value and a callable disposer; defer accepts a callable.
 Disposed stacks reject registrations and move with ReferenceError. Resource
 records retain receivers, cached methods and adopt arguments through object and
 Symbol collection. Adopt's unobservable closure is represented by its captures.
+Its captures include the checked registration Realm identity required by
+CreateBuiltinFunction (10.3.3). Disposal enters that Realm before calling the
+callback, independently of the borrowed dispose method's Realm. The traced
+identity survives move and is released with the resource; its release work is
+prepaid during registration. Defer stores the callback directly.
 A private traced heap record preserves the resource List identity if a disposal
 getter reentrantly moves the stack before registration finishes.
 
@@ -2980,6 +2985,10 @@ Use prefers Symbol.asyncDispose and falls back to Symbol.dispose. The fallback
 creates an intrinsic Promise before invoking the synchronous method, ignores its
 return value and converts a language throw into rejection. Nullish resources
 record an empty async entry so disposal still performs the required Await.
+The synchronous fallback also retains its registration Realm, where its
+unobservable builtin creates the Promise and invokes the method. Await then
+runs in the disposal method's Realm, preserving foreign Promise constructor
+observations. Synchronous and asynchronous disposal share wrapper invocation.
 
 DisposeAsync creates a fresh intrinsic Promise before receiver validation, marks
 the stack disposed before cleanup and moves resources into a private traced

@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Internal disposal wrapper Realm regression
+
+Retained adopt and async-from-sync wrappers keep their registration Realm across
+borrowed disposal methods, move and suspended cleanup. All 576 Runtime units,
+2,438 non-RegExp integrations and the quality gate pass. The 324-case audit
+validates the specified wrapper Realm, including a repeat with collection;
+24 Node adopt differences are retained and explained in coverage. The foreign
+fallback Promise getter independently matches Node. Fixtures are unchanged.
+
 ## Proxy operation Realm regression
 
 An independent 1,404-program comparison matches the reference for all thirteen

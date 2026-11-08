@@ -3,7 +3,7 @@
 use super::async_native::AsyncResumeKind;
 use crate::{
     Error, ObjectHandle, Realm, Value,
-    object::{DisposableResource, DisposableStackKind, DisposalHint},
+    object::{DisposableStackKind, DisposalHint},
 };
 use spite_core::Span;
 
@@ -68,35 +68,6 @@ impl Realm {
         })
     }
 
-    fn call_async_disposal_resource(
-        &mut self,
-        resource: DisposableResource,
-        span: Span,
-    ) -> Result<Value, Error> {
-        let arguments = resource.argument.into_iter().collect();
-        if resource.hint != DisposalHint::AsyncFromSync {
-            return self.call(resource.method, resource.value, arguments, span);
-        }
-        // GetDisposeMethod's unobservable sync fallback creates a Promise
-        // before calling the disposer. Its return value is deliberately ignored.
-        let capability = self.intrinsic_promise_capability(span)?;
-        match self.call(resource.method, resource.value, arguments, span) {
-            Ok(_) => {
-                self.call(
-                    capability.resolve,
-                    Value::Undefined,
-                    vec![Value::Undefined],
-                    span,
-                )?;
-            }
-            Err(error) => {
-                let reason = self.language_exception_value(error)?;
-                self.call(capability.reject, Value::Undefined, vec![reason], span)?;
-            }
-        }
-        Ok(capability.promise)
-    }
-
     // Returns true when a reaction owns the continuation; false when
     // PromiseResolve itself threw before suspension and the loop can continue.
     fn await_async_disposal(
@@ -133,7 +104,7 @@ impl Realm {
                     })?;
                     continue;
                 }
-                match self.call_async_disposal_resource(resource, span) {
+                match self.call_disposable_resource(resource, span) {
                     Ok(value) => {
                         if self.await_async_disposal(state, value, span)? {
                             return Ok(());

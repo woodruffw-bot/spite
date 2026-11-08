@@ -61,6 +61,33 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Internal disposal wrapper Realms
+
+The retained resource-management APIs now keep the creation Realm of adopt and
+async-from-sync wrappers, as required by CreateBuiltinFunction (10.3.3),
+GetDisposeMethod and both adopt algorithms. A shared invocation path enters
+that Realm before calling the cached method or creating the fallback Promise.
+The checked identity is traced through registered and suspended resource lists,
+survives move, and has release work prepaid during registration. Direct defer
+and async disposal methods retain their existing call behavior.
+
+A 324-program audit covers three registration/disposal Realms, foreign callbacks,
+revocation, abrupt bodies and ignored synchronous results. Before the fix, 36
+outcomes disagree with the specified wrapper Realm; afterward every case agrees,
+including a repeat with collection between jobs. Node agrees in 300 cases and
+uses the disposal Realm for the remaining 24 revoked adopt callbacks; those raw
+differences are retained and the implementation follows the wrapper algorithm.
+The foreign fallback Promise constructor getter independently matches Node:
+its throw is observed, while the synchronous disposer's thenable stays ignored.
+
+Three native groups cover 144 call combinations, the constructor getter and
+retention/release of otherwise unreachable registration Realms after move and
+while cleanup is suspended. All 15 selected async-stack groups, 576 Runtime
+units, 2,438 non-RegExp integrations and the quality gate pass. All 64 checked
+benchmark rows pass; three 2 MiB native-stack probes reach the existing guard
+and restore the caller Realm. The published baseline and await-using syntax
+are unchanged.
+
 ## Proxy operation and trap exception Realms
 
 An independent 1,404-program audit matches Node 26.13.0 for all thirteen Proxy

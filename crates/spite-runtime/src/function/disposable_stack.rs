@@ -279,6 +279,8 @@ impl Realm {
                         value: Value::Undefined,
                         method,
                         argument,
+                        wrapper_realm: (member == Member::Adopt)
+                            .then(|| self.record.global_environment.clone().expect("initialized")),
                     },
                 )
             }
@@ -290,6 +292,43 @@ impl Realm {
             objects.push_disposable_resource(&resources, resource, budget)
         })?;
         Ok(result)
+    }
+
+    pub(crate) fn call_disposable_resource(
+        &mut self,
+        resource: DisposableResource,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let invoke = |realm: &mut Self| {
+            let arguments = resource.argument.into_iter().collect();
+            if resource.hint != DisposalHint::AsyncFromSync {
+                return realm.call(resource.method, resource.value, arguments, span);
+            }
+            // GetDisposeMethod creates this builtin in the registration Realm.
+            // Create its Promise there before calling the synchronous disposer;
+            // ignore the return value and translate language throws to rejection.
+            let capability = realm.intrinsic_promise_capability(span)?;
+            match realm.call(resource.method, resource.value, arguments, span) {
+                Ok(_) => {
+                    realm.call(
+                        capability.resolve,
+                        Value::Undefined,
+                        vec![Value::Undefined],
+                        span,
+                    )?;
+                }
+                Err(error) => {
+                    let reason = realm.language_exception_value(error)?;
+                    realm.call(capability.reject, Value::Undefined, vec![reason], span)?;
+                }
+            }
+            Ok(capability.promise)
+        };
+        if let Some(target) = resource.wrapper_realm {
+            self.with_function_realm(&target, span, invoke)
+        } else {
+            invoke(self)
+        }
     }
 
     pub(crate) fn create_disposable_resource(
@@ -304,6 +343,7 @@ impl Realm {
                 value: Value::Undefined,
                 method: Value::Undefined,
                 argument: None,
+                wrapper_realm: None,
             }));
         }
         if !matches!(value, Value::Object(_)) {
@@ -342,6 +382,8 @@ impl Realm {
             value: value.clone(),
             method,
             argument: None,
+            wrapper_realm: (hint == DisposalHint::AsyncFromSync)
+                .then(|| self.record.global_environment.clone().expect("initialized")),
         }))
     }
 

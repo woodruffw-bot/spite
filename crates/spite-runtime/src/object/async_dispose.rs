@@ -22,7 +22,14 @@ impl AsyncDisposeData {
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        std::iter::once(None).chain(self.values().flat_map(Trace::trace))
+        std::iter::once(None)
+            .chain(
+                self.capability
+                    .values()
+                    .chain(&self.error)
+                    .flat_map(Trace::trace),
+            )
+            .chain(self.resources.iter().flat_map(DisposableResource::trace))
     }
 }
 

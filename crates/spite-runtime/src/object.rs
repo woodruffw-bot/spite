@@ -586,13 +586,11 @@ impl Trace for OrdinaryObject {
             .chain(self.module_import.iter().flat_map(|data| data.trace()))
             .chain(self.module_namespace.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
-            .chain(self.disposable_resources.iter().flat_map(|resources| {
-                resources
-                    .entries
-                    .iter()
-                    .flat_map(DisposableResource::values)
-                    .flat_map(Trace::trace)
-            }))
+            .chain(
+                self.disposable_resources.iter().flat_map(|resources| {
+                    resources.entries.iter().flat_map(DisposableResource::trace)
+                }),
+            )
             .chain(self.weak_map.iter().map(|_| None))
             // WeakRef targets are weak; only account for visiting the slot.
             .chain(self.weak_ref.iter().map(|_| None))

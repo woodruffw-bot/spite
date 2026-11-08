@@ -1,8 +1,8 @@
 //! Disposable resources and their strong captures (sec-disposablestack-objects).
 
 use super::{Budget, Error, Objects};
-use crate::Value;
-use spite_heap::Handle;
+use crate::{Value, environment::EnvironmentHandle};
+use spite_heap::{Handle, Trace};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum DisposableStackKind {
@@ -33,6 +33,9 @@ pub(crate) struct DisposableResource {
     pub method: Value,
     // Adopt's unobservable closure is represented by its captured argument.
     pub argument: Option<Value>,
+    // CreateBuiltinFunction captures the registration Realm for adopt and the
+    // async-from-sync wrapper, independently of the eventual disposal method.
+    pub wrapper_realm: Option<EnvironmentHandle>,
 }
 
 impl DisposableResource {
@@ -40,6 +43,13 @@ impl DisposableResource {
         [&self.value, &self.method]
             .into_iter()
             .chain(&self.argument)
+    }
+
+    pub(in crate::object) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
+        self.wrapper_realm
+            .iter()
+            .map(|realm| Some(&realm.0))
+            .chain(self.values().flat_map(Trace::trace))
     }
 }
 
@@ -154,6 +164,10 @@ impl Objects {
     ) -> Result<(), Error> {
         // Charge storage and eventual release here; taking the list is constant work.
         budget.charge(4)?;
+        if let Some(realm) = &resource.wrapper_realm {
+            budget.charge(1)?;
+            self.environment(realm)?;
+        }
         for value in resource.values() {
             if let Value::Object(object) = value {
                 self.inspect(object)?;

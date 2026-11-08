@@ -70,8 +70,7 @@ impl Realm {
         }
         for resource in resources.into_iter().rev() {
             debug_assert_eq!(resource.hint, DisposalHint::Sync);
-            let arguments = resource.argument.into_iter().collect();
-            if let Err(error) = self.call(resource.method, resource.value, arguments, span) {
+            if let Err(error) = self.call_disposable_resource(resource, span) {
                 if !error.is_language_exception() {
                     return Err(error);
                 }
