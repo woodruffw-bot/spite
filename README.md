@@ -87,6 +87,10 @@ available through the dependency-free [benchmark example](docs/benchmarking.md).
 
 ## Embed
 
+Provide at least a 2 MiB native thread stack. The
+[cleanup example](crates/spite/src/lib.rs) shows an explicit host thread with
+that stack size.
+
 ```rust
 use spite::{Realm, Value};
 

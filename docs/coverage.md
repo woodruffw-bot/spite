@@ -61,6 +61,18 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Windows cleanup example stack contract
+
+The cleanup doctest now creates a 2 MiB host thread, matching the existing
+embedding requirement. Its previous Windows main-thread stack was insufficient.
+A 1 MiB parent-stack reproduction fails before the fix and passes all three
+examples afterward. Crate documentation and the README expose the requirement.
+
+All four workspace-rest CI jobs on b457c937d now pass their documentation steps,
+covering Linux/Windows on Rust 1.99 and stable. The full local quality gate also
+passes, including 30 CLI groups. Runtime code, resource quotas and CI stack
+settings are unchanged.
+
 ## Contextual using through comment line terminators
 
 Regression checks distinguish a resource declaration from two ordinary
