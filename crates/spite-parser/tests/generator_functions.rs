@@ -30,6 +30,28 @@ fn generator_kind_exact_source_and_yield_nodes_are_retained() {
 
 #[test]
 fn assignment_precedence_commas_regexp_goals_and_restricted_linebreaks_parse() {
+    for gap in [
+        "\n",
+        "\r",
+        "\r\n",
+        "\u{2028}",
+        "\u{2029}",
+        "//x\n",
+        "/*\n*/",
+        "/*\r*/",
+        "/*\r\n*/",
+        "/*\u{2028}*/",
+        "/*\u{2029}*/",
+    ] {
+        let invalid = format!("function*g(){{yield{gap}*[1]}}");
+        assert_eq!(
+            parse_script(&invalid).unwrap_err().kind,
+            DiagnosticKind::Syntax,
+            "{invalid:?}"
+        );
+        let valid = format!("function*g(){{yield*{gap}[1]}}");
+        assert!(parse_script(&valid).is_ok(), "{valid:?}");
+    }
     for source in [
         "function*g(){yield x?y:z}",
         "function*g(){yield x=1}",

@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Restricted line terminators through comments
+
+All 160 generated sources match Node 26.13.0 under both Script and Module goals,
+for 320 comparisons: each goal accepts 54 and rejects 106 with syntax errors.
+The matrix covers sixteen separator forms around async declarations/methods,
+arrow heads/tokens, yield-star, throw and postfix operators, including CR, LF,
+CRLF, LS/PS and comments containing them. Unsupported and host limits remain
+distinct from syntax rejection.
+
+Expanded regressions protect the restricted productions described by
+[Grammar notation](https://262.ecma-international.org/17.0/#sec-grammar-notation).
+They verify ordinary versus async arrow/declaration kinds, statement counts and
+exact retained source, plus the distinct line-break rules before/after yield's
+star. All 18 Parser units, 443 integrations and the full quality gate pass,
+including 28 CLI groups. Parser/Runtime code, snapshots and inventories are
+unchanged.
+
 ## Array.fromAsync close failures and reason lifetimes
 
 Regressions retain a mapper's thrown/rejected object across collection while

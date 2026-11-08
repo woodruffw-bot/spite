@@ -1,7 +1,10 @@
 //! Async arrow cover selection, lexical contexts and source retention.
 
 use spite_core::DiagnosticKind;
-use spite_parser::parse_script;
+use spite_parser::{
+    ast::{ExprKind, FunctionKind, StatementKind},
+    parse_script,
+};
 
 #[test]
 fn async_arrow_syntax_snapshot_retains_prefix_defaults_and_expression_bodies() {
@@ -31,6 +34,49 @@ fn arrow_heads_preserve_async_identifier_calls_newlines_and_lexical_context() {
             "{source}: {:?}",
             parse_script(source)
         );
+    }
+    for (gaps, kind, count) in [
+        (&[" ", "\t", "/**/", "/*x*/"][..], FunctionKind::Async, 1),
+        (
+            &[
+                "\n",
+                "\r",
+                "\r\n",
+                "\u{2028}",
+                "\u{2029}",
+                "//x\n",
+                "/*\n*/",
+                "/*\r*/",
+                "/*\r\n*/",
+                "/*\u{2028}*/",
+                "/*\u{2029}*/",
+            ][..],
+            FunctionKind::Ordinary,
+            2,
+        ),
+    ] {
+        for gap in gaps {
+            let text = format!("async{gap}x=>x");
+            let script = parse_script(&text).unwrap();
+            assert_eq!(script.statements().len(), count, "{text:?}");
+            let StatementKind::Expression(expression) = &script.statements().last().unwrap().kind
+            else {
+                panic!("arrow expression")
+            };
+            let ExprKind::Arrow {
+                kind: actual,
+                source,
+                ..
+            } = &expression.kind
+            else {
+                panic!("arrow")
+            };
+            assert_eq!(*actual, kind, "{text:?}");
+            assert_eq!(
+                source.as_str(),
+                Some(if count == 1 { text.as_str() } else { "x=>x" })
+            );
+        }
     }
 }
 

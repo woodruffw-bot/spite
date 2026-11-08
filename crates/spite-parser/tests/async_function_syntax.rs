@@ -33,12 +33,26 @@ fn async_functions_keep_sloppy_strict_and_nested_await_grammar_boundaries() {
             parse_script(source)
         );
     }
-    let script = parse_script("async\nfunction f(){}").unwrap();
-    assert_eq!(script.statements().len(), 2);
-    assert_eq!(
-        script.function_declarations()[0].kind,
-        FunctionKind::Ordinary
-    );
+    for gap in [
+        "\n",
+        "\r",
+        "\r\n",
+        "\u{2028}",
+        "\u{2029}",
+        "//x\n",
+        "/*\n*/",
+        "/*\r*/",
+        "/*\r\n*/",
+        "/*\u{2028}*/",
+        "/*\u{2029}*/",
+    ] {
+        let text = format!("async{gap}function f(){{}}");
+        let script = parse_script(&text).unwrap();
+        assert_eq!(script.statements().len(), 2, "{text:?}");
+        let function = script.function_declarations()[0];
+        assert_eq!(function.kind, FunctionKind::Ordinary, "{text:?}");
+        assert_eq!(function.source.as_str(), Some("function f(){}"));
+    }
 }
 
 #[test]
