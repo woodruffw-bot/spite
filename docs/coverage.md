@@ -72,9 +72,17 @@ All 574 Runtime units, 2,431 non-RegExp integrations, 2,441 modes from 1,222
 unchanged String originals and the full quality gate pass. All 472 Node
 comparisons match, including 216 coercion/argument cases and every UTF-16 unit
 in 256 batches. All 1,536 before/after work/string-quota cases have identical
-complete results, including limit messages and visible flags. The new manual
-benchmark exercises the allocation path; no post-change timing is claimed yet.
+complete results, including limit messages and visible flags. The manual
+workload measures evaluation 47.50% lower and collection 13.84% lower in twelve
+matched ABBA process runs; exact revisions and controls are in
+[the benchmark receipt](benchmarking.md#argument-free-stringconcat).
 Dependencies, default quotas and test/fixture inventories are unchanged.
+
+A full gate compiled on clean 5996c936f passes all 87 noncorpus controls and all
+80,028 modes from 41,531 reviewed originals, with zero other outcomes. The frozen
+corpus run takes 1,500.23 seconds; executable and fixture hashes match before and
+after execution. Its executable SHA-256 is
+dc0b0408694d24fbdc0904805d969ed6cb18174f3d5251a1e9dbdb9533abb57c.
 
 ## CLI Script Promise jobs
 

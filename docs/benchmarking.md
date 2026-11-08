@@ -83,6 +83,35 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Argument-free String.concat
+
+With no arguments, concat now returns its converted receiver after the existing
+work/output checks, reusing immutable UTF-16 storage. The added workload calls
+concat 64 times on a 16,384-unit BMP/lone-surrogate String and checks the result.
+Baseline production is 469be7e01 and candidate production is 5996c936f. Both saved
+binaries use identical 47-workload sources. The candidate's full 80,028-mode gate
+passes before timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_concat_no_args | 364.4 | 191.3 | 184.4 | 158.9 |
+| string_add_empty | 186.8 | 187.8 | 162.0 | 162.5 |
+| string_slice | 91.6 | 92.7 | 153.1 | 154.5 |
+| typed_array_indices | 35329.4 | 35781.9 | 7848.6 | 7826.0 |
+| parse_all | 1170.9 | 1182.6 | 0 | 0 |
+| initialize_and_drop | 618.8 | 622.2 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Argument-free concat evaluation is 47.50% lower and collection 13.84% lower in
+this batch. Other program evaluation changes range from -4.46% to +8.05%, and
+collection changes from -7.67% to +3.11%. Parsing and initialization differ by
++1.00% and +0.54%. These observations add no CI timing threshold or execution
+allowance.
+
 ## Direct TypedArray numeric-index classification
 
 Canonical Array-index keys now use the existing checked UTF-16 parser before
