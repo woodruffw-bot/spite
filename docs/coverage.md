@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Class-field metadata collection work
+
+Class fields without initializers previously disappeared inside a filtered
+trace iterator, allowing collection to inspect an arbitrarily long metadata
+list without scan charges. Each now yields one empty slot. Initialized fields
+retain their environment, home-object and module references in the same order.
+Collection limits remain opt-in.
+
+| Uninitialized fields | Previous minimum work | Current minimum work |
+| --- | --- | --- |
+| 0 | 6,537 | 6,537 |
+| 64 | 6,537 | 6,601 |
+| 4,096 | 6,537 | 10,633 |
+| 16,384 | 6,537 | 22,921 |
+
+The public collection regression fails before the change and passes afterward,
+checking both budget refusal and retained field definitions. All six collection
+groups, 576 Runtime units, 2,439 non-RegExp integrations and the quality gate
+pass. The unchanged collection-stack regression still passes its 1 MiB local
+diagnostic. The native inventory is 5,056 integration groups; fixtures and
+snapshots are unchanged.
+
 ## Collection iterator construction frames
 
 Both Windows Runtime second-half jobs on b2459b3ea overflowed during collection
@@ -76,7 +98,13 @@ afterward; the documented embedding minimum remains 2 MiB. All 576 Runtime
 units and all 5,055 integration groups pass, including 2,617 RegExp groups.
 The quality gate passes formatting, strict Clippy, the explicit MSRV,
 policy/inventory checks, 30 CLI groups and all three facade doctests.
-Windows CI verification and the new exact-commit corpus run remain pending.
+Both previously failing Windows second-half jobs pass on stable and the MSRV
+in [run 42516446310](https://github.com/woodruffw-bot/spite/actions/runs/42516446310).
+Its frozen gate compiled on clean 6f3dea51b passes all 87 controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+executable and fixture hashes match across the 1,249.853-second four-worker run.
+All 64 benchmark rows and 324 disposal-wrapper GC replay cases also pass.
+This receipt precedes the class-field scan-accounting change.
 
 ## Completion and suspension differential checks
 

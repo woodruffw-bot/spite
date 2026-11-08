@@ -614,16 +614,24 @@ impl Trace for OrdinaryObject {
                     Callable::ClassConstructor(class) => class.elements.fields.as_ref(),
                     _ => &[],
                 };
-                fields
-                    .iter()
-                    .filter_map(|field| field.initializer.as_ref())
-                    .flat_map(|initializer| {
-                        [
-                            Some(&initializer.environment.0),
-                            Some(&initializer.home_object),
-                            initializer.module.as_ref(),
-                        ]
-                    })
+                fields.iter().flat_map(|field| {
+                    // A missing initializer still consumes a scan slot;
+                    // filtering it out could inspect an unbounded prefix.
+                    let (environment, captures) =
+                        field
+                            .initializer
+                            .as_ref()
+                            .map_or((None, None), |initializer| {
+                                (
+                                    Some(&initializer.environment.0),
+                                    Some([
+                                        Some(&initializer.home_object),
+                                        initializer.module.as_ref(),
+                                    ]),
+                                )
+                            });
+                    std::iter::once(environment).chain(captures.into_iter().flatten())
+                })
             }))
             .chain(self.callable.iter().flat_map(|callable| {
                 let methods = match callable {

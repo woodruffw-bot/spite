@@ -1810,6 +1810,9 @@ tracing sees a foreign/stale handle or exceeds its budget, return without sweepi
 Trace iterators yield an optional handle for each inspected field, including
 primitive-valued fields, so a scan cannot evade its budget by filtering out all
 non-reference properties. Deep object graphs use an explicit work stack.
+Class-field metadata without an initializer yields an empty scan slot instead
+of being filtered out. Initialized fields retain their environment, home-object
+and module slots, so consecutive missing initializers cannot hide scan work.
 Heap-entry tracing stores only the active object or environment iterator.
 Object tracing constructs three ordered iterator segments, keeping temporary
 construction frames smaller in unoptimized builds. Field order, scan charges

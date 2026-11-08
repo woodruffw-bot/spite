@@ -7,6 +7,30 @@ use spite_heap::Error as HeapError;
 use spite_runtime::{Error, Limits, Realm, Value, object::Error as ObjectError};
 
 #[test]
+fn collection_charges_for_uninitialized_class_field_metadata() {
+    let mut baseline = Realm::default();
+    baseline.eval("class C {}").unwrap();
+    baseline.collect(usize::MAX).unwrap();
+    let baseline_work = baseline.collect(usize::MAX).unwrap().work_used;
+
+    const FIELDS: usize = 1024;
+    let fields: String = (0..FIELDS).map(|index| format!("f{index};")).collect();
+    let mut realm = Realm::default();
+    realm.eval(&format!("class C {{{fields}}}")).unwrap();
+    let live = realm.collect(usize::MAX).unwrap().live;
+    // Fields without initializers still require inspecting the metadata entries.
+    assert_eq!(
+        realm.collect(baseline_work + FIELDS / 2),
+        Err(HeapError::Limit)
+    );
+    assert_eq!(realm.collect(usize::MAX).unwrap().live, live);
+    assert_eq!(
+        realm.eval("let instance=new C;Object.keys(instance).length===1024&&instance.f0===undefined&&instance.f1023===undefined"),
+        Ok(Value::Boolean(true))
+    );
+}
+
+#[test]
 fn persistent_lexical_var_and_sloppy_global_bindings_are_roots() {
     let mut realm = Realm::default();
     realm

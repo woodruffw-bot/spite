@@ -5,6 +5,22 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Collection-frame execution receipt
+
+A frozen gate compiled on clean 6f3dea51b passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,249.853-second run.
+Both previously failing Windows Runtime jobs also pass. This receipt precedes
+the class-field scan-accounting change. Fixture bytes, helpers, modes and
+reviews are unchanged.
+
+## Class-field metadata collection regression
+
+One native regression checks scan charges for fields without initializers and
+retains their definitions after budget refusal. All 576 Runtime units, 2,439
+non-RegExp integrations and the quality gate pass. The collection-stack
+diagnostic remains green. Fixture bytes, helpers, modes and reviews are unchanged.
+
 ## Collection-frame native regression
 
 All 576 Runtime units and all 5,055 integration groups pass after reducing
