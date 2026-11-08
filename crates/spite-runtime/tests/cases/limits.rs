@@ -69,3 +69,38 @@ fn source_quota_precedes_parsing_and_realm_initialization_when_enabled() {
     assert!(matches!(realm.eval(&source), Err(Error::Parse(d)) if d.kind == DiagnosticKind::Limit));
     assert_eq!(realm.collect(usize::MAX).unwrap().live, 0);
 }
+
+#[test]
+fn string_to_number_scans_consume_evaluation_work() {
+    for (tail, expected) in [("1", 1.0), ("x", f64::NAN)] {
+        let source = format!("+'{}{tail}'", "0".repeat(4096));
+        let script = spite_parser::parse_script(&source).unwrap();
+        assert!(
+            Realm::default()
+                .evaluate(&script)
+                .unwrap()
+                .same_value(&Value::Number(expected))
+        );
+
+        let mut realm = Realm::new(Limits {
+            max_steps: Some(512),
+            max_bigint_bits: Some(0),
+            ..Limits::default()
+        });
+        assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("+'12'"), Ok(Value::Number(12.0)));
+        assert_eq!(realm.eval("let flags=0"), Ok(Value::Undefined));
+        let guarded = spite_parser::parse_script(&format!(
+            "try{{{source}}}catch{{flags=1}}finally{{flags=2}}"
+        ))
+        .unwrap();
+        assert!(matches!(realm.evaluate(&guarded), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("flags"), Ok(Value::Number(0.0)));
+        assert!(
+            realm
+                .eval("+'-0'")
+                .unwrap()
+                .same_value(&Value::Number(-0.0))
+        );
+    }
+}

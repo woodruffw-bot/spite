@@ -1765,6 +1765,10 @@ not elapsed time or JavaScript statements. Every `Limits` field defaults to `Non
 source bytes, string code units, BigInt bits, argument counts, heap slots, and own
 properties have no host-selected quotas until an embedder supplies `Some(limit)`.
 Checked size arithmetic, fallible reservation, and handle validation remain active.
+Realm-level ToNumber charges the complete UTF-16 String input before
+StringToNumber scans it, after ToPrimitive succeeds (7.1.4–7.1.4.1). This also
+accounts for literal inputs that require no charged String copy. The work debit
+does not impose the separate BigInt magnitude limit on Number conversion.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution

@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## String-to-Number scan work
+
+Realm-level ToNumber charges the complete UTF-16 input after primitive
+conversion (7.1.4–7.1.4.1). A pre-parsed literal previously needed three work
+units regardless of input length. The minimum allowance now increases by
+exactly 1, 65, 4,097 and 16,385 units for those input lengths.
+
+The new native group checks valid and invalid long inputs, host-abort cleanup
+boundaries, subsequent evaluation, signed zero and independence from a zero
+BigInt magnitude quota. All 577 Runtime units, 2,442 non-RegExp integrations
+and the quality gate pass. The 824-program conversion audit matches Node
+before and after, including all 65,536 single UTF-16 units, long decimal/radix
+inputs and 309 primitive-conversion hooks. No fixture or default quota changes.
+
 ## Async-generator adapter rejection boundaries
 
 Seven additional cases strengthen existing queued-delegation regressions for

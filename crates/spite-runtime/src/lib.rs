@@ -459,7 +459,11 @@ impl Realm {
     }
 
     fn number(&mut self, value: Value, span: Span) -> Result<f64, Error> {
-        self.primitive(value, Hint::Number, span)?
+        let value = self.primitive(value, Hint::Number, span)?;
+        if let Value::String(text) = &value {
+            self.integer_work(span, |budget| budget.charge(text.len()))?;
+        }
+        value
             .to_number()
             .map_err(|error| Self::conversion_error(error, span))
     }

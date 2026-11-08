@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## String-to-Number work regression
+
+One native group checks long-input scan refusal, host-abort cleanup boundaries,
+recovery, signed zero and independent Number/BigInt limits. All 577 Runtime
+units, 2,442 non-RegExp integrations and the quality gate pass. All 824
+conversion programs match Node before and after, including every single
+UTF-16 unit. The full corpus receipt for this change is pending; fixture bytes,
+helpers, modes and reviews are unchanged.
+
 ## Async-generator rejection boundary regressions
 
 Seven additional cases strengthen existing delegation groups; all nine groups
