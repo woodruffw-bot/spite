@@ -45,10 +45,10 @@ for line in (root / "runner.tsv").read_text().splitlines():
     if path not in paths or path in reviewed:
         raise SystemExit(f"unknown or duplicate runner path: {path}")
     reviewed.add(path)
-    if modes[path] in {"raw-pass", "script-pass", "script-runtime-error", "script-resolution-error"}:
+    if modes[path] in {"raw-pass", "script-pass", "script-runtime-error", "script-resolution-error", "identifier-tokens", "parser-pass"}:
         if fields[1:] != ["-", "-", "-"]:
             raise SystemExit(f"executed runner entry has a parse review: {path}")
-    elif modes[path] in {"raw-syntax-error", "parse-syntax-error"}:
+    elif modes[path] in {"raw-syntax-error", "parse-syntax-error", "identifier-error"}:
         data = (root / "upstream" / path).read_bytes()
         try:
             start, end = int(start), int(end)
@@ -65,7 +65,7 @@ for line in (root / "runner.tsv").read_text().splitlines():
             raise SystemExit(f"invalid reviewed diagnostic: {path}")
     else:
         raise SystemExit(f"non-executable fixture cannot enter the execution corpus: {path}")
-expected = {path for path, mode in modes.items() if mode in {"raw-pass", "script-pass", "script-runtime-error", "script-resolution-error", "raw-syntax-error", "parse-syntax-error"}}
+expected = {path for path, mode in modes.items() if mode in {"raw-pass", "script-pass", "script-runtime-error", "script-resolution-error", "raw-syntax-error", "parse-syntax-error", "identifier-tokens", "identifier-error", "parser-pass"}}
 if reviewed != expected:
     raise SystemExit("runner inventory does not match the selected fixture modes")
 harness_count = sum(mode == "harness" for mode in modes.values())

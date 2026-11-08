@@ -5,6 +5,18 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Complete-program identifier and ASI execution
+
+The retained eight positive identifier datasets, five identifier-escape syntax
+negatives and six let/ASI programs now also execute as 32 official variants.
+Their existing lexical/parser checks and manifest categories remain intact.
+Five exact negative reviews use the already checked original spans and messages.
+No original bytes, metadata flags, helpers or execution limits change.
+
+The checker requires every standalone original to appear in runner.tsv: 41,550
+originals and 80,060 variants. The remaining 197 files are Module dependencies,
+loaded by their importing tests. Fixture/harness counts remain 41,747/28.
+
 ## Raw asynchronous execution
 
 The runner supports raw async Scripts and Modules without injecting harness files.

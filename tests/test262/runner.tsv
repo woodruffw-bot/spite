@@ -41530,3 +41530,22 @@ test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Warang_Citi
 test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Yezidi.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Yi.js	-	-	-
 test/built-ins/RegExp/property-escapes/generated/Script_Extensions_-_Zanabazar_Square.js	-	-	-
+test/language/identifiers/start-unicode-16.0.0.js	-	-	-
+test/language/identifiers/start-unicode-16.0.0-escaped.js	-	-	-
+test/language/identifiers/part-unicode-16.0.0.js	-	-	-
+test/language/identifiers/part-unicode-16.0.0-escaped.js	-	-	-
+test/language/identifiers/start-unicode-17.0.0.js	-	-	-
+test/language/identifiers/start-unicode-17.0.0-escaped.js	-	-	-
+test/language/identifiers/part-unicode-17.0.0.js	-	-	-
+test/language/identifiers/part-unicode-17.0.0-escaped.js	-	-	-
+test/language/identifiers/start-zwj-escaped.js	323	329	invalid identifier start escape
+test/language/identifiers/start-zwnj-escaped.js	327	333	invalid identifier start escape
+test/language/identifiers/vertical-tilde-start-escaped.js	401	407	invalid identifier start escape
+test/language/identifiers/vertical-tilde-continue-escaped.js	405	411	invalid identifier part escape
+test/language/identifiers/unicode-escape-nls-err.js	950	956	invalid Unicode escape
+test/language/statements/while/let-block-with-newline.js	-	-	-
+test/language/statements/while/let-identifier-with-newline.js	-	-	-
+test/language/statements/if/let-block-with-newline.js	-	-	-
+test/language/statements/if/let-identifier-with-newline.js	-	-	-
+test/language/statements/for/let-block-with-newline.js	-	-	-
+test/language/statements/for/let-identifier-with-newline.js	-	-	-

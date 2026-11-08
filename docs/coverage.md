@@ -59,7 +59,25 @@ claim complete conformance or define an alternative language specification.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+
+## Whole-program identifier and ASI originals
+
+Nineteen retained originals now also run as complete programs in all 32 declared
+modes: eight positive Unicode16/Unicode17 identifier datasets, five exact
+identifier-escape syntax negatives and six non-strict let/ASI programs. Their
+original bytes, metadata flags and separate lexer/parser checks are preserved.
+The negative reviews retain the existing lexical diagnostic spans and messages.
+
+The inventory checker requires review rows for these component categories as
+well as the existing execution categories. All 41,550 standalone originals are
+now reviewed for 80,060 modes; 197 Module dependency fixtures remain loaded
+through their importing tests. Fixture/harness counts remain 41,747/28. This
+extends complete-program coverage without changing runtime algorithms or quotas.
+
+All 32 added modes, 18 Parser units, 443 Parser integrations, 87 runner controls,
+22 CLI groups and the full quality gate pass. Every previous review row and all
+original/helper bytes are retained.
 
 ## Argument-free String.concat storage
 
