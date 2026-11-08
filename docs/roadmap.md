@@ -684,6 +684,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain and trace registration Realms for internal adopt and async-from-sync disposal wrappers, preserving error ownership and foreign Promise constructor observations across move and cleanup.
 - [x] Bound collection iterator construction frames through ordered segments and active heap-entry dispatch, preserving edge order and scan accounting on native thread stacks.
 - [x] Charge class-field metadata scans without initializers, preserving field definitions and bounded collector steps under opt-in work limits.
+- [x] Charge stored string-key scans in suspended object bindings during Symbol collection, preserving retained Symbols and rest exclusions after budget refusal.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

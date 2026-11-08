@@ -344,22 +344,33 @@ impl AsyncExecutionData {
             )
     }
 
-    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+    pub(super) fn symbol_slots(&self) -> impl Iterator<Item = Option<&JsSymbol>> {
         self.expression
             .iter()
             .flat_map(|expression| expression.symbols())
+            .map(Some)
             .chain(
                 self.expression_classes
                     .iter()
-                    .flat_map(|state| state.symbols()),
+                    .flat_map(|state| state.symbols())
+                    .map(Some),
             )
             .chain(
                 self.class_definition
                     .iter()
-                    .flat_map(|state| state.symbols()),
+                    .flat_map(|state| state.symbols())
+                    .map(Some),
             )
-            .chain(self.var_target.iter().flat_map(Reference::symbols))
-            .chain(self.pattern_cursors().flat_map(|cursor| cursor.symbols()))
+            .chain(
+                self.var_target
+                    .iter()
+                    .flat_map(Reference::symbols)
+                    .map(Some),
+            )
+            .chain(
+                self.pattern_cursors()
+                    .flat_map(|cursor| cursor.symbol_slots()),
+            )
     }
 
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {

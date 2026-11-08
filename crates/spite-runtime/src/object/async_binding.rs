@@ -67,7 +67,7 @@ impl BindingCursor {
             .into_iter()
             .chain(self.reference.iter().filter_map(Reference::object))
     }
-    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+    pub(super) fn symbol_slots(&self) -> impl Iterator<Item = Option<&JsSymbol>> {
         let object = match &self.kind {
             BindingCursorKind::Array(_) => None,
             BindingCursorKind::Object(cursor) => Some(cursor),
@@ -75,12 +75,14 @@ impl BindingCursor {
         self.reference
             .iter()
             .flat_map(Reference::symbols)
+            .map(Some)
             .chain(object.into_iter().flat_map(|cursor| {
                 cursor
                     .key
                     .iter()
                     .chain(cursor.excluded.iter())
-                    .filter_map(|key| match key {
+                    // Every key is inspected, including non-Symbol exclusions.
+                    .map(|key| match key {
                         PropertyKey::Symbol(symbol) => Some(symbol),
                         PropertyKey::String(_) => None,
                     })

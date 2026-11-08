@@ -61,6 +61,38 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Suspended binding key collection work
+
+During Symbol census, suspended object bindings previously filtered string keys
+before yielding to the budgeted visitor. Every stored key now yields a slot;
+Symbol keys retain the same references, while string keys yield empty slots.
+
+| Stored string keys | Previous minimum work | Current minimum work |
+| --- | --- | --- |
+| 0 | 24,336 | 24,336 |
+| 64 | 24,336 | 24,464 |
+| 4,096 | 24,336 | 32,528 |
+| 16,384 | 24,336 | 57,104 |
+
+The probe activates census with a Symbol-key WeakMap. An ordinary Symbol
+property alone does not activate that path; that control remains at 6,637 work
+units for all four sizes. These are work counts, not timing measurements.
+The native regression fails before the change and passes afterward, checking
+budget refusal followed by resumption with the original rest exclusions.
+All seven collection groups, 576 Runtime units, 2,440 non-RegExp integrations,
+the quality gate and the unchanged 1 MiB stack diagnostic pass. The native
+inventory is 5,057 integration groups. Collection limits remain opt-in.
+
+## Class-field collection execution receipt
+
+The frozen gate compiled on clean 6bbe6a3ea passes all 87 runner controls and
+all 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+Executable and fixture hashes match across the 1,310.620-second four-worker run.
+All 17 CI jobs also pass in
+[run 42518900506](https://github.com/woodruffw-bot/spite/actions/runs/42518900506),
+including both Windows toolchains. This receipt precedes the suspended-binding
+key accounting change. Fixtures, helpers, modes and reviews are unchanged.
+
 ## Class-field metadata collection work
 
 Class fields without initializers previously disappeared inside a filtered

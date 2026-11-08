@@ -5,6 +5,22 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Suspended binding collection regression
+
+One native regression checks stored string-key scan charges during Symbol
+census and retains rest exclusions after budget refusal and resumption.
+All 576 Runtime units, 2,440 non-RegExp integrations and the quality gate pass;
+the collection-stack diagnostic remains green. Fixtures are unchanged.
+
+## Class-field collection execution receipt
+
+A frozen gate compiled on clean 6bbe6a3ea passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,310.620-second run.
+All 17 CI jobs pass, including both Windows toolchains. This receipt precedes
+the suspended-binding key accounting change. Fixture bytes, helpers, modes and
+reviews are unchanged.
+
 ## Collection-frame execution receipt
 
 A frozen gate compiled on clean 6f3dea51b passes all 87 runner controls and all

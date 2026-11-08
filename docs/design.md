@@ -4129,6 +4129,9 @@ reachable strong fields and activates weak-key values to a fixpoint. External
 strong Symbols and recoverable shared Rc records remain roots. Other realms and
 permanent Symbol registries conservatively retain their identities. WeakSet keys
 have no conditional values and need no candidate census.
+Suspended object bindings yield a charged slot for every current or excluded
+property key during Symbol scans, including string keys. Filtering strings
+before yielding would hide arbitrary exclusion-list traversal from the budget.
 
 A short allocation-free atomic gate orders weak upgrades against logical Symbol
 retirement. Final root rechecks happen before any retirement; newly observed host

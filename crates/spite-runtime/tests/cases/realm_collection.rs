@@ -4,7 +4,45 @@ use crate::common;
 use common::REALM_ENTRIES;
 
 use spite_heap::Error as HeapError;
-use spite_runtime::{Error, Limits, Realm, Value, object::Error as ObjectError};
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value, object::Error as ObjectError};
+
+#[test]
+fn suspended_binding_string_keys_consume_symbol_scan_work() {
+    fn suspend(fields: usize) -> Realm {
+        let keys: String = (0..fields).map(|index| format!("f{index}:sink,")).collect();
+        let mut realm = Realm::default();
+        realm.eval(&format!(
+            "let release,sink,rest,done=false,source={{}};let gate=new Promise(resolve=>{{release=resolve}});let marker=Symbol(),census=new WeakMap([[marker,0]]);let pending=(async()=>{{({{{keys}[await gate]:sink,...rest}}=source);done=true}})();"
+        )).unwrap();
+        realm.collect(usize::MAX).unwrap();
+        realm
+    }
+
+    let mut baseline = suspend(0);
+    let baseline_work = baseline.collect(usize::MAX).unwrap().work_used;
+    const KEYS: usize = 1024;
+    let mut realm = suspend(KEYS);
+    assert_eq!(
+        realm.collect(baseline_work + KEYS / 2),
+        Err(HeapError::Limit)
+    );
+    realm
+        .eval("source.f0='excluded';source.keep='kept';source.later='current';release('later')")
+        .unwrap();
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            PromiseJobOutcome::Completed => {}
+            PromiseJobOutcome::NoJob => break,
+            PromiseJobOutcome::Reported(error) => panic!("{error}"),
+        }
+    }
+    assert_eq!(
+        realm.eval(
+            "done&&sink==='current'&&Object.keys(rest).join(',')==='keep'&&rest.keep==='kept'"
+        ),
+        Ok(Value::Boolean(true))
+    );
+}
 
 #[test]
 fn collection_charges_for_uninitialized_class_field_metadata() {
