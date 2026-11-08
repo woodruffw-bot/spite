@@ -648,6 +648,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share Number prototype method registration in one ordered loop, preserving intrinsic identities, metadata, descriptors and retained roots.
 - [x] Protect escaped async super calls sharing a derived this binding across field failures and collection, and revoked newTarget capability when base Proxy construction supplies the result.
 - [x] Expose Script/Module syntax and early-error validation through CLI --check for arguments, files and stdin, preserving diagnostics before evaluation and Module loading.
+- [x] Protect computed Map/WeakMap insertion with class and revoked callable callbacks, distinguishing existing undefined entries from missing keys and invocation failures.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

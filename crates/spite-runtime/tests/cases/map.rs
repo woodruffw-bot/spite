@@ -180,6 +180,18 @@ fn get_or_insert_computed_validates_before_lookup_and_rechecks_after_mutation() 
         "let m=new Map([[1,undefined]]),called=false;m.getOrInsert(1,2)===undefined && m.getOrInsertComputed(1,()=>{called=true;return 3;})===undefined && !called && m.getOrInsert(2,4)===4 && m.get(2)===4",
     );
     type_error("new Map([[1,2]]).getOrInsertComputed(1,null)");
+    // IsCallable tests [[Call]], including class constructors and revoked
+    // callable Proxies. A hit returns without attempting that call.
+    for callback in [
+        "class{}",
+        "(class{}).bind(null)",
+        "(()=>{let {proxy,revoke}=Proxy.revocable(function(){},{});revoke();return proxy})()",
+        "(()=>{let {proxy,revoke}=Proxy.revocable(class{},{});revoke();return proxy})()",
+    ] {
+        check(&format!(
+            "let callback={callback},m=new Map([[1,undefined]]);let hit=m.getOrInsertComputed(1,callback)===undefined,failed=false;try{{m.getOrInsertComputed(2,callback)}}catch(error){{failed=error instanceof TypeError}}hit&&failed&&m.has(1)&&!m.has(2)&&m.size===1"
+        ));
+    }
     check(
         "let m=new Map(),key,argc,receiver;let value=m.getOrInsertComputed(-0,function(k){'use strict';key=k;argc=arguments.length;receiver=this;m.set(k,3);m.set(2,4);return 5;});value===5 && m.get(0)===5 && [...m.keys()].join(',')==='0,2' && Object.is(key,0) && argc===1 && receiver===undefined",
     );

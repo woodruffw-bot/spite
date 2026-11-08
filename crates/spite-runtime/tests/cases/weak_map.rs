@@ -157,6 +157,15 @@ fn upserts_return_existing_undefined_and_validate_computed_callbacks_before_look
         "let key={},m=new WeakMap([[key,7]]);class C{}m.getOrInsertComputed(key,C)===7 && m.get(key)===7",
     );
     type_error("class C{}new WeakMap().getOrInsertComputed({},C)");
+    for callback in [
+        "(class{}).bind(null)",
+        "(()=>{let {proxy,revoke}=Proxy.revocable(function(){},{});revoke();return proxy})()",
+        "(()=>{let {proxy,revoke}=Proxy.revocable(class{},{});revoke();return proxy})()",
+    ] {
+        check(&format!(
+            "let key={{}},missing={{}},callback={callback},m=new WeakMap([[key,undefined]]);let hit=m.getOrInsertComputed(key,callback)===undefined,failed=false;try{{m.getOrInsertComputed(missing,callback)}}catch(error){{failed=error instanceof TypeError}}hit&&failed&&m.has(key)&&!m.has(missing)"
+        ));
+    }
 }
 
 #[test]

@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Computed Map callback capabilities
+
+Map and WeakMap computed-insertion regressions distinguish IsCallable from
+invocation. Class constructors, bound classes and revoked callable Proxies retain
+their Call capability: an existing undefined-valued entry returns without
+invocation, while a missing key attempts the call and throws without insertion.
+
+All 64 audited programs match native Node 26.13.0 for both ordinary execution and
+collection between jobs, for 128 comparisons. The matrix covers eight callback
+forms, both collection types and four entry states. It observes receiver/argument
+identity, positive-zero Map callback keys, callback traps and reentrant insertion,
+exception kinds and resulting entries. Node 24 lacks these methods; the reference
+uses an official Node 26 binary verified against its published SHA-256 checksum.
+All 55 selected Map/WeakMap integration groups and the full quality gate pass,
+including 28 CLI groups. Runtime implementation and test inventories are unchanged.
+
 ## CLI syntax checking
 
 The --check option validates the supplied source with the existing Script or
