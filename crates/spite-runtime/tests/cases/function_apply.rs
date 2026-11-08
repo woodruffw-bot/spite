@@ -144,6 +144,31 @@ fn unlimited_argument_lists_preserve_full_width_getter_failures() {
         Realm::default().eval("let reads=0,o={length:Infinity,get 0(){reads++;throw 17;}};let caught=false;try{Boolean.apply(null,o);}catch(e){caught=e===17;}caught && reads===1"),
         Ok(Value::Boolean(true))
     );
+    // CreateListFromArrayLike reads each index before appending its value:
+    // https://262.ecma-international.org/17.0/#sec-createlistfromarraylike
+    for length in ["Infinity", "4294967296", "9007199254740991", "1e100"] {
+        for operation in [
+            "target.apply(null,args)",
+            "Reflect.apply(target,null,args)",
+            "Reflect.construct(target,args)",
+            "Reflect.apply(new Proxy(target,{apply(){throw 99}}),null,args)",
+            "Reflect.construct(new Proxy(target,{construct(){throw 99}}),args)",
+            "Reflect.construct(target,args,new Proxy(function(){},{get(){throw 99}}))",
+        ] {
+            for proxy in [false, true] {
+                let source = "let log='',marker={},args={get length(){if(this!==args)throw 99;log+='l';return LENGTH},get 0(){if(this!==args)throw 99;log+='0';throw marker}};if(PROXY)args=new Proxy(args,{get(t,k,r){log+='g'+String(k)+';';return Reflect.get(t,k,r)}});function target(){throw 99}let caught=false;try{CALL}catch(e){caught=e===marker}caught&&log===TRACE"
+                    .replace("LENGTH", length)
+                    .replace("PROXY", if proxy { "true" } else { "false" })
+                    .replace("CALL", operation)
+                    .replace("TRACE", if proxy { "'glength;lg0;0'" } else { "'l0'" });
+                assert_eq!(
+                    Realm::default().eval(&source),
+                    Ok(Value::Boolean(true)),
+                    "{source}"
+                );
+            }
+        }
+    }
 }
 
 #[test]

@@ -124,6 +124,13 @@ Node instead raises RangeError before that read. All 48 engine traces match the
 published rule; the raw differences remain recorded. Runtime behavior, default
 limits and fixture inventories are unchanged.
 
+The existing unlimited-argument regression retains its original example and
+adds 48 finite cases for these lengths across apply, Reflect construction,
+Proxy arguments/targets and a poisoned custom newTarget. Each verifies getter
+receivers, exact access order and the original thrown object's identity before
+target invocation or prototype lookup. All seven apply groups, nine Reflect
+groups and the full quality gate pass; test/fixture inventories are unchanged.
+
 ## Shared TypedArray index formatting
 
 Twenty-one index conversions across six TypedArray modules now use the shared
