@@ -61,6 +61,18 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Number prototype registration
+
+Six Number prototype property definitions now share one ordered loop, matching
+the constructor's existing registration style. The same handles, names,
+attributes, span and property order are passed to define_builtin_property;
+function creation and retained intrinsic roots stay in their original order.
+A source comparison verifies all six ordered name/handle pairs and identical
+surrounding initialization. The change removes 26 Runtime lines.
+All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including 25 CLI groups. Existing metadata, reflection, collection and
+quota cases cover the retained intrinsic graph; test inventories are unchanged.
+
 ## Unavailable-host-name lookup
 
 The missing-global-property query returns directly when the unavailable-host-name

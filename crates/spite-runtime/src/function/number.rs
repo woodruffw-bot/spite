@@ -101,48 +101,22 @@ impl Realm {
             self.new_builtin(function_prototype, Builtin::NumberToExponential, span)?;
         let to_locale_string =
             self.new_builtin(function_prototype, Builtin::NumberToLocaleString, span)?;
-        self.define_builtin_property(
-            &prototype,
-            "toLocaleString",
-            Value::Object(to_locale_string.clone()),
-            true,
-            span,
-        )?;
-        self.define_builtin_property(
-            &prototype,
-            "toExponential",
-            Value::Object(to_exponential.clone()),
-            true,
-            span,
-        )?;
-        self.define_builtin_property(
-            &prototype,
-            "toPrecision",
-            Value::Object(to_precision.clone()),
-            true,
-            span,
-        )?;
-        self.define_builtin_property(
-            &prototype,
-            "toFixed",
-            Value::Object(to_fixed.clone()),
-            true,
-            span,
-        )?;
-        self.define_builtin_property(
-            &prototype,
-            "valueOf",
-            Value::Object(value_of.clone()),
-            true,
-            span,
-        )?;
-        self.define_builtin_property(
-            &prototype,
-            "toString",
-            Value::Object(to_string.clone()),
-            true,
-            span,
-        )?;
+        for (name, method) in [
+            ("toLocaleString", &to_locale_string),
+            ("toExponential", &to_exponential),
+            ("toPrecision", &to_precision),
+            ("toFixed", &to_fixed),
+            ("valueOf", &value_of),
+            ("toString", &to_string),
+        ] {
+            self.define_builtin_property(
+                &prototype,
+                name,
+                Value::Object(method.clone()),
+                true,
+                span,
+            )?;
+        }
         let is_finite = self.new_builtin(function_prototype, Builtin::NumberIsFinite, span)?;
         let is_nan = self.new_builtin(function_prototype, Builtin::NumberIsNaN, span)?;
         let is_integer = self.new_builtin(function_prototype, Builtin::NumberIsInteger, span)?;
