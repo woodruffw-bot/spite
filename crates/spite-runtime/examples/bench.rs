@@ -164,6 +164,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_case_identity_ascii",
+        source: "(()=>{const lower='abc123_-'.repeat(2048),upper='ABC123_-'.repeat(2048);let sum=0;for(let i=0;i<8;i++)sum+=lower.toLowerCase().length+upper.toUpperCase().length;return sum})()",
+        expected: 262_144.0,
+        jobs: false,
+    },
+    Case {
         name: "string_case_ascii",
         source: "(()=>{const text=\"AbC09 .:^`'z\".repeat(1024);let sum=0;for(let i=0;i<8;i++){const lower=text.toLowerCase(),upper=text.toUpperCase();sum+=lower.length+upper.length+lower.charCodeAt(2)+upper.charCodeAt(2)}return sum})()",
         expected: 197_936.0,

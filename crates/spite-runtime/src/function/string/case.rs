@@ -14,6 +14,22 @@ impl Realm {
     ) -> Result<Value, Error> {
         Self::require_object_coercible(&receiver, span)?;
         let string = self.string(receiver, span)?;
+        if self.remaining_steps.is_none()
+            && self.atomic_waits.is_none()
+            && self
+                .limits
+                .max_string_units
+                .is_none_or(|limit| string.len() <= limit)
+        {
+            let changing = if uppercase { 0x61..=0x7a } else { 0x41..=0x5a };
+            if string
+                .code_units()
+                .iter()
+                .all(|unit| *unit <= 0x7f && !changing.contains(unit))
+            {
+                return Ok(Value::String(string));
+            }
+        }
         let mut decoded = char::decode_utf16(string.code_units().iter().copied());
         let mut result = Vec::new();
         let mut preceding_cased = false;
@@ -91,5 +107,42 @@ impl Realm {
         result.try_reserve(units.len()).map_err(|_| limit())?;
         result.extend_from_slice(units);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ascii_identity_preserves_output_limits_work_and_agent_termination() {
+        let mut realm = Realm::default();
+        realm.eval("0").unwrap();
+        let span = Span::default();
+        for (text, uppercase) in [("abc", false), ("ABC", true)] {
+            let input = Value::String(text.into());
+            realm.limits.max_string_units = Some(3);
+            assert_eq!(
+                realm.string_case(input.clone(), uppercase, span),
+                Ok(input.clone())
+            );
+            realm.limits.max_string_units = Some(2);
+            assert!(matches!(
+                realm.string_case(input.clone(), uppercase, span),
+                Err(Error::Limit { .. })
+            ));
+            realm.limits.max_string_units = None;
+            realm.remaining_steps = Some(0);
+            assert!(matches!(
+                realm.string_case(input, uppercase, span),
+                Err(Error::Limit { .. })
+            ));
+            realm.remaining_steps = None;
+        }
+        realm.agent_control().terminate();
+        assert!(matches!(
+            realm.string_case(Value::String("abc".into()), false, span),
+            Err(Error::Host { .. })
+        ));
     }
 }

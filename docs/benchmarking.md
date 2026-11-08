@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 53 program workloads |
+| parse_all | Parse and drop the ASTs for all 54 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | var_bindings | Call an ordinary function with two local var bindings 2,048 times, checking the returned sum |
@@ -45,6 +45,7 @@ and collection medians are computed independently.
 | string_pad_wide | Repeat string_pad with a three-unit BMP/lone-surrogate filler and a partial final copy |
 | string_wellformed | Run toWellFormed sixteen times over a valid 10,240-unit BMP/supplementary input, checking length and final unit |
 | string_wellformed_mixed | Alternate an unpaired leading/trailing surrogate around that input, checking length and repaired unit |
+| string_case_identity_ascii | Perform sixteen unchanged upper/lower conversions of 16,384-unit ASCII Strings, checking total length |
 | string_case_ascii | Lowercase/uppercase a 12,288-unit ASCII input eight times each, checking lengths and selected units |
 | string_case_context | Repeat the casing checks over 11,264 units of ASCII, Greek sigma, combining marks and lone surrogates |
 | string_case_unicode | Repeat over 7,168 units of Greek, supplementary letters, expanding mappings and joiners as a Unicode control |

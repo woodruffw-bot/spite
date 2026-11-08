@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Reuse unchanged ASCII case conversions
+
+String case conversion reuses its input when every unit is ASCII and no letter
+needs changing. The direct return requires absent work accounting and agent
+control, with the output inside any configured string limit. Other inputs and
+controlled calls retain the existing mapping and Unicode-context algorithm.
+The production guard adds sixteen lines without new state, types or APIs.
+
+The fifty-fourth workload performs sixteen unchanged conversions of 16,384-unit
+lower/uppercase Strings. All 54 checked workloads pass with 56 CSV rows. Five
+checked evaluation/collection iterations, including initialization and parsing,
+record 279,475,511 instructions before and 30,572,360 after (-89.06%) in Callgrind.
+Rust calls to free fall from 3,956 to 3,796 (-160/-4.04%). These are scoped
+instruction/allocation counts; full-corpus and quiet timing evidence are pending.
+
+All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including three facade doctests and 30 CLI groups. The new unit checks
+exact/oversized output limits, zero work allowance and host termination. Snapshots
+and fixture inventories are unchanged.
+
 ## Exhaustive primitive boxing
 
 ToObject (7.1.18) now handles every Value kind explicitly in prototype selection
