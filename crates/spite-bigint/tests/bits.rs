@@ -257,3 +257,38 @@ fn native_index_conversion_is_exact_and_unsigned() {
         assert_eq!(BigInt::from(value).is_odd(), value % 2 != 0);
     }
 }
+
+#[test]
+fn and_with_zero_retains_prepaid_work_and_result_size_limits() {
+    let large = parse(&format!("1{}", "0".repeat(256)), 2);
+    for (value, work) in [
+        (BigInt::default(), 6),
+        (BigInt::from(1), 12),
+        (BigInt::from(-1), 12),
+        (large.clone(), 60),
+        (large.neg(&mut budget()).unwrap(), 60),
+    ] {
+        let zero = BigInt::default();
+        for (left, right) in [(&value, &zero), (&zero, &value)] {
+            let mut exact = Budget::new(0, work);
+            assert_eq!(
+                left.bitwise(right, BitwiseOp::And, &mut exact),
+                Ok(zero.clone())
+            );
+            assert_eq!(exact.remaining_work(), Some(0));
+            let mut short = Budget::new(0, work - 1);
+            assert_eq!(
+                left.bitwise(right, BitwiseOp::And, &mut short),
+                Err(Error::Limit)
+            );
+        }
+        if !value.is_zero() {
+            for op in [BitwiseOp::Or, BitwiseOp::Xor] {
+                assert_eq!(
+                    value.bitwise(&zero, op, &mut Budget::new(0, work)),
+                    Err(Error::Limit)
+                );
+            }
+        }
+    }
+}

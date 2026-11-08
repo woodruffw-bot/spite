@@ -1464,6 +1464,10 @@ borrow, multiplication, and division algorithms. Bitwise operands reserve their
 complete two's-complement width once, copy the retained words and extend with
 zeroes before sign conversion. Width overflow and reservation failure return a
 host limit; per-word work charging and infinite sign extension are unchanged.
+AND with zero retains the width calculation and full work debit, then returns
+canonical zero before reserving either temporary buffer. Result-magnitude
+validation still applies. JavaScript operands evaluate and convert before this
+integer-backend shortcut.
 Divisors whose magnitude fits one u32 word use division from the highest word
 down, carrying a remainder in u64. Without work or magnitude quotas, two-word
 divisors similarly use a u128 carry; each combined dividend fits 96 bits and

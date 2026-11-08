@@ -308,6 +308,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "bigint_and_zero",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive;let count=0;for(let i=0;i<2048;i++){const result=i%2?(positive&0n):(0n&negative);if(result===0n)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_and_one",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive;let count=0;for(let i=0;i<2048;i++){const result=i%2?(positive&1n):(1n&negative);if(result===1n)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_bitwise",
         source: "(()=>{let x=-(1n<<2048n)+1n,sum=0;const mask=(1n<<2048n)-1n;for(let i=0;i<64;i++){x=((x&mask)^(x>>13n))|(1n<<BigInt(i));sum+=Number(x&65535n)}return sum})()",
         expected: 2_258_539.0,

@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 65 program workloads |
+| parse_all | Parse and drop the ASTs for all 67 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
@@ -69,6 +69,8 @@ and collection medians are computed independently.
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
 | bigint_to_number_integer | Convert a 513-bit BigInt to Number 2,048 times, checking the exact power of two |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
+| bigint_and_zero | AND positive/negative 4,097-bit integers with 0n in 2,048 operations, checking zero |
+| bigint_and_one | Repeat with 1n as a nonzero-mask control, checking one |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |
 | bigint_divide_u64 | Perform 32 quotient/remainder steps by 2^63+17 from a changing 2,048-bit integer, checking a low-word checksum |
 | bigint_radix | Format changing 2,048-bit integers in hexadecimal/base 32 across 32 steps, checking lengths and trailing-digit checksums |
@@ -100,6 +102,30 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## BigInt AND with zero
+
+After prepaying the existing width-based work, the integer backend returns
+canonical zero when either AND operand is zero. Baseline production is e8443d76a.
+Matched executables use identical 67-workload sources, Rust 1.99, optimized
+conformance libraries, debug assertions and overflow checks. Parser source is
+unchanged; its binary rebuilds with its BigInt dependency.
+
+Each dedicated Callgrind program evaluates five times, with 2,048 AND operations
+per evaluation on positive/negative 4,097-bit magnitudes. The target uses 0n and
+the control uses 1n. Counts include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Zero mask | 384,487,261 | 343,633,019 | 116,421 | 95,941 |
+| One-mask control | 391,189,649 | 391,187,257 | 147,141 | 147,141 |
+
+The target uses 10.6256% fewer instructions and 20,480 fewer Rust deallocations,
+two per AND operation. The control instruction count differs by -0.0006% and
+retains its deallocation count. Both benchmark smokes pass all 69 CSV rows;
+1,536 coercion/error programs and the 1,024-program wide-integer oracle remain
+exact before and after. These counts support no elapsed-time or general workload
+speedup claim and add no CI timing threshold.
 
 ## One-unit character access
 

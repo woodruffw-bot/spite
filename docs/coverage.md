@@ -61,6 +61,48 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt AND with zero
+
+The integer backend returns canonical zero for AND with either zero operand
+after the same checked width calculation and complete work charge (6.1.6.2.17).
+Both JavaScript operands still evaluate and convert before backend dispatch.
+Output-magnitude validation remains in place.
+
+The new backend regression checks both orders, positive/negative operands,
+zero-sized output limits and exact/insufficient work. All 37 BigInt tests,
+113 Core tests, 577 Runtime units, 2,441 non-RegExp integrations and the quality
+gate pass. All 1,536 coercion/error programs match Node before and after, and
+all 1,024 stored Python/Node wide-integer programs remain exact. Both matched
+benchmark smokes pass 67 workloads and 69 CSV rows. Dedicated profiles show
+10.6256% fewer instructions and 20,480 fewer Rust deallocations over 10,240
+zero-mask operations; the nonzero control retains its deallocation count.
+This supports no elapsed-time or general workload speedup claim; see
+[benchmarking](benchmarking.md#bigint-and-with-zero). Runtime groups, fixtures,
+snapshots and default quotas are unchanged.
+
+## String storage-reuse execution receipt
+
+The frozen gate compiled on clean e8443d76a passes all 87 runner controls and
+all 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+Executable and fixture hashes match across the 1,072.321-second four-worker run.
+All 17 CI jobs pass for both
+[repeat](https://github.com/woodruffw-bot/spite/actions/runs/42524378890) and
+[character access](https://github.com/woodruffw-bot/spite/actions/runs/42525704044).
+This receipt includes both String reuse changes and precedes AND-with-zero.
+Fixtures, helpers, modes and reviews are unchanged.
+
+## Using completion and disposal audits
+
+On e8443d76a, all 5,520 distinct generated programs match Node for retained
+synchronous using in ordinary, async and generator functions. They combine
+function/iteration scopes, normal/return/throw/break/continue completions,
+throwing getters, invalid/class/revoked methods, suppression chains and
+IteratorClose failures. Generator resumes include next, injected return and
+injected throw. Another 5,520 repeats with collection after evaluation and each
+Promise job retain all results and traces. The audit adds no production changes,
+native groups, baseline syntax or Test262 passing credit; await-using remains
+outside this retained scope.
+
 ## One-unit character access
 
 For a valid at/charAt index into a one-unit String, the result shares the

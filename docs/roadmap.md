@@ -688,6 +688,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Charge partial class-definition metadata scans across computed-name suspension, retaining instance/static fields and reference order through collector refusal and resumption.
 - [x] Retain nonempty String storage for a single repetition after count conversion and the existing output-length, work and agent checks.
 - [x] Reuse converted one-unit Strings for successful at/charAt results after index conversion and range checks.
+- [x] Return canonical zero for BigInt AND with a zero operand after the existing width-based work charge and result validation.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

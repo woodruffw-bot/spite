@@ -5,6 +5,24 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt AND-with-zero regression
+
+All 37 BigInt tests, 113 Core tests, 577 Runtime units, 2,441 non-RegExp
+integrations and the quality gate pass. The new backend group retains work and
+result-size limits. All 1,536 coercion/error programs and the 1,024-program
+wide-integer oracle remain exact before and after; both matched benchmark
+smokes pass all 69 rows. Fixtures are unchanged.
+
+## String storage-reuse execution receipt
+
+A frozen gate compiled on clean e8443d76a passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,072.321-second run.
+All 17 CI jobs pass for both String commits. Outside the corpus, 5,520 retained
+using programs match Node, including another 5,520 collection-enabled repeats.
+This receipt precedes AND-with-zero. Fixture bytes, helpers, modes and reviews
+are unchanged.
+
 ## One-unit character access regression
 
 All 577 Runtime units, 2,441 non-RegExp integrations and the quality gate pass

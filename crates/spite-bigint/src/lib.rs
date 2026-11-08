@@ -649,6 +649,9 @@ impl BigInt {
             .checked_add(1)
             .ok_or(Error::Limit)?;
         budget.charge(width.checked_mul(6).ok_or(Error::Limit)?)?;
+        if op == BitwiseOp::And && (self.is_zero() || other.is_zero()) {
+            return budget.finish(Self::default());
+        }
         let mut left = self.twos_complement(width)?;
         let right = other.twos_complement(width)?;
         for (a, b) in left.iter_mut().zip(right) {
