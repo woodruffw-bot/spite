@@ -85,6 +85,37 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## TypedArray observer reads
+
+A candidate routed unaccounted at/reduce/reduceRight/join/toLocaleString reads
+through the existing live element reader, retaining normal property dispatch
+for work quotas and agent control. Compared Runtime revisions are 7fdb8d6cb and
+a26ae4a0d, with identical 49-workload sources. The candidate's full 80,060-mode
+gate compiles on 3126d87ce with identical production sources and passes before
+timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| typed_array_indices | 35827.9 | 34082.3 | 7308.9 | 6926.5 |
+| properties | 527.0 | 505.8 | 189.0 | 191.2 |
+| map_iteration | 720.6 | 705.1 | 233.2 | 235.6 |
+| string_slice_full | 220.3 | 220.0 | 170.8 | 172.4 |
+| parse_all | 1241.3 | 1313.1 | 0 | 0 |
+| initialize_and_drop | 639.4 | 644.0 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Candidate evaluation is 4.87% lower and collection 5.23% lower. Other program
+evaluation changes range from -10.53% to +7.21%, and collection changes from
+-7.98% to +5.29%. Parsing and initialization differ by +5.78% and +0.72%.
+The target changes fall within the control variation. These measurements do not
+establish a speedup attributable to direct reads, so the extra dispatch branch
+was removed. Production retains the common property path. The measurements add
+no CI timing threshold or execution allowance.
+
 ## Whole-range String slicing
 
 slice/substring retain their converted receiver when normalized endpoints select

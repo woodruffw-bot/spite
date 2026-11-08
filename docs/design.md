@@ -4320,12 +4320,6 @@ the source without changing the captured iteration range or triggering an extra
 validation step. Includes reads invalid indices as undefined; indexOf and
 lastIndexOf use live presence checks and skip them.
 
-Without work accounting or agent control, at, reductions and string conversion
-pass known numeric indices to the existing live element reader, avoiding property
-key construction and parsing. Every read still checks the current buffer before
-decoding. Accounted and agent-controlled calls retain the original property
-dispatch and its checks.
-
 Callback methods preserve their specified direction, arguments, thisArg, and
 early returns. Find methods retain the value read before the predicate runs.
 Reductions distinguish an omitted accumulator from explicit undefined. Join

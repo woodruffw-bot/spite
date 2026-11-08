@@ -66,23 +66,6 @@ impl Realm {
         }
     }
 
-    fn typed_array_read_index(
-        &mut self,
-        object: &ObjectHandle,
-        index: u64,
-        span: Span,
-    ) -> Result<Value, Error> {
-        // Callers validated the brand and captured a safe-integer length.
-        // The element reader still checks the live buffer after user callbacks.
-        if self.remaining_steps.is_none() && self.atomic_waits.is_none() {
-            return self.object_work(span, |objects, budget| {
-                objects.typed_array_get_element(object, index as f64, budget)
-            });
-        }
-        // Retain all property-dispatch charges and agent checks when enabled.
-        self.get_property(object, &JsString::from_index(index), span)
-    }
-
     fn typed_array_read_at(
         &mut self,
         object: &ObjectHandle,
@@ -102,7 +85,7 @@ impl Realm {
             return Ok(Value::Undefined);
         }
         // The witness bounds finite integral indices below 2^53 - 1.
-        self.typed_array_read_index(object, index as u64, span)
+        self.get_property(object, &JsString::from_index(index as u64), span)
     }
 
     fn typed_array_read_search(
@@ -212,7 +195,7 @@ impl Realm {
             };
             // TypedArray reduction never performs HasProperty, including after
             // a callback has detached the buffer or shrunk the view out of bounds.
-            let value = self.typed_array_read_index(object, index, span)?;
+            let value = self.get_property(object, &JsString::from_index(index), span)?;
             accumulator = Some(match accumulator {
                 None => value,
                 Some(previous) => self.call(
@@ -252,7 +235,7 @@ impl Realm {
             if index > 0 {
                 self.typed_array_read_append(&mut result, separator, span)?;
             }
-            let element = self.typed_array_read_index(object, index, span)?;
+            let element = self.get_property(object, &JsString::from_index(index), span)?;
             if matches!(element, Value::Undefined) || (locale && matches!(element, Value::Null)) {
                 continue;
             }

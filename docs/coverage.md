@@ -80,14 +80,14 @@ the raw differences are retained. No compatibility exception or Runtime behavior
 change is introduced. Native test and fixture inventories are unchanged.
 The extended regression and full quality gate pass, including 25 CLI groups.
 
-## Direct TypedArray observer reads
+## TypedArray observer read measurements
 
-Without work accounting or agent control, at, reduce/reduceRight and
-join/toLocaleString use the existing live element reader for their known numeric
-indices. This avoids creating and reparsing property keys. Each read still checks
-the current buffer bounds; callbacks and coercions can detach, resize or regrow
-the buffer. Budgeted and agent-controlled calls retain their previous property
-dispatch. No state, storage representation or dependency changes.
+TypedArray observers retain their shared property dispatch. A candidate that
+routed unaccounted at/reduce/reduceRight/join/toLocaleString reads directly to the
+existing element reader was measured against the original implementation.
+Evaluation was 4.87% lower and collection 5.23% lower, within the control variation
+in this batch. The extra branch was removed; no speedup is established. Exact
+revisions and controls are in [the benchmark receipt](benchmarking.md#typedarray-observer-reads).
 
 All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes from 2,247
 unchanged TypedArray/Uint8Array originals and the full quality gate pass, including
@@ -95,8 +95,19 @@ unchanged TypedArray/Uint8Array originals and the full quality gate pass, includ
 1,152 cases across all twelve element kinds and fixed/length-tracking resizable
 views match both the previous implementation and Node exactly, including shrinking,
 regrowth, detachment, prototype replacement and callback failures. Inventories and
-default quotas are unchanged. Matched timing binaries are saved; no post-change
-timing is claimed yet.
+default quotas are unchanged. These checks cover the compared candidate. Restored
+production sources exactly match the previously full-validated 7fdb8d6cb baseline.
+After restoration, all 24 TypedArray observer groups, the saved-binding GC
+regression and the full quality gate pass.
+
+A full gate compiled on clean 3126d87ce, whose production sources exactly match
+a26ae4a0d, passes all 87 controls and all 80,060 modes from 41,550 originals with
+zero other outcomes. The four-worker frozen corpus run takes 1,099.58 seconds.
+Its executable SHA-256 is
+1740352331f48dfb69d08efa8afd4bba7ede7d8628e258069a38a59caa173917;
+its fixture-tree SHA-256 is
+bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169.
+Both hashes match before and after execution. This gate covers the compared candidate.
 
 ## Whole-range String slice/substring storage
 
@@ -124,8 +135,8 @@ from 41,550 originals, with zero other outcomes. The frozen corpus run takes
 f9f1c1befa33edf277f4f41d8983f4bac62d001615ac535f464c8117e0f7579b;
 its fixture-tree SHA-256 is
 bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169.
-Both hashes match before and after execution. This gate precedes the direct
-TypedArray observer reads described above.
+Both hashes match before and after execution. This gate also covers the restored
+TypedArray dispatch described above.
 
 ## Uint8Array encoding method catalogue
 
