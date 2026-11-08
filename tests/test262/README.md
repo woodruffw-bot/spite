@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Collection-frame native regression
+
+All 576 Runtime units and all 5,055 integration groups pass after reducing
+collection iterator construction frames. The unchanged Windows failing group
+also passes a 1 MiB local diagnostic that previously aborted. Fixture bytes,
+helpers, modes and reviews are unchanged; the exact-commit corpus run follows
+the implementation commit.
+
 ## Disposal wrapper Realm execution receipt
 
 A frozen gate compiled on clean b2459b3ea passes all 87 runner controls and all

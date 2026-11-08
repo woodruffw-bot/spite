@@ -14,17 +14,35 @@ pub(super) enum Entry {
     Environment(Environment),
 }
 
+// Keep only the selected iterator. Flat-mapping both optional variants stores
+// two inner iterators for each and makes unoptimized collection frames large.
+enum EntryTrace<O, E> {
+    Object(O),
+    Environment(E),
+}
+
+impl<'a, O, E> Iterator for EntryTrace<O, E>
+where
+    O: Iterator<Item = Option<&'a Handle>>,
+    E: Iterator<Item = Option<&'a Handle>>,
+{
+    type Item = Option<&'a Handle>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Object(iterator) => iterator.next(),
+            Self::Environment(iterator) => iterator.next(),
+        }
+    }
+}
+
 impl Trace for Entry {
     #[inline]
     fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
-        let (object, environment) = match self {
-            Self::Object(object) => (Some(object), None),
-            Self::Environment(environment) => (None, Some(environment)),
-        };
-        object
-            .into_iter()
-            .flat_map(Trace::trace)
-            .chain(environment.into_iter().flat_map(Trace::trace))
+        match self {
+            Self::Object(object) => EntryTrace::Object(object.trace()),
+            Self::Environment(environment) => EntryTrace::Environment(environment.trace()),
+        }
     }
 
     fn ephemerons(&self) -> impl Iterator<Item = (&Handle, Option<&Handle>)> {

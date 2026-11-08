@@ -554,7 +554,9 @@ impl Trace for OrdinaryObject {
             Some(Callable::ClassConstructor(class)) => class.method.code.module.as_ref(),
             _ => None,
         };
-        std::iter::once(self.prototype.as_ref())
+        // Preserve slot order while bounding the intermediate iterator values
+        // built by this function in unoptimized native stack frames.
+        let initial_slots = std::iter::once(self.prototype.as_ref())
             .chain(self.function_realm.iter().map(|realm| Some(&realm.0)))
             .chain(self.proxy.iter().flat_map(|proxy| {
                 proxy
@@ -576,8 +578,11 @@ impl Trace for OrdinaryObject {
                     .flat_map(|(_, element)| element.trace()),
             )
             .chain(self.map.iter().flat_map(|data| data.trace()))
-            .chain(self.set.iter().flat_map(|data| data.trace()))
-            .chain(self.disposable_stack.iter().flat_map(|data| data.trace()))
+            .chain(self.set.iter().flat_map(|data| data.trace()));
+        let execution_slots = self
+            .disposable_stack
+            .iter()
+            .flat_map(|data| data.trace())
             .chain(self.async_disposal.iter().flat_map(|data| data.trace()))
             .chain(self.async_execution.iter().flat_map(|data| data.trace()))
             .chain(self.generator.iter().flat_map(|data| data.trace()))
@@ -586,12 +591,13 @@ impl Trace for OrdinaryObject {
             .chain(self.module_import.iter().flat_map(|data| data.trace()))
             .chain(self.module_namespace.iter().flat_map(|data| data.trace()))
             .chain(self.array_from_async.iter().flat_map(|data| data.trace()))
-            .chain(
-                self.disposable_resources.iter().flat_map(|resources| {
-                    resources.entries.iter().flat_map(DisposableResource::trace)
-                }),
-            )
-            .chain(self.weak_map.iter().map(|_| None))
+            .chain(self.disposable_resources.iter().flat_map(|resources| {
+                resources.entries.iter().flat_map(DisposableResource::trace)
+            }));
+        let remaining_slots = self
+            .weak_map
+            .iter()
+            .map(|_| None)
             // WeakRef targets are weak; only account for visiting the slot.
             .chain(self.weak_ref.iter().map(|_| None))
             .chain(
@@ -642,7 +648,8 @@ impl Trace for OrdinaryObject {
                     }
                 };
                 std::iter::once(first).chain(second)
-            }))
+            }));
+        initial_slots.chain(execution_slots).chain(remaining_slots)
     }
 
     fn ephemerons(&self) -> impl Iterator<Item = (&Handle, Option<&Handle>)> {

@@ -682,6 +682,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Preserve the forwarding Realm across builtin and strict tail transfers, creating revoked-Proxy and non-callable errors there while ordinary callees enter their own Realms.
 - [x] Protect exception Realms across all thirteen Proxy operations, distinguishing invalid/revoked traps and invariants from abrupt foreign trap bodies.
 - [x] Retain and trace registration Realms for internal adopt and async-from-sync disposal wrappers, preserving error ownership and foreign Promise constructor observations across move and cleanup.
+- [x] Bound collection iterator construction frames through ordered segments and active heap-entry dispatch, preserving edge order and scan accounting on native thread stacks.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

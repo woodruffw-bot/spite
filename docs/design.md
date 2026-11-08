@@ -1810,6 +1810,10 @@ tracing sees a foreign/stale handle or exceeds its budget, return without sweepi
 Trace iterators yield an optional handle for each inspected field, including
 primitive-valued fields, so a scan cannot evade its budget by filtering out all
 non-reference properties. Deep object graphs use an explicit work stack.
+Heap-entry tracing stores only the active object or environment iterator.
+Object tracing constructs three ordered iterator segments, keeping temporary
+construction frames smaller in unoptimized builds. Field order, scan charges
+and outgoing references are unchanged, without allocating a boxed iterator.
 Reachable containers can additionally enumerate weak-key ephemerons. Waiting
 values are indexed by validated key slots and activated once when those keys
 become reachable. Activated values can expose further keys and containers;

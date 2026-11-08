@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Collection iterator construction frames
+
+Both Windows Runtime second-half jobs on b2459b3ea overflowed during collection
+in the same retained RegExp integration group. Heap-entry tracing now stores
+only its active variant, and object tracing builds three ordered segments.
+This preserves outgoing references, field order and scan accounting without
+adding a heap allocation, changing CI stack flags or modifying the tests.
+
+Linux unoptimized prologues shrink from 1,091,224 to 555,544 bytes for object
+tracing and from 128,616 to 64,280 bytes for heap-entry tracing. The unchanged
+failing group aborts on a 1 MiB diagnostic stack before the change and passes
+afterward; the documented embedding minimum remains 2 MiB. All 576 Runtime
+units and all 5,055 integration groups pass, including 2,617 RegExp groups.
+The quality gate passes formatting, strict Clippy, the explicit MSRV,
+policy/inventory checks, 30 CLI groups and all three facade doctests.
+Windows CI verification and the new exact-commit corpus run remain pending.
+
 ## Completion and suspension differential checks
 
 A further 5,660 generated cases, comprising 4,453 distinct sources, match Node
