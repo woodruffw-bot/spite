@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## String code-construction execution receipt
+
+A frozen gate compiled on clean 16338f8a6 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,156.599-second run.
+Fixed-array construction preserves numeric conversion, UTF-16 encoding, work
+and output checks. Fixture bytes, helpers and reviews are unchanged. This records retained
+corpus execution.
+
 ## String.raw sole-literal execution receipt
 
 A frozen gate compiled on clean e6577c7ca passes all 87 runner controls and all

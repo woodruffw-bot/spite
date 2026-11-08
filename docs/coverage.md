@@ -98,8 +98,25 @@ parsing, record 667,738,769 to 653,885,288 instructions (2.07% fewer) and
 single-input workload. All 576 Runtime units, 2,433 non-RegExp integrations and
 the quality gate pass, including formatting, strict Clippy, the explicit MSRV,
 policy/inventory checks, 30 CLI groups and all three facade doctests.
-Full-corpus and quiet timing evidence remain pending. Existing character-construction tests cover output limits and
+ Existing character-construction tests cover output limits and
 numeric errors; snapshots and fixture inventories are unchanged.
+
+A frozen gate compiled on clean 16338f8a6 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,156.599-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 99cc3921d with 16338f8a6 using
+the same 62 checked workloads and 64 CSV rows, seven samples of ten iterations.
+The single-input code-construction workload measures 15,916.132 to 15,820.910 microseconds
+(-0.60%); separate collection measures 797.638 to
+797.793 (+0.02%). The multiple-input control measures
+27,383.767 to 27,764.048 (+1.39%), with collection
+2,443.646 to 2,696.235 (+10.34%). Other evaluation
+changes range from -8.59% to +11.63%, and collection from
+-6.07% to +6.02%. Parse-all changes
++2.65% and initialization/drop
++0.44%. These timings do not establish a wall-time speedup. Retain
+the fixed-array construction for its scoped allocation/instruction reduction.
 
 ## Release apply argument captures after failures
 
