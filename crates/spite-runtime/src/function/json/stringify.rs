@@ -35,7 +35,7 @@ impl Children {
     fn next(&mut self) -> Option<JsString> {
         match self {
             Self::Array { index, length } if *index < *length => {
-                let name = JsString::from(index.to_string().as_str());
+                let name = JsString::from_index(*index);
                 *index += 1;
                 Some(name)
             }
@@ -82,11 +82,7 @@ impl Realm {
                 let mut seen = HashSet::new();
                 for index in 0..length {
                     self.tick(span)?;
-                    let item = self.get_property(
-                        object,
-                        &JsString::from(index.to_string().as_str()),
-                        span,
-                    )?;
+                    let item = self.get_property(object, &JsString::from_index(index), span)?;
                     let usable = match &item {
                         Value::String(_) | Value::Number(_) => true,
                         Value::Object(object) => self.object_work(span, |objects, _| {

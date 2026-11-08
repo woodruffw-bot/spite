@@ -81,7 +81,7 @@ impl Realm {
         let raw = self.create_intrinsic_array(u64::from(count), span)?;
         for (index, element) in elements.iter().enumerate() {
             self.tick(element.span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index as u64);
             let cooked = match &element.cooked {
                 Some(string) => self.template_string(string, element.span)?,
                 None => Value::Undefined,

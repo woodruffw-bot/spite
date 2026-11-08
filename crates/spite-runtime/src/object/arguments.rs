@@ -27,7 +27,7 @@ impl Objects {
         let bindings = &self.environment(&environment)?.bindings;
         for (index, name) in &names {
             budget.charge(name.len() + 1)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(u64::from(*index));
             budget.lookup(record, &key)?;
             if !bindings.get(name).is_some_and(|binding| binding.mutable)
                 || !record

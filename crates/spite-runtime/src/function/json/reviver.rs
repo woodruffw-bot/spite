@@ -67,7 +67,7 @@ impl Realm {
                     if *index == *length {
                         None
                     } else {
-                        let name = JsString::from(index.to_string().as_str());
+                        let name = JsString::from_index(*index);
                         let record = frame.record.and_then(|record| {
                             let JsonKind::Array(elements) = &document.nodes[record].kind else {
                                 unreachable!("array parse snapshot");

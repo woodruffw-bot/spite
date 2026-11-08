@@ -1536,11 +1536,7 @@ impl Realm {
                 span,
                 message: "call argument allocation failed".into(),
             })?;
-            values.push(self.get_property(
-                &object,
-                &JsString::from(index.to_string().as_str()),
-                span,
-            )?);
+            values.push(self.get_property(&object, &JsString::from_index(index), span)?);
         }
         Ok(values)
     }

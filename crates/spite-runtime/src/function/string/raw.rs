@@ -21,7 +21,7 @@ impl Realm {
         let mut result = Vec::new();
         for index in 0..count {
             self.tick(span)?;
-            let key = JsString::from(index.to_string().as_str());
+            let key = JsString::from_index(index);
             let literal = self.get_property(&literals, &key, span)?;
             self.append_raw_value(&mut result, literal, span)?;
             if index + 1 < count

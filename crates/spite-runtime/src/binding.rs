@@ -276,7 +276,7 @@ impl Realm {
             };
             self.define_property_or_throw(
                 &array,
-                JsString::from(index.to_string().as_str()),
+                JsString::from_index(index as u64),
                 DataDescriptor {
                     value: Some(next),
                     writable: Some(true),

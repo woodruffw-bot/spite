@@ -1091,7 +1091,7 @@ impl Realm {
             return Ok(ObjectStep::Reply(ObjectReply::Keys(walk.keys)));
         }
         self.object_work(span, |_, budget| budget.charge(1))?;
-        let key = JsString::from(walk.next.to_string().as_str());
+        let key = JsString::from_index(walk.next);
         let task = internal(
             walk.object.clone(),
             ObjectOperation::Get(key.into(), Value::Object(walk.object.clone())),

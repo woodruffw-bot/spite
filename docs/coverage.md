@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Shared generic index formatting
+
+Eleven unsigned index conversions across arguments creation/mapping, array-like
+calls, iterator rest bindings, template objects, String.raw, JSON traversal and
+Proxy lists now use the existing exact UTF-16 formatter. This removes temporary
+Rust Strings while preserving full-width indices, property access, coercion,
+work accounting and failure order. No storage, dependency or quota policy changes.
+
+All 574 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass. All 1,937 modes from 1,015 unchanged originals pass across arguments,
+apply/construct, Proxy, JSON, String.raw, templates and destructuring. The existing
+1,613 JSON/DataView and 1,296 Proxy key-list comparisons have zero Node differences.
+This is a construction cleanup without a timing claim; inventories are unchanged.
+
 ## Shared TypedArray index formatting
 
 Twenty-one index conversions across six TypedArray modules now use the shared

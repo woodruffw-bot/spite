@@ -629,6 +629,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect the selected super base and deferred Symbol-key object across an awaited RHS and collection, releasing both after continuation completion while retaining published reference ordering.
 - [x] Report branded CLI Error values with stored name/message diagnostics without invoking JavaScript getters, Proxy traps or coercion, preserving control characters and lone surrogates.
 - [x] Share exact unsigned UTF-16 index formatting across TypedArray constructors, factories, reads, callbacks, copies, mutations and sorting, retaining witness/coercion order and quota behavior.
+- [x] Reuse exact unsigned UTF-16 keys for arguments, array-like calls, rest bindings, templates, String.raw, JSON traversal and Proxy lists, preserving observable access and quota order.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

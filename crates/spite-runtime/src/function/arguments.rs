@@ -87,7 +87,7 @@ impl Realm {
                 budget.value(value)?;
                 objects.define(
                     &object,
-                    JsString::from(index.to_string().as_str()),
+                    JsString::from_index(index as u64),
                     DataDescriptor {
                         value: Some(value.clone()),
                         writable: Some(true),
