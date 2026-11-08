@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Simple var names without temporary vectors
+
+The private variable-name iterator emits identifier names directly through a
+standard singleton iterator. Destructuring retains its existing bound-name list;
+both paths preserve source order and spans. The five-line change adds no public
+API, type or cached state.
+
+The fifty-third workload calls an ordinary function with two local var bindings
+2,048 times. All 53 checked outputs pass with 55 CSV rows. Five checked
+evaluation/collection iterations, including initialization and parsing, record
+357,981,490 instructions before and 355,526,515 after (-0.69%) in Callgrind.
+Rust calls to free fall from 249,366 to 228,876 (-20,490/-8.22%). These are scoped
+counts; full-corpus and quiet wall-time evidence remain pending.
+
+All 18 Parser units, 443 Parser integrations, 574 Runtime units, 2,431 non-RegExp
+integrations and the full quality gate pass, including 30 CLI groups. Snapshots,
+fixture inventories and work charges are unchanged.
+
 ## JSON reviver SameValue source eligibility
 
 All 270 audited programs match Node 26.13.0 across ten zero/overflow spellings,

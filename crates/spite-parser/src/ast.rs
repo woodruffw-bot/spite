@@ -923,7 +923,12 @@ pub struct BoundName<'a> {
 fn variable_names(bindings: &[BindingElement]) -> impl Iterator<Item = BoundName<'_>> {
     bindings
         .iter()
-        .flat_map(|binding| binding.pattern.bound_names())
+        .flat_map(|binding| match &binding.pattern.kind {
+            BindingPatternKind::Identifier(name) => Some((name.as_str(), binding.pattern.span))
+                .into_iter()
+                .chain(Vec::new()),
+            _ => None.into_iter().chain(binding.pattern.bound_names()),
+        })
         .map(|(name, span)| BoundName { name, span })
 }
 

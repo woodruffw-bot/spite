@@ -660,6 +660,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Expose opt-in CLI source-byte limits for syntax checks, evaluation, imported Modules and generated eval/Function source, preserving host-failure behavior.
 - [x] Protect ArraySetLength reentry during both numeric conversions, preserving wrapped/fractional first results, live writable state and partial truncation after new deletion blockers.
 - [x] Protect JSON reviver source eligibility for signed zero, overflowed numbers, boxed replacements and Proxy-wrapped ancestors, preserving SameValue without coercion.
+- [x] Emit simple var-declaration names through borrowed singleton iteration, retaining destructuring traversal, source order and diagnostic spans without temporary identifier lists.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
