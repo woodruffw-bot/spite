@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Completion and suspension differential checks
+
+A further 5,660 generated cases, comprising 4,453 distinct sources, match Node
+26.13.0 on the b2459b3ea Runtime. They cover strict/sloppy eval completion,
+labelled loops, switch and try/finally; async functions and generators with
+return/throw injection through yielding finalizers; awaited coercions,
+short-circuiting, calls and computed properties; and destructuring iterator
+closing across awaited or yielded keys/defaults, missing values and changed
+return methods. Only valid generated programs enter the comparison.
+
+All 3,612 suspension/expression/destructuring repeats also match with collection
+after initial evaluation and every completed Promise job. The raw programs,
+reference outcomes and collection repeats are retained. These checks add no
+Runtime code, native test groups or fixture changes.
+
 ## Internal disposal wrapper Realms
 
 The retained resource-management APIs now keep the creation Realm of adopt and
@@ -87,6 +102,11 @@ units, 2,438 non-RegExp integrations and the quality gate pass. All 64 checked
 benchmark rows pass; three 2 MiB native-stack probes reach the existing guard
 and restore the caller Realm. The published baseline and await-using syntax
 are unchanged.
+
+A frozen gate compiled on clean b2459b3ea passes all 87 controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+executable and fixture hashes match across the 1,057.020-second four-worker run.
+The wrapper fix adds no fixture, harness, mode or review changes.
 
 ## Proxy operation and trap exception Realms
 
