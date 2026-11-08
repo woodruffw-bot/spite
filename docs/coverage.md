@@ -93,11 +93,25 @@ and parsing, record 1,424,028,036 instructions before and 1,402,503,918 after
 (-1.51%) in Callgrind. Rust calls to free fall from 1,086,471 to 1,004,551,
 removing 81,920 temporary name-list/set allocations (-7.54%). All 51 checked
 workload results pass with 53 CSV rows. These are scoped instruction/allocation
-counts; full-corpus and wall-time evidence remain pending.
+counts.
 
 All 574 Runtime units and 2,431 non-RegExp integrations pass, including existing
 duplicate/sloppy parameter, mapped-arguments, default/rest and destructuring
 coverage. Work charges and fixture inventories are unchanged.
+
+A frozen gate compiled on clean cd62f2711 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,217.262-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 6b45ab789 with cd62f2711 using
+the same 51 checked workloads and 53 CSV rows, seven samples of ten iterations.
+The callback workload measures 29,914.997 to 29,226.296 microseconds (-2.30%);
+separate collection measures 4,969.456 to 5,101.461 (+2.66%). Other evaluation
+changes range from -5.82% to +7.01%, and collection from -5.69% to +5.66%.
+Parse-all changes +0.77% and initialization/drop -2.77%. These variations do not
+establish a wall-time speedup; retain the three-line guard for its direct
+single-name case and measured allocation/instruction reduction. The receipt
+predates the later ASCII-normalization change.
 
 ## Exhaustive metadata method dispatch
 
