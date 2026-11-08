@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Instance checks across callable revocation
+
+A 144-program audit matches Node 26.13.0 exactly for instanceof and direct
+intrinsic Symbol.hasInstance calls, bound/unbound targets, primitive/object
+operands, revoked proxies, hook-lookup revocation and prototype-getter failures
+(13.10.2, 7.3.21). The intrinsic's primitive shortcut preserves cached
+callability; bound delegation performs the live target hook lookup first.
+
+Four examples extend the existing bound-instance integration group with revoked
+receivers and revocation during a null-hook lookup. All four selected integration
+groups, six related intrinsic unit groups and the quality gate pass, including
+formatting, strict Clippy, the explicit MSRV, policy/inventory checks, 30 CLI
+groups and all three facade doctests. Runtime code, snapshots and fixture
+inventories are unchanged.
+
 ## Reflect.construct across revoked targets and newTarget
 
 An independent 180-program audit matches Node 26.13.0 exactly for ordinary,

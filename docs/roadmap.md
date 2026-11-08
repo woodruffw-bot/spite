@@ -109,6 +109,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Validate baseline direct/grouped assignment-target classification together with strictness and grammar-goal restrictions.
 - [x] Implement delete for environment references and non-reference expressions.
 - [x] Audit typeof, instanceof, in and delete grammar and evaluation, including custom Symbol.hasInstance, private-in validity, reference order and strict deletion.
+- [x] Protect instanceof and direct intrinsic checks across callable revocation, retaining bound-target hook lookup before primitive shortcuts.
 - [x] Parse var declarations and validate lexical conflicts through nested statements.
 - [x] Instantiate Script vars and execute variable statements and for headers.
 - [x] Audit var/let/const declaration scope, initialization, TDZ, descriptors, strict bindings and grammar-placement constraints.

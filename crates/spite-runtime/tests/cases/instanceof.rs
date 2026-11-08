@@ -62,6 +62,20 @@ fn arrow_and_bound_checks_use_callability_not_constructibility() {
             "{source}"
         );
     }
+    // 7.3.21 and 13.10.2: the intrinsic skips prototype access for a
+    // primitive, while bound delegation still performs the live target lookup.
+    truth(
+        "let pair=Proxy.revocable(function(){},{}),h=Function.prototype[Symbol.hasInstance];pair.revoke();let caught=false;try{0 instanceof pair.proxy}catch(e){caught=e instanceof TypeError}caught&&h.call(pair.proxy,0)===false",
+    );
+    truth(
+        "let pair=Proxy.revocable(function(){},{}),bound=pair.proxy.bind(null),h=Function.prototype[Symbol.hasInstance];pair.revoke();let caught=false;try{h.call(bound,0)}catch(e){caught=e instanceof TypeError}caught",
+    );
+    truth(
+        "let log='',pair=Proxy.revocable(function(){},{get(t,k,r){if(k===Symbol.hasInstance){log+='h';pair.revoke();return null}if(k==='prototype')throw 7;return Reflect.get(t,k,r)}});(0 instanceof pair.proxy)===false&&log==='h'",
+    );
+    truth(
+        "let log='',pair=Proxy.revocable(function(){},{get(t,k,r){if(k===Symbol.hasInstance){log+='h';pair.revoke();return null}if(k==='prototype')throw 7;return Reflect.get(t,k,r)}}),bound=pair.proxy.bind(null),h=Function.prototype[Symbol.hasInstance];h.call(bound,0)===false&&log==='h'",
+    );
 }
 
 #[test]
