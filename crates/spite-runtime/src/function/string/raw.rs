@@ -23,6 +23,13 @@ impl Realm {
             self.tick(span)?;
             let key = JsString::from_index(index);
             let literal = self.get_property(&literals, &key, span)?;
+            if count == 1 {
+                let literal = self.string(literal, span)?;
+                self.object_work(span, |_, budget| budget.charge(literal.len()))?;
+                let value = Value::String(literal);
+                self.check_string(&value, span)?;
+                return Ok(value);
+            }
             self.append_raw_value(&mut result, literal, span)?;
             if index + 1 < count
                 && let Some(substitution) = substitutions.next()
@@ -42,5 +49,40 @@ impl Realm {
         let string = self.string(value, span)?;
         self.object_work(span, |_, budget| budget.charge(string.len()))?;
         self.append_string(result, &string, span)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn single_literal_preserves_output_limits_work_and_agent_termination() {
+        let mut realm = Realm::default();
+        let template = realm.eval("({raw:['x\\uD800\\u4E2D\\uDC00']})").unwrap();
+        let span = Span::default();
+        let expected = Value::String(JsString::from([0x78_u16, 0xd800, 0x4e2d, 0xdc00]));
+        realm.limits.max_string_units = Some(4);
+        assert_eq!(
+            realm.string_raw(template.clone(), Vec::new().into_iter(), span),
+            Ok(expected)
+        );
+        realm.limits.max_string_units = Some(3);
+        assert!(matches!(
+            realm.string_raw(template.clone(), Vec::new().into_iter(), span),
+            Err(Error::Limit { .. })
+        ));
+        realm.limits.max_string_units = None;
+        realm.remaining_steps = Some(0);
+        assert!(matches!(
+            realm.string_raw(template.clone(), Vec::new().into_iter(), span),
+            Err(Error::Limit { .. })
+        ));
+        realm.remaining_steps = None;
+        realm.agent_control().terminate();
+        assert!(matches!(
+            realm.string_raw(template, Vec::new().into_iter(), span),
+            Err(Error::Host { .. })
+        ));
     }
 }

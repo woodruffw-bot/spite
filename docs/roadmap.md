@@ -673,6 +673,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share a stateless arguments-name predicate across parameter and body bindings, checking identifiers directly while retaining composite-pattern traversal and declaration order.
 - [x] Short-circuit exact-sum sticky-bit analysis when the guard and retained low bit already determine ties-to-even rounding, preserving the exact accumulator and work charges.
 - [x] Short-circuit BigInt-to-Number sticky-bit analysis when the guard and retained low bit already determine ties-to-even rounding, preserving exact results and prepaid work.
+- [x] Reuse the converted sole String.raw literal after the same property observations, work charge and output-length check, preserving concatenation and abrupt completion order.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

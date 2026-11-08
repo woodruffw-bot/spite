@@ -80,6 +80,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_raw_single",
+        source: "(()=>{const text='x\\uD800\\u4E2D\\uDC00'.repeat(4096),template={raw:[text]};let total=0;for(let i=0;i<16;i++){const out=String.raw(template);if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_raw_multiple",
+        source: "(()=>{const text='x\\uD800\\u4E2D\\uDC00'.repeat(4096),template={raw:[text,text]};let total=0;for(let i=0;i<16;i++){const out=String.raw(template,'');if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 524288.0,
+        jobs: false,
+    },
+    Case {
         name: "string_search",
         source: "(()=>{const text='a'.repeat(4096)+'b',needle='a'.repeat(128)+'b';let sum=0;for(let i=0;i<8;i++)sum+=text.indexOf(needle);return sum})()",
         expected: 31744.0,

@@ -61,6 +61,31 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Reuse the sole String.raw literal
+
+String.raw returns its converted literal directly when the captured raw length
+is one (22.1.2.4). The seven-line branch retains the existing tick, property
+access, ToString, code-unit work charge and output-length check. The remaining
+loop and helper are byte-identical. It adds no helper, stored state or API and
+preserves raw-length capture, ignored substitutions and abrupt completion order.
+
+Two new workloads check sixteen calls over one or two 16,384-unit literals with
+BMP characters and lone surrogates. The multi-literal workload exercises the
+concatenation path. All 60 checked workloads pass with 62 CSV rows; Node 26.13.0
+independently checks both new workloads. Five checked evaluation/collection
+iterations, including initialization and parsing, record 22,086,491 to
+16,725,689 instructions (24.27% fewer) and 5,161 to 5,001 Rust frees
+(160 fewer, 3.10%). These counts apply to the sole-literal workload.
+
+Separate before/after audits each match Node in all 243 cases covering Proxy
+accesses, conversion hints, raw-length/property mutation, unused substitutions,
+empty/lone-surrogate text and abrupt completions. A new direct unit protects
+exact and oversized output limits, exhausted work and agent termination.
+All 576 Runtime units, 2,432 non-RegExp integrations and the quality gate pass,
+including formatting, strict Clippy, the explicit MSRV, policy/inventory checks,
+30 CLI groups and all three facade doctests. Full-corpus and quiet timing
+evidence remain pending.
+
 ## Short-circuit BigInt-to-Number rounding analysis
 
 BigInt-to-Number conversion skips the pure discarded-bit scan when the guard
