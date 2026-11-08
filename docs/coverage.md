@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Unchanged TrimString storage
+
+TrimString now returns its converted receiver directly when trim, trimStart or
+trimEnd removes no UTF-16 units. It keeps the initial work charge, output-length
+check and result work charge in their existing order. Changed ranges retain the
+existing checked slice construction; immutable storage sharing introduces no
+new state or dependency.
+
+All 574 Runtime units, 2,431 non-RegExp integrations and 2,441 modes from 1,222
+unchanged String originals pass. All 1,024 Node comparisons match, including 768
+receiver/coercion/ignored-argument cases and all 65,536 UTF-16 units across the
+three methods. All 3,456 before/after quota cases have identical complete results,
+including limit messages and visible flags. The manual workload exercises this
+path; no post-change timing is claimed yet. Inventories and default quotas are unchanged.
+The full quality gate passes, including 22 CLI groups and dependency/inventory checks.
+
 ## TypedArray method catalogue
 
 All 27 shared prototype methods now store their implementation enum beside the

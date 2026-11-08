@@ -98,6 +98,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_trim_noop",
+        source: "(()=>{const base='ab漢\\ud800'.repeat(4096);let sum=0;for(let i=0;i<64;i++){const out=i%3===0?base.trim():i%3===1?base.trimStart():base.trimEnd();sum+=out.length+out.charCodeAt(out.length-1)}return sum})()",
+        expected: 4_587_520.0,
+        jobs: false,
+    },
+    Case {
         name: "string_repeat",
         source: "(()=>{let sum=0;for(let i=0;i<16;i++){const text=String.fromCharCode(97+i).repeat(65536);sum+=text.length+text.charCodeAt(text.length-1)}return sum})()",
         expected: 1_050_248.0,

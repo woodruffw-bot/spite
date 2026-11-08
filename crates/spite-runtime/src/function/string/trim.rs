@@ -29,6 +29,13 @@ impl Realm {
                 .map_or(0, |last| last + 1);
             units = &units[..end];
         }
+        let length = units.len();
+        if length == string.len() {
+            let value = Value::String(string);
+            self.check_string(&value, span)?;
+            self.object_work(span, |_, budget| budget.charge(length))?;
+            return Ok(value);
+        }
         self.copy_string_units(units, span)
     }
 }

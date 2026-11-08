@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all forty-seven program workloads |
+| parse_all | Parse and drop the ASTs for all forty-eight program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -34,6 +34,7 @@ and collection medians are computed independently.
 | string_add | Append a four-unit BMP/lone-surrogate fragment 2,048 times with String addition, checking length and final unit |
 | string_add_empty | Alternate empty left/right operands around a 16,384-unit String 64 times, checking length and final unit |
 | string_concat_no_args | Call concat without arguments on a 16,384-unit BMP/lone-surrogate String 64 times, checking length and final unit |
+| string_trim_noop | Alternate trim/trimStart/trimEnd on that already clean String 64 times, checking length and final unit |
 | string_repeat | Repeat sixteen single-unit inputs 65,536 times each, checking lengths and final code units |
 | string_repeat_wide | Repeat a four-unit BMP/lone-surrogate input 16,384 times, sixteen times, checking lengths and final code units |
 | string_pad | Alternate padStart/padEnd to 65,536 units with default spaces sixteen times, checking lengths and outer code units |
