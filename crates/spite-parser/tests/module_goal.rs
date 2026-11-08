@@ -1,10 +1,11 @@
 //! Module goal strictness, lexical functions, Await and ImportMeta (16.2, 13.1.1).
 
-use spite_core::{DiagnosticKind, JsString};
+use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::{
     ast::{ExprKind, Literal, StatementKind},
-    parse_dynamic_function, parse_module, parse_module_utf16, parse_module_with_source_limit,
-    parse_script,
+    parse_dynamic_function, parse_module, parse_module_utf16, parse_module_utf16_with_source_limit,
+    parse_module_with_source_limit, parse_script, parse_script_utf16,
+    parse_script_utf16_with_source_limit,
 };
 
 #[test]
@@ -187,4 +188,57 @@ fn module_utf16_preserves_lone_surrogates_and_source_limits_remain_opted_in() {
             .kind,
         DiagnosticKind::Limit
     );
+    for (units, bytes) in [
+        (vec![], 0),
+        (vec![0x22, 0x22], 2),
+        (vec![0x22, 0x03c0, 0x22], 4),
+        (vec![0x22, 0xd800, 0x22], 5),
+        (vec![0x22, 0xdc00, 0x22], 5),
+        (vec![0x22, 0xfffd, 0x22], 5),
+        (vec![0x22, 0xd83d, 0xde00, 0x22], 6),
+        (vec![0x22, 0xd800, 0xd800, 0x22], 8),
+        (vec![0x22, 0xd800, 0x61, 0xdc00, 0x22], 9),
+    ] {
+        let source = JsString::from_code_units(units);
+        for limit in [bytes, usize::MAX] {
+            assert_eq!(
+                parse_script_utf16_with_source_limit(&source, limit),
+                parse_script_utf16(&source)
+            );
+            assert_eq!(
+                parse_module_utf16_with_source_limit(&source, limit),
+                parse_module_utf16(&source)
+            );
+        }
+        if bytes != 0 {
+            for error in [
+                parse_script_utf16_with_source_limit(&source, bytes - 1).unwrap_err(),
+                parse_module_utf16_with_source_limit(&source, bytes - 1).unwrap_err(),
+            ] {
+                assert_eq!(error.kind, DiagnosticKind::Limit);
+                assert_eq!(error.span, Span::new(0, bytes));
+                assert_eq!(error.message, "source size limit exceeded");
+            }
+        }
+    }
+    for (source, bytes) in [
+        (JsString::from_code_units(vec![0xd800]), 3),
+        (JsString::from("return 1"), 8),
+    ] {
+        assert_eq!(
+            parse_script_utf16_with_source_limit(&source, bytes),
+            parse_script_utf16(&source)
+        );
+        assert_eq!(
+            parse_module_utf16_with_source_limit(&source, bytes),
+            parse_module_utf16(&source)
+        );
+        for error in [
+            parse_script_utf16_with_source_limit(&source, bytes - 1).unwrap_err(),
+            parse_module_utf16_with_source_limit(&source, bytes - 1).unwrap_err(),
+        ] {
+            assert_eq!(error.kind, DiagnosticKind::Limit);
+            assert_eq!(error.span, Span::new(0, bytes));
+        }
+    }
 }

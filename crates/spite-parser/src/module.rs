@@ -40,6 +40,20 @@ pub fn parse_module_utf16(source: &JsString) -> Result<Module, Diagnostic> {
     parser.finish(result)
 }
 
+/// Parses lossless UTF-16 Module source with an opted-in encoded byte limit.
+///
+/// Scalars use their UTF-8 lengths; each lone surrogate occupies three bytes.
+/// The limit is checked before allocating the parser's source representation.
+pub fn parse_module_utf16_with_source_limit(
+    source: &JsString,
+    max_bytes: usize,
+) -> Result<Module, Diagnostic> {
+    let source = source::SourceText::from_utf16_with_limit(source, Some(max_bytes))?;
+    let mut parser = Parser::from_source(std::rc::Rc::new(source))?;
+    let result = contents(&mut parser);
+    parser.finish(result)
+}
+
 fn contents(parser: &mut Parser) -> Result<Module, Diagnostic> {
     parser.module_goal = true;
     parser.allow_await_identifier = false;

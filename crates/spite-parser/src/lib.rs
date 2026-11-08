@@ -34,7 +34,10 @@ pub use dynamic_function::{
     parse_dynamic_function, parse_dynamic_function_utf16, parse_dynamic_generator_function,
     parse_dynamic_generator_function_utf16,
 };
-pub use module::{parse_module, parse_module_utf16, parse_module_with_source_limit};
+pub use module::{
+    parse_module, parse_module_utf16, parse_module_utf16_with_source_limit,
+    parse_module_with_source_limit,
+};
 pub use regexp::{
     RegExpNamedCapture, RegExpNamedReference, RegExpPatternMetadata, parse_regexp_pattern,
     validate_regexp_pattern,
@@ -85,6 +88,20 @@ pub fn parse_script(source: &str) -> Result<Script, Diagnostic> {
 pub fn parse_script_utf16(source: &JsString) -> Result<Script, Diagnostic> {
     let mut parser =
         Parser::from_source(std::rc::Rc::new(source::SourceText::from_utf16(source)?))?;
+    let result = parse_script_contents(&mut parser);
+    parser.finish(result)
+}
+
+/// Parses lossless UTF-16 Script source with an opted-in encoded byte limit.
+///
+/// Scalars use their UTF-8 lengths; each lone surrogate occupies three bytes.
+/// The limit is checked before allocating the parser's source representation.
+pub fn parse_script_utf16_with_source_limit(
+    source: &JsString,
+    max_bytes: usize,
+) -> Result<Script, Diagnostic> {
+    let source = source::SourceText::from_utf16_with_limit(source, Some(max_bytes))?;
+    let mut parser = Parser::from_source(std::rc::Rc::new(source))?;
     let result = parse_script_contents(&mut parser);
     parser.finish(result)
 }

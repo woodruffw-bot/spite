@@ -8,7 +8,7 @@ claim complete conformance or define an alternative language specification.
 
 | Area | Implemented behavior |
 | --- | --- |
-| Source | UTF-8 Scripts and lossless UTF-16 eval/Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
+| Source | UTF-8 and lossless UTF-16 Scripts/Modules, eval/Function input, byte spans, distinct syntax, unsupported, and limit diagnostics |
 | Strings | UTF-16 code units, lone surrogates, ordinary escapes, Unicode escapes, line continuation |
 | Lexical grammar | On-demand parser lookahead, explicit scanner goals and RegExp token boundaries, ECMAScript whitespace and line terminators, comments, initial hashbang, Unicode 18.0.0 identifiers, Unicode identifier escapes |
 | Numbers | Decimal, binary, octal, hex, numeric separators, binary64 rounding and overflow |
@@ -60,6 +60,21 @@ claim complete conformance or define an alternative language specification.
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+
+## Opt-in UTF-16 parser source-byte limits
+
+Script and Module parsing now offer lossless UTF-16 entry points with an explicit
+encoded byte limit, also reexported by the facade. The shared conversion's first
+pass checks the limit before allocating scanner text or surrogate records.
+Scalars retain their UTF-8 lengths, pairs occupy four bytes and lone surrogates
+three. Existing unlimited entry points keep their behavior.
+
+Boundary regressions compare complete ASTs for empty, ASCII, BMP, replacement,
+paired and unpaired input. They check exact full-source limit spans and confirm
+that an exceeded limit precedes syntax errors. All 18 Parser units, 443 Parser
+integrations, 574 Runtime units, 2,431 non-RegExp integrations and the full quality
+gate pass, including three facade doctests and 30 CLI groups. Snapshots and
+test/fixture inventories are unchanged.
 
 ## Facade UTF-16 Scripts and cleanup outcomes
 

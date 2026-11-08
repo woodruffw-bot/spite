@@ -31,6 +31,13 @@ impl SourceText {
     }
 
     pub(crate) fn from_utf16(source: &JsString) -> Result<Self, Diagnostic> {
+        Self::from_utf16_with_limit(source, None)
+    }
+
+    pub(crate) fn from_utf16_with_limit(
+        source: &JsString,
+        max_bytes: Option<usize>,
+    ) -> Result<Self, Diagnostic> {
         let mut bytes = 0usize;
         let mut count = 0usize;
         for point in char::decode_utf16(source.code_units().iter().copied()) {
@@ -38,6 +45,13 @@ impl SourceText {
                 .checked_add(point.as_ref().map_or(3, |c| c.len_utf8()))
                 .ok_or_else(capacity_error)?;
             count += usize::from(point.is_err());
+        }
+        if max_bytes.is_some_and(|limit| bytes > limit) {
+            return Err(Diagnostic::new(
+                DiagnosticKind::Limit,
+                Span::new(0, bytes),
+                "source size limit exceeded",
+            ));
         }
         let mut text = String::new();
         text.try_reserve_exact(bytes)

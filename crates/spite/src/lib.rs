@@ -16,10 +16,13 @@
 //! validated Script through the same Realm entry point.
 //!
 //! ```
-//! use spite::{JsString, Realm, Value, parse_script_utf16};
+//! use spite::{JsString, Realm, Value, parse_module_utf16_with_source_limit,
+//!             parse_script_utf16, parse_script_utf16_with_source_limit};
 //!
 //! let source = JsString::from_code_units(vec![0x22, 0xd800, 0x22]);
-//! let script = parse_script_utf16(&source).unwrap();
+//! let script = parse_script_utf16_with_source_limit(&source, 5).unwrap();
+//! assert_eq!(script, parse_script_utf16(&source).unwrap());
+//! assert!(parse_module_utf16_with_source_limit(&source, 5).unwrap().body().is_strict());
 //! assert_eq!(Realm::default().evaluate(&script).unwrap(),
 //!            Value::String(JsString::from([0xd800])));
 //! ```
@@ -49,8 +52,9 @@
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 pub use spite_parser::{
     ast, parse_dynamic_async_generator_function, parse_dynamic_async_generator_function_utf16,
-    parse_module, parse_module_utf16, parse_module_with_source_limit, parse_script,
-    parse_script_utf16, parse_script_with_source_limit,
+    parse_module, parse_module_utf16, parse_module_utf16_with_source_limit,
+    parse_module_with_source_limit, parse_script, parse_script_utf16,
+    parse_script_utf16_with_source_limit, parse_script_with_source_limit,
 };
 pub use spite_runtime::{
     AgentControl, Collection, ConversionError, Error, ExceptionKind, FinalizationCleanupOutcome,

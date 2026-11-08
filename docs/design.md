@@ -169,6 +169,10 @@ source string. Dynamic Function inputs are UTF-16 code units: decode valid pairs
 to supplementary code points and preserve lone surrogates as source code points
 (11.1). Their spans retain UTF-8 lengths for scalars and use three bytes per lone
 surrogate. JavaScript strings retain every UTF-16 code unit.
+Script and Module UTF-16 entry points also accept opt-in source-byte limits using
+this encoding convention. The conversion checks its complete encoded length
+before allocating scanner text or lone-surrogate records; oversized inputs
+retain distinct Limit diagnostics before grammar validation.
 JsString uses shared immutable Arc slice storage. Cloning a String value does
 not copy its code units, so repeated custom exec calls and iterator snapshots do
 not duplicate the complete input. Concatenation checks and reserves its complete
