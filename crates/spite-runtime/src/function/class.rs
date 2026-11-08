@@ -34,70 +34,76 @@ pub(crate) struct ClassDefinitionState {
 }
 
 impl ClassDefinitionState {
-    fn fields(&self) -> impl Iterator<Item = &super::ClassField> {
+    // Keep absent references as slots so each metadata inspection is charged.
+    fn field_slots(&self) -> impl Iterator<Item = Option<&super::ClassField>> {
         self.instance_fields
             .iter()
-            .chain(
-                self.static_elements
-                    .iter()
-                    .filter_map(|element| match element {
-                        super::class_static::StaticElement::Field(field) => Some(field),
-                        _ => None,
-                    }),
-            )
+            .map(Some)
+            .chain(self.static_elements.iter().map(|element| match element {
+                super::class_static::StaticElement::Field(field) => Some(field),
+                super::class_static::StaticElement::Block { .. } => None,
+            }))
     }
 
-    fn blocks(&self) -> impl Iterator<Item = (&super::ScriptFunction, &crate::ObjectHandle)> {
-        self.static_elements
-            .iter()
-            .filter_map(|element| match element {
-                super::class_static::StaticElement::Block {
-                    code, home_object, ..
-                } => Some((code, home_object)),
-                _ => None,
-            })
+    fn block_slots(
+        &self,
+    ) -> impl Iterator<Item = Option<(&super::ScriptFunction, &crate::ObjectHandle)>> {
+        self.static_elements.iter().map(|element| match element {
+            super::class_static::StaticElement::Block {
+                code, home_object, ..
+            } => Some((code, home_object)),
+            super::class_static::StaticElement::Field(_) => None,
+        })
     }
 
     fn private_methods(&self) -> impl Iterator<Item = &crate::private::PrivateMethod> {
         self.instance_methods.iter().chain(&self.static_methods)
     }
 
-    pub(crate) fn symbols(&self) -> impl Iterator<Item = &spite_core::JsSymbol> {
-        self.fields()
-            .filter_map(super::ClassField::symbol_name)
-            .chain(self.private_methods().map(|method| method.name.symbol()))
+    pub(crate) fn symbol_slots(&self) -> impl Iterator<Item = Option<&spite_core::JsSymbol>> {
+        self.field_slots()
+            .map(|field| field.and_then(super::ClassField::symbol_name))
+            .chain(
+                self.private_methods()
+                    .map(|method| Some(method.name.symbol())),
+            )
     }
 
-    pub(crate) fn environments(
+    pub(crate) fn environment_slots(
         &self,
-    ) -> impl Iterator<Item = &crate::environment::EnvironmentHandle> {
-        std::iter::once(&self.environment)
+    ) -> impl Iterator<Item = Option<&crate::environment::EnvironmentHandle>> {
+        std::iter::once(Some(&self.environment))
+            .chain(self.field_slots().map(|field| {
+                field
+                    .and_then(|field| field.initializer.as_ref())
+                    .map(|initializer| &initializer.environment)
+            }))
             .chain(
-                self.fields()
-                    .filter_map(|field| field.initializer.as_ref())
-                    .map(|initializer| &initializer.environment),
+                self.block_slots()
+                    .map(|block| block.map(|(code, _)| &code.environment)),
             )
-            .chain(self.blocks().map(|(code, _)| &code.environment))
     }
 
-    pub(crate) fn objects(&self) -> impl Iterator<Item = &crate::ObjectHandle> {
-        [&self.function, &self.prototype]
+    pub(crate) fn object_slots(&self) -> impl Iterator<Item = Option<&crate::ObjectHandle>> {
+        [Some(&self.function), Some(&self.prototype)]
             .into_iter()
-            .chain(
-                self.fields()
-                    .filter_map(|field| field.initializer.as_ref())
-                    .flat_map(|initializer| {
-                        std::iter::once(&initializer.home_object).chain(initializer.module.iter())
-                    }),
-            )
-            .chain(
-                self.blocks()
-                    .flat_map(|(code, home)| std::iter::once(home).chain(code.module.iter())),
-            )
+            .chain(self.field_slots().flat_map(|field| {
+                let initializer = field.and_then(|field| field.initializer.as_ref());
+                std::iter::once(initializer.map(|initializer| &initializer.home_object)).chain(
+                    initializer
+                        .and_then(|initializer| initializer.module.as_ref())
+                        .map(Some),
+                )
+            }))
+            .chain(self.block_slots().flat_map(|block| {
+                std::iter::once(block.map(|(_, home)| home))
+                    .chain(block.and_then(|(code, _)| code.module.as_ref()).map(Some))
+            }))
             .chain(
                 self.private_methods()
                     .flat_map(|method| method.kind.trace())
-                    .flatten(),
+                    .flatten()
+                    .map(Some),
             )
     }
 }

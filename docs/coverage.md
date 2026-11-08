@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Suspended class metadata collection work
+
+Partially defined classes previously filtered absent initializers, string field
+names and opposite static element kinds before the budgeted visitor could see
+their scans. Optional slots now pass through class expression and declaration
+continuations. Actual references retain their order; validation still checks
+only present handles.
+
+| Suspended instance fields | Previous ordinary work | Current ordinary work | Previous census work | Current census work |
+| --- | --- | --- | --- | --- |
+| 0 | 6,645 | 6,645 | 24,367 | 24,367 |
+| 64 | 6,645 | 6,773 | 24,367 | 24,623 |
+| 4,096 | 6,645 | 14,837 | 24,367 | 40,751 |
+| 16,384 | 6,645 | 39,413 | 24,367 | 89,903 |
+
+The census probe uses a Symbol-key WeakMap. These are minimum work counts,
+not elapsed times. The new native group fails before the change and passes
+for instance/static fields, expressions/declarations and both collection paths,
+checking field definitions after refusal and resumption. All eight collection
+groups, 576 Runtime units, 2,441 non-RegExp integrations and the quality gate
+pass, including existing Symbol/private/static-capture ownership regressions.
+The unchanged 1 MiB stack diagnostic also passes. There are 5,058 native
+integration groups; quotas remain opt-in and fixtures are unchanged.
+
 ## Suspended binding key collection work
 
 During Symbol census, suspended object bindings previously filtered string keys

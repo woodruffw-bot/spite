@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Suspended class collection regression
+
+One native group checks partial class metadata scan charges for instance/static
+fields, expressions/declarations and ordinary/Symbol collection. Field definitions
+survive budget refusal and resumption. All 576 Runtime units, 2,441 non-RegExp
+integrations and the quality gate pass, including existing retained-reference
+regressions and the unchanged collection-stack diagnostic. Fixtures are unchanged.
+
 ## Suspended binding collection regression
 
 One native regression checks stored string-key scan charges during Symbol

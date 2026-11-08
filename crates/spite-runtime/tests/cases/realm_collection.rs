@@ -7,6 +7,62 @@ use spite_heap::Error as HeapError;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value, object::Error as ObjectError};
 
 #[test]
+fn suspended_class_metadata_consumes_collection_work() {
+    fn suspend(fields: usize, static_fields: bool, declaration: bool, census: bool) -> Realm {
+        let prefix = if static_fields { "static " } else { "" };
+        let fields: String = (0..fields)
+            .map(|index| format!("{prefix}f{index};"))
+            .collect();
+        let definition = format!("class Ready{{{fields}[await gate];}}");
+        let body = if declaration {
+            format!("{definition}C=Ready;")
+        } else {
+            format!("C={definition};")
+        };
+        let weak_map = if census {
+            "let marker=Symbol(),census=new WeakMap([[marker,0]]);"
+        } else {
+            ""
+        };
+        let mut realm = Realm::default();
+        realm.eval(&format!(
+            "let release,C,done=false;let gate=new Promise(resolve=>{{release=resolve}});{weak_map}let pending=(async()=>{{{body}done=true}})();"
+        )).unwrap();
+        realm.collect(usize::MAX).unwrap();
+        realm
+    }
+
+    const FIELDS: usize = 512;
+    for static_fields in [false, true] {
+        for declaration in [false, true] {
+            for census in [false, true] {
+                let mut baseline = suspend(0, static_fields, declaration, census);
+                let baseline_work = baseline.collect(usize::MAX).unwrap().work_used;
+                let mut realm = suspend(FIELDS, static_fields, declaration, census);
+                assert_eq!(
+                    realm.collect(baseline_work + FIELDS / 2),
+                    Err(HeapError::Limit),
+                    "static={static_fields}, declaration={declaration}, census={census}"
+                );
+                realm.eval("release('late')").unwrap();
+                loop {
+                    match realm.run_next_promise_job().unwrap() {
+                        PromiseJobOutcome::Completed => {}
+                        PromiseJobOutcome::NoJob => break,
+                        PromiseJobOutcome::Reported(error) => panic!("{error}"),
+                    }
+                }
+                let target = if static_fields { "C" } else { "instance" };
+                assert_eq!(realm.eval(&format!(
+                    "let instance=new C();done&&Object.hasOwn(instance,'late')&&instance.late===undefined&&Object.keys({target}).length==={}&&Object.hasOwn({target},'f0')&&Object.hasOwn({target},'f511')&&{target}.f0===undefined&&{target}.f511===undefined",
+                    FIELDS + usize::from(!static_fields)
+                )), Ok(Value::Boolean(true)));
+            }
+        }
+    }
+}
+
+#[test]
 fn suspended_binding_string_keys_consume_symbol_scan_work() {
     fn suspend(fields: usize) -> Realm {
         let keys: String = (0..fields).map(|index| format!("f{index}:sink,")).collect();

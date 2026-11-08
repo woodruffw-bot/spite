@@ -352,14 +352,12 @@ impl AsyncExecutionData {
             .chain(
                 self.expression_classes
                     .iter()
-                    .flat_map(|state| state.symbols())
-                    .map(Some),
+                    .flat_map(|state| state.symbol_slots()),
             )
             .chain(
                 self.class_definition
                     .iter()
-                    .flat_map(|state| state.symbols())
-                    .map(Some),
+                    .flat_map(|state| state.symbol_slots()),
             )
             .chain(
                 self.var_target
@@ -391,84 +389,113 @@ impl AsyncExecutionData {
             )
     }
 
-    fn objects(&self) -> impl Iterator<Item = &Handle> {
+    fn object_slots(&self) -> impl Iterator<Item = Option<&Handle>> {
         self.function
             .generator()
             .into_iter()
             .chain(self.function.module_record())
+            .map(Some)
             .chain(
                 self.expression_classes
                     .iter()
-                    .flat_map(|state| state.objects()),
+                    .flat_map(|state| state.object_slots()),
             )
             .chain(
                 self.class_definition
                     .iter()
-                    .flat_map(|state| state.objects()),
+                    .flat_map(|state| state.object_slots()),
             )
             .chain(
                 self.context
                     .iter()
-                    .filter_map(|context| context.module.as_ref()),
+                    .filter_map(|context| context.module.as_ref())
+                    .map(Some),
             )
-            .chain(self.frames.iter().filter_map(AsyncStatementFrame::object))
-            .chain(self.pattern_cursors().flat_map(|cursor| cursor.objects()))
-            .chain(self.var_target.iter().filter_map(Reference::object))
+            .chain(
+                self.frames
+                    .iter()
+                    .filter_map(AsyncStatementFrame::object)
+                    .map(Some),
+            )
+            .chain(
+                self.pattern_cursors()
+                    .flat_map(|cursor| cursor.objects())
+                    .map(Some),
+            )
+            .chain(
+                self.var_target
+                    .iter()
+                    .filter_map(Reference::object)
+                    .map(Some),
+            )
             .chain(
                 self.expression
                     .iter()
-                    .flat_map(|expression| expression.objects()),
+                    .flat_map(|expression| expression.objects())
+                    .map(Some),
             )
     }
 
-    fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
+    fn environment_slots(&self) -> impl Iterator<Item = Option<&EnvironmentHandle>> {
         self.expression
             .iter()
             .flat_map(|expression| expression.environments())
+            .map(Some)
             .chain(
                 self.expression_classes
                     .iter()
-                    .flat_map(|state| state.environments()),
+                    .flat_map(|state| state.environment_slots()),
             )
             .chain(
                 self.class_definition
                     .iter()
-                    .flat_map(|state| state.environments()),
+                    .flat_map(|state| state.environment_slots()),
             )
-            .chain(self.root_scope.iter())
+            .chain(self.root_scope.iter().map(Some))
             .chain(
                 self.class_context
                     .iter()
-                    .map(|context| &context.environment),
+                    .map(|context| Some(&context.environment)),
             )
             .chain(
                 self.pattern_binding
                     .iter()
-                    .flat_map(|state| state.environment.iter()),
+                    .flat_map(|state| state.environment.iter())
+                    .map(Some),
             )
             .chain(
-                self.pattern_cursors().filter_map(|cursor| {
-                    cursor.reference.as_ref().and_then(Reference::environment)
-                }),
+                self.pattern_cursors()
+                    .filter_map(|cursor| cursor.reference.as_ref().and_then(Reference::environment))
+                    .map(Some),
             )
-            .chain(self.var_target.iter().filter_map(Reference::environment))
+            .chain(
+                self.var_target
+                    .iter()
+                    .filter_map(Reference::environment)
+                    .map(Some),
+            )
             .chain(
                 self.frames
                     .iter()
-                    .filter_map(AsyncStatementFrame::environment),
+                    .filter_map(AsyncStatementFrame::environment)
+                    .map(Some),
             )
             .chain(
                 self.context
                     .iter()
-                    .flat_map(|context| context.scopes.iter().chain(&context.variable)),
+                    .flat_map(|context| context.scopes.iter().chain(&context.variable))
+                    .map(Some),
             )
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
         self.values()
             .flat_map(Trace::trace)
-            .chain(self.environments().map(|environment| Some(&environment.0)))
-            .chain(self.objects().map(Some))
+            .chain(
+                self.environment_slots()
+                    .map(|environment| environment.map(|environment| &environment.0)),
+            )
+            .chain(self.object_slots())
     }
 }
 
@@ -526,10 +553,10 @@ impl Objects {
                 self.inspect(object)?;
             }
         }
-        for environment in data.environments() {
+        for environment in data.environment_slots().flatten() {
             self.environment(environment)?;
         }
-        for object in data.objects() {
+        for object in data.object_slots().flatten() {
             self.inspect(object)?;
         }
         Ok(())

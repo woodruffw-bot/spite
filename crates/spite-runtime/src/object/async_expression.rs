@@ -15,21 +15,27 @@ pub(crate) struct AsyncClassExpression {
 }
 
 impl AsyncClassExpression {
-    pub(super) fn symbols(&self) -> impl Iterator<Item = &JsSymbol> {
+    pub(super) fn symbol_slots(&self) -> impl Iterator<Item = Option<&JsSymbol>> {
         self.name
             .iter()
-            .filter_map(spite_core::PropertyKey::as_symbol)
-            .chain(self.definition.iter().flat_map(|state| state.symbols()))
+            .map(spite_core::PropertyKey::as_symbol)
+            .chain(
+                self.definition
+                    .iter()
+                    .flat_map(|state| state.symbol_slots()),
+            )
     }
-    pub(super) fn environments(&self) -> impl Iterator<Item = &EnvironmentHandle> {
-        std::iter::once(&self.context.environment).chain(
+    pub(super) fn environment_slots(&self) -> impl Iterator<Item = Option<&EnvironmentHandle>> {
+        std::iter::once(Some(&self.context.environment)).chain(
             self.definition
                 .iter()
-                .flat_map(|state| state.environments()),
+                .flat_map(|state| state.environment_slots()),
         )
     }
-    pub(super) fn objects(&self) -> impl Iterator<Item = &Handle> {
-        self.definition.iter().flat_map(|state| state.objects())
+    pub(super) fn object_slots(&self) -> impl Iterator<Item = Option<&Handle>> {
+        self.definition
+            .iter()
+            .flat_map(|state| state.object_slots())
     }
 }
 

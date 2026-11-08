@@ -1813,6 +1813,10 @@ non-reference properties. Deep object graphs use an explicit work stack.
 Class-field metadata without an initializer yields an empty scan slot instead
 of being filtered out. Initialized fields retain their environment, home-object
 and module slots, so consecutive missing initializers cannot hide scan work.
+Partially defined classes retain optional slots through field and static-block
+metadata scans and forward them through suspended expression/declaration state.
+Absent initializers, non-Symbol names and opposite element kinds still yield
+charged slots; handle validation continues to inspect only actual references.
 Heap-entry tracing stores only the active object or environment iterator.
 Object tracing constructs three ordered iterator segments, keeping temporary
 construction frames smaller in unoptimized builds. Field order, scan charges
