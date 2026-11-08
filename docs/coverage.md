@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Binary64 decimal formatting boundaries
+
+A bounded audit checks 21,504 formatting results from 1,024 raw binary64 values,
+including signed zeroes, subnormals, exponent/mantissa boundaries, power-of-ten
+neighbors, nonfinite values and seeded samples. All 18,228 finite specified-
+precision results match an exact Python Fraction rounding model; 126 special-value
+outputs match the specified constants. Another 3,150 large-value toFixed fallbacks
+match Node in round trip, notation and digit count. The fallback comparison is
+not an independent proof of shortest-digit minimality. No mismatches occur.
+
+The existing Number regression adds four finite examples with two permitted
+shortest spellings. It accepts either spelling for ordinary/scientific output,
+checks required larger-magnitude tie rounding with explicit precision, and checks
+TypedArray canonical keys against the implementation's own Number::toString
+choice. This follows 6.1.6.1.20, 21.1.3.2–3/.5 and 7.1.21. The standard's
+recommended even-digit choice for ambiguous shortest output is a guideline;
+Rust and Node can select different permitted digits. No compatibility exception
+or Runtime behavior change is introduced.
+
+The extended regression, all 12 Number-formatting groups and the full quality
+gate pass, including 25 CLI groups. Inventories, dependencies and quotas are unchanged.
+
 ## Saved with-environment references across Await
 
 The existing assignment regression now also deletes a selected Proxy-backed

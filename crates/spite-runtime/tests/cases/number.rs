@@ -202,6 +202,31 @@ fn decimal_formatting_and_radix_validation_follow_specification_order() {
     check(
         "NaN.toString(2)==='NaN' && Infinity.toString(36)==='Infinity' && (-0).toString(2)==='0'",
     );
+    // 6.1.6.1.20 and 21.1.3.2 permit either minimal round-trip spelling here.
+    // Explicit precision rounds ties upward in magnitude; 7.1.21 must use the
+    // implementation's own Number::toString choice for canonical numeric keys.
+    for (input, lower, upper, lower_exp, upper_exp) in [
+        (
+            "1000000000000000.25",
+            "1000000000000000.2",
+            "1000000000000000.3",
+            "1.0000000000000002e+15",
+            "1.0000000000000003e+15",
+        ),
+        (
+            "1000000000000000.75",
+            "1000000000000000.7",
+            "1000000000000000.8",
+            "1.0000000000000007e+15",
+            "1.0000000000000008e+15",
+        ),
+    ] {
+        for sign in ["", "-"] {
+            check(&format!(
+                "let x={sign}{input},s=String(x),e=x.toExponential(),a=new Uint8Array(1);let other=s==='{sign}{lower}'?'{sign}{upper}':'{sign}{lower}';(s==='{sign}{lower}'||s==='{sign}{upper}')&&(e==='{sign}{lower_exp}'||e==='{sign}{upper_exp}')&&Number(s)===x&&Number(e)===x&&x.toPrecision()===s&&x.toFixed(1)==='{sign}{upper}'&&x.toPrecision(17)==='{sign}{upper}'&&x.toExponential(16)==='{sign}{upper_exp}'&&Reflect.defineProperty(a,s,{{value:7}})===false&&Reflect.defineProperty(a,other,{{value:9}})===true&&a[s]===undefined&&a[other]===9"
+            ));
+        }
+    }
     for radix in ["null", "false", "NaN", "-0", "1", "37", "Infinity", "'bad'"] {
         for value in ["1", "NaN", "Infinity"] {
             let source = format!("({value}).toString({radix})");
