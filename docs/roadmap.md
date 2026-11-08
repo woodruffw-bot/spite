@@ -661,7 +661,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect ArraySetLength reentry during both numeric conversions, preserving wrapped/fractional first results, live writable state and partial truncation after new deletion blockers.
 - [x] Protect JSON reviver source eligibility for signed zero, overflowed numbers, boxed replacements and Proxy-wrapped ancestors, preserving SameValue without coercion.
 - [x] Emit simple var-declaration names through borrowed singleton iteration, retaining destructuring traversal, source order and diagnostic spans without temporary identifier lists.
-- [x] Protect bound-function metadata reentry through proxy traps, preserving live length/name reads, skipped inherited length and abrupt-completion order.
+- [x] Protect bound-function metadata reentry through proxy traps, preserving live length/name reads, skipped inherited length, abrupt-completion order and capture release after failed binding.
 - [x] Check identifier parameter names directly when deciding whether an ordinary call needs an arguments object, retaining composite-pattern traversal and default/rest binding semantics.
 - [x] Expose lossless UTF-16 Script parsing and explicit FinalizationRegistry cleanup outcomes through the embedding facade.
 - [x] Apply opt-in encoded source-byte limits to lossless UTF-16 Script and Module parsing before scanner allocation, preserving exact spans and grammar diagnostics.

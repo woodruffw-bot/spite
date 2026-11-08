@@ -110,6 +110,33 @@ fn bound_targets_receivers_arguments_and_cycles_survive_collection() {
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 4);
     drop(root);
     assert_eq!(realm.collect(usize::MAX).unwrap().reclaimed, 4);
+
+    // 20.2.3.2 allocates the bound function before length/name getters. A throw
+    // must not leave that unreachable function or its captures rooted.
+    for field in ["length", "name"] {
+        let mut failed = Realm::default();
+        assert_eq!(failed.eval(&format!(r#"
+            let refs,marker={{}};
+            (()=>{{
+                let target=function(){{}},receiver={{symbol:Symbol('receiver')}},argument=Symbol('argument');
+                refs=[target,receiver,receiver.symbol,argument].map(value=>new WeakRef(value));
+                Object.defineProperty(target,'{field}',{{get(){{throw marker;}}}});
+                try{{Function.prototype.bind.call(target,receiver,argument);}}catch(error){{return error===marker;}}
+                return false;
+            }})()
+        "#)),Ok(Value::Boolean(true)));
+        failed.collect(usize::MAX).unwrap();
+        assert_eq!(
+            failed.eval("refs.every(ref=>ref.deref()!==undefined)"),
+            Ok(Value::Boolean(true))
+        );
+        failed.clear_kept_objects().unwrap();
+        failed.collect(usize::MAX).unwrap();
+        assert_eq!(
+            failed.eval("refs.every(ref=>ref.deref()===undefined)"),
+            Ok(Value::Boolean(true))
+        );
+    }
 }
 
 #[test]

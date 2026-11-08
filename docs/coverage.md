@@ -144,6 +144,13 @@ existing bound-function units and the proxy integration group pass, along with
 the full quality gate including 30 CLI groups. Runtime code, snapshots and test
 inventories are unchanged.
 
+Failed length/name metadata reads also retain newly made WeakRef targets through
+the current kept-object sequence, then release the unreachable bound target,
+receiver graph and Symbol argument after an explicit checkpoint and collection.
+Both failures preserve the original thrown reason. All five bind integration
+groups and the full quality gate pass, including three facade doctests and 30 CLI
+groups. This extends the existing collection group without changing Runtime code.
+
 ## Simple var names without temporary vectors
 
 The private variable-name iterator emits identifier names directly through a
