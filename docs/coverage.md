@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Uint8Array encoding method catalogue
+
+The six hex/Base64 methods now carry their implementation in the same ordered
+catalogue as their initial name, length and constructor/prototype placement.
+Invocation selects that implementation directly. Both name-matching switches and
+the unreachable unsupported-method fallback are removed, reducing Runtime source
+by 27 lines. The codec algorithms, method objects and property order are unchanged.
+This is a source simplification without a timing claim.
+
+All six previous name/length/placement/implementation mappings and their order
+match exactly. All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes
+from 2,247 unchanged TypedArray/Uint8Array originals, 1,734 Node collection
+comparisons and the full quality gate pass, including 25 CLI groups. Inventories,
+dependencies and default quotas are unchanged.
+
 ## CLI Script file imports
 
 The Script host now enables dynamic import requests and services them through the

@@ -17,17 +17,6 @@ pub(super) enum Method {
     To,
 }
 
-impl Method {
-    pub(super) fn from_name(name: &str) -> Option<Self> {
-        match name {
-            "fromHex" => Some(Self::From),
-            "setFromHex" => Some(Self::SetFrom),
-            "toHex" => Some(Self::To),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum HexError {
     OddLength,

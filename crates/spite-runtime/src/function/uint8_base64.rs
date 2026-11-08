@@ -15,17 +15,6 @@ pub(super) enum Method {
     To,
 }
 
-impl Method {
-    pub(super) fn from_name(name: &str) -> Option<Self> {
-        match name {
-            "fromBase64" => Some(Self::From),
-            "setFromBase64" => Some(Self::SetFrom),
-            "toBase64" => Some(Self::To),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Alphabet {
     Standard,

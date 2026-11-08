@@ -1,6 +1,9 @@
 //! TypedArray intrinsic graph, state accessors, and iterator wrappers (23.2).
 
-use super::{Builtin, typed_array_methods::Method};
+use super::{
+    Builtin, typed_array_methods::Method, uint8_base64::Method as Base64Method,
+    uint8_hex::Method as HexMethod,
+};
 use crate::{
     Error, ExceptionKind, ObjectHandle, Realm, Value,
     binary_data::ElementType,
@@ -109,15 +112,24 @@ const PROTOTYPE_METHODS: [(&str, u8, Method); 27] = [
     ("with", 2, Method::With),
 ];
 
-// The last column selects a constructor property rather than a prototype one.
-const UINT8_METHODS: [(&str, u8, bool); 6] = [
-    ("fromBase64", 1, true),
-    ("fromHex", 1, true),
-    ("setFromBase64", 1, false),
-    ("setFromHex", 1, false),
-    ("toBase64", 0, false),
-    ("toHex", 0, false),
-];
+#[derive(Clone, Copy)]
+enum EncodingMethod {
+    Base64(Base64Method),
+    Hex(HexMethod),
+}
+
+// The bool selects a constructor property rather than a prototype one.
+const UINT8_METHODS: [(&str, u8, bool, EncodingMethod); 6] = {
+    use EncodingMethod::{Base64, Hex};
+    [
+        ("fromBase64", 1, true, Base64(Base64Method::From)),
+        ("fromHex", 1, true, Hex(HexMethod::From)),
+        ("setFromBase64", 1, false, Base64(Base64Method::SetFrom)),
+        ("setFromHex", 1, false, Hex(HexMethod::SetFrom)),
+        ("toBase64", 0, false, Base64(Base64Method::To)),
+        ("toHex", 0, false, Hex(HexMethod::To)),
+    ]
+};
 
 #[derive(Debug)]
 struct ConcreteIntrinsics {
@@ -349,7 +361,7 @@ impl Realm {
                 span,
             )?;
             if element == ElementType::Uint8 {
-                for (index, (name, _, is_static)) in UINT8_METHODS.into_iter().enumerate() {
+                for (index, (name, _, is_static, _)) in UINT8_METHODS.into_iter().enumerate() {
                     let target = if is_static { &constructor } else { &prototype };
                     let member = Member::Uint8Encoding(index as u8);
                     let method = self.new_builtin(
@@ -422,31 +434,14 @@ impl Realm {
             );
         }
         if let Member::Uint8Encoding(index) = member {
-            if let Some(method) =
-                super::uint8_hex::Method::from_name(UINT8_METHODS[usize::from(index)].0)
-            {
-                return self.uint8_hex_method(method, receiver, arguments, span);
-            }
-            if let Some(method) =
-                super::uint8_base64::Method::from_name(UINT8_METHODS[usize::from(index)].0)
-            {
-                return self.uint8_base64_method(method, receiver, arguments, span);
-            }
-        }
-        let unsupported_owner = match member {
-            Member::Uint8Encoding(index) => Some(if UINT8_METHODS[usize::from(index)].2 {
-                "Uint8Array"
-            } else {
-                "Uint8Array.prototype"
-            }),
-            _ => None,
-        };
-        if let Some(owner) = unsupported_owner {
-            let name = member.initial_name();
-            return Err(Error::Unsupported {
-                span,
-                message: format!("{owner}.{name} is not implemented"),
-            });
+            return match UINT8_METHODS[usize::from(index)].3 {
+                EncodingMethod::Hex(method) => {
+                    self.uint8_hex_method(method, receiver, arguments, span)
+                }
+                EncodingMethod::Base64(method) => {
+                    self.uint8_base64_method(method, receiver, arguments, span)
+                }
+            };
         }
         let tag = matches!(member, Member::ToStringTag);
         let brand_error = || {

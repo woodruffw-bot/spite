@@ -636,6 +636,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Return the converted receiver for argument-free String.concat, reusing immutable UTF-16 storage after the existing work and output-length checks.
 - [x] Bind TypedArray prototype catalogue entries directly to their implementation enums, keeping initial names, lengths and property order in one table.
 - [x] Reuse the converted String when trim/trimStart/trimEnd leaves its full UTF-16 range intact, preserving both work charges and output-length validation.
+- [x] Store each Uint8Array hex/Base64 method's implementation beside its name, length and constructor/prototype placement, removing duplicate string dispatch and obsolete unsupported fallbacks.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
