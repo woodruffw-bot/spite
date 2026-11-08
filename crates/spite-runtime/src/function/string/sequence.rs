@@ -12,8 +12,15 @@ impl Realm {
     ) -> Result<Value, Error> {
         Self::require_object_coercible(&receiver, span)?;
         let string = self.string(receiver, span)?;
-        let mut result = Vec::new();
         self.object_work(span, |_, budget| budget.charge(string.len()))?;
+        // With no arguments, 22.1.3.5 returns S. Retain its immutable storage
+        // after the same work and output-length checks as the copying path.
+        if arguments.as_slice().is_empty() {
+            let value = Value::String(string);
+            self.check_string(&value, span)?;
+            return Ok(value);
+        }
+        let mut result = Vec::new();
         self.append_string(&mut result, &string, span)?;
         for argument in arguments {
             self.tick(span)?;

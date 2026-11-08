@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Argument-free String.concat storage
+
+String.prototype.concat with no arguments now returns its converted receiver
+directly, as 22.1.3.5 specifies. Immutable UTF-16 storage is reused after the
+existing work charge and output-length check. Receiver conversion and nonempty
+argument processing retain their order.
+
+All 574 Runtime units, 2,431 non-RegExp integrations, 2,441 modes from 1,222
+unchanged String originals and the full quality gate pass. All 472 Node
+comparisons match, including 216 coercion/argument cases and every UTF-16 unit
+in 256 batches. All 1,536 before/after work/string-quota cases have identical
+complete results, including limit messages and visible flags. The new manual
+benchmark exercises the allocation path; no post-change timing is claimed yet.
+Dependencies, default quotas and test/fixture inventories are unchanged.
+
 ## CLI Script Promise jobs
 
 Script mode now drains queued FIFO Promise jobs before printing its original
