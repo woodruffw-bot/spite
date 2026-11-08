@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Unchanged ASCII casing execution receipt
+
+A frozen gate compiled on clean 8299ca5df passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Its
+production source and Runtime library match the saved 62791f7a3 candidate. Saved
+four-worker executable and fixture hashes match across the 1,077.434-second run.
+The ASCII identity guard retains all controlled and Unicode mapping paths.
+Fixture bytes, helpers, reviews and execution limits are unchanged. This receipt
+predates the later doctest hosting and using-test updates.
+
 ## UTF-16 parser source-limit execution receipt
 
 A frozen gate compiled on clean 2c8918e33 passes all 87 runner controls and all

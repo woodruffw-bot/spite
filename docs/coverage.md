@@ -90,12 +90,28 @@ lower/uppercase Strings. All 54 checked workloads pass with 56 CSV rows. Five
 checked evaluation/collection iterations, including initialization and parsing,
 record 279,475,511 instructions before and 30,572,360 after (-89.06%) in Callgrind.
 Rust calls to free fall from 3,956 to 3,796 (-160/-4.04%). These are scoped
-instruction/allocation counts; full-corpus and quiet timing evidence are pending.
+instruction/allocation counts.
 
 All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
 pass, including three facade doctests and 30 CLI groups. The new unit checks
 exact/oversized output limits, zero work allowance and host termination. Snapshots
 and fixture inventories are unchanged.
+
+A frozen gate compiled on clean 8299ca5df passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Its production code and
+Runtime library match the saved 62791f7a3 candidate; the intervening commit changes
+only execution-result documents. Saved executable and fixture hashes match across
+the 1,077.434-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare the matched 65b07f5bf and
+62791f7a3 builds using 54 checked workloads and 56 CSV rows, seven samples of ten
+iterations. The unchanged ASCII workload measures 4,233.609 to 334.674
+microseconds (-92.09%); separate collection measures 160.652 to 149.291 (-7.07%).
+Case-changing ASCII measures +8.20%, contextual casing +3.91% and other Unicode
+casing +0.31%. Other evaluation changes range from -5.88% to +12.56%, and
+collection from -5.84% to +5.34%. Parse-all changes -2.49% and initialization/drop
++3.35%. The speedup claim covers only the measured unchanged ASCII workload.
+This receipt predates the later doctest hosting and using-test updates.
 
 ## Exhaustive primitive boxing
 
