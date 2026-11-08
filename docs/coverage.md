@@ -96,9 +96,24 @@ integrations and the full quality gate pass, including 25 CLI groups.
 A userspace Callgrind profile of five checked TypedArray workload evaluation/
 collection iterations, including initialization and parsing, records 1,620,642,093
 instructions before and 1,511,440,779 after (-6.74%). Rust allocator calls to free
-drop from 1,827,131 to 1,294,301. This is instruction/allocation evidence;
-no post-change wall-time result is claimed yet. Inventories and default quotas
-are unchanged.
+drop from 1,827,131 to 1,294,301. Inventories and default quotas are unchanged.
+
+A frozen four-worker gate compiled on clean 5d9943967 passes all 87 controls and
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. The
+corpus ran from 2026-11-08 07:21:47.902 to 07:45:03.114 UTC (1,395.212 seconds).
+Executable SHA-256 c32e9a5f1526f046c5ac2a472ef9c068eee4a8b9a0a329367fa8a4bdc614b604
+and fixture SHA-256 bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169
+match before and after execution.
+
+The quiet wall-time comparison uses twelve ABBA-ordered processes, seven samples
+of ten iterations, the same 49 checked programs and conformance profile, and CPU
+0 affinity under Rust 1.99.0. TypedArray callback evaluation measures
+34,429.446 to 33,662.995 microseconds (-2.23%); collection measures 5,676.275 to
+5,964.181 (+5.07%). Other workload evaluation changes range from -10.38% to
++9.94%, and collection changes from -8.10% to +17.32%. Parsing measures +4.84%
+and initialization/drop -4.52%. These timings do not establish a wall-time
+speedup. The direct leaf calculation retains its instruction/allocation benefit
+with less traversal work.
 
 ## With-bound calls across awaited arguments
 
