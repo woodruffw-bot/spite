@@ -1,6 +1,6 @@
 //! Edition-17 global intrinsic metadata and generic species/getter dispatch.
 //!
-//! Ordinary metadata objects expose the specified reflection graph. The
+//! Ordinary metadata objects expose the specified reflection graph.
 //! Generic species getters, Proxy, weak-reference operations, shared buffers and
 //! Atomics dispatch their algorithms while retaining the intrinsic identities.
 
@@ -491,6 +491,23 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         match member {
+            Member::ProxyRevocable => self.proxy_revocable(
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Member::FinalizationRegistryRegister => self.finalization_registry_register(
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
+            Member::FinalizationRegistryUnregister => self.finalization_registry_unregister(
+                receiver,
+                arguments.next().unwrap_or(Value::Undefined),
+                span,
+            ),
             Member::SharedArrayBufferSlice => self.shared_array_buffer_slice(
                 receiver,
                 arguments.next().unwrap_or(Value::Undefined),
@@ -571,10 +588,6 @@ impl Realm {
             | Member::AtomicsWaitAsync
             | Member::AtomicsNotify
             | Member::AtomicsXor => self.atomics_method(member, arguments, span),
-            _ => Err(Self::unsupported(
-                span,
-                format!("{} is not implemented", member.name()),
-            )),
         }
     }
 }

@@ -4768,6 +4768,10 @@ optional exposure. Constructors, prototypes, methods, tags, species accessors,
 and function name/length properties follow their specification inventories.
 Proxy has no prototype property; Atomics is a namespace, not a function.
 
+All 36 metadata members use one exhaustive native dispatcher, including
+Proxy.revocable and FinalizationRegistry register/unregister. Adding a member
+requires a handler at compile time; there is no unsupported-member fallback.
+
 Promise reactions/combinators and SharedArrayBuffer construction and views run
 their algorithms. Shared Atomics memory accesses run native atomic steps. Waiting validation and
 immediate asynchronous results, local notification and foreign notification jobs

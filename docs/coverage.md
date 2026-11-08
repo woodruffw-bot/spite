@@ -61,6 +61,16 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Exhaustive metadata method dispatch
+
+All 36 global metadata members now use one exhaustive dispatcher. Proxy.revocable
+and FinalizationRegistry register/unregister join the existing handlers instead
+of special-casing the outer builtin match. The old unsupported fallback is
+removed, so adding a member requires an implementation at compile time. The three
+moved calls preserve argument order and receivers; every other handler is
+unchanged. The cleanup removes nine production lines without changing metadata,
+intrinsic identity, work charges or dependencies.
+
 ## Set-like method validation before size shortcuts
 
 Set combination regressions distinguish GetSetRecord's IsCallable validation from

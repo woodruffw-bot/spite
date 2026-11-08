@@ -21,28 +21,6 @@ impl Realm {
                 span,
                 format!("{} requires construction", constructor.name()),
             )),
-            Builtin::GlobalMetadataMember(super::global_metadata::Member::ProxyRevocable) => self
-                .proxy_revocable(
-                    arguments.next().unwrap_or(Value::Undefined),
-                    arguments.next().unwrap_or(Value::Undefined),
-                    span,
-                ),
-            Builtin::GlobalMetadataMember(
-                super::global_metadata::Member::FinalizationRegistryRegister,
-            ) => self.finalization_registry_register(
-                this,
-                arguments.next().unwrap_or(Value::Undefined),
-                arguments.next().unwrap_or(Value::Undefined),
-                arguments.next().unwrap_or(Value::Undefined),
-                span,
-            ),
-            Builtin::GlobalMetadataMember(
-                super::global_metadata::Member::FinalizationRegistryUnregister,
-            ) => self.finalization_registry_unregister(
-                this,
-                arguments.next().unwrap_or(Value::Undefined),
-                span,
-            ),
             Builtin::GlobalMetadataMember(member) => {
                 self.global_metadata_method(member, this, arguments, span)
             }
