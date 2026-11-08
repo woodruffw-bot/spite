@@ -144,6 +144,29 @@ fn construct_validates_target_and_present_newtarget_before_reading_list() {
     check(
         "let log='',caught=false;try{Reflect.construct(function(){log+='c';},{length:2,get 0(){log+='a';throw 7;},get 1(){log+='b';throw 8;}});}catch(e){caught=e===7;}caught && log==='a'",
     );
+    // 7.2.4, 28.1.2 and 10.5.13: revocation preserves [[Construct]]. A
+    // construct trap supplying its result never reads newTarget.prototype.
+    for target in ["function(){throw 9}", "class{constructor(){throw 9}}"] {
+        for revoke_before in [false, true] {
+            let source = r#"
+                let log='',calls=0,marker={},pair=Proxy.revocable(function(){},{get(){throw 7}});
+                let target=new Proxy(TARGET,{construct(t,args,n){
+                    log+='t';calls++;
+                    if(n!==pair.proxy||args.join(',')!=='1,2')throw 8;
+                    return marker;
+                }});
+                let list={get length(){log+='l';return 2},
+                          get 0(){log+='0';AT_ZERO return 1},
+                          get 1(){log+='1';return 2}};
+                BEFORE
+                Reflect.construct(target,list,pair.proxy)===marker&&calls===1&&log==='l01t'
+            "#
+            .replace("TARGET", target)
+            .replace("BEFORE", if revoke_before { "pair.revoke();" } else { "" })
+            .replace("AT_ZERO", if revoke_before { "" } else { "pair.revoke();" });
+            check(&source);
+        }
+    }
 }
 
 #[test]

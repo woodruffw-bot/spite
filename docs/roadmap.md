@@ -102,6 +102,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit ordinary and destructuring assignment reference/write order, iterator closing, inferred names and strict/invalid target early errors.
 - [x] Audit Function bind/call/apply validation, forwarding, construction/new.target, prototype and metadata behavior.
 - [x] Protect apply argument-list gathering across function/class Proxy revocation, preserving cached callability and later getter-failure precedence.
+- [x] Protect Reflect.construct argument gathering with revoked newTarget values, preserving cached constructibility and Proxy construct results without prototype lookup.
 - [x] Protect failed apply argument and invocation captures through the synchronous turn, then release object and Symbol targets after explicit kept-object checkpoints and collection.
 - [x] Audit Function.prototype.toString source retention across syntax forms, dynamic constructors, line endings and callable exotic/native objects.
 - [x] Audit mandatory Function instance/constructor restrictions, Symbol.hasInstance and the dynamic function constructor families.

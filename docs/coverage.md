@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Reflect.construct across revoked targets and newTarget
+
+An independent 180-program audit matches Node 26.13.0 exactly for ordinary,
+class and Proxy targets, invalid arrow constructors, revoked targets/newTarget,
+argument-getter failures and construct traps that return their result directly
+(7.2.4, 28.1.2, 10.5.13). Cached constructibility survives revocation. Argument
+reads precede invocation, while a Proxy construct trap supplying its result
+skips newTarget.prototype lookup.
+
+Four examples extend the existing Reflect constructor-validation group with
+function/class Proxy targets and newTarget revoked before or during argument
+gathering. All 18 selected Reflect, constructor-capability and constructor-Realm
+integration groups and the quality gate pass, including formatting, strict
+Clippy, the explicit MSRV, policy/inventory checks, 30 CLI groups and all three
+facade doctests. Runtime code, snapshots and fixture inventories are unchanged.
+
 ## Single-argument String code construction
 
 String.fromCharCode and String.fromCodePoint construct a sole result through
