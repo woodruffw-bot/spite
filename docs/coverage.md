@@ -104,7 +104,25 @@ Five checked TypedArray workload evaluation/collection iterations, including
 initialization and parsing, record 1,511,440,779 instructions before and
 1,421,895,286 after (-5.92%) in Callgrind. Rust calls to free drop from 1,294,301
 to 1,086,584 (-16.05%). Both profiles use the same workload and compiler settings;
-these counts describe this workload, with no wall-time result claimed yet.
+these counts describe this workload.
+
+The frozen four-worker gate compiled on clean 3bafeec71 passes all 87 controls
+and 80,060 modes from 41,550 unchanged originals, with zero other outcomes.
+It ran from 2026-11-08 07:47:55.621 to 08:08:06.910 UTC (1,211.289 seconds).
+Executable SHA-256 12c1323476232884c9112c16cd29bd605698c7b97aaf777a0860a2ae3d34766d
+and fixture SHA-256 bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169
+match before and after execution. All seventeen CI jobs for this revision pass
+on Linux/Windows with pinned and stable Rust.
+
+The quiet timing comparison uses twelve ABBA-ordered processes, seven samples
+of ten iterations, the same 49 checked programs and conformance profile, and CPU
+0 affinity under Rust 1.99.0. Initialization/drop measures 680.183 to 556.556
+microseconds (-18.18%). TypedArray callback evaluation measures 34,198.230 to
+32,554.207 (-4.81%); collection measures 5,742.726 to 6,252.644 (+8.88%). Other
+workload evaluation changes range from -17.57% to +17.02%, and collection from
+-12.17% to +16.94%; parsing measures -3.10%. The initialization result is scoped
+to this measurement. Callback timing falls within other workload variation and
+does not establish a general speedup.
 
 ## Binding identifier metadata without traversal stacks
 
