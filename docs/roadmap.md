@@ -642,7 +642,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect permitted shortest decimal spellings, required explicit-precision tie rounding and canonical numeric-key consistency without locking implementation-defined digit choices.
 - [x] Protect with-bound ordinary/optional call receivers and direct eval context across awaited arguments, binding deletion, unscopables changes and collection.
 - [x] Compute a binding identifier's bound name/span and zero pattern-expression depth directly, avoiding traversal stacks while retaining composite-pattern analysis and initializer handling.
-- [x] Construct short ASCII String values and property keys through initialized stack storage, retaining exact UTF-16 conversion and shared immutable ownership.
+- [x] Construct ASCII String values and property keys through safe exact-size Arc collection, retaining exact UTF-16 conversion and shared immutable ownership.
 - [x] Protect queued async-generator request arguments across collection and Async-from-Sync throw failures without extra closing or changed Await/reaction order.
 - [x] Skip unavailable-host-name UTF-16 decoding when no names are configured, retaining ordinary unresolved references and configured host-failure behavior.
 - [x] Share Number prototype method registration in one ordered loop, preserving intrinsic identities, metadata, descriptors and retained roots.
@@ -650,6 +650,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Expose Script/Module syntax and early-error validation through CLI --check for arguments, files and stdin, preserving diagnostics before evaluation and Module loading.
 - [x] Protect computed Map/WeakMap insertion with class and revoked callable callbacks, distinguishing existing undefined entries from missing keys and invocation failures.
 - [x] Protect Iterator.concat eager method capture and lazy opening for class/revoked callables, post-capture mutation and return before any source opens.
+- [x] Reuse lossless scalar source ranges through the shared String conversion, preserving recorded lone-surrogate restoration and exact function source.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -118,6 +118,9 @@ impl SourceText {
     }
 
     pub(crate) fn to_js_string(&self, range: Range<usize>) -> JsString {
+        if let Some(text) = self.as_utf8(range.clone()) {
+            return JsString::from(text);
+        }
         let mut units = Vec::new();
         let index = self
             .surrogates

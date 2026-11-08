@@ -61,6 +61,34 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct ASCII allocation and scalar source restoration
+
+JsString now collects ASCII bytes widened to UTF-16 through the standard Arc
+iterator constructor. Rust's documented exact-size collection allocates the final
+slice once. This replaces the manual sixteen-unit buffer and length cutoff with
+four lines, while non-ASCII input retains its encoder. Source restoration reuses
+the existing as_utf8 query and this conversion for ranges without recorded lone
+surrogates. Other ranges keep their exact original restoration path. The two
+changes together remove one production line and add no state or dependency.
+
+The fifty-first checked workload stringifies a function containing a 16,384-byte
+ASCII comment sixteen times, checking its source length and final code unit.
+All 51 workload results pass with 53 CSV rows. Existing UTF-16/lone-surrogate,
+source-range, content identity and thread ownership regressions remain in place.
+
+Five checked ASCII-source evaluation/collection iterations, including initialization
+and parsing, record 81,743,288 instructions before and 39,633,011 after (-51.52%)
+in Callgrind. Rust calls to free fall from 4,939 to 4,746. The callback control
+records 1,421,895,262 to 1,426,991,149 instructions (+0.36%) and 1,086,584 to
+1,086,471 frees. These are scoped instruction/allocation counts; wall-time
+measurements remain pending. The earlier constructor-only experiment measured
++0.32% source and +0.14% callback instructions before source restoration reused
+the shared conversion; those results are retained separately.
+
+All 113 Core units, 18 Parser units, 443 Parser integrations, 574 Runtime units,
+2,431 non-RegExp integrations and the full quality gate pass, including 28 CLI
+groups. Fixture/test inventories and work charges are unchanged.
+
 ## Lazy concat open-method capabilities
 
 Iterator.concat regressions now capture class, bound-class and revoked callable
@@ -206,10 +234,10 @@ All nine delegation integration groups and the full quality gate pass, including
 
 ## Short ASCII String construction
 
-JsString conversion widens UTF-8 inputs of at most sixteen ASCII bytes in an
+The 3bafeec71 increment widened UTF-8 inputs of at most sixteen ASCII bytes in an
 initialized stack buffer before copying into shared immutable Arc storage.
-PropertyKey conversion shares this path. Longer and non-ASCII inputs retain the
-existing UTF-16 encoder. The eight-line change removes the temporary vector for
+PropertyKey conversion shared this path. Longer and non-ASCII inputs retained the
+existing UTF-16 encoder. The eight-line change removed the temporary vector for
 common intrinsic names such as next, done, value and length.
 
 All 113 Core units pass. The existing String conversion regression now covers

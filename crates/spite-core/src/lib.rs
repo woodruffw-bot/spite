@@ -167,13 +167,9 @@ impl JsString {
 
 impl From<&str> for JsString {
     fn from(value: &str) -> Self {
-        // Most intrinsic property names fit without a temporary heap buffer.
-        if value.len() <= 16 && value.is_ascii() {
-            let mut units = [0u16; 16];
-            for (unit, byte) in units.iter_mut().zip(value.bytes()) {
-                *unit = u16::from(byte);
-            }
-            return Self::from(&units[..value.len()]);
+        // Exact-size ASCII iteration lets Arc allocate its final slice directly.
+        if value.is_ascii() {
+            return Self(value.bytes().map(u16::from).collect());
         }
         Self(value.encode_utf16().collect())
     }

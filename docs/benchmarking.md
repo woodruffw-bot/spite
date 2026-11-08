@@ -19,13 +19,14 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all forty-nine program workloads |
+| parse_all | Parse and drop the ASTs for all 51 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
 | parse_int_overflow | Parse an overflowing 8,192-digit hexadecimal prefix and its non-digit suffix sixteen times, checking Infinity for both |
 | parse_int_small | Parse the hexadecimal Strings for integers 0–1,023, checking their numeric sum |
 | properties | Create, populate and read 128 computed object properties |
+| unresolved_globals | Query typeof for an unresolved global 4,096 times, checking the count |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
 | string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
@@ -51,6 +52,7 @@ and collection medians are computed independently.
 | map_group_by | Repeat object_group_by with Map.groupBy as a control |
 | map_iteration | Populate and iterate a 256-entry Map |
 | function_source | Compile a function with a 10,240-unit BMP/supplementary comment, then stringify it sixteen times, checking lengths and final units |
+| function_source_ascii | Repeat source stringification with a 16,384-byte ASCII comment |
 | function_source_surrogates | Repeat function_source with a 12,288-unit comment containing 4,096 lone surrogates |
 | bigint | Perform 64 multiply/add/divide steps starting at 2^256 |
 | bigint_bitwise | Perform 64 mixed-sign AND/XOR/OR and shift steps on 2,048-bit integers, checking a low-word checksum |

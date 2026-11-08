@@ -179,10 +179,12 @@ StringCreate and intrinsic Array list construction format unsigned index keys
 into a fixed stack buffer before copying the digits into Arc storage. They avoid
 temporary UTF-8 and UTF-16 buffers while retaining exact decimal keys, index
 ordering and work charges.
-UTF-8 inputs of at most sixteen ASCII bytes widen in an initialized stack buffer
-before copying directly into Arc storage. Longer and non-ASCII inputs retain
-the existing UTF-16 encoder. This also covers PropertyKey construction, which
-delegates to JsString.
+ASCII UTF-8 inputs widen through a standard byte iterator directly into Arc
+storage. Its exact length lets the standard library allocate the final slice
+once. Non-ASCII input retains the UTF-16 encoder. PropertyKey construction shares
+this conversion. Source ranges without recorded lone surrogates reuse it through
+the existing lossless UTF-8 query; ranges containing surrogates retain their
+original restoration path.
 
 Let-declaration lookahead is shared by statement lists and loop headers and
 recognizes only BindingIdentifier or binding-pattern starts. Word operators and
