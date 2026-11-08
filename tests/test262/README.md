@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Exact-sum rounding execution receipt
+
+A frozen gate compiled on clean 54d5fe2e3 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,441.117-second run.
+The ties-to-even rounding predicate and all work charges are unchanged. Fixture
+bytes, helpers and reviews are unchanged. This records retained-corpus execution.
+
 ## Shared arguments-name predicate execution receipt
 
 A frozen gate compiled on clean c1944cca3 passes all 87 runner controls and all

@@ -97,14 +97,28 @@ The fifty-seventh workload exactly sums four integers 2,048 times and checks
 every result. All 57 checked workloads pass with 59 CSV rows. Five checked
 evaluation/collection iterations, including initialization and parsing, record
 786,656,528 to 697,435,381 instructions (11.34% fewer) and the same 372,216 Rust
-frees. These are scoped instruction counts; full-corpus and quiet wall-clock
-evidence remain pending.
+frees. These are scoped instruction counts.
 
 All 575 Runtime units, 2,432 non-RegExp integrations and the quality gate pass,
 including formatting, strict Clippy, the explicit MSRV, policy/inventory checks,
 30 CLI groups and all three facade doctests. The 464 independent rational
 fixtures regenerate byte-for-byte; existing exponent, halfway, carry and
 cancellation tests remain unchanged.
+
+A frozen gate compiled on clean 54d5fe2e3 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,441.117-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare d3a62a2db with 54d5fe2e3 using
+the same 57 checked workloads and 59 CSV rows, seven samples of ten iterations.
+The integer-summation workload measures 18,109.037 to 16,574.778 microseconds
+(-8.47%); separate collection measures 2,518.793 to
+2,592.231 (+2.92%). Other evaluation changes range from
+-12.77% to +11.89%, and collection from -8.29% to +10.19%.
+Parse-all changes -1.58% and initialization/drop
+-0.65%. These measurements do not establish a general wall-time
+speedup; retain the short-circuit for its scoped instruction reduction and simpler
+rounding predicate.
 
 ## Promise combinator callbacks during abrupt iteration
 
