@@ -23,9 +23,10 @@ printf '1 + 2' | cargo run -p spite -- -
 cargo run -p spite -- --module --eval 'export const answer = await Promise.resolve(42)'
 ```
 
-The CLI prints the Script's completion value. Strings use a quoted representation
-that preserves lone surrogates. Source input must be UTF-8. The host installs no
-console, process, filesystem, or other non-standard JavaScript globals.
+The CLI drains queued Promise jobs, then prints the Script's completion value.
+An idle pending Promise does not delay Script completion. Strings use a quoted
+representation that preserves lone surrogates. Source input must be UTF-8. The
+host installs no console, process, filesystem, or other non-standard JavaScript globals.
 
 Use `--module` for Module sources from an argument, file or stdin.
 Module mode waits for top-level Await and prints the evaluation completion value,

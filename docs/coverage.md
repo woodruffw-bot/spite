@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## CLI Script Promise jobs
+
+Script mode now drains queued FIFO Promise jobs before printing its original
+completion value. This includes jobs enqueued by earlier jobs. Object completions
+remain rooted during the host turn. Reported job errors and opted-in work limits
+return a failing exit status; ordinary rejected Promises keep the existing host
+rejection policy. An empty queue ends the Script turn even with pending Promises.
+
+The new CLI group covers thenable assimilation, transitive reaction jobs ending
+in a reported TypeError, ordinary rejection, an idle pending Promise, a work limit
+inside a queued callback, and an initial Script throw before queued work runs.
+
+All 22 CLI groups, facade smoke/doc tests and the full quality gate pass.
+The Script/Module reaction-error reproduction now has matching failing statuses
+and diagnostics. Runtime algorithms and conformance inventories are unchanged.
+
 ## Direct TypedArray numeric-index classification
 
 CanonicalNumericIndexString now recognizes canonical Array-index keys through

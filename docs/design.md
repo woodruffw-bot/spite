@@ -89,7 +89,12 @@ measurements identify a problem and conformance tests protect the behavior.
 
 ## Command-line host
 
-The default CLI goal is Script. The --module option selects Module
+The default CLI goal is Script. It retains the completion while FIFO Promise jobs
+drain, including jobs queued by earlier jobs. Reported job failures abort the host
+turn; ordinary rejected Promises retain the no-op rejection-tracker policy. An
+empty queue completes the Script host turn even when a Promise remains pending.
+
+The --module option selects Module
 parsing and evaluation (16.2.1), including strict scope and top-level Await.
 Arguments, files and stdin share the same UTF-8 input handling. The host roots
 the evaluation Promise, drains FIFO Promise jobs and services finite Atomics

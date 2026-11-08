@@ -673,3 +673,56 @@ fn local_strings_load_host_data_but_invalid_and_saved_offset_strings_remain_inde
         );
     }
 }
+
+#[test]
+fn script_jobs_drain_transitively_and_report_job_failures() {
+    for (source, expected) in [
+        (
+            "Promise.resolve().then(()=>{throw new Error('rejected')});42",
+            "42",
+        ),
+        (
+            "Promise.resolve({then(resolve){resolve(1)}}).then(v=>v+1);'done'",
+            "\"done\"",
+        ),
+        ("new Promise(()=>{});42", "42"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--eval", source])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), expected);
+        assert!(output.stderr.is_empty());
+    }
+    let source = "const chain=Promise.resolve().then(()=>1).then(v=>v+1);chain.constructor={ [Symbol.species]:class{constructor(executor){executor(()=>{throw new TypeError('reaction report')},()=>{})}}};chain.then(v=>v+1);42";
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(["--eval", source])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    insta::assert_snapshot!(
+        String::from_utf8(output.stderr).unwrap(),
+        @"uncaught TypeError: reaction report"
+    );
+    for (source, expected) in [
+        ("Promise.resolve().then(()=>{while(true){}});42", "Limit"),
+        (
+            "Promise.resolve().then(()=>{while(true){}});throw 7",
+            "uncaught 7",
+        ),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--max-steps", "100000", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+}

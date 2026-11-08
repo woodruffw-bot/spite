@@ -631,6 +631,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share exact unsigned UTF-16 index formatting across TypedArray constructors, factories, reads, callbacks, copies, mutations and sorting, retaining witness/coercion order and quota behavior.
 - [x] Reuse exact unsigned UTF-16 keys for arguments, array-like calls, rest bindings, templates, String.raw, JSON traversal and Proxy lists, preserving observable access and quota order.
 - [x] Recognize canonical Array-index keys directly in TypedArray numeric-index classification, preserving exact Number spelling, negative zero and work charges for every key.
+- [x] Drain queued CLI Script Promise jobs transitively before reporting completion, retaining object values and propagating reported job failures and opted-in work limits.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
