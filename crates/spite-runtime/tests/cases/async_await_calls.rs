@@ -61,6 +61,30 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
         &mut realm,
         "result[0][0]===obj&&result[1][0]===undefined&&result[2][0]===undefined&&result.every(value=>value[1]===9)",
     );
+    // EvaluateCall keeps the WithBaseObject receiver and selected function
+    // before awaited arguments (13.3.6.2), including optional calls (13.3.9.2).
+    for call in ["method(await state.gate)", "method?.(await state.gate)"] {
+        let mut realm = Realm::default();
+        realm.eval(&r#"
+            let state={},events=[],result,receiver;
+            state.gate=new Promise(resolve=>{state.release=resolve});
+            let target={tag:7,[Symbol.unscopables]:{method:false},get method(){return function(value){'use strict';events.push('call');receiver=this;return this.tag+value}}};
+            let holder=new Proxy(target,{get(t,k,r){if(k==='method')events.push('get');return Reflect.get(t,k,r)}}),selected=holder;
+            with(holder){state.call=async()=>CALL}
+            state.call().then(value=>{result=value});
+            delete target.method;target[Symbol.unscopables].method=true;
+            globalThis.method=()=>{throw 7};holder=null;state.call=null;
+        "#.replace("CALL", call)).unwrap();
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        check(&mut realm, "events.join(',')==='get'&&result===undefined");
+        realm.eval("state.release(5)").unwrap();
+        drain(&mut realm);
+        check(
+            &mut realm,
+            "result===12&&receiver===selected&&events.join(',')==='get,call'",
+        );
+    }
 }
 
 #[test]
@@ -76,6 +100,21 @@ fn direct_eval_with_awaited_arguments_keeps_original_identity_variables_and_priv
     realm.eval("state.release('value=7;value')").unwrap();
     drain(&mut realm);
     check(&mut realm, "result.join(',')==='7,7'&&privateResult===12");
+
+    let mut realm = Realm::default();
+    realm.eval(r#"
+        let state={},result,target={eval,[Symbol.unscopables]:{eval:false}};
+        state.gate=new Promise(resolve=>{state.release=resolve});
+        async function f(){let marker=3;with(target){const out=eval(await state.gate);return [out,marker]}}
+        f().then(value=>{result=value});
+        delete target.eval;target[Symbol.unscopables].eval=true;
+        globalThis.eval=()=>{throw 7};target=null;f=null;
+    "#).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    realm.eval("state.release('marker=7;marker')").unwrap();
+    drain(&mut realm);
+    check(&mut realm, "result.join(',')==='7,7'");
 }
 
 #[test]

@@ -640,6 +640,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Store each Uint8Array hex/Base64 method's implementation beside its name, length and constructor/prototype placement, removing duplicate string dispatch and obsolete unsupported fallbacks.
 - [x] Protect saved object-environment assignment references across Await when the selected property is deleted, retaining published Proxy trap order and collection lifetimes.
 - [x] Protect permitted shortest decimal spellings, required explicit-precision tie rounding and canonical numeric-key consistency without locking implementation-defined digit choices.
+- [x] Protect with-bound ordinary/optional call receivers and direct eval context across awaited arguments, binding deletion, unscopables changes and collection.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## With-bound calls across awaited arguments
+
+Existing awaited-call regressions now cover ordinary and optional calls selected
+through a Proxy-backed with environment. The function is read once and invoked
+with the original Proxy receiver after its binding is deleted, blocked and
+shadowed while arguments await. A direct eval case retains the original intrinsic
+and caller's local scope after its with binding is deleted and the global eval
+is replaced. Collection runs while these calls are suspended.
+
+All 144 audited programs match Node in both ordinary execution and with collection
+between Promise jobs, for 288 executions. Observations cover getters, mutation,
+invocation, receiver identity and direct/indirect eval results, including null
+callees and optional argument elision. All eight awaited-call groups and the full
+quality gate pass, including 25 CLI groups. Runtime algorithms, inventories,
+dependencies and quotas are unchanged.
+
 ## Binary64 decimal formatting boundaries
 
 A bounded audit checks 21,504 formatting results from 1,024 raw binary64 values,
