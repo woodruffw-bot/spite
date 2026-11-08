@@ -13,7 +13,7 @@ impl Realm {
         element: &TemplateElement,
     ) -> Result<(), Error> {
         self.tick(element.span)?;
-        self.append_string(
+        self.append_budgeted_string(
             units,
             element
                 .cooked

@@ -503,6 +503,45 @@ impl Realm {
         Ok(())
     }
 
+    fn append_budgeted_string(
+        &mut self,
+        units: &mut Vec<u16>,
+        part: &JsString,
+        span: Span,
+    ) -> Result<(), Error> {
+        let length = units
+            .len()
+            .checked_add(part.len())
+            .ok_or_else(|| Error::Limit {
+                span,
+                message: "string length exceeds platform capacity".into(),
+            })?;
+        if self
+            .limits
+            .max_string_units
+            .is_some_and(|limit| length > limit)
+        {
+            return Err(Error::Limit {
+                span,
+                message: "string length limit exceeded".into(),
+            });
+        }
+        let movement = if length > units.capacity() {
+            units.len()
+        } else {
+            0
+        };
+        self.object_work(span, |_, budget| {
+            budget.charge(movement)?;
+            budget.charge(part.len())
+        })?;
+        units.try_reserve(part.len()).map_err(|_| Error::Limit {
+            span,
+            message: "string storage exceeds platform capacity".into(),
+        })?;
+        self.append_string(units, part, span)
+    }
+
     fn append_string(
         &self,
         units: &mut Vec<u16>,
@@ -1670,7 +1709,7 @@ impl Realm {
                     if let Some(substitution) = substitutions.get(index) {
                         let value = self.expression(substitution)?;
                         let value = self.string(value, substitution.span)?;
-                        self.append_string(&mut units, &value, substitution.span)?;
+                        self.append_budgeted_string(&mut units, &value, substitution.span)?;
                     }
                 }
                 Value::String(JsString::from_code_units(units))
@@ -1907,6 +1946,12 @@ impl Realm {
                             span,
                             message: "string length limit exceeded".into(),
                         });
+                    }
+                    if !a.is_empty() && !b.is_empty() {
+                        self.integer_work(span, |budget| {
+                            budget.charge(a.len())?;
+                            budget.charge(b.len())
+                        })?;
                     }
                     return Ok(Value::String(a.concat(&b)));
                 }

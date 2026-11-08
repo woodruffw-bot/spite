@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## String construction work
+
+String addition prepays both input lengths after conversion when neither input
+is empty. Empty operands retain storage reuse. Immediate and resumed untagged
+templates share the existing TypedArray append routine, charging incoming units
+and buffer movement before reservation. The shared routine's body and existing
+TypedArray charges are unchanged.
+
+One native group protects long-copy refusal, recovery, empty operands and
+side-effect order. All 577 Runtime units, 2,445 non-RegExp integrations and the
+quality gate pass. Public probes replace constant allowances with copy/growth
+work; all three earlier scan curves remain identical. All 704 programs match
+Node before and after, including 64 resumed async-template cases. The 512
+UTF-16 batches also match Python across all 65,536 units. Mixed-addition results
+retain both type and value in the observer. No fixture or default quota changes.
+
+## Initial String-to-Number execution receipt
+
+The gate frozen on clean 7033675b2 passes all 87 controls and all 80,060 modes
+from 41,550 unchanged originals, with zero other outcomes. Saved executable and
+fixture hashes match across the 1,438.724-second four-worker run; all 17 CI jobs
+also pass. This receipt covers the initial ToNumber scan charge and precedes
+both comparison increments and construction accounting.
+
 ## String-pair comparison scan work
 
 Equal-length String equality and switch matching prepay the input length;

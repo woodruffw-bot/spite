@@ -200,3 +200,54 @@ fn string_pair_comparison_scans_consume_evaluation_work() {
         );
     }
 }
+
+#[test]
+fn string_construction_copies_consume_evaluation_work() {
+    let part = "0".repeat(4096);
+    for (source, length) in [
+        (format!("'{part}'+'x'"), part.len() + 1),
+        (format!("`{part}${{'x'}}`"), part.len() + 1),
+        (format!("`{part}`"), part.len()),
+    ] {
+        let script = spite_parser::parse_script(&source).unwrap();
+        let Value::String(value) = Realm::default().evaluate(&script).unwrap() else {
+            panic!("String result")
+        };
+        assert_eq!(value.len(), length);
+        let mut realm = Realm::new(Limits {
+            max_steps: Some(512),
+            ..Limits::default()
+        });
+        assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("'a'+'b'"), Ok(Value::String("ab".into())));
+    }
+
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(512),
+        ..Limits::default()
+    });
+    for source in [format!("'{part}'+''"), format!("''+'{part}'")] {
+        let Value::String(value) = realm.eval(&source).unwrap() else {
+            panic!("String result")
+        };
+        assert_eq!(value.len(), part.len());
+    }
+    realm.eval("let marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!("`{part}${{marker=1}}`")),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
+
+    let part = "0".repeat(16384);
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(8192),
+        ..Limits::default()
+    });
+    realm.eval("let marker=0").unwrap();
+    assert!(matches!(
+        realm.eval(&format!("'{part}'+({{toString(){{marker=1;return 'x'}}}})")),
+        Err(Error::Limit { .. })
+    ));
+    assert_eq!(realm.eval("marker"), Ok(Value::Number(1.0)));
+}

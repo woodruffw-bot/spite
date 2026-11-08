@@ -1778,6 +1778,12 @@ Equal-length String equality prepays the input length through one shared
 budgeted strict-equality operation, including loose equality and switch matching
 (7.2.13–7.2.14). Different lengths require no content scan. Relational String
 comparison prepays the shorter input length before UTF-16 ordering (7.2.12).
+String addition charges copied units after the operand conversions in
+[ApplyStringOrNumericBinaryOperator](https://262.ecma-international.org/17.0/#sec-applystringornumericbinaryoperator);
+an empty operand still permits constant-work storage reuse. Untagged template
+fragments in immediate and resumed execution use the same bounded append as
+TypedArray joins (13.2.8.6). It checks output size, charges incoming units and
+any existing buffer units moved by growth, then reserves and copies.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution

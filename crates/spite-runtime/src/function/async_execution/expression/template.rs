@@ -52,7 +52,7 @@ impl Realm {
         let value = state.current.take().expect("template substitution value");
         let span = substitutions[index].span;
         let part = self.string(value, span)?;
-        self.append_string(&mut units, &part, span)?;
+        self.append_budgeted_string(&mut units, &part, span)?;
         push(
             state,
             ExprTask::TemplateNext {

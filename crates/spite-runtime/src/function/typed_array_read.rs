@@ -233,7 +233,7 @@ impl Realm {
         for index in 0..length {
             self.tick(span)?;
             if index > 0 {
-                self.typed_array_read_append(&mut result, separator, span)?;
+                self.append_budgeted_string(&mut result, separator, span)?;
             }
             let element = self.get_property(object, &JsString::from_index(index), span)?;
             if matches!(element, Value::Undefined) || (locale && matches!(element, Value::Null)) {
@@ -250,49 +250,8 @@ impl Realm {
             } else {
                 self.string(element, span)?
             };
-            self.typed_array_read_append(&mut result, &string, span)?;
+            self.append_budgeted_string(&mut result, &string, span)?;
         }
         Ok(Value::String(JsString::from_code_units(result)))
-    }
-
-    fn typed_array_read_append(
-        &mut self,
-        units: &mut Vec<u16>,
-        part: &JsString,
-        span: Span,
-    ) -> Result<(), Error> {
-        // Preflight the same quota as append_string before fallible bulk
-        // reservation. No receiver hook runs between this check and the append.
-        let length = units
-            .len()
-            .checked_add(part.len())
-            .ok_or_else(|| Error::Limit {
-                span,
-                message: "string length exceeds platform capacity".into(),
-            })?;
-        if self
-            .limits
-            .max_string_units
-            .is_some_and(|limit| length > limit)
-        {
-            return Err(Error::Limit {
-                span,
-                message: "string length limit exceeded".into(),
-            });
-        }
-        let movement = if length > units.capacity() {
-            units.len()
-        } else {
-            0
-        };
-        self.object_work(span, |_, budget| {
-            budget.charge(movement)?;
-            budget.charge(part.len())
-        })?;
-        units.try_reserve(part.len()).map_err(|_| Error::Limit {
-            span,
-            message: "string storage exceeds platform capacity".into(),
-        })?;
-        self.append_string(units, part, span)
     }
 }

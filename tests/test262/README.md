@@ -5,6 +5,23 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## String construction work regression
+
+One native group protects copy refusal, recovery, storage reuse and conversion
+order. All 577 Runtime units, 2,445 non-RegExp integrations and the quality gate
+pass. All 704 programs match Node before and after, including 64 resumed
+templates; 512 UTF-16 batches also match Python for all 65,536 units. The work
+probes retain earlier scan charges. The full corpus receipt is pending; fixtures,
+helpers, modes and reviews are unchanged.
+
+## Initial String-to-Number execution receipt
+
+The gate frozen on clean 7033675b2 passes all 87 controls and all 80,060 modes
+from 41,550 unchanged originals, with zero other outcomes. Saved executable and
+fixture hashes match across the 1,438.724-second run; all 17 CI jobs pass.
+This covers the initial conversion charge before comparison and construction
+changes. Fixtures, helpers, modes and reviews are unchanged.
+
 ## String-pair comparison work regression
 
 One native group protects equality, ordering and switch scan charges, recovery,
@@ -22,8 +39,9 @@ limits. All 577 Runtime units, 2,443 non-RegExp integrations and the quality gat
 pass. The initial 824 conversion programs match Node before and after, including
 every single UTF-16 unit. Another 1,508 comparison programs meet published
 expectations before and after; eight retain the documented StringToBigInt
-behavior where Node differs. The full corpus receipt for these changes is
-pending; fixture bytes, helpers, modes and reviews are unchanged.
+behavior where Node differs. The receipt above covers the initial conversion
+charge; the comparison receipt is pending. Fixture bytes, helpers, modes and
+reviews are unchanged.
 
 ## Async-generator rejection boundary regressions
 

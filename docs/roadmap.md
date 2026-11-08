@@ -693,6 +693,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Charge StringToNumber input scans after primitive conversion, including literal inputs, while preserving independent Number and BigInt limits.
 - [x] Share budgeted primitive ToNumber with numeric comparison branches, preserving type-only decisions, conversion order and exact BigInt/String comparisons.
 - [x] Charge String equality and relational scans, including switch matching, while retaining length-only equality rejection and UTF-16 ordering.
+- [x] Charge String addition copies and immediate/resumed template buffer appends before allocation, preserving conversion order, growth accounting and empty-operand storage reuse.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
