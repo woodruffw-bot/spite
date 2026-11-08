@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Apply argument lists across callable revocation
+
+Reflect.apply and Function.prototype.apply retain cached callability while an
+argument list is gathered (7.2.3, 20.2.3.1, 28.1.1). Revoked function/class
+proxies still pass the initial IsCallable check, and list getters run before
+invocation rejects revocation. A getter's thrown value takes precedence. An
+independent 240-program audit matches Node 26.13.0 exactly for both APIs, direct
+and bound targets, callable/non-callable proxies, revocation at several read
+stages, getter failures and ignored iteration hooks.
+
+Eight examples extend the existing Reflect argument-list group with function
+and class proxies, revocation before or during list gathering, and a later
+getter failure. Runtime code, snapshots and fixture inventories are unchanged.
+All 16 selected Reflect/Function.apply integration groups and the quality gate
+pass, including formatting, strict Clippy, the explicit MSRV, policy/inventory
+checks, 30 CLI groups and all three facade doctests.
+
 ## Reuse the sole String.raw literal
 
 String.raw returns its converted literal directly when the captured raw length

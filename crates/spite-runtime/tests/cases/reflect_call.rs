@@ -78,6 +78,43 @@ fn argument_lists_read_length_once_and_live_indices_in_order_without_iteration()
     check(
         "let calls=0,caught=false;try{Reflect.apply(()=>{calls++;},null,{length:Symbol()});}catch(e){caught=e instanceof TypeError;}caught && calls===0",
     );
+    // 7.2.3, 20.2.3.1 and 28.1.1: revocation preserves cached callability.
+    // Gather the list before [[Call]], allowing a later getter throw to win.
+    for target in ["function(){}", "class{}"] {
+        for throws in [false, true] {
+            for invoke in [
+                "Reflect.apply(target,null,list)",
+                "Function.prototype.apply.call(target,null,list)",
+            ] {
+                let source = r#"
+                    let log='',calls=0,marker={},caught;
+                    let pair=Proxy.revocable(TARGET,{apply(){calls++;return 7}});
+                    let target=pair.proxy,list={
+                        get length(){log+='l';return 2},
+                        get 0(){log+='0';AT_ZERO return 1},
+                        get 1(){log+='1';THROW return 2}
+                    };
+                    BEFORE
+                    try{INVOKE}catch(e){caught=EXPECTED}
+                    caught&&log==='l01'&&calls===0
+                "#
+                .replace("TARGET", target)
+                .replace("THROW", if throws { "throw marker;" } else { "" })
+                .replace("BEFORE", if throws { "" } else { "pair.revoke();" })
+                .replace("AT_ZERO", if throws { "pair.revoke();" } else { "" })
+                .replace("INVOKE", invoke)
+                .replace(
+                    "EXPECTED",
+                    if throws {
+                        "e===marker"
+                    } else {
+                        "e instanceof TypeError"
+                    },
+                );
+                check(&source);
+            }
+        }
+    }
 }
 
 #[test]
