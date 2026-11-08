@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Array.fromAsync close failures and reason lifetimes
+
+Regressions retain a mapper's thrown/rejected object across collection while
+iterator closing awaits a gate, then verify its release after either gate outcome.
+Direct async closing leaves result fields unread; the sync adapter performs its
+own done/value reads before the original mapper failure wins (23.1.2.2,
+AsyncIteratorClose and AsyncFromSyncIteratorContinuation).
+
+All 66 audited programs match a published-clause JavaScript control in ordinary
+execution and with collection between jobs, for 132 comparisons. All 42 programs
+that settle in raw Node 26.13.0 also match that control. Two additional programs
+match with an unhandled-rejection host observer; their ignored sync-return
+Promises otherwise trigger Node's process policy. The remaining 22 reference
+programs stay pending or exceed a two-second external subprocess timeout. Raw
+reference outcomes and the clause control are retained separately; no unexplained
+control differences remain. The engine and fixture limits are unchanged.
+
+All ten Array.fromAsync integration groups and the full quality gate pass,
+including 28 CLI groups. Runtime code and test/fixture inventories are unchanged.
+
 ## Reusing ASCII normalization input
 
 String normalization reuses ASCII input within the output-length limit when work

@@ -655,6 +655,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Dispatch every global metadata member through one exhaustive match, preserving Proxy/FinalizationRegistry calls and removing the obsolete unsupported fallback.
 - [x] Skip duplicate bound-name collection for exactly one simple identifier parameter, preserving existing initialization and other parameter-list analysis.
 - [x] Reuse ASCII normalization input within the output limit without work accounting or agent control, preserving all four forms and checked failure paths.
+- [x] Protect Array.fromAsync mapper reasons across pending close and collection, retaining direct-async versus sync-adapter result inspection and original-failure precedence.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

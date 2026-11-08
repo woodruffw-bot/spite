@@ -151,6 +151,22 @@ fn mapper_failures_await_close_and_original_reason_wins_over_close_rejection() {
         drain(&mut realm);
         check(&mut realm, "ok");
     }
+    // AsyncIteratorClose preserves a throw without inspecting result fields.
+    // A sync adapter first performs its own continuation's done/value reads.
+    for (method, reads) in [("Symbol.asyncIterator", ""), ("Symbol.iterator", "d")] {
+        let mut realm = Realm::default();
+        let source = r#"
+            let marker={},reads='',ok=false,source={
+                [METHOD](){return this},next(){return {value:1,done:false}},
+                return(){return {get done(){reads+='d';throw 7},get value(){reads+='v';throw 8}}}
+            };
+            Array.fromAsync(source,()=>{throw marker}).catch(error=>{ok=error===marker});
+        "#
+        .replace("METHOD", method);
+        realm.eval(&source).unwrap();
+        drain(&mut realm);
+        check(&mut realm, &format!("ok&&reads==='{reads}'"));
+    }
 }
 
 #[test]
@@ -231,6 +247,38 @@ fn pending_native_state_survives_gc_and_releases_source_after_completion() {
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(&mut realm, "state.weak.deref()===undefined&&result[0]===9");
+    for mapper in ["throw reason", "return Promise.reject(reason)"] {
+        for release in [
+            "state.release(9)",
+            "state.release({then(resolve,reject){reject(9)}})",
+        ] {
+            let mut realm = Realm::default();
+            let source = r#"
+                let state={marker:{tag:7},closed:0,observed:false},weak=new WeakRef(state.marker);
+                state.gate=new Promise(resolve=>{state.release=resolve});
+                Array.fromAsync({
+                    [Symbol.asyncIterator](){return this},next(){return {value:1,done:false}},
+                    return(){state.closed++;return state.gate}
+                },()=>{let reason=state.marker;state.marker=null;MAPPER}).catch(error=>{
+                    state.observed=error===weak.deref()&&error.tag===7;
+                });
+            "#
+            .replace("MAPPER", mapper);
+            realm.eval(&source).unwrap();
+            drain(&mut realm);
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            check(
+                &mut realm,
+                "state.marker===null&&state.closed===1&&!state.observed&&weak.deref()!==undefined",
+            );
+            realm.eval(release).unwrap();
+            drain(&mut realm);
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            check(&mut realm, "state.observed&&weak.deref()===undefined");
+        }
+    }
 }
 
 #[test]
