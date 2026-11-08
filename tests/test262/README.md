@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Shared arguments-name predicate execution receipt
+
+A frozen gate compiled on clean c1944cca3 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,410.308-second run.
+Body identifiers now use the same direct arguments-name predicate as parameters;
+composite patterns retain BoundNames traversal. Fixture bytes, helpers, reviews
+and work charges are unchanged.
+This records retained-corpus execution.
+
 ## Arguments body-name analysis execution receipt
 
 A frozen gate compiled on clean cca06cb98 passes all 87 runner controls and all

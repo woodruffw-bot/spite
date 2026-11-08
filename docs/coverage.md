@@ -120,12 +120,26 @@ bindings 2,048 times. All 56 checked workloads pass with 58 CSV rows. Five check
 evaluation/collection iterations, including initialization and parsing, record
 356,401,368 instructions before and 351,661,010 after (-1.33%) in Callgrind.
 Rust calls to free fall from 300,581 to 280,101 (-20,480/-6.81%). These are scoped
-instruction/allocation counts; full-corpus and quiet timing evidence are pending.
+instruction/allocation counts.
 
 All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
 pass, including three facade doctests and 30 CLI groups. Existing arguments and
 destructuring tests cover both paths. Snapshots and fixture inventories are
 unchanged.
+
+A frozen gate compiled on clean c1944cca3 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,410.308-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare aaa3a22a2 with c1944cca3 using
+the same 56 checked workloads and 58 CSV rows, seven samples of ten iterations.
+The lexical-binding workload measures 7,769.118 to 7,975.721 microseconds
+(+2.66%); separate collection measures 2,218.343 to
+2,484.485 (+12.00%). Other evaluation changes range from
+-10.40% to +43.73%, and collection from -4.46% to +12.26%.
+Parse-all changes +2.79% and initialization/drop
++4.80%. These timings do not establish a wall-time speedup;
+retain the shared arguments-name predicate for its scoped allocation/instruction reduction.
 
 ## Lazy body-name analysis for arguments
 
