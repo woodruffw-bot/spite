@@ -100,6 +100,11 @@ fn canonical_numeric_index(
         return Ok(None);
     }
     budget.charge(string.len())?;
+    // Canonical array indices are exact binary64 integers with the same decimal
+    // spelling (7.1.21). Reuse their checked parser before general conversion.
+    if let Some(index) = super::array_index(key) {
+        return Ok(Some(f64::from(index)));
+    }
     let mut ascii = [0; 25];
     for (unit, byte) in string.code_units().iter().zip(&mut ascii) {
         if *unit > 0x7f {
@@ -438,6 +443,34 @@ mod tests {
             .unwrap();
         assert_eq!(index, 0.0);
         assert!(index.is_sign_negative());
+        // Both sides of the Array-index boundary remain canonical numeric keys,
+        // with identical work charges even when general Number conversion runs.
+        for index in [
+            0u64,
+            1,
+            9,
+            10,
+            99,
+            100,
+            4_294_967_294,
+            4_294_967_295,
+            4_294_967_296,
+            9_007_199_254_740_991,
+        ] {
+            let key = JsString::from(index.to_string().as_str());
+            let work = 1 + key.len();
+            let mut budget = Budget::new(work);
+            assert_eq!(
+                canonical_numeric_index((&key).into(), &mut budget).unwrap(),
+                Some(index as f64),
+                "{index}"
+            );
+            assert_eq!(budget.remaining_work(), Some(0));
+            assert!(matches!(
+                canonical_numeric_index((&key).into(), &mut Budget::new(work - 1)),
+                Err(Error::WorkLimit)
+            ));
+        }
         let longest = JsString::from("-0.0000012345678901234567");
         assert_eq!(longest.len(), 25);
         assert!(
@@ -462,6 +495,10 @@ mod tests {
             "1e-6",
             "0.0000001",
             "9007199254740993",
+            "04294967294",
+            "4294967294.0",
+            "4294967295.0",
+            "4294967296.0",
         ] {
             assert!(
                 canonical_numeric_index(

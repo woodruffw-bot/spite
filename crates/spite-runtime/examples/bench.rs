@@ -152,6 +152,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "typed_array_indices",
+        source: "(()=>{const values=Array.from({length:1024},(_,i)=>i);let sum=0;for(let i=0;i<8;i++){const a=Float64Array.from(values),b=a.map(v=>v+1);sum+=b.reduce((x,y)=>x+y,0)}return sum})()",
+        expected: 4_198_400.0,
+        jobs: false,
+    },
+    Case {
         name: "object_group_by_few",
         source: "(()=>{const values=Array.from({length:4096},(_,i)=>i),groups=Object.groupBy(values,v=>'g'+v%4);return groups.g0.length+groups.g1.length+groups.g2.length+groups.g3.length+groups.g3[1023]})()",
         expected: 8191.0,

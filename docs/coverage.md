@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct TypedArray numeric-index classification
+
+CanonicalNumericIndexString now recognizes canonical Array-index keys through
+the existing checked UTF-16 parser. These integers are exactly representable as
+binary64 and retain their decimal spelling. Other inputs keep the shared
+String-to-Number/Number-to-String rules, including negative zero, fractions,
+nonfinite values and larger integers. Existing work charges precede either path.
+
+The existing canonical-index regression now checks exact values and exhausted
+work budgets around decimal widths, both sides of 2^32 and 2^53−1, along with
+noncanonical leading-zero and fractional spellings at the Array-index boundary.
+
+All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes from 2,247
+unchanged TypedArray/Uint8Array originals and the full quality gate pass. All
+1,734 indexed-collection comparisons match Node. The 7,092 receiver cases match
+the published-rule oracle with identical result hashes before and after collection.
+The manual benchmark now includes a checked TypedArray construction/map/reduce
+workload; no timing result is claimed here.
+
 ## Shared generic index formatting
 
 Eleven unsigned index conversions across arguments creation/mapping, array-like

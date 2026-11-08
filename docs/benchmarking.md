@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all forty-five program workloads |
+| parse_all | Parse and drop the ASTs for all forty-six program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
@@ -43,6 +43,7 @@ and collection medians are computed independently.
 | string_case_context | Repeat the casing checks over 11,264 units of ASCII, Greek sigma, combining marks and lone surrogates |
 | string_case_unicode | Repeat over 7,168 units of Greek, supplementary letters, expanding mappings and joiners as a Unicode control |
 | object_group_by | Group 1,024 integers under distinct String keys, checking the key count and endpoint values |
+| typed_array_indices | Construct and map 1,024-element Float64Arrays eight times, reduce each mapped result and check the total |
 | object_group_by_few | Group 4,096 integers under four repeating String keys, checking group sizes and the final value |
 | map_group_by | Repeat object_group_by with Map.groupBy as a control |
 | map_iteration | Populate and iterate a 256-entry Map |
