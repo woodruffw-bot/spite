@@ -623,6 +623,9 @@ pub struct BindingPattern {
 impl BindingPattern {
     /// Collects bound identifier names and their source ranges in source order.
     pub fn bound_names(&self) -> Vec<(&str, Span)> {
+        if let BindingPatternKind::Identifier(name) = &self.kind {
+            return vec![(name.as_str(), self.span)];
+        }
         let mut pending = vec![self];
         let mut names = Vec::new();
         while let Some(pattern) = pending.pop() {
@@ -657,6 +660,9 @@ impl BindingPattern {
     }
 
     fn expression_depth(&self) -> usize {
+        if matches!(&self.kind, BindingPatternKind::Identifier(_)) {
+            return 0;
+        }
         let mut pending = vec![self];
         let mut depth = 0;
         while let Some(pattern) = pending.pop() {

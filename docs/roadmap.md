@@ -641,6 +641,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Protect saved object-environment assignment references across Await when the selected property is deleted, retaining published Proxy trap order and collection lifetimes.
 - [x] Protect permitted shortest decimal spellings, required explicit-precision tie rounding and canonical numeric-key consistency without locking implementation-defined digit choices.
 - [x] Protect with-bound ordinary/optional call receivers and direct eval context across awaited arguments, binding deletion, unscopables changes and collection.
+- [x] Compute a binding identifier's bound name/span and zero pattern-expression depth directly, avoiding traversal stacks while retaining composite-pattern analysis and initializer handling.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

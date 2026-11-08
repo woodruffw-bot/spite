@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Binding identifier metadata without traversal stacks
+
+BindingPattern bound-name and expression-depth queries now return directly for an
+Identifier leaf. The same name/span and zero pattern depth are returned; parameter
+initializers remain handled by Parameter's separate depth query. Object/Array
+patterns retain their iterative traversal, ordering and nested initializer checks.
+The six-line change adds no cache, state, dependency or work-accounting path.
+
+All 18 Parser units, 443 Parser integrations, 574 Runtime units, 2,431 non-RegExp
+integrations and the full quality gate pass, including 25 CLI groups.
+A userspace Callgrind profile of five checked TypedArray workload evaluation/
+collection iterations, including initialization and parsing, records 1,620,642,093
+instructions before and 1,511,440,779 after (-6.74%). Rust allocator calls to free
+drop from 1,827,131 to 1,294,301. This is instruction/allocation evidence;
+no post-change wall-time result is claimed yet. Inventories and default quotas
+are unchanged.
+
 ## With-bound calls across awaited arguments
 
 Existing awaited-call regressions now cover ordinary and optional calls selected
